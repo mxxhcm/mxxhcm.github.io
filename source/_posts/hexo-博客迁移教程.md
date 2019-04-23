@@ -3,7 +3,7 @@ title: hexo 博客迁移教程
 date: 2019-04-23 20:29:40
 tags:
  - hexo
-categories: 博客
+categories: 工具
 ---
 
 ## hexo博客迁移
