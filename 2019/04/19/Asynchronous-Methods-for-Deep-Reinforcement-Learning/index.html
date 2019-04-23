@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="摘要DQN使用experience replay buffer来稳定学习过程。本文提出了一个新的框架，使用异步的梯度下降稳定学习过程。这个框架既适用于on-policy，也适用于off-policy环境上，即能应用于离散动作空间，也能应用于连续的动作空间，既能训练前馈智能体，也能训练循环智能体。 IntroductionOnline学习是不稳定的，并且online更新是强相关的。DQN通过引入ex">
+<meta name="keywords" content="强化学习,A3C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Asynchronous Methods for Deep Reinforcement Learning">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/04/19/Asynchronous-Methods-for-Deep-Reinforcement-Learning/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="摘要DQN使用experience replay buffer来稳定学习过程。本文提出了一个新的框架，使用异步的梯度下降稳定学习过程。这个框架既适用于on-policy，也适用于off-policy环境上，即能应用于离散动作空间，也能应用于连续的动作空间，既能训练前馈智能体，也能训练循环智能体。 IntroductionOnline学习是不稳定的，并且online更新是强相关的。DQN通过引入ex">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-23T11:23:32.346Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Asynchronous Methods for Deep Reinforcement Learning">
+<meta name="twitter:description" content="摘要DQN使用experience replay buffer来稳定学习过程。本文提出了一个新的框架，使用异步的梯度下降稳定学习过程。这个框架既适用于on-policy，也适用于off-policy环境上，即能应用于离散动作空间，也能应用于连续的动作空间，既能训练前馈智能体，也能训练循环智能体。 IntroductionOnline学习是不稳定的，并且online更新是强相关的。DQN通过引入ex">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/04/19/Asynchronous-Methods-for-Deep-Reinforcement-Learning/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Asynchronous Methods for Deep Reinforcement Learning | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/19/Asynchronous-Methods-for-Deep-Reinforcement-Learning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Asynchronous Methods for Deep Reinforcement Learning
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-19 18:11:56" itemprop="dateCreated datePublished" datetime="2019-04-19T18:11:56+08:00">2019-04-19</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-23 19:23:32" itemprop="dateModified" datetime="2019-04-23T19:23:32+08:00">2019-04-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/04/19/Asynchronous-Methods-for-Deep-Reinforcement-Learning/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/04/19/Asynchronous-Methods-for-Deep-Reinforcement-Learning/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>DQN使用experience replay buffer来稳定学习过程。本文提出了一个新的框架，使用异步的梯度下降稳定学习过程。这个框架既适用于on-policy，也适用于off-policy环境上，即能应用于离散动作空间，也能应用于连续的动作空间，既能训练前馈智能体，也能训练循环智能体。</p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>Online学习是不稳定的，并且online更新是强相关的。DQN通过引入experience replay buffer解决了这个问题，但是DQN只能应用在off policy算法上。总的来说，DQN通过引入replay buffer取得了很大成功，但是replay buffer还有以下的几个缺点：</p>
+<ul>
+<li>在每一步交互的时候使用了更多的内存和计算资源</li>
+<li>它只能应用在off policy的算法上，也就是说权重的更新可能会使用到很久之前的数据。</li>
+</ul>
+<p>这篇文章提出不使用replay buffer，而是使用异步的框架，同时在多个相同的环境中操作多个智能体（每个环境中一个智能体）并行的采集数据。这种并行性也能将智能体的数据分解成更稳定的过程（即和experience replay buffer起到了相同的作用），因为在给定的一个时间步，智能体可能会experience很多个不同的states。<br>这个框架既可以应用在on policy算法，如Sarsa，n-step methods和actor-critc等方法上，也可以应用在off policy算法如Q-learning上。</p>
+<h2 id="异步框架"><a href="#异步框架" class="headerlink" title="异步框架"></a>异步框架</h2><p>作者给出了一个框架，将够将on-policy search的actor-critic方法以及off-policy value-based的Q-learning方法都包括进去。<br>具体的，使用一台机器上的多CPU线程，这样子可以避免在不同机器上传递参数和梯度的消耗。然后，多个并行的actor-learner可能会探索环境的不同部分，每个actor-learner可以设置不同的exploration policy。不同的thread运行不同的exploration policy，多个actor-learner并行执行online update可能比单智能体更新在时间上更不相关。所以这里使用了不同的探索策略取代了DQN中buffer稳定学习过程的作用。<br>除了稳定学习过程之外，多个actor-learner还可以减少训练时间，此外，不使用buffer以后还可以使用on-policy的方法进行训练。</p>
+<p><strong>总的来说，下面要介绍的四个算法，前面三个算法都使用了target network，第四个A3C算法没有使用target network。最重要的是所有四个算法都使用了多个actor-learner进行训练，并且使用累计的梯度进行更新（相当于batch的作用）。总共出现了三类参数，一类是network参数，一类是target network参数，一类是thread-specific（每个线程的参数）的参数。thread-specific参数是每个线程自己持有的，通过更新每个线程的参数更新network的参数，然后使用network的参数更新target network的参数，target network参数比network参数更新的要慢很多。</strong></p>
+<h3 id="异步的one-step-Q-learning"><a href="#异步的one-step-Q-learning" class="headerlink" title="异步的one-step Q-learning"></a>异步的one-step Q-learning</h3><ul>
+<li>每个thread都和它自己的环境副本进行交互，在每一个时间步计算Q-learning loss的梯度。</li>
+<li>通过使用不同的exploration策略，可以改进性能，这里实现exploration policy不同的方式就是使用$\epsilon$的不同取值实现。</li>
+<li>使用一个共享的更新的比较缓慢的target network，就是和DQN中的target network一样。</li>
+<li>同时也使用多个时间步上的累计梯度，和batch挺像的，这就减少了multi actor learner重写其他更新的可能性，同时也在计算效率和数据效率方面做了一个权衡。</li>
+</ul>
+<h4 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>Algorithm 1</strong> 异步的one-step Q-learning－－每个actor-learn线程的伪代码<br>用$\theta,\theta^{-}$表示全局共享参数，计数器$T=0$，<br>初始化线程时间步计数器$t\leftarrow 0$，<br>初始化target network权重$\theta^{-} \leftarrow 0$,<br>初始化network梯度$d\theta\leftarrow 0$，<br>初始化，得到初始状态$s$，<br><strong>repeat</strong><br>$\qquad$使用$\epsilon-$greedy策略采取action $a$，<br>$\qquad$接收下一个状态$s’$和reward $r$，<br>$\qquad$设置target value，$y=\begin{cases}r,&amp;for\ terminal\ s’ \\r+\gamma max_{a’}Q(s’,a’;\theta^{-}), &amp;for\ non-terminal\ s’\end{cases}$<br>$\qquad$累计和$\theta$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$<br>$\qquad s\leftarrow s’$<br>$\qquad T\leftarrow T+1, t\leftarrow t+1$<br>$\qquad$<strong>if</strong> $T\ \ mod\ \ I_{target} ==0 $，那么<br>$\qquad\qquad$更新target network $\theta^{-}\leftarrow 0$<br>$\qquad$<strong>end if</strong><br>$\qquad$<strong>if</strong> $t\ \ mod\ \ I_{AsyncUpdate} ==0$或者$s$是terminal state，那么<br>$\qquad\qquad$使用$d\theta$异步更新$\theta$<br>$\qquad\qquad$将累计梯度$d\theta\leftarrow 0$<br>$\qquad$<strong>end if</strong><br><strong>until</strong> $T\ge T_{max}$</p>
+<h3 id="异步的one-step-Sarsa"><a href="#异步的one-step-Sarsa" class="headerlink" title="异步的one-step Sarsa"></a>异步的one-step Sarsa</h3><h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><ul>
+<li>和算法$1$很像，$Q-learning$计算target value使用$r+\gamma max_{a’}Q(s’,a’;\theta^{-})$，而Sarsa计算target value使用$r+\gamma Q(s’,a’;\theta^{-})$，即Q-learning的bahaviour policy和评估的策略是不一样的，而Sarsa的behaviour policy和评估策略是一样的。</li>
+<li>使用target network，</li>
+<li>同时使用多个时间步的累计梯度更新用来稳定学习过程。</li>
+</ul>
+<h4 id="伪代码-1"><a href="#伪代码-1" class="headerlink" title="伪代码"></a>伪代码</h4><p>和算法$1$很像。</p>
+<h3 id="异步的n-step-Q-learning"><a href="#异步的n-step-Q-learning" class="headerlink" title="异步的n-step Q-learning"></a>异步的n-step Q-learning</h3><h4 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h4><ul>
+<li>计算$n-step$的return</li>
+<li>在计算一次更新的时候，使用exploration policy采样到$t_{max}$步或者到terminal state。然后累加从上次更新到$t_{max}$时间步的reward。</li>
+<li>然后计算$n-step$更新对于上次更新之后所有state-action的梯度。</li>
+<li>使用单个时间步中的累计梯度进行更新。</li>
+<li>使用了target network。</li>
+</ul>
+<h4 id="伪代码-2"><a href="#伪代码-2" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>Algorithm 2</strong> 异步的n-step Q-learning算法－－每个actor-learner线程的伪代码<br>用$\theta,\theta^{-}$表示全局共享的network参数和target network参数，用$T=0$表示全局共享计数器。<br>初始化线程步计数器$t\leftarrow 1$，<br>初始化target network参数$\theta^{-}\leftarrow \theta$<br>初始化每个线程的参数参数$\theta^{-}\leftarrow \theta$<br>初始化网络梯度$d\theta\leftarrow 0$<br><strong>repeat</strong><br>$\qquad$重置累计梯度$d\theta\leftarrow0$<br>$\qquad$同步每个线程的参数$\theta’=\theta$<br>$\qquad t_{start}=t$<br>$\qquad得到$s_t$<br>$\qquad<strong>repeat</strong><br>$\qquad\qquad$根据基于$Q(s_t,a;\theta’)$的$\epsilon-greedy$策略执行动作$a_t$，<br>$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，<br>$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>$\qquad$ <strong>until</strong> terminal $s_t$或者$t-t_{start}==t_{max}$<br>$\qquad$设置奖励$R=\begin{cases}0,&amp;for\ terminal\ s_t\\max_aQ(s_t,a;\theta^{-}), &amp;for\ non-terminal\ s_t\end{cases}$<br>$\qquad$<strong>for</strong> $i\in\{t-1,\cdots,t_{start}\}$ do<br>$\qquad\qquad R\leftarrow r_i+\gamma R$<br>$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s_t,a;\theta’))^2}{\partial \theta’}$<br>$\qquad$<strong>end for</strong><br>$\qquad\qquad$使用$d\theta$异步更新$\theta$.<br>$\qquad$<strong>if</strong>$\qquad T\qquad mod T_{target}==0$那么<br>$\qquad\qquad\theta^{-}\leftarrow \theta$<br>$\qquad$<strong>end if</strong><br><strong>until</strong> $T\gt T_{max}$</p>
+<h3 id="异步的advantage-actor-critic"><a href="#异步的advantage-actor-critic" class="headerlink" title="异步的advantage actor-critic"></a>异步的advantage actor-critic</h3><h4 id="概述-2"><a href="#概述-2" class="headerlink" title="概述"></a>概述</h4><ul>
+<li>A3C算法，是一个actor-critic方法，使用值函数$V(s_t;\theta_v)$辅助学习policy $\pi(a_t|s_t;\theta)$，同时这里使用$n-step$的returns更新policy和value function。</li>
+<li>每隔$t_{max}$个action更新一次或者到了terminal state更新一次。</li>
+<li>更新方向为$\nabla_{\theta’}log\pi(a_t|s_t;\theta’)A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum_{i=0}^{k-1}\gamma^ir_{t+i}+\gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$计算。</li>
+<li>这里同样使用并行的actor-learner和累计的梯度用来稳定学习。$\theta$和$\theta_v$在实现上通常共享参数。</li>
+<li>添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla_{\theta’}log\pi(a_t|s_t;\theta’)(R_t-V(s_t;\theta_v))+\beta\nabla_{\theta’}H(\pi(s_t;\theta’))$。</li>
+<li>没有使用target network。</li>
+</ul>
+<h4 id="伪代码-3"><a href="#伪代码-3" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>Algorithm 3</strong> 异步的actor-critic－－每个actor-learn线程的伪代码<br>用$\theta,\theta_v$表示全局共享参数，用$T=0$表示全局共享计数器，<br>用$\theta’,\theta’_v$表示每个线程中的参数<br>初始化线程步计数器$t\leftarrow 1$，<br><strong>repeat</strong><br>$\qquad$重置梯度$d\theta\leftarrow 0,d\theta_v\leftarrow 0$，<br>$\qquad$同步线程参数$\theta’=\theta,\theta’_v=\theta_v$<br>$\qquad$得到状态$s_t$，<br>$\qquad$<strong>repeat</strong><br>$\qquad\qquad$根据策略$\pi(a_t|s_t;\theta’)$执行动作$a_t$，<br>$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，<br>$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>$\qquad$ <strong>until</strong> terminal $s_t$或者$t-t_{start}==t_{max}$<br>$\qquad$设置奖励$R=\begin{cases}0,&amp;for\ terminal\ s_t\\V(s_t,\theta’_v), &amp;for\ non-terminal\ s_t\end{cases}$<br>$\qquad$<strong>for</strong> $i\in\{t-1,\cdots,t_{start}\}$ do<br>$\qquad\qquad R\leftarrow r_i+\gamma R$<br>$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$<br>$\qquad\qquad$累计和$\theta’_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta’_v))^2}{\partial \theta’_v}$<br>$\qquad$<strong>end for</strong><br>$\qquad\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.<br><strong>until</strong> $T\ge T_{max}$</p>
+<h3 id="优化方法"><a href="#优化方法" class="headerlink" title="优化方法"></a>优化方法</h3><h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><h3 id="优化细节"><a href="#优化细节" class="headerlink" title="优化细节"></a>优化细节</h3><p>作者在异步框架中测试了两个优化算法SGD和RMSProp，并且因为效率原因没有使用线程锁。</p>
+<h3 id="设置"><a href="#设置" class="headerlink" title="设置"></a>设置</h3><ul>
+<li>Atari环境中，每个实验使用$16$个actor-learner线程。</li>
+<li>所有方法都每隔$5$个actions更新一次，并且使用共享的RMSProp进行优化。</li>
+<li>三个异步的value-based算法使用每隔$40000$帧更新的共享target network，</li>
+<li>使用了DQN中action repeat of $4$.</li>
+<li>网络架构和DQN一样</li>
+<li>基于值的方法只有一个线性输出层，每个输出单元代表一个action的值。</li>
+<li>actor-critic方法有两个输出层，一个softmax表示选择某一个action的概率，一个线性输出代表值函数。</li>
+<li>所有实验使用的$\gamma=0.99$，RMSProp的衰减因子$\alpha = 0.99$。</li>
+<li>Value-based方法采用的exploration rate $\epsilon$有是三个取值$\epsilon_1,\epsilon_2,\epsilon_3$，相应的概率为$0.4,0.3,0.3$，它们的值在前$4$百万帧中从$1$退火到$0.1,0.01,0.5$。</li>
+<li>A3C使用了entropy进行正则化，entropy项的权重为$\beta=0.01$</li>
+<li>初始学习率从分布$LogUniform(10^{-4},10^{-2})$中进行采样，在训练过程中退火到$0$。</li>
+</ul>
+<h2 id="Discussion"><a href="#Discussion" class="headerlink" title="Discussion"></a>Discussion</h2>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/强化学习/" rel="tag"># 强化学习</a>
+          
+            <a href="/tags/A3C/" rel="tag"># A3C</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/18/Distral-Robust-Multitask-Reinforcement-Learning/" rel="next" title="Distral Robust Multitask Reinforcement Learning">
+                <i class="fa fa-chevron-left"></i> Distral Robust Multitask Reinforcement Learning
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/23/multiprocessing-join/" rel="prev" title="multiprocessing join">
+                multiprocessing join <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">62</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">103</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#摘要"><span class="nav-number">1.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">2.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异步框架"><span class="nav-number">3.</span> <span class="nav-text">异步框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#异步的one-step-Q-learning"><span class="nav-number">3.1.</span> <span class="nav-text">异步的one-step Q-learning</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#伪代码"><span class="nav-number">3.1.1.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步的one-step-Sarsa"><span class="nav-number">3.2.</span> <span class="nav-text">异步的one-step Sarsa</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#概述"><span class="nav-number">3.2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#伪代码-1"><span class="nav-number">3.2.2.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步的n-step-Q-learning"><span class="nav-number">3.3.</span> <span class="nav-text">异步的n-step Q-learning</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#概述-1"><span class="nav-number">3.3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#伪代码-2"><span class="nav-number">3.3.2.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步的advantage-actor-critic"><span class="nav-number">3.4.</span> <span class="nav-text">异步的advantage actor-critic</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#概述-2"><span class="nav-number">3.4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#伪代码-3"><span class="nav-number">3.4.2.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优化方法"><span class="nav-number">3.5.</span> <span class="nav-text">优化方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实验"><span class="nav-number">4.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优化细节"><span class="nav-number">4.1.</span> <span class="nav-text">优化细节</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置"><span class="nav-number">4.2.</span> <span class="nav-text">设置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Discussion"><span class="nav-number">5.</span> <span class="nav-text">Discussion</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
