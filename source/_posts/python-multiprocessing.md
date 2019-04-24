@@ -1,5 +1,5 @@
 ---
-title: multiprocessing join
+title: python multiprocessing 
 date: 2019-04-23 15:46:14
 tags:
 - python

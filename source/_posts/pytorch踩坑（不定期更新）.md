@@ -54,8 +54,57 @@ Linear(in_features=2, out_features=2, bias=True)
 
 其中最后两行为net对象调用self.children()函数返回的模块，就是模型中所有网络的参数。事实上，调用net.apply(fn)函数，会对self.children()中的所有模块应用fn函数，
 
-## torch
+## torch.multiprocessing
+### join
+等待调用join()方法的线程执行完毕，然后继续执行。
+可参见github[https://github.com/mxxhcm/myown_code/tree/master/pytorch/tutorials/torch_multiprocess/mnist_hogwild](官方demo)。
 
+### share_memory\_()
+在多个线程之间共享参数，如下代码所示。可以用来实现A3C。
+``` python
+import torch.multiprocessing as mp
+import torch
+import time
+import os
+
+
+def proc(sec, x):
+   print(os.getpid(),"  ", x)
+   time.sleep(sec)
+   print(os.getpid(), "  ", x)
+   x += sec
+   print(str(os.getpid()) + "  over.  ", x)
+
+
+if __name__ == '__main__':
+   num_processes = 3
+   processes = []
+   x = torch.ones([3,])
+   x.share_memory_()
+   for rank in range(num_processes):
+     p = mp.Process(target=proc, args=(rank + 1, x))
+     p.start() 
+     processes.append(p)
+   for p in processes:
+     p.join()
+   print(x)
+```
+输出结果如下所示：
+> python share_memory.py 
+7739    tensor([1., 1., 1.])
+7738    tensor([1., 1., 1.])
+7737    tensor([1., 1., 1.])
+7737    tensor([1., 1., 1.])
+7737  over.   tensor([2., 2., 2.])
+7738    tensor([2., 2., 2.])
+7738  over.   tensor([4., 4., 4.])
+7739    tensor([4., 4., 4.])
+7739  over.   tensor([7., 7., 7.])
+tensor([7., 7., 7.])
+
+我们可以发现$7739$这个线程中，传入的$x$还是和最开始的一样，但是在$7738$线程更新完$x$之后，$7739$使用的$x$就已经变成了更新后的$x$。所以，我猜测这里面应该是有一个对$x$的锁，保证$x$在同一时刻只能被一个线程访问。
+
+## torch
 ### torch.cat
 #### 函数原型
 将多个tensor在某一个维度上（默认是第0维）拼接到一起（除了拼接的维度上，其他维度的shape必须一定），最后返回一个tensor。
