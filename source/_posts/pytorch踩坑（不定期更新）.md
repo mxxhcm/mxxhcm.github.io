@@ -58,7 +58,7 @@ Linear(in_features=2, out_features=2, bias=True)
 ## torch.multiprocessing
 ### join
 等待调用join()方法的线程执行完毕，然后继续执行。
-可参见github[官方demo](https://github.com/mxxhcm/myown_code/tree/master/pytorch/tutorials/torch_multiprocess/mnist_hogwild)。
+可参见github[官方demo](https://github.com/mxxhcm/myown_code/tree/master/pytorch/tutorials/multiprocess_torch/mnist_hogwild)。
 
 ### share_memory\_()
 在多个线程之间共享参数，如下代码所示。可以用来实现A3C。
