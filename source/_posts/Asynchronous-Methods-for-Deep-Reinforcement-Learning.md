@@ -129,7 +129,7 @@ $\qquad\qquad R\leftarrow r_i+\gamma R$
 $\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$
 $\qquad\qquad$累计和$\theta'_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta'_v))^2}{\partial \theta'_v}$
 $\qquad$**end for**
-$\qquad\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.
+$\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.
 **until** $T\ge T_{max}$
 
 ### 优化方法
