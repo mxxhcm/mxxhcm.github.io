@@ -83,8 +83,8 @@ $\qquad$**end if**
 $\qquad$重置累计梯度$d\theta\leftarrow0$
 $\qquad$同步每个线程的参数$\theta'=\theta$
 $\qquad t_{start}=t$
-$\qquad得到$s_t$
-$\qquad**repeat**
+$\qquad$得到$s_t$
+$\qquad$**repeat**
 $\qquad\qquad$根据基于$Q(s_t,a;\theta')$的$\epsilon-greedy$策略执行动作$a_t$，
 $\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，
 $\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$
@@ -94,8 +94,8 @@ $\qquad$**for** $i\in\{t-1,\cdots,t_{start}\}$ do
 $\qquad\qquad R\leftarrow r_i+\gamma R$
 $\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s_t,a;\theta'))^2}{\partial \theta'}$
 $\qquad$**end for**
-$\qquad\qquad$使用$d\theta$异步更新$\theta$.
-$\qquad$**if**$\qquad T\qquad mod T_{target}==0$那么
+$\qquad$使用$d\theta$异步更新$\theta$.
+$\qquad$**if**$\qquad T\qquad mod\qquad I_{target}==0$那么
 $\qquad\qquad\theta^{-}\leftarrow \theta$
 $\qquad$**end if**
 **until** $T\gt T_{max}$
@@ -117,6 +117,7 @@ $\qquad$**end if**
 **repeat**
 $\qquad$重置梯度$d\theta\leftarrow 0,d\theta_v\leftarrow 0$，
 $\qquad$同步线程参数$\theta'=\theta,\theta'_v=\theta_v$
+$\qquad t_{start}=t$
 $\qquad$得到状态$s_t$，
 $\qquad$**repeat** 
 $\qquad\qquad$根据策略$\pi(a_t|s_t;\theta')$执行动作$a_t$，
