@@ -95,7 +95,7 @@ $\qquad\qquad R\leftarrow r_i+\gamma R$
 $\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s_t,a;\theta'))^2}{\partial \theta'}$
 $\qquad$**end for**
 $\qquad$使用$d\theta$异步更新$\theta$.
-$\qquad$**if**$\qquad T\qquad mod\qquad I_{target}==0$那么
+$\qquad$**if**$\quad T\quad mod\quad I_{target}==0$那么
 $\qquad\qquad\theta^{-}\leftarrow \theta$
 $\qquad$**end if**
 **until** $T\gt T_{max}$
