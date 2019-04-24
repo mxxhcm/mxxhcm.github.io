@@ -104,9 +104,10 @@ $\qquad$**end if**
 #### 概述
 - A3C算法，是一个actor-critic方法，使用值函数$V(s_t;\theta_v)$辅助学习policy $\pi(a_t|s_t;\theta)$，同时这里使用$n-step$的returns更新policy和value function。
 - 每隔$t_{max}$个action更新一次或者到了terminal state更新一次。
-- 更新方向为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum_{i=0}^{k-1}\gamma^ir_{t+i}+\gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$计算。
+- Actor的更新方向为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum_{i=0}^{k-1}\gamma^ir_{t+i}+\gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$计算。
 - 这里同样使用并行的actor-learner和累计的梯度用来稳定学习。$\theta$和$\theta_v$在实现上通常共享参数。
-- 添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')(R_t-V(s_t;\theta_v))+\beta\nabla_{\theta'}H(\pi(s_t;\theta'))$。
+- 添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')(R_t-V(s_t;\theta_v))+\beta\nabla_{\theta'}H(\pi(s_t;\theta'))$。这里的$R$就是上面的$\sum_{i=0}^{k-1}\gamma^ir_{t+i}+\gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。
+- Critic的更新方向通过最小化loss来实现，这里的loss指的是TD-error，即$\sum_{i=0}^{k-1}\gamma^ir_{t+i}- V(s_t;\theta_v)$。
 - 没有使用target network。
 
 #### 伪代码
