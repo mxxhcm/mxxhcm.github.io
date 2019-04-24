@@ -133,6 +133,7 @@ $\qquad\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更�
 **until** $T\ge T_{max}$
 
 ### 优化方法
+作者尝试了三种不同的优化方法，带有momentum的SGD，带有共享statistics的RMSProp以及不带shared statistics的RMSProp。
 
 
 ## 实验
