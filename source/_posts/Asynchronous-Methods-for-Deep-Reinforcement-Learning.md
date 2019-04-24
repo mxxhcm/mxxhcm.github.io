@@ -23,7 +23,8 @@ Online学习是不稳定的，并且online更新是强相关的。DQN通过引�
 具体的，使用一台机器上的多CPU线程，这样子可以避免在不同机器上传递参数和梯度的消耗。然后，多个并行的actor-learner可能会探索环境的不同部分，每个actor-learner可以设置不同的exploration policy。不同的thread运行不同的exploration policy，多个actor-learner并行执行online update可能比单智能体更新在时间上更不相关。所以这里使用了不同的探索策略取代了DQN中buffer稳定学习过程的作用。
 除了稳定学习过程之外，多个actor-learner还可以减少训练时间，此外，不使用buffer以后还可以使用on-policy的方法进行训练。
 
-**总的来说，下面要介绍的四个算法，前面三个算法都使用了target network，第四个A3C算法没有使用target network。最重要的是所有四个算法都使用了多个actor-learner进行训练，并且使用累计的梯度进行更新（相当于batch的作用）。总共出现了三类参数，一类是network参数，一类是target network参数，一类是thread-specific（每个线程的参数）的参数。thread-specific参数是每个线程自己持有的，通过更新每个线程的参数更新network的参数，然后使用network的参数更新target network的参数，target network参数比network参数更新的要慢很多。**
+**总的来说，下面要介绍的四个算法，前面三个算法都使用了target network，第四个A3C算法没有使用target network。最重要的是所有四个算法都使用了多个actor-learner进行训练，并且使用累计的梯度进行更新（相当于batch的作用）。总共出现了三类参数，一类是network参数，一类是target network参数，一类是thread-specific（每个线程的参数）的参数。thread-specific参数是每个线程自己持有的，通过更新每个线程的参数更新network的参数，然后使用network的参数更新target network的参数，target network参数比network参数更新的要慢很多。
+A3C算法的实质就是在多个线程中同步训练。分为主网络和线程中的网络，主网络不需要训练，主要用来存储和传递参数，每个线程中的网络用来训练参数。总的来说，多个线程同时训练提高了效率，另一方面，减小了数据之间的相关性，比如，线程$1$和$2$中都用主网络复制来的参数计算梯度，但是同一时刻只能有一个线程更新主网络的参数，比如线程$1$更新主网络的参数，那么线程$2$利用原来主网络参数计算的梯度会更新在线程$1$更新完之后的主网络参数上。**
 
 ### 异步的one-step Q-learning
 - 每个thread都和它自己的环境副本进行交互，在每一个时间步计算Q-learning loss的梯度。
