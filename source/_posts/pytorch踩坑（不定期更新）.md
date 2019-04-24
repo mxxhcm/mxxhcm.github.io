@@ -7,6 +7,7 @@ tags:
  - 机器学习
  - 深度学习
 categories: python
+mathjax: true
 ---
 
 ## 常见问题
