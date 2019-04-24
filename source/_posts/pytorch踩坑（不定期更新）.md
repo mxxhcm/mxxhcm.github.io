@@ -129,7 +129,7 @@ print(x.size())
 输出如下：
 > torch.Size([3, 5, 4])
 
-### img
+### torch中图像(img)格式
 torch中图像的shape是('RGB',width, height)，而numpy和matplotlib中都是(width, height, 'RGB')
 matplotlib.pyplot.imshow()需要的参数是图像矩阵，如果矩阵中是整数，那么它的值需要在区间[0,255]之内，如果是浮点数，需要在[0,1]之间。
 > Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
