@@ -315,7 +315,40 @@ for t in range(500):
 
 ## torch.nn
 ### Container
+
 #### Module
+Module是所有模型的基类。
+它有以下几个常用的函数和常见的属性。
+##### 常见的函数
+- Module.forward() # 前向传播
+- Module.modules()  # 返回module中所有的module，包含整个module，详情可见[module.modules()](htts)
+- Module.named_modules() # 同时返回module的名字
+- Module.children() # 返回module中所有的子module，不包含整个module，详情可见[module.modules()](htts)
+- Module.named_children() # 同时返回子module的名字
+- Module.parameters() # 返回模型的参数
+- Module.named_parameters() # 同时返回parameter的名字
+- Module.state_dict()  # 保存模型参数
+- Module.load_state_dict()  # 加载模型参数
+- Module.to() # 
+- Module.cuda()
+- Module.cpu() 
+- Module.apply(fn) # 对模型中的每一个module都调用fn函数
+- Module._apply()
+
+##### 常见的属性 
+- self._backend = thnn_backend
+- self._parameters = OrderedDict()
+- self._buffers = OrderedDict()
+- self._backward_hooks = OrderedDict()
+- self._forward_hooks = OrderedDict()
+- self._forward_pre_hooks = OrderedDict()
+- self._state_dict_hooks = OrderedDict()
+- self._load_state_dict_pre_hooks = OrderedDict()
+- self._modules = OrderedDict()
+- self.training = True
+
+##### 代码
+关于module,children_modules,parameters的[代码]()
 
 #### Sequential
 
