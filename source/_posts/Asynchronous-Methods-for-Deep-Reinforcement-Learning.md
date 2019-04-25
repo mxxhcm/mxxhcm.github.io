@@ -154,4 +154,14 @@ $\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\the
 - A3C使用了entropy进行正则化，entropy项的权重为$\beta=0.01$
 - 初始学习率从分布$LogUniform(10^{-4},10^{-2})$中进行采样，在训练过程中退火到$0$。
 
+## 代码
+### 地址
+https://github.com/ikostrikov/pytorch-a3c
+### 问题
+如果直接git下来运行的话，会出问题，需要在main()下加上这样一句
+``` python
+mp.set_start_method("forkserver")
+```
+可能是因为Unix系统默认的多进程方式是fork，这里只要不设置为fork,设置为其他两种方式spawn, forkserver都行。
+
 ## Discussion
