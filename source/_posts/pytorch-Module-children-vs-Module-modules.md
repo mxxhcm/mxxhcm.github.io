@@ -55,6 +55,8 @@ Sequential(
 
 可以看出来，上面只给出了Sequential里面的modules。
 
+### 完整代码
+https://github.com/mxxhcm/myown_code/blob/master/pytorch/tutorials/module_vs_children.py
 
 ## 参考文献
 1.https://discuss.pytorch.org/t/module-children-vs-module-modules/4551/2
