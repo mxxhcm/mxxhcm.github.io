@@ -97,7 +97,7 @@ $$\sum_sd^{\pi}(s)\nabla v_{\pi}(s)=\sum_sd^{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_
 
 ## Policy Gradient with Approximation(使用近似的策略梯度)
 如果$Q^{\pi}$也用一个学习的函数来近似，然后我们希望用近似的函数代替式子(2)中的$Q^{\pi}$，并大致给出梯度的方向。
-用$f_w:S\times A \rightarrow R$表示$Q^{\pi}$的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]^2 \propto \left[\hat{Q}^{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partialf_w(s_t,a_t)}{\partial w}$，其中$\hat{Q}^{\pi}(s_t,a_t)$是$Q^{\pi}(s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：
+用$f_w:S\times A \rightarrow R$表示$Q^{\pi}$的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]^2 \propto \left[\hat{Q}^{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w}$，其中$\hat{Q}^{\pi}(s_t,a_t)$是$Q^{\pi}(s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：
 $$\sum_sd^{\pi}(s)\sum_a\pi(s,a)\left[Q^{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{3}$$
 
 ### Policy Gradient with Approximation Theorem
