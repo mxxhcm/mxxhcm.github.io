@@ -43,7 +43,7 @@ $$V_i(s_t) = \frac{1}{\beta} log\sum_{a_t}\pi_0^{\alpha}(a_t|s_t)e^{\beta Q_i(s_
 $$Q_i(s_t,a_t) = R_i(s_t, a_t)+ \gamma \sum_{s_t}p_i(s_{t+1}|s_t,a_t)V_i(s_{t+1}) \tag{4}$$
 这个Bellman update公式是softened的，因为state value $V_i$在actions上的max操作被温度$\beta$倒数上的soft-max操作代替了，当$\beta\rightarrow\infty$时，就变成了max 操作，这里有些不明白。为什么呢？这个我不理解有什么关系，这是这篇文章给出的解释。
 **按照我的理解，这个和我们平常使用Bellman 期望公式或者最优等式没有什么关系，只是给了一种新的更新Q值和V值的方法。实际上，这两个公式都是根据推导给出的定义。**
-还有一点：**$\pi_0$是学出来的，而不是手动选出来的。**式子(1)中和$\pi_0$相关的只有：
+还有一点：$\pi_0$是学出来的，而不是手动选出来的。式子(1)中和$\pi_0$相关的只有：
 $$\frac{\alpha}{\beta}\sum_i\mathbb{E_{\pi_i}}\left[\sum_{t\ge 0}\gamma^tlog\pi_0(a_t|s_t) \right]\tag{5}$$
 可以看出来，这是使用$\pi_0$去拟合一个混合的带折扣因子$\gamma$的state-action分布，可以使用最大似然估计来求解，如果是非表格情况的话，可以使用stochastic gradient ascent进行优化，但是需要注意的是本文中作者使用的目标函数多了一个KL散度。另一个区别是本文的distilled policy可以作为下一步要优化的task policy的反馈。
 这里考虑以下为什么要多加一个entropy regularization。假设如果没有正则化项的话，也就是式子(2)中的$\alpha = 1$，这里考虑以下$n=1$时的例子，这样子式子(5)在$\pi_0=\pi_1$的时候最大，KL散度为$0$，这样子就目标函数就退化成了一个没有正则化项的expected return，最终策略$\pi_1$会收敛到一个局部最优值。**和TRPO的一个比较？？？未完待续。。。。**
