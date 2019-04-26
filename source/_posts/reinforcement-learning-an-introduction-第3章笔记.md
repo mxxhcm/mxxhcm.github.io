@@ -79,7 +79,8 @@ $$G_t = \sum_{k=1}^{\infty}\gamma^k = \frac{1}{1-\gamma} \tag{3}$$
 $$\pi(a|s) = P[A_t = a | S_t = a] \tag{4}$$
 
 ### 值函数(value function)
-MDP的值函数有两种，状态值函数(state value function)和动作值函数(action value function), 这两种值函数的含义其实是一样的，也可以相互转换。具体来说, 值函数代表的是给定一个policy $\pi$，得到的回报的期望(expected return)。
+这里给出的是值函数的定义，就是这么定义的。
+MDP的值函数有两种，状态值函数(state value function)和动作值函数(action value function), 这两种值函数的含义其实是一样的，也可以相互转换。具体来说, 值函数定义为给定一个policy $\pi$，得到的回报的期望(expected return)。
 一个MDP的状态s对应的值函数(state value function) $v_{\pi}(s)$是从状态s开始采取策略$\pi$得到的回报的期望。
 \begin{align\*}
 v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
@@ -117,8 +118,8 @@ q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',
 
 ### 贝尔曼期望方程(Bellmam expectation equation)
 \begin{align\*}
-v_{\pi}(s) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s]\\
-q_{\pi}(s,a) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a]
+v_{\pi}(s) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s] \tag{11}\\
+q_{\pi}(s,a) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{12}
 \end{align\*}
 #### 矩阵形式
 \begin{align\*}
@@ -148,15 +149,15 @@ v_{\*}(s) &= max_a q_{\*}(s,a)\\
 &= max_a\mathbb{E}_{\pi_{\*}}\left[G_t|S_t=s,A_t=a\right]\\
 &= max_a\mathbb{E}_{\pi_{\*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\
 &= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\
-&= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right]\\
-v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) \left[ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') \right]
+&= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right] \tag{13}\\
+v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) \left[ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') \right] \tag{14}
 \end{align\*}
 #### 动作值函数(action value function)
 \begin{align\*}
 q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
 &= \sum_{s',r} p(s',r|s,a) (r + \gamma max_a q_{\*}(s',a'))\\
-&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\\
-q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi(a'|s') q_{\pi}(s',a')
+&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\tag{15}\\
+q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi(a'|s') q_{\pi}(s',a') \tag{16}
 \end{align\*}
 
 ### 贝尔曼最优方程的求解(solution to Bellman optimal equation)
