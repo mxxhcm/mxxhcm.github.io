@@ -15,13 +15,12 @@ DP指的是给定环境的模型(MDP)，用来计算智能体最优策略的一�
 DP的关键点在于使用value function寻找好的policy。使用第三章定义的value function，在找到了optimal value function之后，我们可以使用Bellman optimal equation找到optimal policy：
 
 \begin{align\*}
-v_{\*}(s) &= max_a q_{\*}(s,a)\\
-&= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right] \\
-&= max_a\mathbb{E}\left[R_{t+1}+\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right] \tag{1}
+v_{\*}(s) &= max_a\mathbb{E}\left[R_{t+1}+\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right] \\
+&= max_a \sum_{s',r} p(s',r|s,a){\*}\left[r+\gamma v_{\*}(s')\right]  \tag{1}
 \end{align\*}
 
 \begin{align\*}
-q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
-&= \sum_{s',r} p(s',r|s,a) (r + \gamma max_a q_{\*}(s',a'))\\
-&= \mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t = a\right] \tag{2}
+q_{\*}(s,a) &= 
+&= \mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t = a\right]\\
+&= \sum_{s',r} p(s',r|s,a) \left[r + \gamma max_a q_{\*}(s',a')\right] \tag{2}
 \end{align\*}
