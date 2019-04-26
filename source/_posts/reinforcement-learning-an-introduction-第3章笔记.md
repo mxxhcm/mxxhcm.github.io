@@ -119,8 +119,8 @@ q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',
 ### 贝尔曼期望方程(Bellmam expectation equation)
 \begin{align\*}
 v_{\pi}(s) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s] \tag{11}\\
-v_{\pi}(s) &= \mathbb{E}_{\pi}\left[q(S_t,A_t)|S_t=s,A_t=a\right]\tag{12}\\
-q_{\pi}(s,a)&= E_{\pi}\left[R+\gamma v(S_{t+1}) |S_t=s,A_t=a\right]\tag{13}\\
+v_{\pi}(s) &= \mathbb{E}_{\pi}\left[q_{\pi}(S_t,A_t)|S_t=s,A_t=a\right]\tag{12}\\
+q_{\pi}(s,a)&= \mathbb{E}_{\pi}\left[R+\gamma v_{\pi}(S_{t+1}) |S_t=s,A_t=a\right]\tag{13}\\
 q_{\pi}(s,a) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{14}
 \end{align\*}
 #### 矩阵形式
@@ -152,14 +152,14 @@ v_{\*}(s) &= max_a q_{\*}(s,a)\\
 &= max_a\mathbb{E}_{\pi_{\*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\
 &= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\
 &= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right] \tag{15}\\
-v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) \left[ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') \right] \tag{16}
+v_{\pi}(s) &= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right] \tag{16}\\
 \end{align\*}
 #### 动作值函数(action value function)
 \begin{align\*}
 q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
 &= \sum_{s',r} p(s',r|s,a) (r + \gamma max_a q_{\*}(s',a'))\\
 &=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\tag{17}\\
-q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi(a'|s') q_{\pi}(s',a') \tag{18}
+q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',a')) \tag{18}\\
 \end{align\*}
 
 ### 贝尔曼最优方程的求解(solution to Bellman optimal equation)
