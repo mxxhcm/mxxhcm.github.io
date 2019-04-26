@@ -144,10 +144,10 @@ $q_{\*}(s,a) = max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value func
 
 ### 寻找最优策略
 寻找optimal policy可以通过寻找optimal action value function来实现： 
-${\pi}_{\*}(a|s) = 
+$${\pi}_{\*}(a|s) = 
 \begin{cases}
 1, &if\quad a = argmax\ q_{\*}(s,a)\\
-0, &otherwise\end{cases}$
+0, &otherwise\end{cases}$$
 
 ### 贝尔曼最优方程(bellman optimal equation)
 \*号表示最优的策略。
