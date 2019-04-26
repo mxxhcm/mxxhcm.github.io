@@ -128,8 +128,8 @@ v_{\*}(s) &= max_a q_{\*}(s,a)\\
 &= max_a\mathbb{E}_{\pi_{\*}}\left[G_t|S_t=s,A_t=a\right]\\
 &= max_a\mathbb{E}_{\pi_{\*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\
 &= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\
-&= max_a [\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )]\\
-v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) [ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') ]
+&= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right]\\
+v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) \left[ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') \right]
 \end{align\*}
 #### 动作值函数(action value function)
 \begin{align\*}
