@@ -4,6 +4,7 @@ date: 2019-04-26 20:36:32
 tags:
  - hexo 
 categories: 工具
+mathjax: true
 ---
 
 ## 问题$1$
