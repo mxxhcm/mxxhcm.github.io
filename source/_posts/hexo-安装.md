@@ -4,7 +4,6 @@ date: 2019-04-26 18:56:46
 tags:
  - hexo 
 categories: 工具
-mathjax: true
 ---
 
 ## 安装
