@@ -65,13 +65,13 @@ R_s^a &= \mathbb{E}[R_{t+1} | S_t = s, A_t = a]
 这里的reward不仅仅与state相关，而是与tuple $\lt state，action\gt$相关。
 
 ### 回报
-MDP中的$G_t$和式子$(1)$的$G_t$是一样的，这里还引入了一个折扣因子$\gamma$，表示的是每一步对未来奖励打一个折扣，这样子$G_t$就变成了
+MDP中的$G_t$和式子$(1)$的$G_t$是一样的，将$G_t$写成和后继时刻相关的形式如下：
 \begin{align\*}
 G_t &= R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \gamma^3 R_{t+4} + ...\\
 &= R_{t+1} + \gamma (R_{t+2} + \gamma^1 R_{t+3} + \gamma^2 R_{t+4} + ...)\\
 &= R_{t+1} + \gamma G_{t+1} \tag{2}
 \end{align\*}
-这里引入$\gamma$之后，即使continuing情况下，只要$G_t$是非零常数，$G_t$也可以通过等比数列求和公式进行计算，即:
+这里引入$\gamma$之后，即使是在continuing情况下，只要$G_t$是非零常数，$G_t$也可以通过等比数列求和公式进行计算，即:
 $$G_t = \sum_{k=1}^{\infty}\gamma^k = \frac{1}{1-\gamma} \tag{3}$$
 
 ### 策略(policy)
@@ -96,7 +96,7 @@ q_{\pi}(s,a) &= \mathbb{E}_{\pi}\left[G_t | S_t = s, A_t = a\right]\\
 #### 状态值函数(state value function)
 \begin{align\*}
 v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) q_{\pi} (s,a) \tag{7}\\
-v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) [ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') ] \tag{8}
+v_{\pi}(s) &= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right] \tag{8}\\
 \end{align\*}
 式子$(7)$是$v(s)$和$q(s,a)$的关系，式子$(8)$是$v(s)$和它的后继状态$v(s')$的关系。
 式子$(8)$的推导如下：
@@ -109,8 +109,8 @@ v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
 
 #### 动作值函数(action value function)
 \begin{align\*}
-q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') \tag{9}\\
-q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi(a'|s') q_{\pi}(s',a') \tag{10}
+q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  v_{\pi}(s') \tag{9}\\
+q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',a') \tag{10}\\
 \end{align\*}
 式子$(9)$是$q(s,a)$和$v(s)$的关系，式子$(10)$是$q(s,a)$和它的后继状态$q(s',a')$的关系。
 以上都是针对MDP来说的，在MDP中，给定policy $\pi$下，状态s下选择a的action value function，$q_{\pi}(s,a)$类似MRP里面的v(s)，而MDP中的v(s)是要考虑在state s下采率各个action后的情况。
