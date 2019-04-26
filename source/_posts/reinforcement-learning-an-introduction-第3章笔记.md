@@ -137,7 +137,10 @@ $q_{\*}(s,a) = max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value func
 
 ### 最优策略(optimal policy)
 对于每一个state s，在policy $\pi$下的value 大于在policy $\pi'$的value， 就称策略$\pi$优于策略$\pi'$， $\pi \ge \pi'$ if $v_{\pi}(s) \ge v_{\pi'}(s)$, 对于任意s都成立
-对于任何MDP，1.都存在一个optimal policy，它比其他策略好或者至少相等；2.所有的optimal policy的optimal value function是相同的；3.所有的optimal policy 都有相同的 action value function.
+对于任何MDP，都满足以下条件：
+1. 都存在一个optimal policy，它比其他策略好或者至少相等；
+2. 所有的optimal policy的optimal value function是相同的；
+3. 所有的optimal policy 都有相同的 action value function.
 
 ### 寻找最优策略
 寻找optimal policy可以通过寻找optimal action value function来实现： 
