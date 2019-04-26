@@ -53,3 +53,28 @@ $\qquad\qquad V(s)\leftarrow\sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gam
 $\qquad\qquad \nabla \leftarrow max(\delta,|v-V(s)|)$
 $\qquad$**end for** 
 **until** $\delta \lt \theta$
+
+## Policy Improvement
+为什么要计算value function？
+其中一个原因是为了找到更好的policy。假设我们已经知道了一个deterministic的策略$\pi$，但是在其中一些状态，我们想要知道是不是有更好的action选择，即$a\neq \pi(s)$的时候，是不是这个变了的策略会更好。好该怎么取评价，这个时候就可以使用值函数了，在某个状态，我们选择一个和$\pi(s)$不同的action $a$，在其余状态，依然遵循策略$\pi$。用公式表示为：
+\begin{align\*}
+q_{\pi}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t=s,A_t = a\right]\\
+&=\sum_{s',r}p(s',r|s,a)\left[r+\gamma v_{\pi}(s')\right] \tag{6}
+\end{align\*}
+那么，这个值是是比$v(s)$要大还是要小呢？如果比$v(s)$要大，那么这个新的策略显然比$\pi$要好。
+用$\pi$和$\pi'$表示任意一对满足下式的deterministic policy：
+$$q_{\pi}(s,\pi'(s)) \ge v_{\pi}(s) \tag{7}$$
+那么$pi'$至少和$\pi$一样好。也就是说，必须需要满足：
+$$v_{\pi'}(s) \ge v_{\pi}(s) \tag{8}$$
+可以证明，如果任意状态$s$满足式子$7$，那么在该状态一定有式子$8$成立。对于我们提到的$\pi$和$\pi'$来说，除了在状态$s$处，$v_{\pi'}(s) = a \neq v_{\pi}(s)$，在其他状态都有$q_{\pi}(s,\pi'(s)) = v_{\pi}(s)$。而在状态$s$处，如果$q_{\pi}(s,a) \gt v_{\pi}(s)$，这里$a=\pi'(s)$，那么$\pi'$一定比$\pi$好。
+证明：
+\begin{align\*}
+v_{\pi}(s) &\le q_{\pi}(s,\pi'(s))\\
+& = \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s, A_t = \pi'(s) \right]\\
+& = \mathbb{E}_{\pi'}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s \right]\\
+& \le \mathbb{E}_{\pi'}\left[R_{t+1} + \gamma q_{\pi}(S_{t+1},\pi'(S_{t+1}))|S_t = s \right]\\
+& = \mathbb{E}_{\pi'}\left[R_{t+1} + \gamma \mathbb{E}_{\pi'}q_{\pi}(S_{t+1},\pi'(S_{t+1}))|S_t = s \right]\\
+& = \mathbb{E}_{\pi'}\left[ \right]\\
+& = \mathbb{E}_{\pi'}\left[ \right]\\
+& = \mathbb{E}_{\pi'}\left[ \right]\\
+\end{align\*}
