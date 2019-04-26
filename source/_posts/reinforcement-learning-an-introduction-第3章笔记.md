@@ -110,8 +110,8 @@ v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
 
 #### 动作值函数(action value function)
 \begin{align\*}
-q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  v_{\pi}(s') \tag{9}\\
-q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',a') \tag{10}\\
+q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  v_{\pi}(s')) \\
+q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',a')) \tag{10}\\
 \end{align\*}
 式子$(9)$是$q(s,a)$和$v(s)$的关系，式子$(10)$是$q(s,a)$和它的后继状态$q(s',a')$的关系。
 以上都是针对MDP来说的，在MDP中，给定policy $\pi$下，状态s下选择a的action value function，$q_{\pi}(s,a)$类似MRP里面的v(s)，而MDP中的v(s)是要考虑在state s下采率各个action后的情况。
@@ -119,6 +119,8 @@ q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',
 ### 贝尔曼期望方程(Bellmam expectation equation)
 \begin{align\*}
 v_{\pi}(s) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s] \tag{11}\\
+v_{\pi}(s) &= \mathbb{E}_{\pi}\left[q(S_t,A_t)|S_t=s,A_t=a\right]\tag{7}\\
+q_{\pi}(s,a)&= E_{\pi}\left[R+\gamma v(S_{t+1}) |S_t=s,A_t=a\right]\tag{9}\\
 q_{\pi}(s,a) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{12}
 \end{align\*}
 #### 矩阵形式
