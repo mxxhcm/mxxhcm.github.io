@@ -5,6 +5,7 @@ tags:
  - 论文
  - 强化学习
 categories: 强化学习
+mathjax: true
 ---
 
 这篇文章给出了多任务学习和迁移学习的一个框架。
