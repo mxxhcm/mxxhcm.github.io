@@ -21,6 +21,8 @@ v_{\*}(s) &= max_a\mathbb{E}\left[R_{t+1}+\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\rig
 
 \begin{align\*}
 q_{\*}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t = a\right]\\
-&= \sum_{s',r} p(s',r|s,a) \left[r + \gamma max_a q_{\*}(s',a')\right] \tag{2}
+&= \sum_{s',r} p(s',r|s,a) \left[r + \gamma max_a q\_{\*}(s',a')\right] \tag{2}
 \end{align\*}
 
+## Policy Evaluation(Prediction)
+给定一个policy，计算state value function的过程叫做
