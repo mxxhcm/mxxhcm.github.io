@@ -25,5 +25,8 @@ Error: pandoc exited with code 7: pandoc: Unknown extension: smart
 卸载pandoc，
 ~$:npm un hexo-renderer-pandoc --save
 
+## 问题$2$
+
+
 ## 参考文献
 1.https://hexo-guide.readthedocs.io/zh_CN/latest/theme/[NexT]%E9%85%8D%E7%BD%AEMathJax.html
