@@ -137,14 +137,20 @@ $q_{\*}(s,a) = max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value func
 
 ### 最优策略(optimal policy)
 对于每一个state s，在policy $\pi$下的value 大于在policy $\pi'$的value， 就称策略$\pi$优于策略$\pi'$， $\pi \ge \pi'$ if $v_{\pi}(s) \ge v_{\pi'}(s)$, 对于任意s都成立
-对于任何MDP，1.都存在一个optimal policy，它比其他策略好或者至少相等；2.所有的optimal policy的optimal value function是相同的；3.所有的optimal policy 都有相同的 action value function.
+对于任何MDP，都满足以下条件：
+1. 都存在一个optimal policy，它比其他策略好或者至少相等；
+2. 所有的optimal policy的optimal value function是相同的；
+3. 所有的optimal policy 都有相同的 action value function.
 
 ### 寻找最优策略
 寻找optimal policy可以通过寻找optimal action value function来实现： 
-${\pi}_{\*}(a|s) = 1$, if $a = argmax q_{\*}(s,a)$, $0$ otherwise
+$${\pi}_{\*}(a|s) = 
+\begin{cases}
+1, &if\quad a = argmax\ q_{\*}(s,a)\\
+0, &otherwise\end{cases}$$
 
 ### 贝尔曼最优方程(bellman optimal equation)
-带\*号的为贝尔曼最优方程，不带\*号的为贝尔曼期望方程。
+\*号表示最优的策略。
 #### 状态值函数(state value function)
 \begin{align\*}
 v_{\*}(s) &= max_a q_{\*}(s,a)\\
@@ -152,14 +158,12 @@ v_{\*}(s) &= max_a q_{\*}(s,a)\\
 &= max_a\mathbb{E}_{\pi_{\*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\
 &= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\
 &= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right] \tag{15}\\
-v_{\pi}(s) &= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right] \tag{16}\\
 \end{align\*}
 #### 动作值函数(action value function)
 \begin{align\*}
 q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
 &= \sum_{s',r} p(s',r|s,a) (r + \gamma max_a q_{\*}(s',a'))\\
-&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\tag{17}\\
-q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',a')) \tag{18}\\
+&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\tag{16}\\
 \end{align\*}
 
 ### 贝尔曼最优方程的求解(solution to Bellman optimal equation)

@@ -4,6 +4,7 @@ date: 2019-04-26 20:36:32
 tags:
  - hexo 
 categories: 工具
+mathjax: true
 ---
 
 ## 问题$1$
@@ -23,6 +24,9 @@ Error: pandoc exited with code 7: pandoc: Unknown extension: smart
 解决方法
 卸载pandoc，
 ~$:npm un hexo-renderer-pandoc --save
+
+## 问题$2$
+
 
 ## 参考文献
 1.https://hexo-guide.readthedocs.io/zh_CN/latest/theme/[NexT]%E9%85%8D%E7%BD%AEMathJax.html
