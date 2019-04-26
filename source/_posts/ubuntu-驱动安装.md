@@ -5,6 +5,7 @@ tags:
  - ubuntu
  - 显卡驱动
 categories: 工具
+maxhjax: true
 ---
 
 ## 步骤
