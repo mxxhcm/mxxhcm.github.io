@@ -4,6 +4,7 @@ date: 2019-04-23 21:21:08
 tags:
 - github
 categories: 工具
+mathjax: true
 ---
 
 ## 首先添加ssh公钥到github
