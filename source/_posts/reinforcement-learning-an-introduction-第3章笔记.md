@@ -134,8 +134,8 @@ v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) [ R_s^a + \gamma \sum_{s' \epsilon S}
 #### 动作值函数(action value function)
 \begin{align\*}
 q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
-&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\\
 &= \sum_{s',r} p(s',r|s,a) (r + \gamma max_a q_{\*}(s',a'))\\
+&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\\
 q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi(a'|s') q_{\pi}(s',a')
 \end{align\*}
 
