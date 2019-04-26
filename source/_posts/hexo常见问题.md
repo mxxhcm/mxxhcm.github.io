@@ -21,9 +21,9 @@ Error: pandoc exited with code 7: pandoc: Unknown extension: smart
     at Socket.emit (events.js:211:7) 
     at Pipe._handle.close [as _onclose] (net.js:567:12) 
 
-解决方法
-卸载pandoc，
-~$:npm un hexo-renderer-pandoc --save
+### 解决方法
+卸载pandoc
+~\$:npm un hexo-renderer-pandoc --save
 
 ## 问题$2$
 

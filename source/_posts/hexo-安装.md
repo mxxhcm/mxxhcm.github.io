@@ -4,7 +4,7 @@ date: 2019-04-26 18:56:46
 tags:
  - hexo 
 categories: 工具
-mathjax: true
+mathjax: false
 ---
 
 ## 安装
@@ -13,7 +13,15 @@ mathjax: true
 ### 安装nodejs
 #### ubuntu 16.04安装
 注意在ubuntu 16.04的时候，安装的nodejs版本太老了。一直报错，
->
+> INFO Start processing FATAL Something's wrong. Maybe you can find the solution here: http://hexo.io/docs/troubleshooting.html 
+Error: pandoc exited with code 7: pandoc: Unknown extension: smart at ChildProcess. (/home/mxxmhh/github/blog/node_modules/hexo-renderer-pandoc/index.js:94:20) at emitTwo (events.js:126:13) 
+at ChildProcess.emit (events.js:214:7) 
+at maybeClose (internal/child_process.js:925:16) 
+at Socket.stream.socket.on (internal/child_process.js:346:11) 
+at emitOne (events.js:116:13) 
+at Socket.emit (events.js:211:7) 
+at Pipe._handle.close [as _onclose] (net.js:567:12)
+
 在官网下载linux 64位nodejs安装包
 解压之后放在/usr/local/nodejs目录下。
 然后在PATH环境变量中添加/usr/local/nodejs/bin即可（在.bashrc文件中修改即可）。
