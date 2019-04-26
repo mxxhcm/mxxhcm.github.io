@@ -25,4 +25,5 @@ q_{\*}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A
 \end{align\*}
 
 ## Policy Evaluation(Prediction)
-给定一个policy，计算state value function的过程叫做
+给定一个policy，计算state value function的过程叫做policy evaluation或者prediction problem。
+

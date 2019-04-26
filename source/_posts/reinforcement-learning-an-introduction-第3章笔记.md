@@ -25,7 +25,7 @@ $\gamma\$称为折扣因子(discount factor), $\gamma \epsilon [0,1]$.**为什�
 
 ### 回报(return)
 回报是累积的未来的reward,其计算公式如下:
-$$G_t = R_{t+1} + R_{t+2} + ... = \sum_{k=0}^{\infty}{\gamma^k R_{t+k+1}}$$
+$$G_t = R_{t+1} + R_{t+2} + ... = \sum_{k=0}^{\infty}{\gamma^k R_{t+k+1}} \tag{1}$$
 它是一个马尔科夫链上从t时刻开始往后所有奖励的有衰减(带折扣因子)的总和。
 
 ### 值函数(value function)
@@ -64,35 +64,55 @@ R_s^a &= \mathbb{E}[R_{t+1} | S_t = s, A_t = a]
 \end{align\*}
 这里的reward不仅仅与state相关，而是与tuple $\lt state，action\gt$相关。
 
+### 回报
+MDP中的$G_t$和式子$(1)$的$G_t$是一样的，这里还引入了一个折扣因子$\gamma$，表示的是每一步对未来奖励打一个折扣，这样子$G_t$就变成了
+\begin{align\*}
+G_t &= R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \gamma^3 R_{t+4} + ...\\
+&= R_{t+1} + \gamma (R_{t+2} + \gamma^1 R_{t+3} + \gamma^2 R_{t+4} + ...)\\
+&= R_{t+1} + \gamma G_{t+1} \tag{2}
+\end{align\*}
+这里引入$\gamma$之后，即使continuing情况下，只要$G_t$是非零常数，$G_t$也可以通过等比数列求和公式进行计算，即:
+$$G_t = \sum_{k=1}^{\infty}\gamma^k = \frac{1}{1-\gamma} \tag{3}$$
+
 ### 策略(policy)
 策略$\pi$的定义:给定状态时采取各个动作的概率分布。
-$$\pi(a|s) = P[A_t = a | S_t = a]$$
+$$\pi(a|s) = P[A_t = a | S_t = a] \tag{4}$$
 
 ### 值函数(value function)
 MDP的值函数有两种，状态值函数(state value function)和动作值函数(action value function), 这两种值函数的含义其实是一样的，也可以相互转换。具体来说, 值函数代表的是给定一个policy $\pi$，得到的回报的期望(expected return)。
 一个MDP的状态s对应的值函数(state value function) $v_{\pi}(s)$是从状态s开始采取策略$\pi$得到的回报的期望。
 \begin{align\*}
 v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
-&=\mathbb{E}_{\pi}[\sum_{k=0}^{\infty} \gamma^{k}R_{t+k+1}|S_t=s]
+&=\mathbb{E}_{\pi}[\sum_{k=0}^{\infty} \gamma^{k}R_{t+k+1}|S_t=s] \tag{5}
 \end{align\*}
+这里的$G_t$是式子(2)中的回报。
 一个MDP过程中动作值函数(action value function) $q_{\pi}(s,a)$是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。
 <action value function $q_{\pi}(s,a)$ is the expected return starting from states, taking action a, and then following policy \pi.>
 \begin{align\*}
-q_{\pi}(s,a) &= \mathbb{E}_{\pi}[G_t | S_t = s, A_t = a]\\
-&= \mathbb{E}_{\pi}[\sum_{k=0}^{\infty} \gamma^{k}R_{t+k+1}|S_t=s, A_t=a]
+q_{\pi}(s,a) &= \mathbb{E}_{\pi}\left[G_t | S_t = s, A_t = a\right]\\
+&= \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} \gamma^{k}R_{t+k+1}|S_t=s, A_t=a\right] \tag{6}
 \end{align\*}
 
 #### 状态值函数(state value function)
 \begin{align\*}
-v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) q_{\pi} (s,a)\\
-v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) [ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') ]
+v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) q_{\pi} (s,a) \tag{7}\\
+v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) [ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') ] \tag{8}
+\end{align\*}
+式子$(7)$是$v(s)$和$q(s,a)$的关系，式子$(8)$是$v(s)$和它的后继状态$v(s')$的关系。
+式子$(8)$的推导如下：
+\begin{align\*}
+v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
+&= \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\\
+&= \sum_a \pi(a|s)\sum_{s'}\sum_rp(s',r|s,a) \left[r + \gamma \mathbb{E}_{\pi}\left[G_{t+1}|S_{t+1}=s'\right]\right]\\
+&= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right]\\
 \end{align\*}
 
 #### 动作值函数(action value function)
 \begin{align\*}
-q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s')\\
-q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi{a'|s'} q_{\pi}(s',a')
+q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') \tag{9}\\
+q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi(a'|s') q_{\pi}(s',a') \tag{10}
 \end{align\*}
+式子$(9)$是$q(s,a)$和$v(s)$的关系，式子$(10)$是$q(s,a)$和它的后继状态$q(s',a')$的关系。
 以上都是针对MDP来说的，在MDP中，给定policy $\pi$下，状态s下选择a的action value function，$q_{\pi}(s,a)$类似MRP里面的v(s)，而MDP中的v(s)是要考虑在state s下采率各个action后的情况。
 
 ### 贝尔曼期望方程(Bellmam expectation equation)
