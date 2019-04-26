@@ -16,13 +16,13 @@ DP的关键点在于使用value function寻找好的policy。使用第三章定�
 
 \begin{align\*}
 v_{\*}(s) &= max_a q_{\*}(s,a)\\
-&= max_a [\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )]\\
-v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) [ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') ]  \tag{1}
+&= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right] \\
+&= max_a\mathbb{E}\left[R_{t+1}+\gammav_{*}(S_{t+1})|S_t=s,A_t=a\right] \tag{1}
 \end{align\*}
 
 \begin{align\*}
 q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
 &= \sum_{s',r} p(s',r|s,a) (r + \gamma max_a q_{\*}(s',a'))\\
-q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi(a'|s') q_{\pi}(s',a') \tag{2}
+&= \mathbb\left[R_{t+1}+\gamma max_{a'}q_{*}(S_{t+1},a')|S_t=s,A_t = a\right] \tag{2}
 
 \end{align\*}
