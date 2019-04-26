@@ -125,12 +125,16 @@ ${\pi}_{\*}(a|s) = 1$, if $a = argmax q_{\*}(s,a)$, $0$ otherwise
 #### 状态值函数(state value function)
 \begin{align\*}
 v_{\*}(s) &= max_a q_{\*}(s,a)\\
+&= max_a\mathbb{E}_{\pi_{*}}\left[G_t|S_t=s,A_t=a\right]\\
+&= max_a\mathbb{E}_{\pi_{*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\
+&= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{*}(S_{t+1})|S_t=s,A_t=a\right]\\
 &= max_a [\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )]\\
 v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) [ R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a v_{\pi}(s') ]
 \end{align\*}
 #### 动作值函数(action value function)
 \begin{align\*}
 q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
+&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{*}(S_{t+1},a')|S_t=s,A_t=a \right]\\
 &= \sum_{s',r} p(s',r|s,a) (r + \gamma max_a q_{\*}(s',a'))\\
 q_{\pi}(s,a) &= R_s^a + \gamma \sum_{s' \epsilon S} P_{ss'}^a \sum_{a' \epsilon A} \pi(a'|s') q_{\pi}(s',a')
 \end{align\*}
