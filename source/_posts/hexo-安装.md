@@ -9,7 +9,7 @@ mathjax: false
 
 ## 安装
 ### 安装git
-~$:sudo apt install git
+~\$:sudo apt install git
 ### 安装nodejs
 #### ubuntu 16.04安装
 注意在ubuntu 16.04安装的时候，一直报错，
@@ -22,19 +22,19 @@ ERROR Try running: 'npm install hexo --save'
 解压之后放在/usr/local/nodejs目录下。
 然后在PATH环境变量中添加/usr/local/nodejs/bin即可（在.bashrc文件中修改即可）。
 使用以下命令查看nodejs版本
-~$:node -v
+~\$:node -v
 #### ubuntu 18.04安装
 在ubuntu 18.04可以直接使用以下命令安装。
-~$:sudo apt install nodejs
-~$:sudo apt install npm
+~\$:sudo apt install nodejs
+~\$:sudo apt install npm
 
 ### 安装hexo 
-~$:sudo npm install -g hexo-cli
+~\$:sudo npm install -g hexo-cli
 
 ## 配置
 创建文件夹
-~$:git clone your repo
+~\$:git clone your repo
 或者直接
-~$:hexo init your repo
+~\$:hexo init your repo
 安装依赖包
-~$:npm install 
+~\$:npm install 
