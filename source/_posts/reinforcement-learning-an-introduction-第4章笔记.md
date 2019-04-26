@@ -6,6 +6,7 @@ tags:
  - DP
  - 强化学习
 categories: 强化学习
+mathjax: true
 ---
 
 ## Dynamic Programming
