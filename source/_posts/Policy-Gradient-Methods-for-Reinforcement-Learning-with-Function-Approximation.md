@@ -46,8 +46,9 @@ $$Q^{\pi}(s,a) = \sum_{t=1}^{\infty}\mathbb{E}\{r_t - \rho(\pi)|s_0=s,a_0=a,\pi\
 这种情况是指定一个开始状态$s_0$，然后我们只关心从这个状态得到的长期reward。
 $$\rho(\pi) = \mathbb{E}\{\sum_{t=1}^{\infty}\gamma^{t-1}|s_0,\pi\},$$
 $$Q^{\pi}(s,a) = \mathbb{E}\{\sum_{k=1}^{\infty}r_{t+k}|s_t=s,a_t=a,\pi\}.$$
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重：
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s\_0$执行策略$\pi$遇到的状态的折扣权重：
 $d^{\pi}(s) = \sum_{t=1}^{\infty}\gamma^tPr\{s_t = s|s_0,\pi\}.$
+
 ### Policy Gradient Theorem
 对于任何MDP，不论是平均奖励还是指定初始状态的形式，都有：
 $$\frac{\partial J}{\partial \mathbf{\theta}} = \sum_ad^{\pi}(s)\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi}(s,a), \tag{2}$$
@@ -56,7 +57,7 @@ $$\frac{\partial J}{\partial \mathbf{\theta}} = \sum_ad^{\pi}(s)\sum_a\frac{\pi(
 \begin{align\*}
 \nabla v_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\
 &= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a)\right], \\
-&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)\right] \\
+&= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)\right] \\
 &= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \left[r-\rho(\pi)+\sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right]\right] \\
 &= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \rho(\pi)+\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right]\right], \nabla r = 0\\
 \end{align\*}
