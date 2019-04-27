@@ -3,7 +3,6 @@ title: reinforcement learning an introduction 第4章笔记
 date: 2019-04-07 23:46:17
 tags:
  - 动态规划
- - DP
  - 强化学习
 categories: 强化学习
 mathjax: true
