@@ -5,22 +5,22 @@ tags:
  - ubuntu
  - 显卡驱动
 categories: 工具
-maxhjax: false
+maxhjax: true
 ---
 
 ## 步骤
 卸载原有驱动
-~\$:sudo apt purge nvidia\*
+~\\$:sudo apt purge nvidia\*
 禁用nouveau
-~\$:sudo vim /etc/modprobe.d/blacklist.conf
+~\\$:sudo vim /etc/modprobe.d/blacklist.conf
 在文件最后添加
 blacklist nouveau
 更新内核
-~\$:sudo update-initramfs -u
+~\\$:sudo update-initramfs -u
 使用如下命令，如果没有输出，即已经关闭了nouveau
-~\$:lsmod | grep nouveau 
+~\\$:lsmod | grep nouveau 
 关闭X service
-~\$:sudo service lightdm stop
+~\\$:sudo service lightdm stop
 接下来执行如下语句即可：
 ``` shell
 sudo apt-get install build-essential pkg-config xserver-xorg-dev linux-headers-`uname -r`
