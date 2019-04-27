@@ -2,7 +2,7 @@
 title: reinforcement learning an introduction 第9章笔记
 date: 2019-04-04 10:14:08
 tags:
- - function approximation
+ - 函数近似 
  - on-policy
  - 强化学习
  - 值函数

@@ -14,7 +14,7 @@ mathjax: true
 
 用$J(\mathbf{\theta})$表示policy parameters的标量performance measure。使用梯度上升(gradient ascent) 方法来最大化这个performance：
 $$\mathbf{\theta}_{t+1} = \mathbf{\theta}_t + \alpha \widehat{\nabla J(\mathbf{\theta}_t}),\tag{1}$$
-其中$\hat{\nabla J(\mathbf{\theta}_t)} \in R^{d'}$是一个随机估计(stachastic estimate)，它的期望是performance measure对$\mathbf{\theta_t}$的梯度。不管它们是否使用value function，这种方法就叫做policy gradient方法。既学习policy，又学习value function的方法被称为actor-critic，其中actor指的是学到的policy，critic指的是学习到的value funciton,通常是state value function。
+其中$\widehat{\nabla J(\mathbf{\theta}_t)} \in R^{d'}$是一个随机估计(stachastic estimate)，它的期望是performance measure对$\mathbf{\theta_t}$的梯度。不管它们是否使用value function，这种方法就叫做policy gradient方法。既学习policy，又学习value function的方法被称为actor-critic，其中actor指的是学到的policy，critic指的是学习到的value funciton,通常是state value function。
 
 ## policy估计和它的优势
 ### 参数化policy的条件
