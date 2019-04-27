@@ -4,6 +4,7 @@ date: 2019-04-15 18:49:57
 tags:
  - ubuntu
 categories: 工具
+mathjax: true
 ---
 
 ## 动机
@@ -15,10 +16,10 @@ categories: 工具
 在/home/mxxmhh/.bashrc文件中添加如下一行即可(当然也可以在其他配置文件中添加)：
 alias posts='cd /home/mxxmhh/github/blog/source/_posts'
 然后执行
-~$:source /home/mxxmhh/.bashrc
+~\$:source /home/mxxmhh/.bashrc
 即可。
 接下来可在终端输入
-~$:posts
+~\$:posts
 直接访问该目录。
 
 ## 参考文献
