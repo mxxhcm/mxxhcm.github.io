@@ -23,9 +23,12 @@ ERROR Try running: 'npm install hexo --save'
 然后在PATH环境变量中添加/usr/local/nodejs/bin即可（在.bashrc文件中修改即可）。
 使用以下命令查看nodejs版本
 ~\$:node -v
+
 #### ubuntu 18.04安装
 在ubuntu 18.04可以直接使用以下命令安装。
+安装nodejs
 ~\$:sudo apt install nodejs
+安装npm
 ~\$:sudo apt install npm
 
 ### 安装hexo 

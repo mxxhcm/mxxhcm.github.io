@@ -4,10 +4,10 @@ date: 2019-04-26 20:36:32
 tags:
  - hexo 
 categories: 工具
-mathjax: true
+mathjax: false 
 ---
 
-## 问题$1$
+## 问题1
 Error: pandoc exited with code 7: pandoc: Unknown extension: smart
 > INFO  Start processing
 FATAL Something's wrong. Maybe you can find the solution here: http://hexo.io/docs/troubleshooting.html
@@ -25,7 +25,7 @@ Error: pandoc exited with code 7: pandoc: Unknown extension: smart
 卸载pandoc
 ~\$:npm un hexo-renderer-pandoc --save
 
-## 问题$2$
+## 问题2
 
 
 ## 参考文献
