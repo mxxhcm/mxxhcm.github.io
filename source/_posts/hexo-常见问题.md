@@ -4,7 +4,7 @@ date: 2019-04-26 20:36:32
 tags:
  - hexo 
 categories: 工具
-mathjax: false 
+mathjax: true 
 ---
 
 ## 问题1
@@ -26,7 +26,9 @@ Error: pandoc exited with code 7: pandoc: Unknown extension: smart
 ~\$:npm un hexo-renderer-pandoc --save
 
 ## 问题2
-
+部分公式无法解析。
+是因为markdown和mathjax的解析有一些冲突，按照参考文献$1$中进行修改即可，原因见[2]。
 
 ## 参考文献
 1.https://hexo-guide.readthedocs.io/zh_CN/latest/theme/[NexT]%E9%85%8D%E7%BD%AEMathJax.html
+2.https://shomy.top/2016/10/22/hexo-markdown-mathjax/
