@@ -46,7 +46,7 @@ $$Q^{\pi}(s,a) = \sum_{t=1}^{\infty}\mathbb{E}\{r_t - \rho(\pi)|s_0=s,a_0=a,\pi\
 这种情况是指定一个开始状态$s_0$，然后我们只关心从这个状态得到的长期reward。
 $$\rho(\pi) = \mathbb{E}\{\sum_{t=1}^{\infty}\gamma^{t-1}|s_0,\pi\},$$
 $$Q^{\pi}(s,a) = \mathbb{E}\{\sum_{k=1}^{\infty}r_{t+k}|s_t=s,a_t=a,\pi\}.$$
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s\_0$执行策略$\pi$遇到的状态的折扣权重：
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重：
 $d^{\pi}(s) = \sum_{t=1}^{\infty}\gamma^tPr\{s_t = s|s_0,\pi\}.$
 
 ### Policy Gradient Theorem
