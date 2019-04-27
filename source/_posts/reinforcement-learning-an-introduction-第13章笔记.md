@@ -12,7 +12,7 @@ mathjax: true
 这章介绍的是使用一个参数化策略(parameterized policy)直接给出action，而不用借助一个value funciton选择action。但是需要说一下的是，Policy gradient方法也可以学习一个Value function，但是value function是用来帮助学习policy parameters的，而不是用来选择action。我们用$\mathbf{\theta} \in R^{d'}$表示policy's parameters vector，用$\pi(a|s, \mathbf{\theta}) = Pr[A_t = a|S_t = s, \mathbf{\theta}_t = \mathbf{\theta}]$表示environment在时刻$t$处于state $s$时，智能体根据参数为$\mathbf{\theta}$的策略$\pi$选择action $a$。
 如果policy gradient方法使用了一个value function,它的权重用$\mathbf{w} \in R^d$表示，即$\hat{v}(s,\mathbf{w})$。
 
-用$J(\mathbf{\theta})$表示policy parameters的标量performance measure。使用梯度上升(gradient ascent$ 方法来最大化这个performance：
+用$J(\mathbf{\theta})$表示policy parameters的标量performance measure。使用梯度上升(gradient ascent) 方法来最大化这个performance：
 $$\mathbf{\theta}_{t+1} = \mathbf{\theta}_t + \alpha \widehat{\nabla J(\mathbf{\theta}_t}),\tag{1}$$
 其中$\hat{\nabla J(\mathbf{\theta}_t)} \in R^{d'}$是一个随机估计(stachastic estimate)，它的期望是performance measure对$\mathbf{\theta_t}$的梯度。不管它们是否使用value function，这种方法就叫做policy gradient方法。既学习policy，又学习value function的方法被称为actor-critic，其中actor指的是学到的policy，critic指的是学习到的value funciton,通常是state value function。
 
@@ -48,7 +48,7 @@ $$h(s,a, \mathbf{\theta}) = \mathbf{\theta}^Tx(s,a), \tag{3}$$
 除了上节说的实用优势之外，还有理论优势。policy parameterization学到关于参数的一个连续函数，action probability概率可以平滑的变化。然而$\epsilon-greedy$算法中，action-value改变以后，action probability可能变化很大。很大程度上是因为policy gradient方法的收敛性要比action value方法强的多。因为policy的连续性依赖于参数，使得policy gradient方法接近于gradient ascent。
 这里讨论episodic情况。定义perfromance measure是episode初始状态的值。假设每一个episode，都从state $s_0$开始，定义：
 $$J(\mathbf{\theta}) = v_{\pi_\mathbf{\theta}}(s_0), \tag{4}$$
-其中$v_{\pi_\mathbf{\theta}}(s_0)$是由参数$\mathbf{\theta}$确定的策略$\pi_{\mathbf{\theta}}$的true value function。假设在episodic情况下，$\gamma=1$。
+其中$v_{\pi_\mathbf{\theta}}(s\\_0)$是由参数$\mathbf{\theta}$确定的策略$\pi_{\mathbf{\theta}}$的true value function。假设在episodic情况下，$\gamma=1$。
 
 使用function approximation，一个需要解决的问题就是如何确保每次更新policy parameter，performance measure都有improvement。因为performence不仅仅依赖于action的选择，还取决于state的分布，然后它们都受policy parameter的影响。给定一个state，policy parameter对于actions，reward的影响，都可以相对直接的利用参数知识计算出来。但是policy parameter对于state 分布的影响是一个环境的函数，通常是不知道的。当梯度依赖于policy改变对于state分布的影响未知时，我们该如何估计performance相对于参数的梯度。
 
