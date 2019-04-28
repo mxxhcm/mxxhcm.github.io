@@ -140,5 +140,28 @@ $\qquad$**Loop** for each $s\in S$
 $\qquad\qquad V(s) = max_a\sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
 $\qquad\qquad\Delta \leftarrow max(Delta, |v-V(s)|)$
 **until** $\Delta \lt \theta$
-**返回** 输出一个策略$\pi\approx\pi_{\*}$，这里书中说是deterministic，都可以，$\pi$也可以是stochastic的，$\pi$满足:
+**返回** 输出一个策略$\pi\approx\pi_{\*}$，这里书中说是deterministic，我觉得都可以，$\pi$也可以是stochastic的，最后得到的$\pi$满足:
 $\pi(s) = argmax_a\sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
+
+
+## Asychronous Dynamic Programming
+之前介绍的这些DP方法，在每一次操作的时候，都有对所有的状态进行处理，这就很耗费资源。所以这里就产生了异步的DP算法，这类算法在更新的时候，不会使用整个的state set，而是使用部分state进行更新，可能其中一些state被访问了很多次，而另一些state还没有被访问过。
+其中一种异步DP算法就是在plicy evalutaion的过程中，只使用一个state。
+使用DP算法并不代表一定能减少计算量，他只是减少在策略没有改进之前陷入无意义的evaluation的可能。尽量选取那些重要的state用来进行更新。
+同时，异步DP方便进行实时的交互。在使用异步DP更新的时候，同时使用一个真实场景中的agent经历进行更新。智能体的experience可以被用来确定使用哪些state进行更新，DP更新后的值也可以用来指导智能体的决策。
+
+## Generalized Policy Iteration
+
+
+## Efficiency of Dynamic Programming
+
+## Summary
+- 使用贝尔曼公式更新值函数，可以使用backup diagram看他们的直观表示。
+
+- 基本上所有的强化学习算法都可以看成GPI(generalized policy iteraion)，先评估某个策略，然后改进这个策略，评估新的策略...这样子循环下去，直到收敛，找到一个不在变化的最优值函数和策略。
+GPI不一定是收敛的，本章介绍的这些大多都是收敛的，但是还有一些没有被证明收敛。
+- 可以使用异步的DP算法。
+- 所有的DP算法都有一个属性叫做bootstrapping，就是他们更新自己的估计值也是基于其他的估计上。因为每一个state value的更新都需要用到他们的successor state的估计。
+> They update estimates onthe basis of other estimates。
+
+
