@@ -151,7 +151,7 @@ $${\pi}_{\*}(a|s) =
 
 ### 贝尔曼最优方程(bellman optimal equation)
 \*号表示最优的策略。
-#### 状态值函数(state value function)
+#### 最优状态值函数(state value function)
 \begin{align\*}
 v_{\*}(s) &= max_a q_{\*}(s,a)\\
 &= max_a\mathbb{E}_{\pi_{\*}}\left[G_t|S_t=s,A_t=a\right]\\
@@ -159,7 +159,7 @@ v_{\*}(s) &= max_a q_{\*}(s,a)\\
 &= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\
 &= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right] \tag{15}\\
 \end{align\*}
-#### 动作值函数(action value function)
+#### 最优动作值函数(action value function)
 \begin{align\*}
 q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
 &= \sum_{s',r} p(s',r|s,a) (r + \gamma max_a q_{\*}(s',a'))\\
