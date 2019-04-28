@@ -136,9 +136,9 @@ v_{\pi'}(s) &= max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_{\pi}(s')\right]\\
 阈值$\theta$，以及随机初始化的$V(s), s\in S^{+}$，$V(terminal)=0$。
 **Loop**
 $\qquad v\leftarrow V(s)$
-$\qquad$**Loop* for each $s\in S$
+$\qquad$**Loop** for each $s\in S$
 $\qquad\qquad V(s) = max_a\sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
 $\qquad\qquad\Delta \leftarrow max(Delta, |v-V(s)|)$
 **until** $\Delta \lt \theta$
-**返回** 输出一个策略$\pi\approx\pi_{*}$，这里书中说是deterministic，都可以，$\pi$也可以是stochastic的，$|pi$满足:
+**返回** 输出一个策略$\pi\approx\pi_{\*}$，这里书中说是deterministic，都可以，$\pi$也可以是stochastic的，$\pi$满足:
 $\pi(s) = argmax_a\sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
