@@ -121,12 +121,24 @@ $\qquad If\ old\_action \neq \pi(s), policy\-stable\leftarrow false$
 从Policy Iteration算法中我们可以看出来，整个算法分为两步，第一步是Policy Evaluation，第二步是Policy Improvement。而每一次Policy Evaluation都要等到Value function收敛到一定程度才结束，这样子就会非常慢。一个替代的策略是我们尝试每一次Policy Evaluation只进行几步的话，一种特殊情况就是每一个Policy Evaluation只进行一步，这种就叫做Value Iteration。给出如下定义：
 \begin{align\*}
 v_{k+1}(s) &= max_a \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\
-&= max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]
+&= max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right] \tag{10}
 \end{align\*}
 它其实就是把两个步骤给合在了一起，原来分开是：
 \begin{align\*}
 v_{\pi}(s) &= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\
 &= \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]\\
-v_{\pi'}(s) &= \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_{\pi}(s')\right]\\
-\end{align\*}
+v_{\pi'}(s) &= max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_{\pi}(s')\right]\\
+\end{align\*} 
+另一种方式理解式$(10)$可以把它看成是使用贝尔曼最优等式进行迭代更新，Policy Evaluation用的是贝尔曼期望等式进行更新。下面给出完整的Value Iteration算法
 
+**Value Iteration 算法**
+**初始化**
+阈值$\theta$，以及随机初始化的$V(s), s\in S^{+}$，$V(terminal)=0$。
+**Loop**
+$\qquad v\leftarrow V(s)$
+$\qquad$**Loop* for each $s\in S$
+$\qquad\qquad V(s) = max_a\sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
+$\qquad\qquad\Delta \leftarrow max(Delta, |v-V(s)|)$
+**until** $\Delta \lt \theta$
+**返回** 输出一个策略$\pi\approx\pi_{*}$，这里书中说是deterministic，都可以，$\pi$也可以是stochastic的，$|pi$满足:
+$\pi(s) = argmax_a\sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
