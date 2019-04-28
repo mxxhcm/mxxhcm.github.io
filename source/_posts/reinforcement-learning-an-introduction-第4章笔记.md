@@ -62,7 +62,7 @@ q_{\pi}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t=s,A_t = a\ri
 &=\sum_{s',r}p(s',r|s,a)\left[r+\gamma v_{\pi}(s')\right] \tag{6}
 \end{align\*}
 那么，这个值是是比$v(s)$要大还是要小呢？如果比$v(s)$要大，那么这个新的策略就比$\pi$要好。
-用$\pi$和$\pi'$表示任意一对满足下式的policy：
+用$\pi$和$\pi'$表示任意一对满足下式的deterministic policy：
 $$q_{\pi}(s,\pi'(s)) \ge v_{\pi}(s) \tag{7}$$
 那么$\pi'$至少和$\pi$一样好。可以证明，任意满足$(7)$的$s$都满足下式：
 $$v_{\pi'}(s) \ge v_{\pi}(s) \tag{8}$$
@@ -73,8 +73,60 @@ v_{\pi}(s) &\le q_{\pi}(s,\pi'(s))\\
 & = \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s, A_t = \pi'(s) \right]\\
 & = \mathbb{E}_{\pi'}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s \right]\\
 & \le \mathbb{E}_{\pi'}\left[R_{t+1} + \gamma q_{\pi}(S_{t+1},\pi'(S_{t+1}))|S_t = s \right]\\
-& = \mathbb{E}_{\pi'}\left[R_{t+1} + \gamma \mathbb{E}_{\pi'}\left[R_{t+2} + v_{\pi}(S_{t+2})|S_{t+1}=, A_{t+1}=\pi'(S_{t+1})|S_t = s \right\right]\\
-& = \mathbb{E}_{\pi'}\left[ \right]\\
-& = \mathbb{E}_{\pi'}\left[ \right]\\
-& = \mathbb{E}_{\pi'}\left[ \right]\\
+& = \mathbb{E}_{\pi'}\left[ R_{t+1} + \gamma \mathbb{E}_{\pi'}\left[R_{t+2} +\gamma v_{\pi}(S_{t+2})|S_{t+1}, A_{t+1}=\pi'(S_{t+1})|S_t = s \right]\right]\\
+& = \mathbb{E}_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 v_{\pi}(S_{t+2})|S_t = s \right]\\
+& \le \mathbb{E}_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 v_{\pi}(S_{t+3})|S_t = s \right]\\
+& \le \mathbb{E}_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 R_{t+4} + \cdots |S_t = s \right]\\
+&=v_{\pi'}(s)
 \end{align\*}
+所以，在计算出一个policy的value function的时候，很容易我们就直到某个状态$s$处的变化是好还是坏。扩展到所有状态和所有action的时候，在每个state，根据$q_{\pi}(s,a)$选择处最好的action，这样就得到了一个greedy策略$\pi'$，给出如下定义：
+\begin{align\*}
+\pi'(s') &= argmax_{a} q_{\pi}(s,a)\\
+& = argmax_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\\
+& = argmax_{a} \sum_{s',r}p(s',r|s,a)\left[r+v_{\pi}(s') \right]
+\end{align\*}
+可以看出来，该策略的定义一定满足式子$(7)$，所以$\pi'$比$\pi$要好或者相等，这就叫做policy improvement。当$\pi'$和$\pi$相等时，，根据式子$(9)$我们有：
+\begin{align\*}
+v_{\pi'}(s')& = max_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi'}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\\
+& = max_{a} \sum_{s',r}p(s',r|s,a)\left[r+v_{\pi'}(s') \right]
+\end{align\*}
+这和贝尔曼最优等式是一样的？？？殊途同归！！！
+但是，需要说的一点是，目前我们假设的$\pi$和$\pi'$是deterministic，当$\pi$是stochastic情况的时候，其实也是一样的。只不过，原来我们每次选择的是使得$v_{\pi}$最大的action。对于stochastic的情况来说，输出的是每个动作的概率，可能有几个动作都能使得value function最大，那就让这几个动作的概率一样大，比如是$n$个动作，都是$\frac{1}{n}$。
+
+
+## Policy Iteration
+我们已经讲了Policy Evaluation和Policy Improvement，Evalution会计算出一个固定$\pi$的value function，Improvment会根据value function改进这个policy，然后计算出一个新的policy $\pi'$，对于新的策略，我们可以再次进行Evaluation，然后在Improvement，就这样一直迭代，对于有限的MDP，我们可以求解出最优的value function和policy。这就是Policy Iteration算法。
+
+**Policy Iteration算法**
+**1.初始化**
+$V(s)\in R,\pi(s) in A(s)$
+$\qquad$
+**2.Policy Evaluation**
+**Loop**
+$\qquad\Delta\leftarrow 0 $
+$\qquad$ **For** each $s\in S$
+$\qquad\qquad v\leftarrow V(s)$
+$\qquad\qquad V(s)\leftarrow \sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
+$\qquad\qquad \Delta \leftarrow max(\Delta, |v-V(s)|) $
+**until** $\Delta \lt \theta$ 
+**3.Policy Improvement**
+$policy\-stable\leftarrow true$
+**For** each $s \in S$
+$\qquad old_action = \pi(s)$
+$\qquad \pi(s) = argmax_a \sum_{s',a'}p(s',r|s,a)\left[r+\gamma V(s')\right]$
+$\qquad If\ old\_action \neq \pi(s), policy\-stable\leftarrow false$
+**If policy-stable**，停止迭代，返回$V$和$\pi$，否则回到2.Policy Evalution继续执行。
+
+## Value Iteration
+从Policy Iteration算法中我们可以看出来，整个算法分为两步，第一步是Policy Evaluation，第二步是Policy Improvement。而每一次Policy Evaluation都要等到Value function收敛到一定程度才结束，这样子就会非常慢。一个替代的策略是我们尝试每一次Policy Evaluation只进行几步的话，一种特殊情况就是每一个Policy Evaluation只进行一步，这种就叫做Value Iteration。给出如下定义：
+\begin{align\*}
+v_{k+1}(s) &= max_a \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\
+&= max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]
+\end{align\*}
+它其实就是把两个步骤给合在了一起，原来分开是：
+\begin{align\*}
+v_{\pi}(s) &= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\
+&= \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]\\
+v_{\pi'}(s) &= \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_{\pi}(s')\right]\\
+\end{align\*}
+
