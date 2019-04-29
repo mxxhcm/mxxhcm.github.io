@@ -2,8 +2,7 @@
 title: python2和python3中的dict
 date: 2019-04-13 14:46:26
 tags:
- - python2
- - python3
+ - python
 categories: python
 ---
 

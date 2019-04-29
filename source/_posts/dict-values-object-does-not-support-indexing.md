@@ -2,7 +2,7 @@
 title: '''dict_values'' object does not support indexing'
 date: 2019-03-13 10:40:03
 tags:
- - python3
+ - python
 categories: Error
 ---
 
