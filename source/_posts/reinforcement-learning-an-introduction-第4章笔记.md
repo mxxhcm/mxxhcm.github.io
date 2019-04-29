@@ -145,13 +145,13 @@ $\pi(s) = argmax_a\sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
 
 
 ## Asychronous Dynamic Programming
-之前介绍的这些DP方法，在每一次操作的时候，都有对所有的状态进行处理，这就很耗费资源。所以这里就产生了异步的DP算法，这类算法在更新的时候，不会使用整个的state set，而是使用部分state进行更新，可能其中一些state被访问了很多次，而另一些state还没有被访问过。
+之前介绍的这些DP方法，在每一次操作的时候，都有对所有的状态进行处理，这就很耗费资源。所以这里就产生了异步的DP算法，这类算法在更新的时候，不会使用整个的state set，而是使用部分state进行更新，其中一些state可能被访问了很多次，而另一些state一次也没有被访问过。
 其中一种异步DP算法就是在plicy evalutaion的过程中，只使用一个state。
 使用DP算法并不代表一定能减少计算量，他只是减少在策略没有改进之前陷入无意义的evaluation的可能。尽量选取那些重要的state用来进行更新。
 同时，异步DP方便进行实时的交互。在使用异步DP更新的时候，同时使用一个真实场景中的agent经历进行更新。智能体的experience可以被用来确定使用哪些state进行更新，DP更新后的值也可以用来指导智能体的决策。
 
 ## Generalized Policy Iteration
-
+之前介绍了三类方法，Policy Iteration,Value iteration以及Asychronous DP算法，它们的
 
 ## Efficiency of Dynamic Programming
 
