@@ -151,13 +151,16 @@ $\pi(s) = argmax_a\sum_{s',r}p(s',r|s,a)\left[r+\gamma V(s')\right]$
 同时，异步DP方便进行实时的交互。在使用异步DP更新的时候，同时使用一个真实场景中的agent经历进行更新。智能体的experience可以被用来确定使用哪些state进行更新，DP更新后的值也可以用来指导智能体的决策。
 
 ## Generalized Policy Iteration
-之前介绍了三类方法，Policy Iteration,Value iteration以及Asychronous DP算法，它们的
+之前介绍了三类方法，Policy Iteration,Value iteration以及Asychronous DP算法，它们都有两个过程在不断的迭代进行。一个是evaluation，一个是improvement，这类算法统一的被称为Generalized Policy Iteration(GPI)，可以根据不同的粒度进行细分。基本上所有的算法都是GPI，policy使用value function进行改进，value function朝着policy的真实值函数改进，如果value function和policy都稳定之后，那么说他们都是最优的了。
+GPI中evalution和improvemetnt可以看成既有竞争又有合作。竞争是因为evaluation和improment的方向通常是相对的，policy改进意味着value function不适用于当前的policy,value function更新意味着policy不是greedy的。然后长期来说，他们共同作用，想要找到最优的值函数和policy。
+GPI可以看成两个目标的交互过程，这两个目标不是正交的，改进一个目标也会使用另一个目标有所改进，直到最后，这两个交互过程使得总的目标变成最优的。
 
 ## Efficiency of Dynamic Programming
+用$n$和$k$表示MDP的状态数和动作数，DP算法保证在多项式时间内找到最优解，即使策略的总数是$k^n$个。
+DP比任何在policy space内搜索的算法要快上指数倍，因为policy space搜索需要检查每一个算法。Linear Programming算法也可以用来解MDP问题，在某些情况下最坏的情况还要比DP算法快，但是LP要比只适合解决state数量小的问题。而DP也能处理states很大的情况。
 
 ## Summary
 - 使用贝尔曼公式更新值函数，可以使用backup diagram看他们的直观表示。
-
 - 基本上所有的强化学习算法都可以看成GPI(generalized policy iteraion)，先评估某个策略，然后改进这个策略，评估新的策略...这样子循环下去，直到收敛，找到一个不在变化的最优值函数和策略。
 GPI不一定是收敛的，本章介绍的这些大多都是收敛的，但是还有一些没有被证明收敛。
 - 可以使用异步的DP算法。
