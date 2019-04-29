@@ -5,6 +5,7 @@ tags:
 - 强化学习
 - 蒙特卡洛
 categories: 强化学习
+mathjax: true
 ---
 
 
