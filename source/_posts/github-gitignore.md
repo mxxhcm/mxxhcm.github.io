@@ -29,6 +29,8 @@ git push
 \*\*/.idea/
 然后再次提交到git的时候就不会同步.idea文件了。
 
+## 加注释
+.gitignore文件的注释使用#号开头即可。
 
 ## 参考文献
 1.https://segmentfault.com/q/1010000000720031
