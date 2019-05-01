@@ -117,6 +117,6 @@ DeepMind Lab中的八个任务，最好的baseline是单独在每个任务上训
 另一个就是在深度神经网络中，它们的参数没有意义，所以作者不是在参数空间进行的正则化，而是在策略空间进行正则化，这样子更有语义意义。
 
 ## 参考文献
-1.
+1.https://papers.nips.cc/paper/7036-distral-robust-multitask-reinforcement-learning.pdf
 2.
 
