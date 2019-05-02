@@ -85,6 +85,8 @@ $\mathcal{A}$ \mathcal{A}
 分数$(\frac{1}{2})$ (\frac{1}{2})
 分数$\left(\frac{1}{2}\right)$ \left(\frac{1}{2}\right)
 无穷$\infty$ \infty
+期望$\mathbb{E}$ \mathbb{E}
+$\mathbb{{\pi}_i}$ \mathbb{{\pi}_i}
 $\pm$ \pm
 $\mp$ \mp
 
