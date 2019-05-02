@@ -59,9 +59,7 @@ $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}
 \begin{align\*}
 \hat{\pi}_i(a_t|s_t) 
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \hat{Q}_i(a_t|s_t)-\beta \hat{V}(s_t)\right)}\\ 
-
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \hat{A}_i(a_t|s_t)\right)}\\ 
-
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \left(f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)\right)}\\ 
 \end{align\*}
 \begin{align\*}
