@@ -86,7 +86,7 @@ $\mathcal{A}$ \mathcal{A}
 分数$\left(\frac{1}{2}\right)$ \left(\frac{1}{2}\right)
 无穷$\infty$ \infty
 期望$\mathbb{E}$ \mathbb{E}
-$\mathbb{\pi}$ \mathbb{\pi}
+$\mathbb{\pi}$ \mathbb{\pi} # 可以看出来，没有起作用，因为mathbb没有只支持大写字母。
 $\pm$ \pm
 $\mp$ \mp
 
