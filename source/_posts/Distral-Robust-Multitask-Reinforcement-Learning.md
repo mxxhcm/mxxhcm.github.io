@@ -84,7 +84,7 @@ $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}
 所以：
 $$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t))}=\frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}{\sum_{a'}e^{(\alpha h_{\theta_0}(a'|s_t) + \beta f_{\theta_i}(a'|s_t))}} \tag{8}$$
 这可以看成policy的一个两列架构，一列是提取的shared policy，一列是将$\pi_0$应用到task $i$上需要做的一些修改。
-使用参数化的$\pi_0, \pi_i$，我们可以推导策略梯度：
+使用参数化的$\pi_0, \pi_i$，首先推导策略相对于$\pi_i$的梯度（policy gradient的推导，这里是直接应用了)：
 \begin{align\*}
 \nabla_{\theta_i}J& = \mathbb{E}_{\hat{\pi}_i}\left[\left(\sum_{t\gt 1} \nabla_{\theta_i}log{\hat{\pi}}_i(a_t|s_t)\right) \left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right]\\
 & = \mathbb{E}_{\hat{\pi}_i}\left[\sum_{t\gt 1} \nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right] \tag{9}\\
@@ -102,7 +102,7 @@ $$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t
              \right)
         \right)
 \right]\\
-& + \frac{\alpha}{\beta}\sum_i\mathbb{E}_{\hat{\pi}_i}
+& + \qquad \frac{\alpha}{\beta}\sum_i\mathbb{E}_{\hat{\pi}_i}
 \left[
     \sum_{t\ge 1}\gamma^t\sum_{a'_t}
         \left(
