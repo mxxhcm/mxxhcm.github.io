@@ -51,14 +51,20 @@ $$\frac{\alpha}{\beta}\sum_i\mathbb{E_{\pi_i}}\left[\sum_{t\ge 0}\gamma^tlog\pi_
 
 ### Policy Gradient and a Better Parameterization
 上面一节讲的是表格形式的计算，给定$\pi_0$，首先求解出$\pi$对应的$V$和$Q$，然后写出$\pi_i$的解析。但是如果我们用神经网络等函数去拟合$V$和$Q$，$V$和$Q$的求解特别慢，这里使用梯度下降同时优化task polices和distilled policy。这种情况下，$\pi_i$的梯度更新通过求带有entropy正则化的return即可求出来，并且可以放在如actor-critic之类的框架中。
-每一个$\pi_i$都用一个单独的网络表示，$\pi_0$也用一个单独的网络表示，用$\theta_0$表示$\pi_0$的参数，重写式子$(2)$对应的policy：
+每一个$\pi_i$都用一个单独的网络表示，$\pi_0$也用一个单独的网络表示，用$\theta_0$表示$\pi_0$的参数，对应的policy表示为：
 $$\hat{\pi}(a_t|s_t) = \frac{e^{(h_{\theta_0}(a_t|s_t)}}{\sum_{a'}e^{h_{\theta_0}(a'|s_t)}} \tag{6}$$
-这里作者没有分别去估计V和Q的值，而是使用参数为$\theta_i$的神经网络，直接估计A=Q-V的值：
+这里作者没有分别去估计$V$和$Q$的值，而是使用参数为$\theta_i$的神经网络，直接估计$A=Q-V$的值：
 $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)} \tag{7}$$
-第$i$个任务的policy可以参数化为：
+将式子$(7)$代入式子$(2)$得第$i$个任务的policy可以参数化为：
+\begin{align\*}
+\hat{\pi}_i(a_t|s_t) 
+& = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\beta \hat{Q}_i(a_t|s_t)-\beta \hat{V}(s_t)}\\ 
+& = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}{\sum_a'e^{(\alpha h_{\theta_0}(a'|s_t) + \beta f_{\theta_i}(a'|s_t))}} 
+\end{align\*}
+所以：
 $$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t))}=\frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}{\sum_a'e^{(\alpha h_{\theta_0}(a'|s_t) + \beta f_{\theta_i}(a'|s_t))}} \tag{8}$$
-这可以看成policy的一个两列架构，一列是提取的policy，一列是应用到task i上需要的一些调整。
-给定上面$\pi_0, \pi_i$的参数化，我们可以推导策略梯度：
+这可以看成policy的一个两列架构，一列是提取的shared policy，一列是将$\pi_0$应用到task $i$上需要做的一些调整。
+使用参数化的$\pi_0, \pi_i$，我们可以推导策略梯度：
 \begin{align\*}
 \nabla_{\theta_i}J& = \mathbb_{\hat{\pi}_i}\left[\left(\sum_{t\gt 1} \nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\right)\left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u\right)\right) \right]\\
 & = \mathbb_{\hat{\pi}_i}\left[\sum_{t\gt 1} \nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right] \tag{9}\\
