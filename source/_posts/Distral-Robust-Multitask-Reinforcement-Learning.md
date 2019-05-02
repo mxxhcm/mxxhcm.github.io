@@ -31,10 +31,10 @@ mathjax: true
 \begin{align\*}
 J(\pi_0, \{\pi_i\}_{i=1}^n) &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^tlog\pi_i(a_t|s_t)\right]\\
 &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) - c_{KL}\gamma^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma^tlog\pi_i(a_t|s_t)\right]\\
-&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{kL}\gamma^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{kl}\gamma^t)log\pi_i(a_t|s_t)\right]\\
+&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{KL}\gamma^t)log\pi_i(a_t|s_t)\right]\\
 &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
 \end{align\*}
-其中，$c_{KL},c_{Ent}\ge 0$是控制KL散度正则化项和entropy正则化项大小的超参数，这里的$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}，log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action，而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，所有任务的正则化系数$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale不同，可以根据具体情况给相应任务设定相应系数。
+其中$c_{KL},c_{Ent}\ge 0$是控制KL散度正则化项和entropy正则化项大小的超参数，$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}，而log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action，而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，所有任务的正则化系数$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale不同，可以根据具体情况给相应任务设定相应系数。
 
 ### Soft Q-Learing 
 这一节给出了表格形式的情况下如何去优化目标函数，使用和EM算法类似的策略去优化，给定$\pi_0$优化$\pi_i$，给定$\pi_i$然后优化$\pi_0$。
