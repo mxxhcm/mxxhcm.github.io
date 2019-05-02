@@ -72,12 +72,13 @@ $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}
 & = \frac{e^{\alpha \cdot(h_{\theta_0}(a_t|s_t))}}   {\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right)^{\alpha}} 
       \cdot 
          \frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\ 
-& = \frac{e^{\alpha \cdot(h_{\theta_0}(a_t|s_t))}}  {\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right)^{\alpha}} 
+& = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t))}}  {\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right)^{\alpha}} 
       \cdot 
         \frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}\\ 
-& = \frac{e^{(h_{\theta_0}(a_t|s_t))} \cdot e^{\beta f_{\theta_i}(a_t|s_t) }}{\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right)^{\alpha} 
-      \cdot 
-        e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}\\
+& = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t))} \cdot e^{\beta f_{\theta_i}(a_t|s_t) }}
+         {\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right)^{\alpha} \cdot {\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}\\
+& = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t)) + \beta f_{\theta_i}(a_t|s_t) }}
+         {\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right)^{\alpha} \cdot {\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}\\
 & = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}  {\sum_{a'}e^{(\alpha h_{\theta_0}(a'|s_t) + \beta f_{\theta_i}(a'|s_t))}} 
 \end{align\*}
 所以：
