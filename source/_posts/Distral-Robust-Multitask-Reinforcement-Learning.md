@@ -61,15 +61,13 @@ $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \hat{Q}_i(a_t|s_t)-\beta \hat{V}(s_t)\right)}\\ 
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \hat{A}_i(a_t|s_t)\right)}\\ 
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \left(f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)\right)}\\ 
-\end{align\*}
-\begin{align\*}
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\ 
-
 & = \left(\frac{e^{(h_{\theta_0}(a_t|s_t))}}{\sum_{a'}e^{h_{\theta_0}(a'|s_t)}}\right)^{\alpha}e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\ 
-
 & = \left(\frac{e^{(h_{\theta_0}(a_t|s_t))}}{\sum_{a'}e^{h_{\theta_0}(a'|s_t)}}\right)^{\alpha} 
       \cdot 
        \frac{e^{\beta f_{\theta_i}(a_t|s_t)}}   {e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\ 
+\end{align\*}
+\begin{align\*}
 
 & = \frac{\left(e^{(h_{\theta_0}(a_t|s_t))}\right)^{\alpha}}  {\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right^{\alpha}} 
       \cdot 
