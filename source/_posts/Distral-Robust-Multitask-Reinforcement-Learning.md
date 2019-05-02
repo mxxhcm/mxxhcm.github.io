@@ -102,7 +102,7 @@ $$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t
              \right)
         \right)
 \right]\\
-& + \qquad \frac{\alpha}{\beta}\sum_i\mathbb{E}_{\hat{\pi}_i}
+& \qquad +\frac{\alpha}{\beta}\sum_i\mathbb{E}_{\hat{\pi}_i}
 \left[
     \sum_{t\ge 1}\gamma^t\sum_{a'_t}
         \left(
