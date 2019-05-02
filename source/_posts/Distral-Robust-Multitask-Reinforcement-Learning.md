@@ -29,26 +29,25 @@ mathjax: true
 一个multitask RL任务中，假设有$n$个任务，折扣因子为$\gamma$，它们的state space和action space是相同的，但是每个任务$i$的状态转换概率$p_i(s'|s,a)$和奖励函数$R_i(s,a)$是不同的，用$\pi_i$表示第$i$个任务的stochastic polices。给定从一些初始状态开始的state和action联合分布的轨迹，用$\pi_i$表示dynamics和polices。
 作者通过优化一个expected return和policy regularization组成的目标函数将学习不同任务的policy联系起来。用$\pi_0$表示要提取的shared policy，然后通过使用$\pi_0$和$\pi_i$的KL散度$\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(s_t|a_t)}\right]$正则化使所有的策略$\pi_i$向$\pi_0$移动。此外，作者还使用了一个带折扣因子的entropy正则化项鼓励exploration。系统越混乱，entropy越大，所以exploration越多，采取的动作越随机，entropy就越大。最后总的优化目标就变成了：
 \begin{align\*}
-J(\pi_0, \{\pi_i\}_{i=1}^n) &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^tlog\pi(a_t|s_t)\right]\\
+J(\pi_0, \{\pi_i\}_{i=1}^n) &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^tlog\pi_i(a_t|s_t)\right]\\
 &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
 \end{align\*}
-其中，$c_{KL},c_{Ent}\ge 0$是KL和entropy regularization大小的超参数，这里的$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}，log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action，而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，所有任务的正则化项$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale是不同的，可以根据具体情况给每个任务都设定不同的系数。
+其中，$c_{KL},c_{Ent}\ge 0$是KL和entropy regularization大小的超参数，这里的$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}，log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action，而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，所有任务的正则化系数$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale不同，可以根据具体情况给相应任务设定相应系数。
 
 ### Soft Q-Learing 
-这一节给出了表格形式的情况下如何去优化这个目标函数。这里使用了和EM算法类似的策略去优化这个目标函数，给定$\pi_0$优化$\pi_i$，给定$\pi_i$然后优化$\pi_0$。
+这一节给出了表格形式的情况下如何去优化目标函数，使用和EM算法类似的策略去优化，给定$\pi_0$优化$\pi_i$，给定$\pi_i$然后优化$\pi_0$。
 当$\pi_0$固定的时候，式子(1)可以分解成每个任务的最大化问题，即优化每个任务的entropy　regularized expected return 和regularized reward $R'_i(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\pi_0(a|s)$，可以使用G-learning来优化。根据G-learning的证明，给定$\pi_0$，我们能得到以下的关系：
 $$\pi_i(a_t|s_t) = \pi_0^{\alpha}(a_t|s_t)e^{\beta Q_i(a_t|s_t)-\beta V(s_t)} = \pi_0^{\alpha}(a_t|s_t)e^{\beta A_i(a_t|s_t)} \tag{2}$$
-其中$hiA_i(s,a) = Q_i(s,a)-V_i(s)$是advantage function，$\pi_0$可以看成是一个policy prior，**需要注意的是这里多了一个指数$\alpha \lt 1$，这是多出来的entropy项的影响，soften了$\pi_0$对$\pi_i$的影响**。
+其中$A_i(s,a) = Q_i(s,a)-V_i(s)$是advantage function，$\pi_0$可以看成是一个policy prior，**需要注意的是这里多了一个指数$\alpha \lt 1$，这是多出来的entropy项的影响，soften了$\pi_0$对$\pi_i$的影响**。
 V和S是一种新定义的state value和action value。使用推导出来的softened Bellman公式更新state value $V_i$和action value $Q_i(s,a)$的值：
 $$V_i(s_t) = \frac{1}{\beta} log\sum_{a_t}\pi_0^{\alpha}(a_t|s_t)e^{\beta Q_i(s_t,a_t)} \tag{3}$$
 $$Q_i(s_t,a_t) = R_i(s_t, a_t)+ \gamma \sum_{s_t}p_i(s_{t+1}|s_t,a_t)V_i(s_{t+1}) \tag{4}$$
-这个Bellman update公式是softened的，因为state value $V_i$在actions上的max操作被温度$\beta$倒数上的soft-max操作代替了，当$\beta\rightarrow\infty$时，就变成了max 操作，这里有些不明白。为什么呢？这个我不理解有什么关系，这是这篇文章给出的解释。
-**按照我的理解，这个和我们平常使用Bellman 期望公式或者最优等式没有什么关系，只是给了一种新的更新Q值和V值的方法。实际上，这两个公式都是根据推导给出的定义。**
+这个Bellman update公式是softened的，因为state value $V_i$在actions上的max操作被温度$\beta$倒数上的soft-max操作代替了，当$\beta\rightarrow\infty$时，就变成了max 操作，这里有些不明白。为什么呢？这个我不理解有什么关系，这是这篇文章给出的解释。**按照我的理解，这个和我们平常使用Bellman 期望公式或者最优等式没有什么关系，只是给了一种新的更新Q值和V值的方法。实际上，这两个公式都是根据推导给出的定义。**
 还有一点：$\pi_0$是学出来的，而不是手动选出来的。式子(1)中和$\pi_0$相关的只有：
 $$\frac{\alpha}{\beta}\sum_i\mathbb{E_{\pi_i}}\left[\sum_{t\ge 0}\gamma^tlog\pi_0(a_t|s_t) \right]\tag{5}$$
 可以看出来，这是使用$\pi_0$去拟合一个混合的带折扣因子$\gamma$的state-action分布，可以使用最大似然估计来求解，如果是非表格情况的话，可以使用stochastic gradient ascent进行优化，但是需要注意的是本文中作者使用的目标函数多了一个KL散度。另一个区别是本文的distilled policy可以作为下一步要优化的task policy的反馈。
-这里考虑以下为什么要多加一个entropy regularization。假设如果没有正则化项的话，也就是式子(2)中的$\alpha = 1$，这里考虑以下$n=1$时的例子，这样子式子(5)在$\pi_0=\pi_1$的时候最大，KL散度为$0$，这样子就目标函数就退化成了一个没有正则化项的expected return，最终策略$\pi_1$会收敛到一个局部最优值。**和TRPO的一个比较？？？未完待续。。。。**
-如果$\alpha\lt 1$，即式(1)中有一个额外的entropy项。这样即使$\pi_0=\pi_1$，$KL(\pi_1||\pi_0)=0$，式子(1)也无法通过greedy策略进行最大化，式子(1)这时候就变成了entropy正则化的expected return，正则化系数$\beta'=\frac{\beta}{1-\alpha} = \frac{1}{c_{Ent}}$，所以最优的策略就是在$\beta'$处的Boltzmann policy。通过添加这个entropy项，可以保证策略不是greedy的，可以通过调整$c_{Ent}$的大小来调整exploration。
+这里考虑以下为什么作者要多加一个entropy正则项？如果不加entropy正则化，也就是式子$(2)$中的$\alpha = 1$，考虑$n=1$时的例子，式子$(5)$在$\pi_0=\pi_1$的时候最大，KL散度为$0$，目标函数退化成了一个没有正则化项的expected return，最终策略$\pi_1$会收敛到一个局部最优值。**和TRPO的一个比较？？？未完待续。。。。**
+如果$\alpha\lt 1$，即式(1)中有一个额外的entropy项。这样即使$\pi_0=\pi_1$，$KL(\pi_1||\pi_0)=0$，也无法通过greedy策略最大化式子$(1)$，式子$(1)$这时候就变成了entropy正则化的expected return，正则化系数$\beta'=\frac{\beta}{1-\alpha} = \frac{1}{c_{Ent}}$，所以最优的策略就是在$\beta'$处的Boltzmann policy。通过添加这个entropy项，可以保证策略不是greedy的，可以通过调整$c_{Ent}$的大小来调整exploration。
 最开始的时候，exploration是在multitask任务上加的，如果有多个任务，一个很简单，而其他的很复杂，如果先遇到了简单任务，没有加entropy的话，最后就会收敛到最简单任务的greedy策略，这样子就无法充分探索其他任务的，导致陷入到次优解。对于single-task的RL来说，在A3C中提出用entropy取应对过早的收敛，作者在这里推广到了multitask任务上。
 
 ### Policy Gradient and a Better Parameterization
