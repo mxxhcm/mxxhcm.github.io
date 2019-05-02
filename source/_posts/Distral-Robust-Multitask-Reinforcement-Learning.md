@@ -69,6 +69,7 @@ $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}
 & = \frac{\left(e^{(h_{\theta_0}(a_t|s_t))}\right)^{\alpha}}  {\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right^{\alpha}} 
       \cdot 
          \frac{e^{\beta f_{\theta_i}(a_t|s_t)}}   {e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\ 
+\end{align\*}
 & = \frac{e^{\alpha \cdot(h_{\theta_0}(a_t|s_t))}}   {\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right)^{\alpha}} 
       \cdot 
          \frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\ 
@@ -79,7 +80,6 @@ $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}
       \cdot 
         e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}\\
 & = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}  {\sum_{a'}e^{(\alpha h_{\theta_0}(a'|s_t) + \beta f_{\theta_i}(a'|s_t))}} 
-\end{align\*}
 所以：
 $$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t))}=\frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}{\sum_{a'}e^{(\alpha h_{\theta_0}(a'|s_t) + \beta f_{\theta_i}(a'|s_t))}} \tag{8}$$
 这可以看成policy的一个两列架构，一列是提取的shared policy，一列是将$\pi_0$应用到task $i$上需要做的一些调整。
