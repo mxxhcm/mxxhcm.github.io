@@ -94,7 +94,7 @@ $$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t
 关于$\theta_0$的梯度如下：
 \begin{align\*}
 \nabla_{\theta_0}J
-& = \mathbb_{\hat{\pi}_i}\\
+& = \mathbb_{{\pi}_i}\\
 \end{align\*}
 \left[\sum_{t\gt 1} \nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t) \right]
 \left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right)
