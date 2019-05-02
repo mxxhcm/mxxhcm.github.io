@@ -26,13 +26,13 @@ mathjax: true
 ![figure1](/figure1.png)
 
 ### 数学框架
-一个multitask RL任务中，假设有$n$个任务，折扣因子为$\gamma$，不同任务的state space和action space都是相同的，但是每个任务$i$的状态转换概率$p_i(s'|s,a)$和奖励函数$R_i(s,a)$是不同的，用$\pi_i$表示task-specific的stochastic polices。给定从一些初始状态开始的state和action轨迹，用$\pi_i$表示dynamics和polices。
-作者通过优化一个由expected return和policy regularization组成的目标函数将这两个过程联系起来。用$\pi_0$表示要提取的shared policy，然后通过使用$\pi_0$和$\pi_i$的KL散度$\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(s_t|a_t)}\right]$正则化项使用每个任务的策略$\pi_i$向$\pi_0$移动。此外，作者还使用了一个带折扣因子的entropy正则化项鼓励exploration。最后总的优化目标是：
+一个multitask RL任务中，假设有$n$个任务，折扣因子为$\gamma$，它们的state space和action space是相同的，但是每个任务$i$的状态转换概率$p_i(s'|s,a)$和奖励函数$R_i(s,a)$是不同的，用$\pi_i$表示第$i$个任务的stochastic polices。给定从一些初始状态开始的state和action联合分布的轨迹，用$\pi_i$表示dynamics和polices。
+作者通过优化一个expected return和policy regularization组成的目标函数将学习不同任务的policy联系起来。用$\pi_0$表示要提取的shared policy，然后通过使用$\pi_0$和$\pi_i$的KL散度$\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(s_t|a_t)}\right]$正则化使所有的策略$\pi_i$向$\pi_0$移动。此外，作者还使用了一个带折扣因子的entropy正则化项鼓励exploration。系统越混乱，entropy越大，所以exploration越多，采取的动作越随机，entropy就越大。最后总的优化目标就变成了：
 \begin{align\*}
 J(\pi_0, \{\pi_i\}_{i=1}^n) &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^tlog\pi(a_t|s_t)\right]\\
-&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t\alpha}{\beta}log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}log\pi(a_t|s_t)\right], \tag{1}
+&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
 \end{align\*}
-其中，$c_{KL},c_{Ent}\ge 0$是确定KL和entropy regularization大小的标量，这里的$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}，log\pi_0(a_t|s_t)$可以查看reward shaping鼓励大概率的action，而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，所有任务的正则化项$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale是不同的，可以根据具体情况给每个任务都设定不同的系数。
+其中，$c_{KL},c_{Ent}\ge 0$是KL和entropy regularization大小的超参数，这里的$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}，log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action，而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，所有任务的正则化项$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale是不同的，可以根据具体情况给每个任务都设定不同的系数。
 
 ### Soft Q-Learing 
 这一节给出了表格形式的情况下如何去优化这个目标函数。这里使用了和EM算法类似的策略去优化这个目标函数，给定$\pi_0$优化$\pi_i$，给定$\pi_i$然后优化$\pi_0$。
