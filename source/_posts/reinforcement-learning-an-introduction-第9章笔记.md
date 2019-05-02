@@ -29,5 +29,5 @@ $$\bar{VE}(\mathbf{w}) = \sum_{s\in S}\mu(s)[v_{\pi}(s) - \hat{v}(s, \mathbf{w})
 $$\eta(s) = h(s) + \sum_{\bar{s}}\eta(\bar{s})\sum_a\pi(a|\bar{s})p(s|\bar{s},a), forall\ s \in S$$
 其中$\bar{s}$是$s$的前一个状态，$s$处的时间为以状态$s$开始的概率$h(s)$加上它由前一个状态$\bar{s}$转换过来消耗的时间。
 列出一个方程组，可以解出来$\eta(s)$的期望值。然后进行归一化，得到：
-$$\mu(s)=\frac{\eta{s}}{\sum_s'\eta{s'}}, \forall s \in S.$$
+$$\mu(s)=\frac{\eta{s}}{\sum_{s'}\eta{s'}}, \forall s \in S.$$
 这是没有折扣因子的式子，如果有折扣因子的话，可以看成一种形式的

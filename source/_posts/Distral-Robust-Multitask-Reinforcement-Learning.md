@@ -87,9 +87,9 @@ $$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t
 使用参数化的$\pi_0, \pi_i$，首先推导策略相对于$\pi_i$的梯度（policy gradient的推导，这里是直接应用了)：
 \begin{align\*}
 \nabla_{\theta_i}J& = \mathbb{E}_{\hat{\pi}_i}\left[\left(\sum_{t\gt 1} \nabla_{\theta_i}log{\hat{\pi}}_i(a_t|s_t)\right) \left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right]\\
-& = \mathbb{E}_{\hat{\pi}_i}\left[\sum_{t\gt 1} \nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right] \tag{9}\\
+& = \mathbb{E}_{\hat{\pi}_i}\left[\sum_{t\gt 1} \nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\left(\sum_{u\ge t}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right] \tag{9}\\
 \end{align\*}
-其中$R_i^{reg}(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\hat{\pi}_0(a|s) - \frac{1}{\beta}log\hat{\pi}_i(a|s)$是正则化后的reward，注意，这里$\mathbb{E}_{\hat{\pi}_i}\left[\nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\right] = 0$，因为log-derivative trick。如果有一个value baseline，那么为了减少梯度的方差，可以从正则化后的returns中减去它。
+其中$R_i^{reg}(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\hat{\pi}_0(a|s) - \frac{1}{\beta}log\hat{\pi}_i(a|s)$是正则化后的reward。注意，这里$\mathbb{E}_{\hat{\pi}_i}\left[\nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\right] = 0$，因为log-derivative trick。如果有一个value baseline，那么为了减少梯度的方差，可以从正则化后的returns中减去它。
 关于$\theta_0$的梯度如下：
 \begin{align\*}
 \nabla_{\theta_0}J
@@ -111,13 +111,13 @@ $$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t
             \nabla_{\theta_0}h_{\theta_0}(a'_t|s_t)
 \right] \tag{10}
 \end{align\*}
-其中的第一项和$\pi_i$一样，这里多了第二项，第二项是尽量匹配$\hat{\pi}_i,\hat{\pi}_0$的概率，如果不使用KL散度的话，这里就不会有第二项了。KL正则是为了让$\pi_0$在$\pi_i$的质心上，即$\hat{\pi}_0(a'_t|s_t) = \frac{1}{n}\sum_i\hat{\pi}_i(a'_t|s_t)$，最后第二项就为$0$了，可以快速的将公共信息迁移到新任务上。
+第一项和$\pi_i$一样，第二项是让$\hat{\pi}_i,\hat{\pi}_0$的概率尽可能接近。如果不使用KL散度的话，这里就不会有第二项了。KL正则是为了让$\pi_0$在$\pi_i$的质心上，即$\hat{\pi}_0(a'_t|s_t) = \frac{1}{n}\sum_i\hat{\pi}_i(a'_t|s_t)$，最后第二项就为$0$了，可以快速的将公共信息迁移到新任务上。
 和ADMM,EASGD等在参数空间上进行优化不同的是，Distral是在策略空间上进行优化，这样子在语义上更有意义，对于稳定学习过程很重要。
 本文的方法通过添加了entropy正则化和KL正则化，使得算法可以分开控制每个任务迁移的信息大小和exploration程序。
 
 ## 算法
 上面给出的框架可以对不同的目标函数，算法和架构进行组合，然后生成一系列算法实例。
-- KL散度和entropy：当$\alpha=0$时，只有entorpy，没有耦合，在不同任务中进行迁移，当$\alpha=1$时，只有KL散度，耦合，在不同任务中进行迁移，但是如果$\pi_i,\pi_0$很相似的话，会过早的停止探索。当$0\lt \alpha \lt 1$时，KL散度和entropy都有。
+- KL散度和entropy：当$\alpha=0$时，只有entorpy，不同任务之间没有耦合，在不同任务中进行迁移。当$\alpha=1$时，只有KL散度，不同任务之间有耦合，在不同任务中进行迁移，但是如果$\pi_i,\pi_0$很像的话，会过早的停止探索。当$0\lt \alpha \lt 1$时，KL散度和entropy都有。
 - 迭代优化还是联合优化：可以选择同时优化$\pi_0,\pi_i$，也可以固定其中一个，优化另一个。迭代优化和actor-mimic以及policy-distilled有一些相似，但是Distral是迭代进行的，$\pi_0$会对$\pi_i$的优化提供反馈。尽管迭代优化可能会很慢，但是从actor-mimic等的结果来看，可能它会更稳定。
 - Separate还是two-column参数化：这里的意思是$\pi_i$是否使用式子(8)中的$\pi_0$，如果用的话，$\pi_0$中提取到的信息可以立刻用到$\pi_i$上，transfer可以更快。但是如果transfer的太快的话，可能会抑制在单个任务上exploration的有效性。。
 
