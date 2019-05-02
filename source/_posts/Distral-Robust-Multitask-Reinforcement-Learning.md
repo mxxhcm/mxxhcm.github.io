@@ -52,8 +52,8 @@ $$\frac{\alpha}{\beta}\sum_i\mathbb{E_{\pi_i}}\left[\sum_{t\ge 0}\gamma^tlog\pi_
 ### Policy Gradient and a Better Parameterization
 上面一节讲的是表格形式的计算，给定$\pi_0$，首先求解出$\pi$对应的$V$和$Q$，然后写出$\pi_i$的解析。但是如果我们用神经网络等函数去拟合$V$和$Q$，$V$和$Q$的求解特别慢，这里使用梯度下降同时优化task polices和distilled policy。这种情况下，$\pi_i$的梯度更新通过求带有entropy正则化的return即可求出来，并且可以放在如actor-critic之类的框架中。
 每一个$\pi_i$都用一个单独的网络表示，$\pi_0$也用一个单独的网络表示，用$\theta_0$表示$\pi_0$的参数，对应的policy表示为：
-$$\hat{\pi_0}(a_t|s_t) = \frac{e^{(h_{\theta_0}(a_t|s_t)}}{\sum_{a'}e^{h_{\theta_0}(a'|s_t)}} \tag{6}$$
-使用参数为$\theta_i$的神经网络表示$Q$值，用f_{\theat_i}$表示第$\pi$的$Q$值，用$Q$表示$V$，再估计$A=Q-V$的值：
+$$\hat{\pi_0}(a_t|s_t) = \frac{e^{(h_{\theta_0}(a_t|s_t))}}{\sum_{a'}e^{h_{\theta_0}(a'|s_t)}} \tag{6}$$
+使用参数为$\theta_i$的神经网络表示$Q$值，用$f_{\theat_i}$表示第$i$个策略$\pi$的$Q$值，用$Q$表示$V$，再估计$A=Q-V$的值：
 $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)} \tag{7}$$
 将式子$(7)$代入式子$(2)$得第$i$个任务的policy可以参数化为：
 \begin{align\*}
@@ -62,7 +62,8 @@ $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \hat{A}_i(a_t|s_t)\right)}\\ 
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \left(f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)\right)}\\ 
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\ 
-& = \left(\frac{e^{(h_{\theta_0}(a_t|s_t)}}{\sum_{a'}e^{h_{\theta_0}(a'|s_t)}}\right)^{\alpha}e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\ 
+& = \left(\frac{e^{(h_{\theta_0}(a_t|s_t))}}{\sum_{a'}e^{h_{\theta_0}(a'|s_t)}}\right)^{\alpha}e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\ 
+& =\frac{e^{(h_{\theta_0}(a_t|s_t))}e^{\beta f_{\theta_i}(a_t|s_t) }}{\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)\right)^{\alpha}}e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}\\
 & = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}{\sum_{a'}e^{(\alpha h_{\theta_0}(a'|s_t) + \beta f_{\theta_i}(a'|s_t))}} 
 \end{align\*}
 所以：
