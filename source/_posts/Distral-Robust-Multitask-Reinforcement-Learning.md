@@ -34,14 +34,12 @@ J(\pi_0, \{\pi_i\}_{i=1}^n) &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^
 &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{KL}\gamma^t)log\pi_i(a_t|s_t)\right]\\
 &=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
 \end{align\*}
-其中$c_{KL},c_{Ent}\ge 0$是控制KL散度正则化项和entropy正则化项大小的超参数，$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}，而log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action，而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，所有任务的正则化系数$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale不同，可以根据具体情况给相应任务设定相应系数。
+其中$c_{KL},c_{Ent}\ge 0$是控制KL散度正则化项和entropy正则化项大小的超参数，$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}。log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action；而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，设置所有任务的正则化系数$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale不同，可以根据具体情况给相应任务设定相应系数。
 
 ### Soft Q-Learing 
-这一节给出了表格形式的情况下如何去优化目标函数，使用和EM算法类似的策略去优化，给定$\pi_0$优化$\pi_i$，给定$\pi_i$然后优化$\pi_0$。
-当$\pi_0$固定的时候，式子(1)可以分解成每个任务的最大化问题，即优化每个任务的entropy　regularized expected return 和regularized reward $R'_i(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\pi_0(a|s)$，可以使用G-learning来优化。根据G-learning的证明，给定$\pi_0$，我们能得到以下的关系：
+这一节在表格形式的情况下使用和EM算法类似的策略优化目标函数－－给定$\pi_0$优化$\pi_i$，给定$\pi_i$然后优化$\pi_0$。当$\pi_0$固定的时候，式子(1)可以分解成每个任务的最大化问题，即优化每个任务的entropy正则化return，return使用的是正则化reward $R'_i(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\pi_0(a|s)$，正则化后的return可以使用G-learning来优化（这里说的应该是原来的return和R什么都没，这里都加上了正则化）。根据Soft Q-Learning(G-learning)的证明，给定$\pi_0$，我们能得到以下的关系：
 $$\pi_i(a_t|s_t) = \pi_0^{\alpha}(a_t|s_t)e^{\beta Q_i(a_t|s_t)-\beta V(s_t)} = \pi_0^{\alpha}(a_t|s_t)e^{\beta A_i(a_t|s_t)} \tag{2}$$
-其中$A_i(s,a) = Q_i(s,a)-V_i(s)$是advantage function，$\pi_0$可以看成是一个policy prior，**需要注意的是这里多了一个指数$\alpha \lt 1$，这是多出来的entropy项的影响，soften了$\pi_0$对$\pi_i$的影响**。
-V和S是一种新定义的state value和action value。使用推导出来的softened Bellman公式更新state value $V_i$和action value $Q_i(s,a)$的值：
+其中$A_i(s,a) = Q_i(s,a)-V_i(s)$是advantage function，$\pi_0$可以看成是一个policy prior，**需要注意的是这里多了一个指数$\alpha \lt 1$，这是多出来的entropy项的影响，soften了$\pi_0$对$\pi_i$的影响**。$V$和$Q$是新定义的一种state value和action value，使用推导的softened Bellman公式更新：
 $$V_i(s_t) = \frac{1}{\beta} log\sum_{a_t}\pi_0^{\alpha}(a_t|s_t)e^{\beta Q_i(s_t,a_t)} \tag{3}$$
 $$Q_i(s_t,a_t) = R_i(s_t, a_t)+ \gamma \sum_{s_t}p_i(s_{t+1}|s_t,a_t)V_i(s_{t+1}) \tag{4}$$
 这个Bellman update公式是softened的，因为state value $V_i$在actions上的max操作被温度$\beta$倒数上的soft-max操作代替了，当$\beta\rightarrow\infty$时，就变成了max 操作，这里有些不明白。为什么呢？这个我不理解有什么关系，这是这篇文章给出的解释。**按照我的理解，这个和我们平常使用Bellman 期望公式或者最优等式没有什么关系，只是给了一种新的更新Q值和V值的方法。实际上，这两个公式都是根据推导给出的定义。**
