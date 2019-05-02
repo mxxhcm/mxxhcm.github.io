@@ -63,7 +63,7 @@ $$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta \left(f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)\right)}\\ 
 & = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\ 
 & = \left(\frac{e^{(h_{\theta_0}(a_t|s_t))}}{\sum_{a'}e^{h_{\theta_0}(a'|s_t)}}\right)^{\alpha}e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\ 
-& =\frac{e^{(h_{\theta_0}(a_t|s_t))}e^{\beta f_{\theta_i}(a_t|s_t) }}{\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)\right)^{\alpha}}e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}\\
+& = \frac{e^{(h_{\theta_0}(a_t|s_t))} \cdot e^{\beta f_{\theta_i}(a_t|s_t) }}{\left(\sum_{a'}e^{h_{\theta_0}(a'|s_t)}\right)^{\alpha} \cdot e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}\\
 & = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}{\sum_{a'}e^{(\alpha h_{\theta_0}(a'|s_t) + \beta f_{\theta_i}(a'|s_t))}} 
 \end{align\*}
 所以：
