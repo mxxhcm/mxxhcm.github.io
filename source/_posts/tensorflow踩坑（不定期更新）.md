@@ -111,6 +111,32 @@ writer.add_summary(merged_, global_step)
 
 使用tensorboard --logdir ./summary/打开tensorboard
 
+### tf.multinomial
+多项分布，采样。
+如下示例
+``` python
+import tensorflow as tf
+
+# tf.multinomial(logits, num_samples, seed=None, name=None)
+# logits 是一个二维张量，指定概率，num_samples是采样个数
+sess = tf.Session()
+sample = tf.multinomial([[5.0, 5.0, 5.0], [5.0, 4, 3]], 10) # 注意logits必须是float
+for _ in range(5):
+  print(sess.run(sample))
+```
+输出结果如下:
+> [[2 1 2 1 0 2 1 1 1 0]
+ [1 0 0 1 0 1 0 1 0 0]]
+[[2 2 0 2 2 0 2 0 1 2]
+ [1 0 0 2 0 1 0 1 1 0]]
+[[0 0 0 2 0 0 1 2 0 1]
+ [0 0 0 1 0 1 0 0 0 0]]
+[[2 1 0 1 1 1 0 0 2 0]
+ [1 0 0 2 0 0 0 0 0 1]]
+[[1 0 1 0 0 1 2 2 0 0]
+ [1 0 0 0 0 1 1 1 2 0]]
+
+
 ## 参考文献
 1.https://github.com/tensorflow/tensorflow/issues/4842
 2.https://www.bilibili.com/read/cv681031/
