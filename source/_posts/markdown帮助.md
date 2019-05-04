@@ -20,5 +20,4 @@ import tensorflow as tf
 |  name | age | gender|
 | :-: | :-: | :-: |
 |Alice|11 | female|  
-| Bob| 8 | male |
-
+| Bob| 82 | male |
