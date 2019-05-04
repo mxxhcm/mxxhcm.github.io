@@ -109,6 +109,7 @@ tensor([7., 7., 7.])
 这个库和gym.space库很相似，都是提供一些分布，然后从中采样。
 常见的有ExponentialFamily,Bernoulli,Binomial,Categorical,Exponential,Gamma,Independent,Laplace,Multinomial,MultivariateNormal。这里不做过程陈述，可以看[gym](http://localhost:4000/2019/04/12/gym%E4%BB%8B%E7%BB%8D/)中。
 ### Categorical
+对应tensorflow中的[tf.multinomial](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py)。
 类原型：
 ``` python
 CLASS torch.distributions.categorical.Categorical(probs=None, logits=None, validate_args=None)

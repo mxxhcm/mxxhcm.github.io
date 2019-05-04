@@ -10,9 +10,9 @@ categories: python
 
 ## 对应
 |tensorflow | pytorch|
-|-|-|
-|[tf.maximum]() |  torch.max|
-|[tf.multinomial](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/multinominal.py)|torch.distributions.Categorical|
+|:-:|:-:|
+|[tf.maximum](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py) |  torch.max|
+|[tf.multinomial](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py)|[torch.distributions.Categorical](https://github.com/mxxhcm/myown_code/blob/master/pytorch/pytorch_test/torch_distribution.py)|
 |tensor.shape| tensor.size()|
 
 ## 参考文献

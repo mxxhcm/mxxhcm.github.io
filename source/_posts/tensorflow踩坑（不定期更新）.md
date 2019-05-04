@@ -113,7 +113,7 @@ writer.add_summary(merged_, global_step)
 
 ### tf.multinomial
 多项分布，采样。
-如下示例
+如下[示例](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py)
 ``` python
 import tensorflow as tf
 
@@ -139,7 +139,7 @@ for _ in range(5):
 ### tf.max
 #### tf.maximum
 比较两个tensor，返回element-wise两个tensor的最大值。
-如下[示例]()：
+如下[示例](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py)：
 ``` python
 import tensorflow as tf
 
