@@ -136,6 +136,29 @@ for _ in range(5):
 [[1 0 1 0 0 1 2 2 0 0]
  [1 0 0 0 0 1 1 1 2 0]]
 
+### tf.max
+#### tf.maximum
+比较两个tensor，返回element-wise两个tensor的最大值。
+如下[示例]()：
+``` python
+import tensorflow as tf
+
+sess = tf.Session()
+a = tf.Variable([1, 2, 3])
+b = tf.Variable([2, 1, 4])
+
+sess.run(tf.global_variables_initializer())
+print("a: ", sess.run(a))
+print("b: ", sess.run(b))
+c = tf.maximum(a, b)
+
+print("tf.maximum(a, b):\n  ", sess.run(c))
+```
+输出如下：
+> a:  [1 2 3]
+b:  [2 1 4]
+tf.maximum(a, b):
+   [2 2 4]
 
 ## 参考文献
 1.https://github.com/tensorflow/tensorflow/issues/4842
