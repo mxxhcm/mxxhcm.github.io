@@ -11,8 +11,8 @@ categories: python
 ## 对应
 |tensorflow | pytorch|
 |:-:|:-:|
-|[tf.maximum](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py) |  torch.max|
-|[tf.multinomial](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py)|[torch.distributions.Categorical](https://github.com/mxxhcm/myown_code/blob/master/pytorch/pytorch_test/torch_distribution.py)|
 |tensor.shape| tensor.size()|
+|[tf.maximum](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py) |  [torch.max](https://github.com/mxxhcm/myown_code/blob/master/pytorch/pytorch_test/torch_max.py)|
+|[tf.multinomial](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py)|[torch.distributions.Categorical](https://github.com/mxxhcm/myown_code/blob/master/pytorch/pytorch_test/torch_distribution.py)|
 
 ## 参考文献
