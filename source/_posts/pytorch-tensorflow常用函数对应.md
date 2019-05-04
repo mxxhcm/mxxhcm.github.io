@@ -8,9 +8,11 @@ tags:
 categories: python
 ---
 
+## 对应
+|tensorflow | pytorch|
 |-|-|
 |[tf.maximum]() |  torch.max|
 |[tf.multinomial](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/multinominal.py)|torch.distributions.Categorical|
 |tensor.shape| tensor.size()|
 
-
+## 参考文献
