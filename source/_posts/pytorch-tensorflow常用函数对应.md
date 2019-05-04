@@ -11,3 +11,4 @@ categories: python
 |:-:|:-:|
 |tf.maximum |  torch.max|
 |tf.multinomial|torch.distributions.Categorical|
+|tensor.shape| tensor.size()|
