@@ -17,8 +17,8 @@ import tensorflow as tf
 
 
 ## 表格
-  name | age | gender
- :-: | :-: | :-: 
-Alice|12 | female  
- Bob| 8 | male 
+|  name | age | gender|
+| :-: | :-: | :-: |
+|Alice|11 | female|  
+| Bob| 8 | male |
 
