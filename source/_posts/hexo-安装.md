@@ -35,9 +35,15 @@ ERROR Try running: 'npm install hexo --save'
 ~\\$:sudo npm install -g hexo-cli
 
 ## 配置
+以下二选一
 创建文件夹
 ~\\$:git clone your repo
 或者直接
 ~\\$:hexo init your repo
+
 安装依赖包
 ~\\$:npm install 
+解决问题
+参见[参考文献](https://mxxhcm.github.io/2019/04/26/hexo-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/)
+
+
