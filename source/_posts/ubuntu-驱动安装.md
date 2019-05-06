@@ -8,7 +8,9 @@ categories: 工具
 maxhjax: true
 ---
 
-## 步骤
+
+## 方法1.命令行安装
+### 步骤
 卸载原有驱动
 ~\\$:sudo apt purge nvidia\*
 禁用nouveau
@@ -30,6 +32,24 @@ sudo chmod a+x NVIDIA-Linux-x86_64-375.66.run
 sudo sh NVIDIA-Linux-x86_64-375.66.run -no-opengl-files
 sudo reboot
 ```
+
+
+## 方法2.图形界面
+
+
+## 方法3.自动安装
+### 添加源
+~$:sudo add-apt-repository ppa:graphicsw-drivers/ppa
+~$:sudo apt update
+
+### 自动安装
+~$:sudo ubuntu-drivers devices
+~$:sudo ubuntu-drivers autoinstall
+
+### 更新grud
+~$:sudo vim /etc/default/grub
+将"splash"改为"splash acpi_osi=linux"
+~$:sudo update-grub
 
 ## 参考文献
 1.http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/

@@ -31,6 +31,7 @@ categories: linux
 
 
 ## 修改gcc版本
-~$:/usr/bin/gcc -v
-~$:sudo mv /usr/bin/gcc /usr/bin/gcc-x.x.x
+~$:sudo update-alternativess --install /usr/bin/cc cc /usr/local/gcc-4.6.0/bin/gcc-4.6 30
+~$:sudo update-alternativess --install /usr/bin/c++ c++ /usr/local/gcc-4.6.0/bin/g++-4.6 30
 
+~$:sudo update-alternativess --config cc
