@@ -51,5 +51,12 @@ sudo reboot
 将"splash"改为"splash acpi_osi=linux"
 ~$:sudo update-grub
 
+
+## 安装cuda 9.0
+到NVIDIA官网下载cuda 9.0的runfile，然后执行
+~$:sudo sh cuda\*.run
+
 ## 参考文献
 1.http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/
+
+
