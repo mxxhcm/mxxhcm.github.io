@@ -55,7 +55,7 @@ sudo reboot
 ## 安装cuda 9.0
 到NVIDIA官网下载cuda 9.0的runfile，然后执行
 ~$:sudo sh cuda\*.run
-### 报错
+### 测试报错
 > Error: unsupported compiler: 7.4.0. Use --override to override this check.
 
 安装gcc低版本
@@ -77,6 +77,20 @@ sudo reboot
 
 cuda安装在/usr/local/cuda-9.0 目录下
 卸载的话进入/usr/loca/cuda-9.0/bin 找到uninstall_cuda_9.0.pl运行卸载。
+
+### import tensorflow 报错
+> ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory
+Failed to load the native TensorFlow runtime.
+
+配置cuda环境变量
+在bashrc文件中加入
+export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+export CUDA_HOME=/usr/local/cuda
+执行
+~$:source ~/.bashrc
+
+继续报错
 
 ## 参考文献
 1.http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/
