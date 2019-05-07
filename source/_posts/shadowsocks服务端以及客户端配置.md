@@ -2,9 +2,8 @@
 title: shadowsocks服务端以及客户端配置
 date: 2019-03-04 13:03:57
 tags: 
- - 科学上网
  - shadowsocks
- - google
+ - linux
 categories: 工具
 mathjax: false
 ---
@@ -209,7 +208,13 @@ Requirement already satisfied: shadowsocks in /usr/local/lib/python2.7/dist-pack
 搜索cleanup，将其替换为reset
 具体位置在第52行libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)和第111行libcrypto.EVP_CIPHER_CTX_cleanup(self._ctx) 
 
-#### 2.2.3.开机自启shadowsocks client
+#### 2.2.3 手动运行后台挂起
+将所有的log重定向到~/.log/sslocal.log文件中
+~$:mkdir ~/.log
+~$:touch ~/.log/ss-local.log
+~$:nohup sslocal -c /etc/shadowsocks_v6.json \</dev/null &\>>~/.log/ss-local.log &
+
+#### 2.2.4.开机自启shadowsocks client
 但是这样子的话，每次开机都要重新运行上述命令，太麻烦了。可以写个开机自启脚本。执行以下命令：
 ~$:sudo vim /etc/init.d/shadowsocks
 内容为以下shell脚本
