@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="18.　碎片整理，文件写入的block太碎了，文件的读写性能太差，所以可以通过碎片整理将    一个文件的block回合在一起　FAT文件系统经常需要碎片整理,但是Ext2文件类型        是索引式文件系统，所以不太需要经常碎片整理的。  df 查询挂载的设备dumpe2fs [-bh]    查询每个区段以及superblock的信息 -b -h 仅列出superblock的数据 ls -">
+<meta name="keywords" content="linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux file system">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/05/07/linux-file-system/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="18.　碎片整理，文件写入的block太碎了，文件的读写性能太差，所以可以通过碎片整理将    一个文件的block回合在一起　FAT文件系统经常需要碎片整理,但是Ext2文件类型        是索引式文件系统，所以不太需要经常碎片整理的。  df 查询挂载的设备dumpe2fs [-bh]    查询每个区段以及superblock的信息 -b -h 仅列出superblock的数据 ls -">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-05-07T09:03:00.620Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="linux file system">
+<meta name="twitter:description" content="18.　碎片整理，文件写入的block太碎了，文件的读写性能太差，所以可以通过碎片整理将    一个文件的block回合在一起　FAT文件系统经常需要碎片整理,但是Ext2文件类型        是索引式文件系统，所以不太需要经常碎片整理的。  df 查询挂载的设备dumpe2fs [-bh]    查询每个区段以及superblock的信息 -b -h 仅列出superblock的数据 ls -">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/05/07/linux-file-system/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>linux file system | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-file-system/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">linux file system
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 17:02:37 / 修改时间：17:03:00" itemprop="dateCreated datePublished" datetime="2019-05-07T17:02:37+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/05/07/linux-file-system/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/05/07/linux-file-system/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>18.　碎片整理，文件写入的block太碎了，文件的读写性能太差，所以可以通过碎片整理将    一个文件的block回合在一起　FAT文件系统经常需要碎片整理,但是Ext2文件类型        是索引式文件系统，所以不太需要经常碎片整理的。</p>
+<ol>
+<li>df 查询挂载的设备<br>dumpe2fs [-bh]    查询每个区段以及superblock的信息<br> -b<br> -h 仅列出superblock的数据<br> ls -i 查看文件的inode编号<br> 目录并不一定只占一个block，当目录内的文件数太多时，会增加该目录            的block</li>
+</ol>
+<pre><code>df [-haiT]　[dir/file]    显示文件系统的整体磁盘用量
+    -a 列出所有的文件
+    -h 显示文件系统的大写，自行显示格式
+    -i 可用的inode
+    -T 联通分区文件系统的名称
+
+du [-ashkm] [dir/filename] 目录或者文件所占的容量
+    默认显示的是目录的容量，不包含文件
+    -s 该目录下所有文件的容量，不细列出来
+    -a 显示所有的目录与文件的容量
+    -h 以人们熟悉的大小方式显示出来
+    -k 以kb列出容量
+    -m 以mb列出容量:
+</code></pre><ol>
+<li>ln [-s] 链接文件<br>hard-link    硬链接，将某个目录下的block多写入一个数据,磁盘的inode与b            lock数量一般不会改变，磁盘容量也不会改变，而且删除一个文            件并不会响另一个文件的读写，但是其对于目录是没有作用的，            对于不同的文件系统也是没有用的。<br>sybomlic    </li>
+</ol>
+<p>21.磁盘分区　　格式化　检验与挂载</p>
+<pre><code>df + 目录  查看某个目录挂载的磁盘位置
+eg: df /
+
+sudo fdisk [-l]　+ 设备　输出后面设备所有的分区内容　如不加设备名称，列                    　出整个系统。
+
+新增或者删除分区
+sudo fdisk + 设备　　对设备进行操作  
+partprobe
+
+
+sudo mkfs [-t ext2/ext2/vfat] + 设备名　 将某个设备格式化为某种文件系统
+
+sudo mke2fs [-b block_size] [-i inode_size]  [-L 卷标] [-cj -c 检查磁盘                错误　-j 加入日志文件] + 设备名
+
+sudo fsck [-CAay] [-t filesystem] + 设备
+    -C  使用直方图显示进度
+    -A  依据/etc/fstab内容，扫描设备
+    -a  自动修复检查到的有问题的扇区
+    -y  与-a 类似
+    ext2 ext3 支持额外参数　　[-fD] -f 强制进入设备进行检查
+                    -D 对文件系统下的目录进行优化配                                置
+sudo badblocks [-sv] + 设备  -s 在屏幕上列出进度 -v 在屏幕上看到进度
+</code></pre><p>22.mount [-aoltnL] 挂载文件系统与磁盘 P227</p>
+<pre><code>-a　按照/etc/fstab的配置信息将所有未挂载的磁盘挂载上来
+-l　可增加label名称
+-t　加上文件类型
+-n　默认情况下会将挂载情况写入/etc/mtab，加入-n可以不写入
+-L　可以利用卷标名来挂载
+-o 加一些挂载时的额外参数　
+    ro(只读)　rw(可写)
+    async sync 此文件系统是否使用同步写入或者异步的内存机制
+    auto noauto 允许此分区以mount -a自动挂载(auto)
+    dev nodev 是否运行在此分区创建设备文件
+    suid nosuid 
+    exec noexec 是否可拥有可执行binary文件
+    user,nouer 设置user参数可以让一般user能对此分区挂载
+    defaults　默认为rw,suid,dev,exec,auto,nouser,async
+    remount 重新挂载，在系统出错，或者重新更新参数时
+mount 设备文件名　挂载点
+
+用卷标名挂载设备
+~#:mount -L mxx_logical /medic/mxx    
+
+用磁盘设备名挂载
+~#:mount /dev/sdb1 /mnt/usb
+
+~#:mount -t iso9660 /dev/cdrom /media/cdrom
+
+~#:mount -o remount,rw,auto /dir
+
+~#:mount -o loop ~/my.iso/myfile.iso /mnt/iso
+....
+</code></pre><p>23.磁盘参数修改<br>    设备用文件来代表    通过文件的major与minor数值来替代<br>                Major 主设备代码    Minor　次设备代码<br>                /dev/hd<em>  major = 3<br>                /dev/sd</em>  minor = 8<br>    mknod [bcp]<br>        b    设置设备名称成为一个外部存储文件，如硬盘<br>        c    设置设备名称成为一个外部输入文件，如鼠标/键盘<br>        p    设置设备名称成为一个FIFO文件</p>
+<pre><code>e2label /dev/sdb5 + 新的label名称
+
+tune2fs [-jlL]
+    -l  类似 dupme2fs -h 
+    -j  将ext2转换为ext3
+    -L  类似于　e2label 
+
+hdparm -Tt /dev/sd*  测试SATA硬盘的读取性能
+</code></pre><p>24.挂载.iso文件</p>
+<pre><code>mount -o loop /home/mxx/ubuntu16.04 /mnt/ubuntu16.04
+
+dd命令　创建一个大文件 
+dd if=/dev/zero of=/home/mxx/filename bs=1M count=512
+    if--input file    /dev/zero 一直输出0
+    of--output file    将if中的内容加入到of接的文件名中
+    bs--block size    
+    count    共有多少个bs
+</code></pre><p>25.构建swap空间</p>
+<pre><code>例如将第二快硬盘的第五个分区改为swap分区
+~#:sudo fdisk -l /dev/sdb
+    p
+    t 5
+    82
+    w
+    partprobe
+将/dev/sdb5更改为swap类型的文件系统
+
+~#:mkswap /dev/sdb5
+
+~#:free 查看memory以及swap分区的使用情况
+
+~#:swapon /dev/sdb5 使用/deb/sdb5的swap分区    
+~#:swapon -s 查看目前使用的swap设备有哪些
+~#:swapoff /dev/sdb5
+</code></pre><p>26.boost sector 与　superblock 的关系<br>    1.superblock的大小为1024b<br>    boost sector与superblock 各占一个block ,可以查看/boot的挂载目录<br>        0号block给boost ，1号block给superblock<br>    2.superblock的大小大于1024b,如为4096b<br>    superblock在0号blok ,但是superblock 只有1024b,所以为了防止空间浪费，于是        在0号block内，superblock(1024-2047),boost sector(0-1023),2048后            面的空间保留。<br>    实际情况中，由于在比较大的block中，我们能将引导装载程序安装到superblock            所在的0号block,但事实上还是安装到启动扇区的保留区域。<br>    比较正确的说法是，安装到文件系统最前面的1024b内的区域，就是启动扇区</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/linux/" rel="tag"># linux</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/07/linux-compress-uncompress/" rel="next" title="linux compress uncompress">
+                <i class="fa fa-chevron-left"></i> linux compress uncompress
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/07/linux-search-file-command/" rel="prev" title="linux search file command">
+                linux search file command <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">91</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">10</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">107</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
