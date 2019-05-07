@@ -28,6 +28,12 @@ Error: pandoc exited with code 7: pandoc: Unknown extension: smart
 ## 问题2
 部分公式无法解析。
 是因为markdown和mathjax的解析有一些冲突，按照参考文献$1$中进行修改即可，原因见[2]。
+修改node_modules/kramed/lib/rules/inline.js文件，将第11行替换成"escape: /^\\([`*\[\]()#$+\-.!_>])/"，将第19行替换成"em: /^\b_((?:__|[\s\S])+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/"。（不用加双引号）
+
+## 问题3
+Ubuntu 16.04直接使用命令安装nodejs，版本太老，需要使用源代码安装
+~$:sudo apt install nodejs npm
+上述命令可以在Ubuntu 18.04直接使用。
 
 ## 参考文献
 1.https://hexo-guide.readthedocs.io/zh_CN/latest/theme/[NexT]%E9%85%8D%E7%BD%AEMathJax.html
