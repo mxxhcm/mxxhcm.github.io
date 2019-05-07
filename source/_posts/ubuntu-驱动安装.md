@@ -3,6 +3,7 @@ title: ubuntu 驱动安装
 date: 2019-04-26 21:03:02
 tags:
  - ubuntu
+ - linux
  - 显卡驱动
 categories: 工具
 maxhjax: true

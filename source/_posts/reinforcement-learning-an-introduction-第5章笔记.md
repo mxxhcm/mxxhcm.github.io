@@ -28,7 +28,7 @@ $\qquad V(s)\in R,\forall s \in S$
 $\qquad Returns(s)=[],\forall s \in S$
 **Loop** for each episeode:
 $\qquad$生成一个episode
-$\qquadG\leftarrow 0$
+$\qquad G\leftarrow 0$
 $\qquad$**Loop** for each step, $t= T-1,T-2, \cdots, 1$
 $\qquad\qquad G\leftarrow G + \gamma R_t$
 $\qquad\qquad$ 如果$S_t$没有在$S_0, \cdots , S_{t-1}$中出现过
