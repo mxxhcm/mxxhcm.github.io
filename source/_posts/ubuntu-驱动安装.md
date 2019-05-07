@@ -91,6 +91,18 @@ export CUDA_HOME=/usr/local/cuda
 ~$:source ~/.bashrc
 
 继续报错
+然后我才发现我没有装cudnn，按照参考文献[1]安装cudnn即可。
+解压cudnn
+~$:tar -xvf cudnn-x.x-linuz-x64-vx.x.tar.gz
+然后执行
+``` shell
+sudo cp cuda/include/cudnn.h /usr/local/cuda/include/
+sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64/
+sudo chmod a+r /usr/local/cuda/include/cudnn.h
+sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
+```
+即可
+
 
 ## 参考文献
 1.http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/
