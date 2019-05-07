@@ -274,6 +274,23 @@ esac
 ![mxx](https:)
 直接配置proxy，添加如图所示的规则，这样chrome打开的所有网站都是走代理的。
 
+##### 2.2.4.3.使用privoxy让terminal走socks5
+~$:sudo apt install privoxy
+~$:sudo vim /etc/privoxy/config
+取消下列行的注释，或者添加相应条目
+forward-socks5 / 127.0.0.1:1080 . # SOCKS5代理地址
+listen-address 127.0.0.1:8118     # HTTP代理地址
+forward 10.*.*.*/ .               # 内网地址不走代理
+forward .abc.com/ .             # 指定域名不走代理
+重启privoxy服务
+~$:sudo service privoxy restart
+在bashrc中添加如下环境变量
+export http_proxy="http://127.0.0.1:8118"
+export https_proxy="http://127.0.0.1:8118"
+
+~$:source ~/.bashrc
+~$:curl.gs
+
 ## 3.参考文献
 1. http://godjose.com/2017/06/14/new-article/
 2. https://www.polarxiong.com/archives/搭建ipv6-VPN-让ipv4上ipv6-下载速度提升到100M.html

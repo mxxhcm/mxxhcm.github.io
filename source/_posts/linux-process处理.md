@@ -1,5 +1,5 @@
 ---
-title: linux nohup &
+title: linux process 
 date: 2019-05-07 16:19:29
 tags:
  - linux
@@ -26,6 +26,16 @@ jobs -l 查看运行的后台进程，当打开该进程的终端关闭时，就
 ### ps
 比如查看sslocal程序是否运行
 ps aux | grep 'sslocal'
+
+### 查看进程
+ps ax # 显示当前系统进程的列表
+ps aux #显示当前系统进程详细列表以及进程用户
+ps -A  #列出进程号
+
+### 获取进程id
+ps -A |grep "command" | awk '{print $1}'
+pidof 'command'
+pgrep 'command'
 
 
 81.job control
@@ -316,3 +326,4 @@ ps aux | grep 'sslocal'
 ## 参考文献
 1.https://baike.baidu.com/item/nohup/5683841?fr=aladdin
 2.https://www.cnblogs.com/baby123/p/6477429.html
+3.https://www.cnblogs.com/hf8051/p/4494735.html
