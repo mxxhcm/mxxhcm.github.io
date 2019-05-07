@@ -327,6 +327,257 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/23/熵、交叉熵和K-L散度/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/23/熵、交叉熵和K-L散度/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">熵，交叉熵，相对熵（KL散度），条件熵，互信息</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-23 10:54:31" itemprop="dateCreated datePublished" datetime="2018-12-23T10:54:31+08:00">2018-12-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="乡农熵-Shannon-entropy"><a href="#乡农熵-Shannon-entropy" class="headerlink" title="乡农熵(Shannon entropy)"></a>乡农熵(Shannon entropy)</h2><p>乡农定义了一个事件的信息量是其发生概率的负对数($-log(p)$)，即乡农信息量，乡农熵是信息量的期望。</p>
+<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>这里的熵都是指的信息论中的熵，也叫乡农熵(shannon entropy)。通常，熵是无序或不确定性的度量。<br>与每个变量可能的取值相关的信息熵是每个可能取值的概率质量函数的负对数：</p>
+<script type="math/tex; mode=display">S = - \sum_i P_i lnP_i</script><p>当事件发生的概率较低时，该事件比高概率事件携带更多“信息”。这种方式定义的每个事件所携带的信息量是一个随机变量，事实上乡农熵定义的一个事件的信息量就是这个事件发生的概率的负对数，这个随机变量（信息量）的期望值是信息熵。信息熵通常以比特(或者称为shannons),自然单位(nats)或十进制数字(dits，bans或hartleys)来测量。具体的单位取决于用于定义熵的对数的基。<br>采用概率分布的对数形式作为信息的度量的原因是因为它的可加性。例如，投掷公平硬币的熵是$1$比特，投掷$m$个硬币的熵是$m$比特。以比特为单位的时候，如果$n$是$2$的指数次方，则需要$log_2n$位来表示一个具有$n$个取值的变量。如果该变量的$n$个取值发生的可能性是相等的，则熵等于$log_2n$。<br>如果一个事件发生的可能性比其他事件发生的可能性更高，观察到该事件发生的信息量少于观测到一些罕见事件，即观测到更罕见的事件时能提供更多的信息。由于小概率事件发生的可能性更低，因此最终的结果是从非均匀分布的数据接收的熵总是小于或等于$log_2n$。当一个结果一定发生时，熵为零。<br>但是熵仅仅量化考虑事件发生的概率，它封装的信息是有关概率分布的信息，事件本身的意义在这种度量方式的定义中无关紧要。<br>熵的另一种解释是最短平均编码长度。</p>
+<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>乡农定义了entropy, 定义离散型随机变量$X$，其可能取值为${x_1,\cdots,x_n}$，它对应的概率质量函数(probability mass function) P(X)，则熵$H$为：</p>
+<script type="math/tex; mode=display">H(X) = E[I(X)] = E[-log(P(X))]</script><p>其中$E$是求期望，$I$是随机变量$X$的信息量, $I(X)$本身是一个随机变量。<br>它可以显示写成：</p>
+<script type="math/tex; mode=display">H(X) = \sum_{i=1}^nP(x_i)I(x_i) = -\sum_{i=1}^nP(x_i)log_bP(x_i)</script><p>其中b是自然对数的底，$b$常取的值为$2,e,10$，对应的熵的单位是bits, nats，bans。<br>当$P(x_i)=0$的时候，对应的$PlogP$的值为$0log_b(0)$, 和极限(limit)是一致的：</p>
+<script type="math/tex; mode=display">lim_{p\rightarrow 0_+}plog(p) = 0.</script><h4 id="连续型随机变量的熵"><a href="#连续型随机变量的熵" class="headerlink" title="连续型随机变量的熵"></a>连续型随机变量的熵</h4><p>将概率质量函数替换为概率密度函数，即可得到连续性随机变量的熵：</p>
+<script type="math/tex; mode=display">h[f] = E[-ln(f(x))] = - \int_X f(x)ln(f(x))dx.</script><h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>抛一枚硬币，已知其正反两面出现的概率是不相等的，求其正面朝上的概率，该问题可以看做一个伯努利分布问题。<br>如果硬币是公平的，此时得到结果的熵是最大的。这是因为此时抛一次抛硬币的结果具有最大的不确定性。每一个抛硬币的结果会占满一整个bit位。因为<br>\begin{align*}<br>H(X) &amp;= - \sum_{i=1}^n P(x_i)log_bP(x_i)\\<br>&amp;= - \sum_{i=1}^2\frac{1}{2}log_2\frac{1}{2}\\<br>&amp;= - \sum_{i=1}^2\frac{1}{2}\cdot(-1)\\<br>&amp;= 1<br>\end{align*}<br>如果硬币是不公平的，正面向上的概率是$p$，反面向上的概率是$q$，$p \ne q$, 则结果的不确定性更小。因为每次抛硬币，出现其中一面的可能性要比另一面要大，减小的不确定性就得到了更小的熵：每一次抛硬币得到的信息都会小于$1$bit，比如，$p=0.7$时：<br>\begin{align*}<br>H(X) &amp;= -plog_2p - qlog_2q\\<br>&amp;= -0.7log_20.7 - 0.3log_20.3\\<br>&amp;= -0.7\cdot(-0.515) - 0.3\cdot(-1.737)\\<br>&amp;= 0.8816\\<br>&amp;\le 1<br>\end{align*}<br>上面的例子证明不确定性跟变量取值的概率有关。<br>不确定性也跟变量的取值个数有关，上面例子的极端情况是正反面一样（即只有一种取值），那么熵就是0，没有不确定性。</p>
+<h3 id="解释-rationale"><a href="#解释-rationale" class="headerlink" title="解释(rationale)"></a>解释(rationale)</h3><p>为什么乡农定义了信息量为$-log(p)$？$-\sum p_i log(p_i)$的意义是什么？<br>首先我们需要想一想信息量需要满足什么条件，然后定义一个信息函数I表示发生概率为$p_i$的事件$i$的信息量，那么这个信息函数需要满足以下条件。</p>
+<ul>
+<li>$I(p)$是单调下降的；</li>
+<li>$I(p) \ge 0$, 即信息是非负的；</li>
+<li>$I(1) = 0$, 一定发生的事件不包含信息；</li>
+<li>$I(p_1p_2) = I(p_1) + I(p_2)$, 独立事件包含的信息是可加的。<br>最后一个条件很关键，它指出了两个独立事件的联合分布和两个分开的独立事件所包含的信息是一样多的。例如，$A$事件有$m$个等可能性的结果，$B$事件有$n$个等可能性的结果，$AB$有$mn$个等可能性的结果。$A$事件需要$log_2(m)$bits去编码，$B$事件需要用$log_2(n)$bits去编码，$AB$需要$log_2(mn) = log_2(m) + log_2(n)$bits编码。乡农发现了$log$函数能够保留可加性，即：<script type="math/tex; mode=display">I(p) = log(\frac{1}{p}) = - log(p)</script>事实上，这个函数$I$是唯一的(可以证明),选择$I$当做信息函数。如果一个分布中事件$i$发生的概率是$p_i$,那么采样$N$次，事件$i$发生的次数为$n_i = N p_i$, 所有$n_i$次的信息为<script type="math/tex">\sum_in_iI(p_i) = - \sum_iNp_ilog(p_i).</script><br>每个事件的平均信息就是：<script type="math/tex; mode=display">-\sum_ip_ilog(p_i)</script>所以$-\sum_ip_ilog(p_i)$就是信息量的期望，即信息熵。<br>在信息论中，熵的另一种解释是最短平均编码长度。</li>
+</ul>
+<h2 id="交叉熵-cross-entropy"><a href="#交叉熵-cross-entropy" class="headerlink" title="交叉熵(cross entropy)"></a>交叉熵(cross entropy)</h2><h3 id="介绍-1"><a href="#介绍-1" class="headerlink" title="介绍"></a>介绍</h3><p>交叉熵用于衡量估计的概率分布与真实概率分布之间的差异。<br>交叉熵是信息熵的推广。假设有两个分布$p$和$q$，$p$是真实分布，$q$是非真实分布。信息熵是用真实分布$p$来衡量识别一个事件所需要的编码长度的期望。而交叉熵是用非真实分布$q$来估计真实分布$p$的编码长度的期望，用$q$来编码的事件来自分布$p$，所以期望中使用的概率是$p(i)$。$H(p,q)$称为交叉熵。</p>
+<h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>分布p和q在给定集合X的交叉熵定义为：</p>
+<script type="math/tex; mode=display">H(p,q) = E_p[-logq] = H(p) + D_{KL}(p||q)</script><p>其中$H(p)$是$p$的信息熵，$D_{KL}(p||q)$是从$q$到$p$的$K-L$散度，或者说$p$相对于$q$的相对熵。</p>
+<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><p>如含有4个字母$(A,B,C,D)$的数据集中，$p=(\frac{1}{2}, \frac{1}{2}, 0, 0)$，即$A$和$B$出现的概率均为$\frac{1}{2}$，$C$和$D$出现的概率都为$0$。$H(p)$为$1$，即只需要$1$位编码即可识别$A$和$B$。如果使用分布$q=(\frac{1}{4},\frac{1}{4},\frac{1}{4},\frac{1}{4})$来编码则得到$H(p,q)=2$，即需要$2$位编码来识别$A$和$B$。</p>
+<h3 id="解释"><a href="#解释" class="headerlink" title="解释"></a>解释</h3><p>在机器学习中，交叉熵用于衡量估计的概率分布与真实概率分布之间的差异。<br>在信息论中，Kraft-McMillan定理建立了任何可直接解码的编码方案，为了识别一个$X$的可能值$x_i$f可以看做服从一个在$X$上的隐式概率分布$q(x_i)=2^{-l_i}$,其中$l_i$是$x_i$的编码长度，单位是bits。因此，交叉熵可以被解释为当数据服从真实分布$p$时，在假设分布$q$下得到的每个信息编码长度的期望。</p>
+<h3 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h3><ul>
+<li>$H(p,q) \ge H(p)$,由吉布森不等式可以知道，该式子恒成立，当$q$等于$p$时等号成立。</li>
+</ul>
+<h3 id="to-do-交叉熵损失函数和logistic-regression之间的关系。"><a href="#to-do-交叉熵损失函数和logistic-regression之间的关系。" class="headerlink" title="to do ?交叉熵损失函数和logistic regression之间的关系。"></a>to do ?交叉熵损失函数和logistic regression之间的关系。</h3><h2 id="K-L-散度-Kullback-Leibler-divergence"><a href="#K-L-散度-Kullback-Leibler-divergence" class="headerlink" title="$K-L$散度(Kullback-Leibler divergence)"></a>$K-L$散度(Kullback-Leibler divergence)</h2><h3 id="介绍-2"><a href="#介绍-2" class="headerlink" title="介绍"></a>介绍</h3><p>$K-L$散度也叫相对熵(relative entropy)，是用来衡量估计分布和真实分布之间的差异性。<br>$K-L$散度也叫相对熵(relative entropy)，信息熵是用来度量信息量的，信息熵给出了最小熵是多少，但是信息熵并没有给出如何得到最小熵，$K-L$散度也没有给出来如何得到最小熵。但是$K-L$散度可以用来衡量用一个带参数的估计分布来近似真实数据分布时损失了多少信息，可以理解为根据非真实分布$q$得到的平均编码长度比由真实分布$p$得到的平均编码长度多出的长度叫做相对熵。</p>
+<h3 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h3><h4 id="离散型随机变量"><a href="#离散型随机变量" class="headerlink" title="离散型随机变量"></a>离散型随机变量</h4><p>给定概率分布$P$和$Q$在相同的空间中，它们的$K-L$散度定义为：<br>\begin{align*}<br>D_{KL}(P||Q) &amp;= -\sum_iP(i)(logQ(i)) - (-\sum_iP(i)logP(i))\\<br>D_{KL}(P||Q) &amp;= \sum_iP(i)(logP(i) - logQ(i))\\<br>D_{KL}(P||Q) &amp;= -\sum_iP(i)log(\frac{Q(i)}{Q(i)})\\<br>D_{KL}(P||Q) &amp;= \sum_iP(i)log(\frac{P(i)}{Q(i)})<br>\end{align*}<br>可以看出，$K-L$散度是概率分布$P$和$Q$对数差相对于概率分布$P$的期望。需要注意的是$D_{KL}(P||Q) \ne D_{KL}(Q||P),$因为$P$和$Q$的地位是不同的。相对熵的前半部分就是交叉熵，后半部分是相对熵。</p>
+<h4 id="连续型随机变量"><a href="#连续型随机变量" class="headerlink" title="连续型随机变量"></a>连续型随机变量</h4><p>对于连续性随机变量的分布$P$和$Q$，$K-L$散度被定义为积分：</p>
+<script type="math/tex; mode=display">D_{KL}(P||Q) = \int_{-\infty}^{infty}p(x)log(\frac{p(x)}{q(x)})dx,</script><p>其中$p$和$q$代表分布$P$和分布$Q$的概率密度函数。<br>更一般的，$P$和$Q$表示是同一个集合$X$的概率分布，$P$相对于$Q$是绝对连续的，从$Q$到$P$的$K-L$散度定义为：</p>
+<script type="math/tex; mode=display">D_{KL}(P||Q) = \int_X log(\frac{dP}{dQ})dP</script><p>上式可以被写成：</p>
+<script type="math/tex; mode=display">D_{KL}(P||Q) = \int_X log(\frac{dP}{dQ})\frac{dP}{dQ}dP</script><p>可以看成$\frac{P}{Q}$的熵。</p>
+<h3 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h3><p>$P$是一个二项分布，$P~(2,0.4)$，$Q$是一个离散型均匀分布，$x = 0,1,2$, 每一个取值的概率都是$p=\frac{1}{3}$。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$P$分布</td>
+<td>0.36</td>
+<td>0.48</td>
+<td>0.16</td>
+</tr>
+<tr>
+<td>$Q$分布</td>
+<td>0.333</td>
+<td>0.333</td>
+<td>0.333</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>$K-L$散度的计算公式如下（使用自然对数）：<br>\begin{align*}<br>D_{KL}(Q||P) &amp;= \sum_iQ(i)ln(\frac{Q(i)}{P(i)})\\<br>&amp; = 0.333ln(\frac{0.333}{0.36}) + 0.333ln(\frac{0.333}{0.48}) + 0.333ln(\frac{0.333}{0.16})\\<br>&amp; = -0.02596 + (-0.12176) + 0.24408\\<br>&amp; = 0.09637(nats)<br>\end{align*}<br>上面计算出来的是从$P$到$Q$的K-L散度，或者$Q$相对于$P$的相对熵。</p>
+<h3 id="解释-1"><a href="#解释-1" class="headerlink" title="解释"></a>解释</h3><p>从$Q$到$P$的$K-L$散度表示为$D_{KL}(P||Q)$。在机器学习中，$D_{KL}(P||Q)$被称为信息增益。<br>在信息论中，$K-L$散度也被称为$P$相对于$Q$的相对熵。从信息编码角度来看，$D_{KL}(P||Q)$可以看做用估计分布$q$得到的平均编码长度比用真实分布p得到的平均编码长度多出的长度。</p>
+<h3 id="性质-1"><a href="#性质-1" class="headerlink" title="性质"></a>性质</h3><ul>
+<li>非负性，$D_{KL}(P||Q)\ge 0$,当且仅当$P=Q$时等号成立。</li>
+<li>可加性，如果$P_1,P_2$的分布是独立的，即$P(x,y) = P_1(x)P_2(y)$, $Q,Q_1,Q_2$类似，那么：<script type="math/tex; mode=display">D_{KL}(P||Q) = D_{KL}(P_1||Q_1) + D_{KL}(P_2||Q_2)</script></li>
+<li>不对称性，所以K-L散度不是距离，距离需要满足对称性。</li>
+</ul>
+<h2 id="条件熵"><a href="#条件熵" class="headerlink" title="条件熵"></a>条件熵</h2><h3 id="定义-3"><a href="#定义-3" class="headerlink" title="定义"></a>定义</h3><p>给定$X$，$Y$的条件熵定义如下：<br>给定离散变量${\displaystyle X}$和${\displaystyle Y}$,给定${\displaystyle X}$以后，${\displaystyle Y}$的条件熵定义为每一个${\displaystyle x}$使用权值${\displaystyle p(x)}$ 的加权和${\displaystyle \mathrm {H} (Y|X=x)}$。</p>
+<script type="math/tex; mode=display">H(Y|X) &\equiv \sum_{x\in\bold{X}}p(x)H(Y|X=x)</script><p>可以证明它等价于下式：</p>
+<script type="math/tex; mode=display">H(Y|X) = -\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)log{\frac{p(X,Y)}{p(X)}}</script><h3 id="证明"><a href="#证明" class="headerlink" title="证明"></a>证明</h3><p>\begin{align*}<br>H(Y|X) &amp;\equiv \sum_{x\in\bold{X}}p(x)H(Y|X=x)\\<br>&amp;=-\sum_{x\in\bold{X}}p(x)\sum_{y\in \bold{Y}}p(y|x)logp(y|x)\\<br>&amp;=-\sum_{x\in\bold{X}}\sum_{y\in \bold{Y}}p(x)p(y|x)logp(y|x)\\<br>&amp;=-\sum_{x\in\bold{X},y\in \bold{Y}}p(x,y)logp(y|x)\\<br>&amp;=-\sum_{x\in\bold{X},y\in \bold{Y}}p(x,y)\frac{logp(x,y)}{logp(x)}\\<br>&amp;=\sum_{x\in\bold{X},y\in \bold{Y}}p(x,y)\frac{logp(x)}{logp(x,y)}\\<br>\end{align*}</p>
+<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><ul>
+<li>当且仅当$Y$完全由$X$的值确定时，条件熵为$0$。</li>
+<li>当且仅当$X$和$Y$是独立随机变量的时候，$H(Y|X) = H(Y)$。</li>
+<li>链式法则。假设一个系统由随机变量$X,Y$确定，他们有联合熵$H(X,Y)$，我们需要$H(X,Y)$个比特去表述这个系统，如果我们已经知道了$X$的值，相当于我们已经有了$H(X)$位的信息。一旦$X$已知了，我们只需要$H(X,Y)-H(X)$位去描述整个系统。所以就有了链式法则：$H(Y|X) = H(X,Y) - H(X)$。<br>\begin{align*}<br>H(Y|X) &amp;= \sum_{X\in \bold{X}, Y\in \bold{Y}}p(X,Y)log{\frac{p(X)}{p(X,Y)}}\\<br>&amp;= - \sum_{X\in \bold{X}, Y\in \bold{Y}}p(X,Y)log{p(X,Y)}+\sum_{X\in \bold{X}, Y\in \bold{Y}}p(X,Y)log{p(X)}\\<br>&amp;=H(X,Y) +\sum_{X\in \bold{X}}p(X)log{p(X)}\\<br>&amp;=H(X,Y) - H(X)<br>\end{align*}</li>
+<li>贝叶斯公式。$H(Y|X) = H(X|Y) - H(X) + H(Y)$。<br>证明：$H(Y|X)=H(X,Y) - H(X),H(X|Y) = H(X,Y) - H(Y)$。两个式子相减就可以得到。</li>
+</ul>
+<h2 id="互信息"><a href="#互信息" class="headerlink" title="互信息"></a>互信息</h2><p>决策树中的信息增益指的是互信息不是KL散度。</p>
+<h3 id="定义-4"><a href="#定义-4" class="headerlink" title="定义"></a>定义</h3><p>用$(X,Y)$表示空间$\bold{X}\times\bold{Y}$上的一对随机变量，他们的联合分布是$P_{(X,Y)}$，边缘分布是$P_X,P_Y)$，信息熵被定义为：<br>$I(X;Y) = D_{KL}(P_{(X,Y)}||P_XP_Y)$<br>对于离散变量：<br>$I(X;Y)=\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})$<br>对于随机变量：<br>$I(X;Y)=\int_X\int_Y p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})dxdy$</p>
+<h2 id="信息熵，相对熵，交叉熵，条件熵，互信息之间的关系"><a href="#信息熵，相对熵，交叉熵，条件熵，互信息之间的关系" class="headerlink" title="信息熵，相对熵，交叉熵，条件熵，互信息之间的关系"></a>信息熵，相对熵，交叉熵，条件熵，互信息之间的关系</h2><h3 id="信息论"><a href="#信息论" class="headerlink" title="信息论"></a>信息论</h3><p>信息熵是对随机事件用真实的概率分布$p$进行编码的长度的期望，是最短平均编码长度。<br>交叉熵是对随机事件用估计的概率分布$q$按照其真实概率分布$p$进行编码的长度的期望（随机事件是从真实概率分布$p$中取的，但是用分布$q$进行编码），大于等于最短平均编码长度，只有$q$等于真实分布$q$时，才是最短编码长度。<br>而相对熵对随机事件用估计的概率分布$q$比用真实的概率分布$p$进行编码多用的编码长度，如果$p$和$q$相等的话，相对熵为$0$。</p>
+<h3 id="机器学习"><a href="#机器学习" class="headerlink" title="机器学习"></a>机器学习</h3><p>在机器学习中，交叉熵通常作为一个loss函数，用来衡量真实分布$p$和估计分布$q$之间的差异。而$K-L$散度也是用来衡量两个概率分布的差异，但是多了一个信息熵项。$K-L$散度的前半部分是交叉熵，后半部分是真实分布$p$的信息熵。(一个我自己认为的不严谨的说法是相对熵算的是相对值，而交叉熵算的是绝对值)。交叉熵正比于负的对数似然估计，最小化交叉熵等价于最大化对数似然估计。<br>如果$p$是固定的，那么随着$q$的增加相对熵也在增加，但是如果$p$是不固定的，很难说相对熵是差异的绝对量度，因为它随着$p$的增长而改变。而在机器学习领域，真实分布$p$是固定的，随着$q$的改变，$H(p)$是不变的,也就是信息熵是固定的。所以，从优化的角度来说，最小化交叉熵也就是最小化了相对熵。但是在其他领域，$p$可能是变化的，最小化交叉熵和最小化相对熵就不是等价的了。</p>
+<h3 id="互信息和条件熵，相对熵的关系"><a href="#互信息和条件熵，相对熵的关系" class="headerlink" title="互信息和条件熵，相对熵的关系"></a>互信息和条件熵，相对熵的关系</h3><p>互信息可以被等价定义为：<br>\begin{align*}<br>I(X;Y)&amp; \equiv H(X)-H(X|Y)\\<br>&amp;\equiv H(Y) - H(Y|X)\\<br>&amp;\equiv H(X)+H(Y)-H(X,Y)\\<br>&amp;\equiv H(X,Y)-H(X|Y)-H(Y|X)\\<br>\end{align*}</p>
+<p>证明：<br>\begin{align*}<br>I(X;Y)&amp;=\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)p(Y)})\\<br>&amp;=\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)})-\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)logp(Y)\\<br>&amp;=\sum_{X\in \bold{X},Y\in \bold{Y}}p(X)P(Y|X)logp(Y|X)-\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)logp(Y)\\<br>&amp;=\sum_{X\in \bold{X}}p(X)(\sum_{Y\in \bold{Y}}P(Y|X)logp(Y|X))-\sum_{Y\in \bold{Y}}(\sum_{X\in \bold{X}}p(X,Y))logp(Y)\\<br>&amp;=\sum_{X\in \bold{X}}p(X)H(Y|X=x)-\sum_{Y\in \bold{Y}}p(Y)logp(Y)\\<br>&amp;=-H(Y|X)+H(Y)\\<br>&amp;=H(Y)-H(Y|X)<br>\end{align*}</p>
+<p>互信息和KL散度的联系：<br>从联合分布$p(x,y)$到边缘分布$p(X)p(Y)$或者条件分布$p(X|Y)p(X)$的KL散度。</p>
+<h2 id="参考文献-references"><a href="#参考文献-references" class="headerlink" title="参考文献(references)"></a>参考文献(references)</h2><p>1.<a href="https://en.wikipedia.org/wiki/Entropy_(information_theory" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Entropy_(information_theory</a>)<br>2.<a href="https://zh.wikipedia.org/wiki/熵_(信息论" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/熵_(信息论</a>)<br>3.<a href="https://www.zhihu.com/question/22178202/answer/49929786" target="_blank" rel="noopener">https://www.zhihu.com/question/22178202/answer/49929786</a><br>4.<a href="https://en.wikipedia.org/wiki/Cross_entropy" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Cross_entropy</a><br>5.<a href="https://en.wikipedia.org/wiki/Kullback-Leibler_divergence" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Kullback-Leibler_divergence</a><br>6:<a href="https://www.zhihu.com/question/41252833/answer/108777563" target="_blank" rel="noopener">https://www.zhihu.com/question/41252833/answer/108777563</a><br>7.<a href="https://www.zhihu.com/question/41252833/answer/141598211" target="_blank" rel="noopener">https://www.zhihu.com/question/41252833/answer/141598211</a><br>8.<a href="https://stats.stackexchange.com/questions/265966/why-do-we-use-kullback-leibler-divergence-rather-than-cross-entropy-in-the-t-sne" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/265966/why-do-we-use-kullback-leibler-divergence-rather-than-cross-entropy-in-the-t-sne</a><br>9.<a href="https://en.wikipedia.org/wiki/Conditional_entropy" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Conditional_entropy</a><br>10.<a href="https://en.wikipedia.org/wiki/Mutual_information" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Mutual_information</a><br>11.<a href="https://zhuanlan.zhihu.com/p/26551798" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/26551798</a><br>12.<a href="https://blog.csdn.net/gangyin5071/article/details/82228827#4相对熵kl散度" target="_blank" rel="noopener">https://blog.csdn.net/gangyin5071/article/details/82228827#4相对熵kl散度</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/22/convex-optimization-chapter-1-Introduction/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -442,7 +693,7 @@
       
         
           
-            <h2 id="数学优化-mathematical-optimization"><a href="#数学优化-mathematical-optimization" class="headerlink" title="数学优化(mathematical optimization)"></a>数学优化(mathematical optimization)</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>一个数学优化问题（或者称为优化问题）通常有如下的形式：<br>\begin{align*}<br>&amp;minimize \quad f_0(x)\<br>&amp;subject \ to \quad f_i(x) \le b_i, i = 1,\cdots,m.<br>\end{align*}<br>其中$x = (x_1, \cdots, x_m)$被称为优化变量(optimization variables), 或者决策变量(decision variables)。 $f_0(x):R^n\rightarrow R$是目标函数(object function), $f_i(x):R^n\rightarrow R,i =1,\cdots,m$是约束函数(constraint functions)。 常量(constraints) $b_1,\cdots,b_m$是约束的限界(limits)或者边界(bounds), $b_i$可以为0，这个可以通过移项构造出新的$f_i(x)$实现。如果向量$x$使得目标函数取得最小的值，并且满足所有的约束条件，那么这个向量被称为最优解$x^*$。 </p>
+            <h2 id="数学优化-mathematical-optimization"><a href="#数学优化-mathematical-optimization" class="headerlink" title="数学优化(mathematical optimization)"></a>数学优化(mathematical optimization)</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>一个数学优化问题（或者称为优化问题）通常有如下的形式：<br>\begin{align*}<br>&amp;minimize \quad f_0(x)\\<br>&amp;subject \ to \quad f_i(x) \le b_i, i = 1,\cdots,m.<br>\end{align*}<br>其中$x = (x_1, \cdots, x_m)$被称为优化变量(optimization variables), 或者决策变量(decision variables)。 $f_0(x):R^n\rightarrow R$是目标函数(object function), $f_i(x):R^n\rightarrow R,i =1,\cdots,m$是约束函数(constraint functions)。 常量(constraints) $b_1,\cdots,b_m$是约束的限界(limits)或者边界(bounds), $b_i$可以为0，这个可以通过移项构造出新的$f_i(x)$实现。如果向量$x$使得目标函数取得最小的值，并且满足所有的约束条件，那么这个向量被称为最优解$x^*$。 </p>
 <h4 id="线性优化-linear-program"><a href="#线性优化-linear-program" class="headerlink" title="线性优化(linear program)"></a>线性优化(linear program)</h4><p>目标函数和约束函数$f_0,\cdots,f_m$是线性的, 它们满足不等式： </p>
 <script type="math/tex; mode=display">f_i(\alpha x+\beta y) = \alpha f_i(x) + \beta f_i(y)</script><p>对于所有的$x,y \epsilon R^n$和所有的$\alpha, \beta \epsilon R$。<br>线性优化是凸优化的一个特殊形式, 它的目标函数和约束函数都是线性的等式或者不等式。</p>
 <h4 id="非线性问题-non-linear-problem"><a href="#非线性问题-non-linear-problem" class="headerlink" title="非线性问题(non-linear problem)"></a>非线性问题(non-linear problem)</h4><p>如果优化问题不是线性的，就是非线性问题。只要目标函数或者约束函数至少有一个不是线性的，那么这个优化问题就是非线性优化问题。</p>
@@ -462,7 +713,7 @@
 <li>凸优化问题(convex optimization problems)</li>
 </ul>
 <h2 id="最小二乘-least-squares-和线性规划-linear-programming"><a href="#最小二乘-least-squares-和线性规划-linear-programming" class="headerlink" title="最小二乘(least-squares)和线性规划(linear programming)"></a>最小二乘(least-squares)和线性规划(linear programming)</h2><p>least-squares和linear programming是凸优化问题中最有名的两个子问题。</p>
-<h3 id="最小二乘问题-least-squares-problems"><a href="#最小二乘问题-least-squares-problems" class="headerlink" title="最小二乘问题(least-squares problems)"></a>最小二乘问题(least-squares problems)</h3><p>最小二乘问题是一个无约束的优化问题，它的目标函数是项$a<em>i^Tx-b_i$的平方和。<br>\begin{align*}<br>minimize \quad f_0(x) &amp;= {||Ax-b||}^2_2\<br>&amp;=\sum</em>{i=1}^k(a_i^Tx-b_i)^2<br>\end{align*}</p>
+<h3 id="最小二乘问题-least-squares-problems"><a href="#最小二乘问题-least-squares-problems" class="headerlink" title="最小二乘问题(least-squares problems)"></a>最小二乘问题(least-squares problems)</h3><p>最小二乘问题是一个无约束的优化问题，它的目标函数是项$a_i^Tx-b_i$的平方和。<br>\begin{align*}<br>minimize \quad f_0(x) &amp;= {||Ax-b||}^2_2\\<br>&amp;=\sum_{i=1}^k(a_i^Tx-b_i)^2<br>\end{align*}</p>
 <h4 id="求解-solving-least-squares-problems"><a href="#求解-solving-least-squares-problems" class="headerlink" title="求解(solving least-squares problems)"></a>求解(solving least-squares problems)</h4><ul>
 <li>最小二乘问题的解可以转换为求线性方程组$(A^TA)x = A^Tb$的解。线性代数上我们学过该方程组的解析解为$x=(A^TA)^{-1}A^Tb$。</li>
 <li>时间复杂度是$n^2k = n*k*n+n*k+n*n*n, (k &gt; n)$(转置，求逆，矩阵乘法)。</li>
@@ -473,8 +724,8 @@
 <h5 id="加权最小二乘-weighted-least-squares"><a href="#加权最小二乘-weighted-least-squares" class="headerlink" title="加权最小二乘(weighted least-squares)"></a>加权最小二乘(weighted least-squares)</h5><p>加权最小二乘形式如下:</p>
 <script type="math/tex; mode=display">\sum_{i=1}^k \omega_i(a_i^Tx-b_i)^2,</script><p>其中$\omega_1,\cdots,\omega_k$是正的，被最小化。 这里选出权重$\omega$来体现不同项$a_i^Tx-b_i$的比重, 或者仅仅用来影响结果。</p>
 <h5 id="正则化-regularization"><a href="#正则化-regularization" class="headerlink" title="正则化(regularization)"></a>正则化(regularization)</h5><p>目标函数中被加入了额外项, 形式如下：</p>
-<script type="math/tex; mode=display">\sum_{i=1}^k(a_i^Tx-b_i)^2 + \rho \sum_{i=1}^n x_i^2,</script><p>正则项是用来惩罚大的$x$, 求出一个仅仅最小化第一个求和项的不出来的好结果。合理的选择参数$\rho$在原始的目标函数和正则化项之间做一个trade-off, 使得$\sum<em>{k=1}^i(a_i^T - b_i)^2$和$\rho \sum</em>{k=1}^n x_i^2$都很小。<br>正则化项和加权最小二乘会在第六章中讲到，它们的统计解释在第七章给出。</p>
-<h3 id="线性规划-linear-programming"><a href="#线性规划-linear-programming" class="headerlink" title="线性规划(linear programming)"></a>线性规划(linear programming)</h3><p>线性规划问题装目标函数和约束函数都是线性的：<br>\begin{align*}<br>&amp;minimize \quad c^Tx\<br>&amp;subject \ to \quad a_i^T \le b_i, i = 1, \cdots, m.<br>\end{align*}<br>其中向量$c,a_1,\cdots,a_m \epsilon R^n$, 和标量$b_1,\cdots, b_m \epsilon R$是指定目标函数和约束函数条件的参数。</p>
+<script type="math/tex; mode=display">\sum_{i=1}^k(a_i^Tx-b_i)^2 + \rho \sum_{i=1}^n x_i^2,</script><p>正则项是用来惩罚大的$x$, 求出一个仅仅最小化第一个求和项的不出来的好结果。合理的选择参数$\rho$在原始的目标函数和正则化项之间做一个trade-off, 使得$\sum_{k=1}^i(a_i^T - b_i)^2$和$\rho \sum_{k=1}^n x_i^2$都很小。<br>正则化项和加权最小二乘会在第六章中讲到，它们的统计解释在第七章给出。</p>
+<h3 id="线性规划-linear-programming"><a href="#线性规划-linear-programming" class="headerlink" title="线性规划(linear programming)"></a>线性规划(linear programming)</h3><p>线性规划问题装目标函数和约束函数都是线性的：<br>\begin{align*}<br>&amp;minimize \quad c^Tx\\<br>&amp;subject \ to \quad a_i^T \le b_i, i = 1, \cdots, m.<br>\end{align*}<br>其中向量$c,a_1,\cdots,a_m \epsilon R^n$, 和标量$b_1,\cdots, b_m \epsilon R$是指定目标函数和约束函数条件的参数。</p>
 <h4 id="求解线性规划-solving-linear-programs"><a href="#求解线性规划-solving-linear-programs" class="headerlink" title="求解线性规划(solving linear programs)"></a>求解线性规划(solving linear programs)</h4><ul>
 <li>除了一个特例，没有解析解公式(和least-squares不同)；</li>
 <li>有可靠且高效的算法实现；</li>
@@ -483,7 +734,7 @@
 </ul>
 <h4 id="应用-using-linear-programs"><a href="#应用-using-linear-programs" class="headerlink" title="应用(using linear programs)"></a>应用(using linear programs)</h4><p>一些应用直接使用线性规划的标准形式,或者其中一个标准形式。在很多时候，原始的优化问题没有一个标准的线性规划形式，但是可以被转化为等价的线性规划形式。比如切米雪夫近似问题(Chebyshev approximation problem)。它的形式如下：</p>
 <script type="math/tex; mode=display">minimize \quad max_{i=1,\cdots,k}|a_i^Tx-b_i|</script><p>其中$x\epsilon R^n$是变量，$a_1,\cdots,a_k \epsilon R^n, b_1,\cdots,b_k \epsilon R$是实例化的问题参数,和least-squares相似的是，它们的目标函数都是项$a^T_ix-b_i$。不同之处在于，least-squares用的是该项的平方和作为目标函数，而Chebyshev approximation中用的是绝对值的最大值。Chebyshev approximation problem的目标函数是不可导的(max operation), least-squares problem的目标函数是二次的(quadratic), 因此可导的(differentiable)。</p>
-<h2 id="凸优化-Convex-optimization"><a href="#凸优化-Convex-optimization" class="headerlink" title="凸优化(Convex optimization)"></a>凸优化(Convex optimization)</h2><p>凸优化问题是优化问题的一种,它的目标函数和优化函数都是凸的。<br>具有以下形式的问题是一种凸优化问题：<br>\begin{align*}<br>&amp;minimize \quad f_0(x)\<br>&amp;subject \ to \quad f_i(x) \le b_i, i = 1,\cdots,m.<br>\end{align*}<br>其中函数$f_0,\cdots,f_m:R^n \rightarrow R$是凸的(convex), 如满足</p>
+<h2 id="凸优化-Convex-optimization"><a href="#凸优化-Convex-optimization" class="headerlink" title="凸优化(Convex optimization)"></a>凸优化(Convex optimization)</h2><p>凸优化问题是优化问题的一种,它的目标函数和优化函数都是凸的。<br>具有以下形式的问题是一种凸优化问题：<br>\begin{align*}<br>&amp;minimize \quad f_0(x)\\<br>&amp;subject \ to \quad f_i(x) \le b_i, i = 1,\cdots,m.<br>\end{align*}<br>其中函数$f_0,\cdots,f_m:R^n \rightarrow R$是凸的(convex), 如满足</p>
 <script type="math/tex; mode=display">f_i(\alpha x+ \beta y) \le \alpha f_i(x) + \beta f_i(y)</script><p>对于所有的$x,y \epsilon R^n$和所有的$\alpha, \beta \epsilon R$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。<br>或者：</p>
 <script type="math/tex; mode=display">f_i(\theta x+ (1-\theta) y) \le \theta f_i(x) + (1 - \theta) f_i(y)</script><p>其中$\theta \epsilon [0,1]$。<br>课上有人问这里为$\theta$是0和1, 有没有什么物理意义，Stephen Boyd回答说这是定义，就是这么定义的。<br>The least-squares和linear programming problem都是convex optimization problem的特殊形式。线性函数(linear functions)也是convex，它们正处在边界上，它们的曲率(curvature)为0。一种方式是用正曲率去描述凸性。</p>
 <h3 id="凸优化求解-solving-convex-optimization-problems"><a href="#凸优化求解-solving-convex-optimization-problems" class="headerlink" title="凸优化求解(solving convex optimization problems)"></a>凸优化求解(solving convex optimization problems)</h3><ul>
@@ -701,11 +952,11 @@
 <li>Second.</li>
 <li>Third.</li>
 </ul>
-<h2 id="跨多行公式对齐"><a href="#跨多行公式对齐" class="headerlink" title="跨多行公式对齐"></a>跨多行公式对齐</h2><p><strong>注意：不要忘了每行后面的两个\</strong></p>
+<h2 id="跨多行公式对齐"><a href="#跨多行公式对齐" class="headerlink" title="跨多行公式对齐"></a>跨多行公式对齐</h2><p><strong>注意：不要忘了每行后面的两个\\</strong></p>
 <h3 id="示例1"><a href="#示例1" class="headerlink" title="示例1"></a>示例1</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">f(x) &amp;= (3 + 4)^2 + 4\\</span><br><span class="line">&amp;= 7^2 + 4\\</span><br><span class="line">&amp;= 49 + 4\\</span><br><span class="line">&amp;= 53</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure>
-<p>效果如下：<br>\begin{align*}<br>f(x) &amp;= (3 + 4)^2 + 4\<br>&amp;= 7^2 + 4\<br>&amp;= 49 + 4\<br>&amp;= 53<br>\end{align*}</p>
+<p>效果如下：<br>\begin{align*}<br>f(x) &amp;= (3 + 4)^2 + 4\\<br>&amp;= 7^2 + 4\\<br>&amp;= 49 + 4\\<br>&amp;= 53<br>\end{align*}</p>
 <h3 id="示例2"><a href="#示例2" class="headerlink" title="示例2"></a>示例2</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">v &amp;= R + \gamma Pv\\</span><br><span class="line">(1-\gamma P) &amp;= R\\</span><br><span class="line">v &amp;= (1 - \gamma P)^&#123;-1&#125; R</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure>
-<p>\begin{align*}<br>v &amp;= R + \gamma Pv\<br>(1-\gamma P) &amp;= R\<br>v &amp;= (1 - \gamma P)^{-1} R<br>\end{align*}</p>
+<p>\begin{align*}<br>v &amp;= R + \gamma Pv\\<br>(1-\gamma P) &amp;= R\\<br>v &amp;= (1 - \gamma P)^{-1} R<br>\end{align*}</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="http://blog.huangyuanlove.com/2018/02/27/LaTeX笔记-六/" target="_blank" rel="noopener">http://blog.huangyuanlove.com/2018/02/27/LaTeX笔记-六/</a><br>2.<a href="https://blog.csdn.net/xxzhangx/article/details/52778539" target="_blank" rel="noopener">https://blog.csdn.net/xxzhangx/article/details/52778539</a><br>3.<a href="https://blog.csdn.net/hunauchenym/article/details/7330828" target="_blank" rel="noopener">https://blog.csdn.net/hunauchenym/article/details/7330828</a><br>4.<a href="http://geowu.blogspot.com/2012/10/latex_25.html" target="_blank" rel="noopener">http://geowu.blogspot.com/2012/10/latex_25.html</a></p>
 
           
@@ -878,26 +1129,26 @@
       
         
           
-            <h2 id="马尔科夫过程-markov-process-、马尔科夫链-markov-chain"><a href="#马尔科夫过程-markov-process-、马尔科夫链-markov-chain" class="headerlink" title="马尔科夫过程(markov process)、马尔科夫链(markov chain)"></a>马尔科夫过程(markov process)、马尔科夫链(markov chain)</h2><p>马尔科夫过程或者马尔科夫链(markov chain)是一个tuple $\lt S,P\gt$,其中S是一个有限(或者无限)的状态集合,P是状态转移矩阵(transition probability matrix)或马尔科夫矩阵(markov matrix),$P<em>{ss’}= P[S</em>{t+1} = s’|S_t = s]$.</p>
+            <h2 id="马尔科夫过程-markov-process-、马尔科夫链-markov-chain"><a href="#马尔科夫过程-markov-process-、马尔科夫链-markov-chain" class="headerlink" title="马尔科夫过程(markov process)、马尔科夫链(markov chain)"></a>马尔科夫过程(markov process)、马尔科夫链(markov chain)</h2><p>马尔科夫过程或者马尔科夫链(markov chain)是一个tuple $\lt S,P\gt$,其中S是一个有限(或者无限)的状态集合,P是状态转移矩阵(transition probability matrix)或马尔科夫矩阵(markov matrix),$P_{ss’}= P[S_{t+1} = s’|S_t = s]$.</p>
 <h2 id="马尔科夫奖励过程-markov-reward-process"><a href="#马尔科夫奖励过程-markov-reward-process" class="headerlink" title="马尔科夫奖励过程(markov reward process)"></a>马尔科夫奖励过程(markov reward process)</h2><p>马尔科夫奖励过程是一个tuple $\lt S,P,R,\gamma\gt$,和马尔科夫过程相比，它多了一个奖励R，R和某个具体的状态相关，MRP中的reward只和state有关,和action无关。<br>S是一个(有限)状态的集合。<br>P是一个状态转移概率矩阵。<br>R是一个奖励函数$R = \mathbb{E}[R_{t+1}|S_t = s]$, <strong>这里为什么是t+1时刻的reward?这仅仅是一个约定，为了描述RL问题中涉及到的observation，action，reward比较方便。这里可以理解为离开这个状态才能获得奖励而不是进入这个状态即获得奖励。如果改成$R_t$也是可以的，这时可以理解为进入这个状态获得的奖励。</strong><br>$\gamma$称为折扣因子(discount factor), $\gamma \epsilon [0,1]$.<strong>为什么引入$\gamma$，David Silver的公开课中提到了四个原因:(1)数学上便于计算回报(return)；(2)避免陷入无限循环；(3)长远利益具有一定的不确定性；(4)符合人类对眼前利益的追求。</strong></p>
 <h3 id="奖励-reward"><a href="#奖励-reward" class="headerlink" title="奖励(reward)"></a>奖励(reward)</h3><p>每个状态s在一个时刻t立即可得到一个reward,reward的值需要由环境给出,这个值可正可负。目前的强化学习算法中reward都是人为设置的。</p>
 <h3 id="回报-return"><a href="#回报-return" class="headerlink" title="回报(return)"></a>回报(return)</h3><p>回报是累积的未来的reward,其计算公式如下:</p>
 <script type="math/tex; mode=display">G_t = R_{t+1} + R_{t+2} + ... = \sum_{k=0}^{\infty}{\gamma^k R_{t+k+1}} \tag{1}</script><p>它是一个马尔科夫链上从t时刻开始往后所有奖励的有衰减(带折扣因子)的总和。</p>
 <h3 id="值函数-value-function"><a href="#值函数-value-function" class="headerlink" title="值函数(value function)"></a>值函数(value function)</h3><p>值函数是回报(return)的期望(expected return), 一个MRP过程中某一状态的value function为从该状态开始的markov charin return的期望，即$v(s) = \mathbb{E}[G_t|S_t=s]$.<br>MRP的value function和MDP的value function是不同的, MRP的value function是对于state而言的，而MDP的value function是针对tuple $\lt$state, action$\gt$的。<br>这里为什么要取期望,因为policy是stotastic的情况时，在每个state时，采取每个action都是可能的，都有一定的概率，next state也是不确定的了，所以value funciton是一个随机变量，因此就引入期望来刻画随机变量的性质。<br>为什么在当前state就知道下一时刻的state了?对于有界的RL问题来说，return是在一个回合结束时候计算的；对于无界的RL问题来说，由于有衰减系数，只要reward有界，return就可以计算出来。</p>
-<h3 id="马尔科夫奖励过程的贝尔曼方程-bellman-equation-for-MRP"><a href="#马尔科夫奖励过程的贝尔曼方程-bellman-equation-for-MRP" class="headerlink" title="马尔科夫奖励过程的贝尔曼方程(bellman equation for MRP)"></a>马尔科夫奖励过程的贝尔曼方程(bellman equation for MRP)</h3><p>\begin{align*}<br>v(s) &amp;= \mathbb{E}[G<em>t|S_t = s]\<br>&amp;= \mathbb{E}[R</em>{t+1} + \gamma R<em>{t+2} + … | S_t = s]\<br>&amp;= \mathbb{E}[R</em>{t+1} + \gamma (R<em>{t+2} + \gamma R</em>{t+3} + …|S<em>t = s]\<br>&amp;= \mathbb{E}[R</em>{t+1} + \gamma G<em>{t+1} |S_t = s]\<br>&amp;= \mathbb{E}[R</em>{t+1} + \gamma v(S<em>{t+1})|S_t = s]\<br>v(s) &amp;= \mathbb{E}[R</em>{t+1} + \gamma v(S<em>{t+1})|S_t = s]<br>\end{align*}<br>v(s)由两部分组成，一部分是immediate reward的期望(expectation)，$\mathbb{E}[R</em>{t+1}]$, 只与当前时刻state有关；另一部分是下一时刻state的value function的expectation。如果用s’表示s状态下一时刻的state，那么bellman equation可以写成：</p>
+<h3 id="马尔科夫奖励过程的贝尔曼方程-bellman-equation-for-MRP"><a href="#马尔科夫奖励过程的贝尔曼方程-bellman-equation-for-MRP" class="headerlink" title="马尔科夫奖励过程的贝尔曼方程(bellman equation for MRP)"></a>马尔科夫奖励过程的贝尔曼方程(bellman equation for MRP)</h3><p>\begin{align*}<br>v(s) &amp;= \mathbb{E}[G_t|S_t = s]\\<br>&amp;= \mathbb{E}[R_{t+1} + \gamma R_{t+2} + … | S_t = s]\\<br>&amp;= \mathbb{E}[R_{t+1} + \gamma (R_{t+2} + \gamma R_{t+3} + …|S_t = s]\\<br>&amp;= \mathbb{E}[R_{t+1} + \gamma G_{t+1} |S_t = s]\\<br>&amp;= \mathbb{E}[R_{t+1} + \gamma v(S_{t+1})|S_t = s]\\<br>v(s) &amp;= \mathbb{E}[R_{t+1} + \gamma v(S_{t+1})|S_t = s]<br>\end{align*}<br>v(s)由两部分组成，一部分是immediate reward的期望(expectation)，$\mathbb{E}[R_{t+1}]$, 只与当前时刻state有关；另一部分是下一时刻state的value function的expectation。如果用s’表示s状态下一时刻的state，那么bellman equation可以写成：</p>
 <script type="math/tex; mode=display">v(s) = R_s + \gamma \sum_{s' \epsilon S} P_{ss'}v(s')</script><p>我们最终的目的是通过迭代使得t轮迭代时的v(s)和第t+1轮迭代时的v(s)相等。将其写成矩阵形式为：</p>
-<script type="math/tex; mode=display">v_t = R + \gamma P v_{t+1}</script><script type="math/tex; mode=display">(v_1,v_2,...,v_n)^T = (R_1,R_2,...,R_n)^T + \gamma \begin{bmatrix}P_{11}&P_{12}&...&P_{1n}\\P_{21}&P_{22}&...&P_{2n}\\&&...&\\P_{n1}&P_{n2}&...&P_{nn}\end{bmatrix} (v_1,v_2,...,v_n)^T</script><p>MRP的Bellman方程组是线性的，可以直接求解:<br>\begin{align*}<br>v &amp;= R + \gamma Pv\<br>(1-\gamma P) &amp;= R\<br>v &amp;= (1 - \gamma P)^{-1} R<br>\end{align*}<br>可以直接解方程，但是复杂度为$O(n^3)$，对于大的MRP方程组不适用，可以通过迭代法求解，常用的迭代法有动态规划,蒙特卡洛算法和时序差分算法等求解(动态规划是迭代法吗？）</p>
-<h2 id="马尔科夫决策过程-markov-decision-process"><a href="#马尔科夫决策过程-markov-decision-process" class="headerlink" title="马尔科夫决策过程(markov decision process)"></a>马尔科夫决策过程(markov decision process)</h2><p>马尔科夫决策过程，比markov reward process多了一个A,它也是一个tuple $\lt S,A,P,R,\gamma\gt$, 在MRP中奖励R仅仅和状态S相关，在MDP中奖励R和概率P对应的是某个状态S和某个动作A的组合。<br>\begin{align*}<br>P<em>{ss’}^a &amp;= P[S</em>{t+1} = s’ | S<em>t = s, A_t = a]\<br>R_s^a &amp;= \mathbb{E}[R</em>{t+1} | S_t = s, A_t = a]<br>\end{align*}<br>这里的reward不仅仅与state相关，而是与tuple $\lt state，action\gt$相关。</p>
-<h3 id="回报"><a href="#回报" class="headerlink" title="回报"></a>回报</h3><p>MDP中的$G<em>t$和式子$(1)$的$G_t$是一样的，将$G_t$写成和后继时刻相关的形式如下：<br>\begin{align*}<br>G_t &amp;= R</em>{t+1} + \gamma R<em>{t+2} + \gamma^2 R</em>{t+3} + \gamma^3 R<em>{t+4} + …\<br>&amp;= R</em>{t+1} + \gamma (R<em>{t+2} + \gamma^1 R</em>{t+3} + \gamma^2 R<em>{t+4} + …)\<br>&amp;= R</em>{t+1} + \gamma G_{t+1} \tag{2}<br>\end{align*}<br>这里引入$\gamma$之后，即使是在continuing情况下，只要$G_t$是非零常数，$G_t$也可以通过等比数列求和公式进行计算，即:</p>
+<script type="math/tex; mode=display">v_t = R + \gamma P v_{t+1}</script><script type="math/tex; mode=display">(v_1,v_2,...,v_n)^T = (R_1,R_2,...,R_n)^T + \gamma \begin{bmatrix}P_{11}&P_{12}&...&P_{1n}\\P_{21}&P_{22}&...&P_{2n}\\&&...&\\P_{n1}&P_{n2}&...&P_{nn}\end{bmatrix} (v_1,v_2,...,v_n)^T</script><p>MRP的Bellman方程组是线性的，可以直接求解:<br>\begin{align*}<br>v &amp;= R + \gamma Pv\\<br>(1-\gamma P) &amp;= R\\<br>v &amp;= (1 - \gamma P)^{-1} R<br>\end{align*}<br>可以直接解方程，但是复杂度为$O(n^3)$，对于大的MRP方程组不适用，可以通过迭代法求解，常用的迭代法有动态规划,蒙特卡洛算法和时序差分算法等求解(动态规划是迭代法吗？）</p>
+<h2 id="马尔科夫决策过程-markov-decision-process"><a href="#马尔科夫决策过程-markov-decision-process" class="headerlink" title="马尔科夫决策过程(markov decision process)"></a>马尔科夫决策过程(markov decision process)</h2><p>马尔科夫决策过程，比markov reward process多了一个A,它也是一个tuple $\lt S,A,P,R,\gamma\gt$, 在MRP中奖励R仅仅和状态S相关，在MDP中奖励R和概率P对应的是某个状态S和某个动作A的组合。<br>\begin{align*}<br>P_{ss’}^a &amp;= P[S_{t+1} = s’ | S_t = s, A_t = a]\\<br>R_s^a &amp;= \mathbb{E}[R_{t+1} | S_t = s, A_t = a]<br>\end{align*}<br>这里的reward不仅仅与state相关，而是与tuple $\lt state，action\gt$相关。</p>
+<h3 id="回报"><a href="#回报" class="headerlink" title="回报"></a>回报</h3><p>MDP中的$G_t$和式子$(1)$的$G_t$是一样的，将$G_t$写成和后继时刻相关的形式如下：<br>\begin{align*}<br>G_t &amp;= R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \gamma^3 R_{t+4} + …\\<br>&amp;= R_{t+1} + \gamma (R_{t+2} + \gamma^1 R_{t+3} + \gamma^2 R_{t+4} + …)\\<br>&amp;= R_{t+1} + \gamma G_{t+1} \tag{2}<br>\end{align*}<br>这里引入$\gamma$之后，即使是在continuing情况下，只要$G_t$是非零常数，$G_t$也可以通过等比数列求和公式进行计算，即:</p>
 <script type="math/tex; mode=display">G_t = \sum_{k=1}^{\infty}\gamma^k = \frac{1}{1-\gamma} \tag{3}</script><h3 id="策略-policy"><a href="#策略-policy" class="headerlink" title="策略(policy)"></a>策略(policy)</h3><p>策略$\pi$的定义:给定状态时采取各个动作的概率分布。</p>
-<script type="math/tex; mode=display">\pi(a|s) = P[A_t = a | S_t = a] \tag{4}</script><h3 id="值函数-value-function-1"><a href="#值函数-value-function-1" class="headerlink" title="值函数(value function)"></a>值函数(value function)</h3><p>这里给出的是值函数的定义，就是这么定义的。<br>MDP的值函数有两种，状态值函数(state value function)和动作值函数(action value function), 这两种值函数的含义其实是一样的，也可以相互转换。具体来说, 值函数定义为给定一个policy $\pi$，得到的回报的期望(expected return)。<br>一个MDP的状态s对应的值函数(state value function) $v<em>{\pi}(s)$是从状态s开始采取策略$\pi$得到的回报的期望。<br>\begin{align*}<br>v</em>{\pi}(s) &amp;= \mathbb{E}<em>{\pi}[G_t|S_t = s]\<br>&amp;=\mathbb{E}</em>{\pi}[\sum<em>{k=0}^{\infty} \gamma^{k}R</em>{t+k+1}|S<em>t=s] \tag{5}<br>\end{align*}<br>这里的$G_t$是式子(2)中的回报。<br>一个MDP过程中动作值函数(action value function) $q</em>{\pi}(s,a)$是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。</p>
-<p><action value function $q_{\pi}(s,a)$ is the expected return starting from states, taking action a, and then following policy \pi.><br>\begin{align*}<br>q<em>{\pi}(s,a) &amp;= \mathbb{E}</em>{\pi}\left[G<em>t | S_t = s, A_t = a\right]\<br>&amp;= \mathbb{E}</em>{\pi}\left[\sum<em>{k=0}^{\infty} \gamma^{k}R</em>{t+k+1}|S_t=s, A_t=a\right] \tag{6}<br>\end{align*}</action></p>
-<h4 id="状态值函数-state-value-function"><a href="#状态值函数-state-value-function" class="headerlink" title="状态值函数(state value function)"></a>状态值函数(state value function)</h4><p>\begin{align*}<br>v<em>{\pi}(s) &amp;= \sum</em>{a \epsilon A} \pi(a|s) q<em>{\pi} (s,a) \tag{7}\<br>v</em>{\pi}(s) &amp;= \sum<em>a \pi(a|s)\sum</em>{s’,r}p(s’,r|s,a) \left[r + \gamma v<em>{\pi}(s’) \right] \tag{8}\<br>\end{align*}<br>式子$(7)$是$v(s)$和$q(s,a)$的关系，式子$(8)$是$v(s)$和它的后继状态$v(s’)$的关系。<br>式子$(8)$的推导如下：<br>\begin{align*}<br>v</em>{\pi}(s) &amp;= \mathbb{E}<em>{\pi}[G_t|S_t = s]\<br>&amp;= \mathbb{E}</em>{\pi}\left[R<em>{t+1}+\gamma G</em>{t+1}|S<em>t = s\right]\<br>&amp;= \sum_a \pi(a|s)\sum</em>{s’}\sum<em>rp(s’,r|s,a) \left[r + \gamma \mathbb{E}</em>{\pi}\left[G<em>{t+1}|S</em>{t+1}=s’\right]\right]\<br>&amp;= \sum<em>a \pi(a|s)\sum</em>{s’,r}p(s’,r|s,a) \left[r + \gamma v_{\pi}(s’) \right]\<br>\end{align*}</p>
-<h4 id="动作值函数-action-value-function"><a href="#动作值函数-action-value-function" class="headerlink" title="动作值函数(action value function)"></a>动作值函数(action value function)</h4><p>\begin{align*}<br>q<em>{\pi}(s,a) &amp;= \sum</em>{s’}\sum<em>r p(s’,r|s,a)(r + \gamma  v</em>{\pi}(s’)) \<br>q<em>{\pi}(s,a) &amp;= \sum</em>{s’}\sum<em>r p(s’,r|s,a)(r + \gamma  \sum</em>{a’}\pi(a’|s’)q(s’,a’)) \tag{10}\<br>\end{align*}<br>式子$(9)$是$q(s,a)$和$v(s)$的关系，式子$(10)$是$q(s,a)$和它的后继状态$q(s’,a’)$的关系。<br>以上都是针对MDP来说的，在MDP中，给定policy $\pi$下，状态s下选择a的action value function，$q_{\pi}(s,a)$类似MRP里面的v(s)，而MDP中的v(s)是要考虑在state s下采率各个action后的情况。</p>
-<h3 id="贝尔曼期望方程-Bellmam-expectation-equation"><a href="#贝尔曼期望方程-Bellmam-expectation-equation" class="headerlink" title="贝尔曼期望方程(Bellmam expectation equation)"></a>贝尔曼期望方程(Bellmam expectation equation)</h3><p>\begin{align*}<br>v<em>{\pi}(s) &amp;= \mathbb{E}</em>{\pi}[R<em>{t+1} + \gamma v</em>{\pi}(S<em>{t+1})|S_t = s] \tag{11}\<br>v</em>{\pi}(s) &amp;= \mathbb{E}<em>{\pi}\left[q</em>{\pi}(S<em>t,A_t)|S_t=s,A_t=a\right]\tag{12}\<br>q</em>{\pi}(s,a)&amp;= \mathbb{E}<em>{\pi}\left[R+\gamma v</em>{\pi}(S<em>{t+1}) |S_t=s,A_t=a\right]\tag{13}\<br>q</em>{\pi}(s,a) &amp;= \mathbb{E}<em>{\pi}[R</em>{t+1} + \gamma q<em>{\pi}(S</em>{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{14}<br>\end{align*}</p>
-<h4 id="矩阵形式"><a href="#矩阵形式" class="headerlink" title="矩阵形式"></a>矩阵形式</h4><p>\begin{align*}<br>v<em>{\pi} &amp;= R^{\pi} + \gamma P^{\pi} v</em>{\pi}\<br>v_{\pi} &amp;= (I-\gamma P^{\pi})^{-1} R^{\pi}<br>\end{align*}</p>
-<h2 id="最优策程的求解-how-to-find-optimal-policy"><a href="#最优策程的求解-how-to-find-optimal-policy" class="headerlink" title="最优策程的求解(how to find optimal policy)"></a>最优策程的求解(how to find optimal policy)</h2><h3 id="最优价值函数-optimal-value-function"><a href="#最优价值函数-optimal-value-function" class="headerlink" title="最优价值函数(optimal value function)"></a>最优价值函数(optimal value function)</h3><p>$v<em>{*} = max</em>{\pi}v<em>{\pi}(s)$,从所有策略产生的state value function中，选取使得state s的价值最大的函数<br>$q</em>{*}(s,a) = max<em>{\pi} q</em>{\pi}(s,a)$,从所有策略产生的action value function中，选取使$\lt s,a\gt$价值最大的函数<br>当我们得到了optimal value function，也就知道了每个state的最优价值，便认为这个MDP被解决了</p>
-<h3 id="最优策略-optimal-policy"><a href="#最优策略-optimal-policy" class="headerlink" title="最优策略(optimal policy)"></a>最优策略(optimal policy)</h3><p>对于每一个state s，在policy $\pi$下的value 大于在policy $\pi’$的value， 就称策略$\pi$优于策略$\pi’$， $\pi \ge \pi’$ if $v<em>{\pi}(s) \ge v</em>{\pi’}(s)$, 对于任意s都成立<br>对于任何MDP，都满足以下条件：</p>
+<script type="math/tex; mode=display">\pi(a|s) = P[A_t = a | S_t = a] \tag{4}</script><h3 id="值函数-value-function-1"><a href="#值函数-value-function-1" class="headerlink" title="值函数(value function)"></a>值函数(value function)</h3><p>这里给出的是值函数的定义，就是这么定义的。<br>MDP的值函数有两种，状态值函数(state value function)和动作值函数(action value function), 这两种值函数的含义其实是一样的，也可以相互转换。具体来说, 值函数定义为给定一个policy $\pi$，得到的回报的期望(expected return)。<br>一个MDP的状态s对应的值函数(state value function) $v_{\pi}(s)$是从状态s开始采取策略$\pi$得到的回报的期望。<br>\begin{align*}<br>v_{\pi}(s) &amp;= \mathbb{E}_{\pi}[G_t|S_t = s]\\<br>&amp;=\mathbb{E}_{\pi}[\sum_{k=0}^{\infty} \gamma^{k}R_{t+k+1}|S_t=s] \tag{5}<br>\end{align*}<br>这里的$G_t$是式子(2)中的回报。<br>一个MDP过程中动作值函数(action value function) $q_{\pi}(s,a)$是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。</p>
+<p><action value function $q_{\pi}(s,a)$ is the expected return starting from states, taking action a, and then following policy \pi.><br>\begin{align*}<br>q_{\pi}(s,a) &amp;= \mathbb{E}_{\pi}\left[G_t | S_t = s, A_t = a\right]\\<br>&amp;= \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} \gamma^{k}R_{t+k+1}|S_t=s, A_t=a\right] \tag{6}<br>\end{align*}</action></p>
+<h4 id="状态值函数-state-value-function"><a href="#状态值函数-state-value-function" class="headerlink" title="状态值函数(state value function)"></a>状态值函数(state value function)</h4><p>\begin{align*}<br>v_{\pi}(s) &amp;= \sum_{a \epsilon A} \pi(a|s) q_{\pi} (s,a) \tag{7}\\<br>v_{\pi}(s) &amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_{\pi}(s’) \right] \tag{8}\\<br>\end{align*}<br>式子$(7)$是$v(s)$和$q(s,a)$的关系，式子$(8)$是$v(s)$和它的后继状态$v(s’)$的关系。<br>式子$(8)$的推导如下：<br>\begin{align*}<br>v_{\pi}(s) &amp;= \mathbb{E}_{\pi}[G_t|S_t = s]\\<br>&amp;= \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\\<br>&amp;= \sum_a \pi(a|s)\sum_{s’}\sum_rp(s’,r|s,a) \left[r + \gamma \mathbb{E}_{\pi}\left[G_{t+1}|S_{t+1}=s’\right]\right]\\<br>&amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_{\pi}(s’) \right]\\<br>\end{align*}</p>
+<h4 id="动作值函数-action-value-function"><a href="#动作值函数-action-value-function" class="headerlink" title="动作值函数(action value function)"></a>动作值函数(action value function)</h4><p>\begin{align*}<br>q_{\pi}(s,a) &amp;= \sum_{s’}\sum_r p(s’,r|s,a)(r + \gamma  v_{\pi}(s’)) \\<br>q_{\pi}(s,a) &amp;= \sum_{s’}\sum_r p(s’,r|s,a)(r + \gamma  \sum_{a’}\pi(a’|s’)q(s’,a’)) \tag{10}\\<br>\end{align*}<br>式子$(9)$是$q(s,a)$和$v(s)$的关系，式子$(10)$是$q(s,a)$和它的后继状态$q(s’,a’)$的关系。<br>以上都是针对MDP来说的，在MDP中，给定policy $\pi$下，状态s下选择a的action value function，$q_{\pi}(s,a)$类似MRP里面的v(s)，而MDP中的v(s)是要考虑在state s下采率各个action后的情况。</p>
+<h3 id="贝尔曼期望方程-Bellmam-expectation-equation"><a href="#贝尔曼期望方程-Bellmam-expectation-equation" class="headerlink" title="贝尔曼期望方程(Bellmam expectation equation)"></a>贝尔曼期望方程(Bellmam expectation equation)</h3><p>\begin{align*}<br>v_{\pi}(s) &amp;= \mathbb{E}_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s] \tag{11}\\<br>v_{\pi}(s) &amp;= \mathbb{E}_{\pi}\left[q_{\pi}(S_t,A_t)|S_t=s,A_t=a\right]\tag{12}\\<br>q_{\pi}(s,a)&amp;= \mathbb{E}_{\pi}\left[R+\gamma v_{\pi}(S_{t+1}) |S_t=s,A_t=a\right]\tag{13}\\<br>q_{\pi}(s,a) &amp;= \mathbb{E}_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{14}<br>\end{align*}</p>
+<h4 id="矩阵形式"><a href="#矩阵形式" class="headerlink" title="矩阵形式"></a>矩阵形式</h4><p>\begin{align*}<br>v_{\pi} &amp;= R^{\pi} + \gamma P^{\pi} v_{\pi}\\<br>v_{\pi} &amp;= (I-\gamma P^{\pi})^{-1} R^{\pi}<br>\end{align*}</p>
+<h2 id="最优策程的求解-how-to-find-optimal-policy"><a href="#最优策程的求解-how-to-find-optimal-policy" class="headerlink" title="最优策程的求解(how to find optimal policy)"></a>最优策程的求解(how to find optimal policy)</h2><h3 id="最优价值函数-optimal-value-function"><a href="#最优价值函数-optimal-value-function" class="headerlink" title="最优价值函数(optimal value function)"></a>最优价值函数(optimal value function)</h3><p>$v_{*} = max_{\pi}v_{\pi}(s)$,从所有策略产生的state value function中，选取使得state s的价值最大的函数<br>$q_{*}(s,a) = max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value function中，选取使$\lt s,a\gt$价值最大的函数<br>当我们得到了optimal value function，也就知道了每个state的最优价值，便认为这个MDP被解决了</p>
+<h3 id="最优策略-optimal-policy"><a href="#最优策略-optimal-policy" class="headerlink" title="最优策略(optimal policy)"></a>最优策略(optimal policy)</h3><p>对于每一个state s，在policy $\pi$下的value 大于在policy $\pi’$的value， 就称策略$\pi$优于策略$\pi’$， $\pi \ge \pi’$ if $v_{\pi}(s) \ge v_{\pi’}(s)$, 对于任意s都成立<br>对于任何MDP，都满足以下条件：</p>
 <ol>
 <li>都存在一个optimal policy，它比其他策略好或者至少相等；</li>
 <li>所有的optimal policy的optimal value function是相同的；</li>
@@ -908,8 +1159,8 @@
 \begin{cases}
 1, &if\quad a = argmax\ q_{*}(s,a)\\
 0, &otherwise\end{cases}</script><h3 id="贝尔曼最优方程-bellman-optimal-equation"><a href="#贝尔曼最优方程-bellman-optimal-equation" class="headerlink" title="贝尔曼最优方程(bellman optimal equation)"></a>贝尔曼最优方程(bellman optimal equation)</h3><p>*号表示最优的策略。</p>
-<h4 id="最优状态值函数-state-value-function"><a href="#最优状态值函数-state-value-function" class="headerlink" title="最优状态值函数(state value function)"></a>最优状态值函数(state value function)</h4><p>\begin{align*}<br>v<em>{*}(s) &amp;= max_a q</em>{*}(s,a)\<br>&amp;= max<em>a\mathbb{E}</em>{\pi<em>{*}}\left[G_t|S_t=s,A_t=a\right]\<br>&amp;= max_a\mathbb{E}</em>{\pi<em>{*}}\left[R</em>{t+1}+\gamma G<em>t|S_t=s,A_t=a\right]\<br>&amp;= max_a\mathbb{E}\left[R</em>{t+1} +\gamma v<em>{*}(S</em>{t+1})|S<em>t=s,A_t=a\right]\<br>&amp;= max_a \left[\sum</em>{s’,r} p(s’,r|s,a){*}(r+\gamma v_{*}(s’) )\right] \tag{15}\<br>\end{align*}</p>
-<h4 id="最优动作值函数-action-value-function"><a href="#最优动作值函数-action-value-function" class="headerlink" title="最优动作值函数(action value function)"></a>最优动作值函数(action value function)</h4><p>\begin{align*}<br>q<em>{*}(s,a) &amp;= \sum</em>{s’,r} p(s’,r|s,a) (r + \gamma v<em>{*}(s’))\<br>&amp;= \sum</em>{s’,r} p(s’,r|s,a) (r + \gamma max<em>{a’} q</em>{*}(s’,a’))\<br>&amp;=\mathbb{E}\left[R<em>{t+1}+\gamma max</em>{a’}q<em>{*}(S</em>{t+1},a’)|S_t=s,A_t=a \right]\tag{16}\<br>\end{align*}</p>
+<h4 id="最优状态值函数-state-value-function"><a href="#最优状态值函数-state-value-function" class="headerlink" title="最优状态值函数(state value function)"></a>最优状态值函数(state value function)</h4><p>\begin{align*}<br>v_{*}(s) &amp;= max_a q_{*}(s,a)\\<br>&amp;= max_a\mathbb{E}_{\pi_{*}}\left[G_t|S_t=s,A_t=a\right]\\<br>&amp;= max_a\mathbb{E}_{\pi_{*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\<br>&amp;= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{*}(S_{t+1})|S_t=s,A_t=a\right]\\<br>&amp;= max_a \left[\sum_{s’,r} p(s’,r|s,a){*}(r+\gamma v_{*}(s’) )\right] \tag{15}\\<br>\end{align*}</p>
+<h4 id="最优动作值函数-action-value-function"><a href="#最优动作值函数-action-value-function" class="headerlink" title="最优动作值函数(action value function)"></a>最优动作值函数(action value function)</h4><p>\begin{align*}<br>q_{*}(s,a) &amp;= \sum_{s’,r} p(s’,r|s,a) (r + \gamma v_{*}(s’))\\<br>&amp;= \sum_{s’,r} p(s’,r|s,a) (r + \gamma max_{a’} q_{*}(s’,a’))\\<br>&amp;=\mathbb{E}\left[R_{t+1}+\gamma max_{a’}q_{*}(S_{t+1},a’)|S_t=s,A_t=a \right]\tag{16}\\<br>\end{align*}</p>
 <h3 id="贝尔曼最优方程的求解-solution-to-Bellman-optimal-equation"><a href="#贝尔曼最优方程的求解-solution-to-Bellman-optimal-equation" class="headerlink" title="贝尔曼最优方程的求解(solution to Bellman optimal equation)"></a>贝尔曼最优方程的求解(solution to Bellman optimal equation)</h3><p>Bellman equation和Bellman optimal equation相比，一个是对于给定的策略，求其对应的value function,是对一个策略的估计，而bellman optimal equation是要寻找最优策略，通过对action value function进行贪心。<br>Bellman最优方程是非线性的，没有固定的解决方案，只能通过迭代法来解决，如Policy iteration，value iteration，Q-learning，Sarsa等。</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="http://incompleteideas.net/book/the-book-2nd.html" target="_blank" rel="noopener">http://incompleteideas.net/book/the-book-2nd.html</a><br>2.<a href="https://www.bilibili.com/video/av32149008/?p=2" target="_blank" rel="noopener">https://www.bilibili.com/video/av32149008/?p=2</a></p>
 
@@ -1350,7 +1601,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">75</span>
+                    <span class="site-state-item-count">76</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1608,11 +1859,7 @@
                     
                       
                     
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">108</span>
+                    <span class="site-state-item-count">106</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1864,6 +2111,8 @@
     
       
         
+      
+    
       
     
       
