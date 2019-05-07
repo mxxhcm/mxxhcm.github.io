@@ -94,5 +94,6 @@ export CUDA_HOME=/usr/local/cuda
 
 ## 参考文献
 1.http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/
+2.https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#axzz4qYJp45J2
 
 
