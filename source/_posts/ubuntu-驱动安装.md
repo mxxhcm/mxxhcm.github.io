@@ -55,6 +55,28 @@ sudo reboot
 ## 安装cuda 9.0
 到NVIDIA官网下载cuda 9.0的runfile，然后执行
 ~$:sudo sh cuda\*.run
+### 报错
+> Error: unsupported compiler: 7.4.0. Use --override to override this check.
+
+安装gcc低版本
+~$:sudo apt install gcc-6
+
+从CUDA 4.1版本开始，支持gcc 4.5。gcc 4.6和4.7不受支持。
+从CUDA 5.0版本开始，支持gcc 4.6。gcc 4.7不受支持。
+从CUDA 6.0版本开始，支持gcc 4.7。
+从CUDA 7.0版本开始，支持gcc 4.8，在Ubuntu 14.04和Fedora 21上支持4.9。
+从CUDA 7.5版开始，支持gcc 4.8，在Ubuntu 14.04和Fedora 21上支持4.9。
+从CUDA 8版本开始，Ubuntu 16.06和Fedora 23支持gcc 5.3。
+从CUDA 9版本开始，Ubuntu 16.04，Ubuntu 17.04和Fedora 25支持gcc 6。
+使用update-alternativess修改默认gcc版本
+~$:sudo update--install /usr/bin/g++ g++ /usr/bin/g++-6 50
+~$:sudo update--install /usr/bin/gcc gcc /usr/bin/gcc-6 50
+
+然后继续安装：
+~$:sudo sh cuda\*.run
+
+cuda安装在/usr/local/cuda-9.0 目录下
+卸载的话进入/usr/loca/cuda-9.0/bin 找到uninstall_cuda_9.0.pl运行卸载。
 
 ## 参考文献
 1.http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/
