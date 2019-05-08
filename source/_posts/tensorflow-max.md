@@ -1,5 +1,5 @@
 ---
-title: tensorflow maxl代码及例子
+title: tensorflow max
 date: 2019-05-08 17:38:46
 tags:
  - tensorflow
@@ -7,10 +7,10 @@ tags:
 categories: tensorflow
 ---
 
-## tf.max
-### tf.maximum
+## tf.maximum
+### 代码示例
 比较两个tensor，返回element-wise两个tensor的最大值。
-如下[示例](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py)：
+[代码地址示例](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py)：
 ``` python
 import tensorflow as tf
 

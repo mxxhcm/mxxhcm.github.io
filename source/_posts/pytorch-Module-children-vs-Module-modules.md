@@ -4,7 +4,7 @@ date: 2019-04-25 21:06:46
 tags:
  - pytorch
  - python
-categories: python
+categories: pytorch
 ---
 
 ## Module.modules()

@@ -5,7 +5,7 @@ tags:
  - python
  - pytorch
  - tensorflow
-categories: python
+categories: pytorch
 ---
 
 ## 对应

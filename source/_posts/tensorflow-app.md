@@ -1,5 +1,5 @@
 ---
-title: tensorflow app代码及例子
+title: tensorflow app
 date: 2019-05-08 17:35:39
 tags:
  - python
@@ -8,6 +8,8 @@ categories: tensorflow
 ---
 
 ## tf.app.flags
+### 代码示例
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_app.py )
 ``` python
 flags.py
 import tensorflow as tf

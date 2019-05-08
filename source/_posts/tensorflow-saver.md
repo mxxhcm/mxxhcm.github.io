@@ -1,14 +1,15 @@
 ---
-title: tensorflow saver代码及例子
+title: tensorflow saver
 date: 2019-05-08 17:39:54
 tags:
 - tensorflow
 - python
-categories: python
+categories: tensorflow
 ---
 
 ## tf.train.Saver()
 ### 代码示例(可运行)
+[代码地址](https://github.com/mxxhcm/code/tree/master/tf/some_ops/saver_restore)
 ``` python
 import tensorflow as tf
 

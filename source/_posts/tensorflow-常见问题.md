@@ -1,5 +1,5 @@
 ---
-title: tensorflow踩坑（不定期更新）
+title: tensorflow notes（不定期更新）
 date: 2019-03-07 14:51:01
 tags:
  - 机器学习

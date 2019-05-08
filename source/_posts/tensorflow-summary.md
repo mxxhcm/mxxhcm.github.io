@@ -1,5 +1,5 @@
 ---
-title: tensorflow summary代码及例子
+title: tensorflow summary
 date: 2019-05-08 17:39:43
 tags:
  - tensorflow
@@ -23,6 +23,7 @@ tf.summary.FileWriter.add_summary(self, summary, global_step=None)
 
 
 ### 代码示例(无法运行)
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_summary.py)
 ``` python
 import tensorflow as tf
 summary_loss = tf.summary.scalar('loss', loss)

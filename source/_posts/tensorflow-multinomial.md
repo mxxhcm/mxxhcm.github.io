@@ -1,5 +1,5 @@
 ---
-title: tensorflow multinomial代码及例子
+title: tensorflow multinomial
 date: 2019-05-08 17:37:45
 tags:
 - tensorflow
@@ -9,7 +9,8 @@ categories: tensorflow
 
 ## tf.multinomial
 多项分布，采样。
-如下[示例](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py)
+### 代码示例
+[代码地址](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py)
 ``` python
 import tensorflow as tf
 

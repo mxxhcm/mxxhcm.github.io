@@ -7,8 +7,9 @@ tags:
 categories: tensorflow
 ---
 
-## 代码
-[代码地址]()
+## tf.nn.conv2d
+### 代码示例
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_conv2d.py)
 ``` python
 import tensorflow as tf
 def conv(img):

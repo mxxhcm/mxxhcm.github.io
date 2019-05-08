@@ -4,7 +4,7 @@ date: 2019-05-08 18:57:41
 tags:
  - tensorflow
  - python
-categories: tensorflwo
+categories: tensorflow
 ---
 
 ## 创建Session
@@ -97,6 +97,8 @@ import tensorflow as tf
 ops = tf.get_default_graph().get_operations()
 print([op for op in ops])
 ```
+## 代码
+[完整地址](https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_basic.py)
 
 ## 参考文献
 

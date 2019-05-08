@@ -22,7 +22,7 @@ tf.boolean_mask(
 ```
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_boolean_mask.py)
 ```
 import tensorflow as tf
 
@@ -82,3 +82,4 @@ tf.boolean(a, g):
 
 ## 参考文献
 1.http://landcareweb.com/questions/27920/zai-tensorflowzhong-ru-he-cong-pythonde-zhang-liang-zhong-huo-qu-fei-ling-zhi-ji-qi-suo-yin
+2.https://www.tensorflow.org/api_docs/python/tf/boolean_mask
