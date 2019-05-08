@@ -1,5 +1,5 @@
 ---
-title: ubuntu 驱动安装
+title: ubuntu NVIDIA 驱动安装
 date: 2019-04-26 21:03:02
 tags:
  - ubuntu
@@ -26,8 +26,7 @@ blacklist nouveau
 ~\\$:sudo service lightdm stop
 接下来执行如下语句即可：
 ``` shell
-sudo apt-get install build-essential pkg-config xserver-xorg-dev linux-headers-`uname -r`
-sudo apt-get install mesa-common-dev
+sudo apt-get install build-essential pkg-config xserver-xorg-dev linux-headers-`uname -r` sudo apt-get install mesa-common-dev
 sudo apt-get install freeglut3-dev
 sudo chmod a+x NVIDIA-Linux-x86_64-375.66.run
 sudo sh NVIDIA-Linux-x86_64-375.66.run -no-opengl-files
@@ -104,6 +103,14 @@ sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
 ```
 即可
 
+
+## 版本对应
+### 显卡
+RTX 20系列显卡，需要使用cuda 10
+### pytorch
+而pytorch目前不支持cuda 10.1，所以只能使用cuda 10.0。
+### tensorflow
+te
 
 ## 参考文献
 1.http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/

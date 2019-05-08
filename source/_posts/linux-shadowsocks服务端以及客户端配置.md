@@ -24,6 +24,8 @@ mathjax: false
 #### 1.2.1.安装shadowsocks server
 ~#:apt install python-pip
 ~#:pip install shadowsocks
+需要说一下的是，shadowsocks目前还不支持python3.5及以上版本，上次我把/usr/bin/python指向了python3.6，就是系统默认的python指向了python3.6，然后就gg了。一定要使用Python 2.6,2.7,3.3,3.4中的一个版本才能使用。。
+
 #### 1.2.2.创建shadowsocks配置文件
 如果你的VPS支持ipv6的话，那么可以开多进程分别运行ipv4和ipv6的shadowsocks server。本地只有ipv4的话，可以用本地ipv4访问ipv6，从而访问byr等网站，但是六维空间对此做了屏蔽。如果本地有ipv6的话，还可以用本地的ipv6访问ipv6实现校园网不走ipv4流量。
 ##### 1.2.2.1.ipv4配置
@@ -248,7 +250,7 @@ reload)
 　　　stop
 　　　start
 　　　;;
-*)
+\*)
 　　　echo “Usage: $0 {start|reload|stop}”
 　　　exit 1
 　　　;;
@@ -280,7 +282,7 @@ esac
 取消下列行的注释，或者添加相应条目
 forward-socks5 / 127.0.0.1:1080 . # SOCKS5代理地址
 listen-address 127.0.0.1:8118     # HTTP代理地址
-forward 10.*.*.*/ .               # 内网地址不走代理
+forward 10.\*.\*.\*/ .               # 内网地址不走代理
 forward .abc.com/ .             # 指定域名不走代理
 重启privoxy服务
 ~$:sudo service privoxy restart
