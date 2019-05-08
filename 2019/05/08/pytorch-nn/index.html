@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="torch.nnContainerModuleModule是所有模型的基类。它有以下几个常用的函数和常见的属性。 常见的函数 Module.forward() # 前向传播 Module.modules()  # 返回module中所有的module，包含整个module，详情可见module.modules() Module.named_modules() # 同时返回module的名字 Mod">
+<meta name="keywords" content="python,pytorch">
+<meta property="og:type" content="article">
+<meta property="og:title" content="pytorch nn">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/05/08/pytorch-nn/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="torch.nnContainerModuleModule是所有模型的基类。它有以下几个常用的函数和常见的属性。 常见的函数 Module.forward() # 前向传播 Module.modules()  # 返回module中所有的module，包含整个module，详情可见module.modules() Module.named_modules() # 同时返回module的名字 Mod">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-05-08T14:16:33.744Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="pytorch nn">
+<meta name="twitter:description" content="torch.nnContainerModuleModule是所有模型的基类。它有以下几个常用的函数和常见的属性。 常见的函数 Module.forward() # 前向传播 Module.modules()  # 返回module中所有的module，包含整个module，详情可见module.modules() Module.named_modules() # 同时返回module的名字 Mod">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/05/08/pytorch-nn/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>pytorch nn | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-nn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">pytorch nn
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-08 21:55:18 / 修改时间：22:16:33" itemprop="dateCreated datePublished" datetime="2019-05-08T21:55:18+08:00">2019-05-08</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/05/08/pytorch-nn/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/05/08/pytorch-nn/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="torch-nn"><a href="#torch-nn" class="headerlink" title="torch.nn"></a>torch.nn</h2><h3 id="Container"><a href="#Container" class="headerlink" title="Container"></a>Container</h3><h4 id="Module"><a href="#Module" class="headerlink" title="Module"></a>Module</h4><p>Module是所有模型的基类。<br>它有以下几个常用的函数和常见的属性。</p>
+<h5 id="常见的函数"><a href="#常见的函数" class="headerlink" title="常见的函数"></a>常见的函数</h5><ul>
+<li>Module.forward() # 前向传播</li>
+<li>Module.modules()  # 返回module中所有的module，包含整个module，详情可见<a href="htts">module.modules()</a></li>
+<li>Module.named_modules() # 同时返回module的名字</li>
+<li>Module.children() # 返回module中所有的子module，不包含整个module，详情可见<a href="htts">module.modules()</a></li>
+<li>Module.named_children() # 同时返回子module的名字</li>
+<li>Module.parameters() # 返回模型的参数</li>
+<li>Module.named_parameters() # 同时返回parameter的名字</li>
+<li>Module.state_dict()  # 保存模型参数</li>
+<li>Module.load_state_dict()  # 加载模型参数</li>
+<li>Module.to() # </li>
+<li>Module.cuda()</li>
+<li>Module.cpu() </li>
+<li>Module.apply(fn) # 对模型中的每一个module都调用fn函数</li>
+<li>Module._apply()</li>
+</ul>
+<h5 id="常见的属性"><a href="#常见的属性" class="headerlink" title="常见的属性"></a>常见的属性</h5><ul>
+<li>self._backend = thnn_backend</li>
+<li>self._parameters = OrderedDict()</li>
+<li>self._buffers = OrderedDict()</li>
+<li>self._backward_hooks = OrderedDict()</li>
+<li>self._forward_hooks = OrderedDict()</li>
+<li>self._forward_pre_hooks = OrderedDict()</li>
+<li>self._state_dict_hooks = OrderedDict()</li>
+<li>self._load_state_dict_pre_hooks = OrderedDict()</li>
+<li>self._modules = OrderedDict()</li>
+<li>self.training = True</li>
+</ul>
+<h5 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h5><p>关于module,children_modules,parameters的<a href>代码</a></p>
+<h4 id="Sequential"><a href="#Sequential" class="headerlink" title="Sequential"></a>Sequential</h4><h3 id="Convolution-Layers"><a href="#Convolution-Layers" class="headerlink" title="Convolution Layers"></a>Convolution Layers</h3><h4 id="torch-nn-Conv2d"><a href="#torch-nn-Conv2d" class="headerlink" title="torch.nn.Conv2d"></a>torch.nn.Conv2d</h4><h5 id="类声明"><a href="#类声明" class="headerlink" title="类声明"></a>类声明</h5><p>应用2维卷积到输入信号中。<br>torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True)</p>
+<blockquote>
+<p>Applies a 2D convolution over an input signal composed of several input planes.</p>
+</blockquote>
+<h5 id="参数声明"><a href="#参数声明" class="headerlink" title="参数声明"></a>参数声明</h5><p>in_channels (int) – 输入图像的通道<br>out_channels (int) – 卷积产生的输出通道数（也就是有几个kernel）<br>kernel_size (int or tuple) – kernel的大小<br>stride (int or tuple, optional) – 卷积的步长，默认为$1$<br>padding (int or tuple, optional) – 向输入数据的各边添加Zero-padding的数量，默认为$0$<br>dilation (int or tuple, optional) – Spacing between kernel elements. Default: 1<br>groups (int, optional) – Number of blocked connections from input channels to output channels. Default: 1<br>bias (bool, optional) – If True, adds a learnable bias to the output</p>
+<h5 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h5><h6 id="例子1"><a href="#例子1" class="headerlink" title="例子1"></a>例子1</h6><p>用$6$个$5\times 5$的filter处理维度为$32\times 32\times 1$的图像。<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line">model = torch.nn.Conv2d(<span class="number">1</span>, <span class="number">6</span>, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">input = torch.randn(<span class="number">16</span>, <span class="number">1</span>, <span class="number">32</span>, <span class="number">32</span>)</span><br><span class="line">output = model(input)</span><br><span class="line">print(output.size())</span><br></pre></td></tr></table></figure></p>
+<p>输出是：</p>
+<blockquote>
+<p>torch.Size([16, 6, 28, 28])</p>
+</blockquote>
+<h6 id="例子2"><a href="#例子2" class="headerlink" title="例子2"></a>例子2</h6><p>stride和padding<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"><span class="keyword">from</span> torch.autograd <span class="keyword">import</span> Variable</span><br><span class="line"></span><br><span class="line">inputs = Variable(torch.randn(<span class="number">64</span>,<span class="number">3</span>,<span class="number">32</span>,<span class="number">32</span>))</span><br><span class="line"></span><br><span class="line">m1 = nn.Conv2d(<span class="number">3</span>,<span class="number">16</span>,<span class="number">3</span>)</span><br><span class="line">print(m1)</span><br><span class="line">output1 = m1(inputs)</span><br><span class="line">print(output1.size())</span><br><span class="line"></span><br><span class="line">m2 = nn.Conv2d(<span class="number">3</span>, <span class="number">16</span>, <span class="number">3</span>, padding=<span class="number">1</span>)</span><br><span class="line">print(m2)</span><br><span class="line">output2 = m2(inputs)</span><br><span class="line">print(output2.size())</span><br></pre></td></tr></table></figure></p>
+<p>输出</p>
+<blockquote>
+<p>Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1))<br>torch.Size([64, 16, 30, 30])<br>Conv2d(3, 16, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))<br>torch.Size([64, 16, 32, 32])</p>
+</blockquote>
+<h3 id="Pooling-Layers"><a href="#Pooling-Layers" class="headerlink" title="Pooling Layers"></a>Pooling Layers</h3><h4 id="MaxPool2dd"><a href="#MaxPool2dd" class="headerlink" title="MaxPool2dd"></a>MaxPool2dd</h4><p>MaxPool2d这个layer stride默认是和kernel_size相同的<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">import torch</span><br><span class="line">from torch import nn</span><br><span class="line">from torch.autograd import Variable</span><br><span class="line"></span><br><span class="line"># maxpool2d</span><br><span class="line"># class torch.nn.MaxPool2d(kernel_size,stride=None,padding=0,dilation=1,return_indices=False,ceil_mode=False)</span><br><span class="line"></span><br><span class="line">print(&quot;input:&quot;)</span><br><span class="line">input = Variable(torch.randn(30,20,32,32))</span><br><span class="line">print(input.size())</span><br><span class="line"></span><br><span class="line">m2 = nn.MaxPool2d(5)</span><br><span class="line">print(m2)</span><br><span class="line"></span><br><span class="line">for param in m2.parameters():</span><br><span class="line">  print(param)</span><br><span class="line"></span><br><span class="line">print(m2.state_dict().keys())</span><br><span class="line"></span><br><span class="line">output = m2(input)</span><br><span class="line">print(&quot;output:&quot;)</span><br><span class="line">print(output.size())</span><br></pre></td></tr></table></figure></p>
+<p>输出</p>
+<blockquote>
+<p>input:<br>torch.Size([30, 20, 32, 32])<br>MaxPool2d (size=(5, 5), stride=(5, 5), dilation=(1, 1))<br>[]<br>output:<br>torch.Size([30, 20, 6, 6])</p>
+</blockquote>
+<h3 id="Padding-Layers"><a href="#Padding-Layers" class="headerlink" title="Padding Layers"></a>Padding Layers</h3><h3 id="Linear-layers"><a href="#Linear-layers" class="headerlink" title="Linear layers"></a>Linear layers</h3><h3 id="Dropout-layers"><a href="#Dropout-layers" class="headerlink" title="Dropout layers"></a>Dropout layers</h3><h4 id="Drop2D"><a href="#Drop2D" class="headerlink" title="Drop2D"></a>Drop2D</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line">m = nn.Dropout2d(<span class="number">0.3</span>)</span><br><span class="line">print(m)</span><br><span class="line">inputs = torch.randn(<span class="number">1</span>,<span class="number">28</span>,<span class="number">28</span>)</span><br><span class="line">outputs = m(inputs)</span><br><span class="line">print(outputs)</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<blockquote>
+<p>Dropout2d(p=0.3)<br>([[[ 0.8535,  1.0314,  2.7904,  1.2136,  2.7561, -2.0429,  0.0772,<br>     -1.9372, -0.0864, -1.4132, -0.1648,  0.2403,  0.5727,  0.8102,<br>      0.4544,  0.1414,  0.1547, -0.9266, -0.6033,  0.5813, -1.3541,<br>     -0.0536,  0.9574,  0.0554,  0.8368,  0.7633, -0.3377, -1.4293],<br>    [ 0.0000,  0.0000, -0.0000, -0.0000,  0.0000, -0.0000,  0.0000,<br>      0.0000,  0.0000, -0.0000, -0.0000,  0.0000, -0.0000, -0.0000,<br>      0.0000, -0.0000,  0.0000, -0.0000,  0.0000,  0.0000, -0.0000,<br>     -0.0000,  0.0000,  0.0000, -0.0000, -0.0000, -0.0000, -0.0000],<br>      …<br>    [ 0.6452, -0.6455,  0.2370,  0.1088, -0.5421, -0.5120, -2.2915,<br>      0.2061,  1.6384,  2.2276,  2.4022,  0.2033,  0.6984,  0.1254,<br>      1.1627,  1.0699, -2.1868,  1.1293, -0.7030,  0.0454, -1.5428,<br>      -2.4052, -0.3204, -1.5984,  0.1282,  0.2127, -2.3506, -2.2395]]])</p>
+</blockquote>
+<p>会发现输出的数组中有很多被置为$0$了。</p>
+<h3 id="Loss-function"><a href="#Loss-function" class="headerlink" title="Loss function"></a>Loss function</h3>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+            <a href="/tags/pytorch/" rel="tag"># pytorch</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/08/pytorch-tensor/" rel="next" title="pytorch tensor">
+                <i class="fa fa-chevron-left"></i> pytorch tensor
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/08/pytorch-nn-functional/" rel="prev" title="pytorch nn functional">
+                pytorch nn functional <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">114</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">107</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#torch-nn"><span class="nav-number">1.</span> <span class="nav-text">torch.nn</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Container"><span class="nav-number">1.1.</span> <span class="nav-text">Container</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Module"><span class="nav-number">1.1.1.</span> <span class="nav-text">Module</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#常见的函数"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">常见的函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#常见的属性"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">常见的属性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#代码"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Sequential"><span class="nav-number">1.1.2.</span> <span class="nav-text">Sequential</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Convolution-Layers"><span class="nav-number">1.2.</span> <span class="nav-text">Convolution Layers</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#torch-nn-Conv2d"><span class="nav-number">1.2.1.</span> <span class="nav-text">torch.nn.Conv2d</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#类声明"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">类声明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#参数声明"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">参数声明</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#示例"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#例子1"><span class="nav-number">1.2.1.3.1.</span> <span class="nav-text">例子1</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#例子2"><span class="nav-number">1.2.1.3.2.</span> <span class="nav-text">例子2</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Pooling-Layers"><span class="nav-number">1.3.</span> <span class="nav-text">Pooling Layers</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MaxPool2dd"><span class="nav-number">1.3.1.</span> <span class="nav-text">MaxPool2dd</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Padding-Layers"><span class="nav-number">1.4.</span> <span class="nav-text">Padding Layers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Linear-layers"><span class="nav-number">1.5.</span> <span class="nav-text">Linear layers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dropout-layers"><span class="nav-number">1.6.</span> <span class="nav-text">Dropout layers</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Drop2D"><span class="nav-number">1.6.1.</span> <span class="nav-text">Drop2D</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Loss-function"><span class="nav-number">1.7.</span> <span class="nav-text">Loss function</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
