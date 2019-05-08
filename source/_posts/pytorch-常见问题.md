@@ -2,7 +2,8 @@
 title: pytorch 常见问题
 date: 2019-05-08 21:52:18
 tags:
-categories:
+ - pytorch
+categories: pytorch
 ---
 
 ## 常见问题
