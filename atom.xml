@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://mxxhcm.github.io/"/>
-  <updated>2019-05-08T07:45:39.269Z</updated>
+  <updated>2019-05-08T09:41:47.653Z</updated>
   <id>http://mxxhcm.github.io/</id>
   
   <author>
@@ -15,6 +15,155 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>tensorflow saver代码及例子</title>
+    <link href="http://mxxhcm.github.io/2019/05/08/tensorflow-saver%E4%BB%A3%E7%A0%81%E5%8F%8A%E4%BE%8B%E5%AD%90/"/>
+    <id>http://mxxhcm.github.io/2019/05/08/tensorflow-saver代码及例子/</id>
+    <published>2019-05-08T09:39:54.000Z</published>
+    <updated>2019-05-08T09:41:47.653Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="tf-train-Saver"><a href="#tf-train-Saver" class="headerlink" title="tf.train.Saver()"></a>tf.train.Saver()</h2><h3 id="代码示例-可运行"><a href="#代码示例-可运行" class="headerlink" title="代码示例(可运行)"></a>代码示例(可运行)</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">graph = tf.Graph()</span><br><span class="line"><span class="keyword">with</span> graph.as_default():</span><br><span class="line">    W = tf.Variable([<span class="number">0.3</span>], dtype=tf.float32)</span><br><span class="line">    b = tf.Variable([<span class="number">-0.3</span>], dtype=tf.float32)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># input and output</span></span><br><span class="line">    x = tf.placeholder(tf.float32)</span><br><span class="line">    y = tf.placeholder(tf.float32)</span><br><span class="line">    predicted_y = W*x+b</span><br><span class="line"></span><br><span class="line">    <span class="comment"># MSE loss</span></span><br><span class="line">    loss = tf.reduce_mean(tf.square(y - predicted_y))</span><br><span class="line">    <span class="comment"># optimizer</span></span><br><span class="line">    optimizer = tf.train.GradientDescentOptimizer(<span class="number">0.01</span>)</span><br><span class="line">    train_op = optimizer.minimize(loss)</span><br><span class="line"></span><br><span class="line">inputs = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">outputs = [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session(graph=graph) <span class="keyword">as</span> sess:</span><br><span class="line">    saver = tf.train.Saver()</span><br><span class="line">    init_op = tf.global_variables_initializer()</span><br><span class="line">    sess.run(init_op)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5000</span>):</span><br><span class="line">        sess.run(train_op, feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    l_, W_, b_ = sess.run([loss, W, b], feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    print(<span class="string">"loss: "</span>, l_, <span class="string">"w: "</span>, W_, <span class="string">"b:"</span>, b_)</span><br><span class="line">    checkpoint = <span class="string">"./checkpoint/saver1.ckpt"</span></span><br><span class="line">    save_path = saver.save(sess, checkpoint)</span><br><span class="line">    print(<span class="string">"Model has been saved in %s."</span> % save_path)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session(graph=graph) <span class="keyword">as</span> sess:</span><br><span class="line">    saver = tf.train.Saver()</span><br><span class="line">    saver.restore(sess, checkpoint)</span><br><span class="line">    l_, W_, b_ = sess.run([loss, W, b], feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    print(<span class="string">"loss: "</span>, l_, <span class="string">"w: "</span>, W_, <span class="string">"b:"</span>, b_)</span><br><span class="line">    print(<span class="string">"Model has been restored."</span>)</span><br></pre></td></tr></table></figure><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.bilibili.com/read/cv681031/" target="_blank" rel="noopener">https://www.bilibili.com/read/cv681031/</a><br>2.<a href="https://cv-tricks.com/tensorflow-tutorial/save-restore-tensorflow-models-quick-complete-tutorial/" target="_blank" rel="noopener">https://cv-tricks.com/tensorflow-tutorial/save-restore-tensorflow-models-quick-complete-tutorial/</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;tf-train-Saver&quot;&gt;&lt;a href=&quot;#tf-train-Saver&quot; class=&quot;headerlink&quot; title=&quot;tf.train.Saver()&quot;&gt;&lt;/a&gt;tf.train.Saver()&lt;/h2&gt;&lt;h3 id=&quot;代码示例-可运行&quot;&gt;&lt;a 
+      
+    
+    </summary>
+    
+      <category term="python" scheme="http://mxxhcm.github.io/categories/python/"/>
+    
+    
+      <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/tags/tensorflow/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>tensorflow summary代码及例子</title>
+    <link href="http://mxxhcm.github.io/2019/05/08/tensorflow-summary%E4%BB%A3%E7%A0%81%E5%8F%8A%E4%BE%8B%E5%AD%90/"/>
+    <id>http://mxxhcm.github.io/2019/05/08/tensorflow-summary代码及例子/</id>
+    <published>2019-05-08T09:39:43.000Z</published>
+    <updated>2019-05-08T09:40:38.685Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="tf-summary"><a href="#tf-summary" class="headerlink" title="tf.summary"></a>tf.summary</h2><h3 id="api"><a href="#api" class="headerlink" title="api"></a>api</h3><p>函数<br>tf.summary.scalar(name, tensor, collections=None, family=None)<br>定义一个summary标量</p><p>类<br>tf.summary.FileWriter(self, logdir,　graph=None, max_queue=10,flush_secs=120, graph_def=None, filename_suffix=None)<br>定义将数据写入文件的类</p><p>类内函数<br>tf.summary.FileWriter.add_summary(self, summary, global_step=None)<br>将summary类型变量转换为事件 </p><h3 id="代码示例-无法运行"><a href="#代码示例-无法运行" class="headerlink" title="代码示例(无法运行)"></a>代码示例(无法运行)</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line">summary_loss = tf.summary.scalar(<span class="string">'loss'</span>, loss)</span><br><span class="line">summary_weights = tf.summary.scalar(<span class="string">'weights'</span>, weights)</span><br><span class="line">writer = tf.summary.FileWriter(<span class="string">"./summary/"</span>)</span><br><span class="line">sess = tf.Session()</span><br><span class="line">loss_, weights_ = sess.run([summary_loss, summary_weights], feed_dict=&#123;&#125;)</span><br><span class="line">writer.add_summary(loss_)</span><br><span class="line">writer.add_summary(weights_)</span><br><span class="line"><span class="comment"># 或者先把loss和weights merge 一下，然后再run</span></span><br><span class="line">merged = tf.summary.merge_all()</span><br><span class="line">merged_ = sess.rum([merged], feed_dict=&#123;&#125;)</span><br><span class="line">writer.add_summary(merged_, global_step)</span><br></pre></td></tr></table></figure><p>使用tensorboard —logdir ./summary/打开tensorboard</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;tf-summary&quot;&gt;&lt;a href=&quot;#tf-summary&quot; class=&quot;headerlink&quot; title=&quot;tf.summary&quot;&gt;&lt;/a&gt;tf.summary&lt;/h2&gt;&lt;h3 id=&quot;api&quot;&gt;&lt;a href=&quot;#api&quot; class=&quot;header
+      
+    
+    </summary>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/categories/tensorflow/"/>
+    
+    
+      <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/tags/tensorflow/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>tensorflow maxl代码及例子</title>
+    <link href="http://mxxhcm.github.io/2019/05/08/tensorflow-maxl%E4%BB%A3%E7%A0%81%E5%8F%8A%E4%BE%8B%E5%AD%90/"/>
+    <id>http://mxxhcm.github.io/2019/05/08/tensorflow-maxl代码及例子/</id>
+    <published>2019-05-08T09:38:46.000Z</published>
+    <updated>2019-05-08T09:39:29.681Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="tf-max"><a href="#tf-max" class="headerlink" title="tf.max"></a>tf.max</h2><h3 id="tf-maximum"><a href="#tf-maximum" class="headerlink" title="tf.maximum"></a>tf.maximum</h3><p>比较两个tensor，返回element-wise两个tensor的最大值。<br>如下<a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py" target="_blank" rel="noopener">示例</a>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">a = tf.Variable([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line">b = tf.Variable([<span class="number">2</span>, <span class="number">1</span>, <span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">print(<span class="string">"a: "</span>, sess.run(a))</span><br><span class="line">print(<span class="string">"b: "</span>, sess.run(b))</span><br><span class="line">c = tf.maximum(a, b)</span><br><span class="line"></span><br><span class="line">print(<span class="string">"tf.maximum(a, b):\n  "</span>, sess.run(c))</span><br></pre></td></tr></table></figure></p><p>输出如下：</p><blockquote><p>a:  [1 2 3]<br>b:  [2 1 4]<br>tf.maximum(a, b):<br>   [2 2 4]</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;tf-max&quot;&gt;&lt;a href=&quot;#tf-max&quot; class=&quot;headerlink&quot; title=&quot;tf.max&quot;&gt;&lt;/a&gt;tf.max&lt;/h2&gt;&lt;h3 id=&quot;tf-maximum&quot;&gt;&lt;a href=&quot;#tf-maximum&quot; class=&quot;headerli
+      
+    
+    </summary>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/categories/tensorflow/"/>
+    
+    
+      <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/tags/tensorflow/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>tensorflow multinomial代码及例子</title>
+    <link href="http://mxxhcm.github.io/2019/05/08/tensorflow-multinomial%E4%BB%A3%E7%A0%81%E5%8F%8A%E4%BE%8B%E5%AD%90/"/>
+    <id>http://mxxhcm.github.io/2019/05/08/tensorflow-multinomial代码及例子/</id>
+    <published>2019-05-08T09:37:45.000Z</published>
+    <updated>2019-05-08T09:38:51.845Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="tf-multinomial"><a href="#tf-multinomial" class="headerlink" title="tf.multinomial"></a>tf.multinomial</h2><p>多项分布，采样。<br>如下<a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py" target="_blank" rel="noopener">示例</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="comment"># tf.multinomial(logits, num_samples, seed=None, name=None)</span></span><br><span class="line"><span class="comment"># logits 是一个二维张量，指定概率，num_samples是采样个数</span></span><br><span class="line">sess = tf.Session()</span><br><span class="line">sample = tf.multinomial([[<span class="number">5.0</span>, <span class="number">5.0</span>, <span class="number">5.0</span>], [<span class="number">5.0</span>, <span class="number">4</span>, <span class="number">3</span>]], <span class="number">10</span>) <span class="comment"># 注意logits必须是float</span></span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">  print(sess.run(sample))</span><br></pre></td></tr></table></figure></p><p>输出结果如下:</p><blockquote><p>[[2 1 2 1 0 2 1 1 1 0]<br> [1 0 0 1 0 1 0 1 0 0]]<br>[[2 2 0 2 2 0 2 0 1 2]<br> [1 0 0 2 0 1 0 1 1 0]]<br>[[0 0 0 2 0 0 1 2 0 1]<br> [0 0 0 1 0 1 0 0 0 0]]<br>[[2 1 0 1 1 1 0 0 2 0]<br> [1 0 0 2 0 0 0 0 0 1]]<br>[[1 0 1 0 0 1 2 2 0 0]<br> [1 0 0 0 0 1 1 1 2 0]]</p></blockquote>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;tf-multinomial&quot;&gt;&lt;a href=&quot;#tf-multinomial&quot; class=&quot;headerlink&quot; title=&quot;tf.multinomial&quot;&gt;&lt;/a&gt;tf.multinomial&lt;/h2&gt;&lt;p&gt;多项分布，采样。&lt;br&gt;如下&lt;a href=
+      
+    
+    </summary>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/categories/tensorflow/"/>
+    
+    
+      <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/tags/tensorflow/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>tensorflow app代码及例子</title>
+    <link href="http://mxxhcm.github.io/2019/05/08/tensorflow-app%E4%BB%A3%E7%A0%81%E5%8F%8A%E4%BE%8B%E5%AD%90/"/>
+    <id>http://mxxhcm.github.io/2019/05/08/tensorflow-app代码及例子/</id>
+    <published>2019-05-08T09:35:39.000Z</published>
+    <updated>2019-05-08T09:36:58.265Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="tf-app-flags"><a href="#tf-app-flags" class="headerlink" title="tf.app.flags"></a>tf.app.flags</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">flags.py</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">flags = tf.app.flags</span><br><span class="line">flags.DEFINE_string(<span class="string">'model'</span>, <span class="string">'mxx'</span>, <span class="string">'Type of model'</span>)</span><br><span class="line">flags.DEFINE_boolean(<span class="string">'gpu'</span>,<span class="string">'True'</span>, <span class="string">'use gpu?'</span>)</span><br><span class="line">FLAGS = flags.FLAGS</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(_)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> k,v <span class="keyword">in</span> FLAGS.flag_values_dict().items():</span><br><span class="line">        print(k, v)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    tf.app.run(main)</span><br></pre></td></tr></table></figure><p>传递参数的方法有两种，一种是命令行~$:python flags.py —model hhhh ，一种是pycharm中传递参数。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;tf-app-flags&quot;&gt;&lt;a href=&quot;#tf-app-flags&quot; class=&quot;headerlink&quot; title=&quot;tf.app.flags&quot;&gt;&lt;/a&gt;tf.app.flags&lt;/h2&gt;&lt;figure class=&quot;highlight python&quot;&gt;
+      
+    
+    </summary>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/categories/tensorflow/"/>
+    
+    
+      <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
+    
+      <category term="tensorflow" scheme="http://mxxhcm.github.io/tags/tensorflow/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>tensorflow where代码及例子</title>
+    <link href="http://mxxhcm.github.io/2019/05/08/tensorflow-where%E4%BB%A3%E7%A0%81%E5%8F%8A%E4%BE%8B%E5%AD%90/"/>
+    <id>http://mxxhcm.github.io/2019/05/08/tensorflow-where代码及例子/</id>
+    <published>2019-05-08T09:34:47.000Z</published>
+    <updated>2019-05-08T09:34:47.029Z</updated>
+    
+    <summary type="html">
+    
+    </summary>
+    
+    
+  </entry>
   
   <entry>
     <title>ubuntu 18.04 alt tab快捷键</title>
@@ -425,15 +574,17 @@ Warning
     <link href="http://mxxhcm.github.io/2019/05/07/linux-cpu%E4%BF%A1%E6%81%AF/"/>
     <id>http://mxxhcm.github.io/2019/05/07/linux-cpu信息/</id>
     <published>2019-05-07T08:30:27.000Z</published>
-    <updated>2019-05-07T08:34:05.093Z</updated>
+    <updated>2019-05-08T09:32:23.621Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="查看cpu核数和cpu信息"><a href="#查看cpu核数和cpu信息" class="headerlink" title="查看cpu核数和cpu信息"></a>查看cpu核数和cpu信息</h2><p>~$:lscpu<br>~$:cat /proc/info</p><h1 id="总核数-物理CPU个数-X-每颗物理CPU的核数"><a href="#总核数-物理CPU个数-X-每颗物理CPU的核数" class="headerlink" title="总核数 = 物理CPU个数 X 每颗物理CPU的核数"></a>总核数 = 物理CPU个数 X 每颗物理CPU的核数</h1><h1 id="总逻辑CPU数-物理CPU个数-X-每颗物理CPU的核数-X-超线程数"><a href="#总逻辑CPU数-物理CPU个数-X-每颗物理CPU的核数-X-超线程数" class="headerlink" title="总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数"></a>总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数</h1><h2 id="查看物理CPU个数"><a href="#查看物理CPU个数" class="headerlink" title="查看物理CPU个数"></a>查看物理CPU个数</h2><p>~$:cat /proc/cpuinfo| grep “physical id”| sort| uniq| wc -l</p><h2 id="查看每个物理CPU中core的个数-即核数"><a href="#查看每个物理CPU中core的个数-即核数" class="headerlink" title="查看每个物理CPU中core的个数(即核数)"></a>查看每个物理CPU中core的个数(即核数)</h2><p>~$:cat /proc/cpuinfo| grep “cpu cores”| uniq</p><h2 id="查看逻辑CPU的个数"><a href="#查看逻辑CPU的个数" class="headerlink" title="查看逻辑CPU的个数"></a>查看逻辑CPU的个数</h2><p>~$:cat /proc/cpuinfo| grep “processor”| wc -l</p><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.鸟哥的Linux私房菜</p>]]></content>
+    <content type="html"><![CDATA[<h2 id="查看cpu核数和cpu信息"><a href="#查看cpu核数和cpu信息" class="headerlink" title="查看cpu核数和cpu信息"></a>查看cpu核数和cpu信息</h2><p>~$:lscpu</p><blockquote><p>Architecture:          x86_64<br>CPU op-mode(s):        32-bit, 64-bit<br>Byte Order:            Little Endian<br>CPU(s):                16<br>On-line CPU(s) list:   0-15<br>Thread(s) per core:    2<br>Core(s) per socket:    8<br>Socket(s):             1<br>NUMA node(s):          1<br>Vendor ID:             AuthenticAMD<br>CPU family:            23<br>Model:                 8<br>Model name:            AMD Ryzen 7 2700X Eight-Core Processor<br>Stepping:              2<br>CPU MHz:               3921.420<br>CPU max MHz:           3700.0000<br>CPU min MHz:           2200.0000<br>BogoMIPS:              7385.61<br>Virtualization:        AMD-V<br>L1d cache:             32K<br>L1i cache:             64K<br>L2 cache:              512K<br>L3 cache:              8192K<br>NUMA node0 CPU(s):     0-15<br>Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb hw_pstate sme ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt sha_ni xsaveopt xsavec xgetbv1 xsaves clzero irperf xsaveerptr arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overflow_recov succor smca</p></blockquote><p>总核数 = 物理CPU个数 X 每颗物理CPU的核数<br>总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数<br>拿我做测试的机器来说，一个cpu，每个cpu八核，每个核两个超线程。</p><h2 id="查看物理CPU个数"><a href="#查看物理CPU个数" class="headerlink" title="查看物理CPU个数"></a>查看物理CPU个数</h2><p>~$:cat /proc/cpuinfo| grep “physical id”| sort| uniq |wc -l</p><blockquote><p>1</p></blockquote><h2 id="查看每个物理CPU中core的个数-即核数"><a href="#查看每个物理CPU中core的个数-即核数" class="headerlink" title="查看每个物理CPU中core的个数(即核数)"></a>查看每个物理CPU中core的个数(即核数)</h2><p>~$:cat /proc/cpuinfo| grep “cpu cores”</p><blockquote><p>8</p></blockquote><h2 id="查看逻辑CPU的个数"><a href="#查看逻辑CPU的个数" class="headerlink" title="查看逻辑CPU的个数"></a>查看逻辑CPU的个数</h2><p>~$:cat /proc/cpuinfo| grep “processor”| wc -l</p><blockquote><p>processor    : 0<br>processor    : 1<br>processor    : 2<br>processor    : 3<br>processor    : 4<br>processor    : 5<br>processor    : 6<br>processor    : 7<br>processor    : 8<br>processor    : 9<br>processor    : 10<br>processor    : 11<br>processor    : 12<br>processor    : 13<br>processor    : 14<br>processor    : 15</p></blockquote><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.鸟哥的Linux私房菜</p>]]></content>
     
     <summary type="html">
     
       
       
-        &lt;h2 id=&quot;查看cpu核数和cpu信息&quot;&gt;&lt;a href=&quot;#查看cpu核数和cpu信息&quot; class=&quot;headerlink&quot; title=&quot;查看cpu核数和cpu信息&quot;&gt;&lt;/a&gt;查看cpu核数和cpu信息&lt;/h2&gt;&lt;p&gt;~$:lscpu&lt;br&gt;~$:cat /proc/i
+        &lt;h2 id=&quot;查看cpu核数和cpu信息&quot;&gt;&lt;a href=&quot;#查看cpu核数和cpu信息&quot; class=&quot;headerlink&quot; title=&quot;查看cpu核数和cpu信息&quot;&gt;&lt;/a&gt;查看cpu核数和cpu信息&lt;/h2&gt;&lt;p&gt;~$:lscpu&lt;/p&gt;
+&lt;blockquote&gt;
+
       
     
     </summary>
@@ -1894,9 +2045,9 @@ Warning
     <link href="http://mxxhcm.github.io/2019/03/07/tensorflow%E8%B8%A9%E5%9D%91%EF%BC%88%E4%B8%8D%E5%AE%9A%E6%9C%9F%E6%9B%B4%E6%96%B0%EF%BC%89/"/>
     <id>http://mxxhcm.github.io/2019/03/07/tensorflow踩坑（不定期更新）/</id>
     <published>2019-03-07T06:51:01.000Z</published>
-    <updated>2019-05-06T16:22:27.708Z</updated>
+    <updated>2019-05-08T09:41:45.745Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ol><li>TypeError: The value of a feed cannot be a tf.Tensor object<br>Sess.run(train, feed_dict={x:images, y:labels}的输入不能是tensor，可以使用sess.run(tensor)得到numpy.array形式的数据再喂给feed_dict。<blockquote><p>Once you have launched a sess, you can use your_tensor.eval(session=sess) or sess.run(your_tensor) to get you feed tensor into the format of numpy.array and then feed it to your placeholder.</p></blockquote></li></ol><h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><h3 id="tf-app-flags"><a href="#tf-app-flags" class="headerlink" title="tf.app.flags"></a>tf.app.flags</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">flags.py</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">flags = tf.app.flags</span><br><span class="line">flags.DEFINE_string(<span class="string">'model'</span>, <span class="string">'mxx'</span>, <span class="string">'Type of model'</span>)</span><br><span class="line">flags.DEFINE_boolean(<span class="string">'gpu'</span>,<span class="string">'True'</span>, <span class="string">'use gpu?'</span>)</span><br><span class="line">FLAGS = flags.FLAGS</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(_)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> k,v <span class="keyword">in</span> FLAGS.flag_values_dict().items():</span><br><span class="line">        print(k, v)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    tf.app.run(main)</span><br></pre></td></tr></table></figure><p>传递参数的方法有两种，一种是命令行~$:python flags.py —model hhhh ，一种是pycharm中传递参数。</p><h3 id="tf-train-Saver"><a href="#tf-train-Saver" class="headerlink" title="tf.train.Saver()"></a>tf.train.Saver()</h3><h4 id="代码示例-可运行"><a href="#代码示例-可运行" class="headerlink" title="代码示例(可运行)"></a>代码示例(可运行)</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">graph = tf.Graph()</span><br><span class="line"><span class="keyword">with</span> graph.as_default():</span><br><span class="line">    W = tf.Variable([<span class="number">0.3</span>], dtype=tf.float32)</span><br><span class="line">    b = tf.Variable([<span class="number">-0.3</span>], dtype=tf.float32)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># input and output</span></span><br><span class="line">    x = tf.placeholder(tf.float32)</span><br><span class="line">    y = tf.placeholder(tf.float32)</span><br><span class="line">    predicted_y = W*x+b</span><br><span class="line"></span><br><span class="line">    <span class="comment"># MSE loss</span></span><br><span class="line">    loss = tf.reduce_mean(tf.square(y - predicted_y))</span><br><span class="line">    <span class="comment"># optimizer</span></span><br><span class="line">    optimizer = tf.train.GradientDescentOptimizer(<span class="number">0.01</span>)</span><br><span class="line">    train_op = optimizer.minimize(loss)</span><br><span class="line"></span><br><span class="line">inputs = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">outputs = [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session(graph=graph) <span class="keyword">as</span> sess:</span><br><span class="line">    saver = tf.train.Saver()</span><br><span class="line">    init_op = tf.global_variables_initializer()</span><br><span class="line">    sess.run(init_op)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5000</span>):</span><br><span class="line">        sess.run(train_op, feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    l_, W_, b_ = sess.run([loss, W, b], feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    print(<span class="string">"loss: "</span>, l_, <span class="string">"w: "</span>, W_, <span class="string">"b:"</span>, b_)</span><br><span class="line">    checkpoint = <span class="string">"./checkpoint/saver1.ckpt"</span></span><br><span class="line">    save_path = saver.save(sess, checkpoint)</span><br><span class="line">    print(<span class="string">"Model has been saved in %s."</span> % save_path)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session(graph=graph) <span class="keyword">as</span> sess:</span><br><span class="line">    saver = tf.train.Saver()</span><br><span class="line">    saver.restore(sess, checkpoint)</span><br><span class="line">    l_, W_, b_ = sess.run([loss, W, b], feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    print(<span class="string">"loss: "</span>, l_, <span class="string">"w: "</span>, W_, <span class="string">"b:"</span>, b_)</span><br><span class="line">    print(<span class="string">"Model has been restored."</span>)</span><br></pre></td></tr></table></figure><h3 id="tf-summary"><a href="#tf-summary" class="headerlink" title="tf.summary"></a>tf.summary</h3><h4 id="api"><a href="#api" class="headerlink" title="api"></a>api</h4><p>函数<br>tf.summary.scalar(name, tensor, collections=None, family=None)<br>定义一个summary标量</p><p>类<br>tf.summary.FileWriter(self, logdir,　graph=None, max_queue=10,flush_secs=120, graph_def=None, filename_suffix=None)<br>定义将数据写入文件的类</p><p>类内函数<br>tf.summary.FileWriter.add_summary(self, summary, global_step=None)<br>将summary类型变量转换为事件 </p><h4 id="代码示例-无法运行"><a href="#代码示例-无法运行" class="headerlink" title="代码示例(无法运行)"></a>代码示例(无法运行)</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line">summary_loss = tf.summary.scalar(<span class="string">'loss'</span>, loss)</span><br><span class="line">summary_weights = tf.summary.scalar(<span class="string">'weights'</span>, weights)</span><br><span class="line">writer = tf.summary.FileWriter(<span class="string">"./summary/"</span>)</span><br><span class="line">sess = tf.Session()</span><br><span class="line">loss_, weights_ = sess.run([summary_loss, summary_weights], feed_dict=&#123;&#125;)</span><br><span class="line">writer.add_summary(loss_)</span><br><span class="line">writer.add_summary(weights_)</span><br><span class="line"><span class="comment"># 或者先把loss和weights merge 一下，然后再run</span></span><br><span class="line">merged = tf.summary.merge_all()</span><br><span class="line">merged_ = sess.rum([merged], feed_dict=&#123;&#125;)</span><br><span class="line">writer.add_summary(merged_, global_step)</span><br></pre></td></tr></table></figure><p>使用tensorboard —logdir ./summary/打开tensorboard</p><h3 id="tf-multinomial"><a href="#tf-multinomial" class="headerlink" title="tf.multinomial"></a>tf.multinomial</h3><p>多项分布，采样。<br>如下<a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py" target="_blank" rel="noopener">示例</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="comment"># tf.multinomial(logits, num_samples, seed=None, name=None)</span></span><br><span class="line"><span class="comment"># logits 是一个二维张量，指定概率，num_samples是采样个数</span></span><br><span class="line">sess = tf.Session()</span><br><span class="line">sample = tf.multinomial([[<span class="number">5.0</span>, <span class="number">5.0</span>, <span class="number">5.0</span>], [<span class="number">5.0</span>, <span class="number">4</span>, <span class="number">3</span>]], <span class="number">10</span>) <span class="comment"># 注意logits必须是float</span></span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">  print(sess.run(sample))</span><br></pre></td></tr></table></figure></p><p>输出结果如下:</p><blockquote><p>[[2 1 2 1 0 2 1 1 1 0]<br> [1 0 0 1 0 1 0 1 0 0]]<br>[[2 2 0 2 2 0 2 0 1 2]<br> [1 0 0 2 0 1 0 1 1 0]]<br>[[0 0 0 2 0 0 1 2 0 1]<br> [0 0 0 1 0 1 0 0 0 0]]<br>[[2 1 0 1 1 1 0 0 2 0]<br> [1 0 0 2 0 0 0 0 0 1]]<br>[[1 0 1 0 0 1 2 2 0 0]<br> [1 0 0 0 0 1 1 1 2 0]]</p></blockquote><h3 id="tf-max"><a href="#tf-max" class="headerlink" title="tf.max"></a>tf.max</h3><h4 id="tf-maximum"><a href="#tf-maximum" class="headerlink" title="tf.maximum"></a>tf.maximum</h4><p>比较两个tensor，返回element-wise两个tensor的最大值。<br>如下<a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py" target="_blank" rel="noopener">示例</a>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">a = tf.Variable([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line">b = tf.Variable([<span class="number">2</span>, <span class="number">1</span>, <span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">print(<span class="string">"a: "</span>, sess.run(a))</span><br><span class="line">print(<span class="string">"b: "</span>, sess.run(b))</span><br><span class="line">c = tf.maximum(a, b)</span><br><span class="line"></span><br><span class="line">print(<span class="string">"tf.maximum(a, b):\n  "</span>, sess.run(c))</span><br></pre></td></tr></table></figure></p><p>输出如下：</p><blockquote><p>a:  [1 2 3]<br>b:  [2 1 4]<br>tf.maximum(a, b):<br>   [2 2 4]</p></blockquote><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://github.com/tensorflow/tensorflow/issues/4842" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/4842</a><br>2.<a href="https://www.bilibili.com/read/cv681031/" target="_blank" rel="noopener">https://www.bilibili.com/read/cv681031/</a><br>3.<a href="https://cv-tricks.com/tensorflow-tutorial/save-restore-tensorflow-models-quick-complete-tutorial/" target="_blank" rel="noopener">https://cv-tricks.com/tensorflow-tutorial/save-restore-tensorflow-models-quick-complete-tutorial/</a></p>]]></content>
+    <content type="html"><![CDATA[<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ol><li>TypeError: The value of a feed cannot be a tf.Tensor object<br>Sess.run(train, feed_dict={x:images, y:labels}的输入不能是tensor，可以使用sess.run(tensor)得到numpy.array形式的数据再喂给feed_dict。<blockquote><p>Once you have launched a sess, you can use your_tensor.eval(session=sess) or sess.run(your_tensor) to get you feed tensor into the format of numpy.array and then feed it to your placeholder.</p></blockquote></li></ol><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://github.com/tensorflow/tensorflow/issues/4842" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/4842</a></p>]]></content>
     
     <summary type="html">
     
