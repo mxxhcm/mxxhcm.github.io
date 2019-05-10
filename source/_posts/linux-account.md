@@ -7,7 +7,8 @@ categories: linux
 ---
 
 
-63. /etc/passwd /etc/shadow /etc/group /etc/gshadow
+## 账户配置文件
+ /etc/passwd /etc/shadow /etc/group /etc/gshadow
 	/etc/passwd
 	mxx:x:1000:1000:mxx,,,:/home/mxx:/bin/bash
 	账号名称,密码，UID,GID,用户信息说明列，主文件夹，shell
@@ -28,13 +29,13 @@ categories: linux
 		1-99系统账户
 		100-499用户创建的系统账号
 		500-65535一般用户
-64.修改密码
+## 修改密码
 	一般账户:passwd
 	root账户:
 	重启后进入单用户维护模式
 	忘记密码后，以各种方式清空/etc/shadow中root的密码字段。登陆后再用passwd修改密码	
 
-65.账号管理
+## 账号管理
 
 	usermod -G group user将一个用户加入其他用户组
 	初始用户组用户的/etc/passwd的第四个字段即为该用户的初始用户组的GID

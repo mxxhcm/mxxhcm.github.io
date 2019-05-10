@@ -20,7 +20,7 @@ categories: tensorflwo
 
 ## 代码示例
 ### tf.reduce_sum()
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_reduce_sum.py)
 ``` python
 import tensorflow as tf
 import numpy as np
@@ -36,3 +36,5 @@ with tf.Session() as sess :
     l = sess.run(loss, feed_dict={x: inputs})
     print(l)
 ```
+
+## 参考文献
