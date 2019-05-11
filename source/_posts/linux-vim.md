@@ -3,9 +3,27 @@ title: linux vim
 date: 2019-05-07 16:58:22
 tags: 
  - linux
+ - vim
 categories: linux
 mathjax: true
 ---
+
+## vim 配置文件
+个人vim配置文件一般在~/.vimrc下，可以自定义各种配置。
+[我的vimrc文件]()
+### 前缀符号
+为了缓解快捷键冲突问题，就引入了前缀键，跟参考文献[0]一样，设置;号为前缀键。
+let mapleader=";"
+
+
+### 设置显示行号
+set number
+
+### 底部显示文件路径
+set laststatus=2 "设置底部状态栏可见
+set statusline=%F%m%r%h%w\ %=#%n\ [%{&fileformat}:%{(&fenc==\"\"?&enc:&fenc)    .((exists(\"\+bomb\")\ &&\ &bomb)?\"\+B\":\"\").\"\"}:%{strlen(&ft)?&ft:'\*\*'    }]\ [%L\\%l,%c]\ %p%%    "statusline显示的信息，来自参考文献[8]。
+"其中%L是当前文件缓冲区的行数，%P是当前行占总行数的百分比。
+set ruler "显示光标当前位置
 
 ## vim复制到系统寄存器
 ### vim寄存器
@@ -139,9 +157,12 @@ iconv -o保留原文件，-o加新文件名
 iconv -f big5 -t utf8 filename -o filename
 
 ## 参考文献
+0.https://github.com/yangyangwithgnu/use_vim_as_ide
 1.https://askubuntu.com/a/1027647
 2.https://www.zhihu.com/question/19863631/answer/89354508 
 3.鸟哥的LINUX私房菜
 4.http://vimdoc.sourceforge.net/htmldoc/change.html#registers
 5.https://stackoverflow.com/a/11489440
 6.https://www.brianstorti.com/vim-registers/
+7.http://landcareweb.com/questions/3593/ru-he-zai-vimzhong-yong-jiu-xian-shi-dang-qian-wen-jian-de-lu-jing
+8.https://forum.ubuntu.org.cn/viewtopic.php?t=319408
