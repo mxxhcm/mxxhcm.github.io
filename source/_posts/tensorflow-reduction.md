@@ -4,7 +4,7 @@ date: 2019-05-09 11:19:00
 tags:
  - tensorflow 
  - python
-categories: tensorflwo
+categories: tensorflow
 ---
 
 ## tf.Reduction
