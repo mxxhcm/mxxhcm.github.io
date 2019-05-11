@@ -327,6 +327,274 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-file-system/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/07/linux-file-system/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">linux file system</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 17:02:37 / 修改时间：17:03:00" itemprop="dateCreated datePublished" datetime="2019-05-07T17:02:37+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>18.　碎片整理，文件写入的block太碎了，文件的读写性能太差，所以可以通过碎片整理将    一个文件的block回合在一起　FAT文件系统经常需要碎片整理,但是Ext2文件类型        是索引式文件系统，所以不太需要经常碎片整理的。</p>
+<ol>
+<li>df 查询挂载的设备<br>dumpe2fs [-bh]    查询每个区段以及superblock的信息<br> -b<br> -h 仅列出superblock的数据<br> ls -i 查看文件的inode编号<br> 目录并不一定只占一个block，当目录内的文件数太多时，会增加该目录            的block</li>
+</ol>
+<pre><code>df [-haiT]　[dir/file]    显示文件系统的整体磁盘用量
+    -a 列出所有的文件
+    -h 显示文件系统的大写，自行显示格式
+    -i 可用的inode
+    -T 联通分区文件系统的名称
+
+du [-ashkm] [dir/filename] 目录或者文件所占的容量
+    默认显示的是目录的容量，不包含文件
+    -s 该目录下所有文件的容量，不细列出来
+    -a 显示所有的目录与文件的容量
+    -h 以人们熟悉的大小方式显示出来
+    -k 以kb列出容量
+    -m 以mb列出容量:
+</code></pre><ol>
+<li>ln [-s] 链接文件<br>hard-link    硬链接，将某个目录下的block多写入一个数据,磁盘的inode与b            lock数量一般不会改变，磁盘容量也不会改变，而且删除一个文            件并不会响另一个文件的读写，但是其对于目录是没有作用的，            对于不同的文件系统也是没有用的。<br>sybomlic    </li>
+</ol>
+<p>21.磁盘分区　　格式化　检验与挂载</p>
+<pre><code>df + 目录  查看某个目录挂载的磁盘位置
+eg: df /
+
+sudo fdisk [-l]　+ 设备　输出后面设备所有的分区内容　如不加设备名称，列                    　出整个系统。
+
+新增或者删除分区
+sudo fdisk + 设备　　对设备进行操作  
+partprobe
+
+
+sudo mkfs [-t ext2/ext2/vfat] + 设备名　 将某个设备格式化为某种文件系统
+
+sudo mke2fs [-b block_size] [-i inode_size]  [-L 卷标] [-cj -c 检查磁盘                错误　-j 加入日志文件] + 设备名
+
+sudo fsck [-CAay] [-t filesystem] + 设备
+    -C  使用直方图显示进度
+    -A  依据/etc/fstab内容，扫描设备
+    -a  自动修复检查到的有问题的扇区
+    -y  与-a 类似
+    ext2 ext3 支持额外参数　　[-fD] -f 强制进入设备进行检查
+                    -D 对文件系统下的目录进行优化配                                置
+sudo badblocks [-sv] + 设备  -s 在屏幕上列出进度 -v 在屏幕上看到进度
+</code></pre><p>22.mount [-aoltnL] 挂载文件系统与磁盘 P227</p>
+<pre><code>-a　按照/etc/fstab的配置信息将所有未挂载的磁盘挂载上来
+-l　可增加label名称
+-t　加上文件类型
+-n　默认情况下会将挂载情况写入/etc/mtab，加入-n可以不写入
+-L　可以利用卷标名来挂载
+-o 加一些挂载时的额外参数　
+    ro(只读)　rw(可写)
+    async sync 此文件系统是否使用同步写入或者异步的内存机制
+    auto noauto 允许此分区以mount -a自动挂载(auto)
+    dev nodev 是否运行在此分区创建设备文件
+    suid nosuid 
+    exec noexec 是否可拥有可执行binary文件
+    user,nouer 设置user参数可以让一般user能对此分区挂载
+    defaults　默认为rw,suid,dev,exec,auto,nouser,async
+    remount 重新挂载，在系统出错，或者重新更新参数时
+mount 设备文件名　挂载点
+
+用卷标名挂载设备
+~#:mount -L mxx_logical /medic/mxx    
+
+用磁盘设备名挂载
+~#:mount /dev/sdb1 /mnt/usb
+
+~#:mount -t iso9660 /dev/cdrom /media/cdrom
+
+~#:mount -o remount,rw,auto /dir
+
+~#:mount -o loop ~/my.iso/myfile.iso /mnt/iso
+....
+</code></pre><p>23.磁盘参数修改<br>    设备用文件来代表    通过文件的major与minor数值来替代<br>                Major 主设备代码    Minor　次设备代码<br>                /dev/hd<em>  major = 3<br>                /dev/sd</em>  minor = 8<br>    mknod [bcp]<br>        b    设置设备名称成为一个外部存储文件，如硬盘<br>        c    设置设备名称成为一个外部输入文件，如鼠标/键盘<br>        p    设置设备名称成为一个FIFO文件</p>
+<pre><code>e2label /dev/sdb5 + 新的label名称
+
+tune2fs [-jlL]
+    -l  类似 dupme2fs -h 
+    -j  将ext2转换为ext3
+    -L  类似于　e2label 
+
+hdparm -Tt /dev/sd*  测试SATA硬盘的读取性能
+</code></pre><p>24.挂载.iso文件</p>
+<pre><code>mount -o loop /home/mxx/ubuntu16.04 /mnt/ubuntu16.04
+
+dd命令　创建一个大文件 
+dd if=/dev/zero of=/home/mxx/filename bs=1M count=512
+    if--input file    /dev/zero 一直输出0
+    of--output file    将if中的内容加入到of接的文件名中
+    bs--block size    
+    count    共有多少个bs
+</code></pre><p>25.构建swap空间</p>
+<pre><code>例如将第二快硬盘的第五个分区改为swap分区
+~#:sudo fdisk -l /dev/sdb
+    p
+    t 5
+    82
+    w
+    partprobe
+将/dev/sdb5更改为swap类型的文件系统
+
+~#:mkswap /dev/sdb5
+
+~#:free 查看memory以及swap分区的使用情况
+
+~#:swapon /dev/sdb5 使用/deb/sdb5的swap分区    
+~#:swapon -s 查看目前使用的swap设备有哪些
+~#:swapoff /dev/sdb5
+</code></pre><p>26.boost sector 与　superblock 的关系<br>    1.superblock的大小为1024b<br>    boost sector与superblock 各占一个block ,可以查看/boot的挂载目录<br>        0号block给boost ，1号block给superblock<br>    2.superblock的大小大于1024b,如为4096b<br>    superblock在0号blok ,但是superblock 只有1024b,所以为了防止空间浪费，于是        在0号block内，superblock(1024-2047),boost sector(0-1023),2048后            面的空间保留。<br>    实际情况中，由于在比较大的block中，我们能将引导装载程序安装到superblock            所在的0号block,但事实上还是安装到启动扇区的保留区域。<br>    比较正确的说法是，安装到文件系统最前面的1024b内的区域，就是启动扇区</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-compress-uncompress/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -662,7 +930,7 @@ tar -cv -f /dev/st0 /home /root /etc
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-11 16:36:57" itemprop="dateModified" datetime="2019-05-11T16:36:57+08:00">2019-05-11</time>
+                <time title="修改时间：2019-05-11 20:01:16" itemprop="dateModified" datetime="2019-05-11T20:01:16+08:00">2019-05-11</time>
               
             
           </span>
@@ -715,7 +983,11 @@ tar -cv -f /dev/st0 /home /root /etc
       
         
           
-            <h2 id="vim复制到系统寄存器"><a href="#vim复制到系统寄存器" class="headerlink" title="vim复制到系统寄存器"></a>vim复制到系统寄存器</h2><h3 id="vim寄存器"><a href="#vim寄存器" class="headerlink" title="vim寄存器"></a>vim寄存器</h3><p>vim有9种寄存器:</p>
+            <h2 id="vim-配置文件"><a href="#vim-配置文件" class="headerlink" title="vim 配置文件"></a>vim 配置文件</h2><p>个人vim配置文件一般在~/.vimrc下，可以自定义各种配置。<br><a href>我的vimrc文件</a></p>
+<h3 id="前缀符号"><a href="#前缀符号" class="headerlink" title="前缀符号"></a>前缀符号</h3><p>为了缓解快捷键冲突问题，就引入了前缀键，跟参考文献[0]一样，设置;号为前缀键。<br>let mapleader=”;”</p>
+<h3 id="设置显示行号"><a href="#设置显示行号" class="headerlink" title="设置显示行号"></a>设置显示行号</h3><p>set number</p>
+<h3 id="底部显示文件路径"><a href="#底部显示文件路径" class="headerlink" title="底部显示文件路径"></a>底部显示文件路径</h3><p>set laststatus=2 “设置底部状态栏可见<br>set statusline=%F%m%r%h%w\ %=#%n\ [%{&amp;fileformat}:%{(&amp;fenc==\”\”?&amp;enc:&amp;fenc)    .((exists(\”+bomb\”)\ &amp;&amp;\ &amp;bomb)?\”+B\”:\”\”).\”\”}:%{strlen(&amp;ft)?&amp;ft:’**‘    }]\ [%L\\%l,%c]\ %p%%    “statusline显示的信息，来自参考文献[8]。<br>“其中%L是当前文件缓冲区的行数，%P是当前行占总行数的百分比。<br>set ruler “显示光标当前位置</p>
+<h2 id="vim复制到系统寄存器"><a href="#vim复制到系统寄存器" class="headerlink" title="vim复制到系统寄存器"></a>vim复制到系统寄存器</h2><h3 id="vim寄存器"><a href="#vim寄存器" class="headerlink" title="vim寄存器"></a>vim寄存器</h3><p>vim有9种寄存器:</p>
 <ol>
 <li>“是未命名寄存器，vim的默认寄存器，存放删除和复制的文本。</li>
 <li>small delete寄存器 -，存放不超过一行的delete操作（不包括x操作）产生的文本。</li>
@@ -755,7 +1027,7 @@ tar -cv -f /dev/st0 /home /root /etc
 <h3 id="dos和UNIX转换"><a href="#dos和UNIX转换" class="headerlink" title="dos和UNIX转换"></a>dos和UNIX转换</h3><p>ubuntu  don’t have dos2UNIX or UNIX2dos  but is has tofrodos</p>
 <p>frodos filename<br>todos filename<br>    -b .bak<br>    -v ver</p>
 <h3 id="语系编码转换"><a href="#语系编码转换" class="headerlink" title="语系编码转换"></a>语系编码转换</h3><p>iconv -o保留原文件，-o加新文件名<br>iconv -f big5 -t utf8 filename -o filename</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://askubuntu.com/a/1027647" target="_blank" rel="noopener">https://askubuntu.com/a/1027647</a><br>2.<a href="https://www.zhihu.com/question/19863631/answer/89354508" target="_blank" rel="noopener">https://www.zhihu.com/question/19863631/answer/89354508</a><br>3.鸟哥的LINUX私房菜<br>4.<a href="http://vimdoc.sourceforge.net/htmldoc/change.html#registers" target="_blank" rel="noopener">http://vimdoc.sourceforge.net/htmldoc/change.html#registers</a><br>5.<a href="https://stackoverflow.com/a/11489440" target="_blank" rel="noopener">https://stackoverflow.com/a/11489440</a><br>6.<a href="https://www.brianstorti.com/vim-registers/" target="_blank" rel="noopener">https://www.brianstorti.com/vim-registers/</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>0.<a href="https://github.com/yangyangwithgnu/use_vim_as_ide" target="_blank" rel="noopener">https://github.com/yangyangwithgnu/use_vim_as_ide</a><br>1.<a href="https://askubuntu.com/a/1027647" target="_blank" rel="noopener">https://askubuntu.com/a/1027647</a><br>2.<a href="https://www.zhihu.com/question/19863631/answer/89354508" target="_blank" rel="noopener">https://www.zhihu.com/question/19863631/answer/89354508</a><br>3.鸟哥的LINUX私房菜<br>4.<a href="http://vimdoc.sourceforge.net/htmldoc/change.html#registers" target="_blank" rel="noopener">http://vimdoc.sourceforge.net/htmldoc/change.html#registers</a><br>5.<a href="https://stackoverflow.com/a/11489440" target="_blank" rel="noopener">https://stackoverflow.com/a/11489440</a><br>6.<a href="https://www.brianstorti.com/vim-registers/" target="_blank" rel="noopener">https://www.brianstorti.com/vim-registers/</a><br>7.<a href="http://landcareweb.com/questions/3593/ru-he-zai-vimzhong-yong-jiu-xian-shi-dang-qian-wen-jian-de-lu-jing" target="_blank" rel="noopener">http://landcareweb.com/questions/3593/ru-he-zai-vimzhong-yong-jiu-xian-shi-dang-qian-wen-jian-de-lu-jing</a><br>8.<a href="https://forum.ubuntu.org.cn/viewtopic.php?t=319408" target="_blank" rel="noopener">https://forum.ubuntu.org.cn/viewtopic.php?t=319408</a></p>
 
           
         
@@ -2766,192 +3038,6 @@ f.实际动手设置一个/etc/xinted.d/下的服务
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-log文件/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/07/linux-log文件/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">linux log文件</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-07 16:44:36 / 修改时间：16:46:10" itemprop="dateCreated datePublished" datetime="2019-05-07T16:44:36+08:00">2019-05-07</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="如何开启-var-log-message"><a href="#如何开启-var-log-message" class="headerlink" title="如何开启/var/log/message"></a>如何开启/var/log/message</h2><p>通过/etc/rsyslog.conf以及/etc/rsyslog.d/*<br>    ~#:cd /etc/rsyslog.d<br>    ~#:vim    50-default.conf<br>    将某几行输出到/var/log/message的给解注释<br>    ~#:</p>
-<h2 id="常见的日志文件名字"><a href="#常见的日志文件名字" class="headerlink" title="常见的日志文件名字"></a>常见的日志文件名字</h2><pre><code>/var/log/cron.log    crontab调度有没有执行，有没有错误以及/etc/crontab是否正确编写
-/var/log/lastlog    所有账号最后一次的登录信息，非ASCII文件
-/var/log/mail.log    所有邮件的往来信息
-/var/log/messages    各种错误信息
-/var/log/secure        
-/var/log/wtmp        登录成功与识别的账号信息
-/var/log/apport.log    应用程序崩溃记录
-/var/log/apt/*        apt-get 安装卸载软件的日志
-/var/log/auth.log    登录认证log(与/etc/var/secure挺像)
-/var/log/boot.log    系统启动的日志
-/var/log/btmp        记录所有失败者的信息
-/var/log/cups/*         
-/var/log/dist-upgrade    dist-upgrade这种更新方式的日志
-/var/log/dmesg        内核缓冲信息
-/var/log/dpkg.log    安装或dpkg命令清除软件包的日志
-/var/log/faillog    用户登录失败信息，错误登录命令也会显示
-/var/log/fontconfig.log    字体设置有关的日志
-/var/log/fsck        文件系统日志
-/var/log/hp        
-/var/log/install    
-/var/log/kern.log    内核产生的日志
-/var/log/samba        samba存储的信息
-/var/log/syslog        系统登录信息
-/var/log/upstart    
-/var/log/wtmp        包含登录信息，找出谁正在登录进入系统以及谁用命令显示这个文件或者信息等
-/var/log/xorg.*.log    来自X的日志信息
-</code></pre>
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3001,7 +3087,7 @@ f.实际动手设置一个/etc/xinted.d/下的服务
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">117</span>
+                    <span class="site-state-item-count">118</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3013,8 +3099,6 @@ f.实际动手设置一个/etc/xinted.d/下的服务
                 <div class="site-state-item site-state-categories">
                   <a href="/categories/index.html">
                     
-                    
-                      
                     
                       
                     
@@ -3269,7 +3353,9 @@ f.实际动手设置一个/etc/xinted.d/下的服务
                     
                       
                     
-                    <span class="site-state-item-count">108</span>
+                      
+                    
+                    <span class="site-state-item-count">109</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3522,9 +3608,9 @@ f.实际动手设置一个/etc/xinted.d/下的服务
       
     
       
-        
-      
     
+      
+        
       
     
       
