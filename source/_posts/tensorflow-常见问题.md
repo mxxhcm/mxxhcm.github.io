@@ -76,11 +76,13 @@ export CUDA_HOME=/usr/local/cuda
 ```
 
 #### pycharm中
+##### 方法1（这种方法我没有实验成功，不知道为什么）
 在左上角选中
 File\>\>Settings\>\>Build.Execution,Deployment\>\>Console\>\>Python Console
 在Environment下的Environment variables中添加
 LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}即可。
-或者修改完.bashrc文件后从终端中运行pycharm。
+##### 方法2
+修改完.bashrc文件后从终端中运行pycharm。
 
 
 ## 参考文献
