@@ -29,8 +29,9 @@ import tensorflow as tf
 第二步，安装支持emoji的markdown渲染器
 ~$:npm i hexo-renderer-markdown-it --save
 第三步，修改博客根目录下的\_config.yml文件，添加下列内容：
-> #Markdown-it config
-#Docs: https://github.com/celsomiranda/hexo-renderer-markdown-it/wiki
+``` txt
+# Markdown-it config
+## Docs: https://github.com/celsomiranda/hexo-renderer-markdown-it/wiki
 markdown:
   render:
     html: true
@@ -54,6 +55,7 @@ markdown:
     permalinkClass: header-anchor
     # The symbol used to make the permalink
     permalinkSymbol: ¶
+```
 
 然后重新生成部署即可。
 测试：
