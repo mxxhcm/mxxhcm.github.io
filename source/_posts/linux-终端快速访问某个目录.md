@@ -1,9 +1,10 @@
 ---
-title: ubuntu 终端快速访问某个目录
+title: linux 终端快速访问某个目录
 date: 2019-04-15 18:49:57
 tags:
  - ubuntu
-categories: 工具
+ - linux
+categories: linux
 mathjax: true
 ---
 

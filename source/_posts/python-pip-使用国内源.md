@@ -3,7 +3,8 @@ title: pip 使用国内源
 date: 2019-03-07 09:56:54
 tags:
  - python
-categories: 工具
+ - linux
+categories: linux
 ---
 
 ## 暂时使用国内pip源

@@ -1,10 +1,10 @@
 ---
-title: 查看python package的安装位置
+title: linux-查看python package的安装位置
 date: 2019-03-04 14:52:16
 tags:
  - python
  - 技巧
-categories: 工具
+categories: linux
 ---
 
 使用pip install package-name之后，不知道该包存在了哪个路径下。
