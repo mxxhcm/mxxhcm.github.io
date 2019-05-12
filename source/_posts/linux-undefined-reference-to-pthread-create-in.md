@@ -5,7 +5,7 @@ tags:
   - gcc
   - codeblocks
   - Linux
-  - Error
+  - 常见问题
 categories: Linux
 ---
 ## 问题

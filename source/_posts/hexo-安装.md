@@ -3,7 +3,8 @@ title: hexo 安装
 date: 2019-04-26 18:56:46
 tags:
  - hexo 
-categories: 工具
+ - 工具
+categories: hexo
 mathjax: false
 ---
 

@@ -5,7 +5,7 @@ tags:
  - ubuntu
  - linux
  - 显卡驱动
-categories: 工具
+categories: linux
 maxhjax: true
 ---
 

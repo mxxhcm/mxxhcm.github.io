@@ -3,7 +3,9 @@ title: hexo常见问题
 date: 2019-04-26 20:36:32
 tags:
  - hexo 
-categories: 工具
+ - 工具
+ - 常见问题
+categories: hexo
 mathjax: true 
 ---
 

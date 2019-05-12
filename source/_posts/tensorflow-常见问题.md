@@ -5,7 +5,9 @@ tags:
  - 机器学习
  - 深度学习
  - tensorflow
-categories: python
+ - 常见问题
+ - python
+categories: tensorflow
 ---
 
 
