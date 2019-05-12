@@ -3,7 +3,7 @@ title: github push使用ssh
 date: 2019-04-23 21:21:08
 tags:
 - github
-categories: 工具
+categories: github
 mathjax: false
 ---
 
