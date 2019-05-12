@@ -6,7 +6,7 @@ tags:
   - codeblocks
   - Linux
   - 常见问题
-categories: Linux
+categories: linux
 ---
 ## 问题
 
