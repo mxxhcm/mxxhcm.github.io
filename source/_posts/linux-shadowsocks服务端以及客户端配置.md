@@ -4,13 +4,14 @@ date: 2019-03-04 13:03:57
 tags: 
  - shadowsocks
  - linux
-categories: 工具
+ - 工具
+categories: linux
 mathjax: false
 ---
 
-## 1.服务器端配置
+## 服务器端配置
 首先需要有一个VPS账号，vultr,digitalocean,搬瓦工等等都行。
-### 1.1.启用BBR加速
+### 启用BBR加速
 ~#:apt update
 ~#:apt upgrade
 ~#:echo "net.core.default_qdisc=fq" >> /etc/sysctl.conf
@@ -20,15 +21,15 @@ mathjax: false
 ~#:lsmod |grep bbr
 看到输出包含tcp_bbr就说明已经成功了。
 
-### 1.2.搭建shadowsocks server
-#### 1.2.1.安装shadowsocks server
+### 搭建shadowsocks server
+#### 安装shadowsocks server
 ~#:apt install python-pip
 ~#:pip install shadowsocks
 需要说一下的是，shadowsocks目前还不支持python3.5及以上版本，上次我把/usr/bin/python指向了python3.6，就是系统默认的python指向了python3.6，然后就gg了。一定要使用Python 2.6,2.7,3.3,3.4中的一个版本才能使用。。
 
-#### 1.2.2.创建shadowsocks配置文件
+#### 创建shadowsocks配置文件
 如果你的VPS支持ipv6的话，那么可以开多进程分别运行ipv4和ipv6的shadowsocks server。本地只有ipv4的话，可以用本地ipv4访问ipv6，从而访问byr等网站，但是六维空间对此做了屏蔽。如果本地有ipv6的话，还可以用本地的ipv6访问ipv6实现校园网不走ipv4流量。
-##### 1.2.2.1.ipv4配置
+##### ipv4配置
 ~#:vim /etc/shadowsocks_v4.json
 配置文件如下
 {
@@ -41,7 +42,7 @@ mathjax: false
 "method":"aes-256-cfb"
 }
 
-##### 1.2.2.2.ipv6配置
+##### ipv6配置
 ~#:vim /etc/shadowsocks_v6.json
 配置文件如下
 {
@@ -59,7 +60,7 @@ mathjax: false
 ~#:ssserver -c /etc/shadowsock_v6.json -d start --pid-file ss2.pid
 注意这里要给两条命令分配不同的进程号。
 
-### 1.3.设置shadowsocks server开机自启
+### 设置shadowsocks server开机自启
 如果重启服务器的话，就需要重新手动执行上述命令，这里我们可以把它写成开机自启脚本。
 ~#:vim /etc/init.d/shadowsocks_v4
 内容如下：
@@ -144,17 +145,17 @@ esac
 
 至此，服务器端配置完成。
 
-## 2.客户端配置
-### 2.1.Windows客户端配置
-#### 2.1.1安装shadowsock客户端
+## 客户端配置
+### Windows客户端配置
+#### 安装shadowsock客户端
 到该网址 https://github.com/shadowsocks/shadowsocks-windows/releases 下载相应的windows客户端程序。
 然后配置服务器即可～
 
-### 2.2.Linux客户端配置
-#### 2.2.1.安装shadowsocks程序
+### Linux客户端配置
+#### 安装shadowsocks程序
 ~$:sudo pip install shadowsocks
 
-#### 2.2.2.运行shadowsocks客户端程序
+#### 运行shadowsocks客户端程序
 
 ~$:sudo vim /etc/shadowsocks.json
 填入以下配置文件
@@ -210,13 +211,13 @@ Requirement already satisfied: shadowsocks in /usr/local/lib/python2.7/dist-pack
 搜索cleanup，将其替换为reset
 具体位置在第52行libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)和第111行libcrypto.EVP_CIPHER_CTX_cleanup(self._ctx) 
 
-#### 2.2.3 手动运行后台挂起
+#### 手动运行后台挂起
 将所有的log重定向到~/.log/sslocal.log文件中
 ~$:mkdir ~/.log
 ~$:touch ~/.log/ss-local.log
 ~$:nohup sslocal -c /etc/shadowsocks_v6.json \</dev/null &\>>~/.log/ss-local.log &
 
-#### 2.2.4.开机自启shadowsocks client
+#### 开机自启shadowsocks client
 但是这样子的话，每次开机都要重新运行上述命令，太麻烦了。可以写个开机自启脚本。执行以下命令：
 ~$:sudo vim /etc/init.d/shadowsocks
 内容为以下shell脚本
@@ -263,20 +264,20 @@ esac
 ~$:sudo service shadosowcks start
 
 
-#### 2.2.4.配置代理
+#### 配置代理
 上一步的目的是建立了shadowsocks服务的本地客户端，socks5流量会走该通道，但是浏览器的网页的流量是https的，我们需要配置相应的代理，将https流量转换为socks5流量，走ss客户端到达ss服务端。当然，也可以把其他各种流量，如tcp,udp等各种流量都转换为socks5流量，这个可以通过全局代理实现，也可以通过添加特定的代理规则实现。
-##### 2.2.4.1.配置全局代理
+##### 配置全局代理
 如下图所示，添加ubuntu socks5系统代理：
 
 然后就可以成功上网了。
 
-##### 2.2.4.2.使用SwitchyOmega配置chrome代理
+##### 使用SwitchyOmega配置chrome代理
 首先到 https://github.com/FelisCatus/SwitchyOmega/releases 下载SyitchyOmega.crx。然后在chrome的地址栏输入chrome://extensions，将刚才下载的插件拖进去。
 然后在浏览器右上角就有了这个插件，接下来配置插件。如下图：
 ![mxx](https:)
 直接配置proxy，添加如图所示的规则，这样chrome打开的所有网站都是走代理的。
 
-##### 2.2.4.3.使用privoxy让terminal走socks5
+##### 使用privoxy让terminal走socks5
 ~$:sudo apt install privoxy
 ~$:sudo vim /etc/privoxy/config
 取消下列行的注释，或者添加相应条目
@@ -293,7 +294,7 @@ export https_proxy="http://127.0.0.1:8118"
 ~$:source ~/.bashrc
 ~$:curl.gs
 
-## 3.参考文献
+## 参考文献
 1. http://godjose.com/2017/06/14/new-article/
 2. https://www.polarxiong.com/archives/搭建ipv6-VPN-让ipv4上ipv6-下载速度提升到100M.html
 3. https://blog.csdn.net/li1914309758/article/details/86510127
