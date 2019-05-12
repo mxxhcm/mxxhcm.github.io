@@ -15,7 +15,7 @@ categories: tensorflow
 ``` python
 tf.boolean_mask(
     tensor, # 要处理的tensor
-    mask, # 掩码
+    mask, # 掩码，也需要是一个tensor
     name='boolean_mask', # 这个op的名字
     axis=None #
 )
