@@ -8,6 +8,8 @@ categories: tensorflow
 ---
 
 ## tf.cond
+### 一句话介绍
+和if语句的功能和很像，如果条件为真，返回一个函数，如果条件为假，返回另一个函数。
 
 ### API
 ``` python
@@ -33,17 +35,17 @@ import numpy as np
 x = tf.placeholder(tf.int32, [10])
 y = tf.constant([10, 3.2])
 
-for i in range(10):
-    y = tf.cond(tf.equal(x[i], 0), lambda: tf.add(y, 1), lambda: tf.add(y, 10))
-
-# 上面的代码起到了和下面代码相同的作用，但是下面的代码在tensorflow中会报错，不能运行，因为x[i]==0返回的不是python的bool类型，而是bool类型的tf.Tensor。
-# TypeError: Using a tf.Tensor as a Python bool is not allowed.
-
 # for i in range(10):
 #     if tf.equal(x[i], 0):
 #         y = tf.add(y, 1)
 #     else:
 #         y = tf.add(y, 10)
+
+# 上面的代码起到了和下面代码相同的作用，但是上面的代码在tensorflow中会报错，不能运行，因为x[i]==0返回的不是python的bool类型，而是bool类型的tf.Tensor。
+# TypeError: Using a tf.Tensor as a Python bool is not allowed.
+
+for i in range(10):
+    y = tf.cond(tf.equal(x[i], 0), lambda: tf.add(y, 1), lambda: tf.add(y, 10))
 
 result = tf.log(y)
 

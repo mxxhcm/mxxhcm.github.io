@@ -1,5 +1,5 @@
 ---
-title: tensorflow Tensor
+title: tensorflow tensor
 date: 2019-05-08 20:47:50
 tags:
 - tensorflow
@@ -245,3 +245,5 @@ print(sess.run(tf.zeros([2,2])))
  [0. 0.]]
 ```
 
+## 参考文献
+1.https://www.tensorflow.org/guide/tensors?hl=zh_cn

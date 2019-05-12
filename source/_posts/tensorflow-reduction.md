@@ -28,6 +28,7 @@ import numpy as np
 
 x = tf.placeholder(dtype=tf.float32, shape=[None, 2])
 y = tf.log(x)
+# 对所有y求和
 loss = tf.reduce_sum(y)
 
 with tf.Session() as sess :

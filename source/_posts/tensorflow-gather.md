@@ -9,6 +9,8 @@ mathjax: true
 
 
 ## tf.gather_nd
+### 一句话介绍
+按照索引将输入tensor的某些维度拼凑成一个新的tenosr
 ### API
 ``` python
 tf.gather_nd(
