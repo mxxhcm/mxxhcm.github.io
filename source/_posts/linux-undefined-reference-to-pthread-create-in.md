@@ -4,7 +4,7 @@ date: 2018-12-20 20:30:34
 tags: 
   - gcc
   - codeblocks
-  - Linux
+  - linux
   - 常见问题
 categories: linux
 ---
