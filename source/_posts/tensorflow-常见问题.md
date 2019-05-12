@@ -84,8 +84,30 @@ LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}即
 ##### 方法2
 修改完.bashrc文件后从终端中运行pycharm。
 
+## 问题4
+sess.run(op, feed_dict={})中feed的数据中包含有list的时候会报错。
+
+### 报错
+``` txt
+TypeError: unhashable type: 'list'
+```
+### 问题原因
+feed_dict中不能的value不能是list。
+
+### 解决方法
+``` python
+feed_dict = {
+               placeholder : value 
+                  for placeholder, value in zip(placeholder_list, inputs_list))
+            }
+
+```
+
+### 代码示例
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_placeholder_list.py)
 
 ## 参考文献
 1.https://github.com/tensorflow/tensorflow/issues/4842
 2.https://github.com/tensorflow/tensorflow/issues/24496
 3.https://github.com/tensorflow/tensorflow/issues/9530
+4.https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow
