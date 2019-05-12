@@ -1,5 +1,5 @@
 ---
-title: Error! TimeLimit' object has no attribute 'ale'
+title: gym Error! TimeLimit' object has no attribute 'ale'
 date: 2019-03-27 11:00:16
 tags:
  - python
@@ -7,7 +7,7 @@ tags:
  - tensorflow
  - Error
  - 机器学习
-categories: Error
+categories: python
 ---
 
 ## 问题描述

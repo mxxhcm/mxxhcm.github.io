@@ -2,10 +2,11 @@
 title: Undefined reference to pthread_create in Linux
 date: 2018-12-20 20:30:34
 tags: 
-  - C++
+  - gcc
   - codeblocks
   - Linux
-categories: Error
+  - Error
+categories: Linux
 ---
 ## 问题
 

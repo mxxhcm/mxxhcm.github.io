@@ -6,7 +6,7 @@ tags:
  - tensorflow
  - 机器学习
  - Error
-categories: Error
+categories: tensorflow
 ---
 
 ## 错误描述
