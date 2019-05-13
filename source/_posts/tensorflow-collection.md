@@ -8,10 +8,7 @@ categories: tensorflow
 ---
 
 ## tf.collection
-tensorflow用graph collection来管理不同类型的对象。tf.GraphKeys中定义了所有tensorflow graph默认定义的标准collection name。
-tf通过各种各样的collection调用和graph相关的变量。比如tf.Optimizer只优化tf.GraphKeys.TRAINABLE_VARIABLES collection中的变量。
-这里主要介绍三种collection，一种是GLOBAL_VARIABLES，一种是SUMMARIES，一种是自定义的collections。
-
+Tensorflow用graph collection来管理不同类型的对象。tf.GraphKeys中定义了默认的collection，tf通过调用各种各样的collection操作graph中的变量。比如tf.Optimizer只优化tf.GraphKeys.TRAINABLE_VARIABLES collection中的变量。
 常见的collection如下：
 - GLOBAL_VARIABLES: 所有的Variable对象在创建的时候自动加入该colllection，且在分布式环境中共享（model variables是它的子集）。一般来说，TRAINABLE_VARIABLES包含在MODEL_VARIABLES中，MODEL_VARIABLES包含在GLOBAL_VARIABLES中。也就是说TRAINABLE_VARIABLES$\le$MODEL_VARIABLES$\le$GLOBAL_VARIABLES。
 - LOCAL_VARIABLES: 它是GLOBAL_VARIABLES不同的是在本机器上的Variable子集。使用tf.contrib.framework.local_variable将变量添加到这个collection.
@@ -22,16 +19,19 @@ tf通过各种各样的collection调用和graph相关的变量。比如tf.Optimi
 - MOVING_AVERAGE_VARIABLES: 保持Movering average的变量子集。
 - REGULARIZATION_LOSSES: 创建graph的regularization loss。
 
+这里主要介绍三类collection，一种是GLOBAL_VARIABLES，一种是SUMMARIES，一种是自定义的collections。
+
 下面的一些collection也被定义了，但是并不会自动添加？？
 > The following standard keys are defined, but their collections are not automatically populated as many of the others are:
+
 - WEIGHTS
 - BIASES
 - ACTIVATIONS
 
-## Variable collection
-tf.Variable()默认添加到所有的tf.GraphKeys.GLOBAL_VARIABLES collection和tf.GraphKeys.TRAINABLE_VARIABLES collection中。
+## GLOBAL_Variable collection
+tf.Variable()类型在生成时会被默认添加到tf.GraphKeys.GLOBAL_VARIABLES collection和tf.GraphKeys.TRAINABLE_VARIABLES collection中。
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_global_trainable_variables_collections.py)
 ``` python
 import tensorflow as tf
 
@@ -56,9 +56,10 @@ for var in global_variables:
 
 ## Summary collection
 Summary op产生的变量会被添加到tf.GraphKeys.SUMMARIES collection中。
+[点击查看关于tf.summary的详细介绍]()
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_summary_collection.py)
 ``` python
 import tensorflow as tf
 
@@ -122,11 +123,11 @@ with tf.Session(graph=graph) as sess:
 ## 自定义collection
 通过tf.add_collection()和tf.get_collection()可以添加和访问custom collection。
 ### 示例代码
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_custom_collection.py)
 ``` python
 import tensorflow as tf
 
-# 定义第一个loss
+# 定义第1个loss
 x1 = tf.constant(1.0)
 l1 = tf.nn.l2_loss(x1)
 
