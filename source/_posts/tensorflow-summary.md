@@ -9,38 +9,10 @@ categories: tensorflow
 
 ## tf.summary
 ### 目的
-该模块定义在tensorflow/\_api/v1/summary/\_\_init\_\_.py。主要用于可视化。
+该模块定义在tensorflow/\_api/v1/summary/\_\_init\_\_.py文件中，主要用于可视化。
 
-### API
-#### 类
-- class Event: A ProtocolMessage
-- class FileWriter: Writes Summary protocol buffers to event files.
-- class FileWriterCache: Cache for file writers.
-- class SessionLog: A ProtocolMessage
-- class Summary: A ProtocolMessage
-- class SummaryDescription: A ProtocolMessage
-- class TaggedRunMetadata: A ProtocolMessage
-
-#### 函数
-- scalar(...): Outputs a Summary protocol buffer containing a single scalar value.
-- histogram(...): Outputs a Summary protocol buffer with a histogram.
-- image(...): Outputs a Summary protocol buffer with images.
-- tensor_summary(...): Outputs a Summary protocol buffer with a serialized tensor.proto.
-- audio(...): Outputs a Summary protocol buffer with audio.
-- text(...): Summarizes textual data.
-- merge(...): Merges summaries.
-- merge_all(...): Merges all summaries collected in the default graph.
-- get_summary_description(...): Given a TensorSummary node_def, retrieve its SummaryDescription.
-
-### 常用API
-使用流程：
-1. summary_op = tf.summary_scalar() # 声明summary op，会将该op变量加入tf.GraphKeys.SUMMARIES collection
-2. merged = tf.summary.merge_all() # 将所有summary op合并
-3. writer = tf.summary.FileWriter() # 声明一个FileWrite文件，用于将Summary数据写入event文件
-4. output = sess.run([merged]) # 运行merge后的summary op
-5. writer.add_summary(output) # 将op运行后的结果写入事件文件
-
-#### 函数
+## 常用API
+### 函数
 ``` python
 # 用来定义一个summary scalar op，同时会将这个op加入到tf.GraphKeys.SUMMARIES collection中。
 tf.summary.scalar(
@@ -56,7 +28,7 @@ tf.summary.merge_all(
     name=None
 ) 
 ```
-#### 函数示例
+### 函数示例
 ``` python
 summary_loss = tf.summary.scalar('loss', loss)
 summary_weights = tf.summary.scalar('weights', weights)
@@ -64,7 +36,7 @@ summary_weights = tf.summary.scalar('weights', weights)
 merged = tf.summary.merge_all() 
 ```
 
-#### 类
+### 类
 ``` python
 # 定义将Summary数据写入event文件的类
 tf.summary.FileWriter(
@@ -78,7 +50,7 @@ tf.summary.FileWriter(
 )
 ```
 
-##### 类内函数
+#### 类内函数
 ``` python
 # 将summary op的输出存到event文件(Adds a Summary protocol buffer to the event file.)
 tf.summary.FileWriter.add_summary(
@@ -87,7 +59,7 @@ tf.summary.FileWriter.add_summary(
 	global_step=None
 ) 
 ```
-#### 类示例
+### 类示例
 ``` python
 writer = tf.summary.FileWriter("./summary/")
 with tf.Session() as sess:
@@ -95,7 +67,14 @@ with tf.Session() as sess:
     writer.add_summary(summ, global_step=i)
 ```
 
-### 代码示例
+## 使用流程：
+1. summary_op = tf.summary_scalar() # 声明summary op，会将该op变量加入tf.GraphKeys.SUMMARIES collection
+2. merged = tf.summary.merge_all() # 将所有summary op合并
+3. writer = tf.summary.FileWriter() # 声明一个FileWrite文件，用于将Summary数据写入event文件
+4. output = sess.run([merged]) # 运行merge后的summary op
+5. writer.add_summary(output) # 将op运行后的结果写入事件文件
+
+## 代码示例
 [代码地址](https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_summary.py)
 ``` python
 graph = tf.Graph()
@@ -143,6 +122,28 @@ with tf.Session(graph=graph) as sess:
 ```
 
 使用tensorboard --logdir ./summary/打开tensorboard
+
+## 所有API
+### 类
+- class Event: A ProtocolMessage
+- class FileWriter: Writes Summary protocol buffers to event files.
+- class FileWriterCache: Cache for file writers.
+- class SessionLog: A ProtocolMessage
+- class Summary: A ProtocolMessage
+- class SummaryDescription: A ProtocolMessage
+- class TaggedRunMetadata: A ProtocolMessage
+
+### 函数
+- scalar(...): Outputs a Summary protocol buffer containing a single scalar value.
+- histogram(...): Outputs a Summary protocol buffer with a histogram.
+- image(...): Outputs a Summary protocol buffer with images.
+- tensor_summary(...): Outputs a Summary protocol buffer with a serialized tensor.proto.
+- audio(...): Outputs a Summary protocol buffer with audio.
+- text(...): Summarizes textual data.
+- merge(...): Merges summaries.
+- merge_all(...): Merges all summaries collected in the default graph.
+- get_summary_description(...): Given a TensorSummary node_def, retrieve its SummaryDescription.
+
 
 ## 参考文献
 1.

@@ -56,7 +56,7 @@ for var in global_variables:
 
 ## Summary collection
 Summary op产生的变量会被添加到tf.GraphKeys.SUMMARIES collection中。
-[点击查看关于tf.summary的详细介绍]()
+[点击查看关于tf.summary的详细介绍](https://mxxhcm.github.io/2019/05/08/tensorflow-summary/)
 
 ### 代码示例
 [代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_summary_collection.py)
