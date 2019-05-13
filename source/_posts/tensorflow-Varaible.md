@@ -16,8 +16,9 @@ tf.get_variable()和tf.Variable()相比，必须提供name，以及shape，tf.Va
 ### tf.Variable()
 #### 一句话介绍
 创建一个类操作全局变量。
-tf.Variable 表示可通过对其运行op来改变其值的张量。与 tf.Tensor对象不同，tf.Variable 存在于单个session.run调用的上下文之外。
-在TensorFlow内部，tf.Variable会存储持久性张量。具体op读取和修改此张量的值。这些修改在多个 tf.Session 之间是可见的，因此对于一个 tf.Variable，多个工作器可以看到相同的值。
+#### 和tf.Tensor对比
+tf.Variable 表示可通过对其运行op来改变其值的张量。与 tf.Tensor对象不同，tf.Variable 存在于单个session.run调用的上下文之外。tf.Tensor的值是不可以改变的，tf.Tensor没有assign函数。
+在TensorFlow内部，tf.Variable会存储持久性张量，允许各种op读取和修改它的值。这些修改在多个 tf.Session 之间是可见的，因此对于一个 tf.Variable，多个工作器可以看到相同的值。
 
 #### API
 ``` python
@@ -78,7 +79,7 @@ with tf.variable_scope("model") as scope:
 - tf.GraphKeys.GLOBAL_VARIABLES - 可以在多台设备间共享的变量，
 - tf.GraphKeys.TRAINABLE_VARIABLES - TensorFlow 将计算其梯度的变量。
 
-如果不希望变量可训练，可以将其添加到 tf.GraphKeys.LOCAL_VARIABLES 集合中。以下代码将名为 my_local 的变量添加到此collection中：
+如果不希望变量可训练，可以将其添加到 tf.GraphKeys.LOCAL_VARIABLES collection中。以下代码将名为 my_local 的变量添加到此collection中：
 ``` python
 my_local = tf.get_variable("my_local", shape=(), collections=[tf.GraphKeys.LOCAL_VARIABLES])
 ```
@@ -107,21 +108,21 @@ print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
 # 可以看出来，只有tf.Variable()和tf.get_variable()产生的变量会加入到这个图中
 ```
 
-### 自定义集合
-#### 添加自定义集合
-可以使用自己的集合。集合名称可为任何字符串，且无需显式创建。创建变量（或任何其他对象）后调用 tf.add_to_collection将其添加到集合中。以下代码将 my_local 变量添加到名为 my_collection_name 的集合中：
+### 自定义collection
+#### 添加自定义collection
+可以使用自己的collection。collection名称可为任何字符串，且无需显式创建。创建变量（或任何其他对象）后调用 tf.add_to_collection将其添加到collection中。以下代码将 my_local 变量添加到名为 my_collection_name 的collection中：
 ``` python
 tf.add_to_collection("my_collection_name", my_local)
 ```
 
 ## 初始化变量
 ### 初始化所有变量
-调用 tf.global_variables_initializer()在训练开始前一次性初始化所有可训练变量。此函数会返回一个op，负责初始化 tf.GraphKeys.GLOBAL_VARIABLES 集合中的所有变量。运行此op会初始化所有变量。
+调用 tf.global_variables_initializer()在训练开始前一次性初始化所有可训练变量。此函数会返回一个op，负责初始化 tf.GraphKeys.GLOBAL_VARIABLES collection中的所有变量。运行此op会初始化所有变量。
 ``` python
 sess.run(tf.global_variables_initializer())
 ```
 ### 初始化单个变量
-运行变量的初始化器操作。
+运行变量的初始化器op。
 ``` python
 sess.run(my_variable.initializer)
 ```

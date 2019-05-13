@@ -81,8 +81,8 @@ print(g.get_operations())
 # [<tf.Operation 'c' type=Const>, <tf.Operation 'c_1' type=Const>, <tf.Operation 'outer/c' type=Const>, <tf.Operation 'outer/inner/c' type=Const>]
 ```
 
-## 类张量的对象
-许多 TensorFlow 操作都会接受一个或多个 tf.Tensor 对象作为参数。例如，tf.matmul 接受两个 tf.Tensor 对象，tf.add_n 接受一个具有 n 个 tf.Tensor 对象的列表。为了方便起见，这些函数将接受类张量对象来取代 tf.Tensor，并将它明确转换为 tf.Tensor（通过 tf.convert_to_tensor 方法）。类张量对象包括以下类型的元素：
+## 类张量对象
+许多 TensorFlow op都会接受一个或多个 tf.Tensor 对象作为参数。例如，tf.matmul 接受两个 tf.Tensor 对象，tf.add_n 接受一个具有 n 个 tf.Tensor 对象的列表。为了方便起见，这些函数将接受类张量对象来取代 tf.Tensor，并将它明确转换为 tf.Tensor（通过 tf.convert_to_tensor 方法）。类张量对象包括以下类型的元素：
 - tf.Tensor
 - tf.Variable
 - numpy.ndarray
