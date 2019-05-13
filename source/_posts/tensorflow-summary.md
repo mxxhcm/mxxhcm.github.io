@@ -8,7 +8,9 @@ categories: tensorflow
 ---
 
 ## tf.summary
-该模块定义在tensorflow/\_api/v1/summary/\_\_init\_\_.py.
+### 目的
+该模块定义在tensorflow/\_api/v1/summary/\_\_init\_\_.py。主要用于可视化。
+
 ### API
 #### 类
 - class Event: A ProtocolMessage
