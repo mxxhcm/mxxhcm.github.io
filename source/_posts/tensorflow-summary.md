@@ -146,6 +146,6 @@ with tf.Session(graph=graph) as sess:
 
 
 ## 参考文献
-1.
-
-
+1.https://www.tensorflow.org/api_docs/python/tf/summary
+2.https://www.tensorflow.org/guide/graphs#visualizing_your_graph
+3.https://www.tensorflow.org/guide/summaries_and_tensorboard

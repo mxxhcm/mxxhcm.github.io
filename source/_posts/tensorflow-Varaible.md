@@ -13,19 +13,19 @@ categories: tensorflow
 tf.Variable()和tf.get_variable()，他们获得的都是tensorflow.python.ops.variables.Variable类型的对象。
 tf.get_variable()和tf.Variable()相比，必须提供name，以及shape，tf.Variable()不需要指定name，shape，但是需要指定初值，tf.get_varialbe()不需要初值（有默认初始化器，可以指定）。
 
-### tf.Variable()
-#### 一句话介绍
+## tf.Variable()
+### 一句话介绍
 创建一个类操作全局变量。
-#### 和tf.Tensor对比
+### 和tf.Tensor对比
 tf.Variable 表示可通过对其运行op来改变其值的张量。与 tf.Tensor对象不同，tf.Variable 存在于单个session.run调用的上下文之外。tf.Tensor的值是不可以改变的，tf.Tensor没有assign函数。
 在TensorFlow内部，tf.Variable会存储持久性张量，允许各种op读取和修改它的值。这些修改在多个 tf.Session 之间是可见的，因此对于一个 tf.Variable，多个工作器可以看到相同的值。
 
-#### API
+### API
 ``` python
 tf.Variable.\_\_init\_\_(initial_value=None, trainable=True, collections=Non    e, validate_shape=True, caching_device=None, name=None, ...)
 ```
 
-#### 代码示例
+### 代码示例
 ``` python
 tensor1 = tf.Variable([[1,2], [3,5]])
 tensor2 = tf.Variable(tf.constant([[1,2], [3,5]]))
@@ -34,18 +34,18 @@ sess.run(tensor1)
 sess.run(tensor2)
 ```
 
-#### 初始化
+### 初始化
 tf.Variable()生成的变量必须初始化，tf.constant()可以不用初始化。
 - 使用全局初始化
 sess.run(tf.global_variables_initializer())
 - 使用checkpoint
 - 使用tf.assign赋值
 
-### tf.get_variable() 
-#### 一句话介绍
+## tf.get_variable() 
+### 一句话介绍
 获取一个已经存在的变量或者创建一个新的变量。主要目的，变量复用。
 
-#### API
+### API
 ``` python
 tf.get_variable(
     name,
@@ -65,7 +65,7 @@ tf.get_variable(
     aggregation=tf.VariableAggregation.NONE
 )
 ```
-#### 代码示例
+### 代码示例
 ``` python
 with tf.variable_scope("model") as scope:
   output1 = my_image_filter(input1)
@@ -74,16 +74,16 @@ with tf.variable_scope("model") as scope:
 ```
 
 ## 变量collection
-[点击查看关于collecion的详细介绍]()
+[点击查看关于collecion的详细介绍](https://mxxhcm.github.io/2019/05/13/tensorflow-collection/)
 默认情况下，每个tf.Variable()都在以下两个collection中：
 - tf.GraphKeys.GLOBAL_VARIABLES - 可以在多台设备间共享的变量，
 - tf.GraphKeys.TRAINABLE_VARIABLES - TensorFlow 将计算其梯度的变量。
 
-如果不希望变量可训练，可以将其添加到 tf.GraphKeys.LOCAL_VARIABLES collection中。以下代码将名为 my_local 的变量添加到此collection中：
+如果不希望变量是可训练的，可以在创建时指定其collection为 tf.GraphKeys.LOCAL_VARIABLES collection中。
 ``` python
 my_local = tf.get_variable("my_local", shape=(), collections=[tf.GraphKeys.LOCAL_VARIABLES])
 ```
-或者可以指定 trainable=False（作为 tf.get_variable 的参数）：
+或者可以指定 trainable=False：
 ``` python
 my_non_trainable = tf.get_variable("my_non_trainable",
                                    shape=(),
@@ -92,11 +92,10 @@ my_non_trainable = tf.get_variable("my_non_trainable",
 
 ### 获取collection
 要检索放在某个collection中的所有变量的列表，可以使用：
-##### 代码示例
+#### 代码示例
 [代码地址]()
 ``` python
 import tensorflow as tf
-
 
 a = tf.Variable([1, 2, 3])
 b = tf.get_variable("bbb", shape=[2,3])
@@ -110,7 +109,7 @@ print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
 
 ### 自定义collection
 #### 添加自定义collection
-可以使用自己的collection。collection名称可为任何字符串，且无需显式创建。创建变量（或任何其他对象）后调用 tf.add_to_collection将其添加到collection中。以下代码将 my_local 变量添加到名为 my_collection_name 的collection中：
+可以使用自定义的collection。collection名称可为任何字符串，且无需显式创建。创建对象（包括Variable和其他）后调用 tf.add_to_collection将其添加到相应collection中。以下代码将 my_local 变量添加到名为 my_collection_name 的collection中：
 ``` python
 tf.add_to_collection("my_collection_name", my_local)
 ```
@@ -132,14 +131,15 @@ sess.run(my_variable.initializer)
 print(sess.run(tf.report_uninitialized_variables()))
 ```
 
+
 ## 共享变量
 TensorFlow 支持两种共享变量的方式：
 - 显式传递 tf.Variable 对象。
 - 将 tf.Variable 对象隐式封装在 tf.variable_scope 对象内。
 
-### 代码示例1
+### variable_scope
+#### 代码示例1
 使用variable_scope区分weights和biases。
-
 ``` python
 def conv_relu(input, kernel_shape, bias_shape):
     # Create variable named "weights".
@@ -153,7 +153,7 @@ def conv_relu(input, kernel_shape, bias_shape):
     return tf.nn.relu(conv + biases)
 ```
 
-### 代码示例2
+#### 代码示例2
 使用variable_scope声明不同作用域
 ``` python
 def my_image_filter(input_images):
