@@ -19,7 +19,6 @@ tf.get_variable()和tf.Variable()相比，必须提供name，以及shape，tf.Va
 tf.Variable 表示可通过对其运行op来改变其值的张量。与 tf.Tensor对象不同，tf.Variable 存在于单个session.run调用的上下文之外。
 在TensorFlow内部，tf.Variable会存储持久性张量。具体op读取和修改此张量的值。这些修改在多个 tf.Session 之间是可见的，因此对于一个 tf.Variable，多个工作器可以看到相同的值。
 
-
 #### API
 ``` python
 tf.Variable.\_\_init\_\_(initial_value=None, trainable=True, collections=Non    e, validate_shape=True, caching_device=None, name=None, ...)
@@ -73,13 +72,13 @@ with tf.variable_scope("model") as scope:
   output2 = my_image_filter(input2)
 ```
 
-## 变量集合
-### 默认集合
-默认情况下，每个tf.Variable()都在以下两个集合中：
+## 变量collection
+[点击查看关于collecion的详细介绍]()
+默认情况下，每个tf.Variable()都在以下两个collection中：
 - tf.GraphKeys.GLOBAL_VARIABLES - 可以在多台设备间共享的变量，
 - tf.GraphKeys.TRAINABLE_VARIABLES - TensorFlow 将计算其梯度的变量。
 
-如果不希望变量可训练，可以将其添加到 tf.GraphKeys.LOCAL_VARIABLES 集合中。以下代码将名为 my_local 的变量添加到此集合中：
+如果不希望变量可训练，可以将其添加到 tf.GraphKeys.LOCAL_VARIABLES 集合中。以下代码将名为 my_local 的变量添加到此collection中：
 ``` python
 my_local = tf.get_variable("my_local", shape=(), collections=[tf.GraphKeys.LOCAL_VARIABLES])
 ```
@@ -90,8 +89,8 @@ my_non_trainable = tf.get_variable("my_non_trainable",
                                    trainable=False)
 ```
 
-### 获取集合
-要检索放在某个集合中的所有变量的列表，可以使用：
+### 获取collection
+要检索放在某个collection中的所有变量的列表，可以使用：
 ##### 代码示例
 [代码地址]()
 ``` python
