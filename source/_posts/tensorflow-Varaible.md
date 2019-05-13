@@ -9,8 +9,9 @@ categories: tensorflow
 
 
 ## 创建变量
-主要用两种方式。
-tf.Variable()和tf.get_variable()
+主要有两种方式。
+tf.Variable()和tf.get_variable()，他们获得的都是tensorflow.python.ops.variables.Variable类型的对象。
+tf.get_variable()和tf.Variable()相比，必须提供name，以及shape，tf.Variable()不需要指定name，shape，但是需要指定初值，tf.get_varialbe()不需要初值（有默认初始化器，可以指定）。
 
 ### tf.Variable()
 #### 一句话介绍
@@ -43,7 +44,6 @@ sess.run(tf.global_variables_initializer())
 ### tf.get_variable() 
 #### 一句话介绍
 获取一个已经存在的变量或者创建一个新的变量。主要目的，变量复用。
-和tf.Variable()相比，必须提供name，以及shape，tf.Variable()不需要指定name，但是需要指定shape，并且需要初值，tf.get_varialbe()不需要初值（有默认初始化器，可以指定）。
 
 #### API
 ``` python
@@ -81,8 +81,7 @@ with tf.variable_scope("model") as scope:
 
 如果不希望变量可训练，可以将其添加到 tf.GraphKeys.LOCAL_VARIABLES 集合中。以下代码将名为 my_local 的变量添加到此集合中：
 ``` python
-my_local = tf.get_variable("my_local", shape=(),
-collections=[tf.GraphKeys.LOCAL_VARIABLES])
+my_local = tf.get_variable("my_local", shape=(), collections=[tf.GraphKeys.LOCAL_VARIABLES])
 ```
 或者可以指定 trainable=False（作为 tf.get_variable 的参数）：
 ``` python
@@ -91,16 +90,29 @@ my_non_trainable = tf.get_variable("my_non_trainable",
                                    trainable=False)
 ```
 
+### 获取集合
+要检索放在某个集合中的所有变量的列表，可以使用：
+##### 代码示例
+[代码地址]()
+``` python
+import tensorflow as tf
+
+
+a = tf.Variable([1, 2, 3])
+b = tf.get_variable("bbb", shape=[2,3])
+tf.constant([3])
+c = tf.ones([3])
+d = tf.random_uniform([3, 4])
+print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))
+# [<tf.Variable 'Variable:0' shape=(3,) dtype=int32_ref>, <tf.Variable 'bbb:0' shape=(2, 3) dtype=float32_ref>]
+# 可以看出来，只有tf.Variable()和tf.get_variable()产生的变量会加入到这个图中
+```
+
 ### 自定义集合
 #### 添加自定义集合
 可以使用自己的集合。集合名称可为任何字符串，且无需显式创建。创建变量（或任何其他对象）后调用 tf.add_to_collection将其添加到集合中。以下代码将 my_local 变量添加到名为 my_collection_name 的集合中：
 ``` python
 tf.add_to_collection("my_collection_name", my_local)
-```
-#### 获取自定义集合
-要检索放在某个集合中的所有变量的列表，可以使用：
-``` python
-tf.get_collection("my_collection_name")
 ```
 
 ## 初始化变量
