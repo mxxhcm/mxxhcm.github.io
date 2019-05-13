@@ -10,7 +10,7 @@ categories: tensorflow
 ## tf.Tensor
 ### 目的
 - 当做另一个op的输入，各个op通过Tensor连接起来，形成数据流。
-- 
+- 可以使用t.eval()得到Tensor的值。。。 
 
 ### 属性
 - 数据类型，float32, int32, string等
