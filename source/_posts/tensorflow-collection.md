@@ -5,6 +5,7 @@ tags:
  - tensorflow
  - python
 categories: tensorflow
+mathjax: true
 ---
 
 ## tf.collection
@@ -28,12 +29,11 @@ Tensorflow用graph collection来管理不同类型的对象。tf.GraphKeys中定
 - ACTIVATIONS
 
 ## GLOBAL_Variable collection
-tf.Variable()类型在生成时会被默认添加到tf.GraphKeys.GLOBAL_VARIABLES collection和tf.GraphKeys.TRAINABLE_VARIABLES collection中。
+tf.Variable()对象在生成时会被默认添加到tf.GraphKeys中的GLOBAL_VARIABLES和TRAINABLE_VARIABLES collection中。
 ### 代码示例
 [代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_global_trainable_variables_collections.py)
 ``` python
 import tensorflow as tf
-
 
 a = tf.Variable([1, 2, 3])
 b = tf.get_variable("bbb", shape=[2,3])
@@ -91,7 +91,6 @@ with graph.as_default():
     with tf.name_scope('train_model'):
         optimizer = tf.train.GradientDescentOptimizer(0.01)
         train = optimizer.minimize(loss)
-
 
 with tf.Session(graph=graph) as sess:
 	inputs = [1, 2, 3, 4]
