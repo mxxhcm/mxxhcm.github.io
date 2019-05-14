@@ -8,21 +8,33 @@ categories: tensorflow
 ---
 
 
-## 创建变量
-主要有两种方式。
-tf.Variable()和tf.get_variable()，他们获得的都是tensorflow.python.ops.variables.Variable类型的对象。
-tf.get_variable()和tf.Variable()相比，必须提供name，以及shape，tf.Variable()不需要指定name，shape，但是需要指定初值，tf.get_varialbe()不需要初值（有默认初始化器，可以指定）。
+## 创建Variable
+Tensorflow有两种方式创建Variable：tf.Variable()和tf.get_variable()，这两种方式获得的都是tensorflow.python.ops.variables.Variable类型的对象，但是他们的输入参数还有些不一样。
+||tf.Variable()|tf.get_variable()|
+|:-:|:-:|:-:|
+|name|不需要|需要|
+|shape|不需要|需要|
+|初值|需要|不需要|
+
+两种方法事实上都可以指定name,shape和初值。这里的需要和不需要指的是必要不必要，如果没有传入需要的参数，就会报错，不需要的参数则不会影响。
 
 ## tf.Variable()
 ### 一句话介绍
-创建一个类操作全局变量。
+创建一个类操作全局变量。在TensorFlow内部，tf.Variable会存储持久性张量，允许各种op读取和修改它的值。这些修改在多个Session之间是可见的，因此对于一个tf.Variable，多个工作器可以看到相同的值。
 ### 和tf.Tensor对比
 tf.Variable 表示可通过对其运行op来改变其值的张量。与 tf.Tensor对象不同，tf.Variable 存在于单个session.run调用的上下文之外。tf.Tensor的值是不可以改变的，tf.Tensor没有assign函数。
-在TensorFlow内部，tf.Variable会存储持久性张量，允许各种op读取和修改它的值。这些修改在多个 tf.Session 之间是可见的，因此对于一个 tf.Variable，多个工作器可以看到相同的值。
 
 ### API
 ``` python
-tf.Variable.\_\_init\_\_(initial_value=None, trainable=True, collections=Non    e, validate_shape=True, caching_device=None, name=None, ...)
+tf.Variable.\_\_init\_\_(
+	initial_value=None,  # 指定变量的初值
+	trainable=True,  # 是否在BP时训练该参数
+	collections=None, # 指定变量的collection
+	validate_shape=True, 
+	caching_device=None, 
+	name=None,  # 指定变量的名字
+	...
+)
 ```
 
 ### 代码示例
@@ -48,10 +60,10 @@ sess.run(tf.global_variables_initializer())
 ### API
 ``` python
 tf.get_variable(
-    name,
-    shape=None,
-    dtype=None,
-    initializer=None,
+    name, # 指定变量的名字，必选项
+    shape=None, # 指定变量的shape，可选项
+    dtype=None, # 指定变量类型
+    initializer=None, # 指定变量初始化器
     regularizer=None,
     trainable=None,
     collections=None,
@@ -73,7 +85,7 @@ with tf.variable_scope("model") as scope:
   output2 = my_image_filter(input2)
 ```
 
-## 变量collection
+## Variable和collection
 [点击查看关于collecion的详细介绍](https://mxxhcm.github.io/2019/05/13/tensorflow-collection/)
 默认情况下，每个tf.Variable()都在以下两个collection中：
 - tf.GraphKeys.GLOBAL_VARIABLES - 可以在多台设备间共享的变量，
@@ -93,7 +105,7 @@ my_non_trainable = tf.get_variable("my_non_trainable",
 ### 获取collection
 要检索放在某个collection中的所有变量的列表，可以使用：
 #### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/tree/master/tf/ops/tf_Variable_collection.py)
 ``` python
 import tensorflow as tf
 

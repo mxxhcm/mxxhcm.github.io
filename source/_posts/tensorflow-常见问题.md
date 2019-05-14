@@ -106,8 +106,31 @@ feed_dict = {
 ### 代码示例
 [代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_placeholder_list.py)
 
+## 问题5
+执行mnist_with_summary代码时报错
+### 报错
+``` txt
+I tensorflow/stream_executor/dso_loader.cc:142] Couldn't open CUDA library libcupti.so.10.0. LD_LIBRARY_PATH: /usr/local/cuda/lib64:
+2019-05-13 23:04:10.620149: F tensorflow/stream_executor/lib/statusor.cc:34] Attempting to fetch value instead of handling error Failed precondition: could not dlopen DSO: libcupti.so.10.0; dlerror: libcupti.so.10.0: cannot open shared object file: No such file or directory
+Aborted (core dumped)
+```
+
+### 原因
+libcupti.so.10.0包没找到
+
+### 解决方法
+执行以下命令，找到相关的依赖包：
+~$:find /usr/local/cuda/ -name libcupti.so.10.0 
+输出如下：
+> /usr/local/cuda/extras/CUPTI/lib64/libcupti.so.10.0
+
+然后修改~/.bashrc文件中相应的环境变量:
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} 
+重新运行即可。
+
 ## 参考文献
 1.https://github.com/tensorflow/tensorflow/issues/4842
 2.https://github.com/tensorflow/tensorflow/issues/24496
 3.https://github.com/tensorflow/tensorflow/issues/9530
 4.https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow
+5.https://github.com/tensorflow/tensorflow/issues/11897

@@ -123,6 +123,9 @@ with tf.Session(graph=graph) as sess:
 
 使用tensorboard --logdir ./summary/打开tensorboard
 
+### 官网示例
+加了一定注释，[可以点击查看](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_summary_example.py)
+
 ## 所有API
 ### 类
 - class Event: A ProtocolMessage
