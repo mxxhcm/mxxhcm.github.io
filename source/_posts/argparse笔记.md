@@ -24,7 +24,7 @@ parser.add_argument(,,)
 ``` python
 arglist = parser.parse_args()
 ```
-###
+### 代码示例
 完整代码如下
 ```python
 import argparse
@@ -54,7 +54,19 @@ if __name__ == "__main__":
 > The ArgumentParser object will hold all the information necessary to parse the command line into python data types
 
 ``` python
-class argparse.ArgumentParser(prog=None,usage=None,description=None,epilog=None,parents=[],formatter_class=argparse.HelpFormatter,prefix_chars='-',fromfile_prefix_chars=None,argument_default=None,conflict_handler='error',add_help=True)
+class argparse.ArgumentParser(
+	prog=None,
+	usage=None,
+	description=None,
+	epilog=None,
+	parents=[],
+	formatter_class=argparse.HelpFormatter,
+	prefix_chars='-',
+	fromfile_prefix_chars=None,
+	argument_default=None,
+	conflict_handler='error',
+	add_help=True
+)
 ```
 
 ### 创建一个名为test.py的程序如下
@@ -65,8 +77,7 @@ args = parser.parse_args()
 ```
 ~#:python test.py -h
 > usage: test.py [-h]
-
-> optional arguments:
+optional arguments:
   -h, --help  show this help message and exit
 
 ### prog参数
@@ -74,8 +85,7 @@ args = parser.parse_args()
 #### 直接使用默认显示的程序名
 ~#:python test.py -h
 > usage: test.py [-h]
-
-> optional arguments:
+optional arguments:
   -h, --help  show this help message and exit
 
 #### 使用prog参数进行设置
@@ -87,8 +97,7 @@ args = parser.parse_args()
 ```
 ~#:python test.py -h
 > usage: mytest [-h]
-
-> optional arguments:
+ optional arguments:
   -h, --help  show this help message and exit
 
 usage后的名称变为我们prog参数指定的名称
@@ -135,8 +144,7 @@ parser.print_help()
 ```
 输出
 > usage: [-h]
-
-> optional arguments:
+ optional arguments:
   -h, --help  show this help message and exit
 将add_help设置为false
 
@@ -150,8 +158,21 @@ parser.print_help()
 
 ## The add_argument() method
 ``` python
-ArgumentParser.add_argument(name or flags...[,action],[,nargs],[,const],[,default],[,type],[,choices],[,required],[,help],[,metavar],[,dest])
+ArgumentParser.add_argument(
+	name or flags...
+	[,action],
+	[,nargs],
+	[,const],
+	[,default],
+	[,type],
+	[,choices],
+	[,required],
+	[,help],
+	[,metavar],
+	[,dest]
+)
 ```
+
 ### 例子
 ``` python
 import argparse

@@ -10,4 +10,4 @@ categories: python
 ## 
 
 ## 代码
-https://github.com/mxxhcm/matplotlib_tutorials
+https://github.com/mxxhcm/code/tree/master/tools/matplotlib
