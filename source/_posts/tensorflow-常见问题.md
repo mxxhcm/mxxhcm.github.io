@@ -50,7 +50,7 @@ GPU不够用了。
 ### 解决方法
 在代码中添加下面几句：
 ``` python
-config = ConfigProto()
+config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 ```
@@ -127,6 +127,32 @@ libcupti.so.10.0包没找到
 然后修改~/.bashrc文件中相应的环境变量:
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} 
 重新运行即可。
+
+
+## 问题6
+tf.Session()和tf.InteractiveSession()混用问题。
+### 报错
+``` txt
+tensorflow.python.framework.errors_impl.FailedPreconditionError: Attempting to use uninitialized value prediction/l1/w
+	 [[{{node prediction/l1/w/read}}]]
+	 [[{{node prediction/LogSoftmax}}]]
+```
+
+### 问题原因
+声明了如下session:
+``` python
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+```
+在接下来的代码中，使用了op.eval()函数
+result = op.eval(feed_dict={})
+然后就报了未初始化的错误。
+把代码改成：
+result = sess.run([op], feeed_dct={})
+即可，即上下文使用的session应该一致。
+
+### 解决方案
+使用统一的session类型
 
 ## 参考文献
 1.https://github.com/tensorflow/tensorflow/issues/4842
