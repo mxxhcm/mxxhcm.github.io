@@ -10,6 +10,7 @@ categories: tensorflow
 ## tf.summary
 ### 目的
 该模块定义在tensorflow/\_api/v1/summary/\_\_init\_\_.py文件中，主要用于可视化。
+每次运行完一个op之后，调用writer.add_summary()将其写入事件file。因为summary操作实在数据流的外面进行操作的，并不会操作数据，所以需要每次运行完之后，都调用一次写入函数。
 
 ## 常用API
 ### 函数
@@ -17,17 +18,29 @@ categories: tensorflow
 # 用来定义一个summary scalar op，同时会将这个op加入到tf.GraphKeys.SUMMARIES collection中。
 tf.summary.scalar(
 	name, 
-	tensor, 
-	collections=None, 
+	tensor, # 一个实数型的Tensor，包含单个的值。
+	collections=None, # 可选项，是graph collections keys的list，新的summary op会被添加到这个list of collection。默认的list是[GraphKeys.SUMMARIES]。
 	family=None
 )
-# 将所有定义的summary op集中到一块，如scalar，text等。
+# 定义一个summary histogram op，同时会将这个op加入到tf.GraphKeys.SUMMARIES collection中。
+tf.summary.histogram(
+    name,
+    values, # 一个实数型的Tensor，任意shape，用来生成直方图。
+    collections=None, # 可选项，是graph collections keys的list，新的summary op会被添加到这个list of collection。默认的list是[GraphKeys.SUMMARIES].
+    family=None
+)
+# 将所有定义的summary op集中到一块，如scalar，text，histogram等。
 tf.summary.merge_all(  
-	key=tf.GraphKeys.SUMMARIES, # GraphKey 用来collect summaries。默认设置为GraphKeys.SUMMARIES.
+	key=tf.GraphKeys.SUMMARIES, #指定用哪个GraphKey来collect summaries。默认设置为GraphKeys.SUMMARIES.并不是说将他们加入到哪个GraphKey的意思，tf.summary.scalar()等会将op加入到相应的colleection。
     scope=None, #
     name=None
 ) 
 ```
+
+### scalar和histogram的区别
+scalar记录的是一个标量。
+而histogram记录的是一个分布，可以是任何shape。
+
 ### 函数示例
 ``` python
 summary_loss = tf.summary.scalar('loss', loss)
@@ -35,6 +48,7 @@ summary_weights = tf.summary.scalar('weights', weights)
 # merged可以代替sumary_loss和summary_weights op。
 merged = tf.summary.merge_all() 
 ```
+关于tf.summary.histogram()的示例，[可以点击查看。](https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_summary_histogram.py)
 
 ### 类
 ``` python
@@ -150,5 +164,9 @@ with tf.Session(graph=graph) as sess:
 
 ## 参考文献
 1.https://www.tensorflow.org/api_docs/python/tf/summary
-2.https://www.tensorflow.org/guide/graphs#visualizing_your_graph
-3.https://www.tensorflow.org/guide/summaries_and_tensorboard
+2.https://www.tensorflow.org/api_docs/python/tf/summary/scalar
+3.https://www.tensorflow.org/api_docs/python/tf/summary/histogram
+4.https://www.tensorflow.org/api_docs/python/tf/summary/merge_all
+5.https://www.tensorflow.org/guide/graphs#visualizing_your_graph
+6.https://www.tensorflow.org/guide/summaries_and_tensorboard
+7.https://www.tensorflow.org/tensorboard/r1/histograms

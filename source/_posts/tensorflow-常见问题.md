@@ -144,7 +144,7 @@ tensorflow.python.framework.errors_impl.FailedPreconditionError: Attempting to u
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 ```
-在接下来的代码中，使用了op.eval()函数
+在接下来的代码中，因为我声明的是tf.Session()，使用了op.eval()函数，这种用法是tf.InteractiveSession的用法，所以就相当于没有初始化。
 result = op.eval(feed_dict={})
 然后就报了未初始化的错误。
 把代码改成：
@@ -154,9 +154,43 @@ result = sess.run([op], feeed_dct={})
 ### 解决方案
 使用统一的session类型
 
+## 问题7
+feed_dict必须是numpy.ndarray，不能是其他类型，尤其不能是tf.Variable。
+
+### 报错
+``` txt
+valueerror setting an array element with a sequence,
+```
+
+### 解决方法
+检查sess.run(op, feed_dict={})中的feed_dict，确保他们的类型，不能是tf.Variable()类型的对象，需要是numpy.ndarray。
+
+## 问题8
+如何获得tf.Variable()对象的值
+
+### 解决方法
+``` python
+import tensorflow as tf
+x = tf.Varialbe([1.0, 2.0])
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+value = sess.run(x)
+```
+或者
+```
+import tensorflow as tf
+x = tf.Varialbe([1.0, 2.0])
+sess = tf.InteractiveSession()
+sess.run(tf.global_variables_initializer())
+x.eval()
+```
+
+
 ## 参考文献
 1.https://github.com/tensorflow/tensorflow/issues/4842
 2.https://github.com/tensorflow/tensorflow/issues/24496
 3.https://github.com/tensorflow/tensorflow/issues/9530
 4.https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow
 5.https://github.com/tensorflow/tensorflow/issues/11897
+6.https://stackoverflow.com/questions/34156639/tensorflow-python-valueerror-setting-an-array-element-with-a-sequence-in-t
+7.https://stackoverflow.com/questions/33679382/how-do-i-get-the-current-value-of-a-variable
