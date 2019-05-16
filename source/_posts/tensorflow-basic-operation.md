@@ -20,23 +20,28 @@ x = tf.linspace(-3.0, 3.0, n)
 sess = tf.Session()
 ```
 
-
 ### 交互式Session 
 ``` python
 import tensorflow as tf
 sess = tf.InteractiveSession()
-x.eval()
 ```
 
 ### 在sess内执行op
 #### 方法1
+sess.run(tf.global_variables_initializer())
 sess.run(op)
+代码示例
 ``` python
+sess.run(tf.global_variables_initializer())
 result  = sess.run(x)
 ```
 #### 方法2
+tf.global_variables_initializer().run()
+sess.run(op)
 op.eval()
+代码示例
 ``` python
+tf.global_variables_initializer().run()
 x.eval(session=sess)
 sess.close()
 ```

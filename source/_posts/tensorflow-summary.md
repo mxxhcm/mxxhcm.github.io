@@ -30,8 +30,8 @@ tf.summary.histogram(
     family=None
 )
 # 将所有定义的summary op集中到一块，如scalar，text，histogram等。
-tf.summary.merge_all(  
-	key=tf.GraphKeys.SUMMARIES, #指定用哪个GraphKey来collect summaries。默认设置为GraphKeys.SUMMARIES.并不是说将他们加入到哪个GraphKey的意思，tf.summary.scalar()等会将op加入到相应的colleection。
+tf.summary.merge_all(
+    key=tf.GraphKeys.SUMMARIES, #指定用哪个GraphKey来collect summaries。默认设置为GraphKeys.SUMMARIES.并不是说将他们加入到哪个GraphKey的意思，tf.summary.scalar()等会将op加入到相应的colleection。
     scope=None, #
     name=None
 ) 
@@ -81,7 +81,7 @@ with tf.Session() as sess:
     writer.add_summary(summ, global_step=i)
 ```
 
-## 使用流程：
+## 使用流程
 1. summary_op = tf.summary_scalar() # 声明summary op，会将该op变量加入tf.GraphKeys.SUMMARIES collection
 2. merged = tf.summary.merge_all() # 将所有summary op合并
 3. writer = tf.summary.FileWriter() # 声明一个FileWrite文件，用于将Summary数据写入event文件
