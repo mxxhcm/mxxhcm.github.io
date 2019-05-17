@@ -91,7 +91,7 @@ $\pm$ \pm
 $\mp$ \mp
 
 ### 上下花括号
-$\overbrace{x+y}^{1+2}=\underbrace{z}_3$ \overbrace{x+y}^{1+2}=\underbrace{z}_3
+$\overbrace{x+y}\^{1+2}=\underbrace{z}_3$ \overbrace{x+y}\^{1+2}=\underbrace{z}_3
 
 ### 集合
 真含于$\subset$ \subset
@@ -168,16 +168,16 @@ $\sim$ \sim
 ### 示例1
 ``` Latex
 \begin{align*}
-f(x) &= (3 + 4)^2 + 4\\
-&= 7^2 + 4\\
+f(x) &= (3 + 4)\^2 + 4\\
+&= 7\^2 + 4\\
 &= 49 + 4\\
 &= 53
 \end{align*}
 ```
 效果如下：
 \begin{align\*}
-f(x) &= (3 + 4)^2 + 4\\
-&= 7^2 + 4\\
+f(x) &= (3 + 4)\^2 + 4\\
+&= 7\^2 + 4\\
 &= 49 + 4\\
 &= 53
 \end{align\*}
@@ -186,13 +186,36 @@ f(x) &= (3 + 4)^2 + 4\\
 \begin{align*}
 v &= R + \gamma Pv\\
 (1-\gamma P) &= R\\
-v &= (1 - \gamma P)^{-1} R
+v &= (1 - \gamma P)\^{-1} R
 \end{align*}
 ```
 \begin{align\*}
-v &= R + \gamma Pv\\
-(1-\gamma P) &= R\\
-v &= (1 - \gamma P)^{-1} R
+v &= R + \gamma Pv\\\\
+(1-\gamma P) &= R\\\\
+v &= (1 - \gamma P)\^{-1} R
+\end{align\*}
+
+## 测试
+\begin{align\*}
+J(\pi_0, \{\pi_i\}\_{i=1}\^n) &=\sum_i\mathbb{E}\_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) -c_{KL}\gamma\^t log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma\^t log\pi_i(a_t|s_t)\right]\\\\
+&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) - c_{KL}\gamma\^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma\^tlog\pi_i(a_t|s_t)\right]\\\\
+&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma\^t + c_{KL}\gamma\^t)log\pi_i(a_t|s_t)\right]\\\\
+&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) +\frac{\gamma\^t\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma\^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
+\end{align\*}
+
+``` latex
+\begin{align\*}
+J(\pi_0, {\pi_i}{i=1}\^n) &=\sum_i\mathbb{E}{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) -c_{KL}\gammatlog\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gammatlog\pi_i(a_t|s_t)\right]\\
+&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) - c_{KL}\gamma\^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma\^tlog\pi_i(a_t|s_t)\right]\\
+&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma\^t + c_{KL}\gamma\^t)log\pi_i(a_t|s_t)\right]\\
+&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) +\frac{\gammat\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gammat}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
+\end{align\*}
+```
+\begin{align\*}
+J(\pi_0, \{\pi_i\}\_{i=1}\^n) &=\sum_i\mathbb{E}\_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) -c_{KL}\gamma\^t log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma\^t log\pi_i(a_t|s_t)\right]\\\\
+&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) - c_{KL}\gamma\^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma\^tlog\pi_i(a_t|s_t)\right]\\\\
+&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma\^t + c_{KL}\gamma\^t)log\pi_i(a_t|s_t)\right]\\\\
+&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) +\frac{\gamma\^t \alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma\^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
 \end{align\*}
 
 ## 参考文献
