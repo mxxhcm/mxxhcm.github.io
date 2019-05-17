@@ -14,7 +14,7 @@ tf.Graph包含两类信息：
 当调用tf.train.Saver和tf.train.Optimizer的时候，它会使用这些collection中的变量作为默认参数。
 常见的定义在tf.GraphKeys上的collection:
 VARIABLES, TRAINABLE_VARIABLES, MOVING_AVERAGE_VARIABLES, LOCAL_VARIABLES, MODEL_VARIABLE,SUMMARIES.
-[关于collections的详细介绍可点击这里]()
+[关于collections的详细介绍可点击这里](https://mxxhcm.github.io/2019/05/13/tensorflow-collection/)
 
 ## 构建tf.Graph
 调用tensorflow API就会构建新的tf.Operation和tf.Tensor，并将他们添加到tf.Graph实例中去。
@@ -29,6 +29,12 @@ VARIABLES, TRAINABLE_VARIABLES, MOVING_AVERAGE_VARIABLES, LOCAL_VARIABLES, MODEL
 ``` python
 # Print all of the operations in the default graph.
 g = tf.get_default_graph()
+```
+## 清空默认图
+tf.reset_default_graph()
+``` python
+# 清空当前session的默认图
+tf.reset_default_graph()
 ```
 
 ## 命名空间
