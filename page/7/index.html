@@ -1252,7 +1252,7 @@ $\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\the
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-16 20:09:08" itemprop="dateModified" datetime="2019-05-16T20:09:08+08:00">2019-05-16</time>
+                <time title="修改时间：2019-05-17 08:57:01" itemprop="dateModified" datetime="2019-05-17T08:57:01+08:00">2019-05-17</time>
               
             
           </span>
@@ -1321,19 +1321,19 @@ $\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\the
 <img src="/2019/04/18/Distral-Robust-Multitask-Reinforcement-Learning/figure1.png" alt="figure1"></p>
 <h3 id="数学框架">数学框架</h3>
 <p>一个multitask RL任务中，假设有$n$个任务，折扣因子为$\gamma$，它们的state space和action space是相同的，但是每个任务$i$的状态转换概率$p_i(s’|s,a)$和奖励函数$R_i(s,a)$是不同的，用$\pi_i$表示第$i$个任务的stochastic polices。给定从一些初始状态开始的state和action联合分布的轨迹，用$\pi_i$表示dynamics和polices。<br>
-作者通过优化一个expected return和policy regularization组成的目标函数将学习不同任务的policy联系起来。用$\pi_0$表示要提取的shared policy，然后通过使用$\pi_0$和$\pi_i$的KL散度$\mathbb{E}<em>{\pi_i}\left[\sum</em>{t\ge 0}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(s_t|a_t)}\right]$正则化使所有的策略$\pi_i$向$\pi_0$移动。此外，作者还使用了一个带折扣因子的entropy正则化项鼓励exploration。系统越混乱，entropy越大，所以exploration越多，采取的动作越随机，entropy就越大。最后总的优化目标就变成了：<br>
+作者通过优化一个expected return和policy regularization组成的目标函数将学习不同任务的policy联系起来。用$\pi_0$表示要提取的shared policy，然后通过使用$\pi_0$和$\pi_i$的KL散度$\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tlog\frac{\pi_i(a_t|s_t)}{\pi_0(s_t|a_t)}\right]$ 正则化使所有的策略 $\pi_i$ 向 $\pi_0$ 移动。此外，作者还使用了一个带折扣因子的entropy正则化项鼓励exploration。系统越混乱，entropy越大，所以exploration越多，采取的动作越随机，entropy就越大。最后总的优化目标就变成了：<br>
 \begin{align*}<br>
-J(\pi_0, {\pi_i}<em>{i=1}^n) &amp;=\sum_i\mathbb{E}</em>{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma<sup>tlog\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma</sup>tlog\pi_i(a_t|s_t)\right]\<br>
-&amp;=\sum_i\mathbb{E}<em>{\pi_i}\left[\sum</em>{t\ge 0}\gamma^tR_i(s_t,a_t) - c_{KL}\gamma^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma^tlog\pi_i(a_t|s_t)\right]\<br>
-&amp;=\sum_i\mathbb{E}<em>{\pi_i}\left[\sum</em>{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{KL}\gamma^t)log\pi_i(a_t|s_t)\right]\<br>
-&amp;=\sum_i\mathbb{E}<em>{\pi_i}\left[\sum</em>{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma<sup>t\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma</sup>t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}<br>
+J(\pi_0, {\pi_i}_{i=1}^n) &amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^t log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^t log\pi_i(a_t|s_t)\right]\\<br>
+&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) - c_{KL}\gamma^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma^tlog\pi_i(a_t|s_t)\right]\\<br>
+&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{KL}\gamma^t)log\pi_i(a_t|s_t)\right]\\<br>
+&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t \alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}<br>
 \end{align*}<br>
 其中$c_{KL},c_{Ent}\ge 0$是控制KL散度正则化项和entropy正则化项大小的超参数，$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}。log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action；而entropy项$-log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，设置所有任务的正则化系数$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale不同，可以根据具体情况给相应任务设定相应系数。</p>
 <h3 id="soft-q-learing">Soft Q-Learing</h3>
-<p>这一节在表格形式的情况下使用和EM算法类似的策略优化目标函数－－固定$\pi_0$优化$\pi_i$，固定$\pi_i$然后优化$\pi_0$。当$\pi_0$固定的时候，式子(1)可以分解成每个任务的最大化问题，即优化每个任务的entropy正则化return，return使用的是正则化reward $R’<em>i(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\pi_0(a|s)$，正则化后的return可以使用G-learning来优化（这里说的应该是原来的return和R什么都没，这里都加上了正则化）。根据Soft Q-Learning(G-learning)的证明，给定$\pi_0$，我们能得到以下的关系：<br>
-$$\pi_i(a_t|s_t) = \pi_0<sup>{\alpha}(a_t|s_t)e</sup>{\beta Q_i(a_t|s_t)-\beta V(s_t)} = \pi_0<sup>{\alpha}(a_t|s_t)e</sup>{\beta A_i(a_t|s_t)} \tag{2}$$<br>
+<p>这一节在表格形式的情况下使用和EM算法类似的策略优化目标函数－－固定$\pi_0$优化$\pi_i$，固定$\pi_i$然后优化$\pi_0$。当$\pi_0$固定的时候，式子(1)可以分解成每个任务的最大化问题，即优化每个任务的entropy正则化return，return使用的是正则化reward $R’_i(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\pi_0(a|s)$，正则化后的return可以使用G-learning来优化（这里说的应该是原来的return和R什么都没，这里都加上了正则化）。根据Soft Q-Learning(G-learning)的证明，给定$\pi_0$，我们能得到以下的关系：<br>
+$$\pi_i(a_t|s_t) = \pi_0^{\alpha} (a_t|s_t)e^{\beta Q_i(a_t|s_t)-\beta V(s_t)} = \pi_0^{\alpha} (a_t|s_t)e^{\beta A_i(a_t|s_t)} \tag{2}$$<br>
 其中$A_i(s,a) = Q_i(s,a)-V_i(s)$是advantage function，$\pi_0$可以看成是一个policy prior，<strong>需要注意的是这里多了一个指数$\alpha \lt 1$，这是多出来的entropy项的影响，soften了$\pi_0$对$\pi_i$的影响</strong>。$V$和$Q$是新定义的一种state value和action value，使用推导的softened Bellman公式更新：<br>
-$$V_i(s_t) = \frac{1}{\beta} log\sum</em>{a_t}\pi_0<sup>{\alpha}(a_t|s_t)e</sup>{\beta Q_i(s_t,a_t)} \tag{3}$$<br>
+$$V_i(s_t) = \frac{1}{\beta} log\sum_{a_t}\pi_0^{\alpha} (a_t|s_t)e^{\beta Q_i(s_t,a_t)} \tag{3}$$<br>
 $$Q_i(s_t,a_t) = R_i(s_t, a_t)+ \gamma \sum_{s_t}p_i(s_{t+1}|s_t,a_t)V_i(s_{t+1}) \tag{4}$$<br>
 这个Bellman update公式是softened的，因为state value $V_i$在actions上的max操作被温度$\beta$倒数上的soft-max操作代替了，当$\beta\rightarrow\infty$时，就变成了max 操作，这里有些不明白。为什么呢？这个我不理解有什么关系，这是这篇文章给出的解释。<strong>按照我的理解，这个和我们平常使用Bellman 期望公式或者最优等式没有什么关系，只是给了一种新的更新Q值和V值的方法。实际上，这两个公式都是根据推导给出的定义。</strong><br>
 还有一点：$\pi_0$是学出来的，而不是手动选出来的。式子(1)中和$\pi_0$相关的只有：<br>
@@ -1344,63 +1344,63 @@ $$\frac{\alpha}{\beta}\sum_i\mathbb{E_{\pi_i}}\left[\sum_{t\ge 0}\gamma^tlog\pi_
 <h3 id="policy-gradient-and-a-better-parameterization">Policy Gradient and a Better Parameterization</h3>
 <p>上面一节讲的是表格形式的计算，给定$\pi_0$，首先求解出$\pi$对应的$V$和$Q$，然后写出$\pi_i$的解析。但是如果我们用神经网络等函数去拟合$V$和$Q$，$V$和$Q$的求解特别慢，这里使用梯度下降同时优化task polices和distilled policy。这种情况下，$\pi_i$的梯度更新通过求带有entropy正则化的return即可求出来，并且可以放在如actor-critic之类的框架中。<br>
 每一个$\pi_i$都用一个单独的网络表示，$\pi_0$也用一个单独的网络表示，用$\theta_0$表示$\pi_0$的参数，对应的policy表示为：<br>
-$$\hat{\pi_0}(a_t|s_t) = \frac{e<sup>{(h_{\theta_0}(a_t|s_t))}}{\sum_{a’}e</sup>{h_{\theta_0}(a’|s_t)}} \tag{6}$$<br>
+$$\hat{\pi_0}(a_t|s_t) = \frac{e^{(h_{\theta_0}(a_t|s_t))} }{\sum_{a’}e^{h_{\theta_0}(a’|s_t)}} \tag{6}$$<br>
 使用参数为$\theta_i$的神经网络表示$Q$值，用$f_{\theta_i}$表示第$i$个策略$\pi$的$Q$值，用$Q$表示$V$，再估计$A=Q-V$的值：<br>
-$$\hat{A}<em>i(a_t|s_t) = f</em>{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}<em>0<sup>{\alpha}(a|s_t)e</sup>{\beta f</em>{\theta_i}(a|s_t)} \tag{7}$$<br>
+$$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}_0^{\alpha} (a|s_t)e^{\beta f_{\theta_i}(a|s_t)} \tag{7}$$<br>
 将式子$(7)$代入式子$(2)$得第$i$个任务的policy可以参数化为：<br>
 \begin{align*}<br>
-\hat{\pi}<em>i(a_t|s_t)<br>
-&amp; = \hat{\pi}<em>0<sup>{\alpha}(a_t|s_t)e</sup>{\left(\beta \hat{Q}<em>i(a_t|s_t)-\beta \hat{V}(s_t)\right)}\<br>
-&amp; = \hat{\pi}<em>0<sup>{\alpha}(a_t|s_t)e</sup>{\left(\beta \hat{A}<em>i(a_t|s_t)\right)}\<br>
-&amp; = \hat{\pi}<em>0<sup>{\alpha}(a_t|s_t)e</sup>{\left(\beta \left(f</em>{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}<em>0<sup>{\alpha}(a|s_t)e</sup>{\beta f</em>{\theta_i}(a|s_t)}\right)\right)}\<br>
-&amp; = \hat{\pi}<em>0<sup>{\alpha}(a_t|s_t)e</sup>{\left(\beta f</em>{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}<em>0<sup>{\alpha}(a|s_t)e</sup>{\beta f</em>{\theta_i}(a|s_t)}\right)}\<br>
-&amp; = \left(\frac{e<sup>{(h_{\theta_0}(a_t|s_t))}}{\sum_{a’}e</sup>{h</em>{\theta_0}(a’|s_t)}}\right)<sup>{\alpha}e</sup>{\left(\beta f</em>{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}<em>0<sup>{\alpha}(a|s_t)e</sup>{\beta f</em>{\theta_i}(a|s_t)}\right)}\<br>
-&amp; = \left(\frac{e<sup>{(h_{\theta_0}(a_t|s_t))}}{\sum_{a’}e</sup>{h</em>{\theta_0}(a’|s_t)}}\right)^{\alpha}<br>
+\hat{\pi}_i(a_t|s_t)<br>
+&amp; = \hat{\pi}_0^{\alpha} (a_t|s_t)e^{\left(\beta \hat{Q}_i(a_t|s_t)-\beta \hat{V}(s_t)\right)}\\<br>
+&amp; = \hat{\pi}_0^{\alpha} (a_t|s_t)e^{\left(\beta \hat{A}_i(a_t|s_t)\right)}\\<br>
+&amp; = \hat{\pi}_0^{\alpha} (a_t|s_t)e^{\left(\beta \left(f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)\right)}\\<br>
+&amp; = \hat{\pi}_0^{\alpha} (a_t|s_t)e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\<br>
+&amp; = \left(\frac{e^{(h_{\theta_0}(a_t|s_t))} }{\sum_{a’}e^{h_{\theta_0}(a’|s_t)}}\right)^{\alpha}e^{\left(\beta f_{\theta_i}(a_t|s_t) - log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\<br>
+&amp; = \left(\frac{e^{(h_{\theta_0}(a_t|s_t))} }{\sum_{a’}e^{h_{\theta_0}(a’|s_t)}}\right)^{\alpha}<br>
 \cdot<br>
-\frac{e^{\beta f</em>{\theta_i}(a_t|s_t)}}   {e<sup>{log\sum_a\hat{\pi}_0</sup>{\alpha}(a|s_t)e^{\beta f</em>{\theta_i}(a|s_t)}}}\<br>
-&amp; = \frac{\left(e<sup>{(h_{\theta_0}(a_t|s_t))}\right)</sup>{\alpha}}  {\left(\sum_{a’}e<sup>{h_{\theta_0}(a’|s_t)}\right)</sup>{\alpha}}<br>
+\frac{e^{\beta f_{\theta_i}(a_t|s_t)} }   {e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\<br>
+&amp; = \frac{\left(e^{(h_{\theta_0}(a_t|s_t))}\right)^{\alpha}}  {\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha}}<br>
 \cdot<br>
-\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}   {e<sup>{log\sum_a\hat{\pi}_0</sup>{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\<br>
-&amp; = \frac{e^{\alpha \cdot(h_{\theta_0}(a_t|s_t))}}   {\left(\sum_{a’}e<sup>{h_{\theta_0}(a’|s_t)}\right)</sup>{\alpha}}<br>
+\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}   {e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\<br>
+&amp; = \frac{e^{\alpha \cdot(h_{\theta_0}(a_t|s_t))}}   {\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha}}<br>
 \cdot<br>
-\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{e<sup>{log\sum_a\hat{\pi}_0</sup>{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\<br>
-&amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t))}}  {\left(\sum_{a’}e<sup>{h_{\theta_0}(a’|s_t)}\right)</sup>{\alpha}}<br>
+\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{e^{log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\<br>
+&amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t))}}  {\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha}}<br>
 \cdot<br>
-\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{\sum_a\hat{\pi}<em>0<sup>{\alpha}(a|s_t)e</sup>{\beta f</em>{\theta_i}(a|s_t)}}\<br>
+\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}\\<br>
 &amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t))} \cdot e^{\beta f_{\theta_i}(a_t|s_t) }}<br>
-{\left(\sum_{a’}e<sup>{h_{\theta_0}(a’|s_t)}\right)</sup>{\alpha} \cdot {\sum_a\hat{\pi}<em>0^{\alpha}(a|s_t) e^{\beta f</em>{\theta_i}(a|s_t)}}}\<br>
+{\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha} \cdot {\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}\\<br>
 &amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t)) }}<br>
-{\left(\sum_{a’}e<sup>{h_{\theta_0}(a’|s_t)}\right)</sup>{\alpha} \cdot {\sum_a\hat{\pi}<em>0^{\alpha}(a|s_t) e^{\beta f</em>{\theta_i}(a|s_t)}}}(Why to blow equation???)\<br>
+{\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha} \cdot {\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}(Why to blow equation???)\\<br>
 &amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}  {\sum_{a’}e^{(\alpha h_{\theta_0}(a’|s_t) + \beta f_{\theta_i}(a’|s_t))}}<br>
 \end{align*}<br>
 所以：<br>
-$$\hat{\pi}<em>i(a_t|s_t) = \hat{\pi}<em>0<sup>{\alpha}(a_t|s_t)e</sup>{(\beta\hat{A}<em>i(a_t|s_t))}=\frac{e^{(\alpha h</em>{\theta_0}(a_t|s_t) + \beta f</em>{\theta_i}(a_t|s_t))}}{\sum</em>{a’}e^{(\alpha h_{\theta_0}(a’|s_t) + \beta f_{\theta_i}(a’|s_t))}} \tag{8}$$<br>
+$$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t))}=\frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}{\sum_{a’}e^{(\alpha h_{\theta_0}(a’|s_t) + \beta f_{\theta_i}(a’|s_t))}} \tag{8}$$<br>
 这可以看成policy的一个两列架构，一列是提取的shared policy，一列是将$\pi_0$应用到task $i$上需要做的一些修改。<br>
 使用参数化的$\pi_0, \pi_i$，首先推导策略相对于$\pi_i$的梯度（policy gradient的推导，这里是直接应用了)：<br>
 \begin{align*}<br>
-\nabla_{\theta_i}J&amp; = \mathbb{E}<em>{\hat{\pi}<em>i}\left[\left(\sum</em>{t\gt 1} \nabla</em>{\theta_i}log{\hat{\pi}}<em>i(a_t|s_t)\right) \left(\sum</em>{u\ge 1}\gamma^u \left(R^{reg}<em>i(a_u,s_u)\right)\right) \right]\<br>
-&amp; = \mathbb{E}</em>{\hat{\pi}<em>i}\left[\sum</em>{t\gt 1} \nabla_{\theta_i}log\hat{\pi}<em>i(a_t|s_t)\left(\sum</em>{u\ge t}\gamma^u \left(R^{reg}<em>i(a_u,s_u)\right)\right) \right] \tag{9}\<br>
+\nabla_{\theta_i}J&amp; = \mathbb{E}_{\hat{\pi}_i}\left[\left(\sum_{t\gt 1} \nabla_{\theta_i}log{\hat{\pi}}_i(a_t|s_t)\right) \left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right]\\<br>
+&amp; = \mathbb{E}_{\hat{\pi}_i}\left[\sum_{t\gt 1} \nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\left(\sum_{u\ge t}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right] \tag{9}\\<br>
 \end{align*}<br>
-其中$R_i^{reg}(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\hat{\pi}<em>0(a|s) - \frac{1}{\beta}log\hat{\pi}<em>i(a|s)$是正则化后的reward。注意，这里$\mathbb{E}</em>{\hat{\pi}<em>i}\left[\nabla</em>{\theta_i}log\hat{\pi}<em>i(a_t|s_t)\right] = 0$，因为log-derivative trick。如果有一个value baseline，那么为了减少梯度的方差，可以从正则化后的returns中减去它。<br>
+其中$R_i^{reg}(s,a) = R_i(s,a) + \frac{\alpha}{\beta}log\hat{\pi}_0(a|s) - \frac{1}{\beta}log\hat{\pi}_i(a|s)$是正则化后的reward。注意，这里$\mathbb{E}_{\hat{\pi}_i}\left[\nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)\right] = 0$，因为log-derivative trick。如果有一个value baseline，那么为了减少梯度的方差，可以从正则化后的returns中减去它。<br>
 关于$\theta_0$的梯度如下：<br>
 \begin{align*}<br>
-\nabla</em>{\theta_0}J<br>
-&amp; = \mathbb{E}</em>{\hat{\pi}<em>i}<br>
+\nabla_{\theta_0}J<br>
+&amp; = \mathbb{E}_{\hat{\pi}_i}<br>
 \left[<br>
-\sum</em>{t\gt 1} \nabla</em>{\theta_i}log\hat{\pi}<em>i(a_t|s_t)<br>
-\left(\sum</em>{u\ge 1}\gamma^u<br>
+\sum_{t\gt 1} \nabla_{\theta_i}log\hat{\pi}_i(a_t|s_t)<br>
+\left(\sum_{u\ge 1}\gamma^u<br>
 \left(<br>
-R^{reg}<em>i(a_u,s_u)<br>
+R^{reg}_i(a_u,s_u)<br>
 \right)<br>
 \right)<br>
-\right]\<br>
-&amp; \qquad +\frac{\alpha}{\beta}\sum_i\mathbb{E}</em>{\hat{\pi}<em>i}<br>
+\right]\\<br>
+&amp; \qquad +\frac{\alpha}{\beta}\sum_i\mathbb{E}_{\hat{\pi}_i}<br>
 \left[<br>
-\sum</em>{t\ge 1}\gamma^t\sum_{a’_t}<br>
+\sum_{t\ge 1}\gamma^t\sum_{a’_t}<br>
 \left(<br>
-\hat{\pi}_i(a’_t|s_t)-\hat{\pi}<em>0(a’<em>t|s_t)<br>
+\hat{\pi}_i(a’_t|s_t)-\hat{\pi}_0(a’_t|s_t)<br>
 \right)<br>
-\nabla</em>{\theta_0}h</em>{\theta_0}(a’_t|s_t)<br>
+\nabla_{\theta_0}h_{\theta_0}(a’_t|s_t)<br>
 \right] \tag{10}<br>
 \end{align*}<br>
 第一项和$\pi_i$一样，第二项是让$\hat{\pi}_i,\hat{\pi}_0$的概率尽可能接近。如果不使用KL散度的话，这里就不会有第二项了。KL正则是为了让$\pi_0$在$\pi_i$的质心上，即$\hat{\pi}_0(a’_t|s_t) = \frac{1}{n}\sum_i\hat{\pi}_i(a’_t|s_t)$，最后第二项就为$0$了，可以快速的将公共信息迁移到新任务上。<br>
@@ -1446,9 +1446,6 @@ multitask A3C和two-column A3C学习的不稳定，有时候学的好，有时�
 另一个就是在深度神经网络中，它们的参数没有意义，所以作者不是在参数空间进行的正则化，而是在策略空间进行正则化，这样子更有语义意义。</p>
 <h2 id="参考文献">参考文献</h2>
 <p>1.<a href="https://papers.nips.cc/paper/7036-distral-robust-multitask-reinforcement-learning.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/7036-distral-robust-multitask-reinforcement-learning.pdf</a></p>
-<ol start="2">
-<li></li>
-</ol>
 
           
         
