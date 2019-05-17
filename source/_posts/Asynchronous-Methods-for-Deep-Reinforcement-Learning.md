@@ -35,20 +35,20 @@ A3C算法的实质就是在多个线程中同步训练。分为主网络和线�
 
 #### 伪代码
 **Algorithm 1** 异步的one-step Q-learning－－每个actor-learn线程的伪代码
-用$\theta,\theta^{-}$表示全局共享参数，计数器$T=0$，
+用$\theta,\theta\^{-}$表示全局共享参数，计数器$T=0$，
 初始化线程时间步计数器$t\leftarrow 0$，
-初始化target network权重$\theta^{-} \leftarrow 0$,
+初始化target network权重$\theta\^{-} \leftarrow 0$,
 初始化network梯度$d\theta\leftarrow 0$，
 初始化，得到初始状态$s$，
 **repeat**
 $\qquad$使用$\epsilon-$greedy策略采取action $a$，
 $\qquad$接收下一个状态$s'$和reward $r$，
-$\qquad$设置target value，$y=\begin{cases}r,&for\ terminal\ s' \\r+\gamma max_{a'}Q(s',a';\theta^{-}), &for\ non-terminal\ s'\end{cases}$
-$\qquad$累计和$\theta$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$
+$\qquad$设置target value，$y=\begin{cases}r,&for\ terminal\ s' \\\\ r+\gamma max_{a'}Q(s',a';\theta\^{-}), &for\ non-terminal\ s'\end{cases}$
+$\qquad$累计和$\theta$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))\^2}{\partial \theta}$
 $\qquad s\leftarrow s'$
 $\qquad T\leftarrow T+1, t\leftarrow t+1$
 $\qquad$**if** $T\ \ mod\ \ I_{target} ==0 $，那么
-$\qquad\qquad$更新target network $\theta^{-}\leftarrow 0$
+$\qquad\qquad$更新target network $\theta\^{-}\leftarrow 0$
 $\qquad$**end if**
 $\qquad$**if** $t\ \ mod\ \ I_{AsyncUpdate} ==0$或者$s$是terminal state，那么
 $\qquad\qquad$使用$d\theta$异步更新$\theta$
@@ -58,7 +58,7 @@ $\qquad$**end if**
 
 ### 异步的one-step Sarsa
 #### 概述
-- 和算法$1$很像，$Q-learning$计算target value使用$r+\gamma max_{a'}Q(s',a';\theta^{-})$，而Sarsa计算target value使用$r+\gamma Q(s',a';\theta^{-})$，即Q-learning的bahaviour policy和评估的策略是不一样的，而Sarsa的behaviour policy和评估策略是一样的。
+- 和算法$1$很像，$Q-learning$计算target value使用$r+\gamma max_{a'}Q(s',a';\theta\^{-})$，而Sarsa计算target value使用$r+\gamma Q(s',a';\theta\^{-})$，即Q-learning的bahaviour policy和评估的策略是不一样的，而Sarsa的behaviour policy和评估策略是一样的。
 - 使用target network，
 - 同时使用多个时间步的累计梯度更新用来稳定学习过程。
 
@@ -75,10 +75,10 @@ $\qquad$**end if**
 
 #### 伪代码
 **Algorithm 2** 异步的n-step Q-learning算法－－每个actor-learner线程的伪代码
-用$\theta,\theta^{-}$表示全局共享的network参数和target network参数，用$T=0$表示全局共享计数器。
+用$\theta,\theta\^{-}$表示全局共享的network参数和target network参数，用$T=0$表示全局共享计数器。
 初始化线程步计数器$t\leftarrow 1$，
-初始化target network参数$\theta^{-}\leftarrow \theta$
-初始化每个线程的参数参数$\theta^{-}\leftarrow \theta$
+初始化target network参数$\theta\^{-}\leftarrow \theta$
+初始化每个线程的参数参数$\theta\^{-}\leftarrow \theta$
 初始化网络梯度$d\theta\leftarrow 0$
 **repeat**
 $\qquad$重置累计梯度$d\theta\leftarrow0$
@@ -90,14 +90,14 @@ $\qquad\qquad$根据基于$Q(s_t,a;\theta')$的$\epsilon-greedy$策略执行动�
 $\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，
 $\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$
 $\qquad$ **until** terminal $s_t$或者$t-t_{start}==t_{max}$
-$\qquad$设置奖励$R=\begin{cases}0,&for\ terminal\ s_t\\max_aQ(s_t,a;\theta^{-}), &for\ non-terminal\ s_t\end{cases}$
+$\qquad$设置奖励$R=\begin{cases}0,&for\ terminal\ s_t\\max_aQ(s_t,a;\theta\^{-}), &for\ non-terminal\ s_t\end{cases}$
 $\qquad$**for** $i\in\{t-1,\cdots,t_{start}\}$ do
 $\qquad\qquad R\leftarrow r_i+\gamma R$
-$\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s_t,a;\theta'))^2}{\partial \theta'}$
+$\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s_t,a;\theta'))\^2}{\partial \theta'}$
 $\qquad$**end for**
 $\qquad$使用$d\theta$异步更新$\theta$.
 $\qquad$**if**$\quad T\quad mod\quad I_{target}==0$那么
-$\qquad\qquad\theta^{-}\leftarrow \theta$
+$\qquad\qquad\theta\^{-}\leftarrow \theta$
 $\qquad$**end if**
 **until** $T\gt T_{max}$
 
@@ -105,10 +105,10 @@ $\qquad$**end if**
 #### 概述
 - A3C算法，是一个actor-critic方法，使用值函数$V(s_t;\theta_v)$辅助学习policy $\pi(a_t|s_t;\theta)$，同时这里使用$n-step$的returns更新policy和value function。
 - 每隔$t_{max}$个action更新一次或者到了terminal state更新一次。
-- Actor的更新方向为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum_{i=0}^{k-1}\gamma^ir_{t+i}+\gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$计算。
+- Actor的更新方向为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum_{i=0}\^{k-1} \gamma\^ir_{t+i}+\gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$计算。
 - 这里同样使用并行的actor-learner和累计的梯度用来稳定学习。$\theta$和$\theta_v$在实现上通常共享参数。
-- 添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')(R_t-V(s_t;\theta_v))+\beta\nabla_{\theta'}H(\pi(s_t;\theta'))$。这里的$R$就是上面的$\sum_{i=0}^{k-1}\gamma^ir_{t+i}+\gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。
-- Critic的更新方向通过最小化loss来实现，这里的loss指的是TD-error，即$\sum_{i=0}^{k-1}\gamma^ir_{t+i} + \gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。
+- 添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')(R_t-V(s_t;\theta_v))+\beta\nabla_{\theta'}H(\pi(s_t;\theta'))$。这里的$R$就是上面的$\sum_{i=0}\^{k-1}\gamma\^ir_{t+i}+\gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。
+- Critic的更新方向通过最小化loss来实现，这里的loss指的是TD-error，即$\sum_{i=0}\^{k-1}\gamma\^ir_{t+i} + \gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。
 - 没有使用target network。
 
 #### 伪代码
@@ -118,22 +118,22 @@ $\qquad$**end if**
 初始化线程步计数器$t\leftarrow 1$，
 **repeat**
 $\qquad$重置梯度$d\theta\leftarrow 0,d\theta_v\leftarrow 0$，
-$\qquad$同步线程参数$\theta'=\theta,\theta'_v=\theta_v$
-$\qquad t_{start}=t$
+$\qquad$同步线程参数$\theta'=\theta,\theta'\_v=\theta_v$
+$\qquad t\_{start}=t$
 $\qquad$得到状态$s_t$，
 $\qquad$**repeat** 
 $\qquad\qquad$根据策略$\pi(a_t|s_t;\theta')$执行动作$a_t$，
-$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，
+$\qquad\qquad$接收下一个状态$s\_{t+1}$和reward $r_t$，
 $\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$
-$\qquad$ **until** terminal $s_t$或者$t-t_{start}==t_{max}$
-$\qquad$设置奖励$R=\begin{cases}0,&for\ terminal\ s_t\\V(s_t,\theta'_v), &for\ non-terminal\ s_t\end{cases}$
-$\qquad$**for** $i\in\{t-1,\cdots,t_{start}\}$ do
+$\qquad$ **until** terminal $s_t$或者$t-t\_{start}==t\_{max}$
+$\qquad$设置奖励$R=\begin{cases}0,&for\ terminal\ s_t\\\\ V(s_t,\theta'\_v), &for\ non-terminal\ s_t\end{cases}$
+$\qquad$**for** $i\in\{t-1,\cdots,t\_{start}\}$ do
 $\qquad\qquad R\leftarrow r_i+\gamma R$
-$\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$
-$\qquad\qquad$累计和$\theta'_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta'_v))^2}{\partial \theta'_v}$
+$\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))\^2}{\partial \theta}$
+$\qquad\qquad$累计和$\theta'\_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta'\_v))\^2}{\partial \theta'\_v}$
 $\qquad$**end for**
 $\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.
-**until** $T\ge T_{max}$
+**until** $T\ge T\_{max}$
 
 ### 优化方法
 作者尝试了三种不同的优化方法，带有momentum的SGD，带有共享statistics的RMSProp以及不带shared statistics的RMSProp。
@@ -153,7 +153,7 @@ $\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\the
 - 所有实验使用的$\gamma=0.99$，RMSProp的衰减因子$\alpha = 0.99$。
 - Value-based方法采用的exploration rate $\epsilon$有是三个取值$\epsilon_1,\epsilon_2,\epsilon_3$，相应的概率为$0.4,0.3,0.3$，它们的值在前$4$百万帧中从$1$退火到$0.1,0.01,0.5$。
 - A3C使用了entropy进行正则化，entropy项的权重为$\beta=0.01$
-- 初始学习率从分布$LogUniform(10^{-4},10^{-2})$中进行采样，在训练过程中退火到$0$。
+- 初始学习率从分布$LogUniform(10\^{-4},10\^{-2})$中进行采样，在训练过程中退火到$0$。
 
 ## 代码
 ### 地址

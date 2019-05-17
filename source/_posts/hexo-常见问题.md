@@ -47,9 +47,13 @@ $a^{x+y}b$
 应该写成
 ``` latex
 $a^{x+y} b$
+```
+或者
+``` latex
 $a\^{x+y}b$
 ```
 就是要多一个空格才行，否则就会解析错误。
+还有就是\\可能没转义成功，就用\\\\去代替\\吧。
 
 ## 参考文献
 1.https://hexo-guide.readthedocs.io/zh_CN/latest/theme/[NexT]%E9%85%8D%E7%BD%AEMathJax.html
