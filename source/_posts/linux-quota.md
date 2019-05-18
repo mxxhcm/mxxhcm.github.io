@@ -7,7 +7,10 @@ categories: linux
 ---
 
 
-74.quota示范
+## quota
+该命令显示磁盘使用情况和限额
+
+## quota示范
   文件系统开启quota
 	df -h /home
 	mount -o remount,usrquota,grpquota /home

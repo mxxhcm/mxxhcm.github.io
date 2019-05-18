@@ -13,11 +13,7 @@ Optimizer是所有optimizer的基类。
 调用任何优化器都要先初始化Optimizer类，这里拿Adam优化器举例子。Adam optimizer的init函数如下所示：
 ``` python
 class Adam(Optimizer):
-    r"""Implements Adam algorithm.
-
-    It has been proposed in `Adam: A Method for Stochastic Optimization`_.
-
-    Arguments:
+	"""
         params (iterable): iterable of parameters to optimize or dicts defining
             parameter groups
         lr (float, optional): learning rate (default: 1e-3)
@@ -25,15 +21,9 @@ class Adam(Optimizer):
             running averages of gradient and its square (default: (0.9, 0.999))
         eps (float, optional): term added to the denominator to improve
             numerical stability (default: 1e-8)
-        weight_decay (float, optional): weight decay (L2 penalty) (default: 0)
+        weight_decay (float, optional): weight decay (L2 penalty)
         amsgrad (boolean, optional): whether to use the AMSGrad variant of this
-            algorithm from the paper `On the Convergence of Adam and Beyond`_
-            (default: False)
 
-    .. _Adam\: A Method for Stochastic Optimization:
-        https://arxiv.org/abs/1412.6980
-    .. _On the Convergence of Adam and Beyond:
-        https://openreview.net/forum?id=ryQu7f-RZ
     """
 
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8,
@@ -50,11 +40,11 @@ class Adam(Optimizer):
                         weight_decay=weight_decay, amsgrad=amsgrad)
         super(Adam, self).__init__(params, defaults)
 ```
+
 上述代码将学习率lr,beta,epsilon,weight_decay,amsgrad等封装在一个dict中，然后将其传给Optimizer的init函数，其代码如下：
+
 ``` python
 class Optimizer(object):
-    r"""Base class for all optimizers.
-
     .. warning::
         Parameters need to be specified as collections that have a deterministic
         ordering that is consistent between runs. Examples of objects that don't
@@ -103,3 +93,5 @@ class Optimizer(object):
 如果param已经是一个字典列表的话，就无需操作，否则就需要把param转化成一个字典param_groups。然后对param_groups中的每一个param_group调用add_param_group(param_group)函数将param_group字典和defaults字典拼接成一个新的param_group字典添加到self.param_groups中。
 
 
+## 参考文献
+1.https://pytorch.org/docs/stable/optim.html

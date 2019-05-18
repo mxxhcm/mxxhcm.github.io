@@ -6,6 +6,7 @@ tags:
  - python
 categories: pytorch
 ---
+
 ## torch.distributions
 这个库和gym.space库很相似，都是提供一些分布，然后从中采样。
 常见的有ExponentialFamily,Bernoulli,Binomial,Categorical,Exponential,Gamma,Independent,Laplace,Multinomial,MultivariateNormal。这里不做过程陈述，可以看[gym](http://localhost:4000/2019/04/12/gym%E4%BB%8B%E7%BB%8D/)中。
@@ -18,7 +19,7 @@ CLASS torch.distributions.categorical.Categorical(probs=None, logits=None, valid
 参数probs只能是$1$维或者$2$维，而且必须是非负，有限非零和的，然后将其归一化到和为$1$。
 这个类和torch.multinormal是一样的，从$\{0,\cdots, K-1\}$中按照probs的概率进行采样，$K$是probs.size(-1)，即是size()矩阵的最后一列，$2$维时把第$1$维当成了batch。
 
-举一个简单的例子，[代码]()。
+举一个简单的例子，[代码](https://github.com/mxxhcm/code/blob/master/pytorch/pytorch_test/torch_distribution.py)。
 ``` python
 import torch.distributions as diss
 import torch
@@ -65,4 +66,5 @@ for _ in range(5):
 0
 4
 
-
+## 参考文献
+1.https://pytorch.org/docs/stable/distributions.html

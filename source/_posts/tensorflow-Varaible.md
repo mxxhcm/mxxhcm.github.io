@@ -26,7 +26,7 @@ tf.Variable 表示可通过对其运行op来改变其值的张量。与 tf.Tenso
 
 ### API
 ``` python
-tf.Variable.\_\_init\_\_(
+tf.Variable.__init__(
 	initial_value=None,  # 指定变量的初值
 	trainable=True,  # 是否在BP时训练该参数
 	collections=None, # 指定变量的collection

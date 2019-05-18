@@ -31,5 +31,4 @@ torch.backends.cudnn.enabled=False
 6.https://discuss.pytorch.org/t/distributed-data-parallel-freezes-without-error-message/8009
 7.https://discuss.pytorch.org/t/runtimeerror-cudnn-status-arch-mismatch/3580
 8.https://discuss.pytorch.org/t/error-when-using-cudnn/577/7
-9.https://www.zhihu.com/question/67209417
 10.https://pytorch.org/docs/stable/distributions.html#categorical

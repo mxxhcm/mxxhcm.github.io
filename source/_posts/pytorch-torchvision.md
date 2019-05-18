@@ -5,9 +5,17 @@ tags:
  - pytorch
  - python
 categories: pytorch
+mathjax: true
 ---
+
 ## torchvision
-### torchvision.datasets
+torchvision是pytorch提供的一些工具包，主要包含下列几个模块
+- torchvision.datasets
+- torchvision.utils
+- torchvision.transforms
+- torchvision.models
+
+## torchvision.datasets
 torchvision提供了很多数据集
 ``` python
 import torchvision
@@ -35,11 +43,14 @@ testset = torchvision.datasets.CIFAR100(root="./datasets", train=False, transfor
 
 ```
 
-### torchvision.models
+## torchvision.models
 模型
-### torchvision.transforms
+
+## torchvision.transforms
 transform
-### torchvision.utils
+
+## torchvision.utils
 一些工具包
 
-
+## 参考文献
+1.https://pytorch.org/docs/stable/torchvision/index.html

@@ -156,6 +156,33 @@ todos filename
 iconv -o保留原文件，-o加新文件名
 iconv -f big5 -t utf8 filename -o filename
 
+
+## 常用的vim命令模式命令
+主要利用的是正则表达式和vim的命令模式
+[代码地址](https://github.com/mxxhcm/code/tree/master/shell/vim_regex)
+``` shell
+# 替换所有的^为\^
+:0,$s/\^/\\^/g
+# 替换所有的\*\*为##
+:0,$s/[0-9][0-9]\./## /g
+# 删除所有以tab开头的tab
+:0,$s/^\t//g
+# 删除所有以#开头的行
+:g/^#\.\*$/d
+# 删除所有空行
+:g/^\s\*$/d
+```
+
+## 自定义快捷键
+- namp 正常模式下的递归映射
+- vmap Visual模式
+- imap 插入模式
+- cmap 命令模式
+- nnoremap 正常模式下的非递归映射
+- vnoremap Visual模式下的非递归映射
+- inoremap 插入模式下的非递归映射
+- cnoremap 命令模式下的非递归映射
+
 ## 参考文献
 0.https://github.com/yangyangwithgnu/use_vim_as_ide
 1.https://askubuntu.com/a/1027647

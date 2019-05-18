@@ -8,9 +8,10 @@ categories: pytorch
 ---
 
 ## torch.nn.functional
+该包提供了很多网络函数
 
-### convoludion functions
-#### conv2d
+## convoludion functions
+### conv2d
 ```
 import torch
 import torch.nn as nn
@@ -31,11 +32,12 @@ print(output2.size())
 > torch.Size([64, 16, 30, 30])
 torch.Size([64, 16, 32, 32])
 
-### relu functions
+## relu functions
 
-### pooling functions
-### dropout functions
-#### 例子
+## pooling functions
+
+## dropout functions
+### 例子
 ``` python
 import torch
 import torch.nn.functional as F
@@ -46,9 +48,12 @@ y = F.dropout2d(x, 0.5)
  
 print(y)
 ```
-注意$9$中说的问题，不过可能已经被改正了，注意一些就是了。
+注意$2$中说的问题，不过可能已经被改正了，注意一些就是了。
 
-### linear functions
-### loss functions
+## linear functions
 
+## loss functions
 
+## 参考文献
+1.https://pytorch.org/docs/stable/nn.html#torch-nn-functional
+2.https://pytorch.org/docs/stable/nn.html#torch-nn-functional

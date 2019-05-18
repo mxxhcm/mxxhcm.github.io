@@ -5,11 +5,26 @@ tags:
  - pytorch
  - python
 categories: pytorch
+mathjax: true
 ---
 
 ### Variable(class torch.autograd.Variable)
 #### 声明一个tensor
-torch.zeros,torch.ones,torch.rand,torch.Tensor
+- torch.zeros
+- torch.ones
+- torch.rand
+- torch.full()
+- torch.empyt()
+- torch.rand()
+- torch.randn()
+- torch.ones_like()
+- torch.zeros_like()
+- torch.randn_like()
+- torch.Tensor
+
+
+#### 代码示例
+[代码地址](https://github.com/mxxhcm/code/blob/master/pytorch/pytorch_test/torch_tensor.py)
 ``` python
 import torch
 
@@ -128,14 +143,14 @@ print(torch.arange(1, 3, 0.4))
 # tensor([1.0000, 1.4000, 1.8000, 2.2000, 2.6000])
 ```
 
-#### tensor的各种操作
+## tensor的各种操作
 ``` python
 import torch
 a = torch.ones(2,3)
 b = torch.ones(2,3)
 ```
 
-##### 加操作
+### 加操作
 ``` python
 print(a+b)                #方法1
 c = torch.add(a,b)    #方法2
@@ -143,41 +158,41 @@ torch.add(a,b,result)    #方法3
 a.add(b)                    #方法4,将a加上b，且a不变
 a.add_(b)                #方法5,将a加上b并将其赋值给a
 ```
-##### 转置操作
+### 转置操作
 ```python
 print(a.t())               # 打印出tensor a的转置
 print(a.t_())                 #将tensor a 转置，并将其赋值给a
 ```
 
-##### 求最大行和列
+### 求最大行和列
 ``` python
 torch.max(tensor,dim)
 np.max(array,dim)
 ```
 
-##### 和relu功能比较类似。
+### 和relu功能比较类似。
 ``` python
 torch.clamp(tensor, min, max,out=None)
 np.maximun(x1, x2)  # x1 and x2 must hava the same shape
 ```
 
-#### tensor和numpy转化
-##### convert tensor to numpy
+## tensor和numpy转化
+### convert tensor to numpy
 ``` python
 a = torch.ones(3,4)
 b = a.numpy()
 ```
-##### convert numpy to tensor
+### convert numpy to tensor
 ``` python
 a =  numpy.ones(4,3)
 b = torch.from_numpy(a)
 ```
 
-#### Variable和Tensor
+## Variable和Tensor
 Variable
 图1.Variable
 
-##### 属性
+### 属性
 如图1,Variable wrap a Tensor,and it has six attributes,data,grad,requies_grad,volatile,is_leaf and grad_fn.We can acess the raw tensor through .data operation, we can accumualte gradients w.r.t this Variable into .grad,.Finally , creator attribute will tell us how the Variable were created,we can acess the creator attibute by .grad_fn,if the Variable was created by the user,then the grad_fn is None,else it will show us which Function created the Variable.
 if the grad_fn is None,we call them graph leaves
 ``` python
@@ -185,13 +200,13 @@ Variable.shape  #查看Variable的size
 Variable.size()
 ```
 
-##### parameters
+### parameters
 ``` python
 torch.autograd.Variable(data,requires_grad=False,volatile=False)
 ```
 requires_grad : indicate whether the backward() will ever need to be called
 
-##### backward
+### backward
 backward(gradient=None,retain_graph=None,create_graph=None,retain_variables=None)
 如果Variable是一个scalar output，我们不需要指定gradient，但是如果Variable不是一个scalar，而是有多个element，我们就需要根据output指定一下gradient，gradient的type可以是tensor也可以是Variable，里面的值为梯度的求值比例，例如
 ``` python
@@ -208,4 +223,5 @@ register_hook()
 register_grad()
 ```
 
-
+## 参考文献
+1.https://pytorch.org/docs/stable/tensors.html

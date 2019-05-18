@@ -39,4 +39,4 @@ Linear(in_features=2, out_features=2, bias=True)
 
 其中最后两行为net对象调用self.children()函数返回的模块，就是模型中所有网络的参数。事实上，调用net.apply(fn)函数，会对self.children()中的所有模块应用fn函数，
 
-
+## 参考文献
