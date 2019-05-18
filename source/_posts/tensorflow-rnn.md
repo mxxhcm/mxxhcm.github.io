@@ -1,24 +1,99 @@
 ---
 title: tensorflow rnn
-date: 2019-05-18 15:25:34
+date: 2019-05-18 15:55:34
 tags:
 - tensorflow
 - python
 categories: tensorflow
 ---
 
-## tf.nn.rnn_cell
-该模块提供了RNN cell类和函数op。
-### 类
-- class BasicLSTMCell: 弃用了，使用tf.nn.rnn_cell.LSTMCell代替。
+## 常见Cell
 - class BasicRNNCell: 最基本的RNN cell.
-- class DeviceWrapper: 保证一个RNNCell在一个特定的device运行的op.
-- class DropoutWrapper: 添加droput到给定cell的的inputs和outputs的op.
-- class GRUCell: GRU cell (引用文献 http://arxiv.org/abs/1406.1078).
 - class LSTMCell: LSTM cell 
 - class LSTMStateTuple: tupled LSTM cell
 - class MultiRNNCell: 由很多个简单cells顺序组合成的RNN cell 
+
+## BasicRNNCell
+### API
+``` python
+__init__(
+    num_units,
+    activation=None,
+    reuse=None,
+    name=None,
+    dtype=None,
+    **kwargs
+)
+```
+
+### 示例
+
+
+### 其他
+TF 2.0将会弃用，等价于tf.keras.layers.SimpleRNNCell()
+
+## LSTMCell 
+### API
+``` python
+__init__(
+    num_units,
+    use_peepholes=False,
+    cell_clip=None,
+    initializer=None,
+    num_proj=None,
+    proj_clip=None,
+    num_unit_shards=None,
+    num_proj_shards=None,
+    forget_bias=1.0,
+    state_is_tuple=True,
+    activation=None,
+    reuse=None,
+    name=None,
+    dtype=None,
+    **kwargs
+)
+```
+
+### 示例
+### 其他
+TF 2.0将会弃用，等价于tf.keras.layers.LSTMCell
+
+## LSTMStateTuple
+和LSTMCell一样，只不过state用的是tuple。
+### 其他
+TF 2.0将会弃用，等价于tf.keras.layers.LSTMCell
+
+## MultiRNNCell 
+相当于
+### API
+``` python
+__init__(
+    cells,
+    state_is_tuple=True
+)
+```
+### 示例
+``` python
+num_units = [128, 64]
+cells = [BasicLSTMCell(num_units=n) for n in num_units]
+stacked_rnn_cell = MultiRNNCell(cells)
+```
+### 其他
+TF 2.0将会弃用，等价于tf.keras.layers.StackedRNNCells
+
+## tf.nn.rnn_cell
+该模块提供了许多RNN cell类和rnn函数。
+
+### 类
+- class BasicRNNCell: 最基本的RNN cell.
+- class BasicLSTMCell: 弃用了，使用tf.nn.rnn_cell.LSTMCell代替，就是下面那个
+- class LSTMCell: LSTM cell 
+- class LSTMStateTuple: tupled LSTM cell
+- class GRUCell: GRU cell (引用文献 http://arxiv.org/abs/1406.1078).
 - class RNNCell: 表示一个RNN cell的抽象对象
+- class MultiRNNCell: 由很多个简单cells顺序组合成的RNN cell 
+- class DeviceWrapper: 保证一个RNNCell在一个特定的device运行的op.
+- class DropoutWrapper: 添加droput到给定cell的的inputs和outputs的op.
 - class ResidualWrapper: 确保cell的输入被添加到输出的RNNCell warpper。
 
 ## 函数
@@ -28,30 +103,34 @@ categories: tensorflow
 - bidirectional_dynamic_rnn(...) # 未来将被弃用
 - raw_rnn(...)
 
-
 ## tf.contrib.rnn
 该模块提供了RNN和Attention RNN的类和函数op。
 
 ### 类
-- class AttentionCellWrapper: 
-- class BasicLSTMCell:
+- class RNNCell: # 抽象类，所有Cell都要继承该类。所有的Warpper都要直接继承该Cell。
+- class LayerRNNCell: # 所有的下列定义的Cell都要使用继承该Cell，该Cell继承RNNCell，所以所有下列Cell都间接继承RNNCell。
 - class BasicRNNCell:
-- class BidirectionalGridLSTMCell:
-- class CompiledWrapper:
+- class BasicLSTMCell: # 将被弃用，使用下面的LSTMCell。
+- class LSTMCell:
+- class LSTMStateTuple:
+- class GRUCell:
+- class MultiRNNCell:
+- class ConvLSTMCell:
+- class GLSTMCell:
 - class Conv1DLSTMCell:
 - class Conv2DLSTMCell:
 - class Conv3DLSTMCell:
-- class ConvLSTMCell:
+- class BidirectionalGridLSTMCell:
+- class AttentionCellWrapper: 
+- class CompiledWrapper:
 - class CoupledInputForgetGateLSTMCell:
 - class DeviceWrapper:
 - class DropoutWrapper:
 - class EmbeddingWrapper:
 - class FusedRNNCell:
 - class FusedRNNCellAdaptor:
-- class GLSTMCell:
 - class GRUBlockCell:
 - class GRUBlockCellV2:
-- class GRUCell:
 - class GridLSTMCell:
 - class HighwayWrapper:
 - class IndRNNCell:
@@ -62,15 +141,10 @@ categories: tensorflow
 - class LSTMBlockCell:
 - class LSTMBlockFusedCell:
 - class LSTMBlockWrapper:
-- class LSTMCell:
-- class LSTMStateTuple:
 - class LayerNormBasicLSTMCell:
-- class LayerRNNCell:
-- class MultiRNNCell:
 - class NASCell:
 - class OutputProjectionWrapper:
 - class PhasedLSTMCell:
-- class RNNCell:
 - class ResidualWrapper:
 - class SRUCell:
 - class TimeFreqLSTMCell:
@@ -91,7 +165,6 @@ categories: tensorflow
 contrib中的代码会经常修改，而nn中的代码比较稳定。
 contrib中的cell类型比较多，而nn中的比较少。
 contrib和nn中有重复的cell，基本上nn中有的contrib中都有。
-
 
 ## static_rnn vs dynamic_rnn
 ### static_rnn

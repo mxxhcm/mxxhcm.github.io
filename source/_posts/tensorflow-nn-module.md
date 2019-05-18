@@ -1,12 +1,12 @@
 ---
 title: tensorflow nn module
-date: 2019-05-18 15:53:34
+date: 2019-05-18 15:25:34
 tags:
 - tensorflow
 - python
 categories: tensorflow
 ---
-
+	
 ## tf.nn
 提供神经网络op。包含构建RNN cell的rnn_cell模块和一些functions。
 
@@ -28,21 +28,19 @@ rnn_cell 用于构建RNN cells
 #### 几个常用的函数
 - bias_add(...)
 - conv2d(...)
-- dropout(...)
-- leaky_relu(...)
-- l2_loss(...)
-- log_softmax(...)
-- softmax(...)
-- softmax_cross_entropy_with_logits(...)	# 未来将被弃用
-- softmax_cross_entropy_with_logits_v2(...) # 参数弃用
-- sparse_softmax_cross_entropy_with_logits(...)
 - raw_rnn(...)
 - static_rnn(...) # 未来将被弃用
 - dynamic_rnn(...) # 未来将被弃用
 - static_bidirectional_rnn(...) # 未来将被弃用
 - bidirectional_dynamic_rnn(...) # 未来将被弃用
-
-
+- dropout(...)
+- leaky_relu(...)
+- l2_loss(...)
+- log_softmax(...) # 参数弃用
+- softmax(...) # 参数弃用
+- softmax_cross_entropy_with_logits(...)	# 未来将被弃用
+- softmax_cross_entropy_with_logits_v2(...) # 参数弃用
+- sparse_softmax_cross_entropy_with_logits(...)
 
 #### 全部函数
 - all_candidate_sampler(...)
