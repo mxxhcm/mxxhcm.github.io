@@ -33,9 +33,16 @@ rnn_cell 用于构建RNN cells
 - l2_loss(...)
 - log_softmax(...)
 - softmax(...)
-- softmax_cross_entropy_with_logits(...)
-- softmax_cross_entropy_with_logits_v2(...)
+- softmax_cross_entropy_with_logits(...)	# 未来将被弃用
+- softmax_cross_entropy_with_logits_v2(...) # 参数弃用
 - sparse_softmax_cross_entropy_with_logits(...)
+- raw_rnn(...)
+- static_rnn(...) # 未来将被弃用
+- dynamic_rnn(...) # 未来将被弃用
+- static_bidirectional_rnn(...) # 未来将被弃用
+- bidirectional_dynamic_rnn(...) # 未来将被弃用
+
+
 
 #### 全部函数
 - all_candidate_sampler(...)

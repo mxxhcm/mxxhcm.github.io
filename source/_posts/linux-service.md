@@ -24,7 +24,7 @@ daemon:实现service的程序叫做daemon
 	信号管理的daemon以及每隔一段时间主动执行某项工作的daemon
 	每一个服务程序文件名都会加上d，d代表daemon
 	
-100./etc/services服务端口的对应
+300./etc/services服务端口的对应
 	查询service的端口号
 	服务以及端口号
 	~#:grep 'time' /etc/services
