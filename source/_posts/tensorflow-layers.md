@@ -4,7 +4,7 @@ date: 2019-05-17 16:47:50
 tags:
  - tensorflow
  - python
-categories
+categories: tensorflow
 ---
 
 ## tf.layers
