@@ -13,16 +13,16 @@ categories: tensorflow
 ### tf.nn.rnn_cell
 rnn_cell 用于构建RNN cells
 包括以下几个类：
-class BasicLSTMCell: 弃用了，使用tf.nn.rnn_cell.LSTMCell代替。
-class BasicRNNCell: 最基本的RNN cell.
-class DeviceWrapper: 保证一个RNNCell在一个特定的device运行的op.
-class DropoutWrapper: 添加droput到给定cell的的inputs和outputs的op.
-class GRUCell: GRU cell (引用文献 http://arxiv.org/abs/1406.1078).
-class LSTMCell: LSTM cell 
-class LSTMStateTuple: tupled LSTM cell
-class MultiRNNCell: 由很多个简单cells顺序组合成的RNN cell 
-class RNNCell: 表示一个RNN cell的抽象对象
-class ResidualWrapper: 确保cell的输入被添加到输出的RNNCell warpper。
+- class BasicLSTMCell: 弃用了，使用tf.nn.rnn_cell.LSTMCell代替。
+- class BasicRNNCell: 最基本的RNN cell.
+- class DeviceWrapper: 保证一个RNNCell在一个特定的device运行的op.
+- class DropoutWrapper: 添加droput到给定cell的的inputs和outputs的op.
+- class GRUCell: GRU cell (引用文献 http://arxiv.org/abs/1406.1078).
+- class LSTMCell: LSTM cell 
+- class LSTMStateTuple: tupled LSTM cell
+- class MultiRNNCell: 由很多个简单cells顺序组合成的RNN cell 
+- class RNNCell: 表示一个RNN cell的抽象对象
+- class ResidualWrapper: 确保cell的输入被添加到输出的RNNCell warpper。
 
 ### 函数
 #### 几个常用的函数

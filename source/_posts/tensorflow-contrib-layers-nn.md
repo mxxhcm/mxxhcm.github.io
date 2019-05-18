@@ -11,7 +11,7 @@ categories: tensorflow
 根据tensorflow官网的说法，tf.contrib模块中包含了易修改的测试代码，
 > contrib module containing volatile or experimental code.
 
-当相应的一个模块完成的时候，就会从contrib模块中移除。为了保持对历史版本的兼容性，可能这几个模块会存在同一个函数的不同实现。
+当其中的某一个模块完成的时候，就会从contrib模块中移除。为了保持对历史版本的兼容性，可能这几个模块会存在同一个函数的不同实现。
 
 ## tf.nn,tf.layers和tf.contrib
 tf.nn中是low-level的op
