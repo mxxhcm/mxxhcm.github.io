@@ -1,5 +1,5 @@
 ---
-title: tensorflow nn
+title: tensorflow nn module
 date: 2019-05-18 15:53:34
 tags:
 - tensorflow

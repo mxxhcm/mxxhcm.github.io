@@ -1,6 +1,6 @@
 ---
 title: tensorflow layers
-date: 2019-05-17 16:47:50
+date: 2019-05-18 16:47:50
 tags:
  - tensorflow
  - python
