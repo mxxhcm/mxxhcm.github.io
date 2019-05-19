@@ -81,7 +81,7 @@ TF 2.0将会弃用，等价于tf.keras.layers.LSTMCell
 TF 2.0将会弃用，等价于tf.keras.layers.LSTMCell
 
 ## MultiRNNCell 
-相当于
+这个类可以实现多层RNN。
 ### API
 ``` python
 __init__(
@@ -246,7 +246,7 @@ outputs, state = tf.nn.dynamic_rnn(cell=multi_rnn_cell,
 - class DropoutWrapper: 添加droput到给定cell的的inputs和outputs的op.
 - class ResidualWrapper: 确保cell的输入被添加到输出的RNNCell warpper。
 
-## 函数
+### 函数
 - static_rnn(...) # 未来将被弃用，和tf.contrib.rnn.static_rnn是一样的。
 - dynamic_rnn(...) # 未来将被弃用
 - static_bidirectional_rnn(...) # 未来将被弃用

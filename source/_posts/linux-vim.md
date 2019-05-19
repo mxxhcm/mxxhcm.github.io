@@ -173,6 +173,9 @@ iconv -f big5 -t utf8 filename -o filename
 :g/^\s\*$/d
 ```
 
+### 在Visual模式下操作
+见参考文献[9]。
+
 ## 自定义快捷键
 - namp 正常模式下的递归映射
 - vmap Visual模式
@@ -193,3 +196,4 @@ iconv -f big5 -t utf8 filename -o filename
 6.https://www.brianstorti.com/vim-registers/
 7.http://landcareweb.com/questions/3593/ru-he-zai-vimzhong-yong-jiu-xian-shi-dang-qian-wen-jian-de-lu-jing
 8.https://forum.ubuntu.org.cn/viewtopic.php?t=319408
+9.https://vim.fandom.com/wiki/Search_and_replace_in_a_visual_selection
