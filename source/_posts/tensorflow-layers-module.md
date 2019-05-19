@@ -8,21 +8,66 @@ categories: tensorflow
 ---
 
 ## tf.layers
-这个模块定义在tf.contrib.layers中。主要是构建神经网络，正则化和summaries等op。它包括2个模块，2个类，以及一系列函数。
+这个模块定义在tf.contrib.layers中。主要是构建神经网络，正则化和summaries等op。它包括1个模块，19个类，以及一系列函数。
 
 ## 模块
-### feature_column
-
-
-### summaries
-summary的工具函数定义
+### experimental module
+tf.layers.experimental的公开的API
 
 ## 类
-### class GDN
-### class RevBlock
+### class Conv2D
+二维卷积类。
 
+#### API
+``` python
+__init__(
+    filters, # 卷积核的数量
+    kernel_size, # 卷积核的大小
+    strides=(1, 1),
+    padding='valid',
+    data_format='channels_last', # string, "channels_last", "channels_first"
+    dilation_rate=(1, 1), #
+    activation=None, # 激活函数
+    use_bias=True,
+    kernel_initializer=None, # 卷积核的构造器
+    bias_initializer=tf.zeros_initializer(), # bias的构造器
+    kernel_regularizer=None, #  卷积核的正则化
+    bias_regularizer=None,
+    activity_regularizer=None,
+    kernel_constraint=None,
+    bias_constraint=None,
+    trainable=True, # 如果为True的话，将变量添加到TRANABLE_VARIABELS collection中
+    name=None,
+    **kwargs
+)
+```
+
+#### 示例
+#### 其他
+
+### 所有类
+- class AveragePooling1D
+- class AveragePooling2D
+- class AveragePooling3D
+- class BatchNormalization
+- class Conv1D
+- class Conv2D
+- class Conv2DTranspose
+- class Conv3D
+- class Conv3DTranspose
+- class Dense
+- class Dropout
+- class Flatten
+- class InputSpec
+- class Layer
+- class MaxPooling1D
+- class MaxPooling2D
+- class MaxPooling3D
+- class SeparableConv1D
+- class SeparableConv2D
+
+ 
 ## 函数
-
 ### conv2d
 #### API
 ``` python
@@ -48,122 +93,83 @@ tf.layers.conv2d(
     reuse=None
 )
 ```
-
-### 其他
-### 示例
-
-## Conv2d
-
-### tf.layers.conv2d vs tf.layers.Conv2d
-### 其他
-
-### 其他常用函数
-- softmax(...)
-- avg_pool2d(...)
-- conv2d(...)
-- conv2d_transpose(...)
-- convolution(...)
-- convolution2d(...)
-- convolution2d_transpose(...)
-- dense_to_sparse(...)
-- dropout(...)
-- flatten(...)
-- fully_connected(...)
-- l1_regularizer(...)
-- l2_regularizer(...)
-- max_pool2d(...)
-- max_pool3d(...)
-- optimize_loss(...)
-- xavier_initializer(...)
+#### 示例
+#### 其他
 
 ### 所有函数
-- apply_regularization(...)
-- avg_pool2d(...)
-- avg_pool3d(...)
-- batch_norm(...)
-- bias_add(...)
-- bow_encoder(...)
-- bucketized_column(...)
-- check_feature_columns(...)
+需要注意的是，下列所有函数在以后版本都将被弃用。
+- average_pooling1d(...)
+- average_pooling2d(...)
+- average_pooling3d(...)
+- batch_normalization(...)
 - conv1d(...)
 - conv2d(...)
-- conv2d_in_plane(...)
 - conv2d_transpose(...)
 - conv3d(...)
 - conv3d_transpose(...)
-- convolution(...)
-- convolution1d(...)
-- convolution2d(...)
-- convolution2d_in_plane(...)
-- convolution2d_transpose(...)
-- convolution3d(...)
-- convolution3d_transpose(...)
-- create_feature_spec_for_parsing(...)
-- crossed_column(...)
-- dense_to_sparse(...)
+- dense(...)
 - dropout(...)
-- embed_sequence(...)
-- embedding_column(...)
-- embedding_lookup_unique(...)
 - flatten(...)
-- fully_connected(...)
-- gdn(...)
-- group_norm(...)
-- images_to_sequence(...)
-- infer_real_valued_columns(...)
-- input_from_feature_columns(...)
-- instance_norm(...)
-- joint_weighted_sum_from_feature_columns(...)
-- l1_l2_regularizer(...)
-- l1_regularizer(...)
-- l2_regularizer(...)
-- layer_norm(...)
-- legacy_fully_connected(...)
-- make_place_holder_tensors_for_base_features(...)
-- max_pool2d(...)
-- max_pool3d(...)
-- maxout(...)
-- multi_class_target(...)
-- one_hot_column(...)
-- one_hot_encoding(...)
-- optimize_loss(...)
-- parse_feature_columns_from_examples(...)
-- parse_feature_columns_from_sequence_examples(...)
-- real_valued_column(...)
-- recompute_grad(...)
-- regression_target(...)
-- repeat(...)
-- rev_block(...)
-- safe_embedding_lookup_sparse(...)
-- scattered_embedding_column(...)
+- max_pooling1d(...)
+- max_pooling2d(...)
+- max_pooling3d(...)
+- separable_conv1d(...)
 - separable_conv2d(...)
-- separable_convolution2d(...)
-- sequence_input_from_feature_columns(...)
-- sequence_to_images(...)
-- shared_embedding_columns(...)
-- softmax(...)
-- sparse_column_with_hash_bucket(...)
-- sparse_column_with_integerized_feature(...)
-- sparse_column_with_keys(...)
-- sparse_column_with_vocabulary_file(...)
-- spatial_softmax(...)
-- stack(...)
-- sum_regularizer(...)
-- summarize_activation(...)
-- summarize_activations(...)
-- summarize_collection(...)
-- summarize_tensor(...)
-- summarize_tensors(...)
-- transform_features(...)
-- unit_norm(...)
-- variance_scaling_initializer(...)
-- weighted_sparse_column(...)
-- weighted_sum_from_feature_columns(...)
-- xavier_initializer(...)
-- xavier_initializer_conv2d(...)
+
+## tf.layers.conv2d vs tf.layers.Conv2d
+``` python
+tf.layers.Conv2d.__init__(
+    filters,
+    kernel_size,
+    strides=(1, 1),
+    padding='valid',
+    data_format='channels_last',
+    dilation_rate=(1, 1),
+    activation=None,
+    use_bias=True,
+    kernel_initializer=None,
+    bias_initializer=tf.zeros_initializer(),
+    kernel_regularizer=None,
+    bias_regularizer=None,
+    activity_regularizer=None,
+    kernel_constraint=None,
+    bias_constraint=None,
+    trainable=True,
+    name=None,
+    **kwargs
+)
+tf.layers.conv2d(
+    inputs,
+    filters,
+    kernel_size,
+    strides=(1, 1),
+    padding='valid',
+    data_format='channels_last',
+    dilation_rate=(1, 1),
+    activation=None,
+    use_bias=True,
+    kernel_initializer=None,
+    bias_initializer=tf.zeros_initializer(),
+    kernel_regularizer=None,
+    bias_regularizer=None,
+    activity_regularizer=None,
+    kernel_constraint=None,
+    bias_constraint=None,
+    trainable=True,
+    name=None,
+    reuse=None
+)
+
+```
+
+conv2d是函数；Conv2d是类。
+conv2d运行的时候需要传入卷积核参数，输入；Conv2d在构造的时候需要实例化卷积核参数，实例化后，可以使用不用的输入得到不同的输出。
+调用conv2d就相当于调用Conv2d对象的apply(inputs)函数。
 
 ## 参考文献
 1.https://www.tensorflow.org/api_docs/python/tf/contrib/layers
 2.https://www.tensorflow.org/api_docs/python/tf/contrib/layers/feature_column
 3.https://www.tensorflow.org/api_docs/python/tf/contrib/layers/summaries
-4.https://stackoverflow.com/questions/52011509/what-is-difference-between-tf-layers-conv2d-and-tf-layers-conv2d/52035621
+4.https://www.tensorflow.org/api_docs/python/tf/layers/Conv2D
+5.https://www.tensorflow.org/api_docs/python/tf/layers/conv2d
+6.https://stackoverflow.com/questions/52011509/what-is-difference-between-tf-layers-conv2d-and-tf-layers-conv2d/52035621
