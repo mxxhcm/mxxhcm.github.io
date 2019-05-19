@@ -27,7 +27,13 @@ __init__(
 ```
 
 ### 示例
-
+[完整代码地址]()
+``` python
+    myrnn = rnn.BasicRNNCell(rnn_size,activation=tf.nn.relu)
+    zero_state = myrnn.zero_state(batch_size, dtype=tf.float32)
+    outputs, states = rnn.static_rnn(myrnn, x, initial_state=zero_state, dtype=tf.float32)
+	return outputs
+```
 
 ### 其他
 TF 2.0将会弃用，等价于tf.keras.layers.SimpleRNNCell()
@@ -55,6 +61,14 @@ __init__(
 ```
 
 ### 示例
+[完整代码地址]()    
+``` python
+	lstm = rnn.BasicLSTMCell(lstm_size, forget_bias=1, state_is_tuple=True)
+    zero_state = lstm.zero_state(batch_size, dtype=tf.float32)
+    outputs, states = rnn.static_rnn(lstm, x, initial_state=zero_state, dtype=tf.float32)
+	return outputs
+```
+ 
 ### 其他
 TF 2.0将会弃用，等价于tf.keras.layers.LSTMCell
 
@@ -73,13 +87,66 @@ __init__(
 )
 ```
 ### 示例
+#### 代码1
 ``` python
 num_units = [128, 64]
 cells = [BasicLSTMCell(num_units=n) for n in num_units]
 stacked_rnn_cell = MultiRNNCell(cells)
 ```
+#### 代码2
+[完整代码地址]()
+``` python
+    lstm_cell = rnn.BasicLSTMCell(lstm_size, forget_bias=1, state_is_tuple=True)
+    cell = rnn.MultiRNNCell([lstm_cell]*layers, state_is_tuple=True)
+    state = cell.zero_state(batch_size, dtype=tf.float32)
+    outputs = []
+    with tf.variable_scope("Multi_Layer_RNN", reuse=reuse):
+        for time_step in range(time_steps):
+            if time_step > 0:
+                tf.get_variable_scope().reuse_variables()
+            
+            cell_outputs, state = cell(x[time_step], state)
+            outputs.append(cell_outputs)
+	return outputs 
+```
+
 ### 其他
 TF 2.0将会弃用，等价于tf.keras.layers.StackedRNNCells
+
+## DropoutCellWrapper
+### API
+``` python
+__init__(
+    cell, # 
+    input_keep_prob=1.0,
+    output_keep_prob=1.0,
+    state_keep_prob=1.0,
+    variational_recurrent=False,
+    input_size=None,
+    dtype=None,
+    seed=None,
+    dropout_state_filter_visitor=None
+)
+```
+### 示例
+[完整代码地址]()
+``` python
+    lstm_cell = rnn.BasicLSTMCell(lstm_size, forget_bias=1, state_is_tuple=True)
+    lstm_cell = rnn.DropoutWrapper(lstm_cell, output_keep_prob=0.9)
+    cell = rnn.MultiRNNCell([lstm_cell]*layers, state_is_tuple=True)
+    state = cell.zero_state(batch_size, dtype=tf.float32)
+    outputs = []
+    with tf.variable_scope("Multi_Layer_RNN"):
+        for time_step in range(time_steps):
+            if time_step > 0:
+                tf.get_variable_scope().reuse_variables()
+            cell_outputs, state = cell(x[time_step], state)
+            outputs.append(cell_outputs)
+	return outputs
+```
+
+### 其他
+
 
 ## tf.nn.rnn_cell
 该模块提供了许多RNN cell类和rnn函数。
@@ -151,7 +218,7 @@ TF 2.0将会弃用，等价于tf.keras.layers.StackedRNNCells
 - class TimeReversedFusedRNN:
 - class UGRNNCell:
 
-- ### 函数
+### 函数
 - static_rnn(...) # 将被弃用，和tf.nn.static_rnn是一样的
 - static_bidirectional_rnn(...) # 将被弃用
 - best_effort_input_batch_size(...)
@@ -182,12 +249,9 @@ tf.nn.static_rnn(
 
 #### 示例
 ``` python
-  state = cell.zero_state(...)
-  outputs = []
-  for input_ in inputs:
-    output, state = cell(input_, state)
-    outputs.append(output)
-  return (outputs, state)
+	myrnn = tf.nn.rnn_cell.BasicRNNCell(rnn_size,activation=tf.nn.relu)
+    zero_state = myrnn.zero_state(batch_size, dtype=tf.float32)
+    outputs, states = tf.nn.static_rnn(myrnn, x, initial_state=zero_state, dtype=tf.float32)
 ```
 
 ### dynamic rnn
@@ -204,27 +268,33 @@ tf.nn.dynamic_rnn(
     time_major=False,
     scope=None
 )
+# 最简单形式的RNN，就是该API的参数都是用默认值，给定cell和inputs，相当于做了以下操作：
+#    state = cell.zero_state(...)
+#    outputs = []
+#    for input_ in inputs:
+#      output, state = cell(input_, state)
+#      outputs.append(output)
+#    return (outputs, state)
 ```
 
 #### 示例
 ``` python
-# create a BasicRNNCell
+# 例子1.创建一个BasicRNNCell
 rnn_cell = tf.nn.rnn_cell.BasicRNNCell(hidden_size)
 
-# 'outputs' is a tensor of shape [batch_size, max_time, cell_state_size]
-
-# defining initial state
+# 定义初始化状态
 initial_state = rnn_cell.zero_state(batch_size, dtype=tf.float32)
 
-# 'state' is a tensor of shape [batch_size, cell_state_size]
+# 'outputs' shape [batch_size, max_time, cell_state_size]
+# 'state' shape [batch_size, cell_state_size]
 outputs, state = tf.nn.dynamic_rnn(rnn_cell, input_data,
                                    initial_state=initial_state,
                                    dtype=tf.float32)
 
-# create 2 LSTMCells
+# 例子2.创建两个LSTMCells
 rnn_layers = [tf.nn.rnn_cell.LSTMCell(size) for size in [128, 256]]
 
-# create a RNN cell composed sequentially of a number of RNNCells
+# 创建一个多层RNNCelss。
 multi_rnn_cell = tf.nn.rnn_cell.MultiRNNCell(rnn_layers)
 
 # 'outputs' is a tensor of shape [batch_size, max_time, 256]
@@ -241,3 +311,6 @@ outputs, state = tf.nn.dynamic_rnn(cell=multi_rnn_cell,
 ## 参考文献 
 1.https://www.tensorflow.org/api_docs/python/tf/contrib/rnn
 2.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell
+3.https://www.cnblogs.com/wuzhitj/p/6297992.html
+https://www.tensorflow.org/api_docs/python/tf/nn/static_rnn
+https://www.tensorflow.org/api_docs/python/tf/nn/dynamic_rnn
