@@ -7,11 +7,14 @@ tags:
 categories: tensorflow
 ---
 
-## 常见Cell
-- class BasicRNNCell: 最基本的RNN cell.
-- class LSTMCell: LSTM cell 
-- class LSTMStateTuple: tupled LSTM cell
-- class MultiRNNCell: 由很多个简单cells顺序组合成的RNN cell 
+## 常见Cell和函数
+- tf.nn.rnn_cell.BasicRNNCell: 最基本的RNN cell.
+- tf.nn.rnn_cell.LSTMCell: LSTM cell 
+- tf.nn.rnn_cell.LSTMStateTuple: tupled LSTM cell
+- tf.nn.rnn_cell.MultiRNNCell: 多层Cell
+- tf.nn.rnn_cell.DropoutCellWrapper: 给Cell加上dropout 
+- tf.nn.dynamic_rnn: 动态rnn
+- tf.nn.static_rnn: 静态rnn
 
 ## BasicRNNCell
 ### API
@@ -92,6 +95,9 @@ __init__(
 num_units = [128, 64]
 cells = [BasicLSTMCell(num_units=n) for n in num_units]
 stacked_rnn_cell = MultiRNNCell(cells)
+outputs, state = tf.nn.dynamic_rnn(cell=stacked_rnn_cell,
+                                   inputs=data,
+                                   dtype=tf.float32)
 ```
 #### 代码2
 [完整代码地址]()
@@ -146,6 +152,83 @@ __init__(
 ```
 
 ### 其他
+
+## static_rnn
+### API
+``` python
+tf.nn.static_rnn(
+    cell, # RNNCell的实例
+    inputs, # 输入，长度为T的输入列表，列表中每一个Tensor的shape都是[batch_size, input_size]
+    initial_state=None, # rnn的初始状态，如果cell.state_size是整数，它的shape需要是[batch_size, cell.state_size]，如果cell.state_size是元组，那么终究会是一个tensors的元组，[batch_size, s] for s in cell.state_size
+    dtype=None,
+    sequence_length=None,
+    scope=None
+)
+```
+
+### 示例
+``` python
+	myrnn = tf.nn.rnn_cell.BasicRNNCell(rnn_size,activation=tf.nn.relu)
+    zero_state = myrnn.zero_state(batch_size, dtype=tf.float32)
+    outputs, states = tf.nn.static_rnn(myrnn, x, initial_state=zero_state, dtype=tf.float32)
+```
+
+## dynamic rnn
+### API
+``` python
+tf.nn.dynamic_rnn(
+    cell, # 一个RNNCell的实例
+    inputs, # RNN的输入,time_major = False, [batch_size, max_time, ...],time_major=True, [max_time, batch_size, ...]
+    sequence_length=None, # 
+    initial_state=None, # rnn的初始状态，如果cell.state_size是整数，它的shape需要是[batch_size, cell.state_size]，如果cell.state_size是元组，那么终究会是一个tensors的元组，[batch_size, s] for s in cell.state_size
+    dtype=None,
+    parallel_iterations=None,
+    swap_memory=False,
+    time_major=False,
+    scope=None
+)
+# 最简单形式的RNN，就是该API的参数都是用默认值，给定cell和inputs，相当于做了以下操作：
+#    state = cell.zero_state(...)
+#    outputs = []
+#    for input_ in inputs:
+#      output, state = cell(input_, state)
+#      outputs.append(output)
+#    return (outputs, state)
+```
+
+### 示例
+``` python
+# 例子1.创建一个BasicRNNCell
+rnn_cell = tf.nn.rnn_cell.BasicRNNCell(hidden_size)
+
+# 定义初始化状态
+initial_state = rnn_cell.zero_state(batch_size, dtype=tf.float32)
+
+# 'outputs' shape [batch_size, max_time, cell_state_size]
+# 'state' shape [batch_size, cell_state_size]
+outputs, state = tf.nn.dynamic_rnn(rnn_cell, input_data,
+                                   initial_state=initial_state,
+                                   dtype=tf.float32)
+
+# 例子2.创建两个LSTMCells
+rnn_layers = [tf.nn.rnn_cell.LSTMCell(size) for size in [128, 256]]
+
+# 创建一个多层RNNCelss。
+multi_rnn_cell = tf.nn.rnn_cell.MultiRNNCell(rnn_layers)
+
+# 'outputs' is a tensor of shape [batch_size, max_time, 256]
+# 'state' is a N-tuple where N is the number of LSTMCells containing a
+# tf.contrib.rnn.LSTMStateTuple for each cell
+outputs, state = tf.nn.dynamic_rnn(cell=multi_rnn_cell,
+                                   inputs=data,
+                                   dtype=tf.float32)
+```
+
+## static_rnn vs dynamic_rnn
+
+### tf.keras.layers.RNN(cell)
+在tensorflow 2.0中，上述两个API都会被弃用，使用新的keras.layers.RNN(cell)
+
 
 
 ## tf.nn.rnn_cell
@@ -233,84 +316,16 @@ contrib中的代码会经常修改，而nn中的代码比较稳定。
 contrib中的cell类型比较多，而nn中的比较少。
 contrib和nn中有重复的cell，基本上nn中有的contrib中都有。
 
-## static_rnn vs dynamic_rnn
-### static_rnn
-#### API
-``` python
-tf.nn.static_rnn(
-    cell, # RNNCell的实例
-    inputs, # 输入，长度为T的输入列表，列表中每一个Tensor的shape都是[batch_size, input_size]
-    initial_state=None, # rnn的初始状态，如果cell.state_size是整数，它的shape需要是[batch_size, cell.state_size]，如果cell.state_size是元组，那么终究会是一个tensors的元组，[batch_size, s] for s in cell.state_size
-    dtype=None,
-    sequence_length=None,
-    scope=None
-)
-```
-
-#### 示例
-``` python
-	myrnn = tf.nn.rnn_cell.BasicRNNCell(rnn_size,activation=tf.nn.relu)
-    zero_state = myrnn.zero_state(batch_size, dtype=tf.float32)
-    outputs, states = tf.nn.static_rnn(myrnn, x, initial_state=zero_state, dtype=tf.float32)
-```
-
-### dynamic rnn
-#### API
-``` python
-tf.nn.dynamic_rnn(
-    cell, # 一个RNNCell的实例
-    inputs, # RNN的输入,time_major = False, [batch_size, max_time, ...],time_major=True, [max_time, batch_size, ...]
-    sequence_length=None, # 
-    initial_state=None, # rnn的初始状态，如果cell.state_size是整数，它的shape需要是[batch_size, cell.state_size]，如果cell.state_size是元组，那么终究会是一个tensors的元组，[batch_size, s] for s in cell.state_size
-    dtype=None,
-    parallel_iterations=None,
-    swap_memory=False,
-    time_major=False,
-    scope=None
-)
-# 最简单形式的RNN，就是该API的参数都是用默认值，给定cell和inputs，相当于做了以下操作：
-#    state = cell.zero_state(...)
-#    outputs = []
-#    for input_ in inputs:
-#      output, state = cell(input_, state)
-#      outputs.append(output)
-#    return (outputs, state)
-```
-
-#### 示例
-``` python
-# 例子1.创建一个BasicRNNCell
-rnn_cell = tf.nn.rnn_cell.BasicRNNCell(hidden_size)
-
-# 定义初始化状态
-initial_state = rnn_cell.zero_state(batch_size, dtype=tf.float32)
-
-# 'outputs' shape [batch_size, max_time, cell_state_size]
-# 'state' shape [batch_size, cell_state_size]
-outputs, state = tf.nn.dynamic_rnn(rnn_cell, input_data,
-                                   initial_state=initial_state,
-                                   dtype=tf.float32)
-
-# 例子2.创建两个LSTMCells
-rnn_layers = [tf.nn.rnn_cell.LSTMCell(size) for size in [128, 256]]
-
-# 创建一个多层RNNCelss。
-multi_rnn_cell = tf.nn.rnn_cell.MultiRNNCell(rnn_layers)
-
-# 'outputs' is a tensor of shape [batch_size, max_time, 256]
-# 'state' is a N-tuple where N is the number of LSTMCells containing a
-# tf.contrib.rnn.LSTMStateTuple for each cell
-outputs, state = tf.nn.dynamic_rnn(cell=multi_rnn_cell,
-                                   inputs=data,
-                                   dtype=tf.float32)
-```
-
-### tf.keras.layers.RNN(cell)
-在tensorflow 2.0中，上述两个API都会被弃用，使用新的keras.layers.RNN(cell)
-
 ## 参考文献 
-1.https://www.tensorflow.org/api_docs/python/tf/contrib/rnn
-2.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell
-3.https://www.cnblogs.com/wuzhitj/p/6297992.html
-https://www.tensorflow.org/api_docs/python/tf/nn/static_rnn
-https://www.tensorflow.org/api_docs/python/tf/nn/dynamic_rnn
+1.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/RNNCell
+2.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicRNNCell
+3.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/LSTMCell
+4.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/MultiRNNCell
+5.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/LSTMStateTuple
+6.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/DropoutWrapper
+7.https://www.tensorflow.org/api_docs/python/tf/nn/static_rnn
+8.https://www.tensorflow.org/api_docs/python/tf/nn/dynamic_rnn
+9.https://www.tensorflow.org/api_docs/python/tf/contrib/rnn
+10.https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell
+11.https://www.cnblogs.com/wuzhitj/p/6297992.html
+12.https://stackoverflow.com/questions/48001759/what-is-right-batch-normalization-function-in-tensorflow

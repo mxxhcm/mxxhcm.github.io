@@ -22,3 +22,4 @@ tf.layers是high-level的op
 1.https://www.tensorflow.org/api_docs/python/tf/contrib
 2.https://stackoverflow.com/questions/48001759/what-is-right-batch-normalization-function-in-tensorflow
 3.https://stackoverflow.com/a/48003210
+
