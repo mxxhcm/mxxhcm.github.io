@@ -22,7 +22,42 @@ summary的工具函数定义
 ### class RevBlock
 
 ## 函数
-### 常用函数
+
+### conv2d
+#### API
+``` python
+tf.layers.conv2d(
+    inputs, # 输入
+    filters, #  一个整数,输出的维度，就是有几个卷积核
+    kernel_size,
+    strides=(1, 1),
+    padding='valid',
+    data_format='channels_last',
+    dilation_rate=(1, 1),
+    activation=None,
+    use_bias=True,
+    kernel_initializer=None,
+    bias_initializer=tf.zeros_initializer(),
+    kernel_regularizer=None,
+    bias_regularizer=None,
+    activity_regularizer=None,
+    kernel_constraint=None,
+    bias_constraint=None,
+    trainable=True,
+    name=None,
+    reuse=None
+)
+```
+
+### 其他
+### 示例
+
+## Conv2d
+
+### tf.layers.conv2d vs tf.layers.Conv2d
+### 其他
+
+### 其他常用函数
 - softmax(...)
 - avg_pool2d(...)
 - conv2d(...)
@@ -131,3 +166,4 @@ summary的工具函数定义
 1.https://www.tensorflow.org/api_docs/python/tf/contrib/layers
 2.https://www.tensorflow.org/api_docs/python/tf/contrib/layers/feature_column
 3.https://www.tensorflow.org/api_docs/python/tf/contrib/layers/summaries
+4.https://stackoverflow.com/questions/52011509/what-is-difference-between-tf-layers-conv2d-and-tf-layers-conv2d/52035621
