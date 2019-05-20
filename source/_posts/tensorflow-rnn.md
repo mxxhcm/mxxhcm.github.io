@@ -45,16 +45,16 @@ TF 2.0将会弃用，等价于tf.keras.layers.SimpleRNNCell()
 ### API
 ``` python
 __init__(
-    num_units,
-    use_peepholes=False,
+    num_units, # 隐藏层的大小
+    use_peepholes=False, # 
     cell_clip=None,
-    initializer=None,
+    initializer=None, # 权重的初始化构造器
     num_proj=None,
     proj_clip=None,
     num_unit_shards=None,
     num_proj_shards=None,
     forget_bias=1.0,
-    state_is_tuple=True,
+    state_is_tuple=True, # c_state和m_state的元组
     activation=None,
     reuse=None,
     name=None,
@@ -64,7 +64,7 @@ __init__(
 ```
 
 ### 示例
-[完整代码地址]()    
+[完整代码地址]() 
 ``` python
 	lstm = rnn.BasicLSTMCell(lstm_size, forget_bias=1, state_is_tuple=True)
     zero_state = lstm.zero_state(batch_size, dtype=tf.float32)
@@ -157,13 +157,20 @@ __init__(
 ### API
 ``` python
 tf.nn.static_rnn(
-    cell, # RNNCell的实例
+    cell, # RNNCell的具体对象
     inputs, # 输入，长度为T的输入列表，列表中每一个Tensor的shape都是[batch_size, input_size]
     initial_state=None, # rnn的初始状态，如果cell.state_size是整数，它的shape需要是[batch_size, cell.state_size]，如果cell.state_size是元组，那么终究会是一个tensors的元组，[batch_size, s] for s in cell.state_size
-    dtype=None,
-    sequence_length=None,
+    dtype=None, # 
+    sequence_length=None, # 
     scope=None
 )
+# 最简单形式的RNN，就是该API的参数都是用默认值，给定cell和inputs，相当于做了以下操作：
+#    state = cell.zero_state(...)
+#    outputs = []
+#    for input_ in inputs:
+#      output, state = cell(input_, state)
+#      outputs.append(output)
+#    return (outputs, state)
 ```
 
 ### 示例
@@ -177,23 +184,16 @@ tf.nn.static_rnn(
 ### API
 ``` python
 tf.nn.dynamic_rnn(
-    cell, # 一个RNNCell的实例
+    cell, # RNNCell的具体对象
     inputs, # RNN的输入,time_major = False, [batch_size, max_time, ...],time_major=True, [max_time, batch_size, ...]
     sequence_length=None, # 
-    initial_state=None, # rnn的初始状态，如果cell.state_size是整数，它的shape需要是[batch_size, cell.state_size]，如果cell.state_size是元组，那么终究会是一个tensors的元组，[batch_size, s] for s in cell.state_size
+    initial_state=None, # rnn的初始状态，如果cell.state_size是整数，它的shape需要是[batch_size, cell.state_size]，如果cell.state_size是元组，那么就会是一个tensors的元组，[batch_size, s] for s in cell.state_size
     dtype=None,
     parallel_iterations=None,
-    swap_memory=False,
-    time_major=False,
+    swap_memory=False, #
+    time_major=False, # 如果为True,如果为False，对应不同的inputs 
     scope=None
 )
-# 最简单形式的RNN，就是该API的参数都是用默认值，给定cell和inputs，相当于做了以下操作：
-#    state = cell.zero_state(...)
-#    outputs = []
-#    for input_ in inputs:
-#      output, state = cell(input_, state)
-#      outputs.append(output)
-#    return (outputs, state)
 ```
 
 ### 示例
@@ -228,7 +228,6 @@ outputs, state = tf.nn.dynamic_rnn(cell=multi_rnn_cell,
 
 ### tf.keras.layers.RNN(cell)
 在tensorflow 2.0中，上述两个API都会被弃用，使用新的keras.layers.RNN(cell)
-
 
 
 ## tf.nn.rnn_cell

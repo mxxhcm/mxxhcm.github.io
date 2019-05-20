@@ -96,6 +96,7 @@ tf.layers.conv2d(
 #### 示例
 #### 其他
 
+
 ### 所有函数
 需要注意的是，下列所有函数在以后版本都将被弃用。
 - average_pooling1d(...)
@@ -167,9 +168,7 @@ conv2d运行的时候需要传入卷积核参数，输入；Conv2d在构造的�
 调用conv2d就相当于调用Conv2d对象的apply(inputs)函数。
 
 ## 参考文献
-1.https://www.tensorflow.org/api_docs/python/tf/contrib/layers
-2.https://www.tensorflow.org/api_docs/python/tf/contrib/layers/feature_column
-3.https://www.tensorflow.org/api_docs/python/tf/contrib/layers/summaries
+1.https://www.tensorflow.org/api_docs/python/tf/layers
 4.https://www.tensorflow.org/api_docs/python/tf/layers/Conv2D
 5.https://www.tensorflow.org/api_docs/python/tf/layers/conv2d
 6.https://stackoverflow.com/questions/52011509/what-is-difference-between-tf-layers-conv2d-and-tf-layers-conv2d/52035621
