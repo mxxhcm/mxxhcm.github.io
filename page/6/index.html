@@ -327,6 +327,263 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-at-cron-anacron/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/07/linux-at-cron-anacron/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">linux at cron anacron</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 16:50:33" itemprop="dateCreated datePublished" datetime="2019-05-07T16:50:33+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-12 12:22:27" itemprop="dateModified" datetime="2019-05-12T12:22:27+08:00">2019-05-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>例行性工作<br>
+78.at仅执行一次的工作调度<br>
+	/etc/at.allow<br>
+	/etc/at.deny<br>
+	at [-lmdvc] TIME<br>
+		-m 当at完成时，即使没有输出信息，以mail通知用户<br>
+		-v 可以使用较明显的时间格式列出at调度中的工作<br>
+		-c 可以列出后面接的该项工作的实际命令内容<br>
+		-d 相当于atrm，可以取消一个at工作<br>
+		-l 相当于atq，列出目前系统上所有该用户的at调度<br>
+	TIME<br>
+	  HH:MM	<br>
+		04:00<br>
+	  HH:MM YYYY-MM-DD<br>
+	  	05:00 2016-10-05<br>
+	  HH:MM[pm|am] [Month] [Date]<br>
+		04 January 10<br>
+	  HH:MM [am|pm] + number [minutes|hours|days|weeks]<br>
+		now + 5 minutes<br>
+		05pm + 3days<br>
+	at 04pm + 10 days<br>
+	at -c number<br>
+	at -l//atq</p>
+<pre><code>batch //当空闲时刻再执行
+</code></pre>
+<p>79.例行性工作调度<br>
+	cron<br>
+	ubuntu中没有下面两个配置项<br>
+	/etc/cron.allow<br>
+	/etc/cron.deny<br>
+	默认为所有用户都可以使用crontab<br>
+	crontab [-u user] [-ler]<br>
+		-u　只有root能设置这个参数<br>
+		-l　列出所有的crontab工作内容<br>
+		-e  编辑crontab的内容<br>
+		-r　删除所有crontab的内容</p>
+<pre><code>新建crontab
+！！！！周与月日不可共存
+~#:crontab -e
+* * * * * cmd
+分钟　小时　日期　月份　星期
+* 任何时刻
+- 时间范围 0-59
+, 分隔 3,6,9
+/n */5每过五个单位(分钟，小时，天)
+!!!crontab -r
+~#:crontab -r # 会把所有的crontab都删处理
+要删除一个，请用crontab -e
+</code></pre>
+<p>开启/var/log/cron.log<br>
+	~#:vim /etc/rsyslog.d/50-default.conf<br>
+	将rsylog文件中的#cron.*前的#去掉<br>
+	~#:service rsyslog restart<br>
+	~#:service cron restart<br>
+	~#:vim /var/log/cron.log</p>
+<pre><code>/var/spool/cron/crontabs/
+该目录下为不同账号的crontab内容
+
+/etc/crontab 为系统的例行性任务
+run-parts
+/etc/cron.daily
+/etc/cron.hourly
+/etc/cron.monthly
+/etc/cron.weekly
+
+自己可以新建run-parts，周期性执行
+*/2 * * * * run-parts /etc/cron.minutely
+*/5 * * * * run-parts /root/runcron
+或者直接执行命令
+* * * * * mxx /home/mxx/outputtime_fiveminutes.sh
+</code></pre>
+<p>80.anacron 处理非24小时开机的系统</p>
+<pre><code>anacron [-usfn] [job]
+	-u 更新记录文件的时间戳
+	-s 开始连续执行各项job，依据记录文件的时间戳判断是否进行
+	-f 强制执行，不管时间戳
+	-n 立即进行未进行的任务，而不延迟
+
+/etc/cron*/*ana*
+/etc/cron.daily/0anacron
+0表示最先被执行，让时间戳先被更新，避免anacron误判
+
+/etc/anacron	anacron的设置
+</code></pre>
+<p>/var/spool/anacron/*	<br>
+	记录最近一次执行anacron的时间戳</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-service/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2443,196 +2700,6 @@ P屏蔽集显处理器</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/29/github-gitignore/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/29/github-gitignore/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">github .gitignore</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-29 16:03:21" itemprop="dateCreated datePublished" datetime="2019-04-29T16:03:21+08:00">2019-04-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-12 12:21:34" itemprop="dateModified" datetime="2019-05-12T12:21:34+08:00">2019-05-12</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/github/" itemprop="url" rel="index"><span itemprop="name">github</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="gitignore介绍">gitignore介绍</h2>
-<p>.gitignore是一个隐藏文件，用来指定push的时候忽略哪些文件和文件夹。<br>
-比如忽略所有的__pychche__文件夹<br>
-**/__pycache__/<br>
-这里一定要加上/否则就会把它当做一个文件来处理</p>
-<h2 id="删除git服务器上已有的在-gitignore的文件">删除git服务器上已有的在.gitignore的文件</h2>
-<p>但是.gitignore对于已经提交到git服务器的文件是无法删掉的，它在提交时只能忽略本地尚未同步到服务器的gitignore中出现的文件。<br>
-这里拿.idea举个例子。<br>
-在最开始的时候，没有写.gitignore文件，就把所有的python文件上传到了git，包括.idea文件，这时候，可以先在本地把.idea文件删了，然后commit一下，就把git上的.idea文件删了。这时候写.gitignore文件，以后就不会提交.idea文件了。<br>
-执行以下命令：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">find . -name '.idea' | xargs rm -rf</span><br><span class="line">git add .</span><br><span class="line">git commit -m "deleta .idea"</span><br><span class="line">git push</span><br></pre></td></tr></table></figure>
-<p>这里首先使用find找到当前目录下所有.idea文件夹，然后使用管道命令将其删除，再提交到git。<br>
-接下来在.gitignore文件中添加一行：<br>
-**/.idea/<br>
-然后再次提交到git的时候就不会同步.idea文件了。</p>
-<h2 id="加注释">加注释</h2>
-<p>.gitignore文件的注释使用#号开头即可。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://segmentfault.com/q/1010000000720031" target="_blank" rel="noopener">https://segmentfault.com/q/1010000000720031</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2682,7 +2749,7 @@ P屏蔽集显处理器</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">129</span>
+                    <span class="site-state-item-count">130</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3205,9 +3272,9 @@ P屏蔽集显处理器</p>
       
     
       
-        
-      
     
+      
+        
       
     
       
