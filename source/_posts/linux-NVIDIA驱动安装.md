@@ -9,7 +9,6 @@ categories: linux
 maxhjax: true
 ---
 
-
 ## 方法1.命令行安装
 ### 步骤
 卸载原有驱动
@@ -100,17 +99,19 @@ sudo cp cuda/include/cudnn.h /usr/local/cuda/include/
 sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64/
 sudo chmod a+r /usr/local/cuda/include/cudnn.h
 sudo chmod a+r /usr/local/cuda/lib64/libcudnn*
-```
+``
 即可
 
 
 ## 版本对应
 ### 显卡
 RTX 20系列显卡，需要使用cuda 10
+
 ### pytorch
 而pytorch目前不支持cuda 10.1，所以只能使用cuda 10.0。
+
 ### tensorflow
-te
+tensorflow 13.1 -- cuda 10.0  -- cudnn 7.3
 
 ## 参考文献
 1.http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/

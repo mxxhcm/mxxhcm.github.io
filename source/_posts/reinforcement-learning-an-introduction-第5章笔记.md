@@ -19,6 +19,8 @@ mathjax: true
 
 ## Monte Carlo Prediction
 预测问题就是估计value function，从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。
+
+### First visti MC method
 这里主要介绍两个算法，一个叫做$first visit MC method$，另一个是$every visit MC method$。比如要估计策略$\pi$下的$v(s)$，通过采样一系列经过$s$的episodes，$s$在每一个episode中出现一次叫做一个$visit$，一个$s$可能在一个episode中出现多次。$first visit$就是只取第一次$visit$估计$v(s)$，$every visit$就是每一次$visit$都用。
 下面给出$first visit$的算法：
 **First visit MC preidction**
@@ -37,13 +39,22 @@ $\qquad\qquad\qquad V(S_t)\leftarrow = average(Returns(S_t))$
 $every visit$的话，不用加上判断$S_t$是否出现过的那一句就行了。
 当$s$处的$visit$趋于无穷次的时候，$first vist$和$every visit$算法都收敛于$v_{\pi}(s)$。
 $first vissit$中，每一个return都是$v_{\pi}(s)$的一个有限方差独立同分布估计。通过大数定律，估计平均值（$average(Returns(S_0),\cdots, average(Returns(S_t)$）的序列收敛于它的期望。每一个average都是它自己的一个无偏估计，标准差是$\frac{1}{\sqrt{n}}$。
-$every visit$的收敛更难直观的去理解，但是它二次收敛于$v_{\pi}(s)$。
+$every visit$的收敛更难直观的去理解，但是它二次收敛于$v\_{\pi}(s)$。
 补充一点：
 大数定律：无论抽象分布如何，均值服从正态分布。
 中心极限定理：样本大了，抽样分布近似于整体分布。
-这里再次对比一下DP和MC，在扑克牌中，我们知道环境的所有信息，但是我们不知道概率，比如我们手里有很多牌了，我们想要直到下一张摸到什么牌会赢，但是我们不知道下一个事件发生的概率。使用MC可以采样获得，所以说，即使有时候直到环境信息，MC方法可能也比DP方法好。
-能不能推广DP中的backup图到MC中？什么是backup图？backup图顶部是一个root节点，表示要被更新的节点，下面是所有的transitions，leaves是对于更新有用的reward或者estimated  values。
-MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹。dd
+
+
+这里再次对比一下DP和MC，在扑克牌游戏中，我们知道环境的所有信息，但是我们不知道摸到下一张牌的概率，比如我们手里有很多牌了，我们知道下一张摸到什么牌会赢，但是我们不知道这件事发生的概率。使用MC可以采样获得，所以说，即使有时候知道环境信息，MC方法可能也比DP方法好。
+
+### MC backup diagram
+能不能推广DP中的backup图到MC中？什么是backup图？backup图顶部是一个root节点，表示要被更新的节点，下面是所有的transitions，leaves是对于更新有用的reward或者estimated values。
+MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹，以terminal state为终止节点。
+MC图和DP图的对比，DP图展示了所有可能的transitions，而MC图只展示了采样的那个episode；DP图只包含一步的transitions，而MC图包含一个episode的所有序列。
+![mc backup]()
+![dp backup page 59]()
+
+### MC的特点
 
 ## Monte Carlo Estimation of Action Values
 

@@ -277,7 +277,7 @@ esac
 ![mxx](https:)
 直接配置proxy，添加如图所示的规则，这样chrome打开的所有网站都是走代理的。
 
-##### 使用privoxy让terminal走socks5
+Z#### 使用privoxy让terminal走socks5
 ~$:sudo apt install privoxy
 ~$:sudo vim /etc/privoxy/config
 取消下列行的注释，或者添加相应条目
