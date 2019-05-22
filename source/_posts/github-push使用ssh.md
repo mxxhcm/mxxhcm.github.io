@@ -4,12 +4,12 @@ date: 2019-04-23 21:21:08
 tags:
 - github
 categories: github
-mathjax: false
+mathjax: true
 ---
 
 ## 首先添加ssh公钥到github
-~\\$:ssh-keygen -t rsa -C "mxxhcm@gmail.com"
-~\\$:vim /home/mxxmhh/.ssh/id_rsa.pub
+~\$:ssh-keygen -t rsa -C "mxxhcm@gmail.com"
+~\$:vim /home/mxxmhh/.ssh/id_rsa.pub
 将上述文件中的公钥添加到github的Setting SSH and GPG Keys中。
 
 ## github push时使用ssh,不用输入密码

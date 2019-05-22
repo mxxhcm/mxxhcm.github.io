@@ -4,6 +4,7 @@ date: 2019-04-29 16:03:21
 tags:
 - github
 categories: github
+mathjax: true
 ---
 
 
@@ -15,7 +16,7 @@ categories: github
 
 ## 删除git服务器上已有的在.gitignore的文件
 但是.gitignore对于已经提交到git服务器的文件是无法删掉的，它在提交时只能忽略本地尚未同步到服务器的gitignore中出现的文件。
-这里拿.idea举个例子。
+拿.idea举个例子。
 在最开始的时候，没有写.gitignore文件，就把所有的python文件上传到了git，包括.idea文件，这时候，可以先在本地把.idea文件删了，然后commit一下，就把git上的.idea文件删了。这时候写.gitignore文件，以后就不会提交.idea文件了。
 执行以下命令：
 ``` shell
