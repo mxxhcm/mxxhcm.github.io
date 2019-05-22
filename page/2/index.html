@@ -327,6 +327,257 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/12/tensorflow-graph和session/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/12/tensorflow-graph和session/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">tensorflow graph和session</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-12 21:45:04" itemprop="dateCreated datePublished" datetime="2019-05-12T21:45:04+08:00">2019-05-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-17 11:04:46" itemprop="dateModified" datetime="2019-05-17T11:04:46+08:00">2019-05-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="tf-graph">tf.Graph</h2>
+<p>tf.Graph包含两类信息：</p>
+<ul>
+<li>Node和Edge，用来表示各个op如何进行组合。</li>
+<li>collections。使用tf.add_to_collection和tf.get_collection对collection进行操作。一个常见的例子是创建tf.Variable的时候，默认会将它加入到&quot;global variables&quot;和&quot;trainable variables&quot; collection中。<br>
+当调用tf.train.Saver和tf.train.Optimizer的时候，它会使用这些collection中的变量作为默认参数。<br>
+常见的定义在tf.GraphKeys上的collection:<br>
+VARIABLES, TRAINABLE_VARIABLES, MOVING_AVERAGE_VARIABLES, LOCAL_VARIABLES, MODEL_VARIABLE,SUMMARIES.<br>
+<a href="https://mxxhcm.github.io/2019/05/13/tensorflow-collection/">关于collections的详细介绍可点击这里</a></li>
+</ul>
+<h2 id="构建tf-graph">构建tf.Graph</h2>
+<p>调用tensorflow API就会构建新的tf.Operation和tf.Tensor，并将他们添加到tf.Graph实例中去。</p>
+<ul>
+<li>调用 tf.constant(42.0) 创建单个 tf.Operation，该操作可以生成值 42.0，将该值添加到默认图中，并返回表示常量值的 tf.Tensor。</li>
+<li>调用 tf.matmul(x, y) 可创建单个 tf.Operation，该操作会将 tf.Tensor 对象 x 和 y 的值相乘，将其添加到默认图中，并返回表示乘法运算结果的 tf.Tensor。</li>
+<li>执行 v = tf.Variable(0) 可向图添加一个 tf.Operation，该操作可以存储一个可写入的张量值，该值在多个 tf.Session.run 调用之间保持恒定。tf.Variable 对象会封装此操作，并可以像张量一样使用，即读取已存储值的当前值。tf.Variable 对象也具有 assign 和 assign_add 等方法，这些方法可创建 tf.Operation 对象，这些对象在执行时将更新已存储的值。（请参阅变量了解关于变量的更多信息。）</li>
+<li>调用 tf.train.Optimizer.minimize 可将操作和张量添加到计算梯度的默认图中，并返回一个 tf.Operation，该操作在运行时会将这些梯度应用到一组变量上。</li>
+</ul>
+<h2 id="获得默认图">获得默认图</h2>
+<p>用 tf.get_default_graph，它会返回一个 tf.Graph 对象：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Print all of the operations in the default graph.</span></span><br><span class="line">g = tf.get_default_graph()</span><br></pre></td></tr></table></figure>
+<h2 id="清空默认图">清空默认图</h2>
+<p>tf.reset_default_graph()</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 清空当前session的默认图</span></span><br><span class="line">tf.reset_default_graph()</span><br></pre></td></tr></table></figure>
+<h2 id="命名空间">命名空间</h2>
+<p>tf.Graph 对象会定义一个命名空间（为其包含的 tf.Operation 对象）。TensorFlow 会自动为图中的每个指令选择一个唯一名称，也可以指定描述性名称，让程序阅读和调试起来更轻松。TensorFlow API 提供两种方法来指定op名称：</p>
+<ul>
+<li>如果API会创建新的op或返回新的 tf.Tensor，就可选 name 参数。例如，tf.constant(42.0, name=“answer”) 会创建一个新的 tf.Operation（名为 “answer”）并返回一个 tf.Tensor（名为 “answer:0”）。如果默认图已包含名为 “answer” 的操作，则 TensorFlow 会在名称上附加 “_1”、&quot;_2&quot; 等字符，以便让名称具有唯一性。</li>
+<li>借助 tf.name_scope 函数，可以向在特定上下文中创建的所有op添加name_scope。当前name_scope是一个用 “/” 分隔的名称列表，其中包含所有活跃的 tf.name_scope 上下文管理器名称。如果某个name_scope已在当前上下文中被占用，TensorFlow 将在该作用域上附加 “_1”、&quot;_2&quot; 等字符。例如：</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">c_0 = tf.constant(<span class="number">0</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "c"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Already-used names will be "uniquified".</span></span><br><span class="line">c_1 = tf.constant(<span class="number">2</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "c_1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Name scopes add a prefix to all operations created in the same context.</span></span><br><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">"outer"</span>):</span><br><span class="line">  c_2 = tf.constant(<span class="number">2</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "outer/c"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># Name scopes nest like paths in a hierarchical file system.</span></span><br><span class="line">  <span class="keyword">with</span> tf.name_scope(<span class="string">"inner"</span>):</span><br><span class="line">    c_3 = tf.constant(<span class="number">3</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "outer/inner/c"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># Exiting a name scope context will return to the previous prefix.</span></span><br><span class="line">  c_4 = tf.constant(<span class="number">4</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "outer/c_1"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># Already-used name scopes will be "uniquified".</span></span><br><span class="line">  <span class="keyword">with</span> tf.name_scope(<span class="string">"inner"</span>):</span><br><span class="line">    c_5 = tf.constant(<span class="number">5</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "outer/inner_1/c"</span></span><br></pre></td></tr></table></figure>
+<p>请注意，tf.Tensor 对象以输出张量的op明确命名。张量名称的形式为 “&lt;OP_NAME&gt;:&lt;i&gt;”，其中：</p>
+<ul>
+<li>“&lt;OP_NAME&gt;” 是生成该张量的操作的名称。</li>
+<li>“&lt;i&gt;” 是一个整数，表示该张量在该op的输出中的索引。</li>
+</ul>
+<h2 id="获得图中的op">获得图中的op</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">c_0 = tf.constant(<span class="number">0</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "c"</span></span><br><span class="line"><span class="comment"># Already-used names will be "uniquified".  c_1 = tf.constant(2, name="c")  # =&gt; operation named "c_1"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Name scopes add a prefix to all operations created in the same context.</span></span><br><span class="line"><span class="keyword">with</span> tf.name_scope(<span class="string">"outer"</span>):</span><br><span class="line">  c_2 = tf.constant(<span class="number">2</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "outer/c"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># Name scopes nest like paths in a hierarchical file system.</span></span><br><span class="line">  <span class="keyword">with</span> tf.name_scope(<span class="string">"inner"</span>):</span><br><span class="line">    c_3 = tf.constant(<span class="number">3</span>, name=<span class="string">"c"</span>)  <span class="comment"># =&gt; operation named "outer/inner/c"</span></span><br><span class="line"></span><br><span class="line">g = tf.get_default_graph()</span><br><span class="line">print(g.get_operations())</span><br><span class="line"><span class="comment"># [&lt;tf.Operation 'c' type=Const&gt;, &lt;tf.Operation 'c_1' type=Const&gt;, &lt;tf.Operation 'outer/c' type=Const&gt;, &lt;tf.Operation 'outer/inner/c' type=Const&gt;]</span></span><br></pre></td></tr></table></figure>
+<h2 id="类张量对象">类张量对象</h2>
+<p>许多 TensorFlow op都会接受一个或多个 tf.Tensor 对象作为参数。例如，tf.matmul 接受两个 tf.Tensor 对象，tf.add_n 接受一个具有 n 个 tf.Tensor 对象的列表。为了方便起见，这些函数将接受类张量对象来取代 tf.Tensor，并将它明确转换为 tf.Tensor（通过 tf.convert_to_tensor 方法）。类张量对象包括以下类型的元素：</p>
+<ul>
+<li>tf.Tensor</li>
+<li>tf.Variable</li>
+<li>numpy.ndarray</li>
+<li>list（以及类似于张量的对象的列表）</li>
+<li>标量 Python 类型：bool、float、int、str</li>
+</ul>
+<p><strong>注意</strong> 默认情况下，每次使用同一个类张量对象时，TensorFlow 将创建新的 tf.Tensor。如果类张量对象很大（例如包含一组训练样本的 numpy.ndarray），且多次使用该对象，则可能会耗尽内存。要避免出现此问题，请在类张量对象上手动调用 tf.convert_to_tensor 一次，并使用返回的 tf.Tensor。</p>
+<h2 id="tf-session">tf.Session</h2>
+<h3 id="api">API</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tf.Session.init(</span><br><span class="line">		target, <span class="comment"># 可选参数，指定设备。</span></span><br><span class="line">		graph, <span class="comment">#可选参数，默认情况下，新的session绑定到默认graph</span></span><br><span class="line">		confi <span class="comment"># 可选参数，常见的一个选择为gpu_options.allow_growth。将此参数设置为 True 可更改 GPU 内存分配器，使该分配器逐渐增加分配的内存量，而不是在启动时分配掉大多数内存。</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="创建session">创建session</h3>
+<h4 id="默认session">默认session</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Create a default in-process session.</span></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">  <span class="comment"># ...</span></span><br></pre></td></tr></table></figure>
+<h4 id="none"></h4>
+<h3 id="执行op">执行op</h3>
+<p>tf.Session.run 方法是运行 tf.Operation 或评估 tf.Tensor 的主要机制。传入一个或多个 tf.Operation 或 tf.Tensor 对象到 tf.Session.run，TensorFlow 将执行计算结果所需的操作。<br>
+tf.Session.run 需要指定一组 fetch，这些 fetch 可确定返回值，并且可能是 tf.Operation、tf.Tensor 或类张量类型，例如 tf.Variable。这些 fetch 决定了必须执行哪些子图（属于整体 tf.Graph）以生成结果：该子图包含 fetch 列表中指定的所有op，以及其输出用于计算 fetch 值的所有操作。例如，以下代码段说明了 tf.Session.run 的不同参数如何导致执行不同的子图：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">x = tf.constant([[<span class="number">37.0</span>, <span class="number">-23.0</span>], [<span class="number">1.0</span>, <span class="number">4.0</span>]])</span><br><span class="line">w = tf.Variable(tf.random_uniform([<span class="number">2</span>, <span class="number">2</span>]))</span><br><span class="line">y = tf.matmul(x, w)</span><br><span class="line">output = tf.nn.softmax(y)</span><br><span class="line">init_op = w.initializer</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">  <span class="comment"># 初始化w</span></span><br><span class="line">  sess.run(init_op)</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Evaluate `output`. `sess.run(output)` will return a NumPy array containing</span></span><br><span class="line">  <span class="comment"># the result of the computation.</span></span><br><span class="line">  <span class="comment"># 计算output</span></span><br><span class="line">  print(sess.run(output))</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Evaluate `y` and `output`. Note that `y` will only be computed once, and its</span></span><br><span class="line">  <span class="comment"># result used both to return `y_val` and as an input to the `tf.nn.softmax()`</span></span><br><span class="line">  <span class="comment"># op. Both `y_val` and `output_val` will be NumPy arrays.</span></span><br><span class="line">  <span class="comment"># 计算y和output</span></span><br><span class="line">  y_val, output_val = sess.run([y, output])</span><br></pre></td></tr></table></figure>
+<p>tf.Session.run 也可以接受 feed dict，该字典是从 tf.Tensor 对象（通常是 tf.placeholder 张量），在执行时会替换这些张量的值（通常是 Python 标量、列表或 NumPy 数组）的映射。例如：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Define a placeholder that expects a vector of three floating-point values,</span></span><br><span class="line"><span class="comment"># and a computation that depends on it.</span></span><br><span class="line">x = tf.placeholder(tf.float32, shape=[<span class="number">3</span>])</span><br><span class="line">y = tf.square(x)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">  <span class="comment"># Feeding a value changes the result that is returned when you evaluate `y`.</span></span><br><span class="line">  print(sess.run(y, &#123;x: [<span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">3.0</span>]&#125;))  <span class="comment"># =&gt; "[1.0, 4.0, 9.0]"</span></span><br><span class="line">  print(sess.run(y, &#123;x: [<span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">5.0</span>]&#125;))  <span class="comment"># =&gt; "[0.0, 0.0, 25.0]"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># Raises &lt;a href="../api_docs/python/tf/errors/InvalidArgumentError"&gt;&lt;code&gt;tf.errors.InvalidArgumentError&lt;/code&gt;&lt;/a&gt;, because you must feed a value for</span></span><br><span class="line">  <span class="comment"># a `tf.placeholder()` when evaluating a tensor that depends on it.</span></span><br><span class="line">  sess.run(y)</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Raises `ValueError`, because the shape of `37.0` does not match the shape</span></span><br><span class="line">  <span class="comment"># of placeholder `x`.</span></span><br><span class="line">  sess.run(y, &#123;x: <span class="number">37.0</span>&#125;)</span><br></pre></td></tr></table></figure>
+<p>tf.Session.run 也接受可选的 options 参数（允许指定与调用有关的选项）和可选的 run_metadata 参数（允许收集与执行有关的元数据）。例如，可以同时使用这些选项来收集与执行有关的跟踪信息：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">y = tf.matmul([[<span class="number">37.0</span>, <span class="number">-23.0</span>], [<span class="number">1.0</span>, <span class="number">4.0</span>]], tf.random_uniform([<span class="number">2</span>, <span class="number">2</span>]))</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">  <span class="comment"># Define options for the `sess.run()` call.</span></span><br><span class="line">  options = tf.RunOptions()</span><br><span class="line">  options.output_partition_graphs = <span class="literal">True</span></span><br><span class="line">  options.trace_level = tf.RunOptions.FULL_TRACE</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Define a container for the returned metadata.</span></span><br><span class="line">  metadata = tf.RunMetadata()</span><br><span class="line"></span><br><span class="line">  sess.run(y, options=options, run_metadata=metadata)</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Print the subgraphs that executed on each device.</span></span><br><span class="line">  print(metadata.partition_graphs)</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Print the timings of each operation that executed.</span></span><br><span class="line">  print(metadata.step_stats)</span><br></pre></td></tr></table></figure>
+<h2 id="访问当前sess的图">访问当前sess的图。</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sess = tf.Session()</span><br><span class="line">sess.graph</span><br></pre></td></tr></table></figure>
+<h2 id="可视化图">可视化图</h2>
+<p>使用图可视化工具。最简单的方法是传递tf.Graph到tf.summary.FileWriter中。如下示例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Build your graph.</span></span><br><span class="line">x = tf.constant([[<span class="number">37.0</span>, <span class="number">-23.0</span>], [<span class="number">1.0</span>, <span class="number">4.0</span>]])</span><br><span class="line">w = tf.Variable(tf.random_uniform([<span class="number">2</span>, <span class="number">2</span>]))</span><br><span class="line">y = tf.matmul(x, w)</span><br><span class="line"><span class="comment"># ...</span></span><br><span class="line">loss = ...</span><br><span class="line">train_op = tf.train.AdagradOptimizer(<span class="number">0.01</span>).minimize(loss)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">  <span class="comment"># `sess.graph` provides access to the graph used in a &lt;a href="../api_docs/python/tf/Session"&gt;&lt;code&gt;tf.Session&lt;/code&gt;&lt;/a&gt;.</span></span><br><span class="line">  writer = tf.summary.FileWriter(<span class="string">"/tmp/log/..."</span>, sess.graph)</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Perform your computation...</span></span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1000</span>):</span><br><span class="line">    sess.run(train_op)</span><br><span class="line">    <span class="comment"># ...</span></span><br><span class="line"></span><br><span class="line">  writer.close()</span><br></pre></td></tr></table></figure>
+<p>然后可以在 tensorboard 中打开日志并转到“图”标签，查看图结构的概要可视化图表。</p>
+<h2 id="创建多个图">创建多个图</h2>
+<p>TensorFlow 提供了一个“默认图”，此图明确传递给同一上下文中的所有 API 函数。TensorFlow 提供了操作默认图的方法，在更高级的用例中，这些方法可能有用。</p>
+<ul>
+<li>tf.Graph 会定义 tf.Operation 对象的命名空间：单个图中的每个操作必须具有唯一名称。如果请求的名称已被占用，TensorFlow 将在操作名称上附加 “_1”、&quot;_2&quot; 等字符，以便确保名称的唯一性。通过使用多个明确创建的图，可以更有效地控制为每个op指定什么样的名称。</li>
+<li>默认图会存储与添加的每个 tf.Operation 和 tf.Tensor 有关的信息。如果程序创建了大量未连接的子图，更有效的做法是使用另一个 tf.Graph 构建每个子图，以便回收不相关的状态。</li>
+</ul>
+<h3 id="创建两个图">创建两个图</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">g_1 = tf.Graph()</span><br><span class="line"><span class="keyword">with</span> g_1.as_default():</span><br><span class="line">  <span class="comment"># Operations created in this scope will be added to `g_1`.</span></span><br><span class="line">  c = tf.constant(<span class="string">"Node in g_1"</span>)</span><br><span class="line"></span><br><span class="line">  <span class="comment"># Sessions created in this scope will run operations from `g_1`.</span></span><br><span class="line">  sess_1 = tf.Session()</span><br><span class="line"></span><br><span class="line">g_2 = tf.Graph()</span><br><span class="line"><span class="keyword">with</span> g_2.as_default():</span><br><span class="line">  <span class="comment"># Operations created in this scope will be added to `g_2`.</span></span><br><span class="line">  d = tf.constant(<span class="string">"Node in g_2"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Alternatively, you can pass a graph when constructing a &lt;a href="../api_docs/python/tf/Session"&gt;&lt;code&gt;tf.Session&lt;/code&gt;&lt;/a&gt;:</span></span><br><span class="line"><span class="comment"># `sess_2` will run operations from `g_2`.</span></span><br><span class="line">sess_2 = tf.Session(graph=g_2)</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> c.graph <span class="keyword">is</span> g_1</span><br><span class="line"><span class="keyword">assert</span> sess_1.graph <span class="keyword">is</span> g_1</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> d.graph <span class="keyword">is</span> g_2</span><br><span class="line"><span class="keyword">assert</span> sess_2.graph <span class="keyword">is</span> g_2</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.tensorflow.org/guide/graphs?hl=zh_cn" target="_blank" rel="noopener">https://www.tensorflow.org/guide/graphs?hl=zh_cn</a><br>
+2.<a href="https://blog.csdn.net/shenxiaolu1984/article/details/52815641" target="_blank" rel="noopener">https://blog.csdn.net/shenxiaolu1984/article/details/52815641</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/12/tensorflow-Varaible/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2092,191 +2343,11 @@ Linear(in_features=2, out_features=2, bias=True)</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-utils-data/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/08/pytorch-utils-data/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">pytorch utils data</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-08 21:56:15" itemprop="dateCreated datePublished" datetime="2019-05-08T21:56:15+08:00">2019-05-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-17 15:45:03" itemprop="dateModified" datetime="2019-05-17T15:45:03+08:00">2019-05-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="torch-utils-data">torch.utils.data</h2>
-<h3 id="dataloader">Dataloader</h3>
-<h4 id="原型">原型</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">torch</span>.<span class="title">utils</span>.<span class="title">data</span>.<span class="title">DataLoader</span><span class="params">(</span></span></span><br><span class="line"><span class="class"><span class="params">	dataset, 	# 从哪加载数据</span></span></span><br><span class="line"><span class="class"><span class="params">	batch_size=<span class="number">1</span>, 	# batch大小 <span class="params">(default: <span class="number">1</span>)</span>.</span></span></span><br><span class="line"><span class="class"><span class="params">	shuffle=False,	# 每个epoch的数据是否打乱 <span class="params">(default: False)</span>.</span></span></span><br><span class="line"><span class="class"><span class="params">	sampler=None, 	# 定义采样策略。如果指定这个参数, shuffle必须是False.</span></span></span><br><span class="line"><span class="class"><span class="params">	batch_sampler=None, </span></span></span><br><span class="line"><span class="class"><span class="params">	num_workers=<span class="number">0</span>,		# 多少个子进程用来进行数据加载。<span class="number">0</span>代表使用主进程加载数据 <span class="params">(default: <span class="number">0</span>)</span></span></span></span><br><span class="line"><span class="class"><span class="params">	collate_fn=&lt;function default_collate&gt;, </span></span></span><br><span class="line"><span class="class"><span class="params">	pin_memory=False, </span></span></span><br><span class="line"><span class="class"><span class="params">	drop_last=False, </span></span></span><br><span class="line"><span class="class"><span class="params">	timeout=<span class="number">0</span>, </span></span></span><br><span class="line"><span class="class"><span class="params">	worker_init_fn=None</span></span></span><br><span class="line"><span class="class"><span class="params">)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="例子">例子</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torchvision</span><br><span class="line">dataset = torchvision.datasets.CIFAR100(root=<span class="string">'./data'</span>, train=<span class="literal">True</span>, download=<span class="literal">True</span>, transform=<span class="literal">None</span>)</span><br><span class="line">train_loader = torch.utils.data.DataLoader(dataset, bath_size=<span class="number">16</span>, shuffle=<span class="literal">False</span>, num_worker=<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
-<h4 id="如何访问dataloader返回值">如何访问DataLoader返回值</h4>
-<p>train_loader不是整数，所以不能用range，这里用enumerate()，i是</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i, data <span class="keyword">in</span> enumerate(train_loader):</span><br><span class="line">    images, labels = data</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2321,7 +2392,7 @@ Linear(in_features=2, out_features=2, bias=True)</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">130</span>
+                    <span class="site-state-item-count">131</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2838,9 +2909,9 @@ Linear(in_features=2, out_features=2, bias=True)</p>
       
     
       
-        
-      
     
+      
+        
       
     
       

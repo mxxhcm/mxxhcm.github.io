@@ -108,10 +108,13 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="Monte Carlo Methods 这一章介绍的是Monte Carlo方法，和DP不一样的是，它不需要直到环境的信息，只需要experience即可–从真实交互或者仿真环境中得到的state,action,reward采样序列。从真实交互中学习不需要直到环境的信息，从仿真环境中学习需要一个model，但是这个model只用于生成sample transition，并不需要像DP那样需要所有t">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-05-07T09:10:55.947Z">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
+<meta property="og:updated_time" content="2019-05-22T10:36:31.177Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="reinforcement learning an introduction 第5章笔记">
 <meta name="twitter:description" content="Monte Carlo Methods 这一章介绍的是Monte Carlo方法，和DP不一样的是，它不需要直到环境的信息，只需要experience即可–从真实交互或者仿真环境中得到的state,action,reward采样序列。从真实交互中学习不需要直到环境的信息，从仿真环境中学习需要一个model，但是这个model只用于生成sample transition，并不需要像DP那样需要所有t">
+<meta name="twitter:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
 
 
 
@@ -388,7 +391,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-07 17:10:55" itemprop="dateModified" datetime="2019-05-07T17:10:55+08:00">2019-05-07</time>
+                <time title="修改时间：2019-05-22 18:36:31" itemprop="dateModified" datetime="2019-05-22T18:36:31+08:00">2019-05-22</time>
               
             
           </span>
@@ -455,8 +458,9 @@
 蒙特卡洛算法通过从采样和average returns对每一个state-action进行评估。在一个state采取action得到的return取决于同一个episode后续状态的action，因为所有的action都是在不断学习中采取，从早期state的角度来看，这个问题是non-stationary的。为了解决non-stationary问题，采用GPI中的idea。DP从已知的MDP中计算value function，蒙特卡洛使用MDP的sample returns学习value function。然后value function和对应的policy交互获得好的value和policy。<br>
 这一章就是把DP中的各种想法推广到了MC上，比如prediction和control问题，DP使用的是整个MDP，而MC使用的是MDP的采样。</p>
 <h2 id="monte-carlo-prediction">Monte Carlo Prediction</h2>
-<p>预测问题就是估计value function，从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。<br>
-这里主要介绍两个算法，一个叫做$first visit MC method$，另一个是$every visit MC method$。比如要估计策略$\pi$下的$v(s)$，通过采样一系列经过$s$的episodes，$s$在每一个episode中出现一次叫做一个$visit$，一个$s$可能在一个episode中出现多次。$first visit$就是只取第一次$visit$估计$v(s)$，$every visit$就是每一次$visit$都用。<br>
+<p>预测问题就是估计value function，从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。</p>
+<h3 id="first-visti-mc-method">First visti MC method</h3>
+<p>这里主要介绍两个算法，一个叫做$first visit MC method$，另一个是$every visit MC method$。比如要估计策略$\pi$下的$v(s)$，通过采样一系列经过$s$的episodes，$s$在每一个episode中出现一次叫做一个$visit$，一个$s$可能在一个episode中出现多次。$first visit$就是只取第一次$visit$估计$v(s)$，$every visit$就是每一次$visit$都用。<br>
 下面给出$first visit$的算法：<br>
 <strong>First visit MC preidction</strong><br>
 <strong>输入</strong> 被评估的policy $\pi$<br>
@@ -477,10 +481,15 @@ $first vissit$中，每一个return都是$v_{\pi}(s)$的一个有限方差独立
 $every visit$的收敛更难直观的去理解，但是它二次收敛于$v_{\pi}(s)$。<br>
 补充一点：<br>
 大数定律：无论抽象分布如何，均值服从正态分布。<br>
-中心极限定理：样本大了，抽样分布近似于整体分布。<br>
-这里再次对比一下DP和MC，在扑克牌中，我们知道环境的所有信息，但是我们不知道概率，比如我们手里有很多牌了，我们想要直到下一张摸到什么牌会赢，但是我们不知道下一个事件发生的概率。使用MC可以采样获得，所以说，即使有时候直到环境信息，MC方法可能也比DP方法好。<br>
-能不能推广DP中的backup图到MC中？什么是backup图？backup图顶部是一个root节点，表示要被更新的节点，下面是所有的transitions，leaves是对于更新有用的reward或者estimated  values。<br>
-MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹。dd</p>
+中心极限定理：样本大了，抽样分布近似于整体分布。</p>
+<p>这里再次对比一下DP和MC，在扑克牌游戏中，我们知道环境的所有信息，但是我们不知道摸到下一张牌的概率，比如我们手里有很多牌了，我们知道下一张摸到什么牌会赢，但是我们不知道这件事发生的概率。使用MC可以采样获得，所以说，即使有时候知道环境信息，MC方法可能也比DP方法好。</p>
+<h3 id="mc-backup-diagram">MC backup diagram</h3>
+<p>能不能推广DP中的backup图到MC中？什么是backup图？backup图顶部是一个root节点，表示要被更新的节点，下面是所有的transitions，leaves是对于更新有用的reward或者estimated values。<br>
+MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹，以terminal state为终止节点。<br>
+MC图和DP图的对比，DP图展示了所有可能的transitions，而MC图只展示了采样的那个episode；DP图只包含一步的transitions，而MC图包含一个episode的所有序列。<br>
+<img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt="mc backup"><br>
+<img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt="dp backup page 59"></p>
+<h3 id="mc的特点">MC的特点</h3>
 <h2 id="monte-carlo-estimation-of-action-values">Monte Carlo Estimation of Action Values</h2>
 <h2 id="monte-carlo-control">Monte Carlo Control</h2>
 <h2 id="mnote-carlo-control-without-exploring-starts">Mnote Carlo Control without Exploring Starts</h2>
@@ -618,7 +627,7 @@ MC中的backup图，root节点是一个state，下面是一个episode中的所�
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">130</span>
+                    <span class="site-state-item-count">131</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -948,7 +957,7 @@ MC中的backup图，root节点是一个state，下面是一个episode中的所�
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#monte-carlo-methods"><span class="nav-number">1.</span> <span class="nav-text">Monte Carlo Methods</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#monte-carlo-prediction"><span class="nav-number">2.</span> <span class="nav-text">Monte Carlo Prediction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#monte-carlo-estimation-of-action-values"><span class="nav-number">3.</span> <span class="nav-text">Monte Carlo Estimation of Action Values</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#monte-carlo-control"><span class="nav-number">4.</span> <span class="nav-text">Monte Carlo Control</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mnote-carlo-control-without-exploring-starts"><span class="nav-number">5.</span> <span class="nav-text">Mnote Carlo Control without Exploring Starts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off-policy-prediction-via-importance-sampling"><span class="nav-number">6.</span> <span class="nav-text">Off-policy Prediction via Importance Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#incremental-implementation"><span class="nav-number">7.</span> <span class="nav-text">Incremental Implementation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off-policy-monte-carlo-control"><span class="nav-number">8.</span> <span class="nav-text">Off-policy Monte Carlo Control</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#discounting-aware-importance-sampling"><span class="nav-number">9.</span> <span class="nav-text">Discounting-aware Importance Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#summary"><span class="nav-number">10.</span> <span class="nav-text">Summary</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#monte-carlo-methods"><span class="nav-number">1.</span> <span class="nav-text">Monte Carlo Methods</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#monte-carlo-prediction"><span class="nav-number">2.</span> <span class="nav-text">Monte Carlo Prediction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#first-visti-mc-method"><span class="nav-number">2.1.</span> <span class="nav-text">First visti MC method</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mc-backup-diagram"><span class="nav-number">2.2.</span> <span class="nav-text">MC backup diagram</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mc的特点"><span class="nav-number">2.3.</span> <span class="nav-text">MC的特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#monte-carlo-estimation-of-action-values"><span class="nav-number">3.</span> <span class="nav-text">Monte Carlo Estimation of Action Values</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#monte-carlo-control"><span class="nav-number">4.</span> <span class="nav-text">Monte Carlo Control</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mnote-carlo-control-without-exploring-starts"><span class="nav-number">5.</span> <span class="nav-text">Mnote Carlo Control without Exploring Starts</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off-policy-prediction-via-importance-sampling"><span class="nav-number">6.</span> <span class="nav-text">Off-policy Prediction via Importance Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#incremental-implementation"><span class="nav-number">7.</span> <span class="nav-text">Incremental Implementation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off-policy-monte-carlo-control"><span class="nav-number">8.</span> <span class="nav-text">Off-policy Monte Carlo Control</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#discounting-aware-importance-sampling"><span class="nav-number">9.</span> <span class="nav-text">Discounting-aware Importance Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#summary"><span class="nav-number">10.</span> <span class="nav-text">Summary</span></a></li></ol></div>
             
 
           </div>
