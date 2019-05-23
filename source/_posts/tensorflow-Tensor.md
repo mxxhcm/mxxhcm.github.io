@@ -63,8 +63,10 @@ tf.rank(tensor)
 2阶矩阵，可以传递两个数字，返回一个标量，传递1个数字返回一个向量。
 可以使用:访问，表示不操作该维度。
 
-## 获得shape
-tf.Tensor.shape
+## 获得Tensor的shape
+- tf.Tensor.shape
+- tf.shape(tensor) # 返回tensor的shape
+- tf.Tensor.get_shape()
 
 ## 改变tensor的shape
 ### api
