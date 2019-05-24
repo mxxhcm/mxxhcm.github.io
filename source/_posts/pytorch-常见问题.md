@@ -1,5 +1,5 @@
 ---
-title: pytorch 常见问题
+title: pytorch 常见问题（不定期更新）
 date: 2019-05-08 21:52:18
 tags:
  - pytorch
@@ -8,8 +8,13 @@ tags:
 categories: pytorch
 ---
 
-## 常见问题
-### RuntimeError: CUDNN_STATUS_ARCH_MISMATCH
+## 问题1-CUDNN_STATUS_ARCH_MISMATCH
+
+### 报错
+``` txt
+RuntimeError: CUDNN_STATUS_ARCH_MISMATCH
+```
+### 原因
 CUDNN doesn't support CUDA arch 2.1 cards.
 CUDNN requires Compute Capability 3.0, at least. 
 意思是GPU的加速能力不够，CUDNN只支持CUDA Capability 3.0以上的GPU加速，实验室主机是GT620的显卡，2.1的加速能力。
