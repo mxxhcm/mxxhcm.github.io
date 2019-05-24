@@ -49,6 +49,8 @@ ubuntu 提供了gnome-shell-extensions包，该包中有部分gnome扩展。然�
 ### 安装chrome-gnome-shell native host connector
 执行以下命令进行安装，chrome-gnome-shell并不是代表chrome浏览器的意思，用任何浏览器都要执行以下命令
 ~\$:sudo apt install chrome-gnome-shell
+查看gnome shell版本
+~\$:gnome-shell --version
 
 ### 安装相应的插件
 #### 命令行下
@@ -62,8 +64,7 @@ ubuntu 提供了gnome-shell-extensions包，该包中有部分gnome扩展。然�
 
 
 ### 插件推荐
-- Coverflow Alt-Tab 按alt tab切换程序效果
-[7]
+- Coverflow Alt-Tab 按alt tab切换程序效果[7]
 
 
 ## 修改主题

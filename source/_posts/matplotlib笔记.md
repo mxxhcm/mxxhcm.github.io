@@ -172,7 +172,7 @@ ax.spines['bottom'].set_position(('data',0))
 ax.spines['left'].set_position(('data',0))
 
 # both work
-ax.plot(x,y1,lw=2,marker='*',ms=8)
+ax.plot(x,y1,lw=2,marker='-',ms=8)
 plt.plot(x,y2,lw=3,marker='^',ms=10)
 
 # xlim and ylim
