@@ -11,7 +11,8 @@ categories: tensorflow
 ---
 
 
-## 问题1
+## 问题1-The value of a feed cannot be a tf.Tensor object
+
 
 ### 报错
 ``` txt
@@ -25,7 +26,8 @@ sess.run(op, feed_dict={})中的feed value不能是tf.Tensor类型。
 sess.run(train, feed_dict={x:images, y:labels}的输入不能是tensor，可以使用sess.run(tensor)得到numpy.array形式的数据再喂给feed_dict。
 > Once you have launched a sess, you can use your_tensor.eval(session=sess) or sess.run(your_tensor) to get you feed tensor into the format of numpy.array and then feed it to your placeholder.
 
-## 问题2
+## 问题2-Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR
+
 ### 配置
 环境配置如下：
 - Ubuntu 18.04
@@ -55,7 +57,8 @@ config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 ```
 
-## 问题3
+## 问题3-libcublas.so.10.0: cannot open shared object file: No such file or directory
+
 在命令行或者pycharm中import tensorflow报错
 ### 报错
 ``` txt
@@ -84,29 +87,8 @@ LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}即
 ##### 方法2
 修改完.bashrc文件后从终端中运行pycharm。
 
-## 问题4
-sess.run(op, feed_dict={})中feed的数据中包含有list的时候会报错。
+## 问题4-dlerror: libcupti.so.10.0: cannot open shared object file: No such file or directory
 
-### 报错
-``` txt
-TypeError: unhashable type: 'list'
-```
-### 问题原因
-feed_dict中不能的value不能是list。
-
-### 解决方法
-``` python
-feed_dict = {
-               placeholder : value 
-                  for placeholder, value in zip(placeholder_list, inputs_list))
-            }
-
-```
-
-### 代码示例
-[代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_placeholder_list.py)
-
-## 问题5
 执行mnist_with_summary代码时报错
 ### 报错
 ``` txt
@@ -129,8 +111,34 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/
 重新运行即可。
 
 
-## 问题6
+## 问题5-unhashable type: 'list'
+
+sess.run(op, feed_dict={})中feed的数据中包含有list的时候会报错。
+
+### 报错
+``` txt
+TypeError: unhashable type: 'list'
+```
+### 问题原因
+feed_dict中不能的value不能是list。
+
+### 解决方法
+``` python
+feed_dict = {
+               placeholder : value 
+                  for placeholder, value in zip(placeholder_list, inputs_list))
+            }
+
+```
+
+### 代码示例
+[代码地址](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_placeholder_list.py)
+
+
+## 问题6-Attempting to use uninitialized value 
+
 tf.Session()和tf.InteractiveSession()混用问题。
+
 ### 报错
 ``` txt
 tensorflow.python.framework.errors_impl.FailedPreconditionError: Attempting to use uninitialized value prediction/l1/w
@@ -154,18 +162,19 @@ result = sess.run([op], feeed_dct={})
 ### 解决方案
 使用统一的session类型
 
-## 问题7
+## 问题7-setting an array element with a sequence
+
 feed_dict必须是numpy.ndarray，不能是其他类型，尤其不能是tf.Variable。
 
 ### 报错
 ``` txt
-valueerror setting an array element with a sequence,
+value error setting an array element with a sequence,
 ```
 
 ### 解决方法
 检查sess.run(op, feed_dict={})中的feed_dict，确保他们的类型，不能是tf.Variable()类型的对象，需要是numpy.ndarray。
 
-## 问题8
+## 问题8-访问tf.Variable()值
 如何获得tf.Variable()对象的值
 
 ### 解决方法
@@ -185,6 +194,19 @@ sess.run(tf.global_variables_initializer())
 x.eval()
 ```
 
+## 问题9-Can not convert a ndarray into a Tensor or Operation
+
+### 报错
+``` txt
+Can not convert a ndarray into a Tensor or Operation.
+```
+
+### 原因
+原因是sess.run()前后参数名重了，比如outputs = sess.run(outputs)，outputs本来是自己定义的一个op，但是sess.run(outputs)之后outputs就成了一个变量，就把定义的outputs op覆盖了。
+
+### 解决方法
+换个变量名字就行
+
 
 ## 参考文献
 1.https://github.com/tensorflow/tensorflow/issues/4842
@@ -194,3 +216,4 @@ x.eval()
 5.https://github.com/tensorflow/tensorflow/issues/11897
 6.https://stackoverflow.com/questions/34156639/tensorflow-python-valueerror-setting-an-array-element-with-a-sequence-in-t
 7.https://stackoverflow.com/questions/33679382/how-do-i-get-the-current-value-of-a-variable
+8.https://blog.csdn.net/michael__corleone/article/details/79007425

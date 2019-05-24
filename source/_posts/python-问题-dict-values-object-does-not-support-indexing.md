@@ -7,7 +7,6 @@ tags:
 categories: python 
 ---
 
-
 ## python3 dict
 python3 中调用字典对象的一些函数，返回值是view objects。如果要转换为list的话，需要使用list()强制转换。
 而python2的返回值直接就是list。
