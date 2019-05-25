@@ -97,7 +97,7 @@ I tensorflow/stream_executor/dso_loader.cc:142] Couldn't open CUDA library libcu
 Aborted (core dumped)
 ```
 
-### 原因
+### 问题问题问题问题问题问题问题问题问题原因
 libcupti.so.10.0包没找到
 
 ### 解决方法
@@ -163,18 +163,19 @@ result = sess.run([op], feeed_dct={})
 使用统一的session类型
 
 ## 问题7-setting an array element with a sequence
-
-feed_dict必须是numpy.ndarray，不能是其他类型，尤其不能是tf.Variable。
+feed_dict键值对中中值必须是numpy.ndarray，不能是其他类型。
 
 ### 报错
 ``` txt
 value error setting an array element with a sequence,
 ```
+### 问题原因
+feed_dict中key-value的value必须是numpy.ndarray，不能是其他类型，尤其不能是tf.Variable。
 
 ### 解决方法
 检查sess.run(op, feed_dict={})中的feed_dict，确保他们的类型，不能是tf.Variable()类型的对象，需要是numpy.ndarray。
 
-## 问题8-访问tf.Variable()值
+## 问题8-访问tf.Variable()的值
 如何获得tf.Variable()对象的值
 
 ### 解决方法
@@ -201,7 +202,7 @@ x.eval()
 Can not convert a ndarray into a Tensor or Operation.
 ```
 
-### 原因
+### 问题原因
 原因是sess.run()前后参数名重了，比如outputs = sess.run(outputs)，outputs本来是自己定义的一个op，但是sess.run(outputs)之后outputs就成了一个变量，就把定义的outputs op覆盖了。
 
 ### 解决方法
