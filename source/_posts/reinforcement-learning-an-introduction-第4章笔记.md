@@ -164,7 +164,7 @@ DP比任何在policy space内搜索的算法要快上指数倍，因为policy sp
 - 基本上所有的强化学习算法都可以看成GPI(generalized policy iteraion)，先评估某个策略，然后改进这个策略，评估新的策略...这样子循环下去，直到收敛，找到一个不在变化的最优值函数和策略。
 GPI不一定是收敛的，本章介绍的这些大多都是收敛的，但是还有一些没有被证明收敛。
 - 可以使用异步的DP算法。
-- 所有的DP算法都有一个属性叫做bootstrapping，就是他们更新自己的估计值也是基于其他的估计上。因为每一个state value的更新都需要用到他们的successor state的估计。
+- 所有的DP算法都有一个属性叫做bootstrapping，即基于其他states的估计更新每一个state的值。因为每一个state value的更新都需要用到他们的successor state的估计。
 > They update estimates onthe basis of other estimates。
 
 
