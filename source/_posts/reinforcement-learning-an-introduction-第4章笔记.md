@@ -38,7 +38,7 @@ v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
 v_{k+1}(s) &= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})\ S_t=s\right]\\
 &= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_k(s') \right] \tag{5}
 \end{align\*}
-直到$v_k=v_{\pi}$到达一个fixed point，Bellman equation满足这个条件。当$k\rightarrow \infty$时收敛到$v_{\pi}$。这个算法叫做iterative policy evaluation。
+直到$v_k=v_{\pi}$到达fixed point，Bellman equation满足这个条件。当$k\rightarrow \infty$时收敛到$v_{\pi}$。这个算法叫做iterative policy evaluation。
 在每一次$v_k$到$v_{k+1}$的迭代过程中，所有的$v(s)$都会被更新，$s$的旧值被后继状态$s'$的旧值加上reward替换，正如公式$(5)$中体现的那样。这个目标值被称为expected update，因为它是基于所有$s'$的期望计算出来的（利用环境的模型），而不是通过对$s'$采样计算的。
 在实现iterative policy evaluation的时候，每一次迭代，都需要重新计算所有$s$的值。这里有一个问题，就是你在每次更新$s$的时候，使用的$s'$如果在本次迭代过程中已经被更新过了，那么是使用更新过的$s'$，还是使用没有更新的$s'$，这就和迭代法中的雅克比迭代以及高斯赛德尔迭代很像，如果使用更新后的$s'$，这里我们叫它in-place的算法，否则就不是。具体那种方法收敛的快，还是要看应用场景的，并不是in-place的就一定收敛的快，这是在数值分析上学到的。
 下面给出in-place版本的iterative policy evation算法伪代码。

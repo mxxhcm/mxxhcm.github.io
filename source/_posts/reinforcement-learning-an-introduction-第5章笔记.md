@@ -94,8 +94,41 @@ $\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现
 $\qquad\qquad\qquad$Returns(S_t,A_t).append(G)
 $\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$
 $\qquad\qquad\qquad \pi(S_t) \leftarrow argmax_a Q(S_t,a)$
+这个算法一定会收敛到全局最优解，如果收敛到一个suboptimal policy，value function会收敛到到该policy的true value function，然后再进行improvement会改进该suboptimal policy。
 
 ## Mnote Carlo Control without Exploring Starts
+上节主要是去掉了无穷个episode的限制，这节需要去掉ES的限制，解决方法是需要agents一直能够去选择所有的actions。目前有两类方法实现，一种是on-policy，一种是off-policy。
+
+### on-policy和off-policy
+On-policy算法中，用于evaluation或者improvement的policy和用于决策的policy是相同的，而off-policy算法中，evaluation和improvement的policy和决策的policy是不同的。
+
+### $\epsilon$ soft和$\epsilon$ greedy
+在on-policy算法中，policy一般是soft的，整个policy整体上向一个deterministic policy偏移。
+在$\epsilon$ soft算法中，只要满足$\pi(a|s)\gt 0,\forall s\in S, a\in A$即可。
+在$\epsilon$ greedy算法中，用$\frac{\epsilon}{|A(s)|}$的概率选择non-greedy的action，使用$1 -\epsilon + \frac{\epsilon}{|A(s)|}$的概率选择greedy的action。
+$\epsilon$ greedy是$\epsilon$ soft算法中的一类，可以看成一种特殊的$\epsilon$ soft算法。
+本节介绍的on policy方法使用$\epsilon$ greedy算法。
+
+### On policy first visit MC
+本节介绍的on policy MC算法整体的思路还是GPI，首先使用first visit MC估计当前policy的action value function。去掉exploring starting条件之后，为了保证exploration，不能直接对所有的action value进行贪心，使用$\epsilon$ greedy算法保持exploration。
+对于任意的$\epsilon$ soft policy$\pi$，$\epsilon，相对于$q\_{\pi}$的$\epsilon$ greedy算法至少和$\pi$一样好。
+**On policy first visit MC Control**
+$\epsilon \gt 0$
+**初始化**
+$\qquad$用任意$\epsilon$ soft算法初始化$\pi$
+$\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$
+$\qquad$Returns(s,a)\leftarrow$ empty list, \forall s\in S, \forall a \in A(s)$
+**Loop forever(for each episode)**
+$\qquad$根据policy $\pi$生成一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$
+$\qquad G\leftarrow 0$
+$\qquad$**Loop for each step of episode**,$t=T-1,T-2,\cdots,0$
+$\qquad\qquad G\leftarrow \gamma G+R_{t+1}$
+$\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过
+$\qquad\qquad\qquad$Returns(S_t,A_t).append(G)
+$\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$
+$\qquad\qquad\qquad A^{\*}\leftarrow argmax_a Q(S_t,a)$
+$\qquad\qquad\qquad$**For all** $a \in A(S_t):$
+$\qquad\qquad\qquad\qquad\pi(a|S_t)\leftarrow \begin{cases}1-\epsilon+\frac{\epsilon}{|A(S_t)|}\qquad if a = A^{\*}\\\frac{\epsilon}{|A(S_t)|}\qquad a\neq A^{\*}\end{cases}$
 
 
 ## Off-policy Prediction via Importance Sampling

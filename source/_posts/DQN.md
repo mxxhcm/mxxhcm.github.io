@@ -41,7 +41,7 @@ $$\nabla_{\theta_i}L_i(\theta_i) = E_{s,a~\rho(\cdot),s'\sim E}\left[(r+\gamma m
 10. 它是一个off-policy算法，它评估策略的时候采用的是贪心策略，但是生成数据的策略和评估时是不同。生成数据的策略包含了对环境的exploration(探索)，而评估策略采用的是贪心策略，不包含探索。
 > On-policy methods attempt to evaluate or improve the policy that is used to make decisions, whereas  off-policy methods evaluate or improve a policy different from that used to generate the data.
 
-Sarsa和Q-learning的区别在于更新$Q(s,a)$时,$s'$处action采用的是原来的策略(behaviour policy（行为策略），$\epsilon$-贪心策略)还是现在新的策略(贪心策略)决定，这其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，评估用的策略（贪心策略）和行为策略（$\epsilon$-策略）是不同的。
+Sarsa和Q-learning的区别在于更新$Q(s,a)$时,$s'$处action采用的是原来的策略(behaviour policy（行为策略），$\epsilon$-greedy还是现在新的策略(greedy)决定，这其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，评估用的策略（贪心策略）和行为策略（$\epsilon$-策略）是不同的。
 
 #### 算法
 1. DQN使用了experience replay，将多个episodes中的经验存储到同一个replay buffer中。在更新$Q$值的时候，从replay buffer中进行采样更新。当前时间步动作的选择采用的是$\epsilon$-greedy策略，保持探索。因为replay buffer中存放的有很久之前的experience，所以更新$Q$值的策略(replay buffer)和真实采取动作的策略($epsilon$-greedy)是不一样的，所以是off-policy的方法。采用experience replay的online算法[5]和标准的online算法相比有三个好处[4]，第一个是每一个experience可以多次用来更新参数，提高了数据训练效率；第二个是直接从连续的样本中进行学习是低效的，因为样本之间存在强关联性。第三个是on-policy的学习中，当前的参数决定下一次采样的样本，就可能使学习出来的结果发生偏移。
