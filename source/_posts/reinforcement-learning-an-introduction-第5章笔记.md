@@ -11,7 +11,7 @@ mathjax: true
 ## MC简介
 通过采样估计值函数。有三个优势，从真实experience中学习，从仿真环境中学习，以及每个state value的计算独立于其他state。
 
-## Monte Carlo Methods
+## MC Methods
 这一章介绍的是Monte Carlo方法，和DP不一样的是，它不需要环境的信息，只需要experience即可--从真实交互或者仿真环境中得到的state,action,reward序列都行。从真实交互中学习不需要环境的信息，从仿真环境中学习需要一个model，但是这个model只用于生成sample transition，并不需要像DP那样需要所有transition的完整概率分布。在很多情况下，生成experience sample要比显示的得到概率分布容易很多。
 
 蒙特卡洛算法基于average sample returns估计值函数。为了保证returns是可用的，这里定义蒙特卡洛算法是episodic的，即所有的experience都有一个terminal state。只有在一个episode结束的时候，value estimate和policy才会改变。蒙塔卡洛算法可以在episode和episode实现增量式，不能在step和step之间实现增量式。(Monte Carlo methods can thus be incremental in an episode-by-episode sense, but not in a step-by-step online sense.)
@@ -19,7 +19,7 @@ mathjax: true
 这一章就是把DP中的各种想法推广到了MC上，比如prediction和control问题，DP使用的是整个MDP，而MC使用的是MDP的采样。
 
 
-## Monte Carlo Prediction
+## MC Prediction
 预测问题就是估计value function，从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。
 
 ### First visti MC method
@@ -29,7 +29,7 @@ mathjax: true
 **输入** 被评估的policy $\pi$
 **初始化**:
 $\qquad V(s)\in R,\forall s \in S$
-$\qquad Returns(s)=[],\forall s \in S$
+$\qquad Returns(s) \leftarrow empty list,\forall s \in S$
 **Loop** for each episeode:
 $\qquad$生成一个episode
 $\qquad G\leftarrow 0$
@@ -37,11 +37,9 @@ $\qquad$**Loop** for each step, $t= T-1,T-2, \cdots, 1$
 $\qquad\qquad G\leftarrow G + \gamma R_t$
 $\qquad\qquad$ 如果$S_t$没有在$S_0, \cdots , S_{t-1}$中出现过
 $\qquad\qquad\qquad Returns(S_t).apppend(G)$
-$\qquad\qquad\qquad V(S_t)\leftarrow = average(Returns(S_t))$ 
-$every visit$的话，不用加上判断$S_t$是否出现过的那一句就行了。
-当$s$处的$visit$趋于无穷次的时候，$first vist$和$every visit$算法都收敛于$v_{\pi}(s)$。
-$first vissit$中，每一个return都是$v_{\pi}(s)$的一个有限方差独立同分布估计。通过大数定律，估计平均值（$average(Returns(S_0),\cdots, average(Returns(S_t)$）的序列收敛于它的期望。每一个average都是它自己的一个无偏估计，标准差是$\frac{1}{\sqrt{n}}$。
-$every visit$的收敛更难直观的去理解，但是它二次收敛于$v\_{\pi}(s)$。
+$\qquad\qquad\qquad V(S_t)\leftarrow average(Returns(S_t))$ 
+every visit的话，不用加上判断$S_t$是否出现过的那一句就行了。当$s$处的visit趋于无穷的时候，first vist和every visit算法中$v_{\pi}(s)$都能收敛。
+first visit中，每一个return都是$v_{\pi}(s)$的一个独立同分布估计。根据大数定律，估计平均值（$average(Returns(S_0),\cdots, average(Returns(S_t)$）的序列收敛于它的期望。每一个average都是它自己的一个无偏估计，标准差是$\frac{1}{\sqrt{n}}$。every visit的收敛更难直观的去理解，但是它二次收敛于$v\_{\pi}(s)$。
 补充一点：
 大数定律：无论抽象分布如何，均值服从正态分布。
 中心极限定理：样本大了，抽样分布近似于整体分布。
@@ -58,12 +56,12 @@ MC图和DP图的对比，DP图展示了所有可能的transitions，而MC图只�
 ### MC的特点
 DP中每个state的估计都依赖于它的后继state，而MC中每个state value的计算都不依赖于任何其他state value（MC算法不进行bootstrap），所以可以单独估计某一个state或者states的一个子集。而且估计单个state的计算复杂度和states的数量无关，我们可以只取感兴趣的states子集进行评估，这是MC的第三个优势。前两个优势是从actural experience中学习和从simulated的experience中学习。
 
-## Monte Carlo Estimation of Action Values
+## MC Estimation of Q
 如果没有model的话，需要估计state-action value而不是state value。有model的话，只有state value就可以确定policy，可以估计一步，选择使reward和next_state value加起来最大的action。没有model的话，只用state value是不够的，因为不知道下一个state是什么。而只用action value是可以确定policy的，选择值最大的那个action value，采用相应的action即可。所以这一节的目标是学习action value function。
 和第一节介绍的方法不同的是，第一节求解的是state value，这里换成了aciton value。有一个问题是许多state-action可能从来没有被访问过，如果$\pi$是deterministic的，每一个state输出一个action，其他action的MC估计没有returns进行平均，就无法进行更新。所以，我们需要估计每一个state对应的所有action，这是exploration问题。
 对于action value的policy evaluation，必须保证continual exploration。一种实现方式是指定episode开始的state-action pair，每一个pair都有大于$0$的概率被选中,这就保证了每一个action-pair在无限个episode中会被访问无限次，这叫做exploring starts。这种假设有时候有用，但是在某些时候，我们无法控制环境产生的experience，可行的方法是使用stochastic policy。
 
-## Monte Carlo Control
+## MC Control
 MC control使用的还是GPI的想法，估计当前policy的action value，基于action value改进policy，不断迭代。
 这里考虑经典的policy iteration，执行一次完全的iterative policy evaluation，再执行一次完全的policy improvement，不断迭代。对于policy evaluation，每次evaluation都使用多个episodes的experience，每次action value都会离true value function更近。这里我们假设有无限个exploring starts生成的episodes，满足这些条件时，对于任意$\pi_k$都会精确计算出$q_{\pi_k}$。对于policy improvement，只要对于当前的action value function进行贪心即可，即：
 $$\pi(s) = arg\ max_a q(s,a)$$
@@ -83,7 +81,7 @@ q_{\pi_k}(s,\pi_{k+1}(s)) &=q_{\pi_k}(s, argmax_a q_{\pi_k}(s,a))\\
 **初始化**
 $\qquad$任意初始化$\pi(s)\in A(s), \forall s\in S$
 $\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$
-$\qquad$Returns(s,a)\leftarrow$ empty list, \forall s\in S, \forall a \in A(s)$
+$\qquad$Returns(s,a)$\leftarrow$ empty list, $\forall s\in S, \forall a \in A(s)$
 **Loop forever(for each episode)**
 $\qquad$随机选择满足$S_0\in S, A_0\in A(S_0)$的state-action$(S_0,A_0)$，满足概率大于$0$
 $\qquad$从$S_0,A_0$生成策略$\pi$下的一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$
@@ -91,12 +89,12 @@ $\qquad G\leftarrow 0$
 $\qquad$**Loop for each step of episode**,$t=T-1,T-2,\cdots,0$
 $\qquad\qquad G\leftarrow \gamma G+R_{t+1}$
 $\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过
-$\qquad\qquad\qquad$Returns(S_t,A_t).append(G)
+$\qquad\qquad\qquad$Returns($S_t,A_t$).append(G)
 $\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$
 $\qquad\qquad\qquad \pi(S_t) \leftarrow argmax_a Q(S_t,a)$
-这个算法一定会收敛到全局最优解，如果收敛到一个suboptimal policy，value function会收敛到到该policy的true value function，然后再进行improvement会改进该suboptimal policy。
+这个算法一定会收敛到全局最优解，因为如果收敛到一个suboptimal policy，value function在迭代过程中会收敛到该policy的true value function，接下来的policy improvement会改进该suboptimal policy。
 
-## Mnote Carlo Control without Exploring Starts
+## MC Control without ES
 上节主要是去掉了无穷个episode的限制，这节需要去掉ES的限制，解决方法是需要agents一直能够去选择所有的actions。目前有两类方法实现，一种是on-policy，一种是off-policy。
 
 ### on-policy和off-policy
@@ -109,33 +107,90 @@ On-policy算法中，用于evaluation或者improvement的policy和用于决策�
 $\epsilon$ greedy是$\epsilon$ soft算法中的一类，可以看成一种特殊的$\epsilon$ soft算法。
 本节介绍的on policy方法使用$\epsilon$ greedy算法。
 
-### On policy first visit MC
+### On-policy first visit MC
 本节介绍的on policy MC算法整体的思路还是GPI，首先使用first visit MC估计当前policy的action value function。去掉exploring starting条件之后，为了保证exploration，不能直接对所有的action value进行贪心，使用$\epsilon$ greedy算法保持exploration。
-对于任意的$\epsilon$ soft policy$\pi$，$\epsilon，相对于$q\_{\pi}$的$\epsilon$ greedy算法至少和$\pi$一样好。
 **On policy first visit MC Control**
 $\epsilon \gt 0$
 **初始化**
 $\qquad$用任意$\epsilon$ soft算法初始化$\pi$
 $\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$
-$\qquad$Returns(s,a)\leftarrow$ empty list, \forall s\in S, \forall a \in A(s)$
+$\qquad$Returns(s,a) $\leftarrow$ empty list, $\forall s\in S, \forall a \in A(s)$
 **Loop forever(for each episode)**
 $\qquad$根据policy $\pi$生成一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$
 $\qquad G\leftarrow 0$
 $\qquad$**Loop for each step of episode**,$t=T-1,T-2,\cdots,0$
 $\qquad\qquad G\leftarrow \gamma G+R_{t+1}$
 $\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过
-$\qquad\qquad\qquad$Returns(S_t,A_t).append(G)
+$\qquad\qquad\qquad$Returns($S_t,A_t$).append(G)
 $\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$
 $\qquad\qquad\qquad A^{\*}\leftarrow argmax_a Q(S_t,a)$
-$\qquad\qquad\qquad$**For all** $a \in A(S_t):$
-$\qquad\qquad\qquad\qquad\pi(a|S_t)\leftarrow \begin{cases}1-\epsilon+\frac{\epsilon}{|A(S_t)|}\qquad if a = A^{\*}\\\frac{\epsilon}{|A(S_t)|}\qquad a\neq A^{\*}\end{cases}$
+$\qquad\qquad\qquad$**For all** $a \in A(S_t) \: $
+$\qquad\qquad\qquad\qquad\pi(a|S_t)\leftarrow \begin{cases}1-\epsilon+\frac{\epsilon}{|A(S_t)|}\qquad if\ a = A^{\*}\\\\ \frac{\epsilon}{|A(S_t)|}\qquad a\neq A^{\*}\end{cases}$
 
+对于任意的$\epsilon$ soft policy $\pi$，相对于$q\_{\pi}$的$\epsilon$ greedy算法至少和$\pi$一样好。用$\pi'$表示$\epsilon$ greedy policy，对于$\forall s\in S$，都满足policy improvement theorem的条件：
+\begin{align\*}
+q_{\pi}(s,\pi'(s))&=\sum_a\pi'(a|s)q_{\pi}(s,a)\\\\
+&=\frac{\epsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + (1- \epsilon) max_a q_{\pi}(s,a) \tag{2}\\\\
+&\ge \frac{\epsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + (1-\epsilon) \sum_a\frac{\pi(a|s) - \frac{\epsilon}{|A(s)|}}{1-\epsilon}q\_{\pi}(s,a) \tag{3}\\\\
+&=\frac{\epsilon}{|A(s)|} \sum_aq_{\pi}(s,a) - \frac{\epsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + \sum_a \pi(a|s)\sum_aq\_{\pi}(s,a)\\\\
+&=v(s)
+\end{align\*}
+式子2到式子3是怎么变换的，我有点没看明白！！！（不懂）。后来终于想明白了，式子3的第二项分子服从的是$\pi(a|s)$，而式子2的第二项这个$a$是新的$\pi'(a|s)$。
+接下来证明，当$\pi$和$\pi'$都是optimal $\epsilon$ policy的时候，可以取到等号。这个我看这没什么意思，就不证明了。。在p102。
 
 ## Off-policy Prediction via Importance Sampling
+所有的control方法都要面临一个问题：一方面需要选择optimal的action估计action value，另一方面需要exploration，不能一直选择optimal action，那么该如何控制这两个问题之间的比重。on-policy方法采样的方法是学习一个接近但不是optimal的policy保持exploriation。off-policy的方法使用两个policy，一个用于采样的behavior policy，一个用于evaluation的target policy。用于学习target policy的data不是target policy自己产生的，所以叫做off-policy learning。
 
+### on-policy vs off-policy
+on policy更简单，off policy使用两个不同的policy，所以variance更大，收敛的更慢，但是off-policy效果更好，更通用。On-policy可以看成off-policy的特例，target policy和behaviour policy是相同的。Off-policy可以使用非学习出来的data，比如人工生成的data。
+
+### off-policy prediction problem
+对于prediction problem，target policy和behaviour policy都是固定的。$\pi$是target policy，$b$是behaviour policy，我们要使用$b$生成的episode去估计$q\_{\pi}$或者$v\_{\pi}$。为了使用$b$生成的episodes估计$\pi$，需要满足一个假设，policy $\pi$中采取的action在$b$中也要能有概率被采取，即$\pi(a|s)\gt 0$表明$b(a|s) \gt 0$，这是coverage假设。
+在control问题中，target policy通常是相对于当前action value的deterministic greedy policy，最后target policy是一个deterministic optimal policy而behaviour policy通常是$\epsilon$ greedy的探索策略。
+### importance sampling和importance sampling ratio
+很多off policy方法使用importance sampling，利用一个distribution的samples估计另一个distribution的value function。Importance sampling通过计算trajectoried在target和behaviour policy中出现的概率比值对returns进行加权，这个相对概率称为importance sampling ratio。给定以$S_t$为初始状态的sate-action trajectory，它在任何一个policy $\pi$中发生的概率如下：
+\begin{align\*}
+&Pr\{A_t, S_{t+1},A_{t+1},\cdots,S_T|S_t,A\_{t:T-1}\~\pi\}\\\\
+=&\pi(A_t|S_t)p(S_{t+1}|S_t,A_t)\pi(A_{t+1}|S_{t+1})\cdots p(S_T|S_{T-1},A_{T-1})\\\\
+=&\prod_{k=t}^{T-1}\pi(A_k|S_k)p(S_{k+1}|S_k,A_k)
+\end{align\*}
+其中$p$是状态转换概率，imporrance sampling计算如下：
+$$\rho\_{t:T-1}=\frac{\prod_{k=t}^{T-1} \pi(A_k|S_k)p(S_{k+1}|S_k,A_k)}{\prod_{k=t}^{T-1} b(A_k|S_k)p(S_{k+1}|S_k,A_k)}=\prob_{k=t}^{T-1}\frac{\pi(A_k|S_k)}{b(A_k|S_k}$$
+因为p跟policy无关，所以可以直接消去。importance sampling ratio只和policies以及sequences有关。
+根据behaviour policy的returns $G_t$，我们可以得到一个Expectation，即$\mathbb{E}[G_t|S_t=s]=v_b(s)$，显然，这是b的value function而不是$\pi$的value function，这个时候就用到了importance sampling，ratio $\rho\_{t:T-1}$对b的returns进行转换，得到了另一个期望：
+$$\mathbb{E}[\rho_{t:T-1}G_t|S_t=s]=v\_{\pi}(s)$$
+
+### 符号定义
+假设我们想要从policy b 中的一些episodes中估计$v\_{\pi}(s)$，
+- 用$t$表示episode中的每一步，有些不同的是，$t$在不同episode之间是连续的，比如第$1$个episode有$100$个timesteps，第$2$个episode的timsteps从$101$开始。
+- 用$J(s)$表示state $s$在不同episodes中第一次出现的$t$。
+- 用$T(t)$表示从$t$所在那个episode的terminal timestep。
+- 用$\{G_t\}\_{t\in J(s)}$表示所有state $s$的return list。
+- 用$\{\rho\_{t:T(t)-1}\}\_{t\in J(s)}$表示相应的importance ratio。
+
+### importance sampling
+有两种方法可以估计的$v\_{\pi}(s)$，一种是oridinary importance sampling，一种是weighted importance sampling。
+#### oridinary importance sampling
+直接对多个结果进行平均
+$$V(s) = \frac{\sum\_{t\in J(s)}\rho\_{t:T(t)-1} G_t}{|J(s)|}$$
+
+#### weighted importance sampling
+对多个结果进行加权平均
+$$V(s) = \frac{\sum\_{t\in J(s)}\rho\_{t:T(t)-1} G_t}{\sum\_{t\in J(s)}\rho\_{t:T(t)-1}}$$
+
+#### 异同点
+为了比较这两种importance sampling的异同，考虑state s只有一个returns的first vist MC方法，在加权平均中，ratio会约分约掉，这个returns的expectation是$v_b(s)$而不是$v\_{\pi}(s)$，是一个有偏估计；而普通平均，returns的expectation还是$v\_{\pi}(s)$，是一个无偏估计，但是可能会很极端，比如ratio是$10$，就说明$v\_{\pi}(s)$是$v_b(s)$的$10$倍，可能与实际相差很大。
+在fisrt visit算法中，就偏差和方差来说。普通平均的偏差是无偏的，而加权平均的偏差是有偏的（逐渐趋向$0$）。普通平均的方差是unbounded，因为ratio可以是unbounded，而加权平均对于每一个returns来说，权重最大是$1$。事实上，假定returns是bounded，即使ratios的方差是infinite，加权平均的方差也会趋于$0$。实践中，加权平均有更小的方差，通常更多的被采用。
+在every visit算法中，普通平均和加权平均都是有偏的，随着样本的增加，偏差也趋向于$0$。在实践中，因为every visit不需要记录哪个状态是否被记录过，所以要比first visit常用。
+
+### 无穷大方差
+![]()
+有这样一个例子。只有一个non-terminal state s，两个ation，left和right，right action是deterministic transition到termination，left action有$0.9$的概率回到s，有$0.1$的概率到termination。left action回到termination会产生$+1$的reward，其他操作的reward是$0$。所有target policy策略下的episodes都会经过一些次回到state s然后到达terminal state，总的returns是$1(\gamma = 1)$。使用behaviour policy等概率选择left和right action。
+这个例子中returns的真实期望是$1$。first visit中weighted importance sampling中return的期望是$1$，因为behaviour policy中选择right的action 在target policy中概率为$0$，不满足之前假设的条件，所以没有影响。而oridinary importance sampling的returns期望也是$1$，但是可能经过了几百万个episodes之后，也不一定收敛到$1$。
 ## Incremental Implementation
 
-## Off-policy Monte Carlo Control
+
+## Off-policy MC Control
 
 ## Discounting-aware Importance Sampling
 

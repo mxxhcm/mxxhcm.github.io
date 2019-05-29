@@ -13,7 +13,7 @@ mathajax: true
 show()函数是一个阻塞函数，调用该函数，显示当前已经绘制的图像，然后需要手动关闭打开的图像，程序才会继续执行。
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/1_show.py)
 ``` python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -36,7 +36,7 @@ plt.show()
 该文件接收一个参数，作为文件保存的路径。
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/2_savefig.py)
 ``` python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,7 +56,7 @@ plt.show()
 figure()函数相当于生成一张画布。如果不显示调用的话，所有的图像都会绘制在默认的画布上。可以通过调用figure()函数将函数图像分开。figure()会接受几个参数，num是生成图片的序号，figsize指定图片的大小。
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/3_figure.py)
 ``` python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -80,7 +80,7 @@ plt.show()
 该函数用来显示图像，接受一个图像矩阵。调用完该函数之后还需要调用show()函数。
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/4_image.py)
 ``` python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -97,7 +97,7 @@ plt.show()
 绘制$m\times n$个子图
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/5_subplot.py)
 ``` python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -130,6 +130,7 @@ plt.show()
 将一张图分成$m\times n$个子图。
 
 ### 代码示例
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/6_subplots.py)
 ``` python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -150,10 +151,10 @@ plt.show()
 
 ## ax()
 ### 介绍
-获得当前figure的坐标轴，可以用来绘制。
+获得当前figure的坐标轴，用来绘制。
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/7_axes.py)
 ``` python
 import matplotlib.pyplot as plt
 import numpy as np
@@ -204,22 +205,70 @@ plt.show()
 交互式绘图，可以在一张图上不断的更新。
 
 ### 代码示例
-[代码地址]()
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/8_plt_ion_ioff.py)
 ``` ppython
 import matplotlib.pyplot as plt
 import numpy as np
 
-plt.figure()
-plt.ion()
-x = np.arange(20)
-for i in range(20):
-  # x[i] = x[i] + i 
-  y = pow(x[:i], 2)
-  temp = x[:i]*100
-  print(temp)
-  plt.plot(temp, y, linewidth=1)
-  plt.pause(0.1)
+count = 1
+flag = True
 
-plt.ioff()
+plt.figure()
+ax = plt.gca()
+x = np.arange(20)
+plt.figure()
+ax2 = plt.gca()
+
+while flag:
+    plt.ion()
+    y = pow(x[:count], 2)
+    temp = x[:count]
+    ax.plot(temp, y, linewidth=1)
+    plt.pause(1)
+    plt.ioff()
+
+    ax2.plot(x, x+count)
+    count += 1
+    if count > 20:
+        break
+
 plt.show() 
 ```
+
+## seanborn
+
+### 介绍
+对matplotlib进行了一层封装
+
+### 代码示例
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/matplotlib/9_seanborn.py)
+``` python
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+values = np.zeros((21,21), dtype=np.int)
+fig, axes = plt.subplots(2, 3, figsize=(40,20))
+plt.subplots_adjust(wspace=0.1, hspace=0.2)
+axes = axes.flatten()
+
+# cmap is the paramter to specify color type, ax is the parameter to specify where to show the picture
+# np.flipud(matrix), flip the column in the up/down direction, rows are preserved
+figure = sns.heatmap(np.flipud(values), cmap="YlGnBu", ax=axes[0])
+figure.set_xlabel("cars at second location", fontsize=30)
+figure.set_title("policy", fontsize=30)
+figure.set_ylabel("cars at first location", fontsize=30)
+figure.set_yticks(list(reversed(range(21))))
+
+figure = sns.heatmap(np.flipud(values), ax=axes[1])
+figure.set_ylabel("cars at first location", fontsize=30)
+figure.set_yticks(list(reversed(range(21))))
+figure.set_title("policy", fontsize=30)
+figure.set_xlabel("cars at second location", fontsize=30)
+
+plt.savefig("hello.pdf")
+plt.show()
+plt.close()
+```
+
+

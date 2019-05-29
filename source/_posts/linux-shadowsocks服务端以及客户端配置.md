@@ -209,7 +209,7 @@ Requirement already satisfied: shadowsocks in /usr/local/lib/python2.7/dist-pack
 ~#:cd /usr/local/lib/python2.7/dist-packages/shadowsocks
 ~#:vim crypto/openssl.py
 搜索cleanup，将其替换为reset
-具体位置在第52行libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)和第111行libcrypto.EVP_CIPHER_CTX_cleanup(self._ctx) 
+具体位置在第52行libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)和第111行libcrypto.EVP_CIPHER_CTX_cleanup(self.\_ctx) 
 
 #### 手动运行后台挂起
 将所有的log重定向到~/.log/sslocal.log文件中
