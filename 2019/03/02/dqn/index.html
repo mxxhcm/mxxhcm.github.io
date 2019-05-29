@@ -108,12 +108,12 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="Playing Atari with Deep Reinforcement Learning 概述 用一个CNN表示值函数，直接从高维的输入中学习控制策略。用Q-learning的变种来训练这个CNN。网络的输入是原始的图片，输出是这个图片对应的state可能采取的action的action value。 Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://mxxhcm.github.io/2019/03/02/dqn/nature_dqn.png">
-<meta property="og:updated_time" content="2019-05-29T07:03:49.761Z">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/03/02/dqn/nature-dqn.png">
+<meta property="og:updated_time" content="2019-05-29T08:43:16.406Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="DQN">
 <meta name="twitter:description" content="Playing Atari with Deep Reinforcement Learning 概述 用一个CNN表示值函数，直接从高维的输入中学习控制策略。用Q-learning的变种来训练这个CNN。网络的输入是原始的图片，输出是这个图片对应的state可能采取的action的action value。 Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一">
-<meta name="twitter:image" content="http://mxxhcm.github.io/2019/03/02/dqn/nature_dqn.png">
+<meta name="twitter:image" content="http://mxxhcm.github.io/2019/03/02/dqn/nature-dqn.png">
 
 
 
@@ -390,7 +390,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-29 15:03:49" itemprop="dateModified" datetime="2019-05-29T15:03:49+08:00">2019-05-29</time>
+                <time title="修改时间：2019-05-29 16:43:16" itemprop="dateModified" datetime="2019-05-29T16:43:16+08:00">2019-05-29</time>
               
             
           </span>
@@ -470,9 +470,9 @@ Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一�
 <li>agent的目标是通过采取action和env交互最大化累计reward。定义$t$时刻的回报return为$R_t = \sum^T_{t’=t}\gamma^{t’-t}r_{t’}$，其中$\gamma$是折扣因子，$T$是游戏终止的时间步。</li>
 <li>定义最优的动作值函数$Q^{*}(s,a)$是遵循最优策略在状态$s$处采取动作$a$能获得的最大的期望回报，$Q^{*(s,a)} = max_{\pi}E[R_t|s_t=s,a_t=a,\pi]$。</li>
 <li>最优的动作值函数遵循Bellman optimal equation。如果在下个时间步的状态$s’$处，对于所有可能的$a’$，$Q^{*}(s’,a’)$的最优值是已知的（这里就是对于每一个$a’$，都会有一个最优的$Q(s’,a’)$，最优的策略就是选择最大化$r+Q^{*}(s’,a’)$的动作$a’$：<br>
-$$Q^{<em>}(s,a) = E_{s\sim E}[r+ \gamma max_{a’} Q^{</em>}(s’,a’)|s,a]$$<br>
+$$Q^{*}(s,a) = E_{s\sim E}[r+ \gamma max_{a’} Q^{*}(s’,a’)|s,a]$$<br>
 强化学习的一个思路就是使用Bellman optimal equation更新动作值函数，$Q_{i+1}(s,a) = E[r + \gamma Q_i(s’,a’)|s,a]$，当$i\rightarrow \infty$时，$Q_i \rightarrow Q^{*}$。</li>
-<li>上述例子中的state-action pair是很少的，当有无穷多个的时候，是无法以表格形式计算的。这时候可以采用函数来估计动作值函数，$Q(s,a;\theta) \approx Q^{*}(s,a)$。一般来说，通常采用线性函数进行估计，当然可以采用非线性的函数，如神经网络等等。这里采用的是神经网络，用$\theta$表示网络的参数，这个网络叫做Q网络，Q网络通过最小化下列loss进行训练：<br>
+<li>上述例子是state-action pair很少的情况，当有无穷多个的时候，是无法精确计算的。这时候可以采用函数来估计动作值函数，$Q(s,a;\theta) \approx Q^{*}(s,a)$。一般来说，通常采用线性函数进行估计，当然可以采用非线性的函数，如神经网络等等。这里采用的是神经网络，用$\theta$表示网络的参数，这个网络叫做Q网络，Q网络通过最小化下列loss进行训练：<br>
 $$L_i(\theta_i) = E_{s,a\sim \rho(\cdot)}\left[(y_i - Q(s,a;\theta_i))^2\right]$$<br>
 其中$y_i = E_{s’\sim E}[r+\gamma max_{a’}Q(s’,a’;\theta_{i-1})]$是第$i$次迭代的target值，其中$\rho(s,a)$是$(s,a)$服从的概率分布。</li>
 <li>注意在优化$L_i(\theta_i)$时，上一次迭代的$\theta_{i-1}$是不变的，target取决于网络参数，和监督学习作对比，监督学习的target和网络参数无关。</li>
@@ -485,7 +485,7 @@ $$\nabla_{\theta_i}L_i(\theta_i) = E_{s,a~\rho(\cdot),s’\sim E}\left[(r+\gamma
 <blockquote>
 <p>On-policy methods attempt to evaluate or improve the policy that is used to make decisions, whereas  off-policy methods evaluate or improve a policy different from that used to generate the data.</p>
 </blockquote>
-<p>Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour policy是否相同。其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，评估用的策略（贪心策略）和行为策略（$\epsilon$-策略）是不同的。</p>
+<p>Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour policy是否相同。其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，target policy（greedy）和behaviour policy（$\epsilon$-greedy）是不同的。</p>
 <h4 id="创新和技巧">创新和技巧</h4>
 <ol>
 <li>DQN使用了experience replay，将多个episodes中的经验存储到一个大小为$N$的replay buffer中。在更新$Q$值的时候，从replay buffer中进行采样更新。behaviour policy是$\epsilon$-greedy策略，保持探索。target policy是$\epsilon$ greedy 算法，因为replay buffer中存放的都是behaviour policy生成的experience，所以是off-policy算法。<br>
@@ -511,7 +511,7 @@ $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preproce
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Store transition $(\phi_t, a_t, r_t, \phi_{t+1})$ in D<br>
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Sample random minibatch of transitions $(\phi_j, a_j, r_j, \phi_{j+1})$ from D<br>
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $y_j = \begin{cases}r_j&amp;\ \ \ \ for\ terminal\ \phi_{j+1}\\r_j+\gamma max_{a’}Q(\phi_{j+1},a’|\theta)&amp;\ \ \ \ for\ non-terminal\ \phi_{j+1}\end{cases}$<br>
-$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j; θ))^2$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j|θ))^2$<br>
 $\ \ \ \ \ \ \ \ $end for<br>
 end for</p>
 <h3 id="实验">实验</h3>
@@ -561,7 +561,7 @@ We address these instabilities with a novel variant of Q-learning, which uses tw
 </blockquote>
 <h3 id="框架">框架</h3>
 <p>DNQ的框架如下所示<br>
-<img src="/2019/03/02/dqn/nature_dqn.png" alt="ndqn"></p>
+<img src="/2019/03/02/dqn/nature-dqn.png" alt="ndqn"></p>
 <h3 id="伪代码-v2">伪代码</h3>
 <p>Algorithm 2 deep Q-learning with experience replay, target network<br>
 Initialize replay memory D to capacity N<br>
@@ -577,11 +577,29 @@ $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preproce
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Store transition $(\phi_t, a_t, r_t, \phi_{t+1})$ in D<br>
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Sample random minibatch of transitions $(\phi_j, a_j, r_j, \phi_{j+1})$ from D<br>
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $y_j = \begin{cases}r_j&amp;\ \ \ \ for\ terminal\ \phi_{j+1}\\r_j+\gamma max_{a’}Q(\phi_{j+1},a’|\theta^{-})&amp;\ \ \ \ for\ non-terminal\ \phi_{j+1}\end{cases}$<br>
-$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j; θ))^2$ with respect to the network parameters $\theta$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j|θ))^2$ with respect to the network parameters $\theta$<br>
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Every $C$ steps reset $\hat{Q} = Q$<br>
 $\ \ \ \ \ \ \ \ $end for<br>
 end for</p>
 <h2 id="double-dqn">Double DQN</h2>
+<h3 id="目的">目的</h3>
+<p>解决overestimate问题，Q-learning中在estimated values上进行了max操作，可能会导致某些更偏爱overestimated value而不是underestimated values。<br>
+本文将Double Q-learning的想法推广到了dqn上形成了double-dqn。实验结果表明了overestimated value对于policy有影响，double 会产生好的action value，同时在一些游戏上会得到更高的scores。</p>
+<h3 id="contributions">Contributions</h3>
+<ol>
+<li>解释了在large scale 问题上，Q-learning被overoptimistic的原因是学习固有的estimation errors。</li>
+<li>overestimation在实践中是很常见，也很严重的。</li>
+<li>Double Q-learning可以减少overoptimism</li>
+<li>提出了double-dqn。</li>
+<li>double-dqn在某些游戏上可以找到更好的policy。</li>
+</ol>
+<h3 id="double-q-learning">Double Q-learning</h3>
+<p>Q-learning算法计算target value $y$的公式如下：<br>
+$$y = r + \gamma max_a’ Q(s’, a’|\theta_t)$$<br>
+在计算target value的时候，使用同一个网络选择和评估action $a’$，这可能会让网络选择一个overestimated values，最后得到一个overoptimistic value estimates。所有就有了double Q-learning，计算公式如下：<br>
+$$y = r + \gamma Q(s’, argmax_a’ Q(s’,a;\theta_t);\theta’_t)$$<br>
+原有的公式可以写成下式<br>
+$$y = r + \gamma Q(s’, argmax_a’ Q(s’,a;\theta_t);\theta_t)$$</p>
 <h2 id="prioritized-ddqn">Prioritized DDQN</h2>
 <h2 id="dueling-dqn">Dueling DQN</h2>
 <h2 id="distributed-dqn">Distributed DQN</h2>
@@ -1056,7 +1074,7 @@ end for</p>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#playing-atari-with-deep-reinforcement-learning"><span class="nav-number">1.</span> <span class="nav-text">Playing Atari with Deep Reinforcement Learning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#需要解决的问题"><span class="nav-number">1.2.</span> <span class="nav-text">需要解决的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方案"><span class="nav-number">1.3.</span> <span class="nav-text">解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">1.3.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创新和技巧"><span class="nav-number">1.3.2.</span> <span class="nav-text">创新和技巧</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#伪代码"><span class="nav-number">1.4.</span> <span class="nav-text">伪代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实验"><span class="nav-number">1.5.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#datasets"><span class="nav-number">1.5.1.</span> <span class="nav-text">Datasets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#settings"><span class="nav-number">1.5.2.</span> <span class="nav-text">Settings</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#metrics"><span class="nav-number">1.5.3.</span> <span class="nav-text">Metrics</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#average-reward"><span class="nav-number">1.5.3.1.</span> <span class="nav-text">average reward</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#action-value-function"><span class="nav-number">1.5.3.2.</span> <span class="nav-text">action value function</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#baselines"><span class="nav-number">1.5.4.</span> <span class="nav-text">Baselines</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码"><span class="nav-number">1.6.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nature-dqn"><span class="nav-number">2.</span> <span class="nav-text">Nature DQN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#非线性拟合函数不收敛的原因"><span class="nav-number">2.1.</span> <span class="nav-text">非线性拟合函数不收敛的原因</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#nature-dqn改进"><span class="nav-number">2.2.</span> <span class="nav-text">Nature DQN改进</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#框架"><span class="nav-number">2.3.</span> <span class="nav-text">框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#伪代码-v2"><span class="nav-number">2.4.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#double-dqn"><span class="nav-number">3.</span> <span class="nav-text">Double DQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#prioritized-ddqn"><span class="nav-number">4.</span> <span class="nav-text">Prioritized DDQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dueling-dqn"><span class="nav-number">5.</span> <span class="nav-text">Dueling DQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#distributed-dqn"><span class="nav-number">6.</span> <span class="nav-text">Distributed DQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#noisy-dqn"><span class="nav-number">7.</span> <span class="nav-text">Noisy DQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rainbow"><span class="nav-number">8.</span> <span class="nav-text">Rainbow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#playing-atari-with-deep-reinforcement-learning"><span class="nav-number">1.</span> <span class="nav-text">Playing Atari with Deep Reinforcement Learning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#需要解决的问题"><span class="nav-number">1.2.</span> <span class="nav-text">需要解决的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方案"><span class="nav-number">1.3.</span> <span class="nav-text">解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">1.3.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创新和技巧"><span class="nav-number">1.3.2.</span> <span class="nav-text">创新和技巧</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#伪代码"><span class="nav-number">1.4.</span> <span class="nav-text">伪代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实验"><span class="nav-number">1.5.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#datasets"><span class="nav-number">1.5.1.</span> <span class="nav-text">Datasets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#settings"><span class="nav-number">1.5.2.</span> <span class="nav-text">Settings</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#metrics"><span class="nav-number">1.5.3.</span> <span class="nav-text">Metrics</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#average-reward"><span class="nav-number">1.5.3.1.</span> <span class="nav-text">average reward</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#action-value-function"><span class="nav-number">1.5.3.2.</span> <span class="nav-text">action value function</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#baselines"><span class="nav-number">1.5.4.</span> <span class="nav-text">Baselines</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码"><span class="nav-number">1.6.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nature-dqn"><span class="nav-number">2.</span> <span class="nav-text">Nature DQN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#非线性拟合函数不收敛的原因"><span class="nav-number">2.1.</span> <span class="nav-text">非线性拟合函数不收敛的原因</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#nature-dqn改进"><span class="nav-number">2.2.</span> <span class="nav-text">Nature DQN改进</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#框架"><span class="nav-number">2.3.</span> <span class="nav-text">框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#伪代码-v2"><span class="nav-number">2.4.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#double-dqn"><span class="nav-number">3.</span> <span class="nav-text">Double DQN</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#目的"><span class="nav-number">3.1.</span> <span class="nav-text">目的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#contributions"><span class="nav-number">3.2.</span> <span class="nav-text">Contributions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#double-q-learning"><span class="nav-number">3.3.</span> <span class="nav-text">Double Q-learning</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#prioritized-ddqn"><span class="nav-number">4.</span> <span class="nav-text">Prioritized DDQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dueling-dqn"><span class="nav-number">5.</span> <span class="nav-text">Dueling DQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#distributed-dqn"><span class="nav-number">6.</span> <span class="nav-text">Distributed DQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#noisy-dqn"><span class="nav-number">7.</span> <span class="nav-text">Noisy DQN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rainbow"><span class="nav-number">8.</span> <span class="nav-text">Rainbow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
