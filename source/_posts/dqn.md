@@ -167,10 +167,34 @@ $$$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta\^{-}\_t)$$
 [TODO]
 [TO DO]
 
+### 实验
+提出了一个指标，normalized score，计算公式如下：
+$$score\_{normalized} = \frac{score\_{agent}- score\_{random}}{score\_{human}-score\_{random}}$$
+分母是human和random之差，对应$100%$。
+
 ## Prioritized DDQN
 
-### 目的
-提出一种proritizing experience的框架，重要的transtions replay更多次，学习的更有效率。
+### contributions
+本文提出一种了proritizing experience的框架，在训练过程中多次使用重要的transtions replay进行更新，让训练变得的更有效率。
+使用TD-errors作为prioritization mechanism，确定使用哪些examples进行训练。
+
+### Prioritized replay
+可以从两个维度上考虑replay memeory的改进，一个是存哪些experiences，一个是使用哪些experiences进行回放。本文是从第二个方向上进行的考虑。
+
+#### Rank-based prioritization
+
+#### Proportional prioritization
+
+### 实验
+两组实验，
+一组是DQN和proportional prioritization作比较。
+一组是tuned Double DQN和rank-based以及proportional prioritizaiton。
+
+#### Metrics
+用的是double dqn提出来的nomalized score，这里在分母上加了绝对值。
+主要用的median scores和mean scores。
+
+
 ## Dueling DQN
 
 ## Distributed DQN

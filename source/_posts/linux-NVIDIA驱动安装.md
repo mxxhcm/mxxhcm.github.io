@@ -36,7 +36,7 @@ sudo reboot
 
 ## 方法3.apt安装
 ### 添加apt源
-~$:sudo add-apt-repository ppa:graphicsw-drivers/ppa
+~$:sudo add-apt-repository ppa:graphics-drivers/ppa
 ~$:sudo apt update
 
 ### apt安装
