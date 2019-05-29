@@ -37,8 +37,9 @@ $$L_i(\theta_i) = E_{s,a\sim \rho(\cdot)}\left[(y_i - Q(s,a;\theta_i))\^2\right]
 8. 对Loss函数进行求导，得到下列的gradient信息：
 $$\nabla_{\theta_i}L_i(\theta_i) = E_{s,a\~\rho(\cdot),s'\sim E}\left[(r+\gamma max_{a'}Q(s',a';\theta_{i-1})-Q(s,a;\theta_i))\nabla_{\theta_i}Q(s,a;\theta_i)\right]$$
 通过SGD优化loss函数。如果权重是每隔几个timestep进行更新，并且用从分布$\rho$和环境$E$中采样得到的样本取代期望，就可以得到熟悉的Q-learning算法[2]。(这个具体为什么是这样，我也不清楚，可以看参考文献2)
-9. dqn是Model-Free模型，它直接从环境$E$中采样，并没有显式的对环境进行建模。
-10. dqn是一个off-policy算法，target policy 是greedy policy，behaviour policy是$\epsilon$ greedy policy，target policy和greedy policy策略不同。
+9. dqn是Model-Free的，它直接从环境$E$中采样，并没有显式的对环境进行建模。
+10. dqn是一个online的方法，即训练数据不断增加。offline是训练数据固定。
+11. dqn是一个off-policy算法，target policy 是greedy policy，behaviour policy是$\epsilon$ greedy policy，target policy和greedy policy策略不同。
 > On-policy methods attempt to evaluate or improve the policy that is used to make decisions, whereas  off-policy methods evaluate or improve a policy different from that used to generate the data.
 
 Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour policy是否相同。其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，target policy（greedy）和behaviour policy（$\epsilon$-greedy）是不同的。
@@ -151,14 +152,31 @@ Q-learning算法计算target value $y$的公式如下：
 $$y = r + \gamma max_a' Q(s', a'|\theta_t)$$
 在计算target value的时候，使用同一个网络选择和评估action $a'$，这可能会让网络选择一个overestimated values，最后得到一个overoptimistic value estimates。所有就有了double Q-learning，计算公式如下：
 $$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta'\_t)$$
-原有的公式可以写成下式
+target policy还是greedy policy，通过使用$\theta$对应的网络选择action，然后在计算target value的时候使用$\theta'$对应的网络。
+原有的公式可以写成下式，
 $$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta_t)$$
+即选择action和计算target value都是使用的同一个网络。
+
+### Double dqn
+Double Q-learnign的做法是分解target action中的max opearation为选择和evaluation。而在Nature-dqn中，提出了target network，所以分别使用network和target network去选择和evaluation action是一个很好的做法，这样子公式就变成了
+$$$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta\^{-}\_t)$$
+和Q-learnign相比，将$\theta'$换成了$\theta\^{-}$ evaluate action，target network的更新和nature-dqn一样，过一段时间复制network的参数。
+
+### Double Q learning vs Q-learning
+可以在数学上证明，Q-learning是overestimation的，但是double q leraing是无偏的。。。证明留待以后再说。
+[TODO]
+[TO DO]
 
 ## Prioritized DDQN
 
+### 目的
+提出一种proritizing experience的框架，重要的transtions replay更多次，学习的更有效率。
 ## Dueling DQN
+
 ## Distributed DQN
+
 ## Noisy DQN
+
 ## Rainbow
 
 ## 参考文献
