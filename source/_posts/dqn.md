@@ -28,9 +28,9 @@ Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一�
 3. agent的目标是通过采取action和env交互最大化累计reward。定义$t$时刻的回报return为$R_t = \sum\^T_{t'=t}\gamma\^{t'-t}r_{t'}$，其中$\gamma$是折扣因子，$T$是游戏终止的时间步。
 4. 定义最优的动作值函数$Q\^{\*}(s,a)$是遵循最优策略在状态$s$处采取动作$a$能获得的最大的期望回报，$Q\^{\*(s,a)} = max_{\pi}E[R_t|s_t=s,a_t=a,\pi]$。
 5. 最优的动作值函数遵循Bellman optimal equation。如果在下个时间步的状态$s'$处，对于所有可能的$a'$，$Q\^{\*}(s',a')$的最优值是已知的（这里就是对于每一个$a'$，都会有一个最优的$Q(s',a')$，最优的策略就是选择最大化$r+Q\^{\*}(s',a')$的动作$a'$：
-$$Q\^{*}(s,a) = E_{s\sim E}[r+ \gamma max_{a'} Q\^{*}(s',a')|s,a]$$
+$$Q\^{\*}(s,a) = E_{s\sim E}[r+ \gamma max_{a'} Q\^{\*}(s',a')|s,a]$$
 强化学习的一个思路就是使用Bellman optimal equation更新动作值函数，$Q_{i+1}(s,a) = E[r + \gamma Q_i(s',a')|s,a]$，当$i\rightarrow \infty$时，$Q_i \rightarrow Q\^{\*}$。
-6. 上述例子中的state-action pair是很少的，当有无穷多个的时候，是无法以表格形式计算的。这时候可以采用函数来估计动作值函数，$Q(s,a;\theta) \approx Q\^{\*}(s,a)$。一般来说，通常采用线性函数进行估计，当然可以采用非线性的函数，如神经网络等等。这里采用的是神经网络，用$\theta$表示网络的参数，这个网络叫做Q网络，Q网络通过最小化下列loss进行训练：
+6. 上述例子是state-action pair很少的情况，当有无穷多个的时候，是无法精确计算的。这时候可以采用函数来估计动作值函数，$Q(s,a;\theta) \approx Q\^{\*}(s,a)$。一般来说，通常采用线性函数进行估计，当然可以采用非线性的函数，如神经网络等等。这里采用的是神经网络，用$\theta$表示网络的参数，这个网络叫做Q网络，Q网络通过最小化下列loss进行训练：
 $$L_i(\theta_i) = E_{s,a\sim \rho(\cdot)}\left[(y_i - Q(s,a;\theta_i))\^2\right]$$
 其中$y_i = E_{s'\sim E}[r+\gamma max_{a'}Q(s',a';\theta\_{i-1})]$是第$i$次迭代的target值，其中$\rho(s,a)$是$(s,a)$服从的概率分布。
 7. 注意在优化$L_i(\theta_i)$时，上一次迭代的$\theta\_{i-1}$是不变的，target取决于网络参数，和监督学习作对比，监督学习的target和网络参数无关。
@@ -41,7 +41,7 @@ $$\nabla_{\theta_i}L_i(\theta_i) = E_{s,a\~\rho(\cdot),s'\sim E}\left[(r+\gamma 
 10. dqn是一个off-policy算法，target policy 是greedy policy，behaviour policy是$\epsilon$ greedy policy，target policy和greedy policy策略不同。
 > On-policy methods attempt to evaluate or improve the policy that is used to make decisions, whereas  off-policy methods evaluate or improve a policy different from that used to generate the data.
 
-Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour policy是否相同。其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，评估用的策略（贪心策略）和行为策略（$\epsilon$-策略）是不同的。
+Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour policy是否相同。其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，target policy（greedy）和behaviour policy（$\epsilon$-greedy）是不同的。
 
 #### 创新和技巧
 1. DQN使用了experience replay，将多个episodes中的经验存储到一个大小为$N$的replay buffer中。在更新$Q$值的时候，从replay buffer中进行采样更新。behaviour policy是$\epsilon$-greedy策略，保持探索。target policy是$\epsilon$ greedy 算法，因为replay buffer中存放的都是behaviour policy生成的experience，所以是off-policy算法。
@@ -67,7 +67,7 @@ $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preproce
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Store transition $(\phi_t, a_t, r_t, \phi_{t+1})$ in D
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Sample random minibatch of transitions $(\phi_j, a_j, r_j, \phi_{j+1})$ from D
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $y_j = \begin{cases}r_j&\ \ \ \ for\ terminal\ \phi_{j+1}\\\\r_j+\gamma max_{a'}Q(\phi_{j+1},a'|\theta)&\ \ \ \ for\ non-terminal\ \phi_{j+1}\end{cases}$
-$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j; θ))\^2$
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j|θ))\^2$
 $\ \ \ \ \ \ \ \ $end for
 end for
 
@@ -113,7 +113,7 @@ https://github.com/devsisters/DQN-tensorflow
 
 ### 框架
 DNQ的框架如下所示
-![ndqn](nature_dqn.png)
+![ndqn](nature-dqn.png)
 
 ### 伪代码
 Algorithm 2 deep Q-learning with experience replay, target network
@@ -130,13 +130,32 @@ $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preproce
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Store transition $(\phi_t, a_t, r_t, \phi_{t+1})$ in D
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Sample random minibatch of transitions $(\phi_j, a_j, r_j, \phi_{j+1})$ from D
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $y_j = \begin{cases}r_j&\ \ \ \ for\ terminal\ \phi_{j+1}\\\\r_j+\gamma max_{a'}Q(\phi_{j+1},a'|\theta\^{-})&\ \ \ \ for\ non-terminal\ \phi_{j+1}\end{cases}$
-$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j; θ))\^2$ with respect to the network parameters $\theta$
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j|θ))\^2$ with respect to the network parameters $\theta$
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Every $C$ steps reset $\hat{Q} = Q$
 $\ \ \ \ \ \ \ \ $end for
 end for
 
 ## Double DQN
+### 目的
+解决overestimate问题，Q-learning中在estimated values上进行了max操作，可能会导致某些更偏爱overestimated value而不是underestimated values。
+本文将Double Q-learning的想法推广到了dqn上形成了double-dqn。实验结果表明了overestimated value对于policy有影响，double 会产生好的action value，同时在一些游戏上会得到更高的scores。
+### Contributions
+1. 解释了在large scale 问题上，Q-learning被overoptimistic的原因是学习固有的estimation errors。
+2. overestimation在实践中是很常见，也很严重的。
+3. Double Q-learning可以减少overoptimism
+4. 提出了double-dqn。
+5. double-dqn在某些游戏上可以找到更好的policy。
+
+### Double Q-learning
+Q-learning算法计算target value $y$的公式如下：
+$$y = r + \gamma max_a' Q(s', a'|\theta_t)$$
+在计算target value的时候，使用同一个网络选择和评估action $a'$，这可能会让网络选择一个overestimated values，最后得到一个overoptimistic value estimates。所有就有了double Q-learning，计算公式如下：
+$$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta'\_t)$$
+原有的公式可以写成下式
+$$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta_t)$$
+
 ## Prioritized DDQN
+
 ## Dueling DQN
 ## Distributed DQN
 ## Noisy DQN
