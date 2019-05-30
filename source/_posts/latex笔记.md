@@ -105,6 +105,7 @@ $\succ$ \succ
 $\succeq$ \succeq
 $\prec$ \prec
 $\preceq$ \preceq
+空集$\emptyset$ \emptyset
 
 ### 谓词逻辑
 否定$\neg$ \neg
