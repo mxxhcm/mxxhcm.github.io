@@ -12,7 +12,7 @@ mathjax: true
 
 ## Playing Atari with Deep Reinforcement Learning
 ### 概述
-用一个CNN表示值函数，直接从高维的输入中学习控制策略。用Q-learning的变种来训练这个CNN。网络的输入是原始的图片，输出是这个图片对应的state可能采取的action的action value。
+用一个CNN表示值函数，直接从高维的输入中学习控制策略。用Q-learning的变种来训练这个CNN。网络的输入是原始的图片，输出是图片对应的state可能采取的action的$Q$值。
 Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一个图像输入(210 x 160 RGB视频60Hz)。本文的目标是设计一个NN架构尽可能学会更多游戏，网络的输入只有视频信息，reward和terminal信号以及可能采取的action，和人类玩家得到的信息是一模一样的，当然是计算机能看得懂的信号。
 
 ### 需要解决的问题
@@ -25,7 +25,7 @@ Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一�
 #### 背景
 1. agent与Atari模拟器不断交互，agent不能观测到模拟器的内部状态，只能得到当前屏幕信息的一个图片。这个task可以认为是部分可观测的，因为仅仅从当前的屏幕图像$x_t$上是不能完全理解整个游戏状况的。所有的序列都认为在有限步骤内是会结束的。
 2. 注意agent当前的得分取决于整个sequence的action和observation。一个action的feedback可能等到好几千个timesteps之后才能得到。
-3. agent的目标是通过采取action和env交互最大化累计reward。定义$t$时刻的回报return为$R_t = \sum\^T_{t'=t}\gamma\^{t'-t}r_{t'}$，其中$\gamma$是折扣因子，$T$是游戏终止的时间步。
+3. agent的目标是通过采取action和env交互最大化累计reward。定义$t$时刻的回报return为$R_t = \sum\^T\_{t'=t} \gamma\^{t'-t}r\_{t'}$，其中$\gamma$是折扣因子，$T$是游戏终止的时间步。
 4. 定义最优的动作值函数$Q\^{\*}(s,a)$是遵循最优策略在状态$s$处采取动作$a$能获得的最大的期望回报，$Q\^{\*(s,a)} = max_{\pi}E[R_t|s_t=s,a_t=a,\pi]$。
 5. 最优的动作值函数遵循Bellman optimal equation。如果在下个时间步的状态$s'$处，对于所有可能的$a'$，$Q\^{\*}(s',a')$的最优值是已知的（这里就是对于每一个$a'$，都会有一个最优的$Q(s',a')$，最优的策略就是选择最大化$r+Q\^{\*}(s',a')$的动作$a'$：
 $$Q\^{\*}(s,a) = E_{s\sim E}[r+ \gamma max_{a'} Q\^{\*}(s',a')|s,a], \tag{1}$$
@@ -35,7 +35,7 @@ $$L_i(\theta_i) = E_{s,a\sim \rho(\cdot)}\left[(y_i - Q(s,a;\theta_i))\^2\right]
 其中$y_i = E_{s'\sim E}[r+\gamma max_{a'}Q(s',a';\theta\_{i-1})]$是第$i$次迭代的target值，其中$\rho(s,a)$是$(s,a)$服从的概率分布。
 7. 注意在优化$L_i(\theta_i)$时，上一次迭代的$\theta\_{i-1}$是不变的，target取决于网络参数，和监督学习作对比，监督学习的target和网络参数无关。
 8. 对Loss函数进行求导，得到下列的gradient信息：
-$$\nabla_{\theta_i}L_i(\theta_i) = E_{s,a\~\rho(\cdot),s'\sim E}\left[(r+\gamma max_{a'}Q(s',a';\theta_{i-1})-Q(s,a;\theta_i))\nabla_{\theta_i}Q(s,a;\theta_i)\right]\tag{3}$$
+$$\nabla_{\theta_i}L_i(\theta_i) = E_{s,a\sim \rho(\cdot),s'\sim E}\left[(r+\gamma max_{a'}Q(s',a';\theta_{i-1})-Q(s,a;\theta_i))\nabla_{\theta_i}Q(s,a;\theta_i)\right]\tag{3}$$
 通过SGD优化loss函数。如果权重是每隔几个timestep进行更新，并且用从分布$\rho$和环境$E$中采样得到的样本取代期望，就可以得到熟悉的Q-learning算法[2]。(这个具体为什么是这样，我也不清楚，可以看参考文献2)
 9. dqn是Model-Free的，它直接从环境$E$中采样，并没有显式的对环境进行建模。
 10. dqn是一个online的方法，即训练数据不断增加。offline是训练数据固定。
@@ -55,7 +55,7 @@ Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour polic
 7. DQN是不收敛的。
 
 ### 伪代码
-Algorithm 1 Deep Q-learning with Experience Replay
+算法 1 Deep Q-learning with Experience Replay
 Initialize replay memory D to capacity N
 Initialize action-value function Q with random weights
 for episode = $1, M$ do
@@ -172,23 +172,22 @@ $$$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta\^{-}\_t)\tag{7}$$
 算法 3: Double DQN Algorithm.
 输入: replay buffer $D$, 初始network参数$\theta$,target network参数$\theta\^{-}$ 
 输入 : replay buffer的大小$N_r$, batch size $N_b$, target network更新频率$N\^{-}$
-for episode $e \in \{1, 2,\cdots, M\} do
-$\qquad$初始化frame sequence $\bold{x} \leftarrow ()$
+for episode $e \in \{1, 2,\cdots, M\}$ do
+$\qquad$初始化frame sequence $\mathbf{x} \leftarrow ()$
 $\qquad$for $t \in \{0, 1, \cdots\}$ do
-$\qquad\qquad$设置state $s \leftarrow \bold{x}$, 采样 action $a \~\pi_B$
-$\qquad\qquad$给定$(s, a)$，从环境$E$中采样接下来的frame $x_t$,接收reward $r$,在序列$\bold{x}$上拼接$x$
-$\qquad\qquad$if $|\bold{x}| \gt N_f$
-$\qquad\qquad$从$\bold{x}$中删除最老的frame $x\_{t_min}$
-$\qquad\qquad$设置$s' \leftarrow \bold{x}$,添加transition tuple (s, a, r, s 0 ) 到buffer D中，如果$|D| \ge N_r$替换最老的tuple 
-$\qqua\qquadd$采样$N_b$个tuples $(s, a, r, s') \~ Unif(D)$
+$\qquad\qquad$设置state $s \leftarrow \mathbf{x}$, 采样 action $a \sim\pi_B$
+$\qquad\qquad$给定$(s, a)$，从环境$E$中采样接下来的frame $x_t$,接收reward $r$,在序列$\mathbf{x}$上拼接$x$
+$\qquad\qquad$if $|\mathbf{x}| \gt N_f$
+$\qquad\qquad$从$\mathbf{x}$中删除最老的frame $x\_{t_min}$
+$\qquad\qquad$设置$s' \leftarrow \mathbf{x}$,添加transition tuple (s, a, r, s 0 ) 到buffer D中，如果$|D| \ge N_r$替换最老的tuple 
+$\qquad\qquad$采样$N_b$个tuples $(s, a, r, s') \sim Unif(D)$
 $\qquad\qquad$计算target values, one for each of $N_b$ tuples:
 $\qquad\qquad$定义$a\^{max}(s'; \theta) = arg max\_{a'} 0 Q(s', a';\theta)$
-$\qqua\qquadd$y_j = \begin{cases}r\qquad if s' is terminal\\\\ r+\gammaQ(s', a\^{max}(s';\theta);\theta\^{-}, \qquad otherwise\end{cases}
+$\qquad\qquad y_j = \begin{cases}r\qquad if s' is terminal\\\\ r+\gamma Q(s', a\^{max}(s';\theta);\theta\^{-}, \qquad otherwise\end{cases}$
 $\qquad\qquad$利用loss function$||y_j − Q(s, a; \theta)||^2$的梯度更新
 $\qquad\qquad$每隔$N\^{-}$个步骤更新一下target network 参数$\theta\^{-}$
 $\qquad$end
 end
-
 
 ### 实验
 提出了一个指标，normalized score，计算公式如下：
@@ -214,7 +213,7 @@ prioritized replay最重要的部分是如何评价每一个transition的重要�
 #### Stochastic prioritization
 上述方法有很多问题。第一，每次都sweep整个replay memory的计算量很大，所以只有被replayed的experiences的TD-errors才会被更新。开始时一个TD error很小的transition可能很长一段事件不会被replayed，这就导致了replay buffer的sliding window不起作用了。第二，TD-error对于noise spike很敏感，还会被bootstrap加剧，估计误差可能会是另一个noise。第三，greedy prioritization集中在experiences的一个subset：errors减小的很慢，尤其是使用function appriximation时，这就意味着初始的高error的transitions会被replayed的很频繁，然后会over-fitting因为缺乏diversity。
 为了解决这些问题，引入了一个介于pure greedy prioritizaiton以及uniform random sampling之间的stochastic采样方法，priority高的transition有更大的概率被采样，而lowest-priority的transition也有概率被选中，具体的定义transition $i$的概率如下：
-$$P(i) = \frac{p_i^{\alpha}}{\sum_kp_k^{\alpha}}\tag{9}$$
+$$P(i) = \frac{p_i\^{\alpha}}{\sum_kp_k\^{\alpha}}\tag{9}$$
 $\alpha$确定prioritizaiton的比重，如果$\alpha=0$就是unifrom。
 
 有两种$p_i$的计算方法，一种是直接的proportional prioritization，$p_i = |\delta_i| + \epsilon$，其中$\epsilon$是一个小的正整数，确定当$p_i=0$时，该transition仍能被replay；第二种是间接的，$p_i = \frac{1}{rank(i)}$，其中$rank(i)$是所有replay memory中的experiences根据$|\delta_i|$排序后的rank。第二种方法的鲁棒性更好。
@@ -228,25 +227,25 @@ $$w_i = (\frac{1}{N}\cdot \frac{1}{P(i)})\^{\beta}\tag{10}$$
 OK,这里IS的作用有些不明白。。。。<TODO>
 
 ### 伪代码
-算法4
+算法 4
 输入: minibatch $k$, 学习率（步长）$\eta$, replay period $K$ and size $N$ , exponents $\alpha$ and $\beta$, budget $T$.
-初始化replay memory $H = \empty, \Delta = 0, p_1 = 1$
-根据$S_0$选择 $A_0 \~ \pi\_{\theta|(S_0)$
-for t = 1 to T do
+初始化replay memory $H = \emptyset, \Delta = 0, p_1 = 1$
+根据$S_0$选择 $A_0 \sim \pi\_{\theta}|(S_0)$
+for $t = 1,\cdots, T$ do
 $\qquad$观测$S_t, R_t, \gamma_t$
-$\qquad$存储transition $(S\_{t−1}, A\_{t−1}, R_t , \gamma_t, S_t) 到replay memory，以及$p_t$的最大priority $p_t = max {i\lt t} p_i$
+$\qquad$存储transition $(S\_{t−1}, A\_{t−1}, R_t , \gamma_t, S_t)$ 到replay memory，以及$p_t$的最大priority $p_t = max {i\lt t} p_i$
 $\qquad$if $t ≡ 0$ mod $K$ then
 $\qquad\qquad$for j = 1 to k do
-$\qquad\qquad\qquad$Sample transition $j \~ P(j) = \frac{p_j^{\alpha}}{\sum_i p_i^{\alpha}}$
-$\qquad\qquad\qquad$计算importance-sampling weight $w_j = \frac{(N \cdot P(j))\^{\beta}}{max_i w_i}
+$\qquad\qquad\qquad$Sample transition $j \sim P(j) = \frac{p_j^{\alpha}}{\sum_i p_i^{\alpha}}$
+$\qquad\qquad\qquad$计算importance-sampling weight $w_j = \frac{(N \cdot P(j))\^{\beta}}{max_i w_i}$
 $\qquad\qquad\qquad$计算TD-error $\delta_j = R_j + \gamma_j Q\_{target} (S_j , arg max_a Q(S_j, a)) − Q(S\_{j−1} , A\ {j−1})
 $\qquad\qquad\qquad$更新transition的priority $p_j \leftarrow |\delta_j|
 累计weight-change $\Delta \left \Delta + w_j \cdot \delta_j \cdot \nabla\_{\theta} Q(S\_{j−1}, A\_{j−1})$
 $\qquad\qquad$end for
-$\qquad\qquad$更新weights $\theta\leftarrow \theta+ \eta\cdot\Delta, 重置$\Delta = 0$
+$\qquad\qquad$更新weights $\theta\leftarrow \theta+ \eta\cdot\Delta$, 重置$\Delta = 0$
 $\qquad\qquad$每隔一段时间更新target network $\theta\_{target} \leftarrow \theta$
 $\qquad$end if
-$\qquad$选择action $A_t \~ \pi\_{\theta}(S_t )
+$\qquad$选择action $A_t \sim \pi\_{\theta}(S_t)$
 end for
 
 ### 实验
@@ -269,23 +268,30 @@ end for
 ![dueling-dqn](deuling-dqn.png)
 作者给出了一个single Q-network的architecture，如图所示。
 网络结构和nature-dqn一样，但是这里加了两个fully connected layers，一个用于输出$V$，一个用于输出$A$。然后$A$和$V$结合在一起，产生$Q$，网络的输出和nature dqn一样，对应于某个state的一系列action value。
-从$Q$函数的定义$Q\^{\pi}(s,a) = V\^{\pi}(s)+A\^{\pi}(s,a)$以及$Q$和$V$之间的关系$V\^{\pi}(s) = \mathbb{E}\_{a\~\pi(s)}\left[Q\^{\pi}(s,a)\right] = \pi(a|s)Q\^{\pi}(s,a)$，所以有$\mathbb{E}\_{a\~\pi(s)}\left[A\^{\pi}(s,a)\right]=0$。此外，对于deterministic policy，$a\^{\*} = arg max\_{a'\in A}Q(s,a')$，有$V(s) = Q(s,a\^{\*})$，即$A(s,a\^{\*}) = 0$。
+从$Q$函数的定义$Q\^{\pi}(s,a) = V\^{\pi}(s)+A\^{\pi}(s,a)$以及$Q$和$V$之间的关系$V\^{\pi}(s) = \mathbb{E}\_{a\sim\pi(s)}\left[Q\^{\pi}(s,a)\right] = \pi(a|s)Q\^{\pi}(s,a)$，所以有$\mathbb{E}\_{a\sim\pi(s)}\left[A\^{\pi}(s,a)\right]=0$。此外，对于deterministic policy，$a\^{\*} = arg max\_{a'\in A}Q(s,a')$，有$V(s) = Q(s,a\^{\*})$，即$A(s,a\^{\*}) = 0$。
 如图所示的network中，一个网络输出scalar $V(s;\theta, \beta)$，一个网络输出一个$|A|$维的vector $A(s,a;\theta, \alpha)$，其中$\theta$是网络参数，$\alpha$和$\beta$是两个全连接层的参数。
 根据advantage的定义，可以直接将他们加起来，即：
 $$Q(s,a;\theta, \alpha, \beta) = V(s;\theta, \beta) + A(s,a;\theta, \alpha) \tag{11}$$
 但是，我们需要知道的一点是，$Q(s, a;\theta, \alpha, \beta)$仅仅是$Q$的一个参数化估计。它由两部分组成，一部分是$V$，一部分是$A$，但是需要注意的是，这里的$V$和$Q$只是我们叫它$V$和$A$，它的实际意义并不是$V$和$A$。给了$Q$，我们可以得到任意的$Q(s, a) = V(s) + A(s,a)$，而$V$和$Q$并不代表value function和advantage functino。
-为了解决这个问题，作者提出了选择advantage为$0$的action，即：
+为了解决这个问题，作者提出了选择让advantage为$0$的action，即：
 $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alpha)-max\_{a'\in |A|}A(s, a'; \theta, \alpha)\right)\tag{12}$$
 选择$a\^{\*} = arg max\_{a'\in A} Q(s, a'; \theta, \alpha, \beta) = arg max\_{a'\in A}A(s, a';\theta, \alpha)$，我们得到$Q(s,a\^{\*}; \theta, \alpha,\beta) = V(s;\theta, \beta)$。这个时候，输出$V$的网络给出的真的是state value的估计$V(s;\theta, \beta)$，另一个网络真的给出的是advantage的估计。
 另一种方法是用mean取代max操作：
 $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alpha)- \frac{1}{|A|}\sum\_{a'}A(s, a'; \theta, \alpha)\right)\tag{13}$$
-一方面这种方法失去了$V$和$A$的原始语义，因为它们有一个常数的off-target，但是另一方面它增加了优化的稳定性，因为上式中的advantage改变只需要和mean保持一致就行了，而不需要optimal action's advantage一有变化就要改变。
+一方面这种方法失去了$V$和$A$的原始语义，因为它们有一个常数的off-target，但是另一方面它增加了优化的稳定性，因为上式中advantage的改变只需要和mean保持一致即可，不需要optimal action's advantange一有变化就要改变。
 
 ### 伪代码
 
 ## Distributed DQN
 
 ## Noisy DQN
+### 介绍
+已有方法的exploration都是通过agent policy的random nerturbations，比如常见的$\epsilon$等方法。这种方式没有办法找出许多环境中efficient exploration的behavioural patterns。
+已有的方法包含有optimism in the face of uncertainty，这种方法理论上已经证明可行，但是通常应用在small state-action spaces或者linear approximation，很难应用在non linearn FA，而且在这种情况下没有收敛性保证。
+另一种方法是添加intrinsic motivation term，这种方法的问题是将算法的generalisation mechanism和exploration分离开来，instrinsic reward和environment reward，它们的比例如何去设置，需要人工实验。如果不仔细设置，optimal policy可能会被intrinsic reward影响，此外为了增加exploration的鲁邦性扰动项也是需要的。这些算法很具体也能应用在参数化policy上，但是很低效，而且需要很多次policy evaluation。
+本文提出了NoisyNet学习网络参数的perturbations，主要想法是参数的一点改变可能会导致policy在很多个timsteps上的consistent，complex, state-dependent变化，而那些dithering算法如$\epsilon$ greedy算法中，每一步都有不相关的noise添加到policy上。pertubations从一个noise分布中进行采样，它的variance可以看成noise的energy，variance的参数和网络参数一样都是利用loss的梯度进行更新。网络参数中仅仅加入了噪音，没有distribution，并且自动tune。
+在高维度上，本文的算法是一个randomised value function。
+添加noise辅助训练在监督学习等任务中一直都有，但是这些噪音都是不能训练的，而NoisyNet中的噪音是可以梯度下降更新的。
 
 ## Rainbow
 
@@ -298,3 +304,4 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 6.https://www.freecodecamp.org/news/improvements-in-deep-q-learning-dueling-double-dqn-prioritized-experience-replay-and-fixed-58b130cc5682/
 7.https://jaromiru.com/2016/11/07/lets-make-a-dqn-double-learning-and-prioritized-experience-replay/
 8.https://datascience.stackexchange.com/questions/32873/prioritized-replay-what-does-importance-sampling-really-do
+9.https://papers.nips.cc/paper/5249-weighted-importance-sampling-for-off-policy-learning-with-linear-function-approximation.pdf
