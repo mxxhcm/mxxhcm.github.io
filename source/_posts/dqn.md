@@ -294,6 +294,28 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 在高维度上，本文的算法是一个randomised value function，这个函数是neural network，网络的参数并没有加倍，linear 的参数加倍，而参数是noise的一个简单变换。
 还有人添加constant Gaussian niose到网络参数，而文本的算法添加的noise并不是限制在Gaussion noise distributions。添加noise辅助训练在监督学习等任务中一直都有，但是这些噪音都是不能训练的，而NoisyNet中的噪音是可以梯度下降更新的。
 
+### NoisyNets 
+![noisy_linear_layer](noisy_linear_layer.png)
+用$\theta$表示noisy net的参数，输入是$x$，输出是$y$，即$y=f\_{\theta}(x)$。$\theta$定义为$\theta=\mu+\Sigma\odot\varepsilon$，其中$\zeta=(\mu,\Sigma)$表示可以学习的参数，$\varepsilon$表示服从固定分布的均值为$0$的噪音,$\variepsilon$是random variable。$\odot$表示element-wise乘法。最后的loss函数是关于$\varepsilon$的期望：$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，然后优化相应的$\zeta$，$\varepislon$不能被优化，因为它是random variable。
+一个有$p$个输入单元，$q$个输出单元的fully-connected layer表示如下：
+$$y=wx+b \tag{}$$
+其中$w\in \mathbb{R}\^{q\times p}$，$x\in \mathbb{R}\^{p}$,$b\in \mathbb{R}\^{q}$，对应的noisy linear layer定义如下：
+$$y=(\mu^w+\sigma^w\odot\varepsilon^w)x + \mu^b+\sigma^b\odot\varepsilon^b \tag{}$$
+就是用$\mu^w+\sigma^w\odot\varepsilon^w$取代$w$，用$\mu^b+\sigma^b\odot\varepsilon^b$取代$b$。其中$\mu^w,\sigma^w\in \mathbb{R}\^{q\times p} $，而$\mu^b,\sigma^b\in\mathbb{R}\^{q}$是可以学习的参数，而$\varepsilon^w\in \mathbb{R}\^{p\times q},\varepsilon^b \in \mathbb{R}\^{q}$是random variable。
+作者提出了两种添加noise的方式，一种是Independent Gaussian noise，一种是Factorised Gaussion noise。使用Factorised的原因是减少随机变量的计算时间，这些时间对于单线程的任务来说还是很多的。
+#### Independent Gaussian noise
+应用到每一个weight和bias的noise都是independent的，对于$\varepsilon^w$的每一项$\varepsilon\_{i,j}^w$来说，它们的值都是从一个unit Gaussion distribution中采样得到的；$varepsilon^b$同理。所以对于一个$p$个输入,$q$个输出的noisy linear layer总共有$pq+q$个noise 变量。
+
+#### Factorised Gaussian noise
+通过对$\varepsilon\_{i,j}^w$来说，可以将其分解成$p$个$\varepsilon_i$用于$p$个输入和$q$个$\varepsilon_j$用于$q$个输出，总共有$p+q$个noiss变量。每一个$\varepsilon\_{i,j}^w$和$\varepsilon\_{j}^b$可以写成：
+$$\varepsilon\_{i,j}^w = f(\varepsilon_i)f(\varepsilon_j)\tag{}$$
+$$\varepsilon\_{j}^b = f(\varepsilon_j)\tag{}$$
+其中$f$是一个实函数，在第一个式子中$f(x) = sng(x)\sqrt{|x|}$，在第二个式子中可以取$f(x)=x$，这里选择了和第一个式子中一致。
+因为noisy network的loss函数是$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，是关于noise的一个期望，梯度如下：
+$$\nabla\bar{L}(\zeta)=\nabla\mathbb{E}\left[L(\theta)\right]=\mathbb{E}\left[\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon)\right] \tag{}$$
+使用Monte Carlo估计上述梯度，在每一个step采样一个sample进行optimization:
+$$\nabla\bar{L}(\zeta)\approx\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon) \tag{}$$
+
 ### Noisy DQN and dueling
 相对于DQN和dueling DQN来说，noisy DQN and dueling主要做了两方面的改进：
 1. 不再使用$\varepsilon$-greedy behaviour policy了，而是使用greedy behaviour policy采样优化randomised action-value function。
@@ -308,6 +330,19 @@ $$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma
 就double dqn中的action选择来说，采样一个新的independent sample $\varepsilon\^{''}$计算action value，然后使用greedy操作，NoisyNet-Dueling的loss如下：
 $$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma Q(y, b\^{\*}(y), \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{15}$$
 $$b\^{\*}(y) = arg max\_{b\in A} Q(y, b(y), \varepsilon\^{''};\zeta)\tag{16}$$
+
+### Noisy-A3C
+Noisy-A3C相对于A3C有以下的改进：
+1. entropy项被去掉了;
+2. fully-connected layer被替换成了noisy network。
+
+A3C算法中没有像$\epsilon$-greedy这样进行action exploration，选中的action通常是从current policy中选的，加入entropy是为了鼓励exploration，而不是选择一个deterministic policy。当添加了noisy weights时，对参数进行采样就表示选择不同的current policy，就已经代表了exploration。NoisyNet相当于直接在policy space中进行exploration，而entropy项就可以去掉了。
+
+### Noisy Networks的初始化
+在unfactorised noisy networks中，每个$\mu\_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{3}{p}},sqrt{{3}{p}}\right]$中采样初始化，其中$p$是对应linear layer的输入个数，$\sigma\_{i,j}$设置为一个常数$0.0017$，这是从监督学习的任务中借鉴的。
+在factorised noisy netowrks中，每个$\mu\_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{1}{p}},sqrt{{1}{p}}\right]$中进行采样，$\sigma\_{i,j}$设置为$\frac{\sigma_0}{p}$，超参数$\sigma_0$设置为$0.5$。
+
+
 ### 伪代码
 算法5 NoisyNet-DQN / NoisyNet-Dueling
 输入: Env Environment; $\varepsilon$ random variables of the network的集合
@@ -342,7 +377,7 @@ $\qquad\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma Q(y_j, b\^{\*}(y
 $\qquad\qquad\qquad$**else**
 $\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma max\_{b\in A} Q(y_j, b, \xi';\zeta\^{-})$
 $\qquad\qquad$**end if**
-$\qquad\qquad\qquad$利用loss $(\hat{Q}-Q(x_j,a_j, \xi;\seta))^2$的梯度进行更新（？？？这里是更新什么？我觉得应该是同时更新$\xi$和$\zeta$）
+$\qquad\qquad\qquad$利用loss $(\hat{Q}-Q(x_j,a_j, \xi;\seta))^2$的梯度进行更新$\zeta$
 $\qquad\qquad$**end for**
 $\qquad\qquad$每隔$N\^{-}$步更新target network:$ \zeta\^{−}\leftarrow \zeta$ 
 $\qquad$**end for**

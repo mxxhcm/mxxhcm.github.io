@@ -9,10 +9,10 @@ mathjax: true
 ---
 
 ## 摘要
-DQN使用experience replay buffer来稳定学习过程。本文提出了一个新的框架，使用异步的梯度下降稳定学习过程。这个框架既适用于on-policy，也适用于off-policy环境上，即能应用于离散动作空间，也能应用于连续的动作空间，既能训练前馈智能体，也能训练循环智能体。
+DQN使用experience replay buffer来稳定学习过程。本文提出一个异步框架来代替buffer，稳定学习过程。这个框架同时适用于on-policy和off-policy环境，也能应用于离散动作空间和连续的动作空间，既能训练前馈智能体，也能训练循环智能体。
 
 ## Introduction
-Online学习是不稳定的，并且online更新是强相关的。DQN通过引入experience replay buffer解决了这个问题，但是DQN只能应用在off policy算法上。总的来说，DQN通过引入replay buffer取得了很大成功，但是replay buffer还有以下的几个缺点：
+强化学习算法一般都是online的，而online学习是不稳定的，并且online更新通常都是强相关的。DQN通过引入experience replay buffer解决了这个问题，但是DQN只能应用在off policy算法上。DQN通过引入replay buffer取得了很大成功，但是replay buffer还有以下的几个缺点：
 - 在每一步交互的时候使用了更多的内存和计算资源
 - 它只能应用在off policy的算法上，也就是说权重的更新可能会使用到很久之前的数据。
 
@@ -43,22 +43,22 @@ A3C算法的实质就是在多个线程中同步训练。分为主网络和线�
 **repeat**
 $\qquad$使用$\epsilon-$greedy策略采取action $a$，
 $\qquad$接收下一个状态$s'$和reward $r$，
-$\qquad$设置target value，$y=\begin{cases}r,&for\ terminal\ s' \\\\ r+\gamma max_{a'}Q(s',a';\theta\^{-}), &for\ non-terminal\ s'\end{cases}$
+$\qquad$设置target value，$y=\begin{cases}r,&for\ terminal\ s' \\\\ r+\gamma max\_{a'}Q(s',a';\theta\^{-}), &for\ non-terminal\ s'\end{cases}$
 $\qquad$累计和$\theta$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))\^2}{\partial \theta}$
 $\qquad s\leftarrow s'$
 $\qquad T\leftarrow T+1, t\leftarrow t+1$
-$\qquad$**if** $T\ \ mod\ \ I_{target} ==0 $，那么
+$\qquad$**if** $T\ \ mod\ \ I\_{target} ==0 $，那么
 $\qquad\qquad$更新target network $\theta\^{-}\leftarrow 0$
 $\qquad$**end if**
-$\qquad$**if** $t\ \ mod\ \ I_{AsyncUpdate} ==0$或者$s$是terminal state，那么
+$\qquad$**if** $t\ \ mod\ \ I\_{AsyncUpdate} ==0$或者$s$是terminal state，那么
 $\qquad\qquad$使用$d\theta$异步更新$\theta$
 $\qquad\qquad$将累计梯度$d\theta\leftarrow 0$
 $\qquad$**end if**
-**until** $T\ge T_{max}$
+**until** $T\ge T\_{max}$
 
 ### 异步的one-step Sarsa
 #### 概述
-- 和算法$1$很像，$Q-learning$计算target value使用$r+\gamma max_{a'}Q(s',a';\theta\^{-})$，而Sarsa计算target value使用$r+\gamma Q(s',a';\theta\^{-})$，即Q-learning的bahaviour policy和评估的策略是不一样的，而Sarsa的behaviour policy和评估策略是一样的。
+- 和算法$1$很像，$Q-learning$计算target value使用$r+\gamma max\_{a'}Q(s',a';\theta\^{-})$，而Sarsa计算target value使用$r+\gamma Q(s',a';\theta\^{-})$，即Q-learning的bahaviour policy和评估的策略是不一样的，而Sarsa的behaviour policy和评估策略是一样的。
 - 使用target network，
 - 同时使用多个时间步的累计梯度更新用来稳定学习过程。
 
@@ -68,7 +68,7 @@ $\qquad$**end if**
 ### 异步的n-step Q-learning
 #### 概述
 - 计算$n-step$的return
-- 在计算一次更新的时候，使用exploration policy采样到$t_{max}$步或者到terminal state。然后累加从上次更新到$t_{max}$时间步的reward。
+- 在计算一次更新的时候，使用exploration policy采样到$t\_{max}$步或者到terminal state。然后累加从上次更新到$t\_{max}$时间步的reward。
 - 然后计算$n-step$更新对于上次更新之后所有state-action的梯度。
 - 使用单个时间步中的累计梯度进行更新。
 - 使用了target network。
@@ -83,38 +83,38 @@ $\qquad$**end if**
 **repeat**
 $\qquad$重置累计梯度$d\theta\leftarrow0$
 $\qquad$同步每个线程的参数$\theta'=\theta$
-$\qquad t_{start}=t$
-$\qquad$得到$s_t$
+$\qquad t\_{start}=t$
+$\qquad$得到$s\_t$
 $\qquad$**repeat**
-$\qquad\qquad$根据基于$Q(s_t,a;\theta')$的$\epsilon-greedy$策略执行动作$a_t$，
-$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，
+$\qquad\qquad$根据基于$Q(s\_t,a;\theta')$的$\epsilon-greedy$策略执行动作$a\_t$，
+$\qquad\qquad$接收下一个状态$s\_{t+1}$和reward $r\_t$，
 $\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$
-$\qquad$ **until** terminal $s_t$或者$t-t_{start}==t_{max}$
-$\qquad$设置奖励$R=\begin{cases}0,&for\ terminal\ s_t\\max_aQ(s_t,a;\theta\^{-}), &for\ non-terminal\ s_t\end{cases}$
-$\qquad$**for** $i\in\{t-1,\cdots,t_{start}\}$ do
-$\qquad\qquad R\leftarrow r_i+\gamma R$
-$\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s_t,a;\theta'))\^2}{\partial \theta'}$
+$\qquad$ **until** terminal $s\_t$或者$t-t\_{start}==t\_{max}$
+$\qquad$设置奖励$R=\begin{cases}0,&for\ terminal\ s\_t\\max\_aQ(s\_t,a;\theta\^{-}), &for\ non-terminal\ s\_t\end{cases}$
+$\qquad$**for** $i\in\{t-1,\cdots,t\_{start}\}$ do
+$\qquad\qquad R\leftarrow r\_i+\gamma R$
+$\qquad\qquad$累计和$\theta'$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s\_t,a;\theta'))\^2}{\partial \theta'}$
 $\qquad$**end for**
 $\qquad$使用$d\theta$异步更新$\theta$.
-$\qquad$**if**$\quad T\quad mod\quad I_{target}==0$那么
+$\qquad$**if**$\quad T\quad mod\quad I\_{target}==0$那么
 $\qquad\qquad\theta\^{-}\leftarrow \theta$
 $\qquad$**end if**
-**until** $T\gt T_{max}$
+**until** $T\gt T\_{max}$
 
 ### 异步的advantage actor-critic
 #### 概述
-- A3C算法，是一个actor-critic方法，使用值函数$V(s_t;\theta_v)$辅助学习policy $\pi(a_t|s_t;\theta)$，同时这里使用$n-step$的returns更新policy和value function。
-- 每隔$t_{max}$个action更新一次或者到了terminal state更新一次。
-- Actor的更新方向为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum_{i=0}\^{k-1} \gamma\^ir_{t+i}+\gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$计算。
+- A3C算法，是一个on-policy的actor-critic方法，使用值函数$V(s\_t;\theta\_v)$辅助学习policy $\pi(a_t|s_t;\theta)$，同时这里使用$n-step$的returns更新policy和value function。
+- 每隔$t\_{max}$个action更新一次或者到了terminal state更新一次。
+- Actor的更新方向为$\nabla\_{\theta'}log\pi(a_t|s_t;\theta')A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum\_{i=0}\^{k-1} \gamma\^ir\_{t+i}+\gamma\^kV(s\_{t+k};\theta_v) - V(s_t;\theta_v)$计算。
 - 这里同样使用并行的actor-learner和累计的梯度用来稳定学习。$\theta$和$\theta_v$在实现上通常共享参数。
-- 添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla_{\theta'}log\pi(a_t|s_t;\theta')(R_t-V(s_t;\theta_v))+\beta\nabla_{\theta'}H(\pi(s_t;\theta'))$。这里的$R$就是上面的$\sum_{i=0}\^{k-1}\gamma\^ir_{t+i}+\gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。
-- Critic的更新方向通过最小化loss来实现，这里的loss指的是TD-error，即$\sum_{i=0}\^{k-1}\gamma\^ir_{t+i} + \gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。
+- 添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla\_{\theta'}log\pi(a_t|s_t;\theta')(R_t-V(s_t;\theta_v))+\beta\nabla\_{\theta'}H(\pi(s\_t;\theta'))$。这里的$R$就是上面的$\sum\_{i=0}\^{k-1}\gamma\^ir\_{t+i}+\gamma\^kV(s\_{t+k};\theta_v) - V(s_t;\theta_v)$。
+- Critic的更新方向通过最小化loss来实现，这里的loss指的是TD-error，即$\sum\_{i=0}\^{k-1}\gamma\^ir\_{t+i} + \gamma\^kV(s\_{t+k};\theta_v) - V(s_t;\theta_v)$。
 - 没有使用target network。
 
 #### 伪代码
-**Algorithm 3** 异步的actor-critic－－每个actor-learn线程的伪代码
+**Algorithm 3** A3C－－每个actor-learn线程的伪代码
 用$\theta,\theta_v$表示全局共享参数，用$T=0$表示全局共享计数器，
-用$\theta',\theta'_v$表示每个线程中的参数
+用$\theta',\theta'\_v$表示每个线程中的参数
 初始化线程步计数器$t\leftarrow 1$，
 **repeat**
 $\qquad$重置梯度$d\theta\leftarrow 0,d\theta_v\leftarrow 0$，
@@ -151,13 +151,14 @@ $\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\the
 - 基于值的方法只有一个线性输出层，每个输出单元代表一个action的值。
 - actor-critic方法有两个输出层，一个softmax表示选择某一个action的概率，一个线性输出代表值函数。
 - 所有实验使用的$\gamma=0.99$，RMSProp的衰减因子$\alpha = 0.99$。
-- Value-based方法采用的exploration rate $\epsilon$有是三个取值$\epsilon_1,\epsilon_2,\epsilon_3$，相应的概率为$0.4,0.3,0.3$，它们的值在前$4$百万帧中从$1$退火到$0.1,0.01,0.5$。
+- Value-based方法采用的exploration rate $\epsilon$有三个取值$\epsilon_1,\epsilon_2,\epsilon_3$，相应的概率为$0.4,0.3,0.3$，它们的值在前$4$百万帧中从$1$退火到$0.1,0.01,0.5$。
 - A3C使用了entropy进行正则化，entropy项的权重为$\beta=0.01$
 - 初始学习率从分布$LogUniform(10\^{-4},10\^{-2})$中进行采样，在训练过程中退火到$0$。
 
 ## 代码
-### 地址
+### 代码地址
 https://github.com/ikostrikov/pytorch-a3c
+
 ### 问题
 如果直接git下来运行的话，会出问题，需要在main()下加上这样一句
 ``` python
