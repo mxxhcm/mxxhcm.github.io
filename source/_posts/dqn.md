@@ -39,13 +39,13 @@ $$\nabla_{\theta_i}L_i(\theta_i) = E_{s,a\sim \rho(\cdot),s'\sim E}\left[(r+\gam
 通过SGD优化loss函数。如果权重是每隔几个timestep进行更新，并且用从分布$\rho$和环境$E$中采样得到的样本取代期望，就可以得到熟悉的Q-learning算法[2]。(这个具体为什么是这样，我也不清楚，可以看参考文献2)
 9. dqn是Model-Free的，它直接从环境$E$中采样，并没有显式的对环境进行建模。
 10. dqn是一个online的方法，即训练数据不断增加。offline是训练数据固定。
-11. dqn是一个off-policy算法，target policy 是greedy policy，behaviour policy是$\epsilon$ greedy policy，target policy和greedy policy策略不同。
+11. dqn是一个off-policy算法，target policy 是greedy policy，behaviour policy是$\varepsilon$ greedy policy，target policy和greedy policy策略不同。
 > On-policy methods attempt to evaluate or improve the policy that is used to make decisions, whereas  off-policy methods evaluate or improve a policy different from that used to generate the data.
 
-Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour policy是否相同。其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，target policy（greedy）和behaviour policy（$\epsilon$-greedy）是不同的。
+Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour policy是否相同。其实就是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，target policy（greedy）和behaviour policy（$\varepsilon$-greedy）是不同的。
 
 #### 创新和技巧
-1. DQN使用了experience replay，将多个episodes中的经验存储到一个大小为$N$的replay buffer中。在更新$Q$值的时候，从replay buffer中进行采样更新。behaviour policy是$\epsilon$-greedy策略，保持探索。target policy是$\epsilon$ greedy 算法，因为replay buffer中存放的都是behaviour policy生成的experience，所以是off-policy算法。
+1. DQN使用了experience replay，将多个episodes中的经验存储到一个大小为$N$的replay buffer中。在更新$Q$值的时候，从replay buffer中进行采样更新。behaviour policy是$\varepsilon$-greedy策略，保持探索。target policy是$\varepsilon$ greedy 算法，因为replay buffer中存放的都是behaviour policy生成的experience，所以是off-policy算法。
 采用experience replay的online算法[5]和标准的online算法相比有三个好处[4]，第一个是每一个experience可以多次用来更新参数，提高了数据训练效率；第二个是直接从连续的样本中进行学习是低效的，因为样本之间存在强关联性。第三个是on-policy的学习中，当前的参数决定下一次采样的样本，就可能使学习出来的结果发生偏移。
 2. replay buffer中只存储最近N个experience。
 3. 原始图像是$210\times 160$的RGB图像，预处理首先将它变为灰度图，并进行下采样得到一个$110\times 84$的图像，然后从这个图像中截取一个$84\times 84$的图像。
@@ -61,7 +61,7 @@ Initialize action-value function Q with random weights
 for episode = $1, M$ do
 $\ \ \ \ \ \ \ \ $Initialize sequence $s_1 = {x_1}$ and preprocessed sequenced $\phi_1 = \phi(s_1)$
 $\ \ \ \ \ \ \ \ $for $t = 1,T$ do
-$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $With probability $\epsilon$ select a random action $a_t$ 
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $With probability $\varepsilon$ select a random action $a_t$ 
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $otherwise select $a_t = max_a Q\^{∗}(\phi(s_t), a; θ)$
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Execute action $a_t$ in emulator and observe reward $r_t$ and image $x_{t+1}$
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preprocess $\phi_{t+1} = \phi(s_{t+1})$
@@ -79,7 +79,7 @@ end for
 
 #### Settings
 1. 不同游戏的reward变化很大，这里把正的reward全部设置为$1$，把负的reward全部设置为$-1$，reward为$0$的保持不变。这样子在不同游戏中也可以统一学习率。
-2. 采用RMSProp优化算法，batchsize为$32$，behaviour policy采用的是$\epsilon$-greedy$，在前$100$万步内，$\epsilon$从$1$变到$0.1$，接下来保持不变。
+2. 采用RMSProp优化算法，batchsize为$32$，behaviour policy采用的是$\varepsilon$-greedy$，在前$100$万步内，$\varepsilon$从$1$变到$0.1$，接下来保持不变。
 3. 使用了跳帧技术，每隔$k$步，agent才选择一个action，在中间的$k-1$步中，保持原来的action不变。这里选择了$k=4$，有的游戏设置的为$k=3$。
 
 #### Metrics
@@ -124,7 +124,7 @@ Initialize target action-value function $\hat{Q}$ with weights $\theta\^{-}=\the
 for episode = $1, M$ do
 $\ \ \ \ \ \ \ \ $Initialize sequence $s_1 = {x_1}$ and preprocessed sequenced $\phi_1 = \phi(s_1)$
 $\ \ \ \ \ \ \ \ $for $t = 1,T$ do
-$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $With probability $\epsilon$ select a random action $a_t$ 
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $With probability $\varepsilon$ select a random action $a_t$ 
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $otherwise select $a_t = max_a Q\^{∗}(\phi(s_t), a; θ)$
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Execute action $a_t$ in emulator and observe reward $r_t$ and image $x_{t+1}$
 $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preprocess $\phi_{t+1} = \phi(s_{t+1})$
@@ -217,7 +217,7 @@ prioritized replay最重要的部分是如何评价每一个transition的重要�
 $$P(i) = \frac{p_i\^{\alpha}}{\sum_kp_k\^{\alpha}}\tag{9}$$
 $\alpha$确定prioritizaiton的比重，如果$\alpha=0$就是unifrom。
 
-有两种$p_i$的计算方法，一种是直接的proportional prioritization，$p_i = |\delta_i| + \epsilon$，其中$\epsilon$是一个小的正整数，确定当$p_i=0$时，该transition仍能被replay；第二种是间接的，$p_i = \frac{1}{rank(i)}$，其中$rank(i)$是所有replay memory中的experiences根据$|\delta_i|$排序后的rank。第二种方法的鲁棒性更好。
+有两种$p_i$的计算方法，一种是直接的proportional prioritization，$p_i = |\delta_i| + \varepsilon$，其中$\varepsilon$是一个小的正整数，确定当$p_i=0$时，该transition仍能被replay；第二种是间接的，$p_i = \frac{1}{rank(i)}$，其中$rank(i)$是所有replay memory中的experiences根据$|\delta_i|$排序后的rank。第二种方法的鲁棒性更好。
 在实现上，两种方法都有相应的trick，让复杂度不依赖于memory 大小$N$。Proportional prioritization采用了'sum-tree'数据结构，每一个节点都是它的子节点的children，priorities是leaf nodes。而rank-based方法，使用线性函数估计累计密度函数，具体怎么实现没有细看。
 
 #### annealing the bias
@@ -287,12 +287,70 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 
 ## Noisy DQN
 ### 介绍
-已有方法的exploration都是通过agent policy的random perturbations，比如常见的$\epsilon$-greedy等方法。这些方法不能找出环境中efficient exploration的behavioural patterns。常见的方法有以下几种:
+已有方法的exploration都是通过agent policy的random perturbations，比如常见的$\varepsilon$-greedy等方法。这些方法不能找出环境中efficient exploration的behavioural patterns。常见的方法有以下几种:
 第一种方法是optimism in the face of uncertainty，理论上证明可行，但是通常应用在state-action spaces很小的情况下或者linear FA，很难处理non-linearn FA，而且non-linear情况下收敛性没有保证。
 另一种方法是添加额外的intrinsic motivation term，该方法的问题是将算法的generalisation mechanism和exploration分割开，即有instrinsic reward和environment reward，它们的比例如何去设置，需要认为指定。如果不仔细调整，optimal policy可能会受intrinsic reward影响很大。此外为了增加exploration的鲁邦性，扰动项仍然是需要的。这些算法很具体也能应用在参数化policy上，但是很低效，而且需要很多次policy evaluation。
-本文提出NoisyNet学习网络参数的perturbations，主要想法是参数的一点改变可能会导致policy在很多个timsteps上的consistent，complex, state-dependent的变化，而如$\epsilon$-greedy的dithering算法中，每一步添加到policy上的noise都是不相关的。pertubations从一个noise分布中进行采样，它的variance可以看成noise的energy，variance的参数和网络参数都是通过loss的梯度进行更新。网络参数中仅仅加入了噪音，没有distribution，可以自动学习。
-在高维度上，本文的算法是一个randomised value function。
-添加noise辅助训练在监督学习等任务中一直都有，但是这些噪音都是不能训练的，而NoisyNet中的噪音是可以梯度下降更新的。
+本文提出NoisyNet学习网络参数的perturbations，主要想法是参数的一点改变可能会导致policy在很多个timsteps上的consistent，complex, state-dependent的变化，而如$\varepsilon$-greedy的dithering算法中，每一步添加到policy上的noise都是不相关的。pertubations从一个noise分布中进行采样，它的variance可以看成noise的energy，variance的参数和网络参数都是通过loss的梯度进行更新。网络参数中仅仅加入了噪音，没有distribution，可以自动学习。
+在高维度上，本文的算法是一个randomised value function，这个函数是neural network，网络的参数并没有加倍，linear 的参数加倍，而参数是noise的一个简单变换。
+还有人添加constant Gaussian niose到网络参数，而文本的算法添加的noise并不是限制在Gaussion noise distributions。添加noise辅助训练在监督学习等任务中一直都有，但是这些噪音都是不能训练的，而NoisyNet中的噪音是可以梯度下降更新的。
+
+### Noisy DQN and dueling
+相对于DQN和dueling DQN来说，noisy DQN and dueling主要做了两方面的改进：
+1. 不再使用$\varepsilon$-greedy behaviour policy了，而是使用greedy behaviour policy采样优化randomised action-value function。
+2. 网络中的fully connected layers全都换成了参数化的noisy network，noisy network的参数在每一次replay之后从noise服从的distribution中进行采样。这里使用的nose是factorised Gaussian noise。
+
+在replay 整个batch的过程中，noisy network parameter sample保持不变。因为DQN和Dueling每执行一个action step之后都会执行一次optimization，每次采样action之前都要重新采样noisy network parameters。
+
+#### Loss
+$Q(s,a,\epislon;\zeta)$可以看成$\zeta$的一个random variable，NoisyNet-DQN loss如下：
+$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma max\_{b\in A}Q(y, b, \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{14}$$
+其中外层的期望是$\varepsilon$相对于noisy value function $Q(x,a, \varepsilon;\zeta)$和$\varepsilon'$相对于noisy target value function $Q(x,a, \varepsilon';\zeta\^{-}$。对于buffer中的每一个transition，计算loss的无偏估计，只需要计算target value和true value即可，为了让target value和true之间没有关联，target network和online network采用independent noises。
+就double dqn中的action选择来说，采样一个新的independent sample $\varepsilon\^{''}$计算action value，然后使用greedy操作，NoisyNet-Dueling的loss如下：
+$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma Q(y, b\^{\*}(y), \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{15}$$
+$$b\^{\*}(y) = arg max\_{b\in A} Q(y, b(y), \varepsilon\^{''};\zeta)\tag{16}$$
+### 伪代码
+算法5 NoisyNet-DQN / NoisyNet-Dueling
+输入: Env Environment; $\varepsilon$ random variables of the network的集合
+输入: DUELING Boolean; "true"代表NoisyNet-Dueling and "false"代表 NoisyNet-DQN
+输入: $B$空replay buffer; $\zeta$初始的network parameters; $\zeta\^{-}$初始的target network parameters
+输入: replay buffer大小$N_B$; batch size $N_T$; target network更新频率$N\^{-}$
+输出: $Q(\cdot, \varepsilon; \zeta)$ action-value function
+**for** episode $e\in  {1,\cdots , M}$ do
+初始化state sequence $x_0 \sim Env$
+$$**for** $t \in {1,\cdots }$ do
+设置$x \leftarrow x_0$
+采样 a noisy network  $\xi\sim \varepsilon$
+选择an action $a \leftarrow arg max\_{b\in A} Q(x, b, \xi; \zeta)$
+采样 next state $y \sim  P (\cdot|x, a)$, 接收 reward $r \leftarrow R(x, a) $以及$x_0 \leftarrow y$
+将transition (x, a, r, y)添加到replay buffer
+**if** $|B| \gt N_B$ then
+删掉最老的transition
+**end if**
+采样一个大小为$N_T$的batch, transitions $((x_j , a_j , r_j , y_j) \sim D)\_{j=1}\^{N_T}$
+Sample the noisy variable for the online network ξ ∼ ε
+Sample the noisy variables for the target network ξ 0 ∼ ε
+if DUELING then
+Sample the noisy variables for the action selection network ξ 00 ∼ ε
+for j ∈ {1, . . . , N T } do
+if y j is a terminal state then
+b ← r j
+Q
+if DUELING then
+b ∗ (y j ) = arg max b∈A Q(y j , b, ξ 00 ; ζ)
+b ← r j + γQ(y j , b ∗ (y j ), ξ 0 ; ζ − )
+Q
+else
+b ← r j + γ max b∈A Q(y j , b, ξ 0 ; ζ − )
+Q
+b − Q(x j , a j , ξ; ζ)) 2
+利用loss的梯度进行更新a gradient step with loss ( Q
+**end**
+每隔$N\^{-}$步更新target network:$ \zeta\^{−}\leftarrow \zeta$ 
+**end for**
+**end for**
+
+算法6 Noisy A3C
+
 
 ## Rainbow
 
