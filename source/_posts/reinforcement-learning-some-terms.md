@@ -1,5 +1,5 @@
 ---
-title: reinforcment learning的不同分类方法
+title: reinforcment learning的一些术语
 date: 2019-05-29 17:59:28
 tags:
 - online

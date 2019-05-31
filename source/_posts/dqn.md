@@ -287,10 +287,10 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 
 ## Noisy DQN
 ### 介绍
-已有方法的exploration都是通过agent policy的random nerturbations，比如常见的$\epsilon$等方法。这种方式没有办法找出许多环境中efficient exploration的behavioural patterns。
-已有的方法包含有optimism in the face of uncertainty，这种方法理论上已经证明可行，但是通常应用在small state-action spaces或者linear approximation，很难应用在non linearn FA，而且在这种情况下没有收敛性保证。
-另一种方法是添加intrinsic motivation term，这种方法的问题是将算法的generalisation mechanism和exploration分离开来，instrinsic reward和environment reward，它们的比例如何去设置，需要人工实验。如果不仔细设置，optimal policy可能会被intrinsic reward影响，此外为了增加exploration的鲁邦性扰动项也是需要的。这些算法很具体也能应用在参数化policy上，但是很低效，而且需要很多次policy evaluation。
-本文提出了NoisyNet学习网络参数的perturbations，主要想法是参数的一点改变可能会导致policy在很多个timsteps上的consistent，complex, state-dependent变化，而那些dithering算法如$\epsilon$ greedy算法中，每一步都有不相关的noise添加到policy上。pertubations从一个noise分布中进行采样，它的variance可以看成noise的energy，variance的参数和网络参数一样都是利用loss的梯度进行更新。网络参数中仅仅加入了噪音，没有distribution，并且自动tune。
+已有方法的exploration都是通过agent policy的random perturbations，比如常见的$\epsilon$-greedy等方法。这些方法不能找出环境中efficient exploration的behavioural patterns。常见的方法有以下几种:
+第一种方法是optimism in the face of uncertainty，理论上证明可行，但是通常应用在state-action spaces很小的情况下或者linear FA，很难处理non-linearn FA，而且non-linear情况下收敛性没有保证。
+另一种方法是添加额外的intrinsic motivation term，该方法的问题是将算法的generalisation mechanism和exploration分割开，即有instrinsic reward和environment reward，它们的比例如何去设置，需要认为指定。如果不仔细调整，optimal policy可能会受intrinsic reward影响很大。此外为了增加exploration的鲁邦性，扰动项仍然是需要的。这些算法很具体也能应用在参数化policy上，但是很低效，而且需要很多次policy evaluation。
+本文提出NoisyNet学习网络参数的perturbations，主要想法是参数的一点改变可能会导致policy在很多个timsteps上的consistent，complex, state-dependent的变化，而如$\epsilon$-greedy的dithering算法中，每一步添加到policy上的noise都是不相关的。pertubations从一个noise分布中进行采样，它的variance可以看成noise的energy，variance的参数和网络参数都是通过loss的梯度进行更新。网络参数中仅仅加入了噪音，没有distribution，可以自动学习。
 在高维度上，本文的算法是一个randomised value function。
 添加noise辅助训练在监督学习等任务中一直都有，但是这些噪音都是不能训练的，而NoisyNet中的噪音是可以梯度下降更新的。
 
