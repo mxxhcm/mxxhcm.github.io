@@ -14,31 +14,31 @@ mathjax: true
 
 ### dconf安装
 为了更多的设置，需要安装dconf-editor
-~\$:sudo apt install dconf-tools
+~\\$:sudo apt install dconf-tools
 按下Win键，搜索dconfig-editor，打开它。
 找到org>>gnome>>shell>>extensions>>dash-to-dock，然后就可以修改相应的配置了。也可以在命令行中进行相应的设置，这里就不说了，可以查看参考文献尝试。
 
 ## ubuntu 18.04合上笔记本盖子后不挂起
-~\$:sudo apt install gnome-tweak-tool
-~\$:gnome-tweaks
+~\\$:sudo apt install gnome-tweak-tool
+~\\$:gnome-tweaks
 找到Power选项，设置Suspend when lapto lid is closed为OFF。[6]
 
 ## 显示cpu和gpu温度
 ### 安装lm-sensors
-~\$:sudo apt-get install lm-sensors 
+~\\$:sudo apt-get install lm-sensors 
 然后执行以下命令进行配置：
-~\$:sudo sensors-detect
+~\\$:sudo sensors-detect
 执行sensors命令获得各项硬件的温度
-~\$:sensors
+~\\$:sensors
 
 ## 安装gnome-shell
 ### 安装gnome tweak tool
-~\$:sudo apt install gnome-tweak-tool
+~\\$:sudo apt install gnome-tweak-tool
 gnome tweak 用来查看本地的gnome 插件。
 
 ### 从ubuntu 仓库安装extensions
 ubuntu 提供了gnome-shell-extensions包，该包中有部分gnome扩展。然后可以使用gnome tweaks查看已经安装的程序。
-~\$:sudo apt install gnome-shell-extensions
+~\\$:sudo apt install gnome-shell-extensions
 
 ### 在浏览器上安装gnome shell integration插件
 在firfox或者chrome上安装相应的gnome shell integration插件。
@@ -48,16 +48,16 @@ ubuntu 提供了gnome-shell-extensions包，该包中有部分gnome扩展。然�
 
 ### 安装chrome-gnome-shell native host connector
 执行以下命令进行安装，chrome-gnome-shell并不是代表chrome浏览器的意思，用任何浏览器都要执行以下命令
-~\$:sudo apt install chrome-gnome-shell
+~\\$:sudo apt install chrome-gnome-shell
 查看gnome shell版本
-~\$:gnome-shell --version
+~\\$:gnome-shell --version
 
 ### 安装相应的插件
 #### 命令行下
 搜索
-~\$:sudo apt search gnome-shell-extension
+~\\$:sudo apt search gnome-shell-extension
 安装
-~\$:sudo apt install gnome-shell-extension-package-name
+~\\$:sudo apt install gnome-shell-extension-package-name
 
 #### 浏览器中
 直接打开gnome shell extensions图形化界面进行搜索安装
