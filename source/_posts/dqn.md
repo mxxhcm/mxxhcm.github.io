@@ -238,8 +238,8 @@ $\qquad$if $t ≡ 0$ mod $K$ then
 $\qquad\qquad$for j = 1 to k do
 $\qquad\qquad\qquad$Sample transition $j \sim P(j) = \frac{p_j^{\alpha}}{\sum_i p_i^{\alpha}}$
 $\qquad\qquad\qquad$计算importance-sampling weight $w_j = \frac{(N \cdot P(j))\^{\beta}}{max_i w_i}$
-$\qquad\qquad\qquad$计算TD-error $\delta_j = R_j + \gamma_j Q\_{target} (S_j , arg max_a Q(S_j, a)) − Q(S\_{j−1} , A\ {j−1})
-$\qquad\qquad\qquad$更新transition的priority $p_j \leftarrow |\delta_j|
+$\qquad\qquad\qquad$计算TD-error $\delta_j = R_j + \gamma_j Q\_{target} (S_j$, $arg max_a Q(S_j, a)) − Q(S\_{j−1} , A\ {j−1})$
+$\qquad\qquad\qquad$更新transition的priority $p_j \leftarrow |\delta_j|$
 累计weight-change $\Delta \left \Delta + w_j \cdot \delta_j \cdot \nabla\_{\theta} Q(S\_{j−1}, A\_{j−1})$
 $\qquad\qquad$end for
 $\qquad\qquad$更新weights $\theta\leftarrow \theta+ \eta\cdot\Delta$, 重置$\Delta = 0$
