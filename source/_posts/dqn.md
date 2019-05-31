@@ -26,7 +26,7 @@ Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一�
 1. agent与Atari模拟器不断交互，agent不能观测到模拟器的内部状态，只能得到当前屏幕信息的一个图片。这个task可以认为是部分可观测的，因为仅仅从当前的屏幕图像$x_t$上是不能完全理解整个游戏状况的。所有的序列都认为在有限步骤内是会结束的。
 2. 注意agent当前的得分取决于整个sequence的action和observation。一个action的feedback可能等到好几千个timesteps之后才能得到。
 3. agent的目标是通过采取action和env交互最大化累计reward。定义$t$时刻的回报return为$R_t = \sum\^T\_{t'=t} \gamma\^{t'-t}r\_{t'}$，其中$\gamma$是折扣因子，$T$是游戏终止的时间步。
-4. 定义最优的动作值函数$Q\^{\*}(s,a)$是遵循最优策略在状态$s$处采取动作$a$能获得的最大的期望回报，$Q\^{\*(s,a)} = max_{\pi}E[R_t|s_t=s,a_t=a,\pi]$。
+4. 定义最优的动作值函数$Q\^{\*}(s,a)$是遵循最优策略在状态$s$处采取动作$a$能获得的最大的期望回报，$Q\^{\*}(s,a) = max\_{\pi}E[R_t|s_t=s,a_t=a,\pi]$。
 5. 最优的动作值函数遵循Bellman optimal equation。如果在下个时间步的状态$s'$处，对于所有可能的$a'$，$Q\^{\*}(s',a')$的最优值是已知的（这里就是对于每一个$a'$，都会有一个最优的$Q(s',a')$，最优的策略就是选择最大化$r+Q\^{\*}(s',a')$的动作$a'$：
 $$Q\^{\*}(s,a) = E_{s\sim E}[r+ \gamma max_{a'} Q\^{\*}(s',a')|s,a], \tag{1}$$
 强化学习的一个思路就是使用Bellman optimal equation更新动作值函数，$Q_{i+1}(s,a) = E[r + \gamma Q_i(s',a')|s,a]$，当$i\rightarrow \infty$时，$Q_i \rightarrow Q\^{\*}$。
@@ -79,7 +79,7 @@ end for
 
 #### Settings
 1. 不同游戏的reward变化很大，这里把正的reward全部设置为$1$，把负的reward全部设置为$-1$，reward为$0$的保持不变。这样子在不同游戏中也可以统一学习率。
-2. 采用RMSProp优化算法，batchsize为$32$，behaviour policy采用的是$epsilon-greedy$，在前$100$万步内，$epsilon$从$1$变到$0.1$，接下来保持不变。
+2. 采用RMSProp优化算法，batchsize为$32$，behaviour policy采用的是$\epsilon$-greedy$，在前$100$万步内，$\epsilon$从$1$变到$0.1$，接下来保持不变。
 3. 使用了跳帧技术，每隔$k$步，agent才选择一个action，在中间的$k-1$步中，保持原来的action不变。这里选择了$k=4$，有的游戏设置的为$k=3$。
 
 #### Metrics
@@ -150,7 +150,7 @@ end for
 ### Double Q-learning
 Q-learning算法计算target value $y$的公式如下：
 $$y = r + \gamma max_a' Q(s', a'|\theta_t)\tag{4}$$
-在计算target value的时候，使用同一个网络选择和评估action $a'$，这可能会让网络选择一个overestimated values，最后得到一个overoptimistic value estimates。所有就有了double Q-learning，计算公式如下：
+在计算target value的时候，使用同一个网络选择和评估action $a'$，这可能会让网络选择一个overestimated value，最后得到一个overoptimistic value estimate。所有就有了double Q-learning，计算公式如下：
 $$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta'\_t)\tag{5}$$
 target policy还是greedy policy，通过使用$\theta$对应的网络选择action，然后在计算target value的时候使用$\theta'$对应的网络。
 原有的公式可以写成下式，
@@ -172,22 +172,23 @@ $$$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta\^{-}\_t)\tag{7}$$
 算法 3: Double DQN Algorithm.
 输入: replay buffer $D$, 初始network参数$\theta$,target network参数$\theta\^{-}$ 
 输入 : replay buffer的大小$N_r$, batch size $N_b$, target network更新频率$N\^{-}$
-for episode $e \in \{1, 2,\cdots, M\}$ do
+**for** episode $e \in \{1, 2,\cdots, M\}$ do
 $\qquad$初始化frame sequence $\mathbf{x} \leftarrow ()$
-$\qquad$for $t \in \{0, 1, \cdots\}$ do
+$\qquad$**for** $t \in \{0, 1, \cdots\}$ do
 $\qquad\qquad$设置state $s \leftarrow \mathbf{x}$, 采样 action $a \sim\pi_B$
 $\qquad\qquad$给定$(s, a)$，从环境$E$中采样接下来的frame $x_t$,接收reward $r$,在序列$\mathbf{x}$上拼接$x$
-$\qquad\qquad$if $|\mathbf{x}| \gt N_f$
-$\qquad\qquad$从$\mathbf{x}$中删除最老的frame $x\_{t_min}$
+$\qquad\qquad$**if** $|\mathbf{x}| \gt N_f$
+$\qquad\qquad$**then** 
+$\qquad\qquad\qquad$从$\mathbf{x}$中删除最老的frame $x\_{t_min}$
 $\qquad\qquad$设置$s' \leftarrow \mathbf{x}$,添加transition tuple (s, a, r, s 0 ) 到buffer D中，如果$|D| \ge N_r$替换最老的tuple 
 $\qquad\qquad$采样$N_b$个tuples $(s, a, r, s') \sim Unif(D)$
 $\qquad\qquad$计算target values, one for each of $N_b$ tuples:
-$\qquad\qquad$定义$a\^{max}(s'; \theta) = arg max\_{a'} 0 Q(s', a';\theta)$
-$\qquad\qquad y_j = \begin{cases}r\qquad if s' is terminal\\\\ r+\gamma Q(s', a\^{max}(s';\theta);\theta\^{-}, \qquad otherwise\end{cases}$
-$\qquad\qquad$利用loss function$||y_j − Q(s, a; \theta)||^2$的梯度更新
+$\qquad\qquad$定义$a\^{max}(s'; \theta) = arg max\_{a'} Q(s', a';\theta)$
+$\qquad\qquad y_j = \begin{cases}r&\qquad if\ \ s'\ \ is\ \ terminal\\\\ r+\gamma Q(s', a\^{max}(s';\theta);\theta\^{-}, &\qquad otherwise\end{cases}$
+$\qquad\qquad$利用loss $||y_j − Q(s, a; \theta)||^2$的梯度更新
 $\qquad\qquad$每隔$N\^{-}$个步骤更新一下target network 参数$\theta\^{-}$
-$\qquad$end
-end
+$\qquad$**end**
+**end**
 
 ### 实验
 提出了一个指标，normalized score，计算公式如下：
@@ -231,22 +232,22 @@ OK,这里IS的作用有些不明白。。。。<TODO>
 输入: minibatch $k$, 学习率（步长）$\eta$, replay period $K$ and size $N$ , exponents $\alpha$ and $\beta$, budget $T$.
 初始化replay memory $H = \emptyset, \Delta = 0, p_1 = 1$
 根据$S_0$选择 $A_0 \sim \pi\_{\theta}|(S_0)$
-for $t = 1,\cdots, T$ do
+**for** $t = 1,\cdots, T$ do
 $\qquad$观测$S_t, R_t, \gamma_t$
 $\qquad$存储transition $(S\_{t−1}, A\_{t−1}, R_t , \gamma_t, S_t)$ 到replay memory，以及$p_t$的最大priority $p_t = max {i\lt t} p_i$
-$\qquad$if $t ≡ 0$ mod $K$ then
-$\qquad\qquad$for j = 1 to k do
+$\qquad$**if** $t ≡ 0$ mod $K$ then
+$\qquad\qquad$**for** j = 1 to k do
 $\qquad\qquad\qquad$Sample transition $j \sim P(j) = \frac{p_j^{\alpha}}{\sum_i p_i^{\alpha}}$
 $\qquad\qquad\qquad$计算importance-sampling weight $w_j = \frac{(N \cdot P(j))\^{\beta}}{max_i w_i}$
 $\qquad\qquad\qquad$计算TD-error $\delta_j = R_j + \gamma_j Q\_{target} (S_j$, $arg max_a Q(S_j, a)) − Q(S\_{j−1} , A\ {j−1})$
 $\qquad\qquad\qquad$更新transition的priority $p_j \leftarrow |\delta_j|$
-累计weight-change $\Delta \left \Delta + w_j \cdot \delta_j \cdot \nabla\_{\theta} Q(S\_{j−1}, A\_{j−1})$
-$\qquad\qquad$end for
+$\qquad\qquad\qquad$累计weight-change $\Delta \leftarrow \Delta + w_j \cdot \delta_j \cdot \nabla\_{\theta} Q(S\_{j−1}, A\_{j−1})$
+$\qquad\qquad$**end for**
 $\qquad\qquad$更新weights $\theta\leftarrow \theta+ \eta\cdot\Delta$, 重置$\Delta = 0$
 $\qquad\qquad$每隔一段时间更新target network $\theta\_{target} \leftarrow \theta$
-$\qquad$end if
+$\qquad$**end if**
 $\qquad$选择action $A_t \sim \pi\_{\theta}(S_t)$
-end for
+**end for**
 
 ### 实验
 两组实验，
