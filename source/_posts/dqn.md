@@ -298,9 +298,9 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 ![noisy_linear_layer](noisy_linear_layer.png)
 用$\theta$表示noisy net的参数，输入是$x$，输出是$y$，即$y=f\_{\theta}(x)$。$\theta$定义为$\theta=\mu+\Sigma\odot\varepsilon$，其中$\zeta=(\mu,\Sigma)$表示可以学习的参数，$\varepsilon$表示服从固定分布的均值为$0$的噪音,$\variepsilon$是random variable。$\odot$表示element-wise乘法。最后的loss函数是关于$\varepsilon$的期望：$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，然后优化相应的$\zeta$，$\varepislon$不能被优化，因为它是random variable。
 一个有$p$个输入单元，$q$个输出单元的fully-connected layer表示如下：
-$$y=wx+b \tag{}$$
+$$y=wx+b \tag{14}$$
 其中$w\in \mathbb{R}\^{q\times p}$，$x\in \mathbb{R}\^{p}$,$b\in \mathbb{R}\^{q}$，对应的noisy linear layer定义如下：
-$$y=(\mu^w+\sigma^w\odot\varepsilon^w)x + \mu^b+\sigma^b\odot\varepsilon^b \tag{}$$
+$$y=(\mu^w+\sigma^w\odot\varepsilon^w)x + \mu^b+\sigma^b\odot\varepsilon^b \tag{15}$$
 就是用$\mu^w+\sigma^w\odot\varepsilon^w$取代$w$，用$\mu^b+\sigma^b\odot\varepsilon^b$取代$b$。其中$\mu^w,\sigma^w\in \mathbb{R}\^{q\times p} $，而$\mu^b,\sigma^b\in\mathbb{R}\^{q}$是可以学习的参数，而$\varepsilon^w\in \mathbb{R}\^{p\times q},\varepsilon^b \in \mathbb{R}\^{q}$是random variable。
 作者提出了两种添加noise的方式，一种是Independent Gaussian noise，一种是Factorised Gaussion noise。使用Factorised的原因是减少随机变量的计算时间，这些时间对于单线程的任务来说还是很多的。
 #### Independent Gaussian noise
@@ -308,13 +308,13 @@ $$y=(\mu^w+\sigma^w\odot\varepsilon^w)x + \mu^b+\sigma^b\odot\varepsilon^b \tag{
 
 #### Factorised Gaussian noise
 通过对$\varepsilon\_{i,j}^w$来说，可以将其分解成$p$个$\varepsilon_i$用于$p$个输入和$q$个$\varepsilon_j$用于$q$个输出，总共有$p+q$个noiss变量。每一个$\varepsilon\_{i,j}^w$和$\varepsilon\_{j}^b$可以写成：
-$$\varepsilon\_{i,j}^w = f(\varepsilon_i)f(\varepsilon_j)\tag{}$$
-$$\varepsilon\_{j}^b = f(\varepsilon_j)\tag{}$$
+$$\varepsilon\_{i,j}^w = f(\varepsilon_i)f(\varepsilon_j)\tag{16}$$
+$$\varepsilon\_{j}^b = f(\varepsilon_j)\tag{17}$$
 其中$f$是一个实函数，在第一个式子中$f(x) = sng(x)\sqrt{|x|}$，在第二个式子中可以取$f(x)=x$，这里选择了和第一个式子中一致。
 因为noisy network的loss函数是$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，是关于noise的一个期望，梯度如下：
-$$\nabla\bar{L}(\zeta)=\nabla\mathbb{E}\left[L(\theta)\right]=\mathbb{E}\left[\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon)\right] \tag{}$$
+$$\nabla\bar{L}(\zeta)=\nabla\mathbb{E}\left[L(\theta)\right]=\mathbb{E}\left[\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon)\right] \tag{18}$$
 使用Monte Carlo估计上述梯度，在每一个step采样一个sample进行optimization:
-$$\nabla\bar{L}(\zeta)\approx\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon) \tag{}$$
+$$\nabla\bar{L}(\zeta)\approx\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon) \tag{19}$$
 
 ### Noisy DQN and dueling
 相对于DQN和dueling DQN来说，noisy DQN and dueling主要做了两方面的改进：
@@ -325,11 +325,11 @@ $$\nabla\bar{L}(\zeta)\approx\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon) \
 
 #### Loss
 $Q(s,a,\epislon;\zeta)$可以看成$\zeta$的一个random variable，NoisyNet-DQN loss如下：
-$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma max\_{b\in A}Q(y, b, \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{14}$$
+$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma max\_{b\in A}Q(y, b, \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{20}$$
 其中外层的期望是$\varepsilon$相对于noisy value function $Q(x,a, \varepsilon;\zeta)$和$\varepsilon'$相对于noisy target value function $Q(x,a, \varepsilon';\zeta\^{-}$。对于buffer中的每一个transition，计算loss的无偏估计，只需要计算target value和true value即可，为了让target value和true之间没有关联，target network和online network采用independent noises。
 就double dqn中的action选择来说，采样一个新的independent sample $\varepsilon\^{''}$计算action value，然后使用greedy操作，NoisyNet-Dueling的loss如下：
-$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma Q(y, b\^{\*}(y), \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{15}$$
-$$b\^{\*}(y) = arg max\_{b\in A} Q(y, b(y), \varepsilon\^{''};\zeta)\tag{16}$$
+$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma Q(y, b\^{\*}(y), \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{21}$$
+$$b\^{\*}(y) = arg max\_{b\in A} Q(y, b(y), \varepsilon\^{''};\zeta)\tag{22}$$
 
 ### Noisy-A3C
 Noisy-A3C相对于A3C有以下的改进：
@@ -383,7 +383,41 @@ $\qquad\qquad$每隔$N\^{-}$步更新target network:$ \zeta\^{−}\leftarrow \ze
 $\qquad$**end for**
 **end for**
 
-算法6 Noisy A3C
+算法6 NoisyNet-A3C for each actor-learner thread
+输入: Environment Env, 全局共享参数$(\zeta\_{\pi},\zeta\_{V})$ , 全局共享counter $T$和maximal time $T\_{max}$ 
+输入: 每个线程的参数 $(\zeta'\_{\pi},\zeta'\_{V})$, random variables $\varepsilon$的集合, 每个线程的counter $t$和TD-$\gamma$的长度$t\_{max}$
+输出: policy $\pi(\cdot; \zeta\_{\pi}, \varepsilon)$和value $V(\cdot; \zeta\_{V}, \varepsilon)$
+初始化线程counter $t \leftarrow 1$
+**repeat**
+重置acumulative gradients: $d\zeta\_{\pi}\leftarrow 0$和$d\zeta_V \leftarrow 0
+Synchronise每个线程的parameters: $\zeta'\_{\pi}\leftarrow \zeta\_{\pi}$和$\zeta\_V\leftarrow \zeta\_V$
+counter $\leftarrow 0$
+从Env中得到state $x_t$
+采样noise: $\xi\sim\varepsilon$
+$r \leftarrow \[\]$
+$a \leftarrow \[\]$
+$x \leftarrow \[\]$和$x\[0\] \leftarrow x_t$
+**repeat**
+采样action: $a_t \sim\pi(\cdot|x_t;\zeta'\_{\pi};\xi)$
+$a[−1]\leftarrow a_t$
+接收reward $r_t$和next state $x\_{t+1}$
+$r[−1]\leftarrow r_t$和$x[−1]\leftarrow x_t+1$
+$t\leftarrow t + 1$和 $T\leftarrow T + 1$
+$counter = counter + 1$
+**until** $x_t\ \ terminal\ \ or\ \ counter == t\_{max} + 1$
+**if** x t is a terminal state then
+Q =0
+**else**
+Q = V (x t ; \zeta\_{\pi} V 0 , ξ)
+**end if**
+**for** $i \in \{counter − 1, \cdots, 0\} do
+Update Q: Q\leftarrow  ← r[i] + γQ.
+Accumulate policy-gradient: dζ\zeta\_{\pi} π\leftarrow  ← dζ\zeta\_{\pi} π + ∇ \zeta\_{\pi}ζ π 0 log(π(a[i]|x[i]; ζ π\zeta\_{\pi} 0 , ξ))[Q − V (x[i]; ζ \zeta\_{\pi}V 0 , ξ)].
+Accumulate value-gradient: dζ V \leftarrow ← dζ V\zeta\_{\pi} + ∇ ζ V \zeta\_{\pi}0 [Q − V (x[i]; ζ V \zeta\_{\pi}0 , ξ)] 2 .
+**end for**
+执行$\zeta\_{\pi}$的asynchronous update: $\zeta\_{\pi}\leftarrow \zeta\_{\pi} + \alpha\_{\pi}d\zeta\_{\pi}
+执行$\zeta\_{V}$的asynchronous update: $\zeta\_{V}\leftarrow \zeta\_{V} − \alpha_VdV\zeta\_{V}
+**until** $T \gt T\_{max}$
 
 
 ## Rainbow
