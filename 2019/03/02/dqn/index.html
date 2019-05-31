@@ -111,7 +111,7 @@
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/02/dqn/nature-dqn.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/02/dqn/double-dqn.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/02/dqn/deuling-dqn.png">
-<meta property="og:updated_time" content="2019-05-31T08:48:18.127Z">
+<meta property="og:updated_time" content="2019-05-31T12:17:01.631Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="DQN">
 <meta name="twitter:description" content="Playing Atari with Deep Reinforcement Learning 概述 用一个CNN表示值函数，直接从高维的输入中学习控制策略。用Q-learning的变种来训练这个CNN。网络的输入是原始的图片，输出是图片对应的state可能采取的action的$Q$值。 Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一个图像输入(210">
@@ -392,7 +392,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-31 16:48:18" itemprop="dateModified" datetime="2019-05-31T16:48:18+08:00">2019-05-31</time>
+                <time title="修改时间：2019-05-31 20:17:01" itemprop="dateModified" datetime="2019-05-31T20:17:01+08:00">2019-05-31</time>
               
             
           </span>
@@ -743,37 +743,36 @@ $$b^{*}(y) = arg max_{b\in A} Q(y, b(y), \varepsilon^{’’};\zeta)\tag{16}$$</
 输入: replay buffer大小$N_B$; batch size $N_T$; target network更新频率$N^{-}$<br>
 输出: $Q(\cdot, \varepsilon; \zeta)$ action-value function<br>
 <strong>for</strong> episode $e\in  {1,\cdots , M}$ do<br>
-初始化state sequence $x_0 \sim Env$<br>
-$$<strong>for</strong> $t \in {1,\cdots }$ do<br>
-设置$x \leftarrow x_0$<br>
-采样 a noisy network  $\xi\sim \varepsilon$<br>
-选择an action $a \leftarrow arg max_{b\in A} Q(x, b, \xi; \zeta)$<br>
-采样 next state $y \sim  P (\cdot|x, a)$, 接收 reward $r \leftarrow R(x, a) $以及$x_0 \leftarrow y$<br>
-将transition (x, a, r, y)添加到replay buffer<br>
-<strong>if</strong> $|B| \gt N_B$ then<br>
-删掉最老的transition<br>
-<strong>end if</strong><br>
-采样一个大小为$N_T$的batch, transitions $((x_j , a_j , r_j , y_j) \sim D)_{j=1}^{N_T}$<br>
-Sample the noisy variable for the online network ξ ∼ ε<br>
-Sample the noisy variables for the target network ξ 0 ∼ ε<br>
-if DUELING then<br>
-Sample the noisy variables for the action selection network ξ 00 ∼ ε<br>
-for j ∈ {1, . . . , N T } do<br>
-if y j is a terminal state then<br>
-b ← r j<br>
-Q<br>
-if DUELING then<br>
-b ∗ (y j ) = arg max b∈A Q(y j , b, ξ 00 ; ζ)<br>
-b ← r j + γQ(y j , b ∗ (y j ), ξ 0 ; ζ − )<br>
-Q<br>
-else<br>
-b ← r j + γ max b∈A Q(y j , b, ξ 0 ; ζ − )<br>
-Q<br>
-b − Q(x j , a j , ξ; ζ)) 2<br>
-利用loss的梯度进行更新a gradient step with loss ( Q<br>
-<strong>end</strong><br>
-每隔$N^{-}$步更新target network:$ \zeta^{−}\leftarrow \zeta$<br>
-<strong>end for</strong><br>
+$\qquad$初始化state sequence $x_0 \sim Env$<br>
+$\qquad$<strong>for</strong> $t \in {1,\cdots }$ do<br>
+$\qquad\qquad$设置$x \leftarrow x_0$<br>
+$\qquad\qquad$采样 a noisy network  $\xi\sim \varepsilon$<br>
+$\qquad\qquad$选择an action $a \leftarrow arg max_{b\in A} Q(x, b, \xi; \zeta)$<br>
+$\qquad\qquad$采样 next state $y \sim  P (\cdot|x, a)$, 接收 reward $r \leftarrow R(x, a) $以及$x_0 \leftarrow y$<br>
+$\qquad\qquad$将transition (x, a, r, y)添加到replay buffer<br>
+$\qquad\qquad$<strong>if</strong> $|B| \gt N_B$ then<br>
+$\qquad\qquad\qquad$删掉最老的transition<br>
+$\qquad\qquad$<strong>end if</strong><br>
+$\qquad$采样一个大小为$N_T$的batch, transitions $((x_j, a_j, r_j, y_j) \sim D)_{j=1}^{N_T}$<br>
+$\qquad\qquad$采样noisy variables用于online network $\xi \sim\varepsilon$<br>
+$\qquad\qquad$采样noisy variables用于target network $\xi’\sim\varepsilon$<br>
+$\qquad\qquad$\qquad$<strong>if</strong> DUELING then<br>
+$\qquad\qquad\qquad$采样noisy variables用于选择action的network $\xi\sim\varepsilon$<br>
+$\qquad\qquad$<strong>end if</strong><br>
+$\qquad\qquad$<strong>for</strong> j ∈ {1, . . . , N T } do<br>
+$\qquad\qquad\qquad$<strong>if</strong> $y_j$ is a terminal state then<br>
+$\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j$<br>
+$\qquad\qquad\qquad$<strong>end if</strong><br>
+$\qquad\qquad\qquad$<strong>if</strong> DUELING then<br>
+$\qquad\qquad\qquad\qquad$$b^{*}(y_j) = arg max_{b\in A} Q(y_j, b, \xi^{’’}; \zeta)<br>
+$\qquad\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma Q(y_j, b^{*}(y_j), \xi’;\zeta^{-})$<br>
+$\qquad\qquad\qquad$<strong>else</strong><br>
+$\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma max_{b\in A} Q(y_j, b, \xi’;\zeta^{-})$<br>
+$\qquad\qquad$<strong>end if</strong><br>
+$\qquad\qquad\qquad$利用loss $(\hat{Q}-Q(x_j,a_j, \xi;\seta))^2$的梯度进行更新（？？？这里是更新什么？我觉得应该是同时更新$\xi$和$\zeta$）<br>
+$\qquad\qquad$<strong>end for</strong><br>
+$\qquad\qquad$每隔$N^{-}$步更新target network:$ \zeta^{−}\leftarrow \zeta$<br>
+$\qquad$<strong>end for</strong><br>
 <strong>end for</strong></p>
 <p>算法6 Noisy A3C</p>
 <h2 id="rainbow">Rainbow</h2>
