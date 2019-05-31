@@ -68,6 +68,8 @@ $\Phi$ \Phi
 $\Delta$ \Delta
 $\delta$ \delta
 $\nabla$ \nabla
+$\zeta$ \zeta
+$\xi$ \xi
 
 ### 字体
 $\mathbf{A}$ \mathbf{A}

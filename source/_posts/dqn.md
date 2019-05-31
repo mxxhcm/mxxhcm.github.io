@@ -316,37 +316,36 @@ $$b\^{\*}(y) = arg max\_{b\in A} Q(y, b(y), \varepsilon\^{''};\zeta)\tag{16}$$
 输入: replay buffer大小$N_B$; batch size $N_T$; target network更新频率$N\^{-}$
 输出: $Q(\cdot, \varepsilon; \zeta)$ action-value function
 **for** episode $e\in  {1,\cdots , M}$ do
-初始化state sequence $x_0 \sim Env$
-$$**for** $t \in {1,\cdots }$ do
-设置$x \leftarrow x_0$
-采样 a noisy network  $\xi\sim \varepsilon$
-选择an action $a \leftarrow arg max\_{b\in A} Q(x, b, \xi; \zeta)$
-采样 next state $y \sim  P (\cdot|x, a)$, 接收 reward $r \leftarrow R(x, a) $以及$x_0 \leftarrow y$
-将transition (x, a, r, y)添加到replay buffer
-**if** $|B| \gt N_B$ then
-删掉最老的transition
-**end if**
-采样一个大小为$N_T$的batch, transitions $((x_j , a_j , r_j , y_j) \sim D)\_{j=1}\^{N_T}$
-Sample the noisy variable for the online network ξ ∼ ε
-Sample the noisy variables for the target network ξ 0 ∼ ε
-if DUELING then
-Sample the noisy variables for the action selection network ξ 00 ∼ ε
-for j ∈ {1, . . . , N T } do
-if y j is a terminal state then
-b ← r j
-Q
-if DUELING then
-b ∗ (y j ) = arg max b∈A Q(y j , b, ξ 00 ; ζ)
-b ← r j + γQ(y j , b ∗ (y j ), ξ 0 ; ζ − )
-Q
-else
-b ← r j + γ max b∈A Q(y j , b, ξ 0 ; ζ − )
-Q
-b − Q(x j , a j , ξ; ζ)) 2
-利用loss的梯度进行更新a gradient step with loss ( Q
-**end**
-每隔$N\^{-}$步更新target network:$ \zeta\^{−}\leftarrow \zeta$ 
-**end for**
+$\qquad$初始化state sequence $x_0 \sim Env$
+$\qquad$**for** $t \in {1,\cdots }$ do
+$\qquad\qquad$设置$x \leftarrow x_0$
+$\qquad\qquad$采样 a noisy network  $\xi\sim \varepsilon$
+$\qquad\qquad$选择an action $a \leftarrow arg max\_{b\in A} Q(x, b, \xi; \zeta)$
+$\qquad\qquad$采样 next state $y \sim  P (\cdot|x, a)$, 接收 reward $r \leftarrow R(x, a) $以及$x_0 \leftarrow y$
+$\qquad\qquad$将transition (x, a, r, y)添加到replay buffer
+$\qquad\qquad$**if** $|B| \gt N_B$ then
+$\qquad\qquad\qquad$删掉最老的transition
+$\qquad\qquad$**end if**
+$\qquad$采样一个大小为$N_T$的batch, transitions $((x_j, a_j, r_j, y_j) \sim D)\_{j=1}\^{N_T}$
+$\qquad\qquad$采样noisy variables用于online network $\xi \sim\varepsilon$
+$\qquad\qquad$采样noisy variables用于target network $\xi'\sim\varepsilon$
+$\qquad\qquad$\qquad$**if** DUELING then
+$\qquad\qquad\qquad$采样noisy variables用于选择action的network $\xi\sim\varepsilon$ 
+$\qquad\qquad$**end if**
+$\qquad\qquad$**for** j ∈ {1, . . . , N T } do
+$\qquad\qquad\qquad$**if** $y_j$ is a terminal state then
+$\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j$
+$\qquad\qquad\qquad$**end if**
+$\qquad\qquad\qquad$**if** DUELING then
+$\qquad\qquad\qquad\qquad$$b\^{\*}(y_j) = arg max\_{b\in A} Q(y_j, b, \xi\^{''}; \zeta)
+$\qquad\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma Q(y_j, b\^{\*}(y_j), \xi';\zeta\^{-})$
+$\qquad\qquad\qquad$**else**
+$\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma max\_{b\in A} Q(y_j, b, \xi';\zeta\^{-})$
+$\qquad\qquad$**end if**
+$\qquad\qquad\qquad$利用loss $(\hat{Q}-Q(x_j,a_j, \xi;\seta))^2$的梯度进行更新（？？？这里是更新什么？我觉得应该是同时更新$\xi$和$\zeta$）
+$\qquad\qquad$**end for**
+$\qquad\qquad$每隔$N\^{-}$步更新target network:$ \zeta\^{−}\leftarrow \zeta$ 
+$\qquad$**end for**
 **end for**
 
 算法6 Noisy A3C
