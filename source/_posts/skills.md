@@ -8,7 +8,7 @@ categories:
 
 ## 累加
 ### 简单介绍
-今天在看Reinforcment Learning: an Introduction第五章的时候，写了figure_5_4的代码，然后跟github上作者写出来的效率查了太多。
+今天在看Reinforcment Learning: an Introduction第五章的时候，写了figure_5_4的代码，然后跟github上作者写出来的效率差了太多。
 最后对比了一下代码，发现了原因，是因为做了太多重复运算。
 
 ### 代码示例
@@ -53,9 +53,6 @@ Total time:  450.6051049232483
 Total time:  0.03314399719238281
 """
 ```
-
-
-
 
 ## 参考文献
 1.
