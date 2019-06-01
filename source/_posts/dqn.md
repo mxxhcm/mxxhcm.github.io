@@ -10,7 +10,8 @@ categories: 强化学习
 mathjax: true
 ---
 
-## Playing Atari with Deep Reinforcement Learning
+## DQN
+论文名称[Playing Atari with Deep Reinforcement Learning](https://arxiv.org/pdf/1312.5602.pdf)
 ### 概述
 用一个CNN表示值函数，直接从高维的输入中学习控制策略。用Q-learning的变种来训练这个CNN。网络的输入是原始的图片，输出是图片对应的state可能采取的action的$Q$值。
 Atari 2600是一个RL的benchmark，有2600个游戏，每个agent会得到一个图像输入(210 x 160 RGB视频60Hz)。本文的目标是设计一个NN架构尽可能学会更多游戏，网络的输入只有视频信息，reward和terminal信号以及可能采取的action，和人类玩家得到的信息是一模一样的，当然是计算机能看得懂的信号。
@@ -297,20 +298,20 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 
 ### NoisyNets 
 ![noisy_linear_layer](noisy_linear_layer.png)
-用$\theta$表示noisy net的参数，输入是$x$，输出是$y$，即$y=f\_{\theta}(x)$。$\theta$定义为$\theta=\mu+\Sigma\odot\varepsilon$，其中$\zeta=(\mu,\Sigma)$表示可以学习的参数，$\varepsilon$表示服从固定分布的均值为$0$的噪音,$\variepsilon$是random variable。$\odot$表示element-wise乘法。最后的loss函数是关于$\varepsilon$的期望：$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，然后优化相应的$\zeta$，$\varepislon$不能被优化，因为它是random variable。
+用$\theta$表示noisy net的参数，输入是$x$，输出是$y$，即$y=f\_{\theta}(x)$。$\theta$定义为$\theta=\mu+\Sigma\odot\varepsilon$，其中$\zeta=(\mu,\Sigma)$表示可以学习的参数，$\varepsilon$表示服从固定分布的均值为$0$的噪音,$\varepsilon$是random variable。$\odot$表示element-wise乘法。最后的loss函数是关于$\varepsilon$的期望：$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，然后优化相应的$\zeta$，$\varepsilon$不能被优化，因为它是random variable。
 一个有$p$个输入单元，$q$个输出单元的fully-connected layer表示如下：
 $$y=wx+b \tag{14}$$
 其中$w\in \mathbb{R}\^{q\times p}$，$x\in \mathbb{R}\^{p}$,$b\in \mathbb{R}\^{q}$，对应的noisy linear layer定义如下：
-$$y=(\mu^w+\sigma^w\odot\varepsilon^w)x + \mu^b+\sigma^b\odot\varepsilon^b \tag{15}$$
-就是用$\mu^w+\sigma^w\odot\varepsilon^w$取代$w$，用$\mu^b+\sigma^b\odot\varepsilon^b$取代$b$。其中$\mu^w,\sigma^w\in \mathbb{R}\^{q\times p} $，而$\mu^b,\sigma^b\in\mathbb{R}\^{q}$是可以学习的参数，而$\varepsilon^w\in \mathbb{R}\^{p\times q},\varepsilon^b \in \mathbb{R}\^{q}$是random variable。
+$$y=(\mu\^w+\sigma^w\odot\varepsilon^w)x + \mu\^b+\sigma\^b\odot\varepsilon\^b \tag{15}$$
+就是用$\mu\^w+\sigma\^w\odot\varepsilon\^w$取代$w$，用$\mu\^b+\sigma\^b\odot\varepsilon\^b$取代$b$。其中$\mu^w,\sigma^w\in \mathbb{R}\^{q\times p} $，而$\mu^b,\sigma^b\in\mathbb{R}\^{q}$是可以学习的参数，而$\varepsilon^w\in \mathbb{R}\^{p\times q},\varepsilon^b \in \mathbb{R}\^{q}$是random variable。
 作者提出了两种添加noise的方式，一种是Independent Gaussian noise，一种是Factorised Gaussion noise。使用Factorised的原因是减少随机变量的计算时间，这些时间对于单线程的任务来说还是很多的。
 #### Independent Gaussian noise
-应用到每一个weight和bias的noise都是independent的，对于$\varepsilon^w$的每一项$\varepsilon\_{i,j}^w$来说，它们的值都是从一个unit Gaussion distribution中采样得到的；$varepsilon^b$同理。所以对于一个$p$个输入,$q$个输出的noisy linear layer总共有$pq+q$个noise 变量。
+应用到每一个weight和bias的noise都是independent的，对于$\varepsilon\^w$的每一项$\varepsilon\_{i,j}\^w$来说，它们的值都是从一个unit Gaussion distribution中采样得到的；$varepsilon^b$同理。所以对于一个$p$个输入,$q$个输出的noisy linear layer总共有$pq+q$个noise 变量。
 
 #### Factorised Gaussian noise
-通过对$\varepsilon\_{i,j}^w$来说，可以将其分解成$p$个$\varepsilon_i$用于$p$个输入和$q$个$\varepsilon_j$用于$q$个输出，总共有$p+q$个noiss变量。每一个$\varepsilon\_{i,j}^w$和$\varepsilon\_{j}^b$可以写成：
-$$\varepsilon\_{i,j}^w = f(\varepsilon_i)f(\varepsilon_j) \tag{16}$$
-$$\varepsilon\_{j}^b = f(\varepsilon_j)\tag{17}$$
+通过对$\varepsilon\_{i,j}\^w$来说，可以将其分解成$p$个$\varepsilon_i$用于$p$个输入和$q$个$\varepsilon_j$用于$q$个输出，总共有$p+q$个noiss变量。每一个$\varepsilon\_{i,j}\^w$和$\varepsilon\_{j}\^b$可以写成：
+$$\varepsilon\_{i,j}\^w = f(\varepsilon_i)f(\varepsilon_j) \tag{16}$$
+$$\varepsilon\_{j}\^b = f(\varepsilon_j)\tag{17}$$
 其中$f$是一个实函数，在第一个式子中$f(x) = sng(x)\sqrt{|x|}$，在第二个式子中可以取$f(x)=x$，这里选择了和第一个式子中一致。
 因为noisy network的loss函数是$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，是关于noise的一个期望，梯度如下：
 $$\nabla\bar{L}(\zeta)=\nabla\mathbb{E}\left[L(\theta)\right]=\mathbb{E}\left[\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon)\right] \tag{18}$$
@@ -325,8 +326,8 @@ $$\nabla\bar{L}(\zeta)\approx\nabla\_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon) \
 在replay 整个batch的过程中，noisy network parameter sample保持不变。因为DQN和Dueling每执行一个action step之后都会执行一次optimization，每次采样action之前都要重新采样noisy network parameters。
 
 #### Loss
-$Q(s,a,\epislon;\zeta)$可以看成$\zeta$的一个random variable，NoisyNet-DQN loss如下：
-$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma max\_{b\in A}Q(y, b, \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{20}$$
+$Q(s,a,\epsilon;\zeta)$可以看成$\zeta$的一个random variable，NoisyNet-DQN loss如下：
+$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma max\_{b\in A}Q(y, b, \varepsilon';\zeta\^{-}) - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{20}$$
 其中外层的期望是$\varepsilon$相对于noisy value function $Q(x,a, \varepsilon;\zeta)$和$\varepsilon'$相对于noisy target value function $Q(x,a, \varepsilon';\zeta\^{-}$。对于buffer中的每一个transition，计算loss的无偏估计，只需要计算target value和true value即可，为了让target value和true之间没有关联，target network和online network采用independent noises。
 就double dqn中的action选择来说，采样一个新的independent sample $\varepsilon\^{''}$计算action value，然后使用greedy操作，NoisyNet-Dueling的loss如下：
 $$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}\_{(x,a,r,y)}\sim D\left[r + \gamma Q(y, b\^{\*}(y), \varepsilon';\zeta\^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{21}$$
@@ -364,10 +365,10 @@ $\qquad\qquad$**end if**
 $\qquad$采样一个大小为$N_T$的batch, transitions $((x_j, a_j, r_j, y_j) \sim D)\_{j=1}\^{N_T}$
 $\qquad\qquad$采样noisy variables用于online network $\xi \sim\varepsilon$
 $\qquad\qquad$采样noisy variables用于target network $\xi'\sim\varepsilon$
-$\qquad\qquad$\qquad$**if** DUELING then
+$\qquad\qquad\qquad$**if** DUELING then
 $\qquad\qquad\qquad$采样noisy variables用于选择action的network $\xi\sim\varepsilon$ 
 $\qquad\qquad$**end if**
-$\qquad\qquad$**for** j ∈ {1, . . . , N T } do
+$\qquad\qquad$**for** j \in {1,\cdots, N_T} do
 $\qquad\qquad\qquad$**if** $y_j$ is a terminal state then
 $\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j$
 $\qquad\qquad\qquad$**end if**
@@ -377,7 +378,7 @@ $\qquad\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma Q(y_j, b\^{\*}(y
 $\qquad\qquad\qquad$**else**
 $\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma max\_{b\in A} Q(y_j, b, \xi';\zeta\^{-})$
 $\qquad\qquad$**end if**
-$\qquad\qquad\qquad$利用loss $(\hat{Q}-Q(x_j,a_j, \xi;\seta))^2$的梯度进行更新$\zeta$
+$\qquad\qquad\qquad$利用loss $(\hat{Q}-Q(x_j,a_j, \xi;\zeta))^2$的梯度更新$\zeta$
 $\qquad\qquad$**end for**
 $\qquad\qquad$每隔$N\^{-}$步更新target network:$ \zeta\^{−}\leftarrow \zeta$ 
 $\qquad$**end for**
@@ -389,14 +390,14 @@ $\qquad$**end for**
 输出: policy $\pi(\cdot; \zeta\_{\pi}, \varepsilon)$和value $V(\cdot; \zeta\_{V}, \varepsilon)$
 初始化线程counter $t \leftarrow 1$
 **repeat**
-$\qquad$重置acumulative gradients: $d\zeta\_{\pi}\leftarrow 0$和$d\zeta_V \leftarrow 0
+$\qquad$重置acumulative gradients: $d\zeta\_{\pi}\leftarrow 0$和$d\zeta_V \leftarrow 0$
 $\qquad$Synchronise每个线程的parameters: $\zeta'\_{\pi}\leftarrow \zeta\_{\pi}$和$\zeta\_V\leftarrow \zeta\_V$
 $\qquad$counter $\leftarrow 0$
 $\qquad$从Env中得到state $x_t$
 $\qquad$采样noise: $\xi\sim\varepsilon$
-$\qquad$$r \leftarrow \[\]$
-$\qquad$$a \leftarrow \[\]$
-$\qquad$$x \leftarrow \[\]$和$x\[0\] \leftarrow x_t$
+$\qquad r \leftarrow \[\]$
+$\qquad a \leftarrow \[\]$
+$\qquad x \leftarrow \[\]$和$x\[0\] \leftarrow x_t$
 $\qquad$**repeat**
 $\qquad\qquad$采样action: $a_t \sim\pi(\cdot|x_t;\zeta'\_{\pi};\xi)$
 $\qquad\qquad$$a[−1]\leftarrow a_t$
@@ -410,13 +411,13 @@ $\qquad\qquad$$Q = 0$
 $\qquad$**else**
 $\qquad\qquad$$Q = V(x_t; \zeta'\_{V}, \xi)$
 $\qquad$**end if**
-$\qquad$**for** $i \in \{counter − 1, \cdots, 0\} do
+$\qquad$**for** $i \in \{counter − 1, \cdots, 0\}$ do
 $\qquad\qquad$更新Q: $Q\leftarrow r[i] + \gammaQ$
 $\qquad\qquad$累积policy-gradient: $d\zeta\_{\pi} \leftarrow d\zeta\_{\pi} + \nabla \zeta'\_{\pi}log(\pi(a[i]|x[i]; \zeta'\_{\pi}, \xi))[Q − V(x[i]; \zeta'\_{\pi}V, \xi)]$
 $\qquad\qquad$累积 value-gradient: $d\zeta_V \leftarrow ← d\zeta_V+ \nabla \zeta'\_{V}[Q − V(x[i]; \zeta'\_{V}, \xi)]^2$
 $\qquad$**end for**
-$\qquad$执行$\zeta\_{\pi}$的asynchronous update: $\zeta\_{\pi}\leftarrow \zeta\_{\pi} + \alpha\_{\pi}d\zeta\_{\pi}
-$\qquad$执行$\zeta\_{V}$的asynchronous update: $\zeta\_{V}\leftarrow \zeta\_{V} − \alpha_VdV\zeta\_{V}
+$\qquad$执行$\zeta\_{\pi}$的asynchronous update: $\zeta\_{\pi}\leftarrow \zeta\_{\pi} + \alpha\_{\pi}d\zeta\_{\pi}$
+$\qquad$执行$\zeta\_{V}$的asynchronous update: $\zeta\_{V}\leftarrow \zeta\_{V} − \alpha_VdV\zeta\_{V}$
 **until** $T \gt T\_{max}$
 
 ## Rainbow
