@@ -389,36 +389,35 @@ $\qquad$**end for**
 输出: policy $\pi(\cdot; \zeta\_{\pi}, \varepsilon)$和value $V(\cdot; \zeta\_{V}, \varepsilon)$
 初始化线程counter $t \leftarrow 1$
 **repeat**
-重置acumulative gradients: $d\zeta\_{\pi}\leftarrow 0$和$d\zeta_V \leftarrow 0
-Synchronise每个线程的parameters: $\zeta'\_{\pi}\leftarrow \zeta\_{\pi}$和$\zeta\_V\leftarrow \zeta\_V$
-counter $\leftarrow 0$
-从Env中得到state $x_t$
-采样noise: $\xi\sim\varepsilon$
-$r \leftarrow \[\]$
-$a \leftarrow \[\]$
-$x \leftarrow \[\]$和$x\[0\] \leftarrow x_t$
-**repeat**
-采样action: $a_t \sim\pi(\cdot|x_t;\zeta'\_{\pi};\xi)$
-$a[−1]\leftarrow a_t$
-接收reward $r_t$和next state $x\_{t+1}$
-$r[−1]\leftarrow r_t$和$x[−1]\leftarrow x_t+1$
-$t\leftarrow t + 1$和 $T\leftarrow T + 1$
-$counter = counter + 1$
-**until** $x_t\ \ terminal\ \ or\ \ counter == t\_{max} + 1$
-**if** x t is a terminal state then
-Q =0
-**else**
-Q = V (x t ; \zeta\_{\pi} V 0 , ξ)
-**end if**
-**for** $i \in \{counter − 1, \cdots, 0\} do
-Update Q: Q\leftarrow  ← r[i] + γQ.
-Accumulate policy-gradient: dζ\zeta\_{\pi} π\leftarrow  ← dζ\zeta\_{\pi} π + ∇ \zeta\_{\pi}ζ π 0 log(π(a[i]|x[i]; ζ π\zeta\_{\pi} 0 , ξ))[Q − V (x[i]; ζ \zeta\_{\pi}V 0 , ξ)].
-Accumulate value-gradient: dζ V \leftarrow ← dζ V\zeta\_{\pi} + ∇ ζ V \zeta\_{\pi}0 [Q − V (x[i]; ζ V \zeta\_{\pi}0 , ξ)] 2 .
-**end for**
-执行$\zeta\_{\pi}$的asynchronous update: $\zeta\_{\pi}\leftarrow \zeta\_{\pi} + \alpha\_{\pi}d\zeta\_{\pi}
-执行$\zeta\_{V}$的asynchronous update: $\zeta\_{V}\leftarrow \zeta\_{V} − \alpha_VdV\zeta\_{V}
+$\qquad$重置acumulative gradients: $d\zeta\_{\pi}\leftarrow 0$和$d\zeta_V \leftarrow 0
+$\qquad$Synchronise每个线程的parameters: $\zeta'\_{\pi}\leftarrow \zeta\_{\pi}$和$\zeta\_V\leftarrow \zeta\_V$
+$\qquad$counter $\leftarrow 0$
+$\qquad$从Env中得到state $x_t$
+$\qquad$采样noise: $\xi\sim\varepsilon$
+$\qquad$$r \leftarrow \[\]$
+$\qquad$$a \leftarrow \[\]$
+$\qquad$$x \leftarrow \[\]$和$x\[0\] \leftarrow x_t$
+$\qquad$**repeat**
+$\qquad\qquad$采样action: $a_t \sim\pi(\cdot|x_t;\zeta'\_{\pi};\xi)$
+$\qquad\qquad$$a[−1]\leftarrow a_t$
+$\qquad\qquad$接收reward $r_t$和next state $x\_{t+1}$
+$\qquad\qquad$$r[−1]\leftarrow r_t$和$x[−1]\leftarrow x_t+1$
+$\qquad\qquad$$t\leftarrow t + 1$和 $T\leftarrow T + 1$
+$\qquad\qquad$$counter = counter + 1$
+$\qquad\qquad$**until** $x_t\ \ terminal\ \ or\ \ counter == t\_{max} + 1$
+$\qquad$**if** $x_t$ is a terminal state then
+$\qquad\qquad$$Q = 0$
+$\qquad$**else**
+$\qquad\qquad$$Q = V(x_t; \zeta'\_{V}, \xi)$
+$\qquad$**end if**
+$\qquad$**for** $i \in \{counter − 1, \cdots, 0\} do
+$\qquad\qquad$更新Q: $Q\leftarrow r[i] + \gammaQ$
+$\qquad\qquad$累积policy-gradient: $d\zeta\_{\pi} \leftarrow d\zeta\_{\pi} + \nabla \zeta'\_{\pi}log(\pi(a[i]|x[i]; \zeta'\_{\pi}, \xi))[Q − V(x[i]; \zeta'\_{\pi}V, \xi)]$
+$\qquad\qquad$累积 value-gradient: $d\zeta_V \leftarrow ← d\zeta_V+ \nabla \zeta'\_{V}[Q − V(x[i]; \zeta'\_{V}, \xi)]^2$
+$\qquad$**end for**
+$\qquad$执行$\zeta\_{\pi}$的asynchronous update: $\zeta\_{\pi}\leftarrow \zeta\_{\pi} + \alpha\_{\pi}d\zeta\_{\pi}
+$\qquad$执行$\zeta\_{V}$的asynchronous update: $\zeta\_{V}\leftarrow \zeta\_{V} − \alpha_VdV\zeta\_{V}
 **until** $T \gt T\_{max}$
-
 
 ## Rainbow
 

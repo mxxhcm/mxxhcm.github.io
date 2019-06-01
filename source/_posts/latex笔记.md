@@ -19,6 +19,15 @@ $\mmm{x}$
 $\bf{x}$
 
 ## 常用Latex符号
+### 各种乘法
+$\times$ \times
+$\*$ *
+$\cdot$ \cdot
+$\bullet$ \bullet
+$\otimes$ \otimes
+$\cric$ \cric
+$\odot$ \odot
+
 ### 括号
 \left(\frac{1}{2}\right)    $\left(\frac{1}{2} \right)$
 \left[\frac{1}{2} \right]    $\left[\frac{1}{2} \right]$
@@ -226,3 +235,4 @@ J(\pi_0, \{\pi_i\}\_{i=1}\^n) &=\sum_i\mathbb{E}\_{\pi_i}\left[\sum_{t\ge 0}\gam
 2.https://blog.csdn.net/xxzhangx/article/details/52778539
 3.https://blog.csdn.net/hunauchenym/article/details/7330828
 4.http://geowu.blogspot.com/2012/10/latex_25.html
+5.https://math.stackexchange.com/questions/20412/element-wise-or-pointwise-operations-notation
