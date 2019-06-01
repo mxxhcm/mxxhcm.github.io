@@ -111,7 +111,7 @@
 <meta property="og:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
-<meta property="og:updated_time" content="2019-05-28T01:56:20.456Z">
+<meta property="og:updated_time" content="2019-06-01T07:26:35.996Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="reinforcement learning an introduction 第5章笔记">
 <meta name="twitter:description" content="MC简介 通过采样估计值函数。有三个优势，从真实experience中学习，从仿真环境中学习，以及每个state value的计算独立于其他state。 MC Methods 这一章介绍的是Monte Carlo方法，和DP不一样的是，它不需要环境的信息，只需要experience即可–从真实交互或者仿真环境中得到的state,action,reward序列都行。从真实交互中学习不需要环境的信息，">
@@ -392,7 +392,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-28 09:56:20" itemprop="dateModified" datetime="2019-05-28T09:56:20+08:00">2019-05-28</time>
+                <time title="修改时间：2019-06-01 15:26:35" itemprop="dateModified" datetime="2019-06-01T15:26:35+08:00">2019-06-01</time>
               
             
           </span>
@@ -608,8 +608,23 @@ $$V(s) = \frac{\sum_{t\in J(s)}\rho_{t:T(t)-1} G_t}{\sum_{t\in J(s)}\rho_{t:T(t)
 在every visit算法中，普通平均和加权平均都是有偏的，随着样本的增加，偏差也趋向于$0$。在实践中，因为every visit不需要记录哪个状态是否被记录过，所以要比first visit常用。</p>
 <h3 id="无穷大方差">无穷大方差</h3>
 <p><img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt><br>
-有这样一个例子。只有一个non-terminal state s，两个ation，left和right，right action是deterministic transition到termination，left action有$0.9$的概率回到s，有$0.1$的概率到termination。left action回到termination会产生$+1$的reward，其他操作的reward是$0$。所有target policy策略下的episodes都会经过一些次回到state s然后到达terminal state，总的returns是$1(\gamma = 1)$。使用behaviour policy等概率选择left和right action。<br>
-这个例子中returns的真实期望是$1$。first visit中weighted importance sampling中return的期望是$1$，因为behaviour policy中选择right的action 在target policy中概率为$0$，不满足之前假设的条件，所以没有影响。而oridinary importance sampling的returns期望也是$1$，但是可能经过了几百万个episodes之后，也不一定收敛到$1$。</p>
+考虑一个例子。只有一个non-terminal state s，两个ation，left和right，right action是deterministic transition到termination，left action有$0.9$的概率回到s，有$0.1$的概率到termination。left action回到termination会产生$+1$的reward，其他操作的reward是$0$。所有target policy策略下的episodes都会经过一些次回到state s然后到达terminal state，总的returns是$1(\gamma = 1)$。使用behaviour policy等概率选择left和right action。<br>
+这个例子中returns的真实期望是$1$。first visit中weighted importance sampling中return的期望是$1$，因为behaviour policy中选择right的action 在target policy中概率为$0$，不满足之前假设的条件，所以没有影响。而oridinary importance sampling的returns期望也是$1$，但是可能经过了几百万个episodes之后，也不一定收敛到$1$。<br>
+接下来我们证明oridinary importance sampling中returns的variance是infinite。<br>
+$$Var(X) = \mathbb{E}\left[(X-\bar{X})^2\right] = \mathbb{E}\left[X^2-2\bar{X}X +\bar{x}^2\right]= \mathbb{E}\left[X<sup>2\right]-\bar{X}</sup>2$$<br>
+如果mean是finite，只有当random variable的平方的Expectation为infinte时variance是infinte。所以，我们需要证明：<br>
+$$\mathbb{E}_b\left[\left( \prod_{t=0}^{T-1}\frac{\pu(A_t|S_t}{b(A_t|S_t}G_0\right)^2\right]$$<br>
+是infinte的。<br>
+这里我们按照一个episode一个episode的进行计算。但是需要注意的是，behaviour policy可以选择right action，而target policy只有left action，当behaviour policy选择right的话，ratio是$0$。我们只需要考虑那些一直选择left action回到state s，然后通过left action到达terminal state的episodes。按照下式计算期望，注意这个和上面用oridinary important ratio估计$v_{\pi}(s)$可不一样，上面是用采样估计$v_{\pi}(s)$，这个是计算真实的$v_{\pi}(s)$的期望，不对，是它的平方的期望。<br>
+\begin{align*}<br>
+\mathbb{E}_b\left[\left( \prod_{t=0}^{T-1}\frac{\pu(A_t|S_t}{b(A_t|S_t}G_0\right)^2\right] &amp; = \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\right)^2\tag{长度为1的episode}\\<br>
+&amp;+\frac{1}{2}\cdot 0.9\cdot\frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为2的episode}\\<br>
+&amp;+\frac{1}{2}\cdot 0.9\cdot \frac{1}{2} \cdot 0.9 \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为3的episode}\\<br>
+&amp;+ \cdots\\<br>
+&amp;=0.1 \sum_{k=0}^{\infty}0.9^k\cdot 2^k \cdot 2\\<br>
+&amp;=0.2 \sum_{k=0}^{\infty}1.8^k\\<br>
+&amp;=\infty\\<br>
+\end{align*}</p>
 <h2 id="incremental-implementation">Incremental Implementation</h2>
 <h2 id="off-policy-mc-control">Off-policy MC Control</h2>
 <h2 id="discounting-aware-importance-sampling">Discounting-aware Importance Sampling</h2>

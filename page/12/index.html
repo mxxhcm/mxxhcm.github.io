@@ -389,7 +389,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-01 10:10:39" itemprop="dateModified" datetime="2019-06-01T10:10:39+08:00">2019-06-01</time>
+                <time title="修改时间：2019-06-01 10:17:51" itemprop="dateModified" datetime="2019-06-01T10:17:51+08:00">2019-06-01</time>
               
             
           </span>
@@ -514,7 +514,7 @@ end for</p>
 <h4 id="settings">Settings</h4>
 <ol>
 <li>不同游戏的reward变化很大，这里把正的reward全部设置为$1$，把负的reward全部设置为$-1$，reward为$0$的保持不变。这样子在不同游戏中也可以统一学习率。</li>
-<li>采用RMSProp优化算法，batchsize为$32$，behaviour policy采用的是$\varepsilon$-greedy$，在前$100$万步内，$\varepsilon$从$1$变到$0.1$，接下来保持不变。</li>
+<li>采用RMSProp优化算法，batchsize为$32$，behaviour policy采用的是$\varepsilon$-greedy，在前$100$万步内，$\varepsilon$从$1$变到$0.1$，接下来保持不变。</li>
 <li>使用了跳帧技术，每隔$k$步，agent才选择一个action，在中间的$k-1$步中，保持原来的action不变。这里选择了$k=4$，有的游戏设置的为$k=3$。</li>
 </ol>
 <h4 id="metrics">Metrics</h4>
@@ -598,7 +598,7 @@ $$y = r + \gamma Q(s’, argmax_a’ Q(s’,a;\theta_t);\theta_t)\tag{6}$$<br>
 <h3 id="double-dqn-v2">Double dqn</h3>
 <p><img src="/2019/03/02/dqn/double-dqn.png" alt="double-dqn"><br>
 Double Q-learnign的做法是分解target action中的max opearation为选择和evaluation。而在Nature-dqn中，提出了target network，所以分别使用network和target network去选择和evaluation action是一个很好的做法，这样子公式就变成了<br>
-$$$y = r + \gamma Q(s’, argmax_a’ Q(s’,a;\theta_t);\theta^{-}_t)\tag{7}$$<br>
+$$y = r + \gamma Q(s’, argmax_a’ Q(s’,a;\theta_t);\theta^{-}_t)\tag{7}$$<br>
 和Q-learnign相比，将$\theta’$换成了$\theta^{-}$ evaluate action，target network的更新和nature-dqn一样，过一段时间复制network的参数。</p>
 <h3 id="double-q-learning-vs-q-learning">Double Q learning vs Q-learning</h3>
 <p>可以在数学上证明，Q-learning是overestimation的，但是double q leraing是无偏的。。。证明留待以后再说。<br>
@@ -717,8 +717,8 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 一个有$p$个输入单元，$q$个输出单元的fully-connected layer表示如下：<br>
 $$y=wx+b \tag{14}$$<br>
 其中$w\in \mathbb{R}^{q\times p}$，$x\in \mathbb{R}^{p}$,$b\in \mathbb{R}^{q}$，对应的noisy linear layer定义如下：<br>
-$$y=(\mu^w+\sigma<sup>w\odot\varepsilon</sup>w)x + \mu^b+\sigma^b\odot\varepsilon^b \tag{15}$$<br>
-就是用$\mu^w+\sigma^w\odot\varepsilon^w$取代$w$，用$\mu^b+\sigma^b\odot\varepsilon^b$取代$b$。其中$\mu<sup>w,\sigma</sup>w\in \mathbb{R}^{q\times p} $，而$\mu<sup>b,\sigma</sup>b\in\mathbb{R}^{q}$是可以学习的参数，而$\varepsilon^w\in \mathbb{R}^{p\times q},\varepsilon^b \in \mathbb{R}^{q}$是random variable。<br>
+$$y=(\mu^w+\sigma^w\odot\varepsilon^w)x + \mu^b+\sigma^b\odot\varepsilon^b \tag{15}$$<br>
+就是用$\mu^w+\sigma^w\odot\varepsilon^w$取代$w$，用$\mu^b+\sigma^b\odot\varepsilon^b$取代$b$。其中$\mu^w,\sigma^w\in \mathbb{R}^{q\times p} $，而$\mu^b,\sigma^b\in\mathbb{R}^{q}$是可以学习的参数，而$\varepsilon^w\in \mathbb{R}^{p\times q},\varepsilon^b \in \mathbb{R}^{q}$是random variable。<br>
 作者提出了两种添加noise的方式，一种是Independent Gaussian noise，一种是Factorised Gaussion noise。使用Factorised的原因是减少随机变量的计算时间，这些时间对于单线程的任务来说还是很多的。</p>
 <h4 id="independent-gaussian-noise">Independent Gaussian noise</h4>
 <p>应用到每一个weight和bias的noise都是independent的，对于$\varepsilon^w$的每一项$\varepsilon_{i,j}^w$来说，它们的值都是从一个unit Gaussion distribution中采样得到的；$varepsilon^b$同理。所以对于一个$p$个输入,$q$个输出的noisy linear layer总共有$pq+q$个noise 变量。</p>
@@ -753,8 +753,8 @@ $$b^{*}(y) = arg max_{b\in A} Q(y, b(y), \varepsilon^{’’};\zeta)\tag{22}$$</
 </ol>
 <p>A3C算法中没有像$\epsilon$-greedy这样进行action exploration，选中的action通常是从current policy中选的，加入entropy是为了鼓励exploration，而不是选择一个deterministic policy。当添加了noisy weights时，对参数进行采样就表示选择不同的current policy，就已经代表了exploration。NoisyNet相当于直接在policy space中进行exploration，而entropy项就可以去掉了。</p>
 <h3 id="noisy-networks的初始化">Noisy Networks的初始化</h3>
-<p>在unfactorised noisy networks中，每个$\mu_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{3}{p}},sqrt{\frac{3}{p}}\right]$中采样初始化，其中$p$是对应linear layer的输入个数，$\sigma_{i,j}$设置为一个常数$0.0017$，这是从监督学习的任务中借鉴的。<br>
-在factorised noisy netowrks中，每个$\mu_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{1}{p}},sqrt{\frac{1}{p}}\right]$中进行采样，$\sigma_{i,j}$设置为$\frac{\sigma_0}{p}$，超参数$\sigma_0$设置为$0.5$。</p>
+<p>在unfactorised noisy networks中，每个$\mu_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{3}{p}}, \sqrt{\frac{3}{p}}\right]$中采样初始化，其中$p$是对应linear layer的输入个数，$\sigma_{i,j}$设置为一个常数$0.0017$，这是从监督学习的任务中借鉴的。<br>
+在factorised noisy netowrks中，每个$\mu_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{1}{p}}, \sqrt{\frac{1}{p}}\right]$中进行采样，$\sigma_{i,j}$设置为$\frac{\sigma_0}{p}$，超参数$\sigma_0$设置为$0.5$。</p>
 <h3 id="伪代码-v6">伪代码</h3>
 <p>算法5 NoisyNet-DQN / NoisyNet-Dueling<br>
 输入: Env Environment; $\varepsilon$ random variables of the network的集合<br>
@@ -779,13 +779,13 @@ $\qquad\qquad$采样noisy variables用于target network $\xi’\sim\varepsilon$<
 $\qquad\qquad\qquad$<strong>if</strong> DUELING then<br>
 $\qquad\qquad\qquad$采样noisy variables用于选择action的network $\xi\sim\varepsilon$<br>
 $\qquad\qquad$<strong>end if</strong><br>
-$\qquad\qquad$<strong>for</strong> j \in {1,\cdots, N_T} do<br>
+$\qquad\qquad$<strong>for</strong> $j \in {1,\cdots, N_T}$ do<br>
 $\qquad\qquad\qquad$<strong>if</strong> $y_j$ is a terminal state then<br>
 $\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j$<br>
 $\qquad\qquad\qquad$<strong>end if</strong><br>
 $\qquad\qquad\qquad$<strong>if</strong> DUELING then<br>
-$\qquad\qquad\qquad\qquad$$b^{*}(y_j) = arg max_{b\in A} Q(y_j, b, \xi^{’’}; \zeta)<br>
-$\qquad\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma Q(y_j, b^{*}(y_j), \xi’;\zeta^{-})$<br>
+$\qquad\qquad\qquad\qquad b^{*}(y_j) = arg max_{b\in A} Q(y_j, b, \xi^{’’}; \zeta)$<br>
+$\qquad\qquad\qquad\qquad\qquad \hat{Q}\leftarrow r_j + \gamma Q(y_j, b^{*}(y_j), \xi’;\zeta^{-})$<br>
 $\qquad\qquad\qquad$<strong>else</strong><br>
 $\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma max_{b\in A} Q(y_j, b, \xi’;\zeta^{-})$<br>
 $\qquad\qquad$<strong>end if</strong><br>
@@ -822,7 +822,7 @@ $\qquad$<strong>else</strong><br>
 $\qquad\qquad$$Q = V(x_t; \zeta’_{V}, \xi)$<br>
 $\qquad$<strong>end if</strong><br>
 $\qquad$<strong>for</strong> $i \in {counter − 1, \cdots, 0}$ do<br>
-$\qquad\qquad$更新Q: $Q\leftarrow r[i] + \gammaQ$<br>
+$\qquad\qquad$更新Q: $Q\leftarrow r[i] + \gamma Q$<br>
 $\qquad\qquad$累积policy-gradient: $d\zeta_{\pi} \leftarrow d\zeta_{\pi} + \nabla \zeta’_{\pi}log(\pi(a[i]|x[i]; \zeta’_{\pi}, \xi))[Q − V(x[i]; \zeta’_{\pi}V, \xi)]$<br>
 $\qquad\qquad$累积 value-gradient: $d\zeta_V \leftarrow ← d\zeta_V+ \nabla \zeta’_{V}[Q − V(x[i]; \zeta’_{V}, \xi)]^2$<br>
 $\qquad$<strong>end for</strong><br>
