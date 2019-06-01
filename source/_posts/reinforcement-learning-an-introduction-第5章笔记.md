@@ -185,10 +185,25 @@ $$V(s) = \frac{\sum\_{t\in J(s)}\rho\_{t:T(t)-1} G_t}{\sum\_{t\in J(s)}\rho\_{t:
 
 ### 无穷大方差
 ![]()
-有这样一个例子。只有一个non-terminal state s，两个ation，left和right，right action是deterministic transition到termination，left action有$0.9$的概率回到s，有$0.1$的概率到termination。left action回到termination会产生$+1$的reward，其他操作的reward是$0$。所有target policy策略下的episodes都会经过一些次回到state s然后到达terminal state，总的returns是$1(\gamma = 1)$。使用behaviour policy等概率选择left和right action。
+考虑一个例子。只有一个non-terminal state s，两个ation，left和right，right action是deterministic transition到termination，left action有$0.9$的概率回到s，有$0.1$的概率到termination。left action回到termination会产生$+1$的reward，其他操作的reward是$0$。所有target policy策略下的episodes都会经过一些次回到state s然后到达terminal state，总的returns是$1(\gamma = 1)$。使用behaviour policy等概率选择left和right action。
 这个例子中returns的真实期望是$1$。first visit中weighted importance sampling中return的期望是$1$，因为behaviour policy中选择right的action 在target policy中概率为$0$，不满足之前假设的条件，所以没有影响。而oridinary importance sampling的returns期望也是$1$，但是可能经过了几百万个episodes之后，也不一定收敛到$1$。
-## Incremental Implementation
+接下来我们证明oridinary importance sampling中returns的variance是infinite。
+$$Var(X) = \mathbb{E}\left[(X-\bar{X})^2\right] = \mathbb{E}\left[X^2-2\bar{X}X +\bar{x}^2\right]= \mathbb{E}\left[X^2\right]-\bar{X}^2$$
+如果mean是finite，只有当random variable的平方的Expectation为infinte时variance是infinte。所以，我们需要证明：
+$$\mathbb{E}\_b\left[\left( \prod\_{t=0}\^{T-1}\frac{\pu(A_t|S_t}{b(A_t|S_t}G_0\right)\^2\right]$$
+是infinte的。
+这里我们按照一个episode一个episode的进行计算。但是需要注意的是，behaviour policy可以选择right action，而target policy只有left action，当behaviour policy选择right的话，ratio是$0$。我们只需要考虑那些一直选择left action回到state s，然后通过left action到达terminal state的episodes。按照下式计算期望，注意这个和上面用oridinary important ratio估计$v\_{\pi}(s)$可不一样，上面是用采样估计$v\_{\pi}(s)$，这个是计算真实的$v\_{\pi}(s)$的期望，不对，是它的平方的期望。
+\begin{align\*}
+\mathbb{E}\_b\left[\left( \prod\_{t=0}\^{T-1}\frac{\pu(A_t|S_t}{b(A_t|S_t}G_0\right)\^2\right] & = \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\right)^2\tag{长度为1的episode}\\\\
+&+\frac{1}{2}\cdot 0.9\cdot\frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为2的episode}\\\\
+&+\frac{1}{2}\cdot 0.9\cdot \frac{1}{2} \cdot 0.9 \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为3的episode}\\\\
+&+ \cdots\\\\
+&=0.1 \sum\_{k=0}\^{\infty}0.9^k\cdot 2\^k \cdot 2\\\\
+&=0.2 \sum\_{k=0}\^{\infty}1.8^k\\\\
+&=\infty\\\\
+\end{align\*}
 
+## Incremental Implementation
 
 ## Off-policy MC Control
 

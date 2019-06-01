@@ -80,7 +80,7 @@ end for
 
 #### Settings
 1. 不同游戏的reward变化很大，这里把正的reward全部设置为$1$，把负的reward全部设置为$-1$，reward为$0$的保持不变。这样子在不同游戏中也可以统一学习率。
-2. 采用RMSProp优化算法，batchsize为$32$，behaviour policy采用的是$\varepsilon$-greedy$，在前$100$万步内，$\varepsilon$从$1$变到$0.1$，接下来保持不变。
+2. 采用RMSProp优化算法，batchsize为$32$，behaviour policy采用的是$\varepsilon$-greedy，在前$100$万步内，$\varepsilon$从$1$变到$0.1$，接下来保持不变。
 3. 使用了跳帧技术，每隔$k$步，agent才选择一个action，在中间的$k-1$步中，保持原来的action不变。这里选择了$k=4$，有的游戏设置的为$k=3$。
 
 #### Metrics
@@ -161,7 +161,7 @@ $$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta_t)\tag{6}$$
 ### Double dqn
 ![double-dqn](double-dqn.png)
 Double Q-learnign的做法是分解target action中的max opearation为选择和evaluation。而在Nature-dqn中，提出了target network，所以分别使用network和target network去选择和evaluation action是一个很好的做法，这样子公式就变成了
-$$$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta\^{-}\_t)\tag{7}$$
+$$y = r + \gamma Q(s', argmax_a' Q(s',a;\theta_t);\theta\^{-}\_t)\tag{7}$$
 和Q-learnign相比，将$\theta'$换成了$\theta\^{-}$ evaluate action，target network的更新和nature-dqn一样，过一段时间复制network的参数。
 
 ### Double Q learning vs Q-learning
@@ -302,11 +302,11 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 一个有$p$个输入单元，$q$个输出单元的fully-connected layer表示如下：
 $$y=wx+b \tag{14}$$
 其中$w\in \mathbb{R}\^{q\times p}$，$x\in \mathbb{R}\^{p}$,$b\in \mathbb{R}\^{q}$，对应的noisy linear layer定义如下：
-$$y=(\mu\^w+\sigma^w\odot\varepsilon^w)x + \mu\^b+\sigma\^b\odot\varepsilon\^b \tag{15}$$
-就是用$\mu\^w+\sigma\^w\odot\varepsilon\^w$取代$w$，用$\mu\^b+\sigma\^b\odot\varepsilon\^b$取代$b$。其中$\mu^w,\sigma^w\in \mathbb{R}\^{q\times p} $，而$\mu^b,\sigma^b\in\mathbb{R}\^{q}$是可以学习的参数，而$\varepsilon^w\in \mathbb{R}\^{p\times q},\varepsilon^b \in \mathbb{R}\^{q}$是random variable。
+$$y=(\mu\^w+\sigma\^w\odot\varepsilon\^w)x + \mu\^b+\sigma\^b\odot\varepsilon\^b \tag{15}$$
+就是用$\mu\^w+\sigma\^w\odot\varepsilon\^w$取代$w$，用$\mu\^b+\sigma\^b\odot\varepsilon\^b$取代$b$。其中$\mu\^w,\sigma\^w\in \mathbb{R}\^{q\times p} $，而$\mu\^b,\sigma\^b\in\mathbb{R}\^{q}$是可以学习的参数，而$\varepsilon\^w\in \mathbb{R}\^{p\times q},\varepsilon\^b \in \mathbb{R}\^{q}$是random variable。
 作者提出了两种添加noise的方式，一种是Independent Gaussian noise，一种是Factorised Gaussion noise。使用Factorised的原因是减少随机变量的计算时间，这些时间对于单线程的任务来说还是很多的。
 #### Independent Gaussian noise
-应用到每一个weight和bias的noise都是independent的，对于$\varepsilon\^w$的每一项$\varepsilon\_{i,j}\^w$来说，它们的值都是从一个unit Gaussion distribution中采样得到的；$varepsilon^b$同理。所以对于一个$p$个输入,$q$个输出的noisy linear layer总共有$pq+q$个noise 变量。
+应用到每一个weight和bias的noise都是independent的，对于$\varepsilon\^w$的每一项$\varepsilon\_{i,j}\^w$来说，它们的值都是从一个unit Gaussion distribution中采样得到的；$varepsilon\^b$同理。所以对于一个$p$个输入,$q$个输出的noisy linear layer总共有$pq+q$个noise 变量。
 
 #### Factorised Gaussian noise
 通过对$\varepsilon\_{i,j}\^w$来说，可以将其分解成$p$个$\varepsilon_i$用于$p$个输入和$q$个$\varepsilon_j$用于$q$个输出，总共有$p+q$个noiss变量。每一个$\varepsilon\_{i,j}\^w$和$\varepsilon\_{j}\^b$可以写成：
@@ -341,8 +341,8 @@ Noisy-A3C相对于A3C有以下的改进：
 A3C算法中没有像$\epsilon$-greedy这样进行action exploration，选中的action通常是从current policy中选的，加入entropy是为了鼓励exploration，而不是选择一个deterministic policy。当添加了noisy weights时，对参数进行采样就表示选择不同的current policy，就已经代表了exploration。NoisyNet相当于直接在policy space中进行exploration，而entropy项就可以去掉了。
 
 ### Noisy Networks的初始化
-在unfactorised noisy networks中，每个$\mu\_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{3}{p}},sqrt{\frac{3}{p}}\right]$中采样初始化，其中$p$是对应linear layer的输入个数，$\sigma\_{i,j}$设置为一个常数$0.0017$，这是从监督学习的任务中借鉴的。
-在factorised noisy netowrks中，每个$\mu\_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{1}{p}},sqrt{\frac{1}{p}}\right]$中进行采样，$\sigma\_{i,j}$设置为$\frac{\sigma_0}{p}$，超参数$\sigma_0$设置为$0.5$。
+在unfactorised noisy networks中，每个$\mu\_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{3}{p}}, \sqrt{\frac{3}{p}}\right]$中采样初始化，其中$p$是对应linear layer的输入个数，$\sigma\_{i,j}$设置为一个常数$0.0017$，这是从监督学习的任务中借鉴的。
+在factorised noisy netowrks中，每个$\mu\_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{1}{p}}, \sqrt{\frac{1}{p}}\right]$中进行采样，$\sigma\_{i,j}$设置为$\frac{\sigma_0}{p}$，超参数$\sigma_0$设置为$0.5$。
 
 ### 伪代码
 算法5 NoisyNet-DQN / NoisyNet-Dueling
@@ -368,13 +368,13 @@ $\qquad\qquad$采样noisy variables用于target network $\xi'\sim\varepsilon$
 $\qquad\qquad\qquad$**if** DUELING then
 $\qquad\qquad\qquad$采样noisy variables用于选择action的network $\xi\sim\varepsilon$ 
 $\qquad\qquad$**end if**
-$\qquad\qquad$**for** j \in {1,\cdots, N_T} do
+$\qquad\qquad$**for** $j \in {1,\cdots, N_T}$ do
 $\qquad\qquad\qquad$**if** $y_j$ is a terminal state then
 $\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j$
 $\qquad\qquad\qquad$**end if**
 $\qquad\qquad\qquad$**if** DUELING then
-$\qquad\qquad\qquad\qquad$$b\^{\*}(y_j) = arg max\_{b\in A} Q(y_j, b, \xi\^{''}; \zeta)
-$\qquad\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma Q(y_j, b\^{\*}(y_j), \xi';\zeta\^{-})$
+$\qquad\qquad\qquad\qquad b\^{\*}(y_j) = arg max\_{b\in A} Q(y_j, b, \xi\^{''}; \zeta)$
+$\qquad\qquad\qquad\qquad\qquad \hat{Q}\leftarrow r_j + \gamma Q(y_j, b\^{\*}(y_j), \xi';\zeta\^{-})$
 $\qquad\qquad\qquad$**else**
 $\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma max\_{b\in A} Q(y_j, b, \xi';\zeta\^{-})$
 $\qquad\qquad$**end if**
@@ -412,7 +412,7 @@ $\qquad$**else**
 $\qquad\qquad$$Q = V(x_t; \zeta'\_{V}, \xi)$
 $\qquad$**end if**
 $\qquad$**for** $i \in \{counter − 1, \cdots, 0\}$ do
-$\qquad\qquad$更新Q: $Q\leftarrow r[i] + \gammaQ$
+$\qquad\qquad$更新Q: $Q\leftarrow r[i] + \gamma Q$
 $\qquad\qquad$累积policy-gradient: $d\zeta\_{\pi} \leftarrow d\zeta\_{\pi} + \nabla \zeta'\_{\pi}log(\pi(a[i]|x[i]; \zeta'\_{\pi}, \xi))[Q − V(x[i]; \zeta'\_{\pi}V, \xi)]$
 $\qquad\qquad$累积 value-gradient: $d\zeta_V \leftarrow ← d\zeta_V+ \nabla \zeta'\_{V}[Q − V(x[i]; \zeta'\_{V}, \xi)]^2$
 $\qquad$**end for**
