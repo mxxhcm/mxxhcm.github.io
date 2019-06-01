@@ -81,7 +81,6 @@ results = re.findall(p2,str)
 #### re.sub(pattern,repl,string,count=0,flags=0)
 
 #### re.subn(pattern,repl,string,count=0,flags=0)
-
 #### ...
 
 
