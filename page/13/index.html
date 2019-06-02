@@ -327,6 +327,256 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/03/奇异值分解-singular-value-decomposition/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/03/奇异值分解-singular-value-decomposition/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">奇异值分解 singular value decomposition</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-03 15:19:54" itemprop="dateCreated datePublished" datetime="2019-01-03T15:19:54+08:00">2019-01-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="特征值分解-eigen-value-decomposition">特征值分解(eigen value decomposition)</h2>
+<p>要谈奇异值分解，首先要从特征值分解(eigen value decomposition, EVD)谈起。<br>
+矩阵的作用有三个：一个是旋转，一个是拉伸，一个是平移，都是线性操作。如果一个$n\times n$方阵$A$对某个向量$x$只产生拉伸变换，而不产生旋转和平移变换，那么这个向量就称为方阵$A$的特征向量(eigenvector)，对应的伸缩比例叫做特征值(eigenvalue)，即满足等式$Ax = \lambda x$。其中$A$是方阵，$x$是方阵$A$的一个特征向量，$\lambda$是方阵$A$对应特征向量$x$的特征值。<br>
+假设$S$是由方阵$A$的$n$个线性无关的特征向量构成的方阵，$\Lambda$是方阵$A$的$n$个特征值构成的对角矩阵，则$A=S\Lambda S^{-1}$，这个过程叫做对角化过程。<br>
+证明：<br>
+因为$Ax_1 = \lambda_1 x_1,\cdots,Ax_n = \lambda_n x_n$,<br>
+所以<br>
+\begin{align*}AS &amp;= A\begin{bmatrix}x_1&amp; \cdots&amp;x_n\end{bmatrix}\<br>
+&amp;=\begin{bmatrix} \lambda_1x_1&amp;\cdots&amp;\lambda x_n\end{bmatrix}\<br>
+&amp;= \begin{bmatrix}x_1&amp; \cdots&amp;x_n\end{bmatrix} \begin{bmatrix}\lambda_1&amp;&amp;&amp;\&amp;\lambda_2&amp;&amp;\&amp;&amp;\cdots&amp;\&amp;&amp;&amp;\lambda_n\end{bmatrix}\<br>
+&amp;= S\Lambda<br>
+\end{align*}<br>
+所以$AS=S\Lambda, A=S\Lambda S^{-1}, S^{-1}AS=\Lambda$。<br>
+若方阵$A$为对称矩阵，矩阵$A$的特征向量是正交的，将其单位化为$Q$，则$A=Q\Lambda Q^T$，这个过程就叫做特征值分解。</p>
+<h2 id="奇异值分解-singular-value-decomposition">奇异值分解(singular value decomposition)</h2>
+<p>特征值分解是一个非常好的分解，因为它能把一个方阵分解称两个非常好的矩阵，一个是正交阵，一个是对角阵，这些矩阵都便于进行各种计算，但是它对于原始矩阵的要求太严格了，必须要求矩阵是对称正定矩阵，这是一个很苛刻的条件。所以就产生了奇异值分解，奇异值分解可以看作特征值分解在$m\times n$维矩阵上的推广。对于对称正定矩阵来说，有特征值，对于其他一般矩阵，有奇异值。</p>
+<p>奇异值分解可以看作将一组正交基映射到另一组正交基的变换。普通矩阵$A$不是对称正定矩阵，但是$AA<sup>T$和$A</sup>TA$一定是对称矩阵，且至少是半正定的。从对$A<sup>TA$进行特征值分解开始，$A</sup>TA=V\Sigma_1V^T$，$V$是一组正交的单位化特征向量${v_1,\cdots,v_n}$，则$Av_1,\cdots,Av_n$也是正交的。<br>
+证明：<br>
+\begin{align*}Av_1\cdot Av_2 &amp;=(Av_1)^TAv_2\<br>
+&amp;=v_1<sup>TA</sup>TAv_2\<br>
+&amp;=v_1^T \lambda v_2\<br>
+&amp;=\lambda v_1^T v_2\<br>
+&amp;=0<br>
+\end{align*}<br>
+所以$Av_1,Av_2$是正交的，同理可得$Av_1,\cdots,Av_n$都是正交的。<br>
+而：<br>
+\begin{align*}<br>
+Av_i\cdot Av_i &amp;= v_i<sup>TA</sup>TAv_i\<br>
+&amp;=v_i \lambda v_i\<br>
+&amp;=\lambda v_i^2\<br>
+&amp;=\lambda<br>
+\end{align*}<br>
+将$Av_i$单位化为$u_i$，得$u_i = \frac{Av_i}{|Av_i|} = \frac{Av_i}{\sqrt{\lambda_i}}$，所以$Av_i = \sqrt{\lambda_i}u_i$。<br>
+将向量组${v_1,\cdots,v_r}$扩充到$R<sup>n$中的标准正交基${v_1,\cdots,v_n}$，将向量组${u_1,\cdots,u_r}$扩充到$R</sup>n$中的标准正交基${u_1,\cdots,u_n}$，则$AV = U\Sigma$，$A=U\sigma V^T$。</p>
+<p>事实上，奇异值分解可以看作将行空间的一组正交基加上零空间的一组基映射到列空间的一组正交基加上左零空间的一组基的变换。对一矩阵$A,A\in R^{m\times n}$，若$r(A)=r$，取行空间的一组特殊正交基${v_1,\cdots,v_r}$，当矩阵$A$作用到这组基上，会得到另一组正交基${u_1,\cdots,u_r}$，即$Av_i = \sigma_iu_i$。<br>
+矩阵表示是：<br>
+\begin{align*}<br>
+AV &amp;= A\begin{bmatrix}v_1&amp;\cdots&amp;v_r\end{bmatrix}\<br>
+&amp;= \begin{bmatrix}\sigma_1u_1 &amp; \cdots &amp; \sigma_ru_r\end{bmatrix}\<br>
+&amp;= \begin{bmatrix}u_1&amp;u_2&amp;\cdots&amp;u_r\end{bmatrix}\begin{bmatrix}\sigma_1&amp;&amp;&amp;\&amp;\sigma_2&amp;&amp;\&amp;&amp;\cdots&amp;\&amp;&amp;&amp;\sigma_n\end{bmatrix}\<br>
+&amp;=U\Sigma<br>
+\end{align*}<br>
+其中$A\in R^{m\times n}, V\in R^{n\times r},U\in R^{m\times r}, \Sigma \in R^{r\times n}$。<br>
+当有零空间的时候，行空间的一组基是$r$维，加上零空间的$n-r$维，构成$R<sup>n$空间中的一组标准正交基。列空间的一组基也是$r$维的，加上左零空间的$m-r$维，构成$R</sup>m$空间的一组标准正交基。零空间中的向量在对角矩阵$\Sigma$中体现为$0$，<br>
+则$A=U\Sigma V^{-1}$，$V$是正交的，所以$A=U\Sigma V^T$，其中$V\in R^{n\times n}, U\in R^{m\times m}, \Sigma \in R^{m\times n}$。</p>
+<p>$A=U\Sigma V^T$<br>
+$A^T = V\Sigma<sup>TU</sup>T$<br>
+$AA^T = U\Sigma V<sup>TV\Sigma</sup>TU^T$<br>
+$A^TA = V\Sigma<sup>TU</sup>TU\Sigma V^T$<br>
+对$AA<sup>T$和$A</sup>TA$作特征值分解，则$AA^T = U\Sigma_1U<sup>T$,$A</sup>TA=V\Sigma_2V<sup>T$，所以对$AA</sup>T$作特征值分解求出来的$U$和对$A<sup>TA$作特征值分解求出来的$V$就是对$A$作奇异值分解求出来的$U$和$V$，$AA</sup>T$和$A^TA$作特征值分解求出来的$\Sigma$的非零值是相等的，都是对$A$作奇异值分解的$\Sigma$的平方。</p>
+<h3 id="ata-和-aat-的非零特征值是相等的">$A<sup>TA$和$AA</sup>T$的非零特征值是相等的</h3>
+<p>证明：对于任意的$m\times n$矩阵$A$，$A<sup>TA$和$AA</sup>T$的非零特征值相同的。 设$A<sup>TA$的特征值为$\lambda_i$，对应的特征向量为$v_i$，即$A</sup>TAv_i = \lambda_i v_i$。<br>
+则$AA^T Av_i = A\lambda_iv_i = \lambda_i Av_i$。<br>
+所以$AA^T$的特征值为$\lambda_i$，对应的特征向量为$Av_i$。<br>
+因此$A<sup>TA$和$AA</sup>T$的非零特征值相等。</p>
+<h3 id="几何意义">几何意义</h3>
+<p>对于任意一个矩阵，找到其行空间(加上零空间)的一组正交向量，使得该矩阵作用在该向量序列上得到的新的向量序列保持两两正交。奇异值的几何意义就是这组变化后的新的向量序列的长度。</p>
+<h3 id="物理意义">物理意义</h3>
+<p>奇异值往往对应着矩阵隐含的重要信息，且重要性和奇异值大小正相关。每个矩阵都可以表示为一系列秩为$1$的“小矩阵”的和，而奇异值则衡量了这些秩一矩阵对$A$的权重。<br>
+奇异值分解的物理意义可以通过图像压缩表现出来。给定一张$m\times n$像素的照片$A$，用奇异值分解将矩阵分解为若干个秩一矩阵之和，即：<br>
+\begin{align*}<br>
+A&amp;=\sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T +\cdots+\sigma_r u_rv_r^T\<br>
+&amp;= \begin{bmatrix}u_1&amp;u_2&amp;\cdots&amp;u_r\end{bmatrix}\begin{bmatrix}\sigma_1&amp;&amp;&amp;\&amp;\sigma_2&amp;&amp;\&amp;&amp;\cdots&amp;\&amp;&amp;&amp;\sigma_n\end{bmatrix}\begin{bmatrix}v_1<sup>T\v_2</sup>T\ \vdots\v_r^T\end{bmatrix}\<br>
+&amp;=U\Sigma V^T<br>
+\end{align*}</p>
+<p>这个也叫部分奇异值分解。其中$V\in R^{r\times n}, U\in R^{m\times r}, \Sigma \in R^{r\times r}$。因为不含有零空间和左零空间的基，如果加上零空间的$n-r$维和左零空间的$m-r$维，就是奇异值分解。<br>
+较大的奇异值保存了图片的主要信息，特别小的奇异值有时可能是噪声，或者对于图片的整体信息不是特别重要。做图像压缩的时候，可以只取一部分较大的奇异值，比如取前八个奇异值作为压缩后的图片：<br>
+$A = \sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T + \cdots + \sigma_8 u_8v_8^T$。<br>
+现实中常用的做法有两个：</p>
+<ol>
+<li>保留矩阵中$90%$的信息：将奇异值平方和累加到总值的%90%为止。</li>
+<li>当矩阵有上万个奇异值的时候，取前面的$2000$或者$3000$个奇异值。。</li>
+</ol>
+<h2 id="参考文献-references">参考文献(references)</h2>
+<p>1.Gilbert Strang, MIT Open course：Linear Algebra<br>
+2.<a href="https://www.cnblogs.com/pinard/p/6251584.html" target="_blank" rel="noopener">https://www.cnblogs.com/pinard/p/6251584.html</a><br>
+3.<a href="http://www.ams.org/publicoutreach/feature-column/fcarc-svd" target="_blank" rel="noopener">http://www.ams.org/publicoutreach/feature-column/fcarc-svd</a><br>
+4.<a href="https://www.zhihu.com/question/22237507/answer/53804902" target="_blank" rel="noopener">https://www.zhihu.com/question/22237507/answer/53804902</a><br>
+5.<a href="http://charleshm.github.io/2016/03/Singularly-Valuable-Decomposition/" target="_blank" rel="noopener">http://charleshm.github.io/2016/03/Singularly-Valuable-Decomposition/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/02/主成分分析-Principal-Component-Analysis/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2256,7 +2506,7 @@ The least-squares和linear programming problem都是convex optimization problem�
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-31 22:34:14" itemprop="dateModified" datetime="2019-05-31T22:34:14+08:00">2019-05-31</time>
+                <time title="修改时间：2019-06-01 16:03:44" itemprop="dateModified" datetime="2019-06-01T16:03:44+08:00">2019-06-01</time>
               
             
           </span>
@@ -2322,26 +2572,29 @@ $*$ *<br>
 $\cdot$ \cdot<br>
 $\bullet$ \bullet<br>
 $\otimes$ \otimes<br>
-$\cric$ \cric<br>
+$\circ$ \circ<br>
 $\odot$ \odot</p>
+<h3 id="上下花括号">上下花括号</h3>
+<p>$\overbrace{x+y}^{1+2}=\underbrace{z}_3$ \overbrace{x+y}^{1+2}=\underbrace{z}_3</p>
 <h3 id="括号">括号</h3>
 <p>\left(\frac{1}{2}\right)    $\left(\frac{1}{2} \right)$<br>
-\left[\frac{1}{2} \right]    $\left[\frac{1}{2} \right]$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;cases&#125;x=1\\y=x\end&#123;cases&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{cases}x=1\y=x\end{cases}$$</p>
+\left[\frac{1}{2} \right]    $\left[\frac{1}{2} \right]$<br>
+\left\{\frac{1}{2} \right\}    $\left\{\frac{1}{2} \right\}$</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;cases&#125;x=1\\\\y=x\end&#123;cases&#125;</span><br></pre></td></tr></table></figure>
+<p>$$\begin{cases}x=1\\y=x\end{cases}$$</p>
 <h3 id="矩阵">矩阵</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;matrix&#125;1&amp;2\\3&amp;4\end&#123;matrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{matrix}1&amp;2\3&amp;4\end{matrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;pmatrix&#125;1&amp;2\\3&amp;4\end&#123;pmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{pmatrix}1&amp;2\3&amp;4\end{pmatrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;bmatrix&#125;1&amp;2\\3&amp;4\end&#123;bmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{bmatrix}1&amp;2\3&amp;4\end{bmatrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Bmatrix&#125;1&amp;2\\3&amp;4\end&#123;Bmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{Bmatrix}1&amp;2\3&amp;4\end{Bmatrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;vmatrix&#125;1&amp;2\\3&amp;4\end&#123;vmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{vmatrix}1&amp;2\3&amp;4\end{vmatrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Vmatrix&#125;1&amp;2\\3&amp;4\end&#123;Vmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{Vmatrix}1&amp;2\3&amp;4\end{Vmatrix}$$</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;matrix&#125;1&amp;2\\\\3&amp;4\end&#123;matrix&#125;</span><br></pre></td></tr></table></figure>
+<p>$$\begin{matrix}1&amp;2\\3&amp;4\end{matrix}$$</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;pmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;pmatrix&#125;</span><br></pre></td></tr></table></figure>
+<p>$$\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}$$</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;bmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;bmatrix&#125;</span><br></pre></td></tr></table></figure>
+<p>$$\begin{bmatrix}1&amp;2\\3&amp;4\end{bmatrix}$$</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Bmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;Bmatrix&#125;</span><br></pre></td></tr></table></figure>
+<p>$$\begin{Bmatrix}1&amp;2\\3&amp;4\end{Bmatrix}$$</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;vmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;vmatrix&#125;</span><br></pre></td></tr></table></figure>
+<p>$$\begin{vmatrix}1&amp;2\\3&amp;4\end{vmatrix}$$</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Vmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;Vmatrix&#125;</span><br></pre></td></tr></table></figure>
+<p>$$\begin{Vmatrix}1&amp;2\\3&amp;4\end{Vmatrix}$$</p>
 <h3 id="希腊字母">希腊字母</h3>
 <p>$\eta$ \eta<br>
 $\gamma$ \gamma<br>
@@ -2375,11 +2628,10 @@ $\mathcal{A}$ \mathcal{A}</p>
 分数$\left(\frac{1}{2}\right)$ \left(\frac{1}{2}\right)<br>
 无穷$\infty$ \infty<br>
 期望$\mathbb{E}$ \mathbb{E}<br>
+范数$\Vert$ \Vert<br>
 $\mathbb{\pi}$ \mathbb{\pi} # 可以看出来，没有起作用，因为mathbb没有只支持大写字母。<br>
 $\pm$ \pm<br>
 $\mp$ \mp</p>
-<h3 id="上下花括号">上下花括号</h3>
-<p>$\overbrace{x+y}^{1+2}=\underbrace{z}_3$ \overbrace{x+y}^{1+2}=\underbrace{z}_3</p>
 <h3 id="集合">集合</h3>
 <p>真含于$\subset$ \subset<br>
 含于$\subsetneqq$ \subsetneqq<br>
@@ -2415,7 +2667,6 @@ $a!b$ a!b</p>
 双箭头$\Leftrightarrow$ \Leftrightarrow<br>
 左箭头$\leftarrow$ \leftarrow<br>
 右箭头$\rightarrow$ \rightarrow<br>
-范数$\Vert$ \Vert<br>
 上划线$\overline{A}$ \overline{A}<br>
 下划线$\underline{A}$ \underline{A}<br>
 $\backslash$ \backslash<br>
@@ -2443,9 +2694,9 @@ $\sim$ \sim</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">f(x) &amp;= (3 + 4)\^2 + 4\\</span><br><span class="line">&amp;= 7\^2 + 4\\</span><br><span class="line">&amp;= 49 + 4\\</span><br><span class="line">&amp;= 53</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure>
 <p>效果如下：<br>
 \begin{align*}<br>
-f(x) &amp;= (3 + 4)^2 + 4\<br>
-&amp;= 7^2 + 4\<br>
-&amp;= 49 + 4\<br>
+f(x) &amp;= (3 + 4)^2 + 4\\<br>
+&amp;= 7^2 + 4\\<br>
+&amp;= 49 + 4\\<br>
 &amp;= 53<br>
 \end{align*}</p>
 <h3 id="示例2">示例2</h3>
@@ -2454,20 +2705,6 @@ f(x) &amp;= (3 + 4)^2 + 4\<br>
 v &amp;= R + \gamma Pv\\<br>
 (1-\gamma P) &amp;= R\\<br>
 v &amp;= (1 - \gamma P)^{-1} R<br>
-\end{align*}</p>
-<h2 id="测试">测试</h2>
-<p>\begin{align*}<br>
-J(\pi_0, {\pi_i}_{i=1}^n) &amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^t log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^t log\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}<em>{\pi_i}\left[\sum</em>{t\ge 0}\gamma^tR_i(s_t,a_t) - c_{KL}\gamma^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma^tlog\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}<em>{\pi_i}\left[\sum</em>{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{KL}\gamma^t)log\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}<em>{\pi_i}\left[\sum</em>{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}<br>
-\end{align*}</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align\*&#125;</span><br><span class="line">J(\pi_0, &#123;\pi_i&#125;&#123;i=1&#125;\^n) &amp;=\sum_i\mathbb&#123;E&#125;&#123;\pi_i&#125;\left[\sum_&#123;t\ge 0&#125;\gamma\^tR_i(s_t,a_t) -c_&#123;KL&#125;\gammatlog\frac&#123;\pi_i(a_t|s_t)&#125;&#123;\pi_0(a_t|s_t)&#125;-c_&#123;Ent&#125;\gammatlog\pi_i(a_t|s_t)\right]\\</span><br><span class="line">&amp;=\sum_i\mathbb&#123;E&#125;&#123;\pi_i&#125;\left[\sum&#123;t\ge 0&#125;\gamma\^tR_i(s_t,a_t) - c_&#123;KL&#125;\gamma\^tlog&#123;\pi_i(a_t|s_t)&#125; + c_&#123;KL&#125;\gamma\^tlog&#123;\pi_0(a_t|s_t)&#125; - c_&#123;Ent&#125;\gamma\^tlog\pi_i(a_t|s_t)\right]\\</span><br><span class="line">&amp;=\sum_i\mathbb&#123;E&#125;&#123;\pi_i&#125;\left[\sum&#123;t\ge 0&#125;\gamma\^tR_i(s_t,a_t) + c_&#123;KL&#125;\gamma\^tlog&#123;\pi_0(a_t|s_t)&#125; - (c_&#123;Ent&#125;\gamma\^t + c_&#123;KL&#125;\gamma\^t)log\pi_i(a_t|s_t)\right]\\</span><br><span class="line">&amp;=\sum_i\mathbb&#123;E&#125;&#123;\pi_i&#125;\left[\sum&#123;t\ge 0&#125;\gamma\^tR_i(s_t,a_t) +\frac&#123;\gammat\alpha&#125;&#123;\beta&#125;log&#123;\pi_0(a_t|s_t)&#125;-\frac&#123;\gammat&#125;&#123;\beta&#125;log\pi_i(a_t|s_t)\right], \tag&#123;1&#125;</span><br><span class="line">\end&#123;align\*&#125;</span><br></pre></td></tr></table></figure>
-<p>\begin{align*}<br>
-J(\pi_0, {\pi_i}_{i=1}^n) &amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^t log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^t log\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma^tR_i(s_t,a_t) - c_{KL}\gamma^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma^tlog\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{KL}\gamma^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{KL}\gamma^t)log\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t \alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}<br>
 \end{align*}</p>
 <h2 id="参考文献">参考文献</h2>
 <p>1.<a href="http://blog.huangyuanlove.com/2018/02/27/LaTeX%E7%AC%94%E8%AE%B0-%E5%85%AD/" target="_blank" rel="noopener">http://blog.huangyuanlove.com/2018/02/27/LaTeX笔记-六/</a><br>
@@ -3242,7 +3479,7 @@ Compile with:</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">129</span>
+                    <span class="site-state-item-count">130</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3764,6 +4001,8 @@ Compile with:</p>
     
       
         
+      
+    
       
     
       
