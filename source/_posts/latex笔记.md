@@ -25,42 +25,46 @@ $\*$ *
 $\cdot$ \cdot
 $\bullet$ \bullet
 $\otimes$ \otimes
-$\cric$ \cric
+$\circ$ \circ
 $\odot$ \odot
+
+### 上下花括号
+$\overbrace{x+y}\^{1+2}=\underbrace{z}_3$ \overbrace{x+y}\^{1+2}=\underbrace{z}_3
 
 ### 括号
 \left(\frac{1}{2}\right)    $\left(\frac{1}{2} \right)$
 \left[\frac{1}{2} \right]    $\left[\frac{1}{2} \right]$
+\left\\{\frac{1}{2} \right\\}    $\left\\{\frac{1}{2} \right\\}$
 ``` Latex
-\begin{cases}x=1\\y=x\end{cases}    
+\begin{cases}x=1\\\\y=x\end{cases}    
 ```
-$$\begin{cases}x=1\\y=x\end{cases}$$
+$$\begin{cases}x=1\\\\y=x\end{cases}$$
 
 ### 矩阵
 ``` Latex
-\begin{matrix}1&2\\3&4\end{matrix}
+\begin{matrix}1&2\\\\3&4\end{matrix}
 ```
-$$\begin{matrix}1&2\\3&4\end{matrix}$$
+$$\begin{matrix}1&2\\\\3&4\end{matrix}$$
 ``` Latex
-\begin{pmatrix}1&2\\3&4\end{pmatrix}
+\begin{pmatrix}1&2\\\\3&4\end{pmatrix}
 ```
-$$\begin{pmatrix}1&2\\3&4\end{pmatrix}$$
+$$\begin{pmatrix}1&2\\\\3&4\end{pmatrix}$$
 ``` Latex
-\begin{bmatrix}1&2\\3&4\end{bmatrix}
+\begin{bmatrix}1&2\\\\3&4\end{bmatrix}
 ```
-$$\begin{bmatrix}1&2\\3&4\end{bmatrix}$$
+$$\begin{bmatrix}1&2\\\\3&4\end{bmatrix}$$
 ``` Latex
-\begin{Bmatrix}1&2\\3&4\end{Bmatrix}
+\begin{Bmatrix}1&2\\\\3&4\end{Bmatrix}
 ```
-$$\begin{Bmatrix}1&2\\3&4\end{Bmatrix}$$
+$$\begin{Bmatrix}1&2\\\\3&4\end{Bmatrix}$$
 ``` Latex
-\begin{vmatrix}1&2\\3&4\end{vmatrix}
+\begin{vmatrix}1&2\\\\3&4\end{vmatrix}
 ```
-$$\begin{vmatrix}1&2\\3&4\end{vmatrix}$$
+$$\begin{vmatrix}1&2\\\\3&4\end{vmatrix}$$
 ``` Latex
-\begin{Vmatrix}1&2\\3&4\end{Vmatrix}
+\begin{Vmatrix}1&2\\\\3&4\end{Vmatrix}
 ```
-$$\begin{Vmatrix}1&2\\3&4\end{Vmatrix}$$
+$$\begin{Vmatrix}1&2\\\\3&4\end{Vmatrix}$$
 
 ### 希腊字母
 $\eta$ \eta
@@ -97,12 +101,11 @@ $\mathcal{A}$ \mathcal{A}
 分数$\left(\frac{1}{2}\right)$ \left(\frac{1}{2}\right)
 无穷$\infty$ \infty
 期望$\mathbb{E}$ \mathbb{E}
+范数$\Vert$ \Vert
 $\mathbb{\pi}$ \mathbb{\pi} # 可以看出来，没有起作用，因为mathbb没有只支持大写字母。
 $\pm$ \pm
 $\mp$ \mp
 
-### 上下花括号
-$\overbrace{x+y}\^{1+2}=\underbrace{z}_3$ \overbrace{x+y}\^{1+2}=\underbrace{z}_3
 
 ### 集合
 真含于$\subset$ \subset
@@ -142,7 +145,6 @@ $a\!b$ a\!b
 双箭头$\Leftrightarrow$ \Leftrightarrow
 左箭头$\leftarrow$ \leftarrow 
 右箭头$\rightarrow$ \rightarrow 
-范数$\Vert$ \Vert
 上划线$\overline{A}$ \overline{A}
 下划线$\underline{A}$ \underline{A}
 $\backslash$ \backslash
@@ -188,9 +190,9 @@ f(x) &= (3 + 4)\^2 + 4\\
 ```
 效果如下：
 \begin{align\*}
-f(x) &= (3 + 4)\^2 + 4\\
-&= 7\^2 + 4\\
-&= 49 + 4\\
+f(x) &= (3 + 4)\^2 + 4\\\\
+&= 7\^2 + 4\\\\
+&= 49 + 4\\\\
 &= 53
 \end{align\*}
 ### 示例2
@@ -207,28 +209,6 @@ v &= R + \gamma Pv\\\\
 v &= (1 - \gamma P)\^{-1} R
 \end{align\*}
 
-## 测试
-\begin{align\*}
-J(\pi_0, \{\pi_i\}\_{i=1}\^n) &=\sum_i\mathbb{E}\_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) -c_{KL}\gamma\^t log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma\^t log\pi_i(a_t|s_t)\right]\\\\
-&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) - c_{KL}\gamma\^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma\^tlog\pi_i(a_t|s_t)\right]\\\\
-&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma\^t + c_{KL}\gamma\^t)log\pi_i(a_t|s_t)\right]\\\\
-&=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) +\frac{\gamma\^t\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma\^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
-\end{align\*}
-
-``` latex
-\begin{align\*}
-J(\pi_0, {\pi_i}{i=1}\^n) &=\sum_i\mathbb{E}{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) -c_{KL}\gammatlog\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gammatlog\pi_i(a_t|s_t)\right]\\
-&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) - c_{KL}\gamma\^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma\^tlog\pi_i(a_t|s_t)\right]\\
-&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma\^t + c_{KL}\gamma\^t)log\pi_i(a_t|s_t)\right]\\
-&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) +\frac{\gammat\alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gammat}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
-\end{align\*}
-```
-\begin{align\*}
-J(\pi_0, \{\pi_i\}\_{i=1}\^n) &=\sum_i\mathbb{E}\_{\pi_i}\left[\sum_{t\ge 0}\gamma\^tR_i(s_t,a_t) -c_{KL}\gamma\^t log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma\^t log\pi_i(a_t|s_t)\right]\\\\
-&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) - c_{KL}\gamma\^tlog{\pi_i(a_t|s_t)} + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - c_{Ent}\gamma\^tlog\pi_i(a_t|s_t)\right]\\\\
-&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) + c_{KL}\gamma\^tlog{\pi_0(a_t|s_t)} - (c_{Ent}\gamma\^t + c_{KL}\gamma\^t)log\pi_i(a_t|s_t)\right]\\\\
-&=\sum_i\mathbb{E}{\pi_i}\left[\sum{t\ge 0}\gamma\^tR_i(s_t,a_t) +\frac{\gamma\^t \alpha}{\beta}log{\pi_0(a_t|s_t)}-\frac{\gamma\^t}{\beta}log\pi_i(a_t|s_t)\right], \tag{1}
-\end{align\*}
 
 ## 参考文献
 1.http://blog.huangyuanlove.com/2018/02/27/LaTeX笔记-六/
