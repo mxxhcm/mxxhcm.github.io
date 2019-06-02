@@ -1,5 +1,5 @@
 ---
-title: linux process 
+title: linux process: nohup, & ...
 date: 2019-05-07 16:19:29
 tags:
  - linux
