@@ -15,12 +15,12 @@ categories:
 ## python执行shell脚本并且重定向输出到文件
 目的：有一些shell脚本的参数需要调整，在shell中处理有些麻烦，就用python控制参数，然后调用shell，问题就是如何将shell脚本的输出进行重定向。最开始我想直接用python调用终端中shell重定向的语法，我用的是os.system(command)，command包含重定向的命令，在实践中证明是不可行的。为什么？？？留待解决。
 
-找到的解决方案是调用subprocess包。
-1. call
+找到的解决方案是调用subprocess包，将要执行的命令存入一个list，将这个list当做参数传入，获得返回值，进行文件读写。
+### call
 ``` python
 subprocess.call(['ls', '-l', '.']) # 直接将程序执行结果输出，没有返回值。
 ```
-2. Popen
+### Popen
 ``` python
 results = subprocess.Popen(['ls', '-l', '.'], 
             stdout=subprocess.PIPE, 
@@ -28,7 +28,7 @@ results = subprocess.Popen(['ls', '-l', '.'],
 stdout, stderr = results.communicate() 
 res = stdout.decode('utf-8') # 利用res将结果输出到文件
 ```
-3. run
+### run
 ``` python
 result = subprocess.run(['ls', '-l'], stdout=subprocess.PIPE) 
 res = result.stdout.decode('utf-8')  # 利用res将结果输出到文件

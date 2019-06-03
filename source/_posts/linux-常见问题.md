@@ -9,8 +9,7 @@ tags:
 categories: linux
 ---
 
-## 问题1
-title: Undefined reference to pthread_create in Linux
+## 问题1 Undefined reference to pthread_create in Linux
 在阅读自然语言处理的一篇论文时，读到了bype pair encoding(bpe)算法。在github找到了一个实现[fastBPE](https://github.com/glample/fastBPE), 算法是用C++写的，在编译的过程中遇到了问题"Undefined reference to pthread_create in Linux", 
 
 ### terminal下解决方案
@@ -24,7 +23,23 @@ g++ -std=c++11 -pthread -O3 fast.cc -o fast
 上面给出的方案是使用gcc在terminal进行编译时加入静态库，但是对于不习惯在命令行使用gdb进行调试的人来说没有用。
 在codeblocks中，如果要链接静态库,找到Settings --> Compiler... --> Linker settings，点击add，添加相应的库函数即可。
 
+## 问题2 vim中设置了setexpand不起作用
+~/.vimrc中进行了如下设置：
+``` vimrc
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4           
+```
+但是发现在markdown甚至~/.vimrc中expandtab都没有设置成功，但是py文件是正常的，后来发现是多加了一个set paste的原因，把它删了就好了。
+
+### 原因
+因为set paste覆盖了set expandtab。
+
+### 解决方案
+删除set paste行。
 
 ## 参考文献
-1:<https://stackoverflow.com/questions/1662909/undefined-reference-to-pthread-create-in-linux>
-2:<https://blog.csdn.net/zhaoyue007101/article/details/7705753>
+1:https://stackoverflow.com/questions/1662909/undefined-reference-to-pthread-create-in-linux
+2:https://blog.csdn.net/zhaoyue007101/article/details/7705753
+3.https://stackoverflow.com/a/37962622/8939281

@@ -108,7 +108,7 @@ cannot import name tqdm
 因为自己起的文件名就叫tqdm，然后就和库中的tqdm冲突了，这也太蠢了吧。。。
 
 ## 问题4-linux下python执行shell脚本输出重定向
-[详细介绍]()
+[详细介绍](https://mxxhcm.github.io/2019/06/03/linux-python调用shell脚本并将输出重定向到文件/)
  
 ## 参考文献
 1.https://www.cnblogs.com/timxgb/p/8905290.html
