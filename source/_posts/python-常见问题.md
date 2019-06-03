@@ -1,5 +1,5 @@
 ---
-title: linux 常见问题（不定期更新）
+title: python 常见问题（不定期更新）
 date: 2019-03-13 10:40:03
 tags:
  - python
@@ -107,6 +107,8 @@ cannot import name tqdm
 谷歌了半天，没有发现原因，然后百度了一下，发现了原因，看来还是自己太菜了。。
 因为自己起的文件名就叫tqdm，然后就和库中的tqdm冲突了，这也太蠢了吧。。。
 
+## 问题4-linux下python执行shell脚本输出重定向
+[详细介绍]()
  
 ## 参考文献
 1.https://www.cnblogs.com/timxgb/p/8905290.html
