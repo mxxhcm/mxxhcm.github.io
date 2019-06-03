@@ -44,6 +44,18 @@ MC使用式子$3$的estimate作为target，而DP使用式子$5$的estimate作为
 TD的backup图如图所示。TD和MC更新叫做sample update，因为这两个算法都牵涉到采样一个successor state，使用这个successor和reward计算一个backup value。sample updates和expected updates的不同在于，他们一个使用sample更新，一个使用所有可能的successors进行更新。
 $R\_{t+1} + \gamma V(S\_{t+1}) - V(S_t)$可以看成一类error，度量了$S_t$的estimated value $S_t$和一个更好的estimated value之间的差异$R\_{t+1} +\gamma V(S\_{t+1})$，这叫做$TD error$，用$\delta_t$表示。$\delta_t$是$V(S_t)$的error，在$t+1$时刻可用，如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。
 \begin{align\*}
-G_t - V(S_t) & = R\_{t+1} + G\_{t+1} - V(S_t)\\\\ 
+G_t - V(S_t) & = R\_{t+1} + \gammaG\_{t+1} - V(S_t) + \gamma V(S\_{t+1}) - \gammaV(S\_{t+1})\\\\
+& = R\_{t+1} + \gamma V(S\_{t+1}) - V(S_t) + \gammaG\_{t+1} - \gammaV(S\_{t+1})\\\\
+& = \delta_t + \gammaG\_{t+1} - \gammaV(S\_{t+1})\\\\
+& = \delta_t + \gamma(G\_{t+1} - V(S\_{t+1}))\\\\
+& = \delta_t + \gamma\delta\_{t+1} + \gamma\^2(G\_{t+2} - V(S\_{t+2}))\\\\
+& = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma\^{T-t}(G_T-V_T)\\\\
+& = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma\^{T-t}(0-0)\\\\
+& = \sum\_{k=t}\^{T-1} \gamma\^{k-t}delta_k \tag{6}\\\\
 \end{align\*}
+如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。
 
+\begin{align\*}
+G_t - V(S_t) & = R\_{t+1} + \gammaG\_{t+1} - V(S_t) + \gamma V(S\_{t+1}) - \gammaV(S\_{t+1})\\\\
+&=\\\\
+\end{align\*}
