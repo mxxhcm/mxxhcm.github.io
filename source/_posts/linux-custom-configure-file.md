@@ -210,3 +210,4 @@ set paste
 ## 参考文献
 1.《鸟哥的LINUX私房菜》基础篇
 2.https://github.com/yangyangwithgnu/use_vim_as_ide
+3.https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029

@@ -138,7 +138,7 @@ n N
 :n1,n2 w [filename]
 :set nu
 
-## 其他vim使用事项(290)
+## 其他vim使用事项
 ### 编码
 tty1-tty6默认不支持中文编码　　
 修改终端接口语系　
@@ -188,6 +188,102 @@ iconv -f big5 -t utf8 filename -o filename
 
 具体的配置可以查看[linux custom configure file](https://mxxhcm.github.io/2019/06/03/linux-custom-configure-file/)
 
+## 问题-vim中设置了setexpand不起作用
+~/.vimrc中进行了如下设置：
+``` vimrc
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4           
+```
+但是发现在markdown甚至~/.vimrc中expandtab都没有设置成功，但是py文件是正常的，后来发现是多加了一个set paste的原因，把它删了就好了。
+
+### 原因
+因为set paste覆盖了set expandtab。
+
+### 解决方案
+删除set paste行。
+
+## 我的vimrc文件
+vimrc文件如下，[代码地址](https://github.com/mxxhcm/code/blob/master/shell/vimrc)
+``` shell
+# 使用四个空格代替tab键
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4	
+			
+" 打开文件类型检测
+filetype on
+" 根据不同的文件类型加载插件
+filetype plugin on
+set ignorecase
+
+" 定义前缀键
+" let mappleader=";"
+
+" 设置ctrl+a全选，ctrl+c复制，;y粘贴
+vnoremap ; "+
+nnoremap ; "+
+nmap ;p "+p
+nnoremap <C-C> "+y
+vnoremap <C-C> "+y
+nnoremap <C-A> ggVG
+vnoremap <C-A> ggVG
+
+" 删除#号开头
+nnoremap ;d3 :g/^#.*$/d<CR>
+nnoremap ;d# :g/^#.*$/d<CR>
+" 删除空行
+nnoremap ;ds :g/^\s*$/d<CR>
+" 删除以tab开头的tab
+nnoremap ;rt :0,$s/^\t//g<CR>
+" 用\^代替^
+nnoremap ;r6 :0,$s/\^/\\^/g<CR>
+nnoremap ;r^ :0,$s/\^/\\^/g<CR>
+" 用\\\\代替\\
+nnoremap ;r/ :0,$s/\\\\/\\\\\\\\/g<CR>
+nnoremap ;r? :0,$s/\\\\/\\\\\\\\/g<CR>
+
+" 给选中行加注释
+" cnoremap <C-#> s/^/# /g<CR>
+nmap ;ic :s/^/# /g<CR>
+vmap ;ic :s/^/# /g<CR>
+nmap ;dc :s/^# //g<CR>
+vmap ;dc :s/^# //g<CR>
+"vmap <C-#> :s/^/#/g<CR>
+"nmap <C-#> :s/^/#/g<CR>
+
+""" 状态栏设置
+" 总是显示状态栏
+set laststatus=2
+" 状态信息
+set statusline=%f%m%r%h%w\ %=#%n\ [%{&fileformat}:%{(&fenc==\"\"?&enc:&fenc).((exists(\"\+bomb\")\ &&\ &bomb)?\"\+B\":\"\").\"\"}:%{strlen(&ft)?&ft:'**'}]\ [%c,%l/%L]\ %p%%
+
+"""光标设置
+" 设置显示光标当前位置
+set ruler
+
+" 开启行号显示
+set number
+" 高亮显示当前行/列
+set cursorline
+" set cursorcolumn
+" 高亮显示搜索结果
+set hlsearch
+" 显示文件名
+
+" 开启语法高亮
+syntax enable
+" 允许用指定语法高亮配色方案替换默认方案
+syntax on
+" 将制表符扩展为空格
+" 设置编辑时制表符占用空格数
+" 设置格式化时制表符占用空格数
+" 让 vim 把连续数量的空格视为一个制表符
+set autoindent
+```
+
 ## 参考文献
 0.https://github.com/yangyangwithgnu/use_vim_as_ide
 1.https://askubuntu.com/a/1027647
@@ -198,4 +294,7 @@ iconv -f big5 -t utf8 filename -o filename
 6.https://www.brianstorti.com/vim-registers/
 7.http://landcareweb.com/questions/3593/ru-he-zai-vimzhong-yong-jiu-xian-shi-dang-qian-wen-jian-de-lu-jing
 8.https://forum.ubuntu.org.cn/viewtopic.php?t=319408
-9.https://vim.fandom.com/wiki/Search_and_replace_in_a_visual_selection
+9.https://stackoverflow.com/a/1676659/8939281<op selected lines>
+10.https://vim.fandom.com/wiki/Search_and_replace_in_a_visual_selection
+11.https://stackoverflow.com/a/37962622/8939281<set paste>
+12.3.https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029<ctrl A>
