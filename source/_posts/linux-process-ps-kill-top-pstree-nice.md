@@ -23,16 +23,17 @@ f 用ASCII字符显示树状结构，表达进程间的关系
 x　通常与a这个参数一块使用，显示所有程序，不以终端机来区分
 l　较长，较详细的将该PID的信息列出
 j　工作的格式
-~\$:ps aux　查看系统所有的进程数据
-~\$:ps -lA　查看所有系统的数据
-~\$:ps axjf　连同部分进程树状态
-~\$:ps aux | grep 'sslocal' #查看sslocal程序是否运行
-~\$:ps ax # 显示当前系统进程的列表
-~\$:ps aux #显示当前系统进程详细列表以及进程用户
-~\$:ps -A  #列出进程号
+### 示例
+~\\$:ps aux　查看系统所有的进程数据
+~\\$:ps -lA　查看所有系统的数据
+~\\$:ps axjf　连同部分进程树状态
+~\\$:ps aux | grep 'sslocal' #查看sslocal程序是否运行
+~\\$:ps ax # 显示当前系统进程的列表
+~\\$:ps aux #显示当前系统进程详细列表以及进程用户
+~\\$:ps -A  #列出进程号
 
 ### -l仅查看自己相关的bash进程
-~\$:ps -l #仅查看自己相关的bash进程
+~\\$:ps -l #仅查看自己相关的bash进程
 输出
 F S UID PID PPID C PR NI ADDZ SZ WCHAN TTY TIME CMD
 F  说明进程权限
@@ -47,7 +48,7 @@ TIME    使用掉的CPU时间，而不是系统时间
 CMD command缩写,造成此进程被触发的命令
 
 ### aux 查看系统所有进程
-~\$:ps aux 查看系统所有进程
+~\\$:ps aux 查看系统所有进程
 输出
 USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
 USER    
@@ -80,8 +81,9 @@ top [-d 数字] | top [-bnp]
     k 给某个PID一个信号
     r 给某个PID重新制定一个nice值
     q 离开top软件
-~\$:top -d 2 #每两秒钟刷新一次top，默认为5s
-~\$:top -b -n 2 > ~/tmp/top.out
+### 示例
+~\\$:top -d 2 #每两秒钟刷新一次top，默认为5s
+~\\$:top -b -n 2 > ~/tmp/top.out
 
 ### top输出内容
 第一行top
@@ -110,15 +112,17 @@ TIME+  CPU使用时间的累加
 COMMAND 
 
 ## pstree 查看进程树
+### 参数介绍
 pstree [-A|-U] [-up] 
--A  各进程树直接以ASCII字符连接
--U  各进程树之间以utf-8字符连接
--u  显示进程所属账号名
--p  显示pid
-~\$:pstree -Aup
+    -A  各进程树直接以ASCII字符连接
+    -U  各进程树之间以utf-8字符连接
+    -u  显示进程所属账号名
+    -p  显示pid
+### 示例
+~\\$:pstree -Aup
 
 ## kill管理进程
-### kill参数介绍
+### 参数介绍
 kill -signals %jobnumber 杀掉某个job    
     -l  列出所有signal
     -1  重新读取一次参数的配置文件
@@ -126,9 +130,9 @@ kill -signals %jobnumber 杀掉某个job
     -9  强制删除一个job，非正常状态
     -15 让一个job正常结束
 ### 查看signal种类
-~\$:man 7 signal
+~\\$:man 7 signal
 
-### jobnum vs pid
+### kill示例
 kill -signal %jobnum
 kill -signal pid    
 这两种情况是不同的，第一种是job，第二种是pid,不能弄混
@@ -140,11 +144,10 @@ killall [-iIe]  用来删除某个服务
     -I 忽略大小写
 
 ### killall示例
-~\$:killall utserver
-~\$:killall -1 syslogd
-~\$:killall -9 httpd
-~\$:killall -i -9 bash
-
+~\\$:killall utserver
+~\\$:killall -1 syslogd
+~\\$:killall -9 httpd
+~\\$:killall -i -9 bash
 
 
 ## nice管理进程优先级
@@ -163,18 +166,58 @@ d.一般用户仅可将nice值调高，而无法降低
 e.调整nice值的方法
 新执行的命令手动设置nice值
 nice -n [number] command
-~\$:nice -n -5 vim &
+### 示例
+~\\$:nice -n -5 vim &
     
-#### 已存在的进程调整nice值
+### 已存在的进程调整nice值
 renice [number] command
-~\$:ps -l | grep '\*bash$'
-~\$:renice 10 $(ps -l|grep 'bash$' | awk '{print $4}')
+~\\$:ps -l | grep '\*bash$'
+~\\$:renice 10 $(ps -l|grep 'bash$' | awk '{print $4}')
 
-## 具有SUID，SGID的程序
-如passwd，当触发passwd之后，会取得一个新的进程与PID,该PID产生时通过SUID给予该PID特殊的权限设置。
-在一个bash中执行passwd会衍生出一个passwd进程，而且权限为root
-~\$:passwd &
-~\$:pstree -up找到该进程
+## fuser找到使用某文件的程序
+### 参数介绍
+fuser [-muv] [-k [i] [-signal]] name
+    -m  后面接的文件名会主动提到文件顶层
+    -u  user
+    -v  verbose
+    -k  SIGKILL
+    -i  询问用户，与-k搭配
+    -signal  -1,-15等，默认为-9
+### 示例
+~\\$:mount -o loop ubuntu.iso /mnt/iso
+~\\$:cd /mnt/iso
+~\\$:umount /mnt/iso
+error
+~\\$:fuser -muv   /mnt/iso
+.....
+~\\$:cd 
+~\\$:umount /mnt/iso
+
+~\\$:fuser -muv /proc
+~\\$:fuser -ki /bin/bash
+
+## lsof找到被进程打开的文件
+### 参数介绍
+lsof [-uaU] [+d]
+    -a 相当于and连接符
+    -u 某个用户的相关进程打开的文件
+    -U Unix like 的socket文件类型
+    +d 某个目录下被打开的文件
+### 示例
+~\\$:lsof +d ~/Desktop
+~\\$:lsof -u mxx | grep 'bash'
+~\\$:lsof -u mxx -a -U
+
+## pidof找出某个正在进行的进程的pid
+### 参数介绍
+pidof [-sx] program_name
+-s 仅列出一个pid而不列出所有的pid
+-x 列出该进程可能的ppid的pid
+
+## 获取进程id
+ps -A |grep "command" | awk '{print $1}'
+pidof 'command'
+pgrep 'command'
 
 ## /proc/\* 文件
 /proc/cmdline   加载kernel执行的参数
@@ -195,49 +238,10 @@ renice [number] command
 /proc/version　内核版本 uname -a
 /proc/bus/\*　总线设备，USB设备
 
-## 查询已打开文件或者已执行程序打开的文件
-### fuser通过文件找到使用该文件的程序
-#### 参数介绍
-fuser [-muv] [-k [i] [-signal]] name
-    -m  后面接的文件名会主动提到文件顶层
-    -u  user
-    -v  verbose
-    -k  SIGKILL
-    -i  询问用户，与-k搭配
-    -signal  -1,-15等，默认为-9
-#### 示例
-~\$:mount -o loop ubuntu.iso /mnt/iso
-~\$:cd /mnt/iso
-~\$:umount /mnt/iso
-error
-~\$:fuser -muv   /mnt/iso
-.....
-~\$:cd 
-~\$:umount /mnt/iso
+## 具有SUID，SGID的程序
+如passwd，当触发passwd之后，会取得一个新的进程与PID,该PID产生时通过SUID给予该PID特殊的权限设置。
+在一个bash中执行passwd会衍生出一个passwd进程，而且权限为root
+~\\$:passwd &
+~\\$:pstree -up找到该进程
 
-~\$:fuser -muv /proc
-~\$:fuser -ki /bin/bash
-
-### lsof找到被进程打开的文件
-#### 参数介绍
-lsof [-uaU] [+d]
--a 相当于and连接符
--u 某个用户的相关进程打开的文件
--U Unix like 的socket文件类型
-+d 某个目录下被打开的文件
-#### 示例
-~\$:lsof +d ~/Desktop
-~\$:lsof -u mxx | grep 'bash'
-~\$:lsof -u mxx -a -U
-
-### pidof找出某个正在进行的进程的pid
-#### 参数介绍
-pidof [-sx] program_name
--s 仅列出一个pid而不列出所有的pid
--x 列出该进程可能的ppid的pid
-
-## 获取进程id
-ps -A |grep "command" | awk '{print $1}'
-pidof 'command'
-pgrep 'command'
 
