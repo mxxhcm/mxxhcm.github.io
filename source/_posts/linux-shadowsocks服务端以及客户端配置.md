@@ -263,7 +263,6 @@ esac
 上述命令执行完成以后，进行测试
 ~$:sudo service shadosowcks start
 
-
 #### 配置代理
 上一步的目的是建立了shadowsocks服务的本地客户端，socks5流量会走该通道，但是浏览器的网页的流量是https的，我们需要配置相应的代理，将https流量转换为socks5流量，走ss客户端到达ss服务端。当然，也可以把其他各种流量，如tcp,udp等各种流量都转换为socks5流量，这个可以通过全局代理实现，也可以通过添加特定的代理规则实现。
 ##### 配置全局代理
@@ -277,7 +276,7 @@ esac
 ![mxx](https:)
 直接配置proxy，添加如图所示的规则，这样chrome打开的所有网站都是走代理的。
 
-Z#### 使用privoxy让terminal走socks5
+#### 使用privoxy让terminal走socks5
 ~$:sudo apt install privoxy
 ~$:sudo vim /etc/privoxy/config
 取消下列行的注释，或者添加相应条目
