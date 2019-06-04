@@ -155,7 +155,7 @@ n N
 ### Visual模式
 见参考文献[9]。
 
-## 自定义快捷键
+## 快捷键映射
 - namp 正常模式下的递归映射
 - vmap Visual模式
 - imap 插入模式
@@ -164,22 +164,6 @@ n N
 - vnoremap Visual模式下的非递归映射
 - inoremap 插入模式下的非递归映射
 - cnoremap 命令模式下的非递归映射
-
-## 问题-vim中设置了setexpand不起作用
-~/.vimrc中进行了如下设置：
-``` vimrc
-set expandtab
-set tabstop=4
-set shiftwidth=4
-set softtabstop=4           
-```
-但是发现在markdown甚至~/.vimrc中expandtab都没有设置成功，但是py文件是正常的，后来发现是多加了一个set paste的原因，把它删了就好了。
-
-### 原因
-因为set paste覆盖了set expandtab。
-
-### 解决方案
-删除set paste行。
 
 ## 其他vim使用事项
 ### 编码
@@ -199,7 +183,21 @@ todos filename
 iconv -o保留原文件，-o加新文件名
 iconv -f big5 -t utf8 filename -o filename
 
+## 问题-vim中设置了setexpand不起作用
+~/.vimrc中进行了如下设置：
+``` vimrc
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4           
+```
+但是发现在markdown甚至~/.vimrc中expandtab都没有设置成功，但是py文件是正常的，后来发现是多加了一个set paste的原因，把它删了就好了。
 
+### 原因
+因为set paste覆盖了set expandtab。
+
+### 解决方案
+删除set paste行。
 
 ## 我的vimrc文件
 vimrc文件如下，[代码地址](https://github.com/mxxhcm/code/blob/master/shell/vimrc)
