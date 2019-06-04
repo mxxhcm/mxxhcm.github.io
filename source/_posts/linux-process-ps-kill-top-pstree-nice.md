@@ -173,7 +173,7 @@ nice -n [number] command
 ### 已存在的进程调整nice值
 renice [number] command
 ~\\$:ps -l | grep '\*bash$'
-~\\$:renice 10 $(ps -l|grep 'bash$' | awk '{print $4}')
+~\\$:renice 10 \\$(ps -l|grep 'bash\\$' | awk '{print \\$4}')
 
 ## fuser找到使用某文件的程序
 ### 参数介绍
