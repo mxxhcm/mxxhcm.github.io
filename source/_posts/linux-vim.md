@@ -186,6 +186,8 @@ iconv -f big5 -t utf8 filename -o filename
 - inoremap 插入模式下的非递归映射
 - cnoremap 命令模式下的非递归映射
 
+具体的配置可以查看[linux custom configure file](https://mxxhcm.github.io/2019/06/03/linux-custom-configure-file/)
+
 ## 参考文献
 0.https://github.com/yangyangwithgnu/use_vim_as_ide
 1.https://askubuntu.com/a/1027647

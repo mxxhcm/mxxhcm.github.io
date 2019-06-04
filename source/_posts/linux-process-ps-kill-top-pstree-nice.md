@@ -13,6 +13,7 @@ categories: linux
 mathjax: true
 ---
 
+这一节介绍和process相关的命令，包含ps,top,kill, pstree, nice, fuser, lsof, pidof, /proc/等
 ## ps查看进程
 ### 参数介绍
 ps [-Aauf] [xlj]    
