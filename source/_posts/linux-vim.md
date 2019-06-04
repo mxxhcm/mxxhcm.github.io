@@ -32,7 +32,7 @@ vim有9种寄存器:
 2. small delete寄存器 -，存放不超过一行的delete操作（不包括x操作）产生的文本。
 3. 编号为$0,1,2,\cdot, 9$的寄存器，
 4. $a-za-z$的$26$个字母寄存器,
-5. 只读寄存器 : . % $
+5. 只读寄存器 : .,%,\$
 6. 表达式寄存器 =
 7. 搜索寄存器 /
 8. GUI选择寄存器$\*,+$。
@@ -77,7 +77,7 @@ vim有9种寄存器:
 添加下面一句话，重新打开vim即可
 set clipboard=unnamed
 
-## 常用的vim命令
+## vim模式和常用命令
 ### vim模式
 - 正常模式，用vim打开一个文件之后就处于正常模式
 - 插入模式，在正常模式下输入i,a,o或者I,A,O之后，就进入了命令模式，可以修改文件，按Esc退出。
@@ -124,19 +124,62 @@ p 粘贴
 :sp [filename]
 输入:进入命令模式，然后输入sp，空格，要打开的文件名。使用ctrl w在分开的屏幕之间进行切换。
 
-#### 替换
-:1,10s/word/word.rp/g(c)
-:1,$s/word/word.rp/g(c)
-
 #### 查找
 /word ?word
 n N
+
+#### 替换和删除
+:1,10s/word/word.rp/g(c) 
+:1,$s/word/word.rp/g(c)
+利用正则表达式可以实现下面的一些常用命令
+[代码地址](https://github.com/mxxhcm/code/tree/master/shell/vim_regex)
+``` shell
+# 替换所有的^为\^
+:0,$s/\^/\\^/g
+# 替换所有的\*\*为##
+:0,$s/[0-9][0-9]\./## /g
+# 删除所有以tab开头的tab
+:0,$s/^\t//g
+# 删除所有以#开头的行
+:g/^#\.\*$/d
+# 删除所有空行
+:g/^\s\*$/d
+```
 
 #### 其他
 :w [filename]
 :r [filename]
 :n1,n2 w [filename]
 :set nu
+
+### Visual模式
+见参考文献[9]。
+
+## 自定义快捷键
+- namp 正常模式下的递归映射
+- vmap Visual模式
+- imap 插入模式
+- cmap 命令模式
+- nnoremap 正常模式下的非递归映射
+- vnoremap Visual模式下的非递归映射
+- inoremap 插入模式下的非递归映射
+- cnoremap 命令模式下的非递归映射
+
+## 问题-vim中设置了setexpand不起作用
+~/.vimrc中进行了如下设置：
+``` vimrc
+set expandtab
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4           
+```
+但是发现在markdown甚至~/.vimrc中expandtab都没有设置成功，但是py文件是正常的，后来发现是多加了一个set paste的原因，把它删了就好了。
+
+### 原因
+因为set paste覆盖了set expandtab。
+
+### 解决方案
+删除set paste行。
 
 ## 其他vim使用事项
 ### 编码
@@ -157,52 +200,6 @@ iconv -o保留原文件，-o加新文件名
 iconv -f big5 -t utf8 filename -o filename
 
 
-## 常用的vim命令模式命令
-主要利用的是正则表达式和vim的命令模式
-[代码地址](https://github.com/mxxhcm/code/tree/master/shell/vim_regex)
-``` shell
-# 替换所有的^为\^
-:0,$s/\^/\\^/g
-# 替换所有的\*\*为##
-:0,$s/[0-9][0-9]\./## /g
-# 删除所有以tab开头的tab
-:0,$s/^\t//g
-# 删除所有以#开头的行
-:g/^#\.\*$/d
-# 删除所有空行
-:g/^\s\*$/d
-```
-
-### 在Visual模式下操作
-见参考文献[9]。
-
-## 自定义快捷键
-- namp 正常模式下的递归映射
-- vmap Visual模式
-- imap 插入模式
-- cmap 命令模式
-- nnoremap 正常模式下的非递归映射
-- vnoremap Visual模式下的非递归映射
-- inoremap 插入模式下的非递归映射
-- cnoremap 命令模式下的非递归映射
-
-具体的配置可以查看[linux custom configure file](https://mxxhcm.github.io/2019/06/03/linux-custom-configure-file/)
-
-## 问题-vim中设置了setexpand不起作用
-~/.vimrc中进行了如下设置：
-``` vimrc
-set expandtab
-set tabstop=4
-set shiftwidth=4
-set softtabstop=4           
-```
-但是发现在markdown甚至~/.vimrc中expandtab都没有设置成功，但是py文件是正常的，后来发现是多加了一个set paste的原因，把它删了就好了。
-
-### 原因
-因为set paste覆盖了set expandtab。
-
-### 解决方案
-删除set paste行。
 
 ## 我的vimrc文件
 vimrc文件如下，[代码地址](https://github.com/mxxhcm/code/blob/master/shell/vimrc)
@@ -295,6 +292,6 @@ set autoindent
 7.http://landcareweb.com/questions/3593/ru-he-zai-vimzhong-yong-jiu-xian-shi-dang-qian-wen-jian-de-lu-jing
 8.https://forum.ubuntu.org.cn/viewtopic.php?t=319408
 9.https://stackoverflow.com/a/1676659/8939281<op selected lines>
-10.https://vim.fandom.com/wiki/Search_and_replace_in_a_visual_selection
+10.https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029<ctrl A>
 11.https://stackoverflow.com/a/37962622/8939281<set paste>
-12.3.https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029<ctrl A>
+12.https://vim.fandom.com/wiki/Search_and_replace_in_a_visual_selection
