@@ -144,6 +144,8 @@ n N
 :g/^#\.\*$/d
 # 删除所有空行
 :g/^\s\*$/d
+# 用newlines替换,
+:0,$s/,/\r/g
 ```
 
 #### 其他
@@ -293,3 +295,4 @@ set autoindent
 10.https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029<ctrl A>
 11.https://stackoverflow.com/a/37962622/8939281<set paste>
 12.https://vim.fandom.com/wiki/Search_and_replace_in_a_visual_selection
+13.https://stackoverflow.com/questions/71323/how-to-replace-a-character-by-a-newline-in-vim/71334<用newline替换逗号>
