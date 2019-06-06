@@ -109,7 +109,7 @@
 <meta property="og:description" content="简介 TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。 Temporal-Difference Learning 本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$。然后研究control问题，DP">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png">
-<meta property="og:updated_time" content="2019-06-03T08:35:44.651Z">
+<meta property="og:updated_time" content="2019-06-04T03:33:45.519Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="reinforcement learning an introduction 第6章笔记">
 <meta name="twitter:description" content="简介 TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。 Temporal-Difference Learning 本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$。然后研究control问题，DP">
@@ -390,7 +390,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-03 16:35:44" itemprop="dateModified" datetime="2019-06-03T16:35:44+08:00">2019-06-03</time>
+                <time title="修改时间：2019-06-04 11:33:45" itemprop="dateModified" datetime="2019-06-04T11:33:45+08:00">2019-06-04</time>
               
             
           </span>
@@ -478,26 +478,27 @@ $\qquad$<strong>until</strong> S 是terminal state</p>
 \begin{align*}<br>
 v_{\pi}(s) &amp; = \mathbb{E}_{\pi}\left[G_t\right]\tag{3}\\<br>
 &amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}| S_t = s\right]\tag{4}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma V_{S_{t+1})|S_t = s\right]\tag{5}\\<br>
-\begin{end*}<br>
-MC使用式子$3$的estimate作为target，而DP使用式子$5$的estimate作为target。MC是估计是因为式子$3$中的expectation是不知道的，用一个sample的return代替真是的expected return；DP是因为$v_{\pi}(S_{t+1})$是不知道的，用$V(S_{t+1})$作为一个估计。TD target也是estimate，TD既进行了采样也使用了$V$的估计值，它对式子$4$中的tranisition进行sample，同时使用$v_{\pi}$的估计值$V$进行计算。所以TD结合了MC的采样以及DP的bootstrap。<br>
+&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma V(S_{t+1})|S_t = s\right]\tag{5}\\<br>
+\end{align*}<br>
+MC使用式子$(3)$的estimate作为target，而DP使用式子$(5)$的estimate作为target。MC是估计是因为式子$(3)$中的expectation是不知道的，用一个sample的return代替真实的expected return；DP是因为$v_{\pi}(S_{t+1})$是不知道的，用$V(S_{t+1})$作为一个估计。TD target也是estimate，TD既进行了采样也使用了$V$的估计值，它对式子$(4)$中的tranisition进行sample，同时使用$v_{\pi}$的估计值$V$进行计算。所以TD结合了MC的采样以及DP的bootstrap。<br>
 <img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png" alt="backup_TD"><br>
 TD的backup图如图所示。TD和MC更新叫做sample update，因为这两个算法都牵涉到采样一个successor state，使用这个successor和reward计算一个backup value。sample updates和expected updates的不同在于，他们一个使用sample更新，一个使用所有可能的successors进行更新。<br>
 $R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$可以看成一类error，度量了$S_t$的estimated value $S_t$和一个更好的estimated value之间的差异$R_{t+1} +\gamma V(S_{t+1})$，这叫做$TD error$，用$\delta_t$表示。$\delta_t$是$V(S_t)$的error，在$t+1$时刻可用，如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。<br>
 \begin{align*}<br>
-G_t - V(S_t) &amp; = R_{t+1} + \gammaG_{t+1} - V(S_t) + \gamma V(S_{t+1}) - \gammaV(S_{t+1})\\<br>
-&amp; = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) + \gammaG_{t+1} - \gammaV(S_{t+1})\\<br>
-&amp; = \delta_t + \gammaG_{t+1} - \gammaV(S_{t+1})\\<br>
+G_t - V(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V(S_t) + \gamma V(S_{t+1}) - \gamma V(S_{t+1})\\<br>
+&amp; = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
+&amp; = \delta_t + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
 &amp; = \delta_t + \gamma(G_{t+1} - V(S_{t+1}))\\<br>
 &amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2(G_{t+2} - V(S_{t+2}))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(G_T-V_T)\\<br>
+&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(G_T-V(S_T))\\<br>
 &amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(0-0)\\<br>
-&amp; = \sum_{k=t}^{T-1} \gamma^{k-t}delta_k \tag{6}\\<br>
+&amp; = \sum_{k=t}^{T-1} \gamma^{k-t}\delta_k \tag{6}\\<br>
 \end{align*}<br>
 如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。</p>
 <p>\begin{align*}<br>
-G_t - V(S_t) &amp; = R_{t+1} + \gammaG_{t+1} - V(S_t) + \gamma V(S_{t+1}) - \gammaV(S_{t+1})\\<br>
-&amp;=\\<br>
+G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t+1}) - \gamma V_{t+1}(S_{t+1})\\<br>
+&amp; = R_{t+1} + \gamma V_{t+1}(S_{t+1}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t+1})\\<br>
+&amp;= \\<br>
 \end{align*}</p>
 
       
