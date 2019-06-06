@@ -204,7 +204,6 @@ syntax on
 " 设置格式化时制表符占用空格数
 " 让 vim 把连续数量的空格视为一个制表符
 set autoindent
-set paste	
 ```
 
 ## 参考文献

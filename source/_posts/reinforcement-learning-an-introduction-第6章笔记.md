@@ -37,25 +37,26 @@ $TD(0)$是bootstrap方法，因为它基于其他state的value进行更新。从
 \begin{align\*}
 v\_{\pi}(s) & = \mathbb{E}\_{\pi}\left[G_t\right]\tag{3}\\\\
 & = \mathbb{E}\_{\pi}\left[R\_{t+1}+\gamma G\_{t+1}| S_t = s\right]\tag{4}\\\\
-& = \mathbb{E}\_{\pi}\left[R\_{t+1}+\gamma V\_{S\_{t+1})|S_t = s\right]\tag{5}\\\\
-\begin{end\*}
-MC使用式子$3$的estimate作为target，而DP使用式子$5$的estimate作为target。MC是估计是因为式子$3$中的expectation是不知道的，用一个sample的return代替真是的expected return；DP是因为$v\_{\pi}(S\_{t+1})$是不知道的，用$V(S\_{t+1})$作为一个估计。TD target也是estimate，TD既进行了采样也使用了$V$的估计值，它对式子$4$中的tranisition进行sample，同时使用$v\_{\pi}$的估计值$V$进行计算。所以TD结合了MC的采样以及DP的bootstrap。
+& = \mathbb{E}\_{\pi}\left[R\_{t+1}+\gamma V(S\_{t+1})|S_t = s\right]\tag{5}\\\\
+\end{align\*}
+MC使用式子$(3)$的estimate作为target，而DP使用式子$(5)$的estimate作为target。MC是估计是因为式子$(3)$中的expectation是不知道的，用一个sample的return代替真实的expected return；DP是因为$v\_{\pi}(S\_{t+1})$是不知道的，用$V(S\_{t+1})$作为一个估计。TD target也是estimate，TD既进行了采样也使用了$V$的估计值，它对式子$(4)$中的tranisition进行sample，同时使用$v\_{\pi}$的估计值$V$进行计算。所以TD结合了MC的采样以及DP的bootstrap。
 ![backup_TD](backup_td.png)
 TD的backup图如图所示。TD和MC更新叫做sample update，因为这两个算法都牵涉到采样一个successor state，使用这个successor和reward计算一个backup value。sample updates和expected updates的不同在于，他们一个使用sample更新，一个使用所有可能的successors进行更新。
 $R\_{t+1} + \gamma V(S\_{t+1}) - V(S_t)$可以看成一类error，度量了$S_t$的estimated value $S_t$和一个更好的estimated value之间的差异$R\_{t+1} +\gamma V(S\_{t+1})$，这叫做$TD error$，用$\delta_t$表示。$\delta_t$是$V(S_t)$的error，在$t+1$时刻可用，如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。
 \begin{align\*}
-G_t - V(S_t) & = R\_{t+1} + \gammaG\_{t+1} - V(S_t) + \gamma V(S\_{t+1}) - \gammaV(S\_{t+1})\\\\
-& = R\_{t+1} + \gamma V(S\_{t+1}) - V(S_t) + \gammaG\_{t+1} - \gammaV(S\_{t+1})\\\\
-& = \delta_t + \gammaG\_{t+1} - \gammaV(S\_{t+1})\\\\
+G_t - V(S_t) & = R\_{t+1} + \gamma G\_{t+1} - V(S_t) + \gamma V(S\_{t+1}) - \gamma V(S\_{t+1})\\\\
+& = R\_{t+1} + \gamma V(S\_{t+1}) - V(S_t) + \gamma G\_{t+1} - \gamma V(S\_{t+1})\\\\
+& = \delta_t + \gamma G\_{t+1} - \gamma V(S\_{t+1})\\\\
 & = \delta_t + \gamma(G\_{t+1} - V(S\_{t+1}))\\\\
 & = \delta_t + \gamma\delta\_{t+1} + \gamma\^2(G\_{t+2} - V(S\_{t+2}))\\\\
-& = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma\^{T-t}(G_T-V_T)\\\\
+& = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma\^{T-t}(G_T-V(S_T))\\\\
 & = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma\^{T-t}(0-0)\\\\
-& = \sum\_{k=t}\^{T-1} \gamma\^{k-t}delta_k \tag{6}\\\\
+& = \sum\_{k=t}\^{T-1} \gamma\^{k-t}\delta_k \tag{6}\\\\
 \end{align\*}
 如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。
 
 \begin{align\*}
-G_t - V(S_t) & = R\_{t+1} + \gammaG\_{t+1} - V(S_t) + \gamma V(S\_{t+1}) - \gammaV(S\_{t+1})\\\\
-&=\\\\
+G_t - V_t(S_t) & = R\_{t+1} + \gamma G\_{t+1} - V_t(S_t) + \gamma V\_{t+1}(S\_{t+1}) - \gamma V\_{t+1}(S\_{t+1})\\\\
+& = R\_{t+1} + \gamma V\_{t+1}(S\_{t+1}) - V_t(S_t) + \gamma G\_{t+1}- \gamma V\_{t+1}(S\_{t+1})\\\\
+&= \\\\
 \end{align\*}

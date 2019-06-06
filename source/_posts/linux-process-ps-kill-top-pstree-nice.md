@@ -172,7 +172,7 @@ nice -n [number] command
     
 ### 已存在的进程调整nice值
 renice [number] command
-~\\$:ps -l | grep '\*bash$'
+~\\$:ps -l | grep '\*bash\\$'
 ~\\$:renice 10 \\$(ps -l|grep 'bash\\$' | awk '{print \\$4}')
 
 ## fuser找到使用某文件的程序
@@ -245,4 +245,5 @@ pgrep 'command'
 ~\\$:passwd &
 ~\\$:pstree -up找到该进程
 
-
+## 参考文献
+1.《鸟哥的LINUX私房菜》基础篇
