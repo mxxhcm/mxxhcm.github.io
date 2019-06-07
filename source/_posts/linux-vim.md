@@ -146,6 +146,14 @@ n N
 :g/^\s\*$/d
 # 用newlines替换,
 :0,$s/,/\r/g
+# 在re.*后面加上括号
+# re.Ire.IGNORECASE)
+# re.Lre.LOCALE)
+# re.Mre.MULTILINE)
+# re.sre.DOTALL)
+# re.Ure.UNICODE)
+# re.Xre.VERBOSE)
+:m,ns/\(^re\.[A-Z]\)/\1(/g
 ```
 
 #### 其他
