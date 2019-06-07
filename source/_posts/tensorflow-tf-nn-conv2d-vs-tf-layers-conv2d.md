@@ -7,9 +7,8 @@ tags:
 categories: tensorflow
 ---
 
-
-All of these other replies talk about how the parameters are different, but actually, the main difference of tf.nn and tf.layers conv2d is that for tf.nn, you need to create your own filter tensor and pass it in. This filter needs to have the size of: [kernel_height, kernel_width, in_channels, num_filters]
-
+## nn.conv2d vs layers.con2d
+tf.nn.conv2d需要手动创建tensor，传入filter的参数[kernel_height, kernel_width, in_channels, num_filters]。
 
 ## 参考文献
 1.https://stackoverflow.com/questions/42785026/tf-nn-conv2d-vs-tf-layers-conv2d

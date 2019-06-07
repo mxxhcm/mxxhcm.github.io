@@ -21,7 +21,7 @@ Tensorflow用graph collection来管理不同类型的对象。tf.GraphKeys中定
 
 这里主要介绍三类collection，一种是GLOBAL_VARIABLES，一种是SUMMARIES，一种是自定义的collections。
 
-下面的一些collection也被定义了，但是并不会自动添加？？
+下面的一些collection也被定义了，但是并不会自动添加
 > The following standard keys are defined, but their collections are not automatically populated as many of the others are:
 
 - WEIGHTS

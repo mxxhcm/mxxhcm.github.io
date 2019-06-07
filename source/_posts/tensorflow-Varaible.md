@@ -87,7 +87,7 @@ with tf.variable_scope("model") as scope:
 
 ## Variable和collection
 [点击查看关于collecion的详细介绍](https://mxxhcm.github.io/2019/05/13/tensorflow-collection/)
-默认情况下，每个tf.Variable()都在以下两个collection中：
+默认情况下，每个tf.Variable()都会添加到以下两个collection中：
 - tf.GraphKeys.GLOBAL_VARIABLES - 可以在多台设备间共享的变量，
 - tf.GraphKeys.TRAINABLE_VARIABLES - TensorFlow 将计算其梯度的变量。
 
