@@ -100,6 +100,49 @@ ILSVRC-2010
 pytorch实现
 https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 
+## OverFeat(2013)
+
+### 概述
+本文提出了一个可用于classification, localization和detection等任务的CNN框架。
+ImageNet数据集中大部分选择的是几乎填满了整个image中心的object，image中我们感兴趣的objects的大小和位置也可能变化很大。为了解决这个问题，作者提出了三个方法：
+1. 用sliding window和multiple scales在image的多个位置apply ConvNet。即使这样，许多window中可能包含能够完美识别object类型的一部分，比如一个狗头。。。最后的结果是classfication很好，但是localization和detection结果很差。
+2. 训练一个网络不仅仅预测每一个window的category distribution，还预测包含object的bounding box相对于window的位置和大小。
+3. 在每个位置和大小累加每个category的evidence
+
+
+### Vision任务
+classification，localization和detection。classification和localization通常只有一个很大的object，而detection需要找到很多很小的objects。
+classification任务中，每个image都有一个label对应image中主要的object的类型。为了找到正确的label，每个图片可以猜$5$次（图片中可能包含了没有label的数据）。localization任务中，不仅要给出label，还需要找到这个label对应的bouding box，bounding box和groundtruth至少要有$50$匹配，label和bounding box也需要匹配。detection和localization不同的是，detection任务中可以有任何数量的objects，false positive会使用mean average precison measure。localization任务可以看成classification到detection任务的一个中间步。
+
+### Classification
+#### training
+- datset
+Image 2012 trainign set（1.2million iamges，C=$1000$ classes)。
+- data argumented
+对每张图片进行下采样，所以每个图片最小的dimension需要是$256$。
+提取$5$个random crops以及horizaontal flips，总共$10$个$221\times 221$的图片
+- batchsize
+$128$
+- 初始权重
+$(\mu, \simga)= (0, 1\times 10\^{-2})$
+- momentum
+0.6
+- l2 weigth decay
+$1\times 10\^{-5}$
+- lr
+初始是$5\times 10\^{-2}$，在$(30,50,60,70,80)$个epoches后，乘以$0.5$
+- non-spatial
+这个说的是什么呢，在test的时候，会输出多个output maps，对他们的结果做平均，而在training的时候，output maps是$1\times 1$。
+
+#### fast model架构
+下图展示的是fast model，spatial input size在train和test时候是不同的，这里展示的是train时的spatial seize。layer 5是最上层的CNN，receptive filed最大。后续是FC layers，在test时候使用了sliding window。在spatial设置中，FC-layers可以查看$1\times 1$的卷积。
+![overfeat_fast](overfeat_fast.png)
+![overfeat_accuarcy](overfeat_accuarcy.png)
+
+#### 多scale classification 
+alexnet中，对一张照片的$10$个views（中间，四个角和horizontal flip)的结果做了平均，这种方式可能会忽略很多趋于，同时如果不同的views有重叠的话，计算很redundant。此外，alexnet中只使用了一个scale。
+作者对每个iamge的每一个location和多个scale都进行计算。
+
 ## Vggnet(2013)
 ### 概述
 这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。通过使用$3\times 3$的filters，增加CNN的深度，提高识别精度。
@@ -155,37 +198,30 @@ $。
 
 ### 分类框架
 #### training
-##### 目标函数
+- 目标函数
 多峰logistic regression
-
-##### 训练方法
+- 训练方法
 mini-batch gradient descent with momentum
-
-##### batch size
+- batch size
 256
-
-##### momentum 
+- momentum 
 0.9
-##### 正则化
-- $L_2$参数正则化(5\codt 10\^{-4})
-- 0.5 dorpout 用于前两个FC layers
-
-##### lr
+- 正则化
+$L_2$参数正则化(5\codt 10\^{-4})
+0.5 dorpout 用于前两个FC layers
+- lr
 初始值为$10\^{-2}$，当验证集的accuracy不再提升时，除以$10$。学习率总共降了$3$次，$370K$次迭代后停止。
-
-##### VGG vs alexnet
-VGG参数多，深度深，但是收敛快，原因：
-- 更小的filter带来的implicit regularisation
-- 某些层的预先初始化。
-这个解决的是网络深度过深，某些初值使得网络不稳定的问题。解决方法：先随机初始化不是很深的网络A，进行训练。在训练更深网络的时候，使用A网络的值初始化前$4$个卷基层和最后三个FC layers。随机初始化的网络参数，从均值为$0$，方差为$10\^{-2}$的高斯分布中采样得到。
-
-##### 图像预处理
+- 图像预处理
 从rescaled中随机cropped $224\times 224$的RGB图像。
 使用alexnet中的随机horizontal flipping和随机RGB colour shift。
-
-##### iamge rescale
+- iamge rescale
 用$S$表示training image的小边的大小，$S$也叫作train sacle。网络的输入是从training image中cropped得到的$224\times 224$的图像。所以只要$S$取任何不小于$224$的值即可，如果$S=224$，那么crop在统计上会captuer整个图片，完全包含training image最小的那边；$S\>\>224$的时候，crop会产生很小一部分的图像。
 作者尝试了固定$S$和不固定的$S$。对于固定$S$，设置$S=256$和$S=384$，首先在$S=256$上训练，然后用$S=256$训练的参数初始化$S=384$的参数，使用更小的初始学习率$10\^{-3}$。不固定$S$时，$S$从$\[S\_{min}, S\_{max}\](S\_{max}=512,S\_{min}=256)$任意采样，然后crop。
+- VGG vs alexnet
+VGG参数多，深度深，但是收敛快，原因：
+1. 更小的filter带来的implicit regularisation
+2. 某些层的预先初始化。
+这个解决的是网络深度过深，某些初值使得网络不稳定的问题。解决方法：先随机初始化不是很深的网络A，进行训练。在训练更深网络的时候，使用A网络的值初始化前$4$个卷基层和最后三个FC layers。随机初始化的网络参数，从均值为$0$，方差为$10\^{-2}$的高斯分布中采样得到。
 
 #### testing
 测试的时候先把input image的窄边缩放到$Q$，$Q$也叫test scale，$Q$和$S$不一定需要相等。
@@ -204,7 +240,7 @@ $S$抖动时，设置test image size $Q=0.5(S\_{min}+S\_{max})=0.5(256+512)=384$
 $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\_{min}, 0.5(S\_{min}+S\_{max}), S\_{max}$上进行test。
 
 #### 多个crop evaluation
-这个是为了做对比，alexnet中，在testing时，对每一张图片都进行多次cropped，对testing的结果做平均。
+这个是为了和alexnet做对比，alexnet网络在testing时，对每一张图片都进行多次cropped，对testing的结果做平均。
 
 #### convnet funsion
 之前作者的evaluation都是在单个的网络上进行的，作者还试了将不同网络的softmax输出做了平均。
