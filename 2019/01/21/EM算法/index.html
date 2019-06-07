@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="引言(Introduction) 什么是期望最大化算法 期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。 EM和MLE关系 MLE的目标是求解已知分布类型的单个分布的参数。 EM的目标是求解已知分布类型的多个混合分布的参数。 一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM">
+  <meta name="description" content="引言(Introduction)什么是期望最大化算法期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。 EM和MLE关系MLE的目标是求解已知分布类型的单个分布的参数。EM的目标是求解已知分布类型的多个混合分布的参数。一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM算法是用来">
 <meta name="keywords" content="机器学习,非监督学习,最大似然估计,EM,期望最大化,Jensen不等式">
 <meta property="og:type" content="article">
 <meta property="og:title" content="EM(Expectation Maximization)算法">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/01/21/EM算法/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="引言(Introduction) 什么是期望最大化算法 期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。 EM和MLE关系 MLE的目标是求解已知分布类型的单个分布的参数。 EM的目标是求解已知分布类型的多个混合分布的参数。 一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM">
+<meta property="og:description" content="引言(Introduction)什么是期望最大化算法期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。 EM和MLE关系MLE的目标是求解已知分布类型的单个分布的参数。EM的目标是求解已知分布类型的多个混合分布的参数。一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM算法是用来">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-05-21T03:18:34.892Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="EM(Expectation Maximization)算法">
-<meta name="twitter:description" content="引言(Introduction) 什么是期望最大化算法 期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。 EM和MLE关系 MLE的目标是求解已知分布类型的单个分布的参数。 EM的目标是求解已知分布类型的多个混合分布的参数。 一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM">
+<meta name="twitter:description" content="引言(Introduction)什么是期望最大化算法期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。 EM和MLE关系MLE的目标是求解已知分布类型的单个分布的参数。EM的目标是求解已知分布类型的多个混合分布的参数。一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM算法是用来">
 
 
 
@@ -449,160 +449,38 @@
       
 
       
-        <h2 id="引言-introduction">引言(Introduction)</h2>
-<h3 id="什么是期望最大化算法">什么是期望最大化算法</h3>
-<p>期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。</p>
-<h3 id="em和mle关系">EM和MLE关系</h3>
-<p>MLE的目标是求解已知分布类型的单个分布的参数。<br>
-EM的目标是求解已知分布类型的多个混合分布的参数。<br>
-一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM算法是用来求解已知分布类型，多个该已知类型分布的混合分布的参数，这句话听起来可能有些拗口，举个最常见的例子，高斯混合分布参数的求解，这个混合分布都是高斯分布，只是每个分布的参数不同而已。如果一个高斯分布，一个卡方分布是没有办法求解的。</p>
-<h3 id="为什么叫它em算法">为什么叫它EM算法</h3>
-<p>因为这个算法总共有两个迭代步骤，E步和M步。第一步是对多个分布求期望，固定每一个分布的参数，计算出混合分布的参数，即E步，第二步是对这个混合分布利用最大似然估计方法进行参数估计，即M步。</p>
-<h2 id="推理过程">推理过程</h2>
-<p>假设我们要求一个混合分布p的参数$\theta$，比如校园内男生和女生的身高参数，显然，男生和女生的身高服从的分布类型是相同的，但是参数是不一样的。这里通过引入一个隐变量$z$，求解出对应不同$z$取值的参数$\theta$的值。<br>
-\begin{align*}<br>
-p(x|\theta) &amp;= \sum_zp(x,z|\theta)\\<br>
-&amp;=\sum_zp(z|\theta)p(x|\theta, z) \tag{0}<br>
-\end{align*}<br>
-如果我们假设男女生的身高分布是一个高斯混合模型，现在要求它的参数$\theta$。混合模型的表达式可以写为：<br>
-\begin{align*}<br>
-p(x|\theta) &amp;= \sum_zw(z)N(x|\mu_z,\sigma_z)\\<br>
-&amp;=\sum_zp(z|\theta)p(x|\theta,z)<br>
-\end{align*}<br>
-其中$\sum_zw(z) = 1,\theta={w, \mu, \sigma}$，如果用最大似然估计来解该问题的话，log函数内有和式，不好优化，所以就要换种方法。<br>
-观测数据：$x=(x_1,\cdots, x_N)$<br>
-对应的隐变量：$z=(z_1,\cdots, z_N)$，$z_i$有$c$种取值。</p>
-<p>\begin{align*}<br>
-l(\theta;x) &amp;= log p(x|\theta) \tag{1}\\<br>
-&amp;= log\prod_{i=1}^N\ p(x_i|\theta) \tag{2}\\<br>
-&amp;= \sum_{i=1}^Nlog\ p(x_i|\theta) \tag{3}\\<br>
-&amp;= \sum_{i=1}^Nlog\sum_zp(x_i,z|\theta) \tag{4}\\<br>
-\end{align*}<br>
-这里式子(4)中$\sum_zp(x,z|\theta)$该怎么变形，因为现在解不出来了。<br>
-最开始我想的是使用条件概率进行展开，即：<br>
-$$\sum_zp(x_i, z|\theta) = \sum_zp(x_i|z, \theta)p(z|\theta)$$<br>
-但是如果展开成这样子，就变成了文章开头给出的式子(0)，并没有什么用，不能继续化简了。<br>
-所以就对式子(4)做个变形<br>
-\begin{align*}<br>
-&amp;\ \ \ \ \sum_{i=1}^Nlog\sum_zp(x_i,z|\theta) \tag{4}\\<br>
-&amp;= \sum_{i=1}^Nlog\sum_zq(z|x_i)\frac{p(x_i,z|\theta)}{q(z|x_i)}, \ \ s.t.\sum_zq(z|x_i)=1 \tag{5}\\<br>
-&amp;\ge \sum_{i=1}^N \underbrace{\sum_zq(z|x_i)log\frac{p(x_i,z|\theta)}{q(z|x_i)}}_{L(q,\theta)},\ \ s.t. \sum_zq(z|x_i)=1 \tag{6}\\<br>
-\end{align*}<br>
-第(4)步到第(5)步引入了一个分布$q(z|x)$，就是给定一个观测数据$x$，隐变量$z$取值的概率分布。注意，$q(z)$是一个函数，但是给定$x$之后，$q(z|x)$是一个变量。然后因为变形之后还是没有求解，就利用杰森不等式做了缩放，将$log(sum())$变成了$sum(log())$，就变成了(6)式。<br>
-这里使用Jensen不等式的目的是使得缩放后的值还能取得和原式相等的值，重要的是等号能够取到。</p>
-<h3 id="jensen不等式">Jensen不等式</h3>
-<p>对于随机变量的Jensen不等式，当函数$f(x)$是凸函数的时候可以用下式表示：<br>
-$$f(E(x)) \le E(f(x))$$<br>
-当$f(x)$是凹函数的时候，有<br>
-$$f(E(x)) \ge E(f(x))$$</p>
-<p>接下来我们就要求解使得式子(6)中杰森不等式等号成立的$q$分布的取值。这里有两种方法可以求解。</p>
-<h3 id="拉格朗日乘子法">拉格朗日乘子法</h3>
-<p>令<br>
-$$L(q,\theta) = \sum_z q(z|x_i)log{\frac{p(x_i,z|\theta)}{q(z|x_i)}}, s.t.\sum q(z|x_i) = 1 \tag{7}$$<br>
-构建拉格朗日目标函数：<br>
-\begin{align*}<br>
-L &amp;= L(q, \theta) + \lambda(\sum_zq(z|x)- 1) \tag{8}\\<br>
-&amp;= \sum_z q(z|x_i)log{\frac{p(x_i,z|\theta)}{q(z|x_i)}} + \lambda(\sum_z q(z|x_i) - 1)  \tag{9}<br>
-\end{align*}</p>
-<p>对$L$求导，得到：<br>
-$$\frac{\partial L}{\partial q(z|x_i)} = log\frac{p(x_i, z|\theta)}{q(z|x_i)} + q(z|x_i)(-\frac{1}{q(z|x_i)}) + \lambda \tag{10}$$<br>
-令$\frac{\partial L}{\partial q(z|x_i)}$等于$0$，得到：$$log\frac{p(x_i, z|\theta)}{q(z|x_i)} = 1 - \lambda$$<br>
-两边同取$e$的对数：<br>
-$$\frac{p(x_i, z|\theta)}{q(z|x_i)} = e^{1-\lambda} \tag{11}$$<br>
-$$q(z|x_i) = e^{\lambda - 1}p(x_i, z|\theta) \tag{12}$$<br>
-两边同时求和得：<br>
-$$1 = e^{\lambda - 1}\sum_z p(x_i, z|\theta) \tag{13}$$<br>
-用$p$表示$e^{\lambda-1}$得到：<br>
-$$e^{\lambda-1} = \frac{1}{\sum_z p(x_i, z|\theta)}$$<br>
-将其代入式子(12)得：<br>
-\begin{align*}<br>
-q(z|x_i) &amp;= \frac{p(x_i, z|\theta)}{\sum_z p(x_i, z|\theta)}\\<br>
-&amp;= \frac{p(z, x_i|\theta)}{p(x_i|\theta)}\\<br>
-&amp;= p(z|x_i, \theta)  \tag{14}<br>
-\end{align*}</p>
+        <h2 id="引言-Introduction"><a href="#引言-Introduction" class="headerlink" title="引言(Introduction)"></a>引言(Introduction)</h2><h3 id="什么是期望最大化算法"><a href="#什么是期望最大化算法" class="headerlink" title="什么是期望最大化算法"></a>什么是期望最大化算法</h3><p>期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。</p>
+<h3 id="EM和MLE关系"><a href="#EM和MLE关系" class="headerlink" title="EM和MLE关系"></a>EM和MLE关系</h3><p>MLE的目标是求解已知分布类型的单个分布的参数。<br>EM的目标是求解已知分布类型的多个混合分布的参数。<br>一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM算法是用来求解已知分布类型，多个该已知类型分布的混合分布的参数，这句话听起来可能有些拗口，举个最常见的例子，高斯混合分布参数的求解，这个混合分布都是高斯分布，只是每个分布的参数不同而已。如果一个高斯分布，一个卡方分布是没有办法求解的。</p>
+<h3 id="为什么叫它EM算法"><a href="#为什么叫它EM算法" class="headerlink" title="为什么叫它EM算法"></a>为什么叫它EM算法</h3><p>因为这个算法总共有两个迭代步骤，E步和M步。第一步是对多个分布求期望，固定每一个分布的参数，计算出混合分布的参数，即E步，第二步是对这个混合分布利用最大似然估计方法进行参数估计，即M步。</p>
+<h2 id="推理过程"><a href="#推理过程" class="headerlink" title="推理过程"></a>推理过程</h2><p>假设我们要求一个混合分布p的参数$\theta$，比如校园内男生和女生的身高参数，显然，男生和女生的身高服从的分布类型是相同的，但是参数是不一样的。这里通过引入一个隐变量$z$，求解出对应不同$z$取值的参数$\theta$的值。<br>\begin{align*}<br>p(x|\theta) &amp;= \sum_zp(x,z|\theta)\\\\<br>&amp;=\sum_zp(z|\theta)p(x|\theta, z) \tag{0}<br>\end{align*}<br>如果我们假设男女生的身高分布是一个高斯混合模型，现在要求它的参数$\theta$。混合模型的表达式可以写为：<br>\begin{align*}<br>p(x|\theta) &amp;= \sum_zw(z)N(x|\mu_z,\sigma_z)\\\\<br>&amp;=\sum_zp(z|\theta)p(x|\theta,z)<br>\end{align*}<br>其中$\sum_zw(z) = 1,\theta=\{w, \mu, \sigma\}$，如果用最大似然估计来解该问题的话，log函数内有和式，不好优化，所以就要换种方法。<br>观测数据：$x=(x_1,\cdots, x_N)$<br>对应的隐变量：$z=(z_1,\cdots, z_N)$，$z_i$有$c$种取值。</p>
+<p>\begin{align*}<br>l(\theta;x) &amp;= log p(x|\theta) \tag{1}\\\\<br>&amp;= log\prod_{i=1}\^N p(x_i|\theta) \tag{2}\\\\<br>&amp;= \sum_{i=1}\^Nlog p(x_i|\theta) \tag{3}\\\\<br>&amp;= \sum_{i=1}\^Nlog\sum_zp(x_i,z|\theta) \tag{4}\\\\<br>\end{align*}<br>这里式子(4)中$\sum_zp(x,z|\theta)$该怎么变形，因为现在解不出来了。<br>最开始我想的是使用条件概率进行展开，即：</p>
+<script type="math/tex; mode=display">\sum_zp(x_i, z|\theta) = \sum_zp(x_i|z, \theta)p(z|\theta)</script><p>但是如果展开成这样子，就变成了文章开头给出的式子(0)，并没有什么用，不能继续化简了。<br>所以就对式子(4)做个变形<br>\begin{align*}<br>&amp;    \sum_{i=1}\^Nlog\sum_zp(x_i,z|\theta) \tag{4}\\\\<br>&amp;= \sum_{i=1}\^Nlog\sum_zq(z|x_i)\frac{p(x_i,z|\theta)}{q(z|x_i)},   s.t.\sum_zq(z|x_i)=1 \tag{5}\\\\<br>&amp;\ge \sum_{i=1}\^N \underbrace{\sum_zq(z|x_i)log\frac{p(x_i,z|\theta)}{q(z|x_i)}}_{L(q,\theta)},  s.t. \sum_zq(z|x_i)=1 \tag{6}\\\\<br>\end{align*}<br>第(4)步到第(5)步引入了一个分布$q(z|x)$，就是给定一个观测数据$x$，隐变量$z$取值的概率分布。注意，$q(z)$是一个函数，但是给定$x$之后，$q(z|x)$是一个变量。然后因为变形之后还是没有求解，就利用杰森不等式做了缩放，将$log(sum())$变成了$sum(log())$，就变成了(6)式。<br>这里使用Jensen不等式的目的是使得缩放后的值还能取得和原式相等的值，重要的是等号能够取到。</p>
+<h3 id="Jensen不等式"><a href="#Jensen不等式" class="headerlink" title="Jensen不等式"></a>Jensen不等式</h3><p>对于随机变量的Jensen不等式，当函数$f(x)$是凸函数的时候可以用下式表示：</p>
+<script type="math/tex; mode=display">f(E(x)) \le E(f(x))</script><p>当$f(x)$是凹函数的时候，有</p>
+<script type="math/tex; mode=display">f(E(x)) \ge E(f(x))</script><p>接下来我们就要求解使得式子(6)中杰森不等式等号成立的$q$分布的取值。这里有两种方法可以求解。</p>
+<h3 id="拉格朗日乘子法"><a href="#拉格朗日乘子法" class="headerlink" title="拉格朗日乘子法"></a>拉格朗日乘子法</h3><p>令</p>
+<script type="math/tex; mode=display">L(q,\theta) = \sum_z q(z|x_i)log{\frac{p(x_i,z|\theta)}{q(z|x_i)}}, s.t.\sum q(z|x_i) = 1 \tag{7}</script><p>构建拉格朗日目标函数：<br>\begin{align*}<br>L &amp;= L(q, \theta) + \lambda(\sum_zq(z|x)- 1) \tag{8}\\\\<br>&amp;= \sum_z q(z|x_i)log{\frac{p(x_i,z|\theta)}{q(z|x_i)}} + \lambda(\sum_z q(z|x_i) - 1)  \tag{9}<br>\end{align*}</p>
+<p>对$L$求导，得到：</p>
+<script type="math/tex; mode=display">\frac{\partial L}{\partial q(z|x_i)} = log\frac{p(x_i, z|\theta)}{q(z|x_i)} + q(z|x_i)(-\frac{1}{q(z|x_i)}) + \lambda \tag{10}</script><p>令$\frac{\partial L}{\partial q(z|x_i)}$等于$0$，得到：<script type="math/tex">log\frac{p(x_i, z|\theta)}{q(z|x_i)} = 1 - \lambda</script><br>两边同取$e$的对数：</p>
+<script type="math/tex; mode=display">\frac{p(x_i, z|\theta)}{q(z|x_i)} = e\^{1-\lambda} \tag{11}</script><script type="math/tex; mode=display">q(z|x_i) = e\^{\lambda - 1}p(x_i, z|\theta) \tag{12}</script><p>两边同时求和得：</p>
+<script type="math/tex; mode=display">1 = e\^{\lambda - 1}\sum_z p(x_i, z|\theta) \tag{13}</script><p>用$p$表示$e\^{\lambda-1}$得到：</p>
+<script type="math/tex; mode=display">e\^{\lambda-1} = \frac{1}{\sum_z p(x_i, z|\theta)}</script><p>将其代入式子(12)得：<br>\begin{align*}<br>q(z|x_i) &amp;= \frac{p(x_i, z|\theta)}{\sum_z p(x_i, z|\theta)}\\\ <br>&amp;= \frac{p(z, x_i|\theta)}{p(x_i|\theta)}\\\ <br>&amp;= p(z|x_i, \theta)  \tag{14}<br>\end{align*}</p>
 <p>最后求出来$q(z|x_i) = p(z|x_i, \theta)$。</p>
-<h3 id="杰森不等式成立条件">杰森不等式成立条件</h3>
-<p>杰森不等式成立条件是常数，即：<br>
-$$\frac{p(x_i, z|\theta)}{q(z|x_i)} = c,  s.t. \sum q(z|x_i)=1 \tag{15}$$<br>
-则有:<br>
-$$p(x, z_i|\theta) = cq(z_i|x) \tag{16}$$<br>
-同时对式子左右两边求和，得到：<br>
-$$\sum p(x_i, z|\theta) = \sum cq(z|x_i) = c \tag{17}$$<br>
-将$c = \sum p(x_i, z|\theta)$代入式子(14)得：<br>
-\begin{align*}<br>
-q(z|x_i) &amp;= \frac{p(x_i, z|\theta)}{\sum p(x_i,z|\theta)}\\<br>
-&amp;= \frac{p(x_i, z)|\theta}{p(x_i|\theta)}\\<br>
-&amp;= p(z|x_i, \theta) \tag{18}<br>
-\end{align*}</p>
-<h3 id="等号成立证明">等号成立证明</h3>
-<p>上面两个方法都算出来在$q(z|x_i) = p(z|x_i, \theta)$时$L$能取得最大值。接下来证明这个这个$L$的最大值和$l$相等。<br>
-将$q = p(z|x_i, \theta)$代入$L(q, \theta)$得：<br>
-\begin{align*}<br>
-L(q, \theta) &amp;= L(p(z|x_i, \theta^t), \theta^t)\\<br>
-&amp;= \sum_z p(z|x_i, \theta^t) log\frac{p(z, x_i|\theta^t)}{p(z|x_i, \theta^t)} \\<br>
-&amp;= \sum_z p(z|x_i, \theta^t) log p(x_i|\theta^t)\\<br>
-&amp;= 1\cdot log p(x_i|\theta^t)\\<br>
-&amp;= log p(x_i|\theta^t)\\<br>
-&amp;= l(\theta^t; x_i)<br>
-\end{align*}</p>
-<h3 id="另一种等号成立推导">另一种等号成立推导</h3>
-<p>\begin{align*}<br>
-l(\theta; x) - L(q, \theta) &amp;= l(\theta; x_i) - \sum_z q(z|x_i) log{\frac{p(z, x_i|\theta)}{q(z|x_i)}}\\<br>
-&amp;= \sum_z q(z|x_i) log p(x_i|\theta) - \sum_z q(z|x_i) log{\frac{p(z, x_i|\theta)}{q(z|x_i)}}\\<br>
-&amp;= \sum_z q(z|x_i)log {\frac{p(x_i|\theta)q(z|x_i)}{p(z, x_i|\theta)}}\\<br>
-&amp;= \sum_z q(z|x_i)log {\frac{q(z|x_i)}{p(z|x_i, \theta)}}\\<br>
-&amp;= KL(q(z|x_i)||p(z|x_i,\theta))<br>
-\end{align*}<br>
-最后算出来两个函数之差是一个KL散度，是从$p$到$q$的KL散度。当前仅当$p=q$时取等，否则就非负。</p>
-<h3 id="m步">M步</h3>
-<p>\begin{align*}<br>
-L(q, \theta) &amp; = \sum_z q(z|x_i) log\frac{p(z, x_i|\theta)}{q(z|x_i)} \\<br>
-&amp; = \underbrace{\sum_z q(z|x_i)log{p(z, x_i|\theta)}}_{Expected\ complete\ log-likelyhood} - \underbrace{\sum_z q(z|x_i)l{q(z|x_i)}}_{Entropy}<br>
-\end{align*}</p>
-<h2 id="em流程">EM流程</h2>
-<h3 id="计算流程">计算流程</h3>
-<p>（１）首先随机初始化模型的不同隐变量对应的参数，<br>
-（２）对于每一个观测，首先判断它对应的隐变量的分布。<br>
-（３）求期望<br>
-（４）最大似然估计求参数<br>
-用公式来表示如下：<br>
-E步：$q^{t+1} = arg\ max_q L(q, \theta^t)$<br>
-M步：$\theta^{t+1} = arg max_{\theta}L(q^{t+1}, \theta)$<br>
-E步就是根据$t$时刻的$\theta^t$利用概率$q$求出$L$的期望，然后M步使用最大似然估计计算出新的$\theta$，就这样迭代下去。</p>
-<h2 id="em收敛性分析">EM收敛性分析</h2>
-<p>EM算法的收敛性就是要证明$L(q=p(z|x_i, \theta^t) , \theta)$的值一直在增大。<br>
-\begin{align*}<br>
-L(p(z|x_i, \theta^{t+1}) , \theta^{t+1}) - L(p(z|x_i, \theta^{t}) , \theta^{t}) &amp;= log p(x_i|\theta^{t+1}) - log p(x_i|\theta^t)\\<br>
-&amp; \ge 0<br>
-\end{align*}</p>
-<h2 id="例子">例子</h2>
-<p>假如有两个硬币A和B，假设随机从A,B中选一个硬币，掷$10$次，重复$5$次实验，分别求出两个硬币正面向上的概率。假设硬币服从二项分布<br>
-$5$次实验结果如下：<br>
-5H5T<br>
-9H1T<br>
-8H2T<br>
-4H6T<br>
-7H3T</p>
+<h3 id="杰森不等式成立条件"><a href="#杰森不等式成立条件" class="headerlink" title="杰森不等式成立条件"></a>杰森不等式成立条件</h3><p>杰森不等式成立条件是常数，即：</p>
+<script type="math/tex; mode=display">\frac{p(x_i, z|\theta)}{q(z|x_i)} = c,  s.t. \sum q(z|x_i)=1 \tag{15}</script><p>则有:</p>
+<script type="math/tex; mode=display">p(x, z_i|\theta) = cq(z_i|x) \tag{16}</script><p>同时对式子左右两边求和，得到：</p>
+<script type="math/tex; mode=display">\sum p(x_i, z|\theta) = \sum cq(z|x_i) = c \tag{17}</script><p>将$c = \sum p(x_i, z|\theta)$代入式子(14)得：<br>\begin{align*}<br>q(z|x_i) &amp;= \frac{p(x_i, z|\theta)}{\sum p(x_i,z|\theta)}\\\\<br>&amp;= \frac{p(x_i, z)|\theta}{p(x_i|\theta)}\\\\<br>&amp;= p(z|x_i, \theta) \tag{18}<br>\end{align*}</p>
+<h3 id="等号成立证明"><a href="#等号成立证明" class="headerlink" title="等号成立证明"></a>等号成立证明</h3><p>上面两个方法都算出来在$q(z|x_i) = p(z|x_i, \theta)$时$L$能取得最大值。接下来证明这个这个$L$的最大值和$l$相等。<br>将$q = p(z|x_i, \theta)$代入$L(q, \theta)$得：<br>\begin{align*}<br>L(q, \theta) &amp;= L(p(z|x_i, \theta\^t), \theta\^t)\\\\<br>&amp;= \sum_z p(z|x_i, \theta\^t) log\frac{p(z, x_i|\theta\^t)}{p(z|x_i, \theta\^t)} \\\\<br>&amp;= \sum_z p(z|x_i, \theta\^t) log p(x_i|\theta\^t)\\\\<br>&amp;= 1\cdot log p(x_i|\theta\^t)\\\\<br>&amp;= log p(x_i|\theta\^t)\\\\<br>&amp;= l(\theta\^t; x_i)<br>\end{align*}</p>
+<h3 id="另一种等号成立推导"><a href="#另一种等号成立推导" class="headerlink" title="另一种等号成立推导"></a>另一种等号成立推导</h3><p>\begin{align*}<br>l(\theta; x) - L(q, \theta) &amp;= l(\theta; x_i) - \sum_z q(z|x_i) log{\frac{p(z, x_i|\theta)}{q(z|x_i)}}\\\\<br>&amp;= \sum_z q(z|x_i) log p(x_i|\theta) - \sum_z q(z|x_i) log{\frac{p(z, x_i|\theta)}{q(z|x_i)}}\\\\<br>&amp;= \sum_z q(z|x_i)log {\frac{p(x_i|\theta)q(z|x_i)}{p(z, x_i|\theta)}}\\\\<br>&amp;= \sum_z q(z|x_i)log {\frac{q(z|x_i)}{p(z|x_i, \theta)}}\\\\<br>&amp;= KL(q(z|x_i)||p(z|x_i,\theta))<br>\end{align*}<br>最后算出来两个函数之差是一个KL散度，是从$p$到$q$的KL散度。当前仅当$p=q$时取等，否则就非负。</p>
+<h3 id="M步"><a href="#M步" class="headerlink" title="M步"></a>M步</h3><p>\begin{align*}<br>L(q, \theta) &amp; = \sum_z q(z|x_i) log\frac{p(z, x_i|\theta)}{q(z|x_i)} \\\\<br>&amp; = \underbrace{\sum_z q(z|x_i)log{p(z, x_i|\theta)}}_{Expected complete log-likelyhood} - \underbrace{\sum_z q(z|x_i)l{q(z|x_i)}}_{Entropy}<br>\end{align*}</p>
+<h2 id="EM流程"><a href="#EM流程" class="headerlink" title="EM流程"></a>EM流程</h2><h3 id="计算流程"><a href="#计算流程" class="headerlink" title="计算流程"></a>计算流程</h3><p>（１）首先随机初始化模型的不同隐变量对应的参数，<br>（２）对于每一个观测，首先判断它对应的隐变量的分布。<br>（３）求期望<br>（４）最大似然估计求参数<br>用公式来表示如下：<br>E步：$q\^{t+1} = arg max_q L(q, \theta\^t)$<br>M步：$\theta\^{t+1} = arg max_{\theta}L(q\^{t+1}, \theta)$<br>E步就是根据$t$时刻的$\theta\^t$利用概率$q$求出$L$的期望，然后M步使用最大似然估计计算出新的$\theta$，就这样迭代下去。</p>
+<h2 id="EM收敛性分析"><a href="#EM收敛性分析" class="headerlink" title="EM收敛性分析"></a>EM收敛性分析</h2><p>EM算法的收敛性就是要证明$L(q=p(z|x_i, \theta\^t) , \theta)$的值一直在增大。<br>\begin{align*}<br>L(p(z|x_i, \theta\^{t+1}) , \theta\^{t+1}) - L(p(z|x_i, \theta\^{t}) , \theta\^{t}) &amp;= log p(x_i|\theta\^{t+1}) - log p(x_i|\theta\^t)\\\\<br>&amp; \ge 0<br>\end{align*}</p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>假如有两个硬币A和B，假设随机从A,B中选一个硬币，掷$10$次，重复$5$次实验，分别求出两个硬币正面向上的概率。假设硬币服从二项分布<br>$5$次实验结果如下：<br>5H5T<br>9H1T<br>8H2T<br>4H6T<br>7H3T</p>
 <p>这个时候有两种情况</p>
-<h3 id="知道每次选的是a还是b">知道每次选的是A还是B</h3>
-<p>这个时候就变成了极大似然估计。</p>
-<h3 id="不知道每次选的是a还是b">不知道每次选的是A还是B</h3>
-<p>这个时候就用EM算法了。<br>
-首先随机初始化$\theta_A = 0.5, \theta_B = 0.5$，<br>
-对于每一个观测，首先判断它对应的隐变量的分布。<br>
-$i={1,2,3,4,5}$，分别代表$5$个实验。<br>
-首先求出$\theta_A$的参数。<br>
-$$P(z = A|x_i, \theta_A, \theta_B) = \frac{P(z = A|x_i, \theta_A)}{P(z = A|x_i, \theta_A) + P(z = B|x_i, \theta_B)}$$<br>
-$$P(z = B|x_i, \theta_A, \theta_B) = 1 - P(z = A|x_i,\theta_A,\theta_B)$$<br>
-然后计算下式：<br>
-\begin{align*}<br>
-L(q,\theta_A) &amp;= \sum_{i=1}^5 \sum_zp(z|x_i, \theta_A, \theta_B)log p(x_i|\theta)\\<br>
-&amp;= \sum_{i=1}^5 (p(z=A|x_i, \theta_A)log p(x_i|\theta_A) + p(z=B|x_i, \theta_B)log p(x_i|\theta_B))<br>
-\end{align*}<br>
-然后利用极大既然估计计算$\theta_A$和$\theta_B$的值。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/27976634/answer/153567695" target="_blank" rel="noopener">https://www.zhihu.com/question/27976634/answer/153567695</a><br>
-2.<a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Jensen's_inequality</a></p>
+<h3 id="知道每次选的是A还是B"><a href="#知道每次选的是A还是B" class="headerlink" title="知道每次选的是A还是B"></a>知道每次选的是A还是B</h3><p>这个时候就变成了极大似然估计。</p>
+<h3 id="不知道每次选的是A还是B"><a href="#不知道每次选的是A还是B" class="headerlink" title="不知道每次选的是A还是B"></a>不知道每次选的是A还是B</h3><p>这个时候就用EM算法了。<br>首先随机初始化$\theta_A = 0.5, \theta_B = 0.5$，<br>对于每一个观测，首先判断它对应的隐变量的分布。<br>$i=\{1,2,3,4,5\}$，分别代表$5$个实验。<br>首先求出$\theta_A$的参数。</p>
+<script type="math/tex; mode=display">P(z = A|x_i, \theta_A, \theta_B) = \frac{P(z = A|x_i, \theta_A)}{P(z = A|x_i, \theta_A) + P(z = B|x_i, \theta_B)}</script><script type="math/tex; mode=display">P(z = B|x_i, \theta_A, \theta_B) = 1 - P(z = A|x_i,\theta_A,\theta_B)</script><p>然后计算下式：<br>\begin{align*}<br>L(q,\theta_A) &amp;= \sum_{i=1}\^5 \sum_zp(z|x_i, \theta_A, \theta_B)log p(x_i|\theta)\\\\<br>&amp;= \sum_{i=1}\^5 (p(z=A|x_i, \theta_A)log p(x_i|\theta_A) + p(z=B|x_i, \theta_B)log p(x_i|\theta_B))<br>\end{align*}<br>然后利用极大既然估计计算$\theta_A$和$\theta_B$的值。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.zhihu.com/question/27976634/answer/153567695" target="_blank" rel="noopener">https://www.zhihu.com/question/27976634/answer/153567695</a><br>2.<a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Jensen%27s_inequality</a></p>
 
       
     </div>
@@ -1094,7 +972,7 @@ L(q,\theta_A) &amp;= \sum_{i=1}^5 \sum_zp(z|x_i, \theta_A, \theta_B)log p(x_i|\t
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言-introduction"><span class="nav-number">1.</span> <span class="nav-text">引言(Introduction)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是期望最大化算法"><span class="nav-number">1.1.</span> <span class="nav-text">什么是期望最大化算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#em和mle关系"><span class="nav-number">1.2.</span> <span class="nav-text">EM和MLE关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么叫它em算法"><span class="nav-number">1.3.</span> <span class="nav-text">为什么叫它EM算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#推理过程"><span class="nav-number">2.</span> <span class="nav-text">推理过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#jensen不等式"><span class="nav-number">2.1.</span> <span class="nav-text">Jensen不等式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拉格朗日乘子法"><span class="nav-number">2.2.</span> <span class="nav-text">拉格朗日乘子法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#杰森不等式成立条件"><span class="nav-number">2.3.</span> <span class="nav-text">杰森不等式成立条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#等号成立证明"><span class="nav-number">2.4.</span> <span class="nav-text">等号成立证明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#另一种等号成立推导"><span class="nav-number">2.5.</span> <span class="nav-text">另一种等号成立推导</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#m步"><span class="nav-number">2.6.</span> <span class="nav-text">M步</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#em流程"><span class="nav-number">3.</span> <span class="nav-text">EM流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#计算流程"><span class="nav-number">3.1.</span> <span class="nav-text">计算流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#em收敛性分析"><span class="nav-number">4.</span> <span class="nav-text">EM收敛性分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-number">5.</span> <span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#知道每次选的是a还是b"><span class="nav-number">5.1.</span> <span class="nav-text">知道每次选的是A还是B</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不知道每次选的是a还是b"><span class="nav-number">5.2.</span> <span class="nav-text">不知道每次选的是A还是B</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言-Introduction"><span class="nav-number">1.</span> <span class="nav-text">引言(Introduction)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是期望最大化算法"><span class="nav-number">1.1.</span> <span class="nav-text">什么是期望最大化算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#EM和MLE关系"><span class="nav-number">1.2.</span> <span class="nav-text">EM和MLE关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么叫它EM算法"><span class="nav-number">1.3.</span> <span class="nav-text">为什么叫它EM算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#推理过程"><span class="nav-number">2.</span> <span class="nav-text">推理过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Jensen不等式"><span class="nav-number">2.1.</span> <span class="nav-text">Jensen不等式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#拉格朗日乘子法"><span class="nav-number">2.2.</span> <span class="nav-text">拉格朗日乘子法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#杰森不等式成立条件"><span class="nav-number">2.3.</span> <span class="nav-text">杰森不等式成立条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#等号成立证明"><span class="nav-number">2.4.</span> <span class="nav-text">等号成立证明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#另一种等号成立推导"><span class="nav-number">2.5.</span> <span class="nav-text">另一种等号成立推导</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#M步"><span class="nav-number">2.6.</span> <span class="nav-text">M步</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EM流程"><span class="nav-number">3.</span> <span class="nav-text">EM流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#计算流程"><span class="nav-number">3.1.</span> <span class="nav-text">计算流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EM收敛性分析"><span class="nav-number">4.</span> <span class="nav-text">EM收敛性分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-number">5.</span> <span class="nav-text">例子</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#知道每次选的是A还是B"><span class="nav-number">5.1.</span> <span class="nav-text">知道每次选的是A还是B</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不知道每次选的是A还是B"><span class="nav-number">5.2.</span> <span class="nav-text">不知道每次选的是A还是B</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>

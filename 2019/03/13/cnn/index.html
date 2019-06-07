@@ -113,9 +113,11 @@
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/tanh.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/alexnet.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/alexnet_simple.png">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/overfeat_fast.png">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/overfeat_accuarcy.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/vgg_conf.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/vgg_weights_num.png">
-<meta property="og:updated_time" content="2019-06-07T03:06:09.469Z">
+<meta property="og:updated_time" content="2019-06-07T14:02:09.455Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CNN">
 <meta name="twitter:description" content="Alexnet(2012) 概述 作者提出了一个卷积神经网络架构对Imagenet中$1000$类中的$120$万张图片进行分类。网络架构包含$5$个卷积层，$3$个全连接层，和一个$1000$-way的softmax层，整个网络共有$6000$万参数，$65000$个神经元。作者提出了一些方法提高性能和减少训练的时间，并且介绍了一些防止过拟合的技巧。最后在imagenet测试集上，跑出$37.5">
@@ -396,7 +398,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-07 11:06:09" itemprop="dateModified" datetime="2019-06-07T11:06:09+08:00">2019-06-07</time>
+                <time title="修改时间：2019-06-07 22:02:09" itemprop="dateModified" datetime="2019-06-07T22:02:09+08:00">2019-06-07</time>
               
             
           </span>
@@ -540,8 +542,48 @@ sigmod和tanh是saturating nonlinearity激活函数，如下图所示。<br>
 <h3 id="代码">代码</h3>
 <p>pytorch实现<br>
 <a href="https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py" target="_blank" rel="noopener">https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py</a></p>
-<h2 id="vggnet-2013">Vggnet(2013)</h2>
+<h2 id="overfeat-2013">OverFeat(2013)</h2>
 <h3 id="概述-v2">概述</h3>
+<p>本文提出了一个可用于classification, localization和detection等任务的CNN框架。<br>
+ImageNet数据集中大部分选择的是几乎填满了整个image中心的object，image中我们感兴趣的objects的大小和位置也可能变化很大。为了解决这个问题，作者提出了三个方法：</p>
+<ol>
+<li>用sliding window和multiple scales在image的多个位置apply ConvNet。即使这样，许多window中可能包含能够完美识别object类型的一部分，比如一个狗头。。。最后的结果是classfication很好，但是localization和detection结果很差。</li>
+<li>训练一个网络不仅仅预测每一个window的category distribution，还预测包含object的bounding box相对于window的位置和大小。</li>
+<li>在每个位置和大小累加每个category的evidence</li>
+</ol>
+<h3 id="vision任务">Vision任务</h3>
+<p>classification，localization和detection。classification和localization通常只有一个很大的object，而detection需要找到很多很小的objects。<br>
+classification任务中，每个image都有一个label对应image中主要的object的类型。为了找到正确的label，每个图片可以猜$5$次（图片中可能包含了没有label的数据）。localization任务中，不仅要给出label，还需要找到这个label对应的bouding box，bounding box和groundtruth至少要有$50$匹配，label和bounding box也需要匹配。detection和localization不同的是，detection任务中可以有任何数量的objects，false positive会使用mean average precison measure。localization任务可以看成classification到detection任务的一个中间步。</p>
+<h3 id="classification">Classification</h3>
+<h4 id="training">training</h4>
+<ul>
+<li>datset<br>
+Image 2012 trainign set（1.2million iamges，C=$1000$ classes)。</li>
+<li>data argumented<br>
+对每张图片进行下采样，所以每个图片最小的dimension需要是$256$。<br>
+提取$5$个random crops以及horizaontal flips，总共$10$个$221\times 221$的图片</li>
+<li>batchsize<br>
+$128$</li>
+<li>初始权重<br>
+$(\mu, \simga)= (0, 1\times 10^{-2})$</li>
+<li>momentum<br>
+0.6</li>
+<li>l2 weigth decay<br>
+$1\times 10^{-5}$</li>
+<li>lr<br>
+初始是$5\times 10^{-2}$，在$(30,50,60,70,80)$个epoches后，乘以$0.5$</li>
+<li>non-spatial<br>
+这个说的是什么呢，在test的时候，会输出多个output maps，对他们的结果做平均，而在training的时候，output maps是$1\times 1$。</li>
+</ul>
+<h4 id="fast-model架构">fast model架构</h4>
+<p>下图展示的是fast model，spatial input size在train和test时候是不同的，这里展示的是train时的spatial seize。layer 5是最上层的CNN，receptive filed最大。后续是FC layers，在test时候使用了sliding window。在spatial设置中，FC-layers可以查看$1\times 1$的卷积。<br>
+<img src="/2019/03/13/cnn/overfeat_fast.png" alt="overfeat_fast"><br>
+<img src="/2019/03/13/cnn/overfeat_accuarcy.png" alt="overfeat_accuarcy"></p>
+<h4 id="多scale-classification">多scale classification</h4>
+<p>alexnet中，对一张照片的$10$个views（中间，四个角和horizontal flip)的结果做了平均，这种方式可能会忽略很多趋于，同时如果不同的views有重叠的话，计算很redundant。此外，alexnet中只使用了一个scale。<br>
+作者对每个iamge的每一个location和多个scale都进行计算。</p>
+<h2 id="vggnet-2013">Vggnet(2013)</h2>
+<h3 id="概述-v3">概述</h3>
 <p>这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。通过使用$3\times 3$的filters，增加CNN的深度，提高识别精度。</p>
 <h3 id="方案">方案</h3>
 <h4 id="架构">架构</h4>
@@ -596,35 +638,35 @@ $。</p>
 <li>$1\times 1$ conv layers用来增加非线性程度，本文中使用的$1\times 1$的conv layers可以看成加了非线性激活函数的投影。</li>
 </ol>
 <h3 id="分类框架">分类框架</h3>
-<h4 id="training">training</h4>
-<h5 id="目标函数-v2">目标函数</h5>
-<p>多峰logistic regression</p>
-<h5 id="训练方法">训练方法</h5>
-<p>mini-batch gradient descent with momentum</p>
-<h5 id="batch-size">batch size</h5>
-<p>256</p>
-<h5 id="momentum">momentum</h5>
-<p>0.9</p>
-<h5 id="正则化">正则化</h5>
+<h4 id="training-v2">training</h4>
 <ul>
-<li>$L_2$参数正则化(5\codt 10^{-4})</li>
-<li>0.5 dorpout 用于前两个FC layers</li>
+<li>目标函数<br>
+多峰logistic regression</li>
+<li>训练方法<br>
+mini-batch gradient descent with momentum</li>
+<li>batch size<br>
+256</li>
+<li>momentum<br>
+0.9</li>
+<li>正则化<br>
+$L_2$参数正则化(5\codt 10^{-4})<br>
+0.5 dorpout 用于前两个FC layers</li>
+<li>lr<br>
+初始值为$10^{-2}$，当验证集的accuracy不再提升时，除以$10$。学习率总共降了$3$次，$370K$次迭代后停止。</li>
+<li>图像预处理<br>
+从rescaled中随机cropped $224\times 224$的RGB图像。<br>
+使用alexnet中的随机horizontal flipping和随机RGB colour shift。</li>
+<li>iamge rescale<br>
+用$S$表示training image的小边的大小，$S$也叫作train sacle。网络的输入是从training image中cropped得到的$224\times 224$的图像。所以只要$S$取任何不小于$224$的值即可，如果$S=224$，那么crop在统计上会captuer整个图片，完全包含training image最小的那边；$S&gt;&gt;224$的时候，crop会产生很小一部分的图像。<br>
+作者尝试了固定$S$和不固定的$S$。对于固定$S$，设置$S=256$和$S=384$，首先在$S=256$上训练，然后用$S=256$训练的参数初始化$S=384$的参数，使用更小的初始学习率$10^{-3}$。不固定$S$时，$S$从$[S_{min}, S_{max}](S_{max}=512,S_{min}=256)$任意采样，然后crop。</li>
+<li>VGG vs alexnet<br>
+VGG参数多，深度深，但是收敛快，原因：</li>
 </ul>
-<h5 id="lr">lr</h5>
-<p>初始值为$10^{-2}$，当验证集的accuracy不再提升时，除以$10$。学习率总共降了$3$次，$370K$次迭代后停止。</p>
-<h5 id="vgg-vs-alexnet">VGG vs alexnet</h5>
-<p>VGG参数多，深度深，但是收敛快，原因：</p>
-<ul>
+<ol>
 <li>更小的filter带来的implicit regularisation</li>
 <li>某些层的预先初始化。<br>
 这个解决的是网络深度过深，某些初值使得网络不稳定的问题。解决方法：先随机初始化不是很深的网络A，进行训练。在训练更深网络的时候，使用A网络的值初始化前$4$个卷基层和最后三个FC layers。随机初始化的网络参数，从均值为$0$，方差为$10^{-2}$的高斯分布中采样得到。</li>
-</ul>
-<h5 id="图像预处理">图像预处理</h5>
-<p>从rescaled中随机cropped $224\times 224$的RGB图像。<br>
-使用alexnet中的随机horizontal flipping和随机RGB colour shift。</p>
-<h5 id="iamge-rescale">iamge rescale</h5>
-<p>用$S$表示training image的小边的大小，$S$也叫作train sacle。网络的输入是从training image中cropped得到的$224\times 224$的图像。所以只要$S$取任何不小于$224$的值即可，如果$S=224$，那么crop在统计上会captuer整个图片，完全包含training image最小的那边；$S&gt;&gt;224$的时候，crop会产生很小一部分的图像。<br>
-作者尝试了固定$S$和不固定的$S$。对于固定$S$，设置$S=256$和$S=384$，首先在$S=256$上训练，然后用$S=256$训练的参数初始化$S=384$的参数，使用更小的初始学习率$10^{-3}$。不固定$S$时，$S$从$[S_{min}, S_{max}](S_{max}=512,S_{min}=256)$任意采样，然后crop。</p>
+</ol>
 <h4 id="testing">testing</h4>
 <p>测试的时候先把input image的窄边缩放到$Q$，$Q$也叫test scale，$Q$和$S$不一定需要相等。</p>
 <h3 id="classfication">classfication</h3>
@@ -638,18 +680,18 @@ $S$抖动时，设置test image size $Q=0.5(S_{min}+S_{max})=0.5(256+512)=384$�
 固定$S$时，在三个不同大小的test image size $Q={S-32,S,S+32}$评估。<br>
 $S$抖动时，模型是在$S\in [S_{min},S_{max}]$上训练的，在$Q={S_{min}, 0.5(S_{min}+S_{max}), S_{max}$上进行test。</p>
 <h4 id="多个crop-evaluation">多个crop evaluation</h4>
-<p>这个是为了做对比，alexnet中，在testing时，对每一张图片都进行多次cropped，对testing的结果做平均。</p>
+<p>这个是为了和alexnet做对比，alexnet网络在testing时，对每一张图片都进行多次cropped，对testing的结果做平均。</p>
 <h4 id="convnet-funsion">convnet funsion</h4>
 <p>之前作者的evaluation都是在单个的网络上进行的，作者还试了将不同网络的softmax输出做了平均。</p>
 <h2 id="none"></h2>
-<h3 id="概述-v3">概述</h3>
+<h3 id="概述-v4">概述</h3>
 <h3 id="存在的问题">存在的问题</h3>
 <h3 id="方案-v2">方案</h3>
 <h4 id="背景">背景</h4>
 <h4 id="算法">算法</h4>
 <h4 id="代码-v2">代码</h4>
 <h2 id="none-v2"></h2>
-<h3 id="概述-v4">概述</h3>
+<h3 id="概述-v5">概述</h3>
 <h3 id="存在的问题-v2">存在的问题</h3>
 <h3 id="方案-v3">方案</h3>
 <h4 id="背景-v2">背景</h4>
@@ -662,7 +704,7 @@ $S$抖动时，模型是在$S\in [S_{min},S_{max}]$上训练的，在$Q={S_{min}
 <h4 id="算法-v3">算法</h4>
 <h4 id="代码-v4">代码</h4>
 <h2 id="none-v4"></h2>
-<h3 id="概述-v5">概述</h3>
+<h3 id="概述-v6">概述</h3>
 <h3 id="存在的问题-v3">存在的问题</h3>
 <h3 id="方案-v5">方案</h3>
 <h4 id="背景-v4">背景</h4>
@@ -1159,7 +1201,7 @@ $S$抖动时，模型是在$S\in [S_{min},S_{max}]$上训练的，在$Q={S_{min}
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#alexnet-2012"><span class="nav-number">1.</span> <span class="nav-text">Alexnet(2012)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题"><span class="nav-number">1.2.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创新"><span class="nav-number">1.3.</span> <span class="nav-text">创新</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#relu非线性激活函数"><span class="nav-number">1.3.1.</span> <span class="nav-text">ReLU非线性激活函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#作用"><span class="nav-number">1.3.1.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#saturating-nonlinearity"><span class="nav-number">1.3.1.2.</span> <span class="nav-text">saturating nonlinearity</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多块gpu并行"><span class="nav-number">1.3.2.</span> <span class="nav-text">多块GPU并行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#overlapping-pooling"><span class="nav-number">1.3.3.</span> <span class="nav-text">Overlapping Pooling</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据增强"><span class="nav-number">1.3.4.</span> <span class="nav-text">数据增强</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#裁剪和翻转"><span class="nav-number">1.3.4.1.</span> <span class="nav-text">裁剪和翻转</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在图片上调整rgb通道的密度"><span class="nav-number">1.3.4.2.</span> <span class="nav-text">在图片上调整RGB通道的密度</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dropout"><span class="nav-number">1.3.5.</span> <span class="nav-text">Dropout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#局部响应归一化-local-response-normalizaiton"><span class="nav-number">1.3.6.</span> <span class="nav-text">局部响应归一化(Local Response Normalizaiton)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#整体架构"><span class="nav-number">1.4.</span> <span class="nav-text">整体架构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#目标函数"><span class="nav-number">1.4.1.</span> <span class="nav-text">目标函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#并行框架"><span class="nav-number">1.4.2.</span> <span class="nav-text">并行框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#简化框架"><span class="nav-number">1.4.3.</span> <span class="nav-text">简化框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据流-简化框架"><span class="nav-number">1.4.4.</span> <span class="nav-text">数据流（简化框架）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实验"><span class="nav-number">1.5.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#datasets"><span class="nav-number">1.5.1.</span> <span class="nav-text">Datasets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#baselines"><span class="nav-number">1.5.2.</span> <span class="nav-text">Baselines</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#metric"><span class="nav-number">1.5.3.</span> <span class="nav-text">Metric</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码"><span class="nav-number">1.6.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vggnet-2013"><span class="nav-number">2.</span> <span class="nav-text">Vggnet(2013)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v2"><span class="nav-number">2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案"><span class="nav-number">2.2.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#架构"><span class="nav-number">2.2.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置"><span class="nav-number">2.2.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论"><span class="nav-number">2.2.3.</span> <span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分类框架"><span class="nav-number">2.3.</span> <span class="nav-text">分类框架</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#training"><span class="nav-number">2.3.1.</span> <span class="nav-text">training</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#目标函数-v2"><span class="nav-number">2.3.1.1.</span> <span class="nav-text">目标函数</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#训练方法"><span class="nav-number">2.3.1.2.</span> <span class="nav-text">训练方法</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#batch-size"><span class="nav-number">2.3.1.3.</span> <span class="nav-text">batch size</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#momentum"><span class="nav-number">2.3.1.4.</span> <span class="nav-text">momentum</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#正则化"><span class="nav-number">2.3.1.5.</span> <span class="nav-text">正则化</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#lr"><span class="nav-number">2.3.1.6.</span> <span class="nav-text">lr</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#vgg-vs-alexnet"><span class="nav-number">2.3.1.7.</span> <span class="nav-text">VGG vs alexnet</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#图像预处理"><span class="nav-number">2.3.1.8.</span> <span class="nav-text">图像预处理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#iamge-rescale"><span class="nav-number">2.3.1.9.</span> <span class="nav-text">iamge rescale</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#testing"><span class="nav-number">2.3.2.</span> <span class="nav-text">testing</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#classfication"><span class="nav-number">2.4.</span> <span class="nav-text">classfication</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#single-scale-evaluation"><span class="nav-number">2.4.1.</span> <span class="nav-text">single scale evaluation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#multi-scale-evaluation"><span class="nav-number">2.4.2.</span> <span class="nav-text">multi scale evaluation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多个crop-evaluation"><span class="nav-number">2.4.3.</span> <span class="nav-text">多个crop evaluation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#convnet-funsion"><span class="nav-number">2.4.4.</span> <span class="nav-text">convnet funsion</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none"><span class="nav-number">3.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v3"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存在的问题"><span class="nav-number">3.2.</span> <span class="nav-text">存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案-v2"><span class="nav-number">3.3.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">3.3.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#算法"><span class="nav-number">3.3.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-v2"><span class="nav-number">3.3.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none-v2"><span class="nav-number">4.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v4"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存在的问题-v2"><span class="nav-number">4.2.</span> <span class="nav-text">存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案-v3"><span class="nav-number">4.3.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景-v2"><span class="nav-number">4.3.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#算法-v2"><span class="nav-number">4.3.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-v3"><span class="nav-number">4.3.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none-v3"><span class="nav-number">5.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-存在的问题"><span class="nav-number">5.1.</span> <span class="nav-text">概述 ### 存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案-v4"><span class="nav-number">5.2.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景-v3"><span class="nav-number">5.2.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#算法-v3"><span class="nav-number">5.2.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-v4"><span class="nav-number">5.2.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none-v4"><span class="nav-number">6.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v5"><span class="nav-number">6.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存在的问题-v3"><span class="nav-number">6.2.</span> <span class="nav-text">存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案-v5"><span class="nav-number">6.3.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景-v4"><span class="nav-number">6.3.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#算法-v4"><span class="nav-number">6.3.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-v5"><span class="nav-number">6.3.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#alexnet-2012"><span class="nav-number">1.</span> <span class="nav-text">Alexnet(2012)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#问题"><span class="nav-number">1.2.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创新"><span class="nav-number">1.3.</span> <span class="nav-text">创新</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#relu非线性激活函数"><span class="nav-number">1.3.1.</span> <span class="nav-text">ReLU非线性激活函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#作用"><span class="nav-number">1.3.1.1.</span> <span class="nav-text">作用</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#saturating-nonlinearity"><span class="nav-number">1.3.1.2.</span> <span class="nav-text">saturating nonlinearity</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多块gpu并行"><span class="nav-number">1.3.2.</span> <span class="nav-text">多块GPU并行</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#overlapping-pooling"><span class="nav-number">1.3.3.</span> <span class="nav-text">Overlapping Pooling</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据增强"><span class="nav-number">1.3.4.</span> <span class="nav-text">数据增强</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#裁剪和翻转"><span class="nav-number">1.3.4.1.</span> <span class="nav-text">裁剪和翻转</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#在图片上调整rgb通道的密度"><span class="nav-number">1.3.4.2.</span> <span class="nav-text">在图片上调整RGB通道的密度</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#dropout"><span class="nav-number">1.3.5.</span> <span class="nav-text">Dropout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#局部响应归一化-local-response-normalizaiton"><span class="nav-number">1.3.6.</span> <span class="nav-text">局部响应归一化(Local Response Normalizaiton)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#整体架构"><span class="nav-number">1.4.</span> <span class="nav-text">整体架构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#目标函数"><span class="nav-number">1.4.1.</span> <span class="nav-text">目标函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#并行框架"><span class="nav-number">1.4.2.</span> <span class="nav-text">并行框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#简化框架"><span class="nav-number">1.4.3.</span> <span class="nav-text">简化框架</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据流-简化框架"><span class="nav-number">1.4.4.</span> <span class="nav-text">数据流（简化框架）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实验"><span class="nav-number">1.5.</span> <span class="nav-text">实验</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#datasets"><span class="nav-number">1.5.1.</span> <span class="nav-text">Datasets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#baselines"><span class="nav-number">1.5.2.</span> <span class="nav-text">Baselines</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#metric"><span class="nav-number">1.5.3.</span> <span class="nav-text">Metric</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码"><span class="nav-number">1.6.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#overfeat-2013"><span class="nav-number">2.</span> <span class="nav-text">OverFeat(2013)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v2"><span class="nav-number">2.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vision任务"><span class="nav-number">2.2.</span> <span class="nav-text">Vision任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#classification"><span class="nav-number">2.3.</span> <span class="nav-text">Classification</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#training"><span class="nav-number">2.3.1.</span> <span class="nav-text">training</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fast-model架构"><span class="nav-number">2.3.2.</span> <span class="nav-text">fast model架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多scale-classification"><span class="nav-number">2.3.3.</span> <span class="nav-text">多scale classification</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vggnet-2013"><span class="nav-number">3.</span> <span class="nav-text">Vggnet(2013)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v3"><span class="nav-number">3.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案"><span class="nav-number">3.2.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#架构"><span class="nav-number">3.2.1.</span> <span class="nav-text">架构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置"><span class="nav-number">3.2.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#讨论"><span class="nav-number">3.2.3.</span> <span class="nav-text">讨论</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分类框架"><span class="nav-number">3.3.</span> <span class="nav-text">分类框架</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#training-v2"><span class="nav-number">3.3.1.</span> <span class="nav-text">training</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#testing"><span class="nav-number">3.3.2.</span> <span class="nav-text">testing</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#classfication"><span class="nav-number">3.4.</span> <span class="nav-text">classfication</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#single-scale-evaluation"><span class="nav-number">3.4.1.</span> <span class="nav-text">single scale evaluation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#multi-scale-evaluation"><span class="nav-number">3.4.2.</span> <span class="nav-text">multi scale evaluation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#多个crop-evaluation"><span class="nav-number">3.4.3.</span> <span class="nav-text">多个crop evaluation</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#convnet-funsion"><span class="nav-number">3.4.4.</span> <span class="nav-text">convnet funsion</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none"><span class="nav-number">4.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v4"><span class="nav-number">4.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存在的问题"><span class="nav-number">4.2.</span> <span class="nav-text">存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案-v2"><span class="nav-number">4.3.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景"><span class="nav-number">4.3.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#算法"><span class="nav-number">4.3.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-v2"><span class="nav-number">4.3.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none-v2"><span class="nav-number">5.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v5"><span class="nav-number">5.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存在的问题-v2"><span class="nav-number">5.2.</span> <span class="nav-text">存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案-v3"><span class="nav-number">5.3.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景-v2"><span class="nav-number">5.3.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#算法-v2"><span class="nav-number">5.3.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-v3"><span class="nav-number">5.3.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none-v3"><span class="nav-number">6.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-存在的问题"><span class="nav-number">6.1.</span> <span class="nav-text">概述 ### 存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案-v4"><span class="nav-number">6.2.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景-v3"><span class="nav-number">6.2.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#算法-v3"><span class="nav-number">6.2.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-v4"><span class="nav-number">6.2.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none-v4"><span class="nav-number">7.</span> <span class="nav-text"></span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述-v6"><span class="nav-number">7.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存在的问题-v3"><span class="nav-number">7.2.</span> <span class="nav-text">存在的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方案-v5"><span class="nav-number">7.3.</span> <span class="nav-text">方案</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#背景-v4"><span class="nav-number">7.3.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#算法-v4"><span class="nav-number">7.3.2.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码-v5"><span class="nav-number">7.3.3.</span> <span class="nav-text">代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
