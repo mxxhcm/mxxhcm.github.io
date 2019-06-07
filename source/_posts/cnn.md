@@ -6,6 +6,7 @@ tags:
  - 卷积神经网络
  - alexnet
 categories: 机器学习
+mathjax: true
 ---
 
 ## Alexnet(2012)
@@ -95,7 +96,7 @@ ILSVRC-2010
 - top-1 error rate
 - top-5 error rate
 
-## 代码
+### 代码
 pytorch实现
 https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 
