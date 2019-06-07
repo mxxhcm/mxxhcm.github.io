@@ -192,9 +192,21 @@ VGG参数多，深度深，但是收敛快，原因：
 ### classfication
 ILSVRC-2012，training($1.3M$张图片)，validation($50K张$)，testing($100K$张)
 两个metrics：top-1和top-5 error。top-1 error是multi-class classification error，不正确分类图像占的比例；top-5 error是预测的top-5都不是ground-truth。
-#### single scale 
-#### multi scale 
-![](picture_name.png)
+
+#### single scale evaluation 
+$S$固定时，设置test image size $Q=S=256$；
+$S$抖动时，设置test image size $Q=0.5(S\_{min}+S\_{max})=0.5(256+512)=384$，$S\in \[S\_{min},S\_{max}\]$。
+
+#### multi scale evaluation
+用同一个模型对不同rescaled大小的图片多次test，即对于不同的$Q$。
+固定$S$时，在三个不同大小的test image size $Q=\{S-32,S,S+32\}$评估。
+$S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\_{min}, 0.5(S\_{min}+S\_{max}), S\_{max}$上进行test。
+
+#### 多个crop evaluation
+这个是为了做对比，alexnet中，在testing时，对每一张图片都进行多次cropped，对testing的结果做平均。
+
+#### convnet funsion
+之前作者的evaluation都是在单个的网络上进行的，作者还试了将不同网络的softmax输出做了平均。
 
 ## 
 ### 概述
