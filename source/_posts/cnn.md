@@ -114,6 +114,24 @@ ImageNet数据集中大部分选择的是几乎填满了整个image中心的obje
 classification，localization和detection。classification和localization通常只有一个很大的object，而detection需要找到很多很小的objects。
 classification任务中，每个image都有一个label对应image中主要的object的类型。为了找到正确的label，每个图片可以猜$5$次（图片中可能包含了没有label的数据）。localization任务中，不仅要给出label，还需要找到这个label对应的bouding box，bounding box和groundtruth至少要有$50$匹配，label和bounding box也需要匹配。detection和localization不同的是，detection任务中可以有任何数量的objects，false positive会使用mean average precison measure。localization任务可以看成classification到detection任务的一个中间步。
 
+### FCN
+用卷积层代替全连接层。具体是什么意思呢。
+alexnet中，有5层卷积层，3层全连接层。假设第五层的输出是$5\times 5 \times 512$，$512$是output channels number，$5\times 5$是第五层的feature maps大小。如果使用全连接的话，假设第六层的输出单元是$N$个，第六层权重总共是$(5\times 5\times 512) \* (N)$，对于一个训练好的网络，图片的输入大小是固定的，因为第六层的输入需要固定。如果输入一个其他大小的图片，网络是会出错的，所以就有了Fully Convolutional networks，它可以处理不同大小的输入图片。
+如下所示，使用某个大小的image训练的网络，在classifier处用卷积层替换全连接层，如果使用全连接层，首先将$(5, 5, out_channels)$的feature map进行flatten $5\times 5\times out_channels$，然后经过三层全连接，最后输出一个softmax的结果。而fcn使用卷积层代替全连接，使用$N$个$5\times 5$的卷积核，直接得到$1\tims 1 \times N$的结果，最后得到一个$1\times 1\times C$的输出，$C$代表图像类别，$N$代表全连接层中隐藏节点的数量。
+![fcn](fcn.png)
+事实上，FCN和全连接的本质上都是一样的，只不过一个进行了flatten，一个直接对feature map进行操作，直接对feature map操作可以处理不同大小的输入，而flatten不行。
+当输入图片大小发生变化时，输出大小也会改变，但是网络并不会出错，如下所示：
+![fcn2](fcn2.png)
+最后输出的结果是$2\times 2 \times C$的结果，可以直接对它们取平均，最后得到一个$1\times 1\times C$的分类结果。
+
+### offset Max pooling
+我们之前做max pooling的时候，设$kernel_size=3, stride_size=1$，如果feature map是$3$的倍数，那么只有一个pooling的结果，但是如果不是$3$的倍数，max pooling会很多个结果，比如有个$20\times 20$的feature map，在$x,y$上做max pooling分别有三种结果，分别从$x,y$的位置$0$开始，位置$1$开始，位置$2$开始，排列组合有$9$中情况，这九种情况的结果是不同的。
+如下图所示，在一维的长为$20$的pixels上做maxpooling，有三种情况。
+![offset_maxpooling](offset_maxpooling.png)
+
+### overfeat
+这两个方法中，fcn是在输入图片上进行的window sliding，而offset maxpooling是在feature map进行的window sliding，这两个方法结合起来就是overfeat，要比alexnet直接在输入图片上进行window sliding 要好。
+
 ### Classification
 #### training
 - datset
@@ -134,14 +152,23 @@ $1\times 10\^{-5}$
 - non-spatial
 这个说的是什么呢，在test的时候，会输出多个output maps，对他们的结果做平均，而在training的时候，output maps是$1\times 1$。
 
-#### fast model架构
-下图展示的是fast model，spatial input size在train和test时候是不同的，这里展示的是train时的spatial seize。layer 5是最上层的CNN，receptive filed最大。后续是FC layers，在test时候使用了sliding window。在spatial设置中，FC-layers可以查看$1\times 1$的卷积。
+#### model架构
+下图展示的是fast model，spatial input size在train和test时候是不同的，这里展示的是train时的spatial seize。layer 5是最上层的CNN，receptive filed最大。后续是FC layers，在test时候使用了sliding window。在spatial设置中，FC-layers替换成了$1\times 1$的卷积。
 ![overfeat_fast](overfeat_fast.png)
+下图给出了accuracy model的结构，
 ![overfeat_accuracy](overfeat_accuracy.png)
+总的来说，这两个模型都在alexnet上做了一些修改，但是整体架构没有大的创新。
 
 #### 多scale classification 
 alexnet中，对一张照片的$10$个views（中间，四个角和horizontal flip)的结果做了平均，这种方式可能会忽略很多趋于，同时如果不同的views有重叠的话，计算很redundant。此外，alexnet中只使用了一个scale。
 作者对每个iamge的每一个location和多个scale都进行计算。
+如下图，对应了不同大小的输入图片，layer 5 post pool中$(m\times n)\time(3\times 3)$，前面$m\times n$是fcn得到的不同位置的feature map，后面$3\times 3$是$kernel_size=3$的offset max pooling得到的featrue map。乘起来是所有的预测结果。
+![multi_scale](multi_scale.png)
+
+
+### localization
+
+### Detection
 
 
 ## Vggnet(2013)
@@ -284,3 +311,4 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 3.https://stats.stackexchange.com/questions/145768/importance-of-local-response-normalization-in-cnn
 4.https://stats.stackexchange.com/a/386304
 5.https://blog.csdn.net/luoyang224/article/details/78088582/
+6.https://zhum.in/blog/project/TrafficSignRecognition/OverFeat%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/
