@@ -114,10 +114,10 @@
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/alexnet.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/alexnet_simple.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/overfeat_fast.png">
-<meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/overfeat_accuarcy.png">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/overfeat_accuracy.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/vgg_conf.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/03/13/cnn/vgg_weights_num.png">
-<meta property="og:updated_time" content="2019-06-07T14:02:09.455Z">
+<meta property="og:updated_time" content="2019-06-08T01:55:35.958Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CNN">
 <meta name="twitter:description" content="Alexnet(2012) 概述 作者提出了一个卷积神经网络架构对Imagenet中$1000$类中的$120$万张图片进行分类。网络架构包含$5$个卷积层，$3$个全连接层，和一个$1000$-way的softmax层，整个网络共有$6000$万参数，$65000$个神经元。作者提出了一些方法提高性能和减少训练的时间，并且介绍了一些防止过拟合的技巧。最后在imagenet测试集上，跑出$37.5">
@@ -398,7 +398,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-07 22:02:09" itemprop="dateModified" datetime="2019-06-07T22:02:09+08:00">2019-06-07</time>
+                <time title="修改时间：2019-06-08 09:55:35" itemprop="dateModified" datetime="2019-06-08T09:55:35+08:00">2019-06-08</time>
               
             
           </span>
@@ -565,7 +565,7 @@ Image 2012 trainign set（1.2million iamges，C=$1000$ classes)。</li>
 <li>batchsize<br>
 $128$</li>
 <li>初始权重<br>
-$(\mu, \simga)= (0, 1\times 10^{-2})$</li>
+$(\mu, \sigma)= (0, 1\times 10^{-2})$</li>
 <li>momentum<br>
 0.6</li>
 <li>l2 weigth decay<br>
@@ -578,7 +578,7 @@ $1\times 10^{-5}$</li>
 <h4 id="fast-model架构">fast model架构</h4>
 <p>下图展示的是fast model，spatial input size在train和test时候是不同的，这里展示的是train时的spatial seize。layer 5是最上层的CNN，receptive filed最大。后续是FC layers，在test时候使用了sliding window。在spatial设置中，FC-layers可以查看$1\times 1$的卷积。<br>
 <img src="/2019/03/13/cnn/overfeat_fast.png" alt="overfeat_fast"><br>
-<img src="/2019/03/13/cnn/overfeat_accuarcy.png" alt="overfeat_accuarcy"></p>
+<img src="/2019/03/13/cnn/overfeat_accuracy.png" alt="overfeat_accuracy"></p>
 <h4 id="多scale-classification">多scale classification</h4>
 <p>alexnet中，对一张照片的$10$个views（中间，四个角和horizontal flip)的结果做了平均，这种方式可能会忽略很多趋于，同时如果不同的views有重叠的话，计算很redundant。此外，alexnet中只使用了一个scale。<br>
 作者对每个iamge的每一个location和多个scale都进行计算。</p>
@@ -587,7 +587,7 @@ $1\times 10^{-5}$</li>
 <p>这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。通过使用$3\times 3$的filters，增加CNN的深度，提高识别精度。</p>
 <h3 id="方案">方案</h3>
 <h4 id="架构">架构</h4>
-<p><strong>训练</strong>，输入$224\times 224$大小的RGB图片。对每张图片减去训练集上所有图片RGB 像素的均值。预处理后的图片被输入多层CNN中，CNN的filter是$3\times 3$的，作何也试了$1\tims 1$的filter，相当于对输入做了一个线性变换，紧跟着一个non-linear 激活函数。stride设为$1$，添加padding使得卷积后的输出大小不变。同时使用了$5$个max-pooling层（并不是每一层cnn后面都有max-pooling)，max-pooling在$2\times 2$大小的窗口上，stride是$2$。<br>
+<p><strong>训练</strong>，输入$224\times 224$大小的RGB图片。对每张图片减去训练集上所有图片RGB 像素的均值。预处理后的图片被输入多层CNN中，CNN的filter是$3\times 3$的，作何也试了$1\times 1$的filter，相当于对输入做了一个线性变换，紧跟着一个non-linear 激活函数。stride设为$1$，添加padding使得卷积后的输出大小不变。同时使用了$5$个max-pooling层（并不是每一层cnn后面都有max-pooling)，max-pooling在$2\times 2$大小的窗口上，stride是$2$。<br>
 多层CNN后面接的是三个FC layers，前两个是$4096$单元，最后一层是$1000$个单元的softmax。所有隐藏层都使用ReLu非线性激活函数。</p>
 <h4 id="配置">配置</h4>
 <p>这篇文章给出了五个网络架构，用$A-E$表示，它们只有在深度上有所不同：从$11$层($8$个conv layers和$3$个FC layers)到$19$层（$16$个conv layers和$3$个FC layers）。Conv layers的channels很小，从第一层的$64$，每过一个max pooling layers，变成原理啊的两倍，直到$512$。具体如下表所示。<br>
