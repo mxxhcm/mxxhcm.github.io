@@ -124,7 +124,7 @@ Image 2012 trainign set（1.2million iamges，C=$1000$ classes)。
 - batchsize
 $128$
 - 初始权重
-$(\mu, \simga)= (0, 1\times 10\^{-2})$
+$(\mu, \sigma)= (0, 1\times 10\^{-2})$
 - momentum
 0.6
 - l2 weigth decay
@@ -137,11 +137,12 @@ $1\times 10\^{-5}$
 #### fast model架构
 下图展示的是fast model，spatial input size在train和test时候是不同的，这里展示的是train时的spatial seize。layer 5是最上层的CNN，receptive filed最大。后续是FC layers，在test时候使用了sliding window。在spatial设置中，FC-layers可以查看$1\times 1$的卷积。
 ![overfeat_fast](overfeat_fast.png)
-![overfeat_accuarcy](overfeat_accuarcy.png)
+![overfeat_accuracy](overfeat_accuracy.png)
 
 #### 多scale classification 
 alexnet中，对一张照片的$10$个views（中间，四个角和horizontal flip)的结果做了平均，这种方式可能会忽略很多趋于，同时如果不同的views有重叠的话，计算很redundant。此外，alexnet中只使用了一个scale。
 作者对每个iamge的每一个location和多个scale都进行计算。
+
 
 ## Vggnet(2013)
 ### 概述
@@ -149,7 +150,7 @@ alexnet中，对一张照片的$10$个views（中间，四个角和horizontal fl
 
 ### 方案
 #### 架构
-**训练**，输入$224\times 224$大小的RGB图片。对每张图片减去训练集上所有图片RGB 像素的均值。预处理后的图片被输入多层CNN中，CNN的filter是$3\times 3$的，作何也试了$1\tims 1$的filter，相当于对输入做了一个线性变换，紧跟着一个non-linear 激活函数。stride设为$1$，添加padding使得卷积后的输出大小不变。同时使用了$5$个max-pooling层（并不是每一层cnn后面都有max-pooling)，max-pooling在$2\times 2$大小的窗口上，stride是$2$。
+**训练**，输入$224\times 224$大小的RGB图片。对每张图片减去训练集上所有图片RGB 像素的均值。预处理后的图片被输入多层CNN中，CNN的filter是$3\times 3$的，作何也试了$1\times 1$的filter，相当于对输入做了一个线性变换，紧跟着一个non-linear 激活函数。stride设为$1$，添加padding使得卷积后的输出大小不变。同时使用了$5$个max-pooling层（并不是每一层cnn后面都有max-pooling)，max-pooling在$2\times 2$大小的窗口上，stride是$2$。
 多层CNN后面接的是三个FC layers，前两个是$4096$单元，最后一层是$1000$个单元的softmax。所有隐藏层都使用ReLu非线性激活函数。
 
 #### 配置
