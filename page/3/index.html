@@ -327,6 +327,221 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/13/tensorflow-collection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/13/tensorflow-collection/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">tensorflow collection</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-13 10:28:29" itemprop="dateCreated datePublished" datetime="2019-05-13T10:28:29+08:00">2019-05-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-07 13:10:27" itemprop="dateModified" datetime="2019-06-07T13:10:27+08:00">2019-06-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="tf-collection">tf.collection</h2>
+<p>Tensorflow用graph collection来管理不同类型的对象。tf.GraphKeys中定义了默认的collection，tf通过调用各种各样的collection操作graph中的变量。比如tf.Optimizer只优化tf.GraphKeys.TRAINABLE_VARIABLES collection中的变量。常见的collection如下：</p>
+<ul>
+<li>GLOBAL_VARIABLES: 所有的Variable对象在创建的时候自动加入该colllection，且在分布式环境中共享（model variables是它的子集）。一般来说，TRAINABLE_VARIABLES包含在MODEL_VARIABLES中，MODEL_VARIABLES包含在GLOBAL_VARIABLES中。也就是说TRAINABLE_VARIABLES$\le$MODEL_VARIABLES$\le$GLOBAL_VARIABLES。</li>
+<li>LOCAL_VARIABLES: 它是GLOBAL_VARIABLES不同的是在本机器上的Variable子集。使用tf.contrib.framework.local_variable将变量添加到这个collection.</li>
+<li>MODEL_VARIABLES: 模型变量，在构建模型中，所有用于前向传播的Variable都将添加到这里。使用 tf.contrib.framework.model_variable向这个collection添加变量。</li>
+<li>TRAINALBEL_VARIABLES: 所有用于反向传播的Variable，可以被optimizer训练，进行参数更新的变量。tf.Variable对象同样会自动加入这个collection。</li>
+<li>SUMMARIES: graph创建的所有summary Tensor都会记录在这里面。</li>
+<li>QUEUE_RUNNERS:</li>
+<li>MOVING_AVERAGE_VARIABLES: 保持Movering average的变量子集。</li>
+<li>REGULARIZATION_LOSSES: 创建graph的regularization loss。</li>
+</ul>
+<p>这里主要介绍三类collection，一种是GLOBAL_VARIABLES，一种是SUMMARIES，一种是自定义的collections。</p>
+<p>下面的一些collection也被定义了，但是并不会自动添加</p>
+<blockquote>
+<p>The following standard keys are defined, but their collections are not automatically populated as many of the others are:</p>
+</blockquote>
+<ul>
+<li>WEIGHTS</li>
+<li>BIASES</li>
+<li>ACTIVATIONS</li>
+</ul>
+<h2 id="global-variable-collection">GLOBAL_Variable collection</h2>
+<p>tf.Variable()对象在生成时会被默认添加到tf.GraphKeys中的GLOBAL_VARIABLES和TRAINABLE_VARIABLES collection中。</p>
+<h3 id="代码示例">代码示例</h3>
+<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_global_trainable_variables_collections.py" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">a = tf.Variable([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line">b = tf.get_variable(<span class="string">"bbb"</span>, shape=[<span class="number">2</span>,<span class="number">3</span>])</span><br><span class="line">tf.constant([<span class="number">3</span>])</span><br><span class="line">c = tf.ones([<span class="number">3</span>])</span><br><span class="line">d = tf.random_uniform([<span class="number">3</span>, <span class="number">4</span>])</span><br><span class="line">e = tf.log(c)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看GLOBAL_VARIABLES collection中的变量</span></span><br><span class="line">global_variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)</span><br><span class="line"><span class="keyword">for</span> var <span class="keyword">in</span> global_variables:</span><br><span class="line">   print(var)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看TRAINABLE_VARIABLES collection中的变量</span></span><br><span class="line">trainable_variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)</span><br><span class="line"><span class="keyword">for</span> var <span class="keyword">in</span> global_variables:</span><br><span class="line">   print(var)</span><br></pre></td></tr></table></figure>
+<h2 id="summary-collection">Summary collection</h2>
+<p>Summary op产生的变量会被添加到tf.GraphKeys.SUMMARIES collection中。<br>
+<a href="https://mxxhcm.github.io/2019/05/08/tensorflow-summary/">点击查看关于tf.summary的详细介绍</a></p>
+<h3 id="代码示例-v2">代码示例</h3>
+<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_summary_collection.py" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成一个图</span></span><br><span class="line">graph = tf.Graph()</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> graph.as_default():</span><br><span class="line">    <span class="comment"># 指定模型参数</span></span><br><span class="line">    w = tf.Variable([<span class="number">0.3</span>], name=<span class="string">"w"</span>, dtype=tf.float32)</span><br><span class="line">    b = tf.Variable([<span class="number">0.2</span>], name=<span class="string">"b"</span>, dtype=tf.float32)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 输入数据placeholder</span></span><br><span class="line">    x = tf.placeholder(tf.float32, name=<span class="string">"inputs"</span>)</span><br><span class="line">    y = tf.placeholder(tf.float32, name=<span class="string">"outputs"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 前向传播</span></span><br><span class="line">    <span class="keyword">with</span> tf.name_scope(<span class="string">'linear_model'</span>):</span><br><span class="line">        linear = w * x + b</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 计算loss</span></span><br><span class="line">    <span class="keyword">with</span> tf.name_scope(<span class="string">'cal_loss'</span>):</span><br><span class="line">        loss = tf.reduce_mean(input_tensor=tf.square(y - linear), name=<span class="string">'loss'</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 定义summary saclar op</span></span><br><span class="line">    <span class="keyword">with</span> tf.name_scope(<span class="string">'add_summary'</span>):</span><br><span class="line">        summary_loss = tf.summary.scalar(<span class="string">'MSE'</span>, loss)</span><br><span class="line">        summary_b = tf.summary.scalar(<span class="string">'b'</span>, b[<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 定义优化器</span></span><br><span class="line">    <span class="keyword">with</span> tf.name_scope(<span class="string">'train_model'</span>):</span><br><span class="line">        optimizer = tf.train.GradientDescentOptimizer(<span class="number">0.01</span>)</span><br><span class="line">        train = optimizer.minimize(loss)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session(graph=graph) <span class="keyword">as</span> sess:</span><br><span class="line">	inputs = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">	outputs = [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]</span><br><span class="line">    <span class="comment"># 定义写入文件类</span></span><br><span class="line">    writer = tf.summary.FileWriter(<span class="string">"./summary/"</span>, graph)</span><br><span class="line">    <span class="comment"># 获取所有的summary op，不用一个一个去单独run</span></span><br><span class="line">    merged = tf.summary.merge_all()</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 初始化</span></span><br><span class="line">    init_op = tf.global_variables_initializer()</span><br><span class="line">    sess.run(init_op)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5000</span>):</span><br><span class="line">		<span class="comment"># 运行summary op merged</span></span><br><span class="line">        _, summ = sess.run([train, merged], feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">		<span class="comment"># 将summary op返回的变量转化为事件，写入文件</span></span><br><span class="line">        writer.add_summary(summ, global_step=i)</span><br><span class="line"></span><br><span class="line">    w_, b_, l_ = sess.run([w, b, loss], feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    print(<span class="string">"w: "</span>, w_, <span class="string">"b: "</span>, b_, <span class="string">"loss: "</span>, l_)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 查看SUMMARIES collection</span></span><br><span class="line">    <span class="keyword">for</span> var <span class="keyword">in</span> tf.get_collection(tf.GraphKeys.SUMMARIES):</span><br><span class="line">        print(var)</span><br></pre></td></tr></table></figure>
+<h2 id="自定义collection">自定义collection</h2>
+<p>通过tf.add_collection()和tf.get_collection()可以添加和访问custom collection。</p>
+<h3 id="示例代码">示例代码</h3>
+<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_custom_collection.py" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义第1个loss</span></span><br><span class="line">x1 = tf.constant(<span class="number">1.0</span>)</span><br><span class="line">l1 = tf.nn.l2_loss(x1)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义第2个loss</span></span><br><span class="line">x2 = tf.constant([<span class="number">2.5</span>, <span class="number">-0.3</span>])</span><br><span class="line">l2 = tf.nn.l2_loss(x2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将loss添加到losses collection中</span></span><br><span class="line">tf.add_to_collection(<span class="string">"losses"</span>, l1)</span><br><span class="line">tf.add_to_collection(<span class="string">"losses"</span>, l2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看losses collection中的内容</span></span><br><span class="line">losses = tf.get_collection(<span class="string">'losses'</span>)</span><br><span class="line"><span class="keyword">for</span> var <span class="keyword">in</span> tf.get_collection(<span class="string">'losses'</span>):</span><br><span class="line">    print(var)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 建立session运行</span></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    init = tf.global_variables_initializer()</span><br><span class="line">    sess.run(init)</span><br><span class="line">    losses_val = sess.run(losses)</span><br><span class="line">    print(losses_val)</span><br></pre></td></tr></table></figure>
+<h2 id="疑问">疑问</h2>
+<p>collection是和graph绑定在一起的，那么如果定义了很多个图，如何获得非默认图的tf.GraphKeys中定义的collection？？</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://blog.csdn.net/shenxiaolu1984/article/details/52815641" target="_blank" rel="noopener">https://blog.csdn.net/shenxiaolu1984/article/details/52815641</a><br>
+2.<a href="https://blog.csdn.net/hustqb/article/details/80398934" target="_blank" rel="noopener">https://blog.csdn.net/hustqb/article/details/80398934</a><br>
+3.<a href="https://www.tensorflow.org/api_docs/python/tf/GraphKeys?hl=zh_cn" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/GraphKeys?hl=zh_cn</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/12/tensorflow-graph和session/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2147,202 +2362,6 @@ Linear(in_features=2, out_features=2, bias=True)</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-optim/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/08/pytorch-optim/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">pytorch optim</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-08 21:58:19" itemprop="dateCreated datePublished" datetime="2019-05-08T21:58:19+08:00">2019-05-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-17 16:20:33" itemprop="dateModified" datetime="2019-05-17T16:20:33+08:00">2019-05-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="torch-optim">torch.optim</h2>
-<h3 id="基类class-optimizer-object">基类class Optimizer(object)</h3>
-<p>Optimizer是所有optimizer的基类。<br>
-调用任何优化器都要先初始化Optimizer类，这里拿Adam优化器举例子。Adam optimizer的init函数如下所示：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Adam</span><span class="params">(Optimizer)</span>:</span></span><br><span class="line">	<span class="string">"""</span></span><br><span class="line"><span class="string">        params (iterable): iterable of parameters to optimize or dicts defining</span></span><br><span class="line"><span class="string">            parameter groups</span></span><br><span class="line"><span class="string">        lr (float, optional): learning rate (default: 1e-3)</span></span><br><span class="line"><span class="string">        betas (Tuple[float, float], optional): coefficients used for computing</span></span><br><span class="line"><span class="string">            running averages of gradient and its square (default: (0.9, 0.999))</span></span><br><span class="line"><span class="string">        eps (float, optional): term added to the denominator to improve</span></span><br><span class="line"><span class="string">            numerical stability (default: 1e-8)</span></span><br><span class="line"><span class="string">        weight_decay (float, optional): weight decay (L2 penalty)</span></span><br><span class="line"><span class="string">        amsgrad (boolean, optional): whether to use the AMSGrad variant of this</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, params, lr=<span class="number">1e-3</span>, betas=<span class="params">(<span class="number">0.9</span>, <span class="number">0.999</span>)</span>, eps=<span class="number">1e-8</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">                 weight_decay=<span class="number">0</span>, amsgrad=False)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0.0</span> &lt;= lr:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">"Invalid learning rate: &#123;&#125;"</span>.format(lr))</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0.0</span> &lt;= eps:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">"Invalid epsilon value: &#123;&#125;"</span>.format(eps))</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0.0</span> &lt;= betas[<span class="number">0</span>] &lt; <span class="number">1.0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">"Invalid beta parameter at index 0: &#123;&#125;"</span>.format(betas[<span class="number">0</span>]))</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> <span class="number">0.0</span> &lt;= betas[<span class="number">1</span>] &lt; <span class="number">1.0</span>:</span><br><span class="line">            <span class="keyword">raise</span> ValueError(<span class="string">"Invalid beta parameter at index 1: &#123;&#125;"</span>.format(betas[<span class="number">1</span>]))</span><br><span class="line">        defaults = dict(lr=lr, betas=betas, eps=eps,</span><br><span class="line">                        weight_decay=weight_decay, amsgrad=amsgrad)</span><br><span class="line">        super(Adam, self).__init__(params, defaults)</span><br></pre></td></tr></table></figure>
-<p>上述代码将学习率lr,beta,epsilon,weight_decay,amsgrad等封装在一个dict中，然后将其传给Optimizer的init函数，其代码如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Optimizer</span><span class="params">(object)</span>:</span></span><br><span class="line">    .. warning::</span><br><span class="line">        Parameters need to be specified <span class="keyword">as</span> collections that have a deterministic</span><br><span class="line">        ordering that <span class="keyword">is</span> consistent between runs. Examples of objects that don<span class="string">'t</span></span><br><span class="line"><span class="string">        satisfy those properties are sets and iterators over values of dictionaries.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Arguments:</span></span><br><span class="line"><span class="string">        params (iterable): an iterable of :class:`torch.Tensor` s or</span></span><br><span class="line"><span class="string">            :class:`dict` s. Specifies what Tensors should be optimized.</span></span><br><span class="line"><span class="string">        defaults: (dict): a dict containing default values of optimization</span></span><br><span class="line"><span class="string">            options (used when a parameter group doesn'</span>t specify them).</span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    def __init__(self, params, defaults):</span></span><br><span class="line"><span class="string">        self.defaults = defaults</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        if isinstance(params, torch.Tensor):</span></span><br><span class="line"><span class="string">            raise TypeError("params argument given to the optimizer should be "</span></span><br><span class="line"><span class="string">                            "an iterable of Tensors or dicts, but got " +</span></span><br><span class="line"><span class="string">                            torch.typename(params))</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        self.state = defaultdict(dict)</span></span><br><span class="line"><span class="string">        self.param_groups = []</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        param_groups = list(params)</span></span><br><span class="line"><span class="string">        if len(param_groups) == 0:</span></span><br><span class="line"><span class="string">            raise ValueError("optimizer got an empty parameter list")</span></span><br><span class="line"><span class="string">        if not isinstance(param_groups[0], dict):</span></span><br><span class="line"><span class="string">            param_groups = [&#123;'params': param_groups&#125;]</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        for param_group in param_groups:</span></span><br><span class="line"><span class="string">            self.add_param_group(param_group)</span></span><br></pre></td></tr></table></figure>
-<p>从这里可以看出来，每个pytorch给出的optimizer至少有以下三个属性和四个函数：<br>
-属性：</p>
-<ul>
-<li>self.defaults # 字典类型，主要包含学习率等值</li>
-<li>self.state # defaultdict(&lt;class ‘dict’&gt;, {}) state存放的是</li>
-<li>self.param_gropus # &lt;class ‘list’&gt;:[]，prama_groups是一个字典类型的列表，用来存放parameters。</li>
-</ul>
-<p>函数：</p>
-<ul>
-<li>self.zero_grad()  # 将optimizer中参数的梯度置零</li>
-<li>self.step()  # 将梯度应用在参数上</li>
-<li>self.state_dict() # 返回optimizer的state,包括state和param_groups。</li>
-<li>self.load_state_dict()  # 加载optimizer的state。</li>
-<li>self.add_param_group()  # 将一个param group添加到param_groups。可以用在fine-tune上，只添加我们需要训练的层数，然后其他层不动。</li>
-</ul>
-<p>如果param已经是一个字典列表的话，就无需操作，否则就需要把param转化成一个字典param_groups。然后对param_groups中的每一个param_group调用add_param_group(param_group)函数将param_group字典和defaults字典拼接成一个新的param_group字典添加到self.param_groups中。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://pytorch.org/docs/stable/optim.html" target="_blank" rel="noopener">https://pytorch.org/docs/stable/optim.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2392,7 +2411,7 @@ Linear(in_features=2, out_features=2, bias=True)</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">138</span>
+                    <span class="site-state-item-count">139</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2429,7 +2448,9 @@ Linear(in_features=2, out_features=2, bias=True)</p>
                     
                       
                     
-                    <span class="site-state-item-count">12</span>
+                      
+                    
+                    <span class="site-state-item-count">13</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -2680,7 +2701,9 @@ Linear(in_features=2, out_features=2, bias=True)</p>
                     
                       
                     
-                    <span class="site-state-item-count">119</span>
+                      
+                    
+                    <span class="site-state-item-count">120</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -2931,13 +2954,13 @@ Linear(in_features=2, out_features=2, bias=True)</p>
   
     
       
-    
-      
-    
-      
-    
-      
         
+      
+    
+      
+    
+      
+    
       
     
       
