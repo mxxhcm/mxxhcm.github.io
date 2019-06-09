@@ -5,7 +5,7 @@ tags:
  - python
  - numpy 
  - back propagation
-categories: python
+categories: 机器学习
 ---
 
 
