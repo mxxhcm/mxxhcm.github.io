@@ -950,7 +950,7 @@ ReLU是non-saturating nonlinearity的激活函数，sigmod和tanh是saturating n
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-09 12:40:51" itemprop="dateModified" datetime="2019-06-09T12:40:51+08:00">2019-06-09</time>
+                <time title="修改时间：2019-06-09 22:38:56" itemprop="dateModified" datetime="2019-06-09T22:38:56+08:00">2019-06-09</time>
               
             
           </span>
@@ -1003,7 +1003,37 @@ ReLU是non-saturating nonlinearity的激活函数，sigmod和tanh是saturating n
       
         
           
-            <h2 id="alexnet-2012">Alexnet(2012)</h2>
+            <h2 id="cnn">CNN</h2>
+<h3 id="图片的表示">图片的表示</h3>
+<p>图像在计算机中是一堆按顺序排列的顺子，数值为0到255。0表示最暗，255表示最亮。我们可以把这堆数字用一个长长的一维数组来表示，但是这样会失去平面结构的信息，为保留该结构信息，我们通常会选择矩阵的表示方式，用一个nn的矩阵来表示一个图像。对于黑白颜色的灰度图来说，我们只需要一个nn的矩阵表示即可。对于一个彩色图像，我们会选择RGB颜色模型来表示。<br>
+在彩色图像中，我们需要用三个矩阵去表示一张图，也可以理解为一个三维张量，每一个矩阵叫做这张图片的一个channel。这个三维张量可以表示为(width,length,depth),一张图片就可以用这样一个张量来表示。</p>
+<h3 id="卷积神经网络-cnn">卷积神经网络(CNN)</h3>
+<h4 id="作用">作用</h4>
+<p>让权重在不同位置共享</p>
+<h4 id="filter和stride">filter和stride</h4>
+<p>filter又叫做kernel或者feature detector。filter会对输入的局部区域进行处理，filter处理的局部区域的范围叫做filter size。比如说一个filter的大小为(3,3),那么这个filter会一次处理width=3，length = 3的区域。卷积神经网络会用filter对整个输入进行扫描，一次移动的多少叫做stride。filter处理一次的输出为一个feature map。</p>
+<h4 id="depth">depth</h4>
+<p>对于filter来说，我们一般说它的大小为（3，3）只说了它在平面的大小，但是输入的图片一般是一个RGB的三维张量，对于deepth这一个维度，如果为1的话，那么filter是（3,3），但是如果deepth大于1的话，这个filter的deepth维度一般是和张量中的deepth维度一样的。<br>
+deepth=1时，filter=（3,3），处理输入中33 个节点的值<br>
+deepth=2时，filter=（3,3），会处理输入中332个节点的值<br>
+deepth=n时，filter=（3,3），会处理输入中$33\times n$个节点的值</p>
+<h4 id="zero-paddings">zero paddings</h4>
+<p>因为经过filter处理后，输入的矩阵维度会变小，所以，如果经过很多层filter处理后，就会变得越来越少，因此，为了解决这个问题，提出了zero paddings，zero padding是在filter要处理的输入上，在输入的最外层有选择的加上一行（列）或多行（列）0，从而保持输入经过filter处理之后形状不变。</p>
+<h4 id="feature-map">feature map</h4>
+<p>一个filter的输出就是一个feature map，该feature map的width和height为：$(input_size + 2\times padding_size - filter_size)/stride + 1$<br>
+一个filter可以提取一个feature，得到一个feature map，为了提取多个feature，需要使用多个filters，最后可以得到多个feature map。</p>
+<p>所以说，feature map是一类值，因为它对应的是一个filter，给定不同的输入images，一个feature map可以有不同的取值。这个问题是我在看ZFNet中遇到的，因为它在原文中说<br>
+“For a given feature map, we show the top 9 activations”。给定一个feature map，这里应该是在所有样本中选择最大的$9$个activations对应的images。<br>
+“the strongest activation (across all training examples) within a given feature map”。给定一个feature map，在所有样本中选择一个最强的activation。</p>
+<h4 id="activate-function">activate function</h4>
+<p>一般使用非线性激活函数relu对feature map进行变化</p>
+<h4 id="pooling">pooling</h4>
+<h5 id="maxpooling">maxpooling</h5>
+<p>它基本上采用一个filter和一个同样长度的stride通常是（2,2）和2，然后把它应用到输入中，输出filter卷积计算的每个区域中的最大数字，这个pooling是在各个维度上分别进行的。<br>
+比如一个 22422464的input，经过一个（2,2）的maxpooling会输出一个11211232的张量</p>
+<h5 id="averagepooling">averagepooling</h5>
+<h4 id="fc-layers">fc layers</h4>
+<h2 id="alexnet-2012">Alexnet(2012)</h2>
 <p>论文名称：ImageNet Classification with Deep Convolutional Neural Networks<br>
 论文地址：<a href="http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf" target="_blank" rel="noopener">http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf</a></p>
 <h3 id="概述">概述</h3>
@@ -1020,7 +1050,7 @@ ReLU是non-saturating nonlinearity的激活函数，sigmod和tanh是saturating n
 <p>1.数据集太小，都是数以万计的，需要更大的数据集。</p>
 <h3 id="创新">创新</h3>
 <h4 id="relu非线性激活函数">ReLU非线性激活函数</h4>
-<h5 id="作用">作用</h5>
+<h5 id="作用-v2">作用</h5>
 <p>作者说实验表明ReLU可以加速训练过程。</p>
 <h5 id="saturating-nonlinearity">saturating nonlinearity</h5>
 <p>一个饱和的激活函数会将输出挤压到一个区间内。</p>
@@ -1096,10 +1126,85 @@ sigmod和tanh是saturating nonlinearity激活函数，如下图所示。<br>
 <h3 id="代码">代码</h3>
 <p>pytorch实现<br>
 <a href="https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py" target="_blank" rel="noopener">https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py</a></p>
+<h2 id="zfnet-2013">ZFNet(2013)</h2>
+<p>论文名称：Visualizing and Understanding Convolutional Networks<br>
+论文地址：<a href="https://cs.nyu.edu/~fergus/papers/zeilerECCV2014.pdf" target="_blank" rel="noopener">https://cs.nyu.edu/~fergus/papers/zeilerECCV2014.pdf</a><br>
+为什么叫ZFNet，两个作者名字首字母的拼写。</p>
+<p>首先我有一个问题？就是什么是一个activation。在原文的$2.1$节，有这样一个介绍：</p>
+<blockquote>
+<p>We present a novel way to map these activities back to the input pixel space, showing what input pattern originally caused a given activation in the feature maps.<br>
+我的理解是一个activation就是feature map中的一个unit。事实上，feature map也叫activation map，因为它是image中不同parts的acttivation，而叫feature map是因为它是image中找到特定的feature。</p>
+</blockquote>
+<h3 id="概述-v2">概述</h3>
+<p>这篇文章从可视化的角度给出中间特征的和classifier的特点，分析如何改进alexnet来提高imagenet classification的accuracy。<br>
+为什么CNN结果这么好？</p>
+<ol>
+<li>training set越来越大</li>
+<li>GPU的性能越来越好</li>
+<li>Dropout等正则化技术</li>
+</ol>
+<p>但是CNN还是一个黑盒子，我们不知道它为什么表现这么好？这篇文章给出了一个可视化方法可视化任意层的feature。</p>
+<p>那么本文的contribution是什么呢？使用deconvnet进行可视化，通过分析特征行为，对alexnet进行fine tune提升模型性能。</p>
+<h3 id="使用deconvnet可视化">使用deconvnet可视化</h3>
+<p>什么是deconvnet？可以看成和convnet拥有同样组成部分（pooling, filter)等，但是是反过来进行的。如下图所示，convnet是把pixels映射到feature，或者到底层features映射到高层features，而deconvnet是把高层features映射到底层features，或者把features映射到pixels。在测试convnet中给定feature map的一个activation时，设置所有其他的activation为0，将这个feature map传入deconvnet网络中。<br>
+<img src="/2019/03/13/cnn/fig1.png" alt="fig1"><br>
+图片左上为deconv，右上为conv。conv的流程为filter-&gt;rectify-&gt;pooling；deconv的流程为unpool-&gt;rectify-&gt;filter。</p>
+<h4 id="unpooling">Unpooling</h4>
+<p>convnet中的max pooling是不可逆的，这里作者使用switch variables记录下max pooling后的元素在没有pooling时的位置，进行近似的恢复。</p>
+<h4 id="rectification">Rectification</h4>
+<p>convnet使用relu non-linearities。deconvnet还是使用relu，这里我有些不理解，为什么？为什么deconve还是使用relu</p>
+<h4 id="filtering">Filtering</h4>
+<p>deconvnet使用convnet中filters的transposed版本。</p>
+<h3 id="training">Training</h3>
+<h4 id="整体架构-v2">整体架构</h4>
+<p><img src="/2019/03/13/cnn/fig3.png" alt="fig3.png"></p>
+<ul>
+<li>training set<br>
+1.3百万张图片，1000类</li>
+<li>processed<br>
+每个RGB图像resized成最小边维度为$256$，cropping中间的$256 \times 256$，减去所有像素的平均值。crops$10$个$224\times 224$（四个角落和中心以及horizontal flips)</li>
+<li>优化方法<br>
+带momentumSGD</li>
+<li>batch size<br>
+128</li>
+<li>lr<br>
+初始是$10^{-2}$,然后手动anneal</li>
+<li>momentum<br>
+0;9</li>
+<li>Dropout<br>
+layer 6和layer 7,0.5</li>
+<li>weights和biases初始化<br>
+weights设置为$10^{-2}$，biases设置为$0$</li>
+<li>normalizaiton<br>
+对第一层的filter，如果RMS超过了$10^{-1}$就设置为$10^{-1}$</li>
+<li>训练次数<br>
+70epochs</li>
+</ul>
+<h3 id="visualizaiton">Visualizaiton</h3>
+<h4 id="feature-visualization">Feature visualization</h4>
+<p>如下图所示，使用deconvnet可视化一些feacutre activation。给定一个feature map，选择其中最大的$9$个activations对应的样本，一个feature map是通过一个filter得到的，而一个filter提取的是一个特征，所以这$9$个activations都是一个filter提取的不同图片中的同一个特征。然后将它们输入deconvnet，得到pixel spaces，可以查看哪些不同的结构（哪些原始）产生了这个feature，展现这个filter对于输入deformation的invariance。在黑白图像的旁边有对应的图像原图，他们要比feature的variation更多，因为feature关注的是图像的invariance。比如layer 5的第一行第二列的九个图，这几个patch看起来差异很大，但是却在同一个feature map中，因为这个feature map关注的是背景中的草，并不是其他objects。更多的我们可以看出来，第二层对应corner和edge等，第三次对应更复杂的invariances，比如textures和text等。第四层更class-specific，第五层是object variation。<br>
+<img src="/2019/03/13/cnn/fig2.png" alt="fig2"></p>
+<h4 id="feature-evolution-durign-training">Feature evolution durign training</h4>
+<p>下图随机选择了几个不同的feature，然后展示了他们在不同layer不同epochs（1, 2, 5, 10, 20, 30, 40, 64）的可视化结果。<br>
+<img src="/2019/03/13/cnn/fig4.png" alt="fig4"></p>
+<h4 id="架构选择">架构选择</h4>
+<p>通过可视化alexnet的first layer和second layer，有了各种各样的问题。First layer中主要是high和low frequency的信息，而2nd layer有很多重复的，因为使用stride为$4$而不是$2$。作者做了两个改进：</p>
+<ol>
+<li>将first layer的filter size从$11\times 11$改成了$7\times 7$</li>
+<li>卷积的步长从$4$改成了$2$</li>
+</ol>
+<p>如下图所示：<br>
+<img src="/2019/03/13/cnn/fig5.png" alt="fig5"></p>
+<h4 id="occlusion-sensitivity">Occlusion Sensitivity</h4>
+<p>model是否真的识别了object在image中的位置，还是仅仅使用了上下文信息？下图中的例子证明了model真的locate了object,当遮挡住物体的部分增大时，给出正确分类的概率就减小了。移动遮挡方块的位置，给出一个和方块位置相关的分类概率函数，我们可以看出来，model really works。<br>
+<img src="/2019/03/13/cnn/fig6.png" alt="fig6"></p>
+<h3 id="实验-v2">实验</h3>
+<p>第一个实验通过使用，证明了前面的特征提取层和fc layers都是有用的。<br>
+第二个实验保留前面的特征提取层和fc layers，将最后的softmax替换。</p>
 <h2 id="overfeat-2013">OverFeat(2013)</h2>
 <p>论文名称：OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks<br>
 论文地址：<a href="https://arxiv.org/pdf/1312.6229.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1312.6229.pdf</a></p>
-<h3 id="概述-v2">概述</h3>
+<h3 id="概述-v3">概述</h3>
 <p>本文提出了一个可用于classification, localization和detection等任务的CNN框架。<br>
 ImageNet数据集中大部分选择的是几乎填满了整个image中心的object，image中我们感兴趣的objects的大小和位置也可能变化很大。为了解决这个问题，作者提出了三个方法：</p>
 <ol>
@@ -1126,7 +1231,7 @@ alexnet中，有5层卷积层，3层全连接层。假设第五层的输出是$5
 <h3 id="overfeat">overfeat</h3>
 <p>这两个方法中，fcn是在输入图片上进行的window sliding，而offset maxpooling是在feature map进行的window sliding，这两个方法结合起来就是overfeat，要比alexnet直接在输入图片上进行window sliding 要好。</p>
 <h3 id="classification">Classification</h3>
-<h4 id="training">training</h4>
+<h4 id="training-v2">training</h4>
 <ul>
 <li>datset<br>
 Image 2012 trainign set（1.2million iamges，C=$1000$ classes)。</li>
@@ -1161,8 +1266,9 @@ $1\times 10^{-5}$</li>
 <h3 id="detection">Detection</h3>
 <h2 id="vgg-2013">VGG(2013)</h2>
 <p>论文名称：VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION<br>
-论文地址：<a href="https://arxiv.org/pdf/1409.1556.pdf%20http://arxiv.org/abs/1409.1556.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1409.1556.pdf http://arxiv.org/abs/1409.1556.pdf</a></p>
-<h3 id="概述-v3">概述</h3>
+论文地址：<a href="https://arxiv.org/pdf/1409.1556.pdf%20http://arxiv.org/abs/1409.1556.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1409.1556.pdf http://arxiv.org/abs/1409.1556.pdf</a><br>
+VGG是Visual Geometry Group的缩写</p>
+<h3 id="概述-v4">概述</h3>
 <p>这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。本文的主要contribution就是使用$3\times 3$的卷积核，增加网络深度，提高识别精度。</p>
 <h3 id="方案">方案</h3>
 <h4 id="架构">架构</h4>
@@ -1217,7 +1323,7 @@ $。</p>
 <li>$1\times 1$ conv layers用来增加非线性程度，本文中使用的$1\times 1$的conv layers可以看成加了非线性激活函数的投影。</li>
 </ol>
 <h3 id="分类框架">分类框架</h3>
-<h4 id="training-v2">training</h4>
+<h4 id="training-v3">training</h4>
 <ul>
 <li>目标函数<br>
 多峰logistic regression</li>
@@ -1265,23 +1371,6 @@ $S$抖动时，模型是在$S\in [S_{min},S_{max}]$上训练的，在$Q={S_{min}
 <p>这个是为了和alexnet做对比，alexnet网络在testing时，对每一张图片都进行多次cropped，对testing的结果做平均。</p>
 <h4 id="convnet-funsion">convnet funsion</h4>
 <p>之前作者的evaluation都是在单个的网络上进行的，作者还试了将不同网络的softmax输出做了平均。</p>
-<h2 id="net">Net</h2>
-<p>论文名称：Visualizing and Understanding Convolutional Networks<br>
-论文地址：<a href="https://cs.nyu.edu/~fergus/papers/zeilerECCV2014.pdf" target="_blank" rel="noopener">https://cs.nyu.edu/~fergus/papers/zeilerECCV2014.pdf</a></p>
-<h3 id="概述-v4">概述</h3>
-<p>这篇文章从可视化的角度给出中间特征的和classifier的特点，分析如何改进alexnet来提高imagenet classification的accuracy。<br>
-为什么CNN结果这么好？</p>
-<ol>
-<li>training set越来越大</li>
-<li>GPU的性能越来越好</li>
-<li>Dropout等正则化技术</li>
-</ol>
-<p>但是CNN还是一个黑盒子，我们不知道它为什么表现这么好？这篇文章给出了一个可视化方法可视化任意层的feature。</p>
-<p>那么本文的contribution是什么呢？使用deconvnet进行可视化。</p>
-<h3 id="使用deconvnet可视化">使用deconvnet可视化</h3>
-<p>什么是deconvnet？可以看成和convnet拥有同样组成部分（pooling, filter)等，但是是反过来进行的。convnet是把pixels映射到feature，或者到底层features映射到高层features，而deconvnet是把高层features映射到底层features，或者把features映射到pixels。如下图所示：<br>
-<img src="/2019/03/13/cnn/fig1.png" alt="fig1"><br>
-图片左上为</p>
 <h3 id="存在的问题">存在的问题</h3>
 <h3 id="方案-v2">方案</h3>
 <h4 id="背景">背景</h4>
@@ -1308,12 +1397,15 @@ $S$抖动时，模型是在$S\in [S_{min},S_{max}]$上训练的，在$Q={S_{min}
 <h4 id="算法-v4">算法</h4>
 <h4 id="代码-v5">代码</h4>
 <h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stats.stackexchange.com/a/174438" target="_blank" rel="noopener">https://stats.stackexchange.com/a/174438</a><br>
-2.<a href="https://www.zhihu.com/question/264163033/answer/277481519" target="_blank" rel="noopener">https://www.zhihu.com/question/264163033/answer/277481519</a><br>
-3.<a href="https://stats.stackexchange.com/questions/145768/importance-of-local-response-normalization-in-cnn" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/145768/importance-of-local-response-normalization-in-cnn</a><br>
-4.<a href="https://stats.stackexchange.com/a/386304" target="_blank" rel="noopener">https://stats.stackexchange.com/a/386304</a><br>
-5.<a href="https://blog.csdn.net/luoyang224/article/details/78088582/" target="_blank" rel="noopener">https://blog.csdn.net/luoyang224/article/details/78088582/</a><br>
-6.<a href="https://zhum.in/blog/project/TrafficSignRecognition/OverFeat%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" target="_blank" rel="noopener">https://zhum.in/blog/project/TrafficSignRecognition/OverFeat论文阅读笔记/</a></p>
+<p>1.<a href="https://www.zhihu.com/question/52668301/answer/194998098" target="_blank" rel="noopener">https://www.zhihu.com/question/52668301/answer/194998098</a><br>
+2.<a href="https://stats.stackexchange.com/a/174438" target="_blank" rel="noopener">https://stats.stackexchange.com/a/174438</a><br>
+3.<a href="https://www.zhihu.com/question/264163033/answer/277481519" target="_blank" rel="noopener">https://www.zhihu.com/question/264163033/answer/277481519</a><br>
+4.<a href="https://stats.stackexchange.com/questions/145768/importance-of-local-response-normalization-in-cnn" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/145768/importance-of-local-response-normalization-in-cnn</a><br>
+5.<a href="https://stats.stackexchange.com/a/386304" target="_blank" rel="noopener">https://stats.stackexchange.com/a/386304</a><br>
+6.<a href="https://blog.csdn.net/luoyang224/article/details/78088582/" target="_blank" rel="noopener">https://blog.csdn.net/luoyang224/article/details/78088582/</a><br>
+7.<a href="https://zhum.in/blog/project/TrafficSignRecognition/OverFeat%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" target="_blank" rel="noopener">https://zhum.in/blog/project/TrafficSignRecognition/OverFeat论文阅读笔记/</a><br>
+8.<a href="https://stats.stackexchange.com/a/292064" target="_blank" rel="noopener">https://stats.stackexchange.com/a/292064</a><br>
+9.<a href="https://medium.com/coinmonks/paper-review-of-zfnet-the-winner-of-ilsvlc-2013-image-classification-d1a5a0c45103" target="_blank" rel="noopener">https://medium.com/coinmonks/paper-review-of-zfnet-the-winner-of-ilsvlc-2013-image-classification-d1a5a0c45103</a></p>
 
           
         
