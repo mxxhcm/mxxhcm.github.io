@@ -8,7 +8,6 @@ tags:
 categories: 机器学习
 ---
 
-
 ## numpy 代码示例
 ``` python
 import numpy as np
@@ -50,8 +49,8 @@ for t in range(500):
 ```
 
 ## 推理
-![bp1](bp.png)
-![bp2](bp2.png)
+![bp1](bp.jpg)
+![bp2](bp2.jpg)
 
 ## 参考文献
 1.http://pytorch.org/tutorials/beginner/pytorch_with_examples.html
