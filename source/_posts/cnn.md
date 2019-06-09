@@ -10,8 +10,17 @@ mathjax: true
 ---
 
 ## Alexnet(2012)
+论文名称：ImageNet Classification with Deep Convolutional Neural Networks
+论文地址：http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
+
 ### 概述
 作者提出了一个卷积神经网络架构对Imagenet中$1000$类中的$120$万张图片进行分类。网络架构包含$5$个卷积层，$3$个全连接层，和一个$1000$-way的softmax层，整个网络共有$6000$万参数，$65000$个神经元。作者提出了一些方法提高性能和减少训练的时间，并且介绍了一些防止过拟合的技巧。最后在imagenet测试集上，跑出$37.5%$的top-1 error以及$17.0%$的top-5 error。
+本文主要的contribution：
+1. 给出了一个benchmark－Imagenet
+2. 提出了一个CNN架构
+3. ReLU激活函数
+4. dropout的使用
+5. 数据增强，四个角落和中心的crop以及对应的horizontial 翻转。
 
 ### 问题
 1.数据集太小，都是数以万计的，需要更大的数据集。
@@ -101,7 +110,8 @@ pytorch实现
 https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 
 ## OverFeat(2013)
-
+论文名称：OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks
+论文地址：https://arxiv.org/pdf/1312.6229.pdf
 ### 概述
 本文提出了一个可用于classification, localization和detection等任务的CNN框架。
 ImageNet数据集中大部分选择的是几乎填满了整个image中心的object，image中我们感兴趣的objects的大小和位置也可能变化很大。为了解决这个问题，作者提出了三个方法：
@@ -171,9 +181,11 @@ alexnet中，对一张照片的$10$个views（中间，四个角和horizontal fl
 ### Detection
 
 
-## Vggnet(2013)
+## VGG(2013)
+论文名称：VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION
+论文地址：https://arxiv.org/pdf/1409.1556.pdf%20http://arxiv.org/abs/1409.1556.pdf
 ### 概述
-这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。通过使用$3\times 3$的filters，增加CNN的深度，提高识别精度。
+这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。本文的主要contribution就是使用$3\times 3$的卷积核，增加网络深度，提高识别精度。
 
 ### 方案
 #### 架构
@@ -218,7 +230,7 @@ alexnet中，对一张照片的$10$个views（中间，四个角和horizontal fl
 其实主要的网络参数还是在全连接层，$7\times 7\times 512\times 4096=102760448
 $。
 
-#### 讨论
+#### 卷积核作用
 1. 为什么要用三个$3\times 3$的conv layers替换$7\times 7$个conv layers？
 - 使用三个激活函数而不是一个，让整个决策更discriminative。
 - 减少了网络参数，三个有$C$个通道的$3\times 3$conv layers,总的参数是$3\tims(3^2C^2)=27C^2$，而一个$C$通道的$7\times 7$ conv layers，总参数是$49C^2$。可以看成是一种正则化。
@@ -252,7 +264,8 @@ VGG参数多，深度深，但是收敛快，原因：
 这个解决的是网络深度过深，某些初值使得网络不稳定的问题。解决方法：先随机初始化不是很深的网络A，进行训练。在训练更深网络的时候，使用A网络的值初始化前$4$个卷基层和最后三个FC layers。随机初始化的网络参数，从均值为$0$，方差为$10\^{-2}$的高斯分布中采样得到。
 
 #### testing
-测试的时候先把input image的窄边缩放到$Q$，$Q$也叫test scale，$Q$和$S$不一定需要相等。
+1. 测试的时候先把input image的窄边缩放到$Q$，$Q$也叫test scale，$Q$和$S$不一定需要相等。
+2. 这里和overfeat模型一样，在卷积网络之后采用了fcn，而不是fc layers。
 
 ### classfication
 ILSVRC-2012，training($1.3M$张图片)，validation($50K张$)，testing($100K$张)
@@ -273,8 +286,20 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 #### convnet funsion
 之前作者的evaluation都是在单个的网络上进行的，作者还试了将不同网络的softmax输出做了平均。
 
-## 
+## Net
+论文名称：Visualizing and Understanding Convolutional Networks
+论文地址：https://cs.nyu.edu/~fergus/papers/zeilerECCV2014.pdf
+
 ### 概述
+这篇文章从可视化的角度给出中间特征的和classifier的特点，分析如何改进alexnet来提高imagenet classification的accuracy。
+为什么CNN结果这么好？
+1. training set越来越大
+2. GPU的性能越来越好
+3. Dropout等正则化技术
+
+但是CNN还是一个黑盒子，我们不知道它为什么表现这么好？这篇文章给出了一个可视化技术可视化任意层的feature。
+
+
 ### 存在的问题
 ### 方案
 #### 背景
