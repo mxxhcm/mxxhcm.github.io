@@ -175,7 +175,6 @@ alexnet中，对一张照片的$10$个views（中间，四个角和horizontal fl
 如下图，对应了不同大小的输入图片，layer 5 post pool中$(m\times n)\time(3\times 3)$，前面$m\times n$是fcn得到的不同位置的feature map，后面$3\times 3$是$kernel_size=3$的offset max pooling得到的featrue map。乘起来是所有的预测结果。
 ![multi_scale](multi_scale.png)
 
-
 ### localization
 
 ### Detection
@@ -278,7 +277,7 @@ $S$抖动时，设置test image size $Q=0.5(S\_{min}+S\_{max})=0.5(256+512)=384$
 #### multi scale evaluation
 用同一个模型对不同rescaled大小的图片多次test，即对于不同的$Q$。
 固定$S$时，在三个不同大小的test image size $Q=\{S-32,S,S+32\}$评估。
-$S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\_{min}, 0.5(S\_{min}+S\_{max}), S\_{max}$上进行test。
+$S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\_{min}, 0.5(S\_{min}+S\_{max}), S\_{max}\}$上进行test。
 
 #### 多个crop evaluation
 这个是为了和alexnet做对比，alexnet网络在testing时，对每一张图片都进行多次cropped，对testing的结果做平均。
@@ -297,7 +296,14 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 2. GPU的性能越来越好
 3. Dropout等正则化技术
 
-但是CNN还是一个黑盒子，我们不知道它为什么表现这么好？这篇文章给出了一个可视化技术可视化任意层的feature。
+但是CNN还是一个黑盒子，我们不知道它为什么表现这么好？这篇文章给出了一个可视化方法可视化任意层的feature。
+
+那么本文的contribution是什么呢？使用deconvnet进行可视化。
+
+### 使用deconvnet可视化
+什么是deconvnet？可以看成和convnet拥有同样组成部分（pooling, filter)等，但是是反过来进行的。convnet是把pixels映射到feature，或者到底层features映射到高层features，而deconvnet是把高层features映射到底层features，或者把features映射到pixels。如下图所示：
+![fig1](fig1.png)
+图片左上为
 
 
 ### 存在的问题
