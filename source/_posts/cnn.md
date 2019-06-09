@@ -9,6 +9,46 @@ categories: 机器学习
 mathjax: true
 ---
 
+## CNN
+### 图片的表示
+图像在计算机中是一堆按顺序排列的顺子，数值为0到255。0表示最暗，255表示最亮。我们可以把这堆数字用一个长长的一维数组来表示，但是这样会失去平面结构的信息，为保留该结构信息，我们通常会选择矩阵的表示方式，用一个nn的矩阵来表示一个图像。对于黑白颜色的灰度图来说，我们只需要一个nn的矩阵表示即可。对于一个彩色图像，我们会选择RGB颜色模型来表示。 
+在彩色图像中，我们需要用三个矩阵去表示一张图，也可以理解为一个三维张量，每一个矩阵叫做这张图片的一个channel。这个三维张量可以表示为(width,length,depth),一张图片就可以用这样一个张量来表示。
+
+### 卷积神经网络(CNN)
+#### 作用
+让权重在不同位置共享
+
+#### filter和stride
+filter又叫做kernel或者feature detector。filter会对输入的局部区域进行处理，filter处理的局部区域的范围叫做filter size。比如说一个filter的大小为(3,3),那么这个filter会一次处理width=3，length = 3的区域。卷积神经网络会用filter对整个输入进行扫描，一次移动的多少叫做stride。filter处理一次的输出为一个feature map。
+
+#### depth
+对于filter来说，我们一般说它的大小为（3，3）只说了它在平面的大小，但是输入的图片一般是一个RGB的三维张量，对于deepth这一个维度，如果为1的话，那么filter是（3,3），但是如果deepth大于1的话，这个filter的deepth维度一般是和张量中的deepth维度一样的。 
+deepth=1时，filter=（3,3），处理输入中33 个节点的值 
+deepth=2时，filter=（3,3），会处理输入中332个节点的值 
+deepth=n时，filter=（3,3），会处理输入中$33\times n$个节点的值
+
+#### zero paddings
+因为经过filter处理后，输入的矩阵维度会变小，所以，如果经过很多层filter处理后，就会变得越来越少，因此，为了解决这个问题，提出了zero paddings，zero padding是在filter要处理的输入上，在输入的最外层有选择的加上一行（列）或多行（列）0，从而保持输入经过filter处理之后形状不变。
+
+#### feature map
+一个filter的输出就是一个feature map，该feature map的width和height为：$(input_size + 2\times padding_size - filter_size)/stride + 1$
+一个filter可以提取一个feature，得到一个feature map，为了提取多个feature，需要使用多个filters，最后可以得到多个feature map。
+
+所以说，feature map是一类值，因为它对应的是一个filter，给定不同的输入images，一个feature map可以有不同的取值。这个问题是我在看ZFNet中遇到的，因为它在原文中说
+“For a given feature map, we show the top 9 activations”。给定一个feature map，这里应该是在所有样本中选择最大的$9$个activations对应的images。
+“the strongest activation (across all training examples) within a given feature map”。给定一个feature map，在所有样本中选择一个最强的activation。
+
+#### activate function
+一般使用非线性激活函数relu对feature map进行变化
+
+#### pooling
+##### maxpooling
+它基本上采用一个filter和一个同样长度的stride通常是（2,2）和2，然后把它应用到输入中，输出filter卷积计算的每个区域中的最大数字，这个pooling是在各个维度上分别进行的。 
+比如一个 22422464的input，经过一个（2,2）的maxpooling会输出一个11211232的张量
+
+##### averagepooling
+#### fc layers
+
 ## Alexnet(2012)
 论文名称：ImageNet Classification with Deep Convolutional Neural Networks
 论文地址：http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
@@ -109,6 +149,87 @@ ILSVRC-2010
 pytorch实现
 https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 
+## ZFNet(2013)
+论文名称：Visualizing and Understanding Convolutional Networks
+论文地址：https://cs.nyu.edu/~fergus/papers/zeilerECCV2014.pdf
+为什么叫ZFNet，两个作者名字首字母的拼写。
+
+首先我有一个问题？就是什么是一个activation。在原文的$2.1$节，有这样一个介绍：
+> We present a novel way to map these activities back to the input pixel space, showing what input pattern originally caused a given activation in the feature maps.
+我的理解是一个activation就是feature map中的一个unit。事实上，feature map也叫activation map，因为它是image中不同parts的acttivation，而叫feature map是因为它是image中找到特定的feature。
+
+### 概述
+这篇文章从可视化的角度给出中间特征的和classifier的特点，分析如何改进alexnet来提高imagenet classification的accuracy。
+为什么CNN结果这么好？
+1. training set越来越大
+2. GPU的性能越来越好
+3. Dropout等正则化技术
+
+但是CNN还是一个黑盒子，我们不知道它为什么表现这么好？这篇文章给出了一个可视化方法可视化任意层的feature。
+
+那么本文的contribution是什么呢？使用deconvnet进行可视化，通过分析特征行为，对alexnet进行fine tune提升模型性能。
+
+### 使用deconvnet可视化
+什么是deconvnet？可以看成和convnet拥有同样组成部分（pooling, filter)等，但是是反过来进行的。如下图所示，convnet是把pixels映射到feature，或者到底层features映射到高层features，而deconvnet是把高层features映射到底层features，或者把features映射到pixels。在测试convnet中给定feature map的一个activation时，设置所有其他的activation为0，将这个feature map传入deconvnet网络中。
+![fig1](fig1.png)
+图片左上为deconv，右上为conv。conv的流程为filter-\>rectify-\>pooling；deconv的流程为unpool-\>rectify-\>filter。
+#### Unpooling
+convnet中的max pooling是不可逆的，这里作者使用switch variables记录下max pooling后的元素在没有pooling时的位置，进行近似的恢复。
+
+#### Rectification
+convnet使用relu non-linearities。deconvnet还是使用relu，这里我有些不理解，为什么？为什么deconve还是使用relu
+
+#### Filtering
+deconvnet使用convnet中filters的transposed版本。
+
+### Training
+#### 整体架构
+![fig3.png](fig3.png)
+- training set
+1.3百万张图片，1000类
+- processed
+每个RGB图像resized成最小边维度为$256$，cropping中间的$256 \times 256$，减去所有像素的平均值。crops$10$个$224\times 224$（四个角落和中心以及horizontal flips)
+- 优化方法
+带momentumSGD
+- batch size
+128
+- lr
+初始是$10\^{-2}$,然后手动anneal
+- momentum
+0;9
+- Dropout
+layer 6和layer 7,0.5
+- weights和biases初始化
+weights设置为$10\^{-2}$，biases设置为$0$
+- normalizaiton
+对第一层的filter，如果RMS超过了$10\^{-1}$就设置为$10\^{-1}$
+- 训练次数
+70epochs
+
+### Visualizaiton
+#### Feature visualization
+如下图所示，使用deconvnet可视化一些feacutre activation。给定一个feature map，选择其中最大的$9$个activations对应的样本，一个feature map是通过一个filter得到的，而一个filter提取的是一个特征，所以这$9$个activations都是一个filter提取的不同图片中的同一个特征。然后将它们输入deconvnet，得到pixel spaces，可以查看哪些不同的结构（哪些原始）产生了这个feature，展现这个filter对于输入deformation的invariance。在黑白图像的旁边有对应的图像原图，他们要比feature的variation更多，因为feature关注的是图像的invariance。比如layer 5的第一行第二列的九个图，这几个patch看起来差异很大，但是却在同一个feature map中，因为这个feature map关注的是背景中的草，并不是其他objects。更多的我们可以看出来，第二层对应corner和edge等，第三次对应更复杂的invariances，比如textures和text等。第四层更class-specific，第五层是object variation。
+![fig2](fig2.png)
+#### Feature evolution durign training
+下图随机选择了几个不同的feature，然后展示了他们在不同layer不同epochs（1, 2, 5, 10, 20, 30, 40, 64）的可视化结果。
+![fig4](fig4.png)
+
+#### 架构选择
+通过可视化alexnet的first layer和second layer，有了各种各样的问题。First layer中主要是high和low frequency的信息，而2nd layer有很多重复的，因为使用stride为$4$而不是$2$。作者做了两个改进：
+1. 将first layer的filter size从$11\times 11$改成了$7\times 7$
+2. 卷积的步长从$4$改成了$2$
+
+如下图所示：
+![fig5](fig5.png)
+
+#### Occlusion Sensitivity
+model是否真的识别了object在image中的位置，还是仅仅使用了上下文信息？下图中的例子证明了model真的locate了object,当遮挡住物体的部分增大时，给出正确分类的概率就减小了。移动遮挡方块的位置，给出一个和方块位置相关的分类概率函数，我们可以看出来，model really works。
+![fig6](fig6.png)
+
+### 实验
+第一个实验通过使用，证明了前面的特征提取层和fc layers都是有用的。
+第二个实验保留前面的特征提取层和fc layers，将最后的softmax替换。
+
 ## OverFeat(2013)
 论文名称：OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks
 论文地址：https://arxiv.org/pdf/1312.6229.pdf
@@ -183,6 +304,8 @@ alexnet中，对一张照片的$10$个views（中间，四个角和horizontal fl
 ## VGG(2013)
 论文名称：VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION
 论文地址：https://arxiv.org/pdf/1409.1556.pdf%20http://arxiv.org/abs/1409.1556.pdf
+VGG是Visual Geometry Group的缩写
+
 ### 概述
 这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。本文的主要contribution就是使用$3\times 3$的卷积核，增加网络深度，提高识别精度。
 
@@ -285,27 +408,6 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 #### convnet funsion
 之前作者的evaluation都是在单个的网络上进行的，作者还试了将不同网络的softmax输出做了平均。
 
-## Net
-论文名称：Visualizing and Understanding Convolutional Networks
-论文地址：https://cs.nyu.edu/~fergus/papers/zeilerECCV2014.pdf
-
-### 概述
-这篇文章从可视化的角度给出中间特征的和classifier的特点，分析如何改进alexnet来提高imagenet classification的accuracy。
-为什么CNN结果这么好？
-1. training set越来越大
-2. GPU的性能越来越好
-3. Dropout等正则化技术
-
-但是CNN还是一个黑盒子，我们不知道它为什么表现这么好？这篇文章给出了一个可视化方法可视化任意层的feature。
-
-那么本文的contribution是什么呢？使用deconvnet进行可视化。
-
-### 使用deconvnet可视化
-什么是deconvnet？可以看成和convnet拥有同样组成部分（pooling, filter)等，但是是反过来进行的。convnet是把pixels映射到feature，或者到底层features映射到高层features，而deconvnet是把高层features映射到底层features，或者把features映射到pixels。如下图所示：
-![fig1](fig1.png)
-图片左上为
-
-
 ### 存在的问题
 ### 方案
 #### 背景
@@ -337,9 +439,12 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 
 
 ## 参考文献
-1.https://stats.stackexchange.com/a/174438
-2.https://www.zhihu.com/question/264163033/answer/277481519
-3.https://stats.stackexchange.com/questions/145768/importance-of-local-response-normalization-in-cnn
-4.https://stats.stackexchange.com/a/386304
-5.https://blog.csdn.net/luoyang224/article/details/78088582/
-6.https://zhum.in/blog/project/TrafficSignRecognition/OverFeat%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/
+1.https://www.zhihu.com/question/52668301/answer/194998098
+2.https://stats.stackexchange.com/a/174438
+3.https://www.zhihu.com/question/264163033/answer/277481519
+4.https://stats.stackexchange.com/questions/145768/importance-of-local-response-normalization-in-cnn
+5.https://stats.stackexchange.com/a/386304
+6.https://blog.csdn.net/luoyang224/article/details/78088582/
+7.https://zhum.in/blog/project/TrafficSignRecognition/OverFeat%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/
+8.https://stats.stackexchange.com/a/292064
+9.https://medium.com/coinmonks/paper-review-of-zfnet-the-winner-of-ilsvlc-2013-image-classification-d1a5a0c45103
