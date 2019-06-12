@@ -39,7 +39,7 @@ netstat [-atunlp]
     -n 不列出进程的服务名称，以端口号来显示
     -l 列出目前正在网络监听(listen)的服务
     -p 列出该网络服务的进程pid
-~\\$:netstat -tnlp　　#找出目前系统上已经在监听的网络连接及其PID
+~\$:netstat -tnlp　　#找出目前系统上已经在监听的网络连接及其PID
 
 ## 分析内核产生的信息
 dmesg | more
@@ -55,9 +55,9 @@ vmstat [-d] report sisk statistics
 vmstat [-p 分区]　Detailed statistics about partition
 vmstat [-S 单位]  B K M G 
 vmstat [-f]  displays the num of forks since boot
-~\\$:vmstat 
-~\\$:vmstat -a 
-~\\$:vmstat -p /dev/sda1
-~\\$:vmstat -S M
-~\\$:vmstat -f
+~\$:vmstat 
+~\$:vmstat -a 
+~\$:vmstat -p /dev/sda1
+~\$:vmstat -S M
+~\$:vmstat -f
 
