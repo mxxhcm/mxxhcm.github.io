@@ -25,17 +25,17 @@ x　通常与a这个参数一块使用，显示所有程序，不以终端机来
 l　较长，较详细的将该PID的信息列出
 j　工作的格式
 ### 示例
-~\$:ps aux　查看系统所有的进程数据
-~\$:ps -lA　查看所有系统的数据
-~\$:ps axjf　连同部分进程树状态
-~\$:ps aux | grep 'sslocal' #查看sslocal程序是否运行
-~\$:ps ax # 显示当前系统进程的列表
-~\$:ps aux #显示当前系统进程详细列表以及进程用户
-~\$:ps -A  #列出进程号
-~\$:ps aux |grep 2222'|grep -v grep  # 找出所有包含2222的进程，grep -v 过滤掉含有grep字符的行
+~\\$:ps aux　查看系统所有的进程数据
+~\\$:ps -lA　查看所有系统的数据
+~\\$:ps axjf　连同部分进程树状态
+~\\$:ps aux | grep 'sslocal' #查看sslocal程序是否运行
+~\\$:ps ax # 显示当前系统进程的列表
+~\\$:ps aux #显示当前系统进程详细列表以及进程用户
+~\\$:ps -A  #列出进程号
+~\\$:ps aux |grep 2222'|grep -v grep  # 找出所有包含2222的进程，grep -v 过滤掉含有grep字符的行
 
 ### aux 查看系统所有进程
-~\$:ps aux     # 使用BSD格式显示进程
+~\\$:ps aux     # 使用BSD格式显示进程
 输出
 USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
 USER    
@@ -53,7 +53,7 @@ COMMAND     该进程实际命令
 僵尸进程(<defunct>)
 
 ### ps -ef 
-~\$:ps -ef  # 使用标准格式显示进程
+~\\$:ps -ef  # 使用标准格式显示进程
 输出
 UID        PID  PPID  C STIME TTY          TIME CMD
 UID 用户名
@@ -66,7 +66,7 @@ TIME
 CMD     命令的名称和参数
 
 ### -l仅查看自己相关的bash进程
-~\$:ps -l #仅查看自己相关的bash进程
+~\\$:ps -l #仅查看自己相关的bash进程
 输出
 F S UID PID PPID C PR NI ADDZ SZ WCHAN TTY TIME CMD
 F  说明进程权限
@@ -97,8 +97,8 @@ top [-d 数字] | top [-bnp]
     r 给某个PID重新制定一个nice值
     q 离开top软件
 ### 示例
-~\$:top -d 2 #每两秒钟刷新一次top，默认为5s
-~\$:top -b -n 2 > ~/tmp/top.out
+~\\$:top -d 2 #每两秒钟刷新一次top，默认为5s
+~\\$:top -b -n 2 > ~/tmp/top.out
 
 ### top输出内容
 第一行top
@@ -134,7 +134,7 @@ pstree [-A|-U] [-up]
     -u  显示进程所属账号名
     -p  显示pid
 ### 示例
-~\$:pstree -Aup
+~\\$:pstree -Aup
 
 ## kill管理进程
 ### 参数介绍
@@ -145,7 +145,7 @@ kill -signals %jobnumber 杀掉某个job
     -9  强制删除一个job，非正常状态
     -15 让一个job正常结束
 ### 查看signal种类
-~\$:man 7 signal
+~\\$:man 7 signal
 
 ### kill示例
 kill -signal %jobnum
@@ -159,10 +159,10 @@ killall [-iIe]  用来删除某个服务
     -I 忽略大小写
 
 ### killall示例
-~\$:killall utserver
-~\$:killall -1 syslogd
-~\$:killall -9 httpd
-~\$:killall -i -9 bash
+~\\$:killall utserver
+~\\$:killall -1 syslogd
+~\\$:killall -9 httpd
+~\\$:killall -i -9 bash
 
 
 ## nice管理进程优先级
@@ -182,12 +182,12 @@ e.调整nice值的方法
 新执行的命令手动设置nice值
 nice -n [number] command
 ### 示例
-~\$:nice -n -5 vim &
+~\\$:nice -n -5 vim &
     
 ### 已存在的进程调整nice值
 renice [number] command
-~\$:ps -l | grep '\*bash\$'
-~\$:renice 10 \$(ps -l|grep 'bash\$' | awk '{print \$4}')
+~\\$:ps -l | grep '\\*bash\\$'
+~\\$:renice 10 \\$(ps -l|grep 'bash\\$' | awk '{print \\$4}')
 
 ## fuser找到使用某文件的程序
 ### 参数介绍
@@ -199,17 +199,17 @@ fuser [-muv] [-k [i] [-signal]] name
     -i  询问用户，与-k搭配
     -signal  -1,-15等，默认为-9
 ### 示例
-~\$:mount -o loop ubuntu.iso /mnt/iso
-~\$:cd /mnt/iso
-~\$:umount /mnt/iso
+~\\$:mount -o loop ubuntu.iso /mnt/iso
+~\\$:cd /mnt/iso
+~\\$:umount /mnt/iso
 error
-~\$:fuser -muv   /mnt/iso
+~\\$:fuser -muv   /mnt/iso
 .....
-~\$:cd 
-~\$:umount /mnt/iso
+~\\$:cd 
+~\\$:umount /mnt/iso
 
-~\$:fuser -muv /proc
-~\$:fuser -ki /bin/bash
+~\\$:fuser -muv /proc
+~\\$:fuser -ki /bin/bash
 
 ## lsof找到被进程打开的文件
 ### 参数介绍
@@ -219,9 +219,9 @@ lsof [-uaU] [+d]
     -U Unix like 的socket文件类型
     +d 某个目录下被打开的文件
 ### 示例
-~\$:lsof +d ~/Desktop
-~\$:lsof -u mxx | grep 'bash'
-~\$:lsof -u mxx -a -U
+~\\$:lsof +d ~/Desktop
+~\\$:lsof -u mxx | grep 'bash'
+~\\$:lsof -u mxx -a -U
 
 ## pidof找出某个正在进行的进程的pid
 ### 参数介绍
@@ -234,7 +234,7 @@ ps -A |grep "command" | awk '{print $1}'
 pidof 'command'
 pgrep 'command'
 
-## /proc/\* 文件
+## /proc/\\* 文件
 /proc/cmdline   加载kernel执行的参数
 /proc/cpuinfo   CPU相关信息
 /proc/devices   主要设备代号　与mknod相关
@@ -251,13 +251,13 @@ pgrep 'command'
 /proc/pci　PCI总线上每个设备的详细情况　lspci
 /proc/uptime　uptime
 /proc/version　内核版本 uname -a
-/proc/bus/\*　总线设备，USB设备
+/proc/bus/\\*　总线设备，USB设备
 
 ## 具有SUID，SGID的程序
 如passwd，当触发passwd之后，会取得一个新的进程与PID,该PID产生时通过SUID给予该PID特殊的权限设置。
 在一个bash中执行passwd会衍生出一个passwd进程，而且权限为root
-~\$:passwd &
-~\$:pstree -up找到该进程
+~\\$:passwd &
+~\\$:pstree -up找到该进程
 
 ## 参考文献
 1.《鸟哥的LINUX私房菜》基础篇

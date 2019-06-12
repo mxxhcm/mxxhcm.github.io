@@ -26,10 +26,10 @@ ssh -L 1234:google_ip:80 root@45.32.22.289
 
 ### 内网穿透ssh -R
 外网A(123.123.123.123)访问处于内网B的(127.0.0.1)的机器。
-ssh -N -f -R 2222:127.0.0.1:22 root@123.123.123.123
+~\\$:ssh -N -f -R 2222:127.0.0.1:22 root@123.123.123.123
 
 可以在外网机器A(123.123.123.123)上通过如下命令访问(-R)指定的内网机器B：
-ssh -p 2222 userB@localhost
+~\\$:ssh -p 2222 userB@localhost
 ### 报错
 Host key verification failed
 直接把/home/username/.ssh/known_hosts中相应的给删了。
@@ -37,9 +37,9 @@ Host key verification failed
 ### 内网访问内网（挖洞）
 A是家里的内网（无公网IP）上机器(196.)，B是VPS（有公网IP）(45.32.)，C是公司内网（无公网IP）机器(10.)。
 要在家里的内网访问公司的内网，即A访问C。在C上建立ssh反向隧道：
-ssh -N -f -R 2222:127.0.0.1:22 userB@B.ip
+~\\$:ssh -N -f -R 2222:127.0.0.1:22 userB@B.ip
 在A上访问：
-ssh -p  2222 userC@B.ip
+~\\$:ssh -p  2222 userC@B.ip
 
 ## 参考文献
 1.https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html
