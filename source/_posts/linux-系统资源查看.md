@@ -18,6 +18,7 @@ du -h --max-depth=2 统计当前目录下深度为2的文件和目录大小
 
 ## 查看cpu占用
 top
+[点击查看cpu信息命令](https://mxxhcm.github.io//2019/05/07/linux-cpu信息查看/)
 
 ## 查看系统与内核相关信息
 uname [-asrmpi]

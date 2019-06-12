@@ -1,5 +1,5 @@
 ---
-title: linux cpu信息
+title: linux cpu信息查看
 date: 2019-05-07 16:30:27
 tags:
  - linux

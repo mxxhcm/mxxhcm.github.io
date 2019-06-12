@@ -106,11 +106,14 @@ crontab [-u user] [-ler]
 
 ### 自定义run-parts
 直接编辑/etc/crontab文件，在其中添加
+``` txt
 # m h dom mon dow user	command
 \*/2 \* \* \* \* root   run-parts /etc/cron.minutely
 \*/5 \* \* \* \* root   run-parts /root/runcron
 # 上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本
 \* \* \* \* \* mxxmhh /bin/bash /home/mxxmhh/outputtime_minutes.sh
+```
+outputtime_minutes.sh脚本如下
 ``` /home/mxxmhh/outputtime_minutes.sh
 #! /bin/bash
 time=`date`

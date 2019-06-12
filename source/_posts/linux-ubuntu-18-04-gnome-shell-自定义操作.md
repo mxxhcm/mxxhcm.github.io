@@ -1,5 +1,5 @@
 ---
-title: linux-ubuntu 18.04 自定义操作
+title: linux-ubuntu 18.04 gnome-shell自定义操作
 date: 2019-05-22 21:22:29
 tags:
  - linux

@@ -3,7 +3,7 @@ title: skills
 date: 2019-05-29 12:24:41
 tags:
  - python
-categories:
+categories: python
 ---
 
 ## 累加
@@ -55,4 +55,4 @@ Total time:  0.03314399719238281
 ```
 
 ## 参考文献
-1.
+1.https://github.com/ShangtongZhang/reinforcement-learning-an-introduction/tree/master/chapter05

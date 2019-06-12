@@ -6,7 +6,6 @@ tags:
 categories: linux
 ---
 
-
 ## 问题描述
 ubuntu 16.04中，可以使用alt+tab快捷键在相同的应用中进行切换，在18.04中alt+tab是在不同的应用中切换。事实上，可以使用alt+`在该应用内切换，但是我还是想用alt+tab。
 
