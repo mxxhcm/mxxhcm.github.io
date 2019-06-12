@@ -8,7 +8,8 @@ mathjax: true
 ---
 
 
-## type 查看命令的来自于哪里　　是bash还是外部命令还是别名
+## type 查看命令的来自于哪里　　
+是bash还是外部命令还是别名
 file外部命令
 alias别名
 builtin内置在bash内
@@ -472,11 +473,6 @@ seq [-s]
 ## sh [-vxn] my.sh
 sh -x	执行过程
 sh -n	查询语法问题
-
-## 联想Y400/y400/Y500/y500拆机教程
-http://v.youku.com/v_show/id_XNTA4MDI1NDky.html?from=s1.8-1-1.2
-换屏幕视频
-http://v.youku.com/v_show/id_XODAzOTM2OTAw.html?from=s1.8-1-1.2
 
 ## id和finger
 id 用来显示某个用户的id信息

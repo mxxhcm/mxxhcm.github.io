@@ -32,24 +32,10 @@ j　工作的格式
 ~\\$:ps ax # 显示当前系统进程的列表
 ~\\$:ps aux #显示当前系统进程详细列表以及进程用户
 ~\\$:ps -A  #列出进程号
-
-### -l仅查看自己相关的bash进程
-~\\$:ps -l #仅查看自己相关的bash进程
-输出
-F S UID PID PPID C PR NI ADDZ SZ WCHAN TTY TIME CMD
-F  说明进程权限
-S　进程状态STAT
-R(running)　S(sleep)　D(不可被唤醒的睡眠状态,通常是IO的进程)　T(stop)　Z(zombie僵尸状态)进程已终止，但无法被删除到到内存外,PCB还在，但是其他资源全部被收回，是由父进程负责收回资源。
-UID/PID/PPID
-C CPU使用率
-PR/NI  Priority/Nice的缩写，此进程被CPU执行的优先级
-ADDR/SZ/WCHAN都与内存有关，ADDR是kernel function ,指出该进程在内存的哪个部分，如果是个running的过程，显示-;SZ代表用掉多少内存;WCHAN表示目前进程是否运行，-表示正在运行
-TTY 使用的终端接口
-TIME    使用掉的CPU时间，而不是系统时间
-CMD command缩写,造成此进程被触发的命令
+~\\$:ps aux |grep 2222'|grep -v grep  # 找出所有包含2222的进程，grep -v 过滤掉含有grep字符的行
 
 ### aux 查看系统所有进程
-~\\$:ps aux 查看系统所有进程
+~\\$:ps aux     # 使用BSD格式显示进程
 输出
 USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
 USER    
@@ -65,6 +51,34 @@ TIME    CPU时间
 COMMAND     该进程实际命令
 
 僵尸进程(<defunct>)
+
+### ps -ef 
+~\\$:ps -ef  # 使用标准格式显示进程
+输出
+UID        PID  PPID  C STIME TTY          TIME CMD
+UID 用户名
+PID 进程ID
+PPID    父进程ID
+C   CPU占用百分比
+STIME   进程启动到现在的时间
+TTY     在哪个终端上运行，ps/0表示网络连接
+TIME    
+CMD     命令的名称和参数
+
+### -l仅查看自己相关的bash进程
+~\\$:ps -l #仅查看自己相关的bash进程
+输出
+F S UID PID PPID C PR NI ADDZ SZ WCHAN TTY TIME CMD
+F  说明进程权限
+S　进程状态STAT
+R(running)　S(sleep)　D(不可被唤醒的睡眠状态,通常是IO的进程)　T(stop)　Z(zombie僵尸状态)进程已终止，但无法被删除到到内存外,PCB还在，但是其他资源全部被收回，是由父进程负责收回资源。
+UID/PID/PPID
+C CPU使用率
+PR/NI  Priority/Nice的缩写，此进程被CPU执行的优先级
+ADDR/SZ/WCHAN都与内存有关，ADDR是kernel function ,指出该进程在内存的哪个部分，如果是个running的过程，显示-;SZ代表用掉多少内存;WCHAN表示目前进程是否运行，-表示正在运行
+TTY 使用的终端接口
+TIME    使用掉的CPU时间，而不是系统时间
+CMD command缩写,造成此进程被触发的命令
 
 ## top 动态查看进程的变化
 ### 参数介绍

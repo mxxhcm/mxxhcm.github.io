@@ -51,7 +51,7 @@ vim有9种寄存器:
 > -clipboard         +jumplist          +persistent_undo   +virtualedit
 -ebcdic            -mouseshape        +statusline        -xterm_clipboard
 
-说明当前vim不支持系统剪切板，所以就卸载安装支持的版本呗。
+如果输出+clipboard说明当前vim支持剪切板，-clipboard说明当前vim不支持系统剪切板，所以就卸载安装支持的版本呗。
 ~\\$:sudo apt remove vim
 ~\\$:sudo apt install vim-gtk3
 然后再次查看
