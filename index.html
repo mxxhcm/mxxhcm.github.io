@@ -327,6 +327,186 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/10/ssh-tunnel内网穿透/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/06/10/ssh-tunnel内网穿透/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">ssh tunnel外网访问内网</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-06-10 21:33:16" itemprop="dateCreated datePublished" datetime="2019-06-10T21:33:16+08:00">2019-06-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-11 16:05:19" itemprop="dateModified" datetime="2019-06-11T16:05:19+08:00">2019-06-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="ssh-命令介绍"><a href="#ssh-命令介绍" class="headerlink" title="ssh 命令介绍"></a>ssh 命令介绍</h2><p>ssh是一种安全传输协议，此外还有tunnel转发功能，可以用来内网渗透。</p>
+<h3 id="参数介绍"><a href="#参数介绍" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>-L port:host:hostport，访问本机的port端口就相当于访问host的hostport端口。<br>将本机的某个端口转发到远端指定机器的指定端口。本机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发出去。<br>-R port:host:hostport，将远程主机的某个端口转发到指定的本地机器的指定端口。远程主机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发到指定的本地机器的指定端口。<br>-N 不指定脚本或者命令<br>-f 后台认证，需要和-N连用</p>
+<p>-L和-R的区别，-L是ssh隧道，-R是ssh反向隧道。</p>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><h3 id="翻墙ssh-L"><a href="#翻墙ssh-L" class="headerlink" title="翻墙ssh -L"></a>翻墙ssh -L</h3><p>执行以下命令的本机(localhost)通过中间服务器(45.32.22.289)访问被屏蔽的网站(google)。<br>ssh -L 1234:google_ip:80 root@45.32.22.289<br>拿这个举个例子，可能不是很恰当，但是有助于理解。我自己的机器(A)是不能访问google(C)的，但是我有一台vps(B)，地址为45.32.22.289是可以访问google的，可以通过ssh隧道将A的端口(1234)通过B映射到C的端口(80)。</p>
+<h3 id="内网穿透ssh-R"><a href="#内网穿透ssh-R" class="headerlink" title="内网穿透ssh -R"></a>内网穿透ssh -R</h3><p>外网A(123.123.123.123)访问处于内网B的(127.0.0.1)的机器。<br>ssh -N -f -R 2222:127.0.0.1:22 root@123.123.123.123</p>
+<p>可以在外网机器A(123.123.123.123)上通过如下命令访问(-R)指定的内网机器B：<br>ssh -p 2222 userB@localhost</p>
+<h3 id="报错"><a href="#报错" class="headerlink" title="报错"></a>报错</h3><p>Host key verification failed<br>直接把/home/username/.ssh/known_hosts中相应的给删了。</p>
+<h3 id="内网访问内网（挖洞）"><a href="#内网访问内网（挖洞）" class="headerlink" title="内网访问内网（挖洞）"></a>内网访问内网（挖洞）</h3><p>A是家里的内网（无公网IP）上机器(196.)，B是VPS（有公网IP）(45.32.)，C是公司内网（无公网IP）机器(10.)。<br>要在家里的内网访问公司的内网，即A访问C。在C上建立ssh反向隧道：<br>ssh -N -f -R 2222:127.0.0.1:22 userB@B.ip<br>在A上访问：<br>ssh -p  2222 userC@B.ip</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html" target="_blank" rel="noopener">https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html</a><br>2.<a href="https://blog.creke.net/722.html" target="_blank" rel="noopener">https://blog.creke.net/722.html</a><br>3.<a href="http://arondight.me/2016/02/17/%E4%BD%BF%E7%94%A8SSH%E5%8F%8D%E5%90%91%E9%9A%A7%E9%81%93%E8%BF%9B%E8%A1%8C%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" target="_blank" rel="noopener">http://arondight.me/2016/02/17/%E4%BD%BF%E7%94%A8SSH%E5%8F%8D%E5%90%91%E9%9A%A7%E9%81%93%E8%BF%9B%E8%A1%8C%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/09/windows-IIS-ftp服务器/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -430,22 +610,13 @@
       
         
           
-            <h2 id="在服务端搭建ftp服务器">在服务端搭建ftp服务器</h2>
-<h3 id="创建ftp目录">创建ftp目录</h3>
-<p>这里我选择在D盘，创建目录D://Ftp作为我的ftp文件存放目录</p>
-<h2 id="添加ftp用户-可选">添加ftp用户（可选）</h2>
-<p>其实这里的ftp用户就是windows 操作系统的用户，为了安全起见，我们不选我们工作时登录的用户，选择重新创建一个新的用户。这里添加了新用户ftpuser作为ftp登录用户。</p>
-<h3 id="开启iis服务">开启IIS服务</h3>
-<p>打开控制面板下的程序，选择启用或关闭Windows功能，选中Internet Information Services中的FTP服务器和Web管理工具（如下图）。等待其加载完所有组件</p>
-<h3 id="设置ftp站点">设置ftp站点</h3>
-<p>执行完第3步以后，打开计算机管理，在服务和应用程序下我们就可以看到Internet Infromation Service，点击它，右击网站选择新建一个ftp站点，配置见下图，完成以后启动该ftp。</p>
-<h2 id="防火墙允许通过">防火墙允许通过</h2>
-<p>打开 控制面板&gt;系统和安全&gt;Windows防火墙&gt;允许的应用<br>
-点击允许其他应用，这时添加windows服务主进程的路径&quot;C:\Windows\System32\svchost.exe&quot;，这时候防火墙就允许ftp访问通过了。</p>
-<h2 id="在客户机登录ftp服务器">在客户机登录ftp服务器</h2>
-<p>在资源管理器中输入ftp://ip地址，输入账号密码后即可成功访问ftp服务器。</p>
-<h2 id="参考文献">参考文献</h2>
-
+            <h2 id="在服务端搭建ftp服务器"><a href="#在服务端搭建ftp服务器" class="headerlink" title="在服务端搭建ftp服务器"></a>在服务端搭建ftp服务器</h2><h3 id="创建ftp目录"><a href="#创建ftp目录" class="headerlink" title="创建ftp目录"></a>创建ftp目录</h3><p>这里我选择在D盘，创建目录D://Ftp作为我的ftp文件存放目录</p>
+<h2 id="添加ftp用户（可选）"><a href="#添加ftp用户（可选）" class="headerlink" title="添加ftp用户（可选）"></a>添加ftp用户（可选）</h2><p>其实这里的ftp用户就是windows 操作系统的用户，为了安全起见，我们不选我们工作时登录的用户，选择重新创建一个新的用户。这里添加了新用户ftpuser作为ftp登录用户。</p>
+<h3 id="开启IIS服务"><a href="#开启IIS服务" class="headerlink" title="开启IIS服务"></a>开启IIS服务</h3><p>打开控制面板下的程序，选择启用或关闭Windows功能，选中Internet Information Services中的FTP服务器和Web管理工具（如下图）。等待其加载完所有组件</p>
+<h3 id="设置ftp站点"><a href="#设置ftp站点" class="headerlink" title="设置ftp站点"></a>设置ftp站点</h3><p>执行完第3步以后，打开计算机管理，在服务和应用程序下我们就可以看到Internet Infromation Service，点击它，右击网站选择新建一个ftp站点，配置见下图，完成以后启动该ftp。</p>
+<h2 id="防火墙允许通过"><a href="#防火墙允许通过" class="headerlink" title="防火墙允许通过"></a>防火墙允许通过</h2><p>打开 控制面板&gt;系统和安全&gt;Windows防火墙&gt;允许的应用<br>点击允许其他应用，这时添加windows服务主进程的路径”C:\Windows\System32\svchost.exe”，这时候防火墙就允许ftp访问通过了。</p>
+<h2 id="在客户机登录ftp服务器"><a href="#在客户机登录ftp服务器" class="headerlink" title="在客户机登录ftp服务器"></a>在客户机登录ftp服务器</h2><p>在资源管理器中输入ftp://ip地址，输入账号密码后即可成功访问ftp服务器。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
           
         
       
@@ -616,13 +787,9 @@
       
         
           
-            <h2 id="numpy-代码示例">numpy 代码示例</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># N is batch size; D_in is input dimension;</span></span><br><span class="line"><span class="comment"># H is hidden dimension; D_out is output dimension.</span></span><br><span class="line">N, D_in, H, D_out = <span class="number">64</span>, <span class="number">1000</span>, <span class="number">100</span>, <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Create random input and output data</span></span><br><span class="line">x = np.random.randn(N, D_in)</span><br><span class="line">y = np.random.randn(N, D_out)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Randomly initialize weights</span></span><br><span class="line">w1 = np.random.randn(D_in, H)</span><br><span class="line">w2 = np.random.randn(H, D_out)</span><br><span class="line"></span><br><span class="line">learning_rate = <span class="number">1e-6</span></span><br><span class="line"><span class="keyword">for</span> t <span class="keyword">in</span> range(<span class="number">500</span>):</span><br><span class="line">    <span class="comment"># Forward pass: compute predicted y</span></span><br><span class="line">    h = x.dot(w1)</span><br><span class="line">    h_relu = np.maximum(h, <span class="number">0</span>)</span><br><span class="line">    y_pred = h_relu.dot(w2)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Compute and print loss</span></span><br><span class="line">    loss = np.square(y_pred - y).sum()</span><br><span class="line">    print(t, loss)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Backprop to compute gradients of w1 and w2 with respect to loss</span></span><br><span class="line">    grad_y_pred = <span class="number">2.0</span> * (y_pred - y)</span><br><span class="line">    grad_w2 = h_relu.T.dot(grad_y_pred)</span><br><span class="line">    grad_h_relu = grad_y_pred.dot(w2.T)</span><br><span class="line">    grad_h = grad_h_relu.copy()</span><br><span class="line">    grad_h[h &lt; <span class="number">0</span>] = <span class="number">0</span></span><br><span class="line">    grad_w1 = x.T.dot(grad_h)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Update weights</span></span><br><span class="line">    w1 -= learning_rate * grad_w1</span><br><span class="line">    w2 -= learning_rate * grad_w2</span><br></pre></td></tr></table></figure>
-<h2 id="推理">推理</h2>
-<p><img src="/2019/06/08/numpy-backpropagation/bp.jpg" alt="bp1"><br>
-<img src="/2019/06/08/numpy-backpropagation/bp2.jpg" alt="bp2"></p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="http://pytorch.org/tutorials/beginner/pytorch_with_examples.html" target="_blank" rel="noopener">http://pytorch.org/tutorials/beginner/pytorch_with_examples.html</a></p>
+            <h2 id="numpy-代码示例"><a href="#numpy-代码示例" class="headerlink" title="numpy 代码示例"></a>numpy 代码示例</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># N is batch size; D_in is input dimension;</span></span><br><span class="line"><span class="comment"># H is hidden dimension; D_out is output dimension.</span></span><br><span class="line">N, D_in, H, D_out = <span class="number">64</span>, <span class="number">1000</span>, <span class="number">100</span>, <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Create random input and output data</span></span><br><span class="line">x = np.random.randn(N, D_in)</span><br><span class="line">y = np.random.randn(N, D_out)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Randomly initialize weights</span></span><br><span class="line">w1 = np.random.randn(D_in, H)</span><br><span class="line">w2 = np.random.randn(H, D_out)</span><br><span class="line"></span><br><span class="line">learning_rate = <span class="number">1e-6</span></span><br><span class="line"><span class="keyword">for</span> t <span class="keyword">in</span> range(<span class="number">500</span>):</span><br><span class="line">    <span class="comment"># Forward pass: compute predicted y</span></span><br><span class="line">    h = x.dot(w1)</span><br><span class="line">    h_relu = np.maximum(h, <span class="number">0</span>)</span><br><span class="line">    y_pred = h_relu.dot(w2)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Compute and print loss</span></span><br><span class="line">    loss = np.square(y_pred - y).sum()</span><br><span class="line">    print(t, loss)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Backprop to compute gradients of w1 and w2 with respect to loss</span></span><br><span class="line">    grad_y_pred = <span class="number">2.0</span> * (y_pred - y)</span><br><span class="line">    grad_w2 = h_relu.T.dot(grad_y_pred)</span><br><span class="line">    grad_h_relu = grad_y_pred.dot(w2.T)</span><br><span class="line">    grad_h = grad_h_relu.copy()</span><br><span class="line">    grad_h[h &lt; <span class="number">0</span>] = <span class="number">0</span></span><br><span class="line">    grad_w1 = x.T.dot(grad_h)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Update weights</span></span><br><span class="line">    w1 -= learning_rate * grad_w1</span><br><span class="line">    w2 -= learning_rate * grad_w2</span><br></pre></td></tr></table></figure>
+<h2 id="推理"><a href="#推理" class="headerlink" title="推理"></a>推理</h2><p><img src="/2019/06/08/numpy-backpropagation/bp.jpg" alt="bp1"><br><img src="/2019/06/08/numpy-backpropagation/bp2.jpg" alt="bp2"></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="http://pytorch.org/tutorials/beginner/pytorch_with_examples.html" target="_blank" rel="noopener">http://pytorch.org/tutorials/beginner/pytorch_with_examples.html</a></p>
 
           
         
@@ -782,15 +949,12 @@
       
         
           
-            <h2 id="nn-conv2d-vs-nn-functional-conv2d">nn.Conv2d vs nn.functional.conv2d</h2>
-<ul>
+            <h2 id="nn-Conv2d-vs-nn-functional-conv2d"><a href="#nn-Conv2d-vs-nn-functional-conv2d" class="headerlink" title="nn.Conv2d vs nn.functional.conv2d"></a>nn.Conv2d vs nn.functional.conv2d</h2><ul>
 <li>nn.functional包中是函数接口，是从输入到输出的一个变换，内部没有Variable，不能够构成一个layer；nn包中是nn.functional函数对应的类封装，nn中的类可能有Variable（如Conv2d)，也可能没有（如Dropout，Maxpooling）</li>
 <li>nn中的类一般是nn.Module的子类，继承了nn.Module的方法和属性。</li>
 <li>nn中的类需要传入参数实例化，然后用函数调用的方法调用实例化对象传入数据。而nn.functional是函数，不需要实例化可以直接调用，需要同时传入filters的weights和biases。</li>
 </ul>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/66782101/answer/579393790" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/579393790</a><br>
-2.<a href="https://www.zhihu.com/question/66782101/answer/246460048" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/246460048</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.zhihu.com/question/66782101/answer/579393790" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/579393790</a><br>2.<a href="https://www.zhihu.com/question/66782101/answer/246460048" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/246460048</a></p>
 
           
         
@@ -950,31 +1114,14 @@
       
         
           
-            <h2 id="什么是json">什么是json</h2>
-<p>是一种文件格式<br>
-json object和python的字典差不多。<br>
-json在python中可以以字符串形式读入。</p>
-<h2 id="python读取json">python读取json</h2>
-<h3 id="json-loads">json.loads()</h3>
-<p>json.loads()从内存中读取。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import json</span><br><span class="line"></span><br><span class="line">person = &apos;&#123;&quot;name&quot;: &quot;Bob&quot;, &quot;languages&quot;: [&quot;English&quot;, &quot;Fench&quot;]&#125;&apos;</span><br><span class="line">person_dict = json.loads(person)</span><br><span class="line"></span><br><span class="line"># Output: &#123;&apos;name&apos;: &apos;Bob&apos;, &apos;languages&apos;: [&apos;English&apos;, &apos;Fench&apos;]&#125;</span><br><span class="line">print( person_dict)</span><br><span class="line"></span><br><span class="line"># Output: [&apos;English&apos;, &apos;French&apos;]</span><br><span class="line">print(person_dict[&apos;languages&apos;])</span><br></pre></td></tr></table></figure>
-<h3 id="json-load">json.load()</h3>
-<p>json.load()从文件对象中读取。<br>
-假设有名为person.json的json文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">&quot;name&quot;: &quot;Bob&quot;, </span><br><span class="line">&quot;languages&quot;: [&quot;English&quot;, &quot;Fench&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>直接从文件对象中读取</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'person.json'</span>) <span class="keyword">as</span> f:</span><br><span class="line">  data = json.load(f)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Output: &#123;'name': 'Bob', 'languages': ['English', 'Fench']&#125;</span></span><br><span class="line">print(data)</span><br></pre></td></tr></table></figure>
-<h2 id="python写json文件">python写json文件</h2>
-<h3 id="json-dumps">json.dumps()</h3>
-<p>json.dumps()将字典转化为JSON字符串</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_dict = &#123;<span class="string">'name'</span>: <span class="string">'Bob'</span>,</span><br><span class="line"><span class="string">'age'</span>: <span class="number">12</span>,</span><br><span class="line"><span class="string">'children'</span>: <span class="literal">None</span></span><br><span class="line">&#125;</span><br><span class="line">person_json = json.dumps(person_dict)</span><br><span class="line"></span><br><span class="line">print(person_json)</span><br></pre></td></tr></table></figure>
-<h3 id="json-dump">json.dump()</h3>
-<p>json.dump()直接将字典写入文件对象</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_dict = &#123;<span class="string">"name"</span>: <span class="string">"Bob"</span>,</span><br><span class="line"><span class="string">"languages"</span>: [<span class="string">"English"</span>, <span class="string">"Fench"</span>],</span><br><span class="line"><span class="string">"married"</span>: <span class="literal">True</span>,</span><br><span class="line"><span class="string">"age"</span>: <span class="number">32</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'person.txt'</span>, <span class="string">'w'</span>) <span class="keyword">as</span> json_file:</span><br><span class="line">  json.dump(person_dict, json_file)</span><br></pre></td></tr></table></figure>
-<h2 id="pretty-json">pretty JSON</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_string = <span class="string">'&#123;"name": "Bob", "languages": "English", "numbers": [2, 1.6, null]&#125;'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Getting dictionary</span></span><br><span class="line">person_dict = json.loads(person_string)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Pretty Printing JSON string back</span></span><br><span class="line">print(json.dumps(person_dict, indent = <span class="number">4</span>, sort_keys=<span class="literal">True</span>))</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.programiz.com/python-programming/json" target="_blank" rel="noopener">https://www.programiz.com/python-programming/json</a></p>
+            <h2 id="什么是json"><a href="#什么是json" class="headerlink" title="什么是json"></a>什么是json</h2><p>是一种文件格式<br>json object和python的字典差不多。<br>json在python中可以以字符串形式读入。</p>
+<h2 id="python读取json"><a href="#python读取json" class="headerlink" title="python读取json"></a>python读取json</h2><h3 id="json-loads"><a href="#json-loads" class="headerlink" title="json.loads()"></a>json.loads()</h3><p>json.loads()从内存中读取。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import json</span><br><span class="line"></span><br><span class="line">person = &apos;&#123;&quot;name&quot;: &quot;Bob&quot;, &quot;languages&quot;: [&quot;English&quot;, &quot;Fench&quot;]&#125;&apos;</span><br><span class="line">person_dict = json.loads(person)</span><br><span class="line"></span><br><span class="line"># Output: &#123;&apos;name&apos;: &apos;Bob&apos;, &apos;languages&apos;: [&apos;English&apos;, &apos;Fench&apos;]&#125;</span><br><span class="line">print( person_dict)</span><br><span class="line"></span><br><span class="line"># Output: [&apos;English&apos;, &apos;French&apos;]</span><br><span class="line">print(person_dict[&apos;languages&apos;])</span><br></pre></td></tr></table></figure></p>
+<h3 id="json-load"><a href="#json-load" class="headerlink" title="json.load()"></a>json.load()</h3><p>json.load()从文件对象中读取。<br>假设有名为person.json的json文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">&quot;name&quot;: &quot;Bob&quot;, </span><br><span class="line">&quot;languages&quot;: [&quot;English&quot;, &quot;Fench&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>直接从文件对象中读取<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'person.json'</span>) <span class="keyword">as</span> f:</span><br><span class="line">  data = json.load(f)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Output: &#123;'name': 'Bob', 'languages': ['English', 'Fench']&#125;</span></span><br><span class="line">print(data)</span><br></pre></td></tr></table></figure></p>
+<h2 id="python写json文件"><a href="#python写json文件" class="headerlink" title="python写json文件"></a>python写json文件</h2><h3 id="json-dumps"><a href="#json-dumps" class="headerlink" title="json.dumps()"></a>json.dumps()</h3><p>json.dumps()将字典转化为JSON字符串<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_dict = &#123;<span class="string">'name'</span>: <span class="string">'Bob'</span>,</span><br><span class="line"><span class="string">'age'</span>: <span class="number">12</span>,</span><br><span class="line"><span class="string">'children'</span>: <span class="literal">None</span></span><br><span class="line">&#125;</span><br><span class="line">person_json = json.dumps(person_dict)</span><br><span class="line"></span><br><span class="line">print(person_json)</span><br></pre></td></tr></table></figure></p>
+<h3 id="json-dump"><a href="#json-dump" class="headerlink" title="json.dump()"></a>json.dump()</h3><p>json.dump()直接将字典写入文件对象<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_dict = &#123;<span class="string">"name"</span>: <span class="string">"Bob"</span>,</span><br><span class="line"><span class="string">"languages"</span>: [<span class="string">"English"</span>, <span class="string">"Fench"</span>],</span><br><span class="line"><span class="string">"married"</span>: <span class="literal">True</span>,</span><br><span class="line"><span class="string">"age"</span>: <span class="number">32</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'person.txt'</span>, <span class="string">'w'</span>) <span class="keyword">as</span> json_file:</span><br><span class="line">  json.dump(person_dict, json_file)</span><br></pre></td></tr></table></figure></p>
+<h2 id="pretty-JSON"><a href="#pretty-JSON" class="headerlink" title="pretty JSON"></a>pretty JSON</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_string = <span class="string">'&#123;"name": "Bob", "languages": "English", "numbers": [2, 1.6, null]&#125;'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Getting dictionary</span></span><br><span class="line">person_dict = json.loads(person_string)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Pretty Printing JSON string back</span></span><br><span class="line">print(json.dumps(person_dict, indent = <span class="number">4</span>, sort_keys=<span class="literal">True</span>))</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.programiz.com/python-programming/json" target="_blank" rel="noopener">https://www.programiz.com/python-programming/json</a></p>
 
           
         
@@ -1093,7 +1240,7 @@ json在python中可以以字符串形式读入。</p>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-04 10:59:05" itemprop="dateModified" datetime="2019-06-04T10:59:05+08:00">2019-06-04</time>
+                <time title="修改时间：2019-06-11 16:27:23" itemprop="dateModified" datetime="2019-06-11T16:27:23+08:00">2019-06-11</time>
               
             
           </span>
@@ -1147,216 +1294,37 @@ json在python中可以以字符串形式读入。</p>
         
           
             <p>这一节介绍和process相关的命令，包含ps,top,kill, pstree, nice, fuser, lsof, pidof, /proc/等</p>
-<h2 id="ps查看进程">ps查看进程</h2>
-<h3 id="参数介绍">参数介绍</h3>
-<p>ps [-Aauf] [xlj]<br>
--A 所有的进程全部显示出来<br>
-a 现行终端机下所有程序，包含其他用户<br>
-u 有效用户相关的进程，主要以用户为主的格式来区分<br>
-f 用ASCII字符显示树状结构，表达进程间的关系<br>
-x　通常与a这个参数一块使用，显示所有程序，不以终端机来区分<br>
-l　较长，较详细的将该PID的信息列出<br>
-j　工作的格式</p>
-<h3 id="示例">示例</h3>
-<p>~\$:ps aux　查看系统所有的进程数据<br>
-~\$:ps -lA　查看所有系统的数据<br>
-~\$:ps axjf　连同部分进程树状态<br>
-~\$:ps aux | grep ‘sslocal’ #查看sslocal程序是否运行<br>
-~\$:ps ax # 显示当前系统进程的列表<br>
-~\$:ps aux #显示当前系统进程详细列表以及进程用户<br>
-~\$:ps -A  #列出进程号</p>
-<h3 id="l仅查看自己相关的bash进程">-l仅查看自己相关的bash进程</h3>
-<p>~\$:ps -l #仅查看自己相关的bash进程<br>
-输出<br>
-F S UID PID PPID C PR NI ADDZ SZ WCHAN TTY TIME CMD<br>
-F  说明进程权限<br>
-S　进程状态STAT<br>
-R(running)　S(sleep)　D(不可被唤醒的睡眠状态,通常是IO的进程)　T(stop)　Z(zombie僵尸状态)进程已终止，但无法被删除到到内存外,PCB还在，但是其他资源全部被收回，是由父进程负责收回资源。<br>
-UID/PID/PPID<br>
-C CPU使用率<br>
-PR/NI  Priority/Nice的缩写，此进程被CPU执行的优先级<br>
-ADDR/SZ/WCHAN都与内存有关，ADDR是kernel function ,指出该进程在内存的哪个部分，如果是个running的过程，显示-;SZ代表用掉多少内存;WCHAN表示目前进程是否运行，-表示正在运行<br>
-TTY 使用的终端接口<br>
-TIME    使用掉的CPU时间，而不是系统时间<br>
-CMD command缩写,造成此进程被触发的命令</p>
-<h3 id="aux-查看系统所有进程">aux 查看系统所有进程</h3>
-<p>~\$:ps aux 查看系统所有进程<br>
-输出<br>
-USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND<br>
-USER<br>
-PID<br>
-%CPU    该进程使用掉的CPU资源百分比<br>
-%MEM    该进程占用物理内存百分比<br>
-VSZ 该进程占用虚拟内存量<br>
-RSS 该进程占用固定内存量(KB)<br>
-TTY pts/0　表示由网络连接进主机的进程<br>
-STAT    进程状态<br>
-START   该进程被触发的时间<br>
-TIME    CPU时间<br>
-COMMAND     该进程实际命令</p>
+<h2 id="ps查看进程"><a href="#ps查看进程" class="headerlink" title="ps查看进程"></a>ps查看进程</h2><h3 id="参数介绍"><a href="#参数介绍" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>ps [-Aauf] [xlj]<br>-A 所有的进程全部显示出来<br>a 现行终端机下所有程序，包含其他用户<br>u 有效用户相关的进程，主要以用户为主的格式来区分<br>f 用ASCII字符显示树状结构，表达进程间的关系<br>x　通常与a这个参数一块使用，显示所有程序，不以终端机来区分<br>l　较长，较详细的将该PID的信息列出<br>j　工作的格式</p>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>~\\$:ps aux　查看系统所有的进程数据<br>~\\$:ps -lA　查看所有系统的数据<br>~\\$:ps axjf　连同部分进程树状态<br>~\\$:ps aux | grep ‘sslocal’ #查看sslocal程序是否运行<br>~\\$:ps ax # 显示当前系统进程的列表<br>~\\$:ps aux #显示当前系统进程详细列表以及进程用户<br>~\\$:ps -A  #列出进程号<br>~\\$:ps aux |grep 2222’|grep -v grep  # 找出所有包含2222的进程，grep -v 过滤掉含有grep字符的行</p>
+<h3 id="aux-查看系统所有进程"><a href="#aux-查看系统所有进程" class="headerlink" title="aux 查看系统所有进程"></a>aux 查看系统所有进程</h3><p>~\\$:ps aux     # 使用BSD格式显示进程<br>输出<br>USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND<br>USER<br>PID<br>%CPU    该进程使用掉的CPU资源百分比<br>%MEM    该进程占用物理内存百分比<br>VSZ 该进程占用虚拟内存量<br>RSS 该进程占用固定内存量(KB)<br>TTY pts/0　表示由网络连接进主机的进程<br>STAT    进程状态<br>START   该进程被触发的时间<br>TIME    CPU时间<br>COMMAND     该进程实际命令</p>
 <p>僵尸进程(<defunct>)</defunct></p>
-<h2 id="top-动态查看进程的变化">top 动态查看进程的变化</h2>
-<h3 id="参数介绍-v2">参数介绍</h3>
-<p>top [-d 数字] | top [-bnp]<br>
--d　整个进程界面更新的秒数<br>
--b  以批次的方式执行top，<br>
--n  与-b搭配，意义是，需要进行几次top的输出结果<br>
--p  指定某个PID来查看<br>
-在top执行中可以使用的命令<br>
-?查询所有的命令<br>
-P 按CPU使用率排序<br>
-M Mem排序<br>
-N PID排序<br>
-T CPU累计时间排序<br>
-k 给某个PID一个信号<br>
-r 给某个PID重新制定一个nice值<br>
-q 离开top软件</p>
-<h3 id="示例-v2">示例</h3>
-<p>~\$:top -d 2 #每两秒钟刷新一次top，默认为5s<br>
-~\$:top -b -n 2 &gt; ~/tmp/top.out</p>
-<h3 id="top输出内容">top输出内容</h3>
-<p>第一行top<br>
-目前时间　<br>
-开机到现在时间　up n days , hh:mm<br>
-登陆的用户<br>
-系统在1,5,15分钟时的负载，batch工作方式负载小于0.8即为这个负载，代表的是1,5,15分钟，系统平均要负责多少个程序。越小说明系统越闲<br>
-第二行task<br>
-目前进程总量，分别有多少个处于什么状态，不能有处于zombie的进程，<br>
-第三行%cpu<br>
-wa代表的是I/Owait，系统变慢都是由于I/O产生问题较多<br>
-第四五行内存和swap使用情况，swap被使用的应该尽量少，否则说明物理内存实在不足。<br>
-第六行<br>
-PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND<br>
-PID　每个进程ID<br>
-USER　该进程所属用户<br>
-PR　Priority 进程的优先级顺序，越小越早被执行<br>
-NI　Nice 与Priority有关，越小越早被执行<br>
-VIRT<br>
-RES<br>
-SHR<br>
-S   STAT<br>
-%CPU　CPU使用率<br>
-%MEM　内存使用率<br>
-TIME+  CPU使用时间的累加<br>
-COMMAND</p>
-<h2 id="pstree-查看进程树">pstree 查看进程树</h2>
-<h3 id="参数介绍-v3">参数介绍</h3>
-<p>pstree [-A|-U] [-up]<br>
--A  各进程树直接以ASCII字符连接<br>
--U  各进程树之间以utf-8字符连接<br>
--u  显示进程所属账号名<br>
--p  显示pid</p>
-<h3 id="示例-v3">示例</h3>
-<p>~\$:pstree -Aup</p>
-<h2 id="kill管理进程">kill管理进程</h2>
-<h3 id="参数介绍-v4">参数介绍</h3>
-<p>kill -signals %jobnumber 杀掉某个job<br>
--l  列出所有signal<br>
--1  重新读取一次参数的配置文件<br>
--2  与ctrl+c　一样<br>
--9  强制删除一个job，非正常状态<br>
--15 让一个job正常结束</p>
-<h3 id="查看signal种类">查看signal种类</h3>
-<p>~\$:man 7 signal</p>
-<h3 id="kill示例">kill示例</h3>
-<p>kill -signal %jobnum<br>
-kill -signal pid<br>
-这两种情况是不同的，第一种是job，第二种是pid,不能弄混</p>
-<h3 id="killall将系统中所有以某个命令启动的服务全部删除">killall将系统中所有以某个命令启动的服务全部删除</h3>
-<p>killall [-iIe]  用来删除某个服务<br>
--i iteractive<br>
--e exact<br>
--I 忽略大小写</p>
-<h3 id="killall示例">killall示例</h3>
-<p>~\$:killall utserver<br>
-~\$:killall -1 syslogd<br>
-~\$:killall -9 httpd<br>
-~\$:killall -i -9 bash</p>
-<h2 id="nice管理进程优先级">nice管理进程优先级</h2>
-<p>PRI(priority)与NI(nice)<br>
-PRI值是由内核动态调整的，用户无法直接调整PRI值<br>
-PRI(new)=PRI(old)+nice</p>
-<p>nice值虽然可以影响PRI，但是并不是说原来PRI为50,nice为5,就会让PRI变为55,<br>
-这是需要经过系统分析之后决定的</p>
-<p>nice值<br>
-a.可调整范围为-20~19<br>
-b.root可随意调整任何人的nice值-20~19间的任意一个值<br>
-c.一般用户仅可以调整自己nice值，且范围在0~19<br>
-d.一般用户仅可将nice值调高，而无法降低<br>
-e.调整nice值的方法<br>
-新执行的命令手动设置nice值<br>
-nice -n [number] command</p>
-<h3 id="示例-v4">示例</h3>
-<p>~\$:nice -n -5 vim &amp;</p>
-<h3 id="已存在的进程调整nice值">已存在的进程调整nice值</h3>
-<p>renice [number] command<br>
-~\$:ps -l | grep ‘*bash\$’<br>
-~\$:renice 10 \$(ps -l|grep ‘bash\$’ | awk ‘{print \$4}’)</p>
-<h2 id="fuser找到使用某文件的程序">fuser找到使用某文件的程序</h2>
-<h3 id="参数介绍-v5">参数介绍</h3>
-<p>fuser [-muv] [-k [i] [-signal]] name<br>
--m  后面接的文件名会主动提到文件顶层<br>
--u  user<br>
--v  verbose<br>
--k  SIGKILL<br>
--i  询问用户，与-k搭配<br>
--signal  -1,-15等，默认为-9</p>
-<h3 id="示例-v5">示例</h3>
-<p>~\$:mount -o loop ubuntu.iso /mnt/iso<br>
-~\$:cd /mnt/iso<br>
-~\$:umount /mnt/iso<br>
-error<br>
-~\$:fuser -muv   /mnt/iso<br>
-…<br>
-~\$:cd<br>
-~\$:umount /mnt/iso</p>
-<p>~\$:fuser -muv /proc<br>
-~\$:fuser -ki /bin/bash</p>
-<h2 id="lsof找到被进程打开的文件">lsof找到被进程打开的文件</h2>
-<h3 id="参数介绍-v6">参数介绍</h3>
-<p>lsof [-uaU] [+d]<br>
--a 相当于and连接符<br>
--u 某个用户的相关进程打开的文件<br>
--U Unix like 的socket文件类型<br>
-+d 某个目录下被打开的文件</p>
-<h3 id="示例-v6">示例</h3>
-<p>~\$:lsof +d ~/Desktop<br>
-~\$:lsof -u mxx | grep ‘bash’<br>
-~\$:lsof -u mxx -a -U</p>
-<h2 id="pidof找出某个正在进行的进程的pid">pidof找出某个正在进行的进程的pid</h2>
-<h3 id="参数介绍-v7">参数介绍</h3>
-<p>pidof [-sx] program_name<br>
--s 仅列出一个pid而不列出所有的pid<br>
--x 列出该进程可能的ppid的pid</p>
-<h2 id="获取进程id">获取进程id</h2>
-<p>ps -A |grep “command” | awk '{print $1}'<br>
-pidof 'command’<br>
-pgrep ‘command’</p>
-<h2 id="proc-文件">/proc/* 文件</h2>
-<p>/proc/cmdline   加载kernel执行的参数<br>
-/proc/cpuinfo   CPU相关信息<br>
-/proc/devices   主要设备代号　与mknod相关<br>
-/proc/filesystems   目前已加载的文件系统<br>
-/proc/interrupts    系统上IRQ分配状态<br>
-/proc/ioports   目前系统上每个设备配置的I/O地址<br>
-/proc/loadavg   top/uptime显示的负载<br>
-/proc/kcore 内存大写<br>
-/proc/meminfo   free<br>
-/proc/modules   目前系统已加载的模块列表，可想成驱动程序<br>
-/proc/mounts　mount<br>
-/proc/swaps  系统加载的内存使用的分区记录<br>
-/proc/partitions　fdisk -l<br>
-/proc/pci　PCI总线上每个设备的详细情况　lspci<br>
-/proc/uptime　uptime<br>
-/proc/version　内核版本 uname -a<br>
-/proc/bus/*　总线设备，USB设备</p>
-<h2 id="具有suid-sgid的程序">具有SUID，SGID的程序</h2>
-<p>如passwd，当触发passwd之后，会取得一个新的进程与PID,该PID产生时通过SUID给予该PID特殊的权限设置。<br>
-在一个bash中执行passwd会衍生出一个passwd进程，而且权限为root<br>
-~\$:passwd &amp;<br>
-~\$:pstree -up找到该进程</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《鸟哥的LINUX私房菜》基础篇</p>
+<h3 id="ps-ef"><a href="#ps-ef" class="headerlink" title="ps -ef"></a>ps -ef</h3><p>~\\$:ps -ef  # 使用标准格式显示进程<br>输出<br>UID        PID  PPID  C STIME TTY          TIME CMD<br>UID 用户名<br>PID 进程ID<br>PPID    父进程ID<br>C   CPU占用百分比<br>STIME   进程启动到现在的时间<br>TTY     在哪个终端上运行，ps/0表示网络连接<br>TIME<br>CMD     命令的名称和参数</p>
+<h3 id="l仅查看自己相关的bash进程"><a href="#l仅查看自己相关的bash进程" class="headerlink" title="-l仅查看自己相关的bash进程"></a>-l仅查看自己相关的bash进程</h3><p>~\\$:ps -l #仅查看自己相关的bash进程<br>输出<br>F S UID PID PPID C PR NI ADDZ SZ WCHAN TTY TIME CMD<br>F  说明进程权限<br>S　进程状态STAT<br>R(running)　S(sleep)　D(不可被唤醒的睡眠状态,通常是IO的进程)　T(stop)　Z(zombie僵尸状态)进程已终止，但无法被删除到到内存外,PCB还在，但是其他资源全部被收回，是由父进程负责收回资源。<br>UID/PID/PPID<br>C CPU使用率<br>PR/NI  Priority/Nice的缩写，此进程被CPU执行的优先级<br>ADDR/SZ/WCHAN都与内存有关，ADDR是kernel function ,指出该进程在内存的哪个部分，如果是个running的过程，显示-;SZ代表用掉多少内存;WCHAN表示目前进程是否运行，-表示正在运行<br>TTY 使用的终端接口<br>TIME    使用掉的CPU时间，而不是系统时间<br>CMD command缩写,造成此进程被触发的命令</p>
+<h2 id="top-动态查看进程的变化"><a href="#top-动态查看进程的变化" class="headerlink" title="top 动态查看进程的变化"></a>top 动态查看进程的变化</h2><h3 id="参数介绍-1"><a href="#参数介绍-1" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>top [-d 数字] | top [-bnp]<br>-d　整个进程界面更新的秒数<br>-b  以批次的方式执行top，<br>-n  与-b搭配，意义是，需要进行几次top的输出结果<br>-p  指定某个PID来查看<br>在top执行中可以使用的命令<br>    ?查询所有的命令<br>    P 按CPU使用率排序<br>    M Mem排序<br>    N PID排序<br>    T CPU累计时间排序<br>    k 给某个PID一个信号<br>    r 给某个PID重新制定一个nice值<br>    q 离开top软件</p>
+<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><p>~\\$:top -d 2 #每两秒钟刷新一次top，默认为5s<br>~\\$:top -b -n 2 &gt; ~/tmp/top.out</p>
+<h3 id="top输出内容"><a href="#top输出内容" class="headerlink" title="top输出内容"></a>top输出内容</h3><p>第一行top<br>目前时间　<br>开机到现在时间　up n days , hh:mm<br>登陆的用户<br>系统在1,5,15分钟时的负载，batch工作方式负载小于0.8即为这个负载，代表的是1,5,15分钟，系统平均要负责多少个程序。越小说明系统越闲<br>第二行task<br>目前进程总量，分别有多少个处于什么状态，不能有处于zombie的进程，<br>第三行%cpu<br>wa代表的是I/Owait，系统变慢都是由于I/O产生问题较多<br>第四五行内存和swap使用情况，swap被使用的应该尽量少，否则说明物理内存实在不足。<br>第六行<br>PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND<br>PID　每个进程ID<br>USER　该进程所属用户<br>PR　Priority 进程的优先级顺序，越小越早被执行<br>NI　Nice 与Priority有关，越小越早被执行<br>VIRT<br>RES<br>SHR<br>S   STAT<br>%CPU　CPU使用率<br>%MEM　内存使用率<br>TIME+  CPU使用时间的累加<br>COMMAND </p>
+<h2 id="pstree-查看进程树"><a href="#pstree-查看进程树" class="headerlink" title="pstree 查看进程树"></a>pstree 查看进程树</h2><h3 id="参数介绍-2"><a href="#参数介绍-2" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>pstree [-A|-U] [-up]<br>    -A  各进程树直接以ASCII字符连接<br>    -U  各进程树之间以utf-8字符连接<br>    -u  显示进程所属账号名<br>    -p  显示pid</p>
+<h3 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h3><p>~\\$:pstree -Aup</p>
+<h2 id="kill管理进程"><a href="#kill管理进程" class="headerlink" title="kill管理进程"></a>kill管理进程</h2><h3 id="参数介绍-3"><a href="#参数介绍-3" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>kill -signals %jobnumber 杀掉某个job<br>    -l  列出所有signal<br>    -1  重新读取一次参数的配置文件<br>    -2  与ctrl+c　一样<br>    -9  强制删除一个job，非正常状态<br>    -15 让一个job正常结束</p>
+<h3 id="查看signal种类"><a href="#查看signal种类" class="headerlink" title="查看signal种类"></a>查看signal种类</h3><p>~\\$:man 7 signal</p>
+<h3 id="kill示例"><a href="#kill示例" class="headerlink" title="kill示例"></a>kill示例</h3><p>kill -signal %jobnum<br>kill -signal pid<br>这两种情况是不同的，第一种是job，第二种是pid,不能弄混</p>
+<h3 id="killall将系统中所有以某个命令启动的服务全部删除"><a href="#killall将系统中所有以某个命令启动的服务全部删除" class="headerlink" title="killall将系统中所有以某个命令启动的服务全部删除"></a>killall将系统中所有以某个命令启动的服务全部删除</h3><p>killall [-iIe]  用来删除某个服务<br>    -i iteractive<br>    -e exact<br>    -I 忽略大小写</p>
+<h3 id="killall示例"><a href="#killall示例" class="headerlink" title="killall示例"></a>killall示例</h3><p>~\\$:killall utserver<br>~\\$:killall -1 syslogd<br>~\\$:killall -9 httpd<br>~\\$:killall -i -9 bash</p>
+<h2 id="nice管理进程优先级"><a href="#nice管理进程优先级" class="headerlink" title="nice管理进程优先级"></a>nice管理进程优先级</h2><p>PRI(priority)与NI(nice)<br>PRI值是由内核动态调整的，用户无法直接调整PRI值<br>PRI(new)=PRI(old)+nice</p>
+<p>nice值虽然可以影响PRI，但是并不是说原来PRI为50,nice为5,就会让PRI变为55,<br>这是需要经过系统分析之后决定的</p>
+<p>nice值<br>a.可调整范围为-20~19<br>b.root可随意调整任何人的nice值-20~19间的任意一个值<br>c.一般用户仅可以调整自己nice值，且范围在0~19<br>d.一般用户仅可将nice值调高，而无法降低<br>e.调整nice值的方法<br>新执行的命令手动设置nice值<br>nice -n [number] command</p>
+<h3 id="示例-3"><a href="#示例-3" class="headerlink" title="示例"></a>示例</h3><p>~\\$:nice -n -5 vim &amp;</p>
+<h3 id="已存在的进程调整nice值"><a href="#已存在的进程调整nice值" class="headerlink" title="已存在的进程调整nice值"></a>已存在的进程调整nice值</h3><p>renice [number] command<br>~\\$:ps -l | grep ‘*bash\\$’<br>~\\$:renice 10 \\$(ps -l|grep ‘bash\\$’ | awk ‘{print \\$4}’)</p>
+<h2 id="fuser找到使用某文件的程序"><a href="#fuser找到使用某文件的程序" class="headerlink" title="fuser找到使用某文件的程序"></a>fuser找到使用某文件的程序</h2><h3 id="参数介绍-4"><a href="#参数介绍-4" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>fuser [-muv] [-k [i] [-signal]] name<br>    -m  后面接的文件名会主动提到文件顶层<br>    -u  user<br>    -v  verbose<br>    -k  SIGKILL<br>    -i  询问用户，与-k搭配<br>    -signal  -1,-15等，默认为-9</p>
+<h3 id="示例-4"><a href="#示例-4" class="headerlink" title="示例"></a>示例</h3><p>~\\$:mount -o loop ubuntu.iso /mnt/iso<br>~\\$:cd /mnt/iso<br>~\\$:umount /mnt/iso<br>error<br>~\\$:fuser -muv   /mnt/iso<br>…..<br>~\\$:cd<br>~\\$:umount /mnt/iso</p>
+<p>~\\$:fuser -muv /proc<br>~\\$:fuser -ki /bin/bash</p>
+<h2 id="lsof找到被进程打开的文件"><a href="#lsof找到被进程打开的文件" class="headerlink" title="lsof找到被进程打开的文件"></a>lsof找到被进程打开的文件</h2><h3 id="参数介绍-5"><a href="#参数介绍-5" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>lsof [-uaU] [+d]<br>    -a 相当于and连接符<br>    -u 某个用户的相关进程打开的文件<br>    -U Unix like 的socket文件类型<br>    +d 某个目录下被打开的文件</p>
+<h3 id="示例-5"><a href="#示例-5" class="headerlink" title="示例"></a>示例</h3><p>~\\$:lsof +d ~/Desktop<br>~\\$:lsof -u mxx | grep ‘bash’<br>~\\$:lsof -u mxx -a -U</p>
+<h2 id="pidof找出某个正在进行的进程的pid"><a href="#pidof找出某个正在进行的进程的pid" class="headerlink" title="pidof找出某个正在进行的进程的pid"></a>pidof找出某个正在进行的进程的pid</h2><h3 id="参数介绍-6"><a href="#参数介绍-6" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>pidof [-sx] program_name<br>-s 仅列出一个pid而不列出所有的pid<br>-x 列出该进程可能的ppid的pid</p>
+<h2 id="获取进程id"><a href="#获取进程id" class="headerlink" title="获取进程id"></a>获取进程id</h2><p>ps -A |grep “command” | awk ‘{print $1}’<br>pidof ‘command’<br>pgrep ‘command’</p>
+<h2 id="proc-文件"><a href="#proc-文件" class="headerlink" title="/proc/* 文件"></a>/proc/* 文件</h2><p>/proc/cmdline   加载kernel执行的参数<br>/proc/cpuinfo   CPU相关信息<br>/proc/devices   主要设备代号　与mknod相关<br>/proc/filesystems   目前已加载的文件系统<br>/proc/interrupts    系统上IRQ分配状态<br>/proc/ioports   目前系统上每个设备配置的I/O地址<br>/proc/loadavg   top/uptime显示的负载<br>/proc/kcore 内存大写<br>/proc/meminfo   free<br>/proc/modules   目前系统已加载的模块列表，可想成驱动程序<br>/proc/mounts　mount<br>/proc/swaps  系统加载的内存使用的分区记录<br>/proc/partitions　fdisk -l<br>/proc/pci　PCI总线上每个设备的详细情况　lspci<br>/proc/uptime　uptime<br>/proc/version　内核版本 uname -a<br>/proc/bus/*　总线设备，USB设备</p>
+<h2 id="具有SUID，SGID的程序"><a href="#具有SUID，SGID的程序" class="headerlink" title="具有SUID，SGID的程序"></a>具有SUID，SGID的程序</h2><p>如passwd，当触发passwd之后，会取得一个新的进程与PID,该PID产生时通过SUID给予该PID特殊的权限设置。<br>在一个bash中执行passwd会衍生出一个passwd进程，而且权限为root<br>~\\$:passwd &amp;<br>~\\$:pstree -up找到该进程</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《鸟哥的LINUX私房菜》基础篇</p>
 
           
         
@@ -1516,51 +1484,15 @@ pgrep ‘command’</p>
       
         
           
-            <h2 id="查看内存">查看内存</h2>
-<p>free [-bkmg] -t<br>
--t  输出结果中显示free和swap加在一起的总量<br>
-free -h</p>
-<h2 id="查看磁盘">查看磁盘</h2>
-<p>df -h 查看磁盘占用情况<br>
-du -h --max-depth=2 统计当前目录下深度为2的文件和目录大小</p>
-<h2 id="查看cpu占用">查看cpu占用</h2>
-<p>top</p>
-<h2 id="查看系统与内核相关信息">查看系统与内核相关信息</h2>
-<p>uname [-asrmpi]<br>
--a 所有系统相关的信息，<br>
--s 系统内核名称<br>
--r 内核版本<br>
--m 本系统硬件名称<br>
--p CPU类型，与-m类似，显示的是CPU类型<br>
--i 硬件平台</p>
-<h2 id="查看系统启动时间与工作负载">查看系统启动时间与工作负载</h2>
-<p>uptime</p>
-<h2 id="查看网络">查看网络</h2>
-<p>netstat [-atunlp]<br>
--a 将目前系统上所有连接监听，socket列出来<br>
--t 列出tcp网络数据包的数据<br>
--u 列出udp网络数据包的数据<br>
--n 不列出进程的服务名称，以端口号来显示<br>
--l 列出目前正在网络监听(listen)的服务<br>
--p 列出该网络服务的进程pid<br>
-~\$:netstat -tnlp　　#找出目前系统上已经在监听的网络连接及其PID</p>
-<h2 id="分析内核产生的信息">分析内核产生的信息</h2>
-<p>dmesg | more<br>
-dmesg | grep -i 'sd’<br>
-dmesg | grep -i ‘eth’</p>
-<h2 id="动态分析系统资源使用情况">动态分析系统资源使用情况</h2>
-<p>man vmstat 查看各字段含义</p>
-<p>vmstat      动态查看系统资源<br>
-vmstat [-a]     display active and inactive memory<br>
-vmstat [-d] report sisk statistics<br>
-vmstat [-p 分区]　Detailed statistics about partition<br>
-vmstat [-S 单位]  B K M G<br>
-vmstat [-f]  displays the num of forks since boot<br>
-~\$:vmstat<br>
-~\$:vmstat -a<br>
-~\$:vmstat -p /dev/sda1<br>
-~\$:vmstat -S M<br>
-~\$:vmstat -f</p>
+            <h2 id="查看内存"><a href="#查看内存" class="headerlink" title="查看内存"></a>查看内存</h2><p>free [-bkmg] -t<br>    -t  输出结果中显示free和swap加在一起的总量<br>free -h </p>
+<h2 id="查看磁盘"><a href="#查看磁盘" class="headerlink" title="查看磁盘"></a>查看磁盘</h2><p>df -h 查看磁盘占用情况<br>du -h —max-depth=2 统计当前目录下深度为2的文件和目录大小</p>
+<h2 id="查看cpu占用"><a href="#查看cpu占用" class="headerlink" title="查看cpu占用"></a>查看cpu占用</h2><p>top</p>
+<h2 id="查看系统与内核相关信息"><a href="#查看系统与内核相关信息" class="headerlink" title="查看系统与内核相关信息"></a>查看系统与内核相关信息</h2><p>uname [-asrmpi]<br>    -a 所有系统相关的信息，<br>    -s 系统内核名称<br>    -r 内核版本<br>    -m 本系统硬件名称<br>    -p CPU类型，与-m类似，显示的是CPU类型<br>    -i 硬件平台</p>
+<h2 id="查看系统启动时间与工作负载"><a href="#查看系统启动时间与工作负载" class="headerlink" title="查看系统启动时间与工作负载"></a>查看系统启动时间与工作负载</h2><p>uptime</p>
+<h2 id="查看网络"><a href="#查看网络" class="headerlink" title="查看网络"></a>查看网络</h2><p>netstat [-atunlp]<br>    -a 将目前系统上所有连接监听，socket列出来<br>    -t 列出tcp网络数据包的数据<br>    -u 列出udp网络数据包的数据<br>    -n 不列出进程的服务名称，以端口号来显示<br>    -l 列出目前正在网络监听(listen)的服务<br>    -p 列出该网络服务的进程pid<br>~\\$:netstat -tnlp　　#找出目前系统上已经在监听的网络连接及其PID</p>
+<h2 id="分析内核产生的信息"><a href="#分析内核产生的信息" class="headerlink" title="分析内核产生的信息"></a>分析内核产生的信息</h2><p>dmesg | more<br>dmesg | grep -i ‘sd’<br>dmesg | grep -i ‘eth’</p>
+<h2 id="动态分析系统资源使用情况"><a href="#动态分析系统资源使用情况" class="headerlink" title="动态分析系统资源使用情况"></a>动态分析系统资源使用情况</h2><p>man vmstat 查看各字段含义</p>
+<p>vmstat      动态查看系统资源<br>vmstat [-a]     display active and inactive memory<br>vmstat [-d] report sisk statistics<br>vmstat [-p 分区]　Detailed statistics about partition<br>vmstat [-S 单位]  B K M G<br>vmstat [-f]  displays the num of forks since boot<br>~\\$:vmstat<br>~\\$:vmstat -a<br>~\\$:vmstat -p /dev/sda1<br>~\\$:vmstat -S M<br>~\\$:vmstat -f</p>
 
           
         
@@ -1739,18 +1671,12 @@ vmstat [-f]  displays the num of forks since boot<br>
       
         
           
-            <h2 id="python执行shell脚本并且重定向输出到文件">python执行shell脚本并且重定向输出到文件</h2>
-<p>目的：有一些shell脚本的参数需要调整，在shell中处理有些麻烦，就用python控制参数，然后调用shell，问题就是如何将shell脚本的输出进行重定向。最开始我想直接用python调用终端中shell重定向的语法，我用的是os.system(command)，command包含重定向的命令，在实践中证明是不可行的。为什么？？？留待解决。</p>
+            <h2 id="python执行shell脚本并且重定向输出到文件"><a href="#python执行shell脚本并且重定向输出到文件" class="headerlink" title="python执行shell脚本并且重定向输出到文件"></a>python执行shell脚本并且重定向输出到文件</h2><p>目的：有一些shell脚本的参数需要调整，在shell中处理有些麻烦，就用python控制参数，然后调用shell，问题就是如何将shell脚本的输出进行重定向。最开始我想直接用python调用终端中shell重定向的语法，我用的是os.system(command)，command包含重定向的命令，在实践中证明是不可行的。为什么？？？留待解决。</p>
 <p>找到的解决方案是调用subprocess包，将要执行的命令存入一个list，将这个list当做参数传入，获得返回值，进行文件读写。这里拿ls命令举个例子，注意一点是，包含重定向语句的ls命令使用os.system()也能重定向成功，我使用的一个命令就不行了。</p>
-<h3 id="call">call</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">subprocess.call([<span class="string">'ls'</span>, <span class="string">'-l'</span>, <span class="string">'.'</span>]) <span class="comment"># 直接将程序执行结果输出，没有返回值。</span></span><br></pre></td></tr></table></figure>
-<h3 id="popen">Popen</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">results = subprocess.Popen([<span class="string">'ls'</span>, <span class="string">'-l'</span>, <span class="string">'.'</span>], </span><br><span class="line">            stdout=subprocess.PIPE, </span><br><span class="line">            stderr=subprocess.STDOUT)</span><br><span class="line">stdout, stderr = results.communicate() </span><br><span class="line">res = stdout.decode(<span class="string">'utf-8'</span>) <span class="comment"># 利用res将结果输出到文件</span></span><br></pre></td></tr></table></figure>
-<h3 id="run">run</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result = subprocess.run([<span class="string">'ls'</span>, <span class="string">'-l'</span>], stdout=subprocess.PIPE) </span><br><span class="line">res = result.stdout.decode(<span class="string">'utf-8'</span>)  <span class="comment"># 利用res将结果输出到文件</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/4760215/running-shell-command-and-capturing-the-output" target="_blank" rel="noopener">https://stackoverflow.com/questions/4760215/running-shell-command-and-capturing-the-output</a><br>
-2.<a href="https://linuxhandbook.com/execute-shell-command-python/" target="_blank" rel="noopener">https://linuxhandbook.com/execute-shell-command-python/</a></p>
+<h3 id="call"><a href="#call" class="headerlink" title="call"></a>call</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">subprocess.call([<span class="string">'ls'</span>, <span class="string">'-l'</span>, <span class="string">'.'</span>]) <span class="comment"># 直接将程序执行结果输出，没有返回值。</span></span><br></pre></td></tr></table></figure>
+<h3 id="Popen"><a href="#Popen" class="headerlink" title="Popen"></a>Popen</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">results = subprocess.Popen([<span class="string">'ls'</span>, <span class="string">'-l'</span>, <span class="string">'.'</span>], </span><br><span class="line">            stdout=subprocess.PIPE, </span><br><span class="line">            stderr=subprocess.STDOUT)</span><br><span class="line">stdout, stderr = results.communicate() </span><br><span class="line">res = stdout.decode(<span class="string">'utf-8'</span>) <span class="comment"># 利用res将结果输出到文件</span></span><br></pre></td></tr></table></figure>
+<h3 id="run"><a href="#run" class="headerlink" title="run"></a>run</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result = subprocess.run([<span class="string">'ls'</span>, <span class="string">'-l'</span>], stdout=subprocess.PIPE) </span><br><span class="line">res = result.stdout.decode(<span class="string">'utf-8'</span>)  <span class="comment"># 利用res将结果输出到文件</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://stackoverflow.com/questions/4760215/running-shell-command-and-capturing-the-output" target="_blank" rel="noopener">https://stackoverflow.com/questions/4760215/running-shell-command-and-capturing-the-output</a><br>2.<a href="https://linuxhandbook.com/execute-shell-command-python/" target="_blank" rel="noopener">https://linuxhandbook.com/execute-shell-command-python/</a></p>
 
           
         
@@ -1922,17 +1848,10 @@ vmstat [-f]  displays the num of forks since boot<br>
       
         
           
-            <h2 id="bashrc自定义配置">bashrc自定义配置</h2>
-<p>~/.bashrc文件详细内容，<a href="https://github.com/mxxhcm/code/blob/master/shell/bashrc" target="_blank" rel="noopener">代码地址</a></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> 使用alias给常用文件夹起别名</span><br><span class="line">alias post-dir='/home/mxxmhh/mxxhcm/blog/source/_posts'</span><br><span class="line">alias code-dir='/home/mxxmhh/mxxhcm/code/'</span><br><span class="line">alias matplotlib-dir='/home/mxxmhh/mxxhcm/code/tools/matplotlib/'</span><br><span class="line">alias numpy-dir='/home/mxxmhh/mxxhcm/code/tools/numpy/'</span><br><span class="line">alias shell-dir='/home/mxxmhh/mxxhcm/code/shell'</span><br><span class="line">alias github-dir='/home/mxxmhh/github/'</span><br><span class="line">alias torch-dir='/home/mxxmhh/mxxhcm/code/pytorch'</span><br><span class="line">alias tf-dir='/home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line">alias rl-dir='/home/mxxmhh/mxxhcm/code/rl'</span><br><span class="line">alias ops-dir='/home/mxxmhh/mxxhcm/code/tf/ops'</span><br><span class="line">alias paper-dir='/home/mxxmhh/mxxhcm/papers'</span><br><span class="line">alias tf-dir='/home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 使用alias直接cd到常用文件夹</span><br><span class="line">alias post='cd /home/mxxmhh/mxxhcm/blog/source/_posts'</span><br><span class="line">alias code='cd /home/mxxmhh/mxxhcm/code/'</span><br><span class="line">alias matplotlib='cd /home/mxxmhh/mxxhcm/code/tools/matplotlib/'</span><br><span class="line">alias numpy='cd /home/mxxmhh/mxxhcm/code/tools/numpy/'</span><br><span class="line">alias shell='cd /home/mxxmhh/mxxhcm/code/shell'</span><br><span class="line">alias github='cd /home/mxxmhh/github/'</span><br><span class="line">alias torch='cd /home/mxxmhh/mxxhcm/code/pytorch'</span><br><span class="line">alias tf='cd /home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line">alias rl='cd /home/mxxmhh/mxxhcm/code/rl'</span><br><span class="line">alias ops='cd /home/mxxmhh/mxxhcm/code/tf/ops'</span><br><span class="line">alias paper='cd /home/mxxmhh/mxxhcm/papers'</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> hexo博客相关命令</span><br><span class="line">alias update='hexo g -d'</span><br><span class="line">alias n='hexo n '</span><br><span class="line">alias new='hexo n '</span><br><span class="line"><span class="meta">#</span> git相关命令</span><br><span class="line">alias status='git status'</span><br><span class="line">alias add='git add .'</span><br><span class="line">alias remove='git rm'</span><br><span class="line">alias commit='git commit -m '</span><br><span class="line">alias branch='git branch'</span><br><span class="line">alias check='git checkout '</span><br><span class="line">alias push-master='git push origin master'</span><br><span class="line">alias pull-master='git pull origin master'</span><br><span class="line">alias push-hexo='git push origin hexo'</span><br><span class="line">alias pull-hexo='git pull origin hexo'</span><br><span class="line">alias utorrent='utserver -settingspath /opt/utorrent/'</span><br><span class="line"><span class="meta">#</span> shadowsocks local运行</span><br><span class="line">alias ssr='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr4='nohup sslocal -c /etc/shadowsocks_v4.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr5='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr6='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 获得sslocal进程id</span><br><span class="line">function sspid()&#123;</span><br><span class="line">	ps aux |grep 'sslocal'</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> kill sslocal进程</span><br><span class="line">function killss()&#123;</span><br><span class="line">	pid=`ps -A | grep 'sslocal' |awk '&#123;print $1&#125;'`</span><br><span class="line">	echo $pid</span><br><span class="line">	kill -9 $pid</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 失效了</span><br><span class="line">function anaconda_on()&#123;</span><br><span class="line">	export PATH=/home/mxxmhh/anaconda3/bin:$PATH</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 连接到我的vultr账户</span><br><span class="line">function vultr()&#123;</span><br><span class="line">	ssh root@2001:19f0:7001:20f8:5400:01ff:fee6:aff6</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 定义函数实现hexo博客的add, commit, push整个流程</span><br><span class="line">function deploy-upload-hexo()&#123;</span><br><span class="line">	git add .</span><br><span class="line">	git commit -m "update blog"</span><br><span class="line">	git push origin hexo</span><br><span class="line">	hexo g -d</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 定义函数实现普通repo的add, commit, push整个流程</span><br><span class="line">function upload-master()&#123;</span><br><span class="line">	git add .</span><br><span class="line">	git commit -m "update code"</span><br><span class="line">	git push origin master</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 获得当前folder的大小</span><br><span class="line">function folder-size()&#123;</span><br><span class="line">	dir=`pwd`</span><br><span class="line">	du -h --max-depth=1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 更新环境变量</span><br><span class="line"><span class="meta">#</span> PATH</span><br><span class="line">export PATH=/home/mxxmhh/anaconda3/bin:$PATH</span><br><span class="line">export PATH=/usr/local/cuda/bin$&#123;PATH:+:$&#123;PATH&#125;&#125;</span><br><span class="line"><span class="meta">#</span> CUDA PATH</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/:$&#123;LD_LIBRARY_PATH:+:$&#123;LD_LIBRARY_PATH&#125;&#125;</span><br><span class="line">export CUDA_HOME=/usr/local/cuda</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> terminal走privoxy设置</span><br><span class="line">export https_proxy="http://127.0.0.1:8118"</span><br><span class="line">export http_proxy="http://127.0.0.1:8118"</span><br><span class="line">export HTTP_PROXY="http://127.0.0.1:8118"</span><br><span class="line">export HTTPS_PROXY="http://127.0.0.1:8118"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 关闭terminal走privoxy设置</span><br><span class="line">function proxyv6_off()&#123;</span><br><span class="line">	unset https_proxy</span><br><span class="line">	unset http_proxy</span><br><span class="line">	unset HTTP_PROXY</span><br><span class="line">	unset HTTPS_PROXY</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="vim自定义配置">vim自定义配置</h2>
-<p>关于vim详细介绍，可以查看<a href="https://mxxhcm.github.io/2019/05/07/linux-vim/">linux-vim</a><br>
-vimrc文件如下，<a href="https://github.com/mxxhcm/code/blob/master/shell/vimrc" target="_blank" rel="noopener">代码地址</a></p>
+            <h2 id="bashrc自定义配置"><a href="#bashrc自定义配置" class="headerlink" title="bashrc自定义配置"></a>bashrc自定义配置</h2><p>~/.bashrc文件详细内容，<a href="https://github.com/mxxhcm/code/blob/master/shell/bashrc" target="_blank" rel="noopener">代码地址</a><br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> 使用alias给常用文件夹起别名</span><br><span class="line">alias post-dir='/home/mxxmhh/mxxhcm/blog/source/_posts'</span><br><span class="line">alias code-dir='/home/mxxmhh/mxxhcm/code/'</span><br><span class="line">alias matplotlib-dir='/home/mxxmhh/mxxhcm/code/tools/matplotlib/'</span><br><span class="line">alias numpy-dir='/home/mxxmhh/mxxhcm/code/tools/numpy/'</span><br><span class="line">alias shell-dir='/home/mxxmhh/mxxhcm/code/shell'</span><br><span class="line">alias github-dir='/home/mxxmhh/github/'</span><br><span class="line">alias torch-dir='/home/mxxmhh/mxxhcm/code/pytorch'</span><br><span class="line">alias tf-dir='/home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line">alias rl-dir='/home/mxxmhh/mxxhcm/code/rl'</span><br><span class="line">alias ops-dir='/home/mxxmhh/mxxhcm/code/tf/ops'</span><br><span class="line">alias paper-dir='/home/mxxmhh/mxxhcm/papers'</span><br><span class="line">alias tf-dir='/home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 使用alias直接cd到常用文件夹</span><br><span class="line">alias post='cd /home/mxxmhh/mxxhcm/blog/source/_posts'</span><br><span class="line">alias code='cd /home/mxxmhh/mxxhcm/code/'</span><br><span class="line">alias matplotlib='cd /home/mxxmhh/mxxhcm/code/tools/matplotlib/'</span><br><span class="line">alias numpy='cd /home/mxxmhh/mxxhcm/code/tools/numpy/'</span><br><span class="line">alias shell='cd /home/mxxmhh/mxxhcm/code/shell'</span><br><span class="line">alias github='cd /home/mxxmhh/github/'</span><br><span class="line">alias torch='cd /home/mxxmhh/mxxhcm/code/pytorch'</span><br><span class="line">alias tf='cd /home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line">alias rl='cd /home/mxxmhh/mxxhcm/code/rl'</span><br><span class="line">alias ops='cd /home/mxxmhh/mxxhcm/code/tf/ops'</span><br><span class="line">alias paper='cd /home/mxxmhh/mxxhcm/papers'</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> hexo博客相关命令</span><br><span class="line">alias update='hexo g -d'</span><br><span class="line">alias n='hexo n '</span><br><span class="line">alias new='hexo n '</span><br><span class="line"><span class="meta">#</span> git相关命令</span><br><span class="line">alias status='git status'</span><br><span class="line">alias add='git add .'</span><br><span class="line">alias remove='git rm'</span><br><span class="line">alias commit='git commit -m '</span><br><span class="line">alias branch='git branch'</span><br><span class="line">alias check='git checkout '</span><br><span class="line">alias push-master='git push origin master'</span><br><span class="line">alias pull-master='git pull origin master'</span><br><span class="line">alias push-hexo='git push origin hexo'</span><br><span class="line">alias pull-hexo='git pull origin hexo'</span><br><span class="line">alias utorrent='utserver -settingspath /opt/utorrent/'</span><br><span class="line"><span class="meta">#</span> shadowsocks local运行</span><br><span class="line">alias ssr='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr4='nohup sslocal -c /etc/shadowsocks_v4.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr5='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr6='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 获得sslocal进程id</span><br><span class="line">function sspid()&#123;</span><br><span class="line">	ps aux |grep 'sslocal'</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> kill sslocal进程</span><br><span class="line">function killss()&#123;</span><br><span class="line">	pid=`ps -A | grep 'sslocal' |awk '&#123;print $1&#125;'`</span><br><span class="line">	echo $pid</span><br><span class="line">	kill -9 $pid</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 失效了</span><br><span class="line">function anaconda_on()&#123;</span><br><span class="line">	export PATH=/home/mxxmhh/anaconda3/bin:$PATH</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 连接到我的vultr账户</span><br><span class="line">function vultr()&#123;</span><br><span class="line">	ssh root@2001:19f0:7001:20f8:5400:01ff:fee6:aff6</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 定义函数实现hexo博客的add, commit, push整个流程</span><br><span class="line">function deploy-upload-hexo()&#123;</span><br><span class="line">	git add .</span><br><span class="line">	git commit -m "update blog"</span><br><span class="line">	git push origin hexo</span><br><span class="line">	hexo g -d</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 定义函数实现普通repo的add, commit, push整个流程</span><br><span class="line">function upload-master()&#123;</span><br><span class="line">	git add .</span><br><span class="line">	git commit -m "update code"</span><br><span class="line">	git push origin master</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 获得当前folder的大小</span><br><span class="line">function folder-size()&#123;</span><br><span class="line">	dir=`pwd`</span><br><span class="line">	du -h --max-depth=1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 更新环境变量</span><br><span class="line"><span class="meta">#</span> PATH</span><br><span class="line">export PATH=/home/mxxmhh/anaconda3/bin:$PATH</span><br><span class="line">export PATH=/usr/local/cuda/bin$&#123;PATH:+:$&#123;PATH&#125;&#125;</span><br><span class="line"><span class="meta">#</span> CUDA PATH</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/:$&#123;LD_LIBRARY_PATH:+:$&#123;LD_LIBRARY_PATH&#125;&#125;</span><br><span class="line">export CUDA_HOME=/usr/local/cuda</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> terminal走privoxy设置</span><br><span class="line">export https_proxy="http://127.0.0.1:8118"</span><br><span class="line">export http_proxy="http://127.0.0.1:8118"</span><br><span class="line">export HTTP_PROXY="http://127.0.0.1:8118"</span><br><span class="line">export HTTPS_PROXY="http://127.0.0.1:8118"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 关闭terminal走privoxy设置</span><br><span class="line">function proxyv6_off()&#123;</span><br><span class="line">	unset https_proxy</span><br><span class="line">	unset http_proxy</span><br><span class="line">	unset HTTP_PROXY</span><br><span class="line">	unset HTTPS_PROXY</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="vim自定义配置"><a href="#vim自定义配置" class="headerlink" title="vim自定义配置"></a>vim自定义配置</h2><p>关于vim详细介绍，可以查看<a href="https://mxxhcm.github.io/2019/05/07/linux-vim/">linux-vim</a><br>vimrc文件如下，<a href="https://github.com/mxxhcm/code/blob/master/shell/vimrc" target="_blank" rel="noopener">代码地址</a></p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> 使用四个空格代替tab键</span><br><span class="line">set expandtab</span><br><span class="line">set tabstop=4</span><br><span class="line">set shiftwidth=4</span><br><span class="line">set softtabstop=4	</span><br><span class="line">			</span><br><span class="line">" 打开文件类型检测</span><br><span class="line">filetype on</span><br><span class="line">" 根据不同的文件类型加载插件</span><br><span class="line">filetype plugin on</span><br><span class="line">set ignorecase</span><br><span class="line"></span><br><span class="line">" 定义前缀键</span><br><span class="line">" let mappleader=";"</span><br><span class="line"></span><br><span class="line">" 设置ctrl+a全选，ctrl+c复制，;y粘贴</span><br><span class="line">vnoremap ; "+</span><br><span class="line">nnoremap ; "+</span><br><span class="line">nmap ;p "+p</span><br><span class="line">nnoremap &lt;C-C&gt; "+y</span><br><span class="line">vnoremap &lt;C-C&gt; "+y</span><br><span class="line">nnoremap &lt;C-A&gt; ggVG</span><br><span class="line">vnoremap &lt;C-A&gt; ggVG</span><br><span class="line"></span><br><span class="line">" 删除#号开头</span><br><span class="line">nnoremap ;d3 :g/^#.*$/d&lt;CR&gt;</span><br><span class="line">nnoremap ;d# :g/^#.*$/d&lt;CR&gt;</span><br><span class="line">" 删除空行</span><br><span class="line">nnoremap ;ds :g/^\s*$/d&lt;CR&gt;</span><br><span class="line">" 删除以tab开头的tab</span><br><span class="line">nnoremap ;rt :0,$s/^\t//g&lt;CR&gt;</span><br><span class="line">" 用\^代替^</span><br><span class="line">nnoremap ;r6 :0,$s/\^/\\^/g&lt;CR&gt;</span><br><span class="line">nnoremap ;r^ :0,$s/\^/\\^/g&lt;CR&gt;</span><br><span class="line">" 用\\\\代替\\</span><br><span class="line">nnoremap ;r/ :0,$s/\\\\/\\\\\\\\/g&lt;CR&gt;</span><br><span class="line">nnoremap ;r? :0,$s/\\\\/\\\\\\\\/g&lt;CR&gt;</span><br><span class="line"></span><br><span class="line">" 给选中行加注释</span><br><span class="line">" cnoremap &lt;C-#&gt; s/^/# /g&lt;CR&gt;</span><br><span class="line">nmap ;ic :s/^/# /g&lt;CR&gt;</span><br><span class="line">vmap ;ic :s/^/# /g&lt;CR&gt;</span><br><span class="line">nmap ;dc :s/^# //g&lt;CR&gt;</span><br><span class="line">vmap ;dc :s/^# //g&lt;CR&gt;</span><br><span class="line">"vmap &lt;C-#&gt; :s/^/#/g&lt;CR&gt;</span><br><span class="line">"nmap &lt;C-#&gt; :s/^/#/g&lt;CR&gt;</span><br><span class="line"></span><br><span class="line">""" 状态栏设置</span><br><span class="line">" 总是显示状态栏</span><br><span class="line">set laststatus=2</span><br><span class="line">" 状态信息</span><br><span class="line">set statusline=%f%m%r%h%w\ %=#%n\ [%&#123;&amp;fileformat&#125;:%&#123;(&amp;fenc==\"\"?&amp;enc:&amp;fenc).((exists(\"\+bomb\")\ &amp;&amp;\ &amp;bomb)?\"\+B\":\"\").\"\"&#125;:%&#123;strlen(&amp;ft)?&amp;ft:'**'&#125;]\ [%c,%l/%L]\ %p%%</span><br><span class="line"></span><br><span class="line">"""光标设置</span><br><span class="line">" 设置显示光标当前位置</span><br><span class="line">set ruler</span><br><span class="line"></span><br><span class="line">" 开启行号显示</span><br><span class="line">set number</span><br><span class="line">" 高亮显示当前行/列</span><br><span class="line">set cursorline</span><br><span class="line">" set cursorcolumn</span><br><span class="line">" 高亮显示搜索结果</span><br><span class="line">set hlsearch</span><br><span class="line">" 显示文件名</span><br><span class="line"></span><br><span class="line">" 开启语法高亮</span><br><span class="line">syntax enable</span><br><span class="line">" 允许用指定语法高亮配色方案替换默认方案</span><br><span class="line">syntax on</span><br><span class="line">" 将制表符扩展为空格</span><br><span class="line">" 设置编辑时制表符占用空格数</span><br><span class="line">" 设置格式化时制表符占用空格数</span><br><span class="line">" 让 vim 把连续数量的空格视为一个制表符</span><br><span class="line">set autoindent</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《鸟哥的LINUX私房菜》基础篇<br>
-2.<a href="https://github.com/yangyangwithgnu/use_vim_as_ide" target="_blank" rel="noopener">https://github.com/yangyangwithgnu/use_vim_as_ide</a><br>
-3.<a href="https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029" target="_blank" rel="noopener">https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《鸟哥的LINUX私房菜》基础篇<br>2.<a href="https://github.com/yangyangwithgnu/use_vim_as_ide" target="_blank" rel="noopener">https://github.com/yangyangwithgnu/use_vim_as_ide</a><br>3.<a href="https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029" target="_blank" rel="noopener">https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029</a></p>
 
           
         
@@ -2092,247 +2011,11 @@ vimrc文件如下，<a href="https://github.com/mxxhcm/code/blob/master/shell/vi
       
         
           
-            <h2 id="stdin-stdout-stderr">stdin, stdout, stderr</h2>
-<p>standard input(file handle 0)：标准输入，process利用这个file handle从用户读取数据<br>
-standard output(file handle 1)：标准输出，process向这个file handle写normal infor<br>
-standard error(file handle 2)：标准错误，process向这个file hanle写error infor</p>
-<h3 id="示例1">示例1</h3>
-<p>my_command &lt;inputfile 2&gt;errorfile | grep XYZ<br>
-执行my_command，<br>
-打开inputfile文件作为标准输入，<br>
-打开errorfile文件作为标准错误，<br>
-|重定向上述命令的结果到grep 命令</p>
-<h3 id="示例2">示例2</h3>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">echo "hello"</span><br><span class="line"><span class="meta">#</span> 是将"hello"给了echo的stdin的简写</span><br><span class="line">echo &lt; text.txt</span><br><span class="line"><span class="meta">#</span> 将text.txt给echo的stdin</span><br><span class="line">ps | grep 1000</span><br><span class="line"><span class="meta">#</span> |将ps的stdout给了grep的stdin</span><br><span class="line">ls . &gt; current_dir_list.txt</span><br><span class="line"><span class="meta">#</span> &gt;将ls .的stdout输出到相应文件</span><br><span class="line">ls. &gt;&gt; current_dir_list.txt</span><br><span class="line"><span class="meta">#</span> &gt;&gt;是追加，&gt;不是</span><br><span class="line">command 2&gt;&amp;1 output_error.txt，</span><br><span class="line"><span class="meta">#</span>可以将2&gt;&amp;1看成将stderr重定向到stdout，如果写成2&gt;1的话看起来像是将stderr重定向到一个名为$1$的文件。在redirece的上下文中，&amp;可以看成file descriptor的意思。为什么不写成&amp;2&gt;&amp;1，这会被解析成&amp; 和2&amp;1，第一个&amp;会被解析成后台运行，然后剩下的就是2&gt;&amp;1了。</span><br><span class="line"><span class="meta">#</span> 将command的stdout和stderr都输出到该文件</span><br><span class="line">command &amp;&gt; /dev/null</span><br><span class="line"><span class="meta">#</span> 将command的stderr和stdout输出到/dev/null，将会什么也不输出</span><br><span class="line"><span class="meta">#</span> &amp;&gt;是bash的扩展，而2&gt;&amp;1是standard Bourne/POSIX shell</span><br></pre></td></tr></table></figure>
-<h2 id="一个神奇的命令-dev-null">一个神奇的命令&lt;/dev/null &amp;&gt;</h2>
-<p>/dev/null是一个神奇的文件，它代表null device，会抛弃所有写入它的数据，但是会report写操作成功了，并且它不会向读取它的任何process提供任何数据，也就是向读取它的程序发送一个EOF。<br>
-所以&lt;/dev/null会发送一个EOF到stdin，&amp;就是将程序放在后台运行，&amp;的详细介绍可见<a href>linux process章节</a><br>
-这时候如果再加一个重定向命令，就是将命令的输出重定向到某个文件中而不在stdout中显示。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://unix.stackexchange.com/questions/27955/the-usage-of-dev-null-in-the-command-line" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/27955/the-usage-of-dev-null-in-the-command-line</a><br>
-2.<a href="https://stackoverflow.com/questions/3385201/confused-about-stdin-stdout-and-stderr" target="_blank" rel="noopener">https://stackoverflow.com/questions/3385201/confused-about-stdin-stdout-and-stderr</a><br>
-3.<a href="https://stackoverflow.com/questions/818255/in-the-shell-what-does-21-mean" target="_blank" rel="noopener">https://stackoverflow.com/questions/818255/in-the-shell-what-does-21-mean</a><br>
-4.<a href="https://askubuntu.com/questions/635065/what-is-the-differences-between-and-21" target="_blank" rel="noopener">https://askubuntu.com/questions/635065/what-is-the-differences-between-and-21</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">reinforcement learning an introduction 第6章笔记</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-02 14:31:49" itemprop="dateCreated datePublished" datetime="2019-06-02T14:31:49+08:00">2019-06-02</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-04 11:33:45" itemprop="dateModified" datetime="2019-06-04T11:33:45+08:00">2019-06-04</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介">简介</h2>
-<p>TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。</p>
-<h2 id="temporal-difference-learning">Temporal-Difference Learning</h2>
-<p>本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$。然后研究control问题，DP,TD,MC方法用的都是GPI方法，不同点在于prediction问题的解决方法。</p>
-<h2 id="td-prediction">TD prediction</h2>
-<p>TD和MC都从采样得到的experience中求解prediction问题。给定一个policy $\pi$下的一个experience，TD和MC方法估计在这个experience中出现的non-terminal state $S_t$的$V$。MC方法等到整个experience的return知道以后，用这个return当做$V(S_t)$的target，一个every visit MC方法更新如下：<br>
-$$V(S_t) = V(S_t) + \alpha \left[G_t - V(S_t)\right]\tag{1}$$<br>
-其中$G_t$是从时刻$t$到这个episode结束的return，$\alpha$是一个常数的步长，这个方法叫做$constant-\alpha$ MC。MC方法必须等到一个episode结束，才能进行更新，因为只有这个时候$G_t$才知道。TD方法做了改进，它使用$t+1$时刻对应的state $V(S_{t+1})$的估计值和reward $R_{t+1}$作为target：<br>
-$$V(S_t) = V(S_t) + \alpha \left[R_{t+1}+\gamma V(S_{t+1}) - V(S_t)\right]\tag{2}$$<br>
-即只要有了到$S_{t+1}$的transition并且接收到了reward $R_{t+1}$就可以进行上述更新。<br>
-MC方法的target是$G_t$，而TD方法的target是$\gamma V(S_{t+1}) + R_{t+1})$，这种TD方法叫做$TD-0$或者$one step TD$，它是$TD(\lambda)$和$n-step TD$的一种特殊情况。下面是$TD(0)$的完整算法：<br>
-算法1 Tabular TD(0) for V<br>
-输入： 待评估的policy $\pi$<br>
-算法参数：步长$\alpha \in (0,1]$<br>
-初始化： $V(s), \forall s\in S^{+}，V(terminal) = 0$<br>
-<strong>Loop</strong> for each episode<br>
-$\qquad$初始化$S$<br>
-$\qquad$$A\leftarrow \pi(a|S)$<br>
-$\qquad$<strong>Loop</strong> for each step of episode<br>
-$\qquad\qquad$执行action A，得到$S’$和$R$<br>
-$\qquad\qquad V(S) = V(S) + \alpha \left[R + \gamma V(S’) - V(S)\right]$<br>
-$\qquad\qquad$$S\leftarrow S’$<br>
-$\qquad$<strong>until</strong> S 是terminal state</p>
-<p>$TD(0)$是bootstrap方法，因为它基于其他state的value进行更新。从第三章中我们知道：<br>
-\begin{align*}<br>
-v_{\pi}(s) &amp; = \mathbb{E}_{\pi}\left[G_t\right]\tag{3}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}| S_t = s\right]\tag{4}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma V(S_{t+1})|S_t = s\right]\tag{5}\\<br>
-\end{align*}<br>
-MC使用式子$(3)$的estimate作为target，而DP使用式子$(5)$的estimate作为target。MC是估计是因为式子$(3)$中的expectation是不知道的，用一个sample的return代替真实的expected return；DP是因为$v_{\pi}(S_{t+1})$是不知道的，用$V(S_{t+1})$作为一个估计。TD target也是estimate，TD既进行了采样也使用了$V$的估计值，它对式子$(4)$中的tranisition进行sample，同时使用$v_{\pi}$的估计值$V$进行计算。所以TD结合了MC的采样以及DP的bootstrap。<br>
-<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png" alt="backup_TD"><br>
-TD的backup图如图所示。TD和MC更新叫做sample update，因为这两个算法都牵涉到采样一个successor state，使用这个successor和reward计算一个backup value。sample updates和expected updates的不同在于，他们一个使用sample更新，一个使用所有可能的successors进行更新。<br>
-$R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$可以看成一类error，度量了$S_t$的estimated value $S_t$和一个更好的estimated value之间的差异$R_{t+1} +\gamma V(S_{t+1})$，这叫做$TD error$，用$\delta_t$表示。$\delta_t$是$V(S_t)$的error，在$t+1$时刻可用，如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。<br>
-\begin{align*}<br>
-G_t - V(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V(S_t) + \gamma V(S_{t+1}) - \gamma V(S_{t+1})\\<br>
-&amp; = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
-&amp; = \delta_t + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
-&amp; = \delta_t + \gamma(G_{t+1} - V(S_{t+1}))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2(G_{t+2} - V(S_{t+2}))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(G_T-V(S_T))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(0-0)\\<br>
-&amp; = \sum_{k=t}^{T-1} \gamma^{k-t}\delta_k \tag{6}\\<br>
-\end{align*}<br>
-如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。</p>
-<p>\begin{align*}<br>
-G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t+1}) - \gamma V_{t+1}(S_{t+1})\\<br>
-&amp; = R_{t+1} + \gamma V_{t+1}(S_{t+1}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t+1})\\<br>
-&amp;= \\<br>
-\end{align*}</p>
+            <h2 id="stdin-stdout-stderr"><a href="#stdin-stdout-stderr" class="headerlink" title="stdin, stdout, stderr"></a>stdin, stdout, stderr</h2><p>standard input(file handle 0)：标准输入，process利用这个file handle从用户读取数据<br>standard output(file handle 1)：标准输出，process向这个file handle写normal infor<br>standard error(file handle 2)：标准错误，process向这个file hanle写error infor</p>
+<h3 id="示例1"><a href="#示例1" class="headerlink" title="示例1"></a>示例1</h3><p>my_command \<inputfile 2\>errorfile | grep XYZ<br>执行my_command，<br>打开inputfile文件作为标准输入，<br>打开errorfile文件作为标准错误，<br>|重定向上述命令的结果到grep 命令</inputfile></p>
+<h3 id="示例2"><a href="#示例2" class="headerlink" title="示例2"></a>示例2</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">echo "hello"</span><br><span class="line"><span class="meta">#</span> 是将"hello"给了echo的stdin的简写</span><br><span class="line">echo &lt; text.txt</span><br><span class="line"><span class="meta">#</span> 将text.txt给echo的stdin</span><br><span class="line">ps | grep 1000</span><br><span class="line"><span class="meta">#</span> |将ps的stdout给了grep的stdin</span><br><span class="line">ls . &gt; current_dir_list.txt</span><br><span class="line"><span class="meta">#</span> &gt;将ls .的stdout输出到相应文件</span><br><span class="line">ls. &gt;&gt; current_dir_list.txt</span><br><span class="line"><span class="meta">#</span> &gt;&gt;是追加，&gt;不是</span><br><span class="line">command 2&gt;&amp;1 output_error.txt，</span><br><span class="line"><span class="meta">#</span>可以将2&gt;&amp;1看成将stderr重定向到stdout，如果写成2&gt;1的话看起来像是将stderr重定向到一个名为$1$的文件。在redirece的上下文中，&amp;可以看成file descriptor的意思。为什么不写成&amp;2&gt;&amp;1，这会被解析成&amp; 和2&amp;1，第一个&amp;会被解析成后台运行，然后剩下的就是2&gt;&amp;1了。</span><br><span class="line"><span class="meta">#</span> 将command的stdout和stderr都输出到该文件</span><br><span class="line">command &amp;&gt; /dev/null</span><br><span class="line"><span class="meta">#</span> 将command的stderr和stdout输出到/dev/null，将会什么也不输出</span><br><span class="line"><span class="meta">#</span> &amp;&gt;是bash的扩展，而2&gt;&amp;1是standard Bourne/POSIX shell</span><br></pre></td></tr></table></figure>
+<h2 id="一个神奇的命令-lt-dev-null-amp-gt"><a href="#一个神奇的命令-lt-dev-null-amp-gt" class="headerlink" title="一个神奇的命令\&lt;/dev/null &amp;&gt;"></a>一个神奇的命令\&lt;/dev/null &amp;&gt;</h2><p>/dev/null是一个神奇的文件，它代表null device，会抛弃所有写入它的数据，但是会report写操作成功了，并且它不会向读取它的任何process提供任何数据，也就是向读取它的程序发送一个EOF。<br>所以\&lt;/dev/null会发送一个EOF到stdin，&amp;就是将程序放在后台运行，&amp;的详细介绍可见<a href>linux process章节</a><br>这时候如果再加一个重定向命令，就是将命令的输出重定向到某个文件中而不在stdout中显示。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://unix.stackexchange.com/questions/27955/the-usage-of-dev-null-in-the-command-line" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/27955/the-usage-of-dev-null-in-the-command-line</a><br>2.<a href="https://stackoverflow.com/questions/3385201/confused-about-stdin-stdout-and-stderr" target="_blank" rel="noopener">https://stackoverflow.com/questions/3385201/confused-about-stdin-stdout-and-stderr</a><br>3.<a href="https://stackoverflow.com/questions/818255/in-the-shell-what-does-21-mean" target="_blank" rel="noopener">https://stackoverflow.com/questions/818255/in-the-shell-what-does-21-mean</a><br>4.<a href="https://askubuntu.com/questions/635065/what-is-the-differences-between-and-21" target="_blank" rel="noopener">https://askubuntu.com/questions/635065/what-is-the-differences-between-and-21</a></p>
 
           
         
@@ -2423,7 +2106,7 @@ G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">139</span>
+                    <span class="site-state-item-count">140</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2715,7 +2398,9 @@ G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t
                     
                       
                     
-                    <span class="site-state-item-count">120</span>
+                      
+                    
+                    <span class="site-state-item-count">121</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -2974,9 +2659,9 @@ G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t
       
     
       
-        
-      
     
+      
+        
       
     
       

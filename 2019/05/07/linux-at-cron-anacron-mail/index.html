@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="例行性工作 at    仅执行一次 cron  周期性执行 anacron   适合不常开机的设置  at仅执行一次的工作调度参数说明at [-lmdvc] TIME    -m 当at完成时，即使没有输出信息，以mail通知用户    -v 可以使用较明显的时间格式列出at调度中的工作    -c 可以列出后面接的该项工作的实际命令内容    -d 相当于atrm，可以取消一个at工作    -">
+<meta name="keywords" content="linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux at cron anacron mail">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/05/07/linux-at-cron-anacron-mail/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="例行性工作 at    仅执行一次 cron  周期性执行 anacron   适合不常开机的设置  at仅执行一次的工作调度参数说明at [-lmdvc] TIME    -m 当at完成时，即使没有输出信息，以mail通知用户    -v 可以使用较明显的时间格式列出at调度中的工作    -c 可以列出后面接的该项工作的实际命令内容    -d 相当于atrm，可以取消一个at工作    -">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-12T02:13:57.619Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="linux at cron anacron mail">
+<meta name="twitter:description" content="例行性工作 at    仅执行一次 cron  周期性执行 anacron   适合不常开机的设置  at仅执行一次的工作调度参数说明at [-lmdvc] TIME    -m 当at完成时，即使没有输出信息，以mail通知用户    -v 可以使用较明显的时间格式列出at调度中的工作    -c 可以列出后面接的该项工作的实际命令内容    -d 相当于atrm，可以取消一个at工作    -">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/05/07/linux-at-cron-anacron-mail/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>linux at cron anacron mail | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-at-cron-anacron-mail/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">linux at cron anacron mail
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 16:50:33" itemprop="dateCreated datePublished" datetime="2019-05-07T16:50:33+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-12 10:13:57" itemprop="dateModified" datetime="2019-06-12T10:13:57+08:00">2019-06-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/05/07/linux-at-cron-anacron-mail/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/05/07/linux-at-cron-anacron-mail/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="例行性工作"><a href="#例行性工作" class="headerlink" title="例行性工作"></a>例行性工作</h2><ul>
+<li>at    仅执行一次</li>
+<li>cron  周期性执行</li>
+<li>anacron   适合不常开机的设置</li>
+</ul>
+<h2 id="at仅执行一次的工作调度"><a href="#at仅执行一次的工作调度" class="headerlink" title="at仅执行一次的工作调度"></a>at仅执行一次的工作调度</h2><h3 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h3><p>at [-lmdvc] TIME<br>    -m 当at完成时，即使没有输出信息，以mail通知用户<br>    -v 可以使用较明显的时间格式列出at调度中的工作<br>    -c 可以列出后面接的该项工作的实际命令内容<br>    -d 相当于atrm，可以取消一个at工作<br>    -l 相当于atq，列出目前系统上所有该用户的at调度<br>    -b 相当于batch<br>    TIME<br>        HH:MM    04:00<br>        HH:MM YYYY-MM-DD    05:00 2016-10-05<br>        HH:MM[pm|am] [Month] [Date] 04 January 10<br>        HH:MM [am|pm] + number [minutes|hours|days|weeks]<br>            now + 5 minutes<br>            05pm + 3days<br>            04pm + 10 days</p>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><h4 id="创建一个job"><a href="#创建一个job" class="headerlink" title="创建一个job"></a>创建一个job</h4><p>~$:at now+1minutes<br>at>echo “create a job”<br>按ctrl+D结束<br>OK，但是这样子我找不到任何程序的输出在哪里。<br>所以可以改成这样子<br>at>echo “create a job” > at_job.output<br>或者<br>~$:echo “create a job” > at_job.output | at now</p>
+<h4 id="列出所有at-jobs"><a href="#列出所有at-jobs" class="headerlink" title="列出所有at jobs"></a>列出所有at jobs</h4><p>~$:at -l   # 列出at的所有任务<br>~$:atq</p>
+<h4 id="列出某个job"><a href="#列出某个job" class="headerlink" title="列出某个job"></a>列出某个job</h4><p>~$:at -c <a href="1, 2..">number</a> # 如果当前没有相应的job，会输出cannot find jobid x</p>
+<h4 id="删除某个job"><a href="#删除某个job" class="headerlink" title="删除某个job"></a>删除某个job</h4><p>~$:at -r 8<br>~$:atrm 1</p>
+<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p>/etc/at.allow   # 哪些人能使用<br>/etc/at.deny    # 哪些人不能使用<br>使用at命令的话，先查找at.allow，如果存在并且有内容，那么只有这些人能使用。如果不存在的话，就去找at.deny。</p>
+<h2 id="batch"><a href="#batch" class="headerlink" title="batch"></a>batch</h2><p>当空闲时执行，空闲指的是CPU占用率在$0.8$以下</p>
+<h2 id="crond例行性工作调度"><a href="#crond例行性工作调度" class="headerlink" title="crond例行性工作调度"></a>crond例行性工作调度</h2><h3 id="参数介绍"><a href="#参数介绍" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>crontab [-u user] [-ler]<br>    -u　只有root能设置这个参数<br>    -l　列出当前用户的所有crontab工作内容<br>    -e  编辑crontab的内容<br>    -r　删除所有crontab的内容</p>
+<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><h4 id="新建crontab"><a href="#新建crontab" class="headerlink" title="新建crontab"></a>新建crontab</h4><p><strong>注意：周与月日不可共存</strong><br>~$:crontab -e<br>* * * * * cmd<br>分钟　小时　日期　月份　星期<br>*表示任何取值，<br>-表示时间范围 0-59,<br>“,”表示分隔 3,6,9<br>“/n”，如*/5每过五个单位(分钟，小时，天)<br>比如添加每一小时给荟荟发一封邮件，需要添加以下内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* */1 * * * echo &quot;I love you.&quot; | mail -s &quot;huhui&quot; 18811367922@163.com</span><br></pre></td></tr></table></figure></p>
+<h4 id="删除一个crontab"><a href="#删除一个crontab" class="headerlink" title="删除一个crontab"></a>删除一个crontab</h4><p>~$:crontab -e<br>然后手动编辑要删除的crontab</p>
+<h4 id="删除所有crontab"><a href="#删除所有crontab" class="headerlink" title="删除所有crontab"></a>删除所有crontab</h4><p>~$:crontab -r # 删除所有的crontab</p>
+<h3 id="开启-var-log-cron-log"><a href="#开启-var-log-cron-log" class="headerlink" title="开启/var/log/cron.log"></a>开启/var/log/cron.log</h3><p>~$:vim /etc/rsyslog.d/50-default.conf<br>将rsylog文件中的#cron.*前的#去掉<br>~$:service rsyslog restart<br>~$:service cron restart<br>~$:vim /var/log/cron.log</p>
+<h3 id="系统任务"><a href="#系统任务" class="headerlink" title="系统任务"></a>系统任务</h3><p>/etc/crontab 为系统的例行性任务，它会执行以下run-parts</p>
+<ul>
+<li>/etc/cron.daily/</li>
+<li>/etc/cron.hourly/</li>
+<li>/etc/cron.monthly/</li>
+<li>/etc/cron.weekly/</li>
+</ul>
+<h3 id="自定义run-parts"><a href="#自定义run-parts" class="headerlink" title="自定义run-parts"></a>自定义run-parts</h3><p>直接编辑/etc/crontab文件，在其中添加</p>
+<h1 id="m-h-dom-mon-dow-user-command"><a href="#m-h-dom-mon-dow-user-command" class="headerlink" title="m h dom mon dow user    command"></a>m h dom mon dow user    command</h1><p>*/2 * * * * root   run-parts /etc/cron.minutely<br>*/5 * * * * root   run-parts /root/runcron</p>
+<h1 id="上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本"><a href="#上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本" class="headerlink" title="上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本"></a>上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本</h1><p>* * * * * mxxmhh /bin/bash /home/mxxmhh/outputtime_minutes.sh<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#! /bin/bash</span><br><span class="line">time=`date`</span><br><span class="line">echo $time &gt;&gt; /home/mxxmhh/test.log</span><br></pre></td></tr></table></figure></p>
+<h3 id="crontab-e-vs-vim-etc-crontab"><a href="#crontab-e-vs-vim-etc-crontab" class="headerlink" title="crontab -e vs vim /etc/crontab"></a>crontab -e vs vim /etc/crontab</h3><p>他们的格式不同，一个需要指定用户，一个不需要<br>只有root能够修改/etc/crontab，而crontab -e所有不在cron.deny中的用户都可以<br>/etc/crontab是系统的任务，crontab -e是用户的任务</p>
+<h3 id="配置文件-1"><a href="#配置文件-1" class="headerlink" title="配置文件"></a>配置文件</h3><p>ubuntu中没有下面两个配置项<br>/etc/cron.allow<br>/etc/cron.deny<br>即默认为所有用户都可以使用crontab</p>
+<h3 id="cron-spool"><a href="#cron-spool" class="headerlink" title="cron spool"></a>cron spool</h3><p>/var/spool/cron/crontabs/<br>该目录下为不同账号的crontab内容</p>
+<h2 id="anacron-处理非24小时开机的系统"><a href="#anacron-处理非24小时开机的系统" class="headerlink" title="anacron 处理非24小时开机的系统"></a>anacron 处理非24小时开机的系统</h2><h3 id="参数介绍-1"><a href="#参数介绍-1" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>anacron [-usfn] [job]<br>    -u 更新记录文件的时间戳<br>    -s 开始连续执行各项job，依据记录文件的时间戳判断是否进行<br>    -f 强制执行，不管时间戳<br>    -n 立即进行未进行的任务，而不延迟</p>
+<h3 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h3><p>系统的anacron文件都在目录/etc/cron*/*ana*存放<br>/etc/cron.daily/0anacron<br>0表示最先被执行，让时间戳先被更新，避免anacron误判<br>/etc/anacron    anacron的设置</p>
+<p>/var/spool/anacron/*<br>记录最近一次执行anacron的时间戳</p>
+<h2 id="mail命令介绍"><a href="#mail命令介绍" class="headerlink" title="mail命令介绍"></a>mail命令介绍</h2><p>mail -s “title” target_email_address<br>echo “content |mail -s “title” target_email_address<br>mail -s “title target_email_address &lt; file #将file的内容当做邮件正文</p>
+<h2 id="mail发送邮件"><a href="#mail发送邮件" class="headerlink" title="mail发送邮件"></a>mail发送邮件</h2><h3 id="安装相应软件"><a href="#安装相应软件" class="headerlink" title="安装相应软件"></a>安装相应软件</h3><p>~$:sudo apt-get install postfix mailutils libsasl2-2 ca-certificates libsasl2-modules<br>编辑/etc/postfix/main.cf文件，在文件末尾添加下列内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 指定默认的邮件发送服务器</span><br><span class="line">relayhost = [smtp.gmail.com]:587</span><br><span class="line"># 激活sasl认证</span><br><span class="line">smtp_sasl_auth_enable = yes</span><br><span class="line"># 指定sasl密码配置文件</span><br><span class="line">smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd</span><br><span class="line"># 非匿名登录</span><br><span class="line">smtp_sasl_security_options = noanonymous</span><br><span class="line"># linux用户与发件人的对应关系配置文件</span><br><span class="line">sender_canonical_maps = hash:/etc/postfix/sender_canonical </span><br><span class="line">smtp_tls_CApath = /etc/ssl/certs</span><br><span class="line">smtpd_tls_CApath = /etc/ssl/certs</span><br><span class="line">smtp_use_tls = yes</span><br></pre></td></tr></table></figure></p>
+<h3 id="创建密码配置文件"><a href="#创建密码配置文件" class="headerlink" title="创建密码配置文件"></a>创建密码配置文件</h3><p>~$:vim /etc/postfix/sasl_passwd<br>添加如下内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 163邮箱格式</span><br><span class="line">[smtp.163.com]:25 your163mail:your163mailpassword   #注意这里如果直接用passwd是会报错的，需要使用授权码</span><br><span class="line"># gamil邮箱格式</span><br><span class="line">[smtp.gmail.com]:587 yourgmail:yourgmailpassword</span><br></pre></td></tr></table></figure></p>
+<p>~$:sudo postmap /etc/postfix/sasl_passwd</p>
+<h3 id="创建用户与发件人对应文件"><a href="#创建用户与发件人对应文件" class="headerlink" title="创建用户与发件人对应文件"></a>创建用户与发件人对应文件</h3><p>~$:vim /etc/postfix/sender_canonical<br>添加如下内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root your163mail</span><br><span class="line">user1 yourgmail</span><br></pre></td></tr></table></figure></p>
+<p>~$:sudo postmap /etc/postfix/sender_canonical</p>
+<h3 id="重启postfix服务"><a href="#重启postfix服务" class="headerlink" title="重启postfix服务"></a>重启postfix服务</h3><p>~$:sudo /etc/init.d/postfix reload<br>或者<br>~$:sudo systemctl relaod postfix.service<br>或者<br>~$:sudo service postfix restart</p>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>~$:echo “Hello.” |mail -s “I love you.” 18811376816@163.com</p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><p>更多at命令的TIME格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">noon	</span><br><span class="line">midnight	</span><br><span class="line">teatime	</span><br><span class="line">tomorrow	</span><br><span class="line">noon tomorrow	</span><br><span class="line">next week	</span><br><span class="line">next monday	</span><br><span class="line">fri	</span><br><span class="line">NOV	</span><br><span class="line">9:00 AM	</span><br><span class="line">2:30 PM	</span><br><span class="line">1430	</span><br><span class="line">2:30 PM tomorrow	</span><br><span class="line">2:30 PM next month	</span><br><span class="line">2:30 PM Fri	</span><br><span class="line">2:30 PM 10/21	</span><br><span class="line">2:30 PM Oct 21	</span><br><span class="line">2:30 PM 10/21/2014	</span><br><span class="line">2:30 PM 21.10.14	</span><br><span class="line">now + 30 minutes	</span><br><span class="line">now + 1 hour	</span><br><span class="line">now + 2 days	</span><br><span class="line">4 PM + 2 days	</span><br><span class="line">now + 3 weeks	</span><br><span class="line">now + 4 months	</span><br><span class="line">now + 5 years</span><br></pre></td></tr></table></figure></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《鸟哥的LINUX私房菜》<br>2.<a href="https://zhidao.baidu.com/question/249718018.html" target="_blank" rel="noopener">https://zhidao.baidu.com/question/249718018.html</a><br>3.<a href="https://askubuntu.com/questions/1112772/send-system-mail-ubuntu-18-04" target="_blank" rel="noopener">https://askubuntu.com/questions/1112772/send-system-mail-ubuntu-18-04</a><br>4.<a href="https://www.cnblogs.com/tugeler/p/6620150.html" target="_blank" rel="noopener">https://www.cnblogs.com/tugeler/p/6620150.html</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/linux/" rel="tag"># linux</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/07/linux-service/" rel="next" title="linux service">
+                <i class="fa fa-chevron-left"></i> linux service
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/07/linux-raid-lvm/" rel="prev" title="linux raid lvm">
+                linux raid lvm <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">140</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">13</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">121</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#例行性工作"><span class="nav-number">1.</span> <span class="nav-text">例行性工作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#at仅执行一次的工作调度"><span class="nav-number">2.</span> <span class="nav-text">at仅执行一次的工作调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参数说明"><span class="nav-number">2.1.</span> <span class="nav-text">参数说明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">2.2.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建一个job"><span class="nav-number">2.2.1.</span> <span class="nav-text">创建一个job</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#列出所有at-jobs"><span class="nav-number">2.2.2.</span> <span class="nav-text">列出所有at jobs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#列出某个job"><span class="nav-number">2.2.3.</span> <span class="nav-text">列出某个job</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除某个job"><span class="nav-number">2.2.4.</span> <span class="nav-text">删除某个job</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置文件"><span class="nav-number">2.3.</span> <span class="nav-text">配置文件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#batch"><span class="nav-number">3.</span> <span class="nav-text">batch</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#crond例行性工作调度"><span class="nav-number">4.</span> <span class="nav-text">crond例行性工作调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参数介绍"><span class="nav-number">4.1.</span> <span class="nav-text">参数介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例-1"><span class="nav-number">4.2.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#新建crontab"><span class="nav-number">4.2.1.</span> <span class="nav-text">新建crontab</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除一个crontab"><span class="nav-number">4.2.2.</span> <span class="nav-text">删除一个crontab</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#删除所有crontab"><span class="nav-number">4.2.3.</span> <span class="nav-text">删除所有crontab</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#开启-var-log-cron-log"><span class="nav-number">4.3.</span> <span class="nav-text">开启/var/log/cron.log</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#系统任务"><span class="nav-number">4.4.</span> <span class="nav-text">系统任务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自定义run-parts"><span class="nav-number">4.5.</span> <span class="nav-text">自定义run-parts</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#m-h-dom-mon-dow-user-command"><span class="nav-number"></span> <span class="nav-text">m h dom mon dow user    command</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本"><span class="nav-number"></span> <span class="nav-text">上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#crontab-e-vs-vim-etc-crontab"><span class="nav-number">0.1.</span> <span class="nav-text">crontab -e vs vim /etc/crontab</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置文件-1"><span class="nav-number">0.2.</span> <span class="nav-text">配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cron-spool"><span class="nav-number">0.3.</span> <span class="nav-text">cron spool</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#anacron-处理非24小时开机的系统"><span class="nav-number">1.</span> <span class="nav-text">anacron 处理非24小时开机的系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参数介绍-1"><span class="nav-number">1.1.</span> <span class="nav-text">参数介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例-2"><span class="nav-number">1.2.</span> <span class="nav-text">示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mail命令介绍"><span class="nav-number">2.</span> <span class="nav-text">mail命令介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mail发送邮件"><span class="nav-number">3.</span> <span class="nav-text">mail发送邮件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#安装相应软件"><span class="nav-number">3.1.</span> <span class="nav-text">安装相应软件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建密码配置文件"><span class="nav-number">3.2.</span> <span class="nav-text">创建密码配置文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建用户与发件人对应文件"><span class="nav-number">3.3.</span> <span class="nav-text">创建用户与发件人对应文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重启postfix服务"><span class="nav-number">3.4.</span> <span class="nav-text">重启postfix服务</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试"><span class="nav-number">3.5.</span> <span class="nav-text">测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">4.</span> <span class="nav-text">附录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
