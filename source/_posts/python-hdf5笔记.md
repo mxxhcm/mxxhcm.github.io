@@ -97,10 +97,13 @@ group.attrs["attr_name"]="attr_value"    #设置attr
 print(group.attrs["attr_name"])                #访问attr
 
 ## numpy and h5py
+``` python
 f = h5py.File(pathname,"r")
 
 data = f['data']    # type 是dataset
 data = f['data'][:] #type是numpy ndarray
+f.close()
+```
 
 ## 参考文献
 1.http://docs.h5py.org/en/latest/index.html

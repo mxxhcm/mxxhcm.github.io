@@ -31,14 +31,14 @@ array[array>0].size    #统计一个数组有多少个非零元素，不论array
 
 例子
 ``` python
-np.zeros((3,4),dtype='i')
+np.zeros((3, 4),dtype='i')
 ``` 
 
 #### numpy.empty()
 > np.empty(shape,dtype=float,order='C')
 例子
 ``` python
-np.empty((3,4),dtype='f')
+np.empty((3, 4),dtype='f')
 ```
 
 ### numpy.random()

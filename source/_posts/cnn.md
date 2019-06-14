@@ -52,7 +52,6 @@ deepth=n时，filter=（3,3），会处理输入中$33\times n$个节点的值
 ## Alexnet(2012)
 论文名称：ImageNet Classification with Deep Convolutional Neural Networks
 论文地址：http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf
-
 ### 概述
 作者提出了一个卷积神经网络架构对Imagenet中$1000$类中的$120$万张图片进行分类。网络架构包含$5$个卷积层，$3$个全连接层，和一个$1000$-way的softmax层，整个网络共有$6000$万参数，$65000$个神经元。作者提出了一些方法提高性能和减少训练的时间，并且介绍了一些防止过拟合的技巧。最后在imagenet测试集上，跑出$37.5%$的top-1 error以及$17.0%$的top-5 error。
 本文主要的contribution：
@@ -149,7 +148,84 @@ ILSVRC-2010
 pytorch实现
 https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 
-## ZFNet(2013)
+## NIN
+论文名称：Network In Network
+论文地址：https://arxiv.org/pdf/1312.4400.pdf
+
+### 摘要
+
+
+## OverFeat(2013)
+论文名称：OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks
+论文地址：https://arxiv.org/pdf/1312.6229.pdf
+### 概述
+本文提出了一个可用于classification, localization和detection等任务的CNN框架。
+ImageNet数据集中大部分选择的是几乎填满了整个image中心的object，image中我们感兴趣的objects的大小和位置也可能变化很大。为了解决这个问题，作者提出了三个方法：
+1. 用sliding window和multiple scales在image的多个位置apply ConvNet。即使这样，许多window中可能包含能够完美识别object类型的一部分，比如一个狗头。。。最后的结果是classfication很好，但是localization和detection结果很差。
+2. 训练一个网络不仅仅预测每一个window的category distribution，还预测包含object的bounding box相对于window的位置和大小。
+3. 在每个位置和大小累加每个category的evidence
+
+
+### Vision任务
+classification，localization和detection。classification和localization通常只有一个很大的object，而detection需要找到很多很小的objects。
+classification任务中，每个image都有一个label对应image中主要的object的类型。为了找到正确的label，每个图片可以猜$5$次（图片中可能包含了没有label的数据）。localization任务中，不仅要给出label，还需要找到这个label对应的bouding box，bounding box和groundtruth至少要有$50$匹配，label和bounding box也需要匹配。detection和localization不同的是，detection任务中可以有任何数量的objects，false positive会使用mean average precison measure。localization任务可以看成classification到detection任务的一个中间步。
+
+### FCN
+用卷积层代替全连接层。具体是什么意思呢。
+alexnet中，有5层卷积层，3层全连接层。假设第五层的输出是$5\times 5 \times 512$，$512$是output channels number，$5\times 5$是第五层的feature maps大小。如果使用全连接的话，假设第六层的输出单元是$N$个，第六层权重总共是$(5\times 5\times 512) \* (N)$，对于一个训练好的网络，图片的输入大小是固定的，因为第六层的输入需要固定。如果输入一个其他大小的图片，网络是会出错的，所以就有了Fully Convolutional networks，它可以处理不同大小的输入图片。
+如下所示，使用某个大小的image训练的网络，在classifier处用卷积层替换全连接层，如果使用全连接层，首先将$(5, 5, out_channels)$的feature map进行flatten $5\times 5\times out_channels$，然后经过三层全连接，最后输出一个softmax的结果。而fcn使用卷积层代替全连接，使用$N$个$5\times 5$的卷积核，直接得到$1\tims 1 \times N$的结果，最后得到一个$1\times 1\times C$的输出，$C$代表图像类别，$N$代表全连接层中隐藏节点的数量。
+![fcn](fcn.png)
+事实上，FCN和全连接的本质上都是一样的，只不过一个进行了flatten，一个直接对feature map进行操作，直接对feature map操作可以处理不同大小的输入，而flatten不行。
+当输入图片大小发生变化时，输出大小也会改变，但是网络并不会出错，如下所示：
+![fcn2](fcn2.png)
+最后输出的结果是$2\times 2 \times C$的结果，可以直接对它们取平均，最后得到一个$1\times 1\times C$的分类结果。
+
+### offset Max pooling
+我们之前做max pooling的时候，设$kernel_size=3, stride_size=1$，如果feature map是$3$的倍数，那么只有一个pooling的结果，但是如果不是$3$的倍数，max pooling会很多个结果，比如有个$20\times 20$的feature map，在$x,y$上做max pooling分别有三种结果，分别从$x,y$的位置$0$开始，位置$1$开始，位置$2$开始，排列组合有$9$中情况，这九种情况的结果是不同的。
+如下图所示，在一维的长为$20$的pixels上做maxpooling，有三种情况。
+![offset_maxpooling](offset_maxpooling.png)
+
+### overfeat
+这两个方法中，fcn是在输入图片上进行的window sliding，而offset maxpooling是在feature map进行的window sliding，这两个方法结合起来就是overfeat，要比alexnet直接在输入图片上进行window sliding 要好。
+
+### Classification
+#### training
+- datset
+Image 2012 trainign set（1.2million iamges，C=$1000$ classes)。
+- data argumented
+对每张图片进行下采样，所以每个图片最小的dimension需要是$256$。
+提取$5$个random crops以及horizaontal flips，总共$10$个$221\times 221$的图片
+- batchsize
+$128$
+- 初始权重
+$(\mu, \sigma)= (0, 1\times 10\^{-2})$
+- momentum
+0.6
+- l2 weigth decay
+$1\times 10\^{-5}$
+- lr
+初始是$5\times 10\^{-2}$，在$(30,50,60,70,80)$个epoches后，乘以$0.5$
+- non-spatial
+这个说的是什么呢，在test的时候，会输出多个output maps，对他们的结果做平均，而在training的时候，output maps是$1\times 1$。
+
+#### model架构
+下图展示的是fast model，spatial input size在train和test时候是不同的，这里展示的是train时的spatial seize。layer 5是最上层的CNN，receptive filed最大。后续是FC layers，在test时候使用了sliding window。在spatial设置中，FC-layers替换成了$1\times 1$的卷积。
+![overfeat_fast](overfeat_fast.png)
+下图给出了accuracy model的结构，
+![overfeat_accuracy](overfeat_accuracy.png)
+总的来说，这两个模型都在alexnet上做了一些修改，但是整体架构没有大的创新。
+
+#### 多scale classification 
+alexnet中，对一张照片的$10$个views（中间，四个角和horizontal flip)的结果做了平均，这种方式可能会忽略很多趋于，同时如果不同的views有重叠的话，计算很redundant。此外，alexnet中只使用了一个scale。
+作者对每个iamge的每一个location和多个scale都进行计算。
+如下图，对应了不同大小的输入图片，layer 5 post pool中$(m\times n)\time(3\times 3)$，前面$m\times n$是fcn得到的不同位置的feature map，后面$3\times 3$是$kernel_size=3$的offset max pooling得到的featrue map。乘起来是所有的预测结果。
+![multi_scale](multi_scale.png)
+
+### localization
+
+### Detection
+
+## ZFNet(2014)
 论文名称：Visualizing and Understanding Convolutional Networks
 论文地址：https://cs.nyu.edu/~fergus/papers/zeilerECCV2014.pdf
 为什么叫ZFNet，两个作者名字首字母的拼写。
@@ -230,78 +306,8 @@ model是否真的识别了object在image中的位置，还是仅仅使用了上�
 第一个实验通过使用，证明了前面的特征提取层和fc layers都是有用的。
 第二个实验保留前面的特征提取层和fc layers，将最后的softmax替换。
 
-## OverFeat(2013)
-论文名称：OverFeat: Integrated Recognition, Localization and Detection using Convolutional Networks
-论文地址：https://arxiv.org/pdf/1312.6229.pdf
-### 概述
-本文提出了一个可用于classification, localization和detection等任务的CNN框架。
-ImageNet数据集中大部分选择的是几乎填满了整个image中心的object，image中我们感兴趣的objects的大小和位置也可能变化很大。为了解决这个问题，作者提出了三个方法：
-1. 用sliding window和multiple scales在image的多个位置apply ConvNet。即使这样，许多window中可能包含能够完美识别object类型的一部分，比如一个狗头。。。最后的结果是classfication很好，但是localization和detection结果很差。
-2. 训练一个网络不仅仅预测每一个window的category distribution，还预测包含object的bounding box相对于window的位置和大小。
-3. 在每个位置和大小累加每个category的evidence
 
-
-### Vision任务
-classification，localization和detection。classification和localization通常只有一个很大的object，而detection需要找到很多很小的objects。
-classification任务中，每个image都有一个label对应image中主要的object的类型。为了找到正确的label，每个图片可以猜$5$次（图片中可能包含了没有label的数据）。localization任务中，不仅要给出label，还需要找到这个label对应的bouding box，bounding box和groundtruth至少要有$50$匹配，label和bounding box也需要匹配。detection和localization不同的是，detection任务中可以有任何数量的objects，false positive会使用mean average precison measure。localization任务可以看成classification到detection任务的一个中间步。
-
-### FCN
-用卷积层代替全连接层。具体是什么意思呢。
-alexnet中，有5层卷积层，3层全连接层。假设第五层的输出是$5\times 5 \times 512$，$512$是output channels number，$5\times 5$是第五层的feature maps大小。如果使用全连接的话，假设第六层的输出单元是$N$个，第六层权重总共是$(5\times 5\times 512) \* (N)$，对于一个训练好的网络，图片的输入大小是固定的，因为第六层的输入需要固定。如果输入一个其他大小的图片，网络是会出错的，所以就有了Fully Convolutional networks，它可以处理不同大小的输入图片。
-如下所示，使用某个大小的image训练的网络，在classifier处用卷积层替换全连接层，如果使用全连接层，首先将$(5, 5, out_channels)$的feature map进行flatten $5\times 5\times out_channels$，然后经过三层全连接，最后输出一个softmax的结果。而fcn使用卷积层代替全连接，使用$N$个$5\times 5$的卷积核，直接得到$1\tims 1 \times N$的结果，最后得到一个$1\times 1\times C$的输出，$C$代表图像类别，$N$代表全连接层中隐藏节点的数量。
-![fcn](fcn.png)
-事实上，FCN和全连接的本质上都是一样的，只不过一个进行了flatten，一个直接对feature map进行操作，直接对feature map操作可以处理不同大小的输入，而flatten不行。
-当输入图片大小发生变化时，输出大小也会改变，但是网络并不会出错，如下所示：
-![fcn2](fcn2.png)
-最后输出的结果是$2\times 2 \times C$的结果，可以直接对它们取平均，最后得到一个$1\times 1\times C$的分类结果。
-
-### offset Max pooling
-我们之前做max pooling的时候，设$kernel_size=3, stride_size=1$，如果feature map是$3$的倍数，那么只有一个pooling的结果，但是如果不是$3$的倍数，max pooling会很多个结果，比如有个$20\times 20$的feature map，在$x,y$上做max pooling分别有三种结果，分别从$x,y$的位置$0$开始，位置$1$开始，位置$2$开始，排列组合有$9$中情况，这九种情况的结果是不同的。
-如下图所示，在一维的长为$20$的pixels上做maxpooling，有三种情况。
-![offset_maxpooling](offset_maxpooling.png)
-
-### overfeat
-这两个方法中，fcn是在输入图片上进行的window sliding，而offset maxpooling是在feature map进行的window sliding，这两个方法结合起来就是overfeat，要比alexnet直接在输入图片上进行window sliding 要好。
-
-### Classification
-#### training
-- datset
-Image 2012 trainign set（1.2million iamges，C=$1000$ classes)。
-- data argumented
-对每张图片进行下采样，所以每个图片最小的dimension需要是$256$。
-提取$5$个random crops以及horizaontal flips，总共$10$个$221\times 221$的图片
-- batchsize
-$128$
-- 初始权重
-$(\mu, \sigma)= (0, 1\times 10\^{-2})$
-- momentum
-0.6
-- l2 weigth decay
-$1\times 10\^{-5}$
-- lr
-初始是$5\times 10\^{-2}$，在$(30,50,60,70,80)$个epoches后，乘以$0.5$
-- non-spatial
-这个说的是什么呢，在test的时候，会输出多个output maps，对他们的结果做平均，而在training的时候，output maps是$1\times 1$。
-
-#### model架构
-下图展示的是fast model，spatial input size在train和test时候是不同的，这里展示的是train时的spatial seize。layer 5是最上层的CNN，receptive filed最大。后续是FC layers，在test时候使用了sliding window。在spatial设置中，FC-layers替换成了$1\times 1$的卷积。
-![overfeat_fast](overfeat_fast.png)
-下图给出了accuracy model的结构，
-![overfeat_accuracy](overfeat_accuracy.png)
-总的来说，这两个模型都在alexnet上做了一些修改，但是整体架构没有大的创新。
-
-#### 多scale classification 
-alexnet中，对一张照片的$10$个views（中间，四个角和horizontal flip)的结果做了平均，这种方式可能会忽略很多趋于，同时如果不同的views有重叠的话，计算很redundant。此外，alexnet中只使用了一个scale。
-作者对每个iamge的每一个location和多个scale都进行计算。
-如下图，对应了不同大小的输入图片，layer 5 post pool中$(m\times n)\time(3\times 3)$，前面$m\times n$是fcn得到的不同位置的feature map，后面$3\times 3$是$kernel_size=3$的offset max pooling得到的featrue map。乘起来是所有的预测结果。
-![multi_scale](multi_scale.png)
-
-### localization
-
-### Detection
-
-
-## VGG(2013)
+## VGG(2014)
 论文名称：VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION
 论文地址：https://arxiv.org/pdf/1409.1556.pdf%20http://arxiv.org/abs/1409.1556.pdf
 VGG是Visual Geometry Group的缩写
@@ -408,11 +414,23 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 #### convnet funsion
 之前作者的evaluation都是在单个的网络上进行的，作者还试了将不同网络的softmax输出做了平均。
 
-### 存在的问题
-### 方案
-#### 背景
-#### 算法 
-#### 代码
+
+## GoogleLeNet
+### 摘要
+提出一种方法能够在不增加计算代价的同时增加网络的深度和宽度。
+
+### motivation
+直接增加网络的深度和宽度有两个缺点：
+1. 参数更多，容易过拟合，尤其是训练集太小的情况下，高质量的训练集很难生成。
+2. 需要更多的计算资源。比如两层CNN，即使每一层中线性增加filters的个数也会造成计算代价指数级增加。如果增加的权重接近$0$的话，计算代价就浪费了。而现实中的计算资源是有限的。
+
+如何解决这个问题呢？使用sparsity layers取代fully connetcted layers。但是现在的计算资源在处理non-uniform 的sparse data时是非常低效的，即使数值操作减小$100$倍，查找的时间也是很多的。而针对CPU和GPU的dense matrix计算能够加快fc layer的学习。现在绝大部分的机器学习视觉模型在sparsity spatial domain都仅仅利用了CNN，而convolution是和前一层patches的dense connection。1998年的convnet为了打破网络对称性，改善学习结果，使用的是random和sparse连接，而在alexnet中为了并行优化计算，使用了全连接。当前cv的state-of-the-art架构使用的都是unifrom structure，为了高效的进行dense计算，filters和batch size的数量都是很大的。
+稀疏性可以解决过拟合和资源消耗过多的问题，而稠密连接可以提高计算效率。所以接下来要做的是一个折中，利用filter维度的稀疏结构，同时利用硬件在dense matrices上的计算进行加速。
+Inception架构就是一个例子使用dense组件去近似一个sparse结构。
+
+### 算法 
+Inception的idea就是使用
+### 代码
 
 ##
 ### 概述
