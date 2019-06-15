@@ -153,6 +153,42 @@ https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 论文地址：https://arxiv.org/pdf/1312.4400.pdf
 
 ### 摘要
+这篇文章作者使用更复杂的micro神经网络代替CNN，用一个mlp实例化micro nn。CNN中的filter用的是generalized linear model(GLM)。本文使用nonlinear的FA，作者用一个multi layers perceptron 取代GLM。通过和cnn类似的操作对input进行sliding得到feature maps，然后传入下一层，deep NIN通过堆叠多层类似的结构生成。同时作者使用average pooling取代最后的fullcy connected layer。
+本文的两个contribution是：
+1. 使用MLP代替CNN中linear model
+2. 使用average pooling代替fully connected layer。
+
+在传统的CNN中，一个concept的不同variation可能需要多个filters，这样子会让下一层的的计算量太大。高层CNN的filters对应input的区域更大，高层的concept是通过对底层的concepts进行组合得到的。这里作者而提出在每层的local patch进行组合，而不是在高层才开始进行组合，在每一层中，micro network计算更加local patches更abstract的特征。
+
+### Network in Network
+#### MLP convolution layers
+为什么使用MLP代替GLP？
+1. MLP和CNN的结构兼容，可以使用BP进行训练；
+2. MLP本身就是一个deep model，满足feature复用的想法。
+
+如下图所示，是MLP CNN和GLP CNN的区别。
+![mvl_vs_glp](mlp_vs_linear.png)
+
+MLP的公式如下。
+![equ](equ.png)
+从跨channel(feature maps)的角度来看，上面的公式相当于在一个正常的conv layer上进行多次的pooling，每一个pooling layer对输入的feature map进行重新组合，经过一个relu层之后在下一层继续进行pooling。MLP其实就相当于一个普通的卷积加上了多个$1\times 1$的卷积，如下图所示：
+![11filter](11filter.png)
+
+#### Global average pooling
+FC layers证明是容易过拟合的，dropout被提出来正则化fc layers的参数。
+本文提出的global average pooling取代了CNN的fc layers，直接在最后一个mlpconv layer中对应于分类任务中的每个类别生成一个feature map。然后用在feature maps上的average pooling代替fc layers，然后把它送入softmax layer。原来的CNN是将feature map reshape成一个一维向量，现在是对每一个feature map进行一个average pooling，有多少个feature map就有多少个pooling，相当于一个feature map对应与一个类型。
+这样做有以下几个好处：
+1. 在fc layers上的global average pooling让feature map和categories对应起来，feature map可以看成类别的置信度。
+2. 直接进行average pooling不用优化fc layer的参数，也就没有过拟合问题。
+3. global average pooling对全局信息进行了加和，对于input的spatial信息更加鲁邦。
+
+#### NIN
+如下图所示，是NIN的整体架构。
+![nin](nin.png)
+下图是一个具体参数化的示例
+![instance](instance.png)
+
+### 实验
 
 
 ## OverFeat(2013)
@@ -426,10 +462,11 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 
 如何解决这个问题呢？使用sparsity layers取代fully connetcted layers。但是现在的计算资源在处理non-uniform 的sparse data时是非常低效的，即使数值操作减小$100$倍，查找的时间也是很多的。而针对CPU和GPU的dense matrix计算能够加快fc layer的学习。现在绝大部分的机器学习视觉模型在sparsity spatial domain都仅仅利用了CNN，而convolution是和前一层patches的dense connection。1998年的convnet为了打破网络对称性，改善学习结果，使用的是random和sparse连接，而在alexnet中为了并行优化计算，使用了全连接。当前cv的state-of-the-art架构使用的都是unifrom structure，为了高效的进行dense计算，filters和batch size的数量都是很大的。
 稀疏性可以解决过拟合和资源消耗过多的问题，而稠密连接可以提高计算效率。所以接下来要做的是一个折中，利用filter维度的稀疏结构，同时利用硬件在dense matrices上的计算进行加速。
-Inception架构就是一个例子使用dense组件去近似一个sparse结构。
+Inception架构就是使用一个dense组件去近似一个sparse结构的例子。
 
 ### 算法 
-Inception的idea就是使用
+Inception的idea是使用dense组件近似卷积的局部稀疏结构。
+
 ### 代码
 
 ##
@@ -466,3 +503,4 @@ Inception的idea就是使用
 7.https://zhum.in/blog/project/TrafficSignRecognition/OverFeat%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/
 8.https://stats.stackexchange.com/a/292064
 9.https://medium.com/coinmonks/paper-review-of-zfnet-the-winner-of-ilsvlc-2013-image-classification-d1a5a0c45103
+10.https://blog.csdn.net/C_chuxin/article/details/82929747
