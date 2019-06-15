@@ -11,6 +11,9 @@ mathjax: false
 
 ## 服务器端配置
 首先需要有一个VPS账号，vultr,digitalocean,搬瓦工等等都行。
+首先到下面两个网站检测22端口是否开启，如果关闭的话，vps换个ip把。。
+http://tool.chinaz.com/port
+https://www.yougetsignal.com/tools/open-ports/
 ### 启用BBR加速
 ~#:apt update
 ~#:apt upgrade
@@ -32,28 +35,32 @@ mathjax: false
 ##### ipv4配置
 ~#:vim /etc/shadowsocks_v4.json
 配置文件如下
+``` json
 {
 "server":"0.0.0.0",
-"server_port":8889,
+"server_port":"你的端口号",
 "local_address":"127.0.0.1",
 "local_port":1080,
 "password":"你的密码",
 "timeout":600,
 "method":"aes-256-cfb"
 }
+```
 
 ##### ipv6配置
 ~#:vim /etc/shadowsocks_v6.json
 配置文件如下
+``` json
 {
 "server":"::",
-"server_port":8888,
+"server_port":"你的端口号",
 "local_address":"127.0.0.1",
 "local_port":1080,
 "password":"你的密码",
 "timeout":600,
 "method":"aes-256-cfb"
 }
+``` 
 注意这两个文件的server_port一定要不同，以及双引号必须是英文引号。
 ##### 1.2.2.3.手动运行shadowsocks server
 ~#:ssserver -c /etc/shadowsock_v4.json -d start --pid-file ss1.pid
@@ -145,6 +152,19 @@ esac
 
 至此，服务器端配置完成。
 
+## 服务端自动配置脚本
+[地址]()
+首先将该文件中所有文件复制到vps上，然后执行
+~#:sh install_ssh.sh
+即可
+### 补充说明
+该文件夹共包含五个文件
+shadowsocks_v4.json为ipv4 ss配置文件，可根据自己的需要修改端口号和密码
+shadowsocks_v6.json为ipv6 ss配置文件，可根据自己的需要修改端口号和密码
+shadowsocks_v4为ipv4 ss自启动文件，无需修改
+shadowsocks_v6为ipv6 ss自启动文件，无需修改
+install_ssh.sh为安装脚本，该脚本同时配置ipv4和ipv6 ss server。可根据自己需要自行选择。
+
 ## 客户端配置
 ### Windows客户端配置
 #### 安装shadowsock客户端
@@ -160,12 +180,12 @@ esac
 ~$:sudo vim /etc/shadowsocks.json
 填入以下配置文件
 {
-"server":"填上自己的shadowsocks server ip地址",
-"server_port":"8888",//填上自己的shadowsocks server 端口"
-"local_port":1080,
-"password":"mxxhcm150929",
-"timeout":600,
-"method":"aes-256-cfb"
+    "server":"填上自己的shadowsocks server ip地址",
+    "server_port":"8888",//填上自己的shadowsocks server 端口"
+    "local_port":1080,
+    "password":"mxxhcm150929",
+    "timeout":600,
+    "method":"aes-256-cfb"
 }
 
 接下来可以执行以下命令运行shadowsocks客户端：
