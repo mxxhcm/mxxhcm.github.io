@@ -153,7 +153,7 @@ esac
 至此，服务器端配置完成。
 
 ## 服务端自动配置脚本
-[地址]()
+[地址](https://github.com/mxxhcm/code/tree/master/shell/ss)
 首先将该文件中所有文件复制到vps上，然后执行
 ~#:sh install_ssh.sh
 即可
