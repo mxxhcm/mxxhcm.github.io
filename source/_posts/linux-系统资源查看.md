@@ -62,3 +62,5 @@ vmstat [-f]  displays the num of forks since boot
 ~\\$:vmstat -S M
 ~\\$:vmstat -f
 
+## 参考文献
+1.《鸟哥的LINUX私房菜》 

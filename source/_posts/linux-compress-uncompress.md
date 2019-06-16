@@ -7,7 +7,7 @@ categories: linux
 ---
 
 
-$$ 压缩
+## 压缩
 - gzip
 - zcat
 - bzip2
@@ -18,7 +18,7 @@ $$ 压缩
 - zip
 - rar
 
-### gzip bzip2
+### gzip和bzip2
 gzip和bzip2公用参数
 #### 参数介绍
 gzip(bzip2)
@@ -65,11 +65,12 @@ unzip [-dnovj]
 ~$:apt-get install p7zip
 #### 参数介绍
 7z [x|a] [-rotr]
-a　代表添加文件到压缩包
-x　代表解压缩文件
--r 表示递归所有文件
--t 制定压缩类型
--o 指定解压到的目录
+    a　代表添加文件到压缩包
+    x　代表解压缩文件
+    -r 表示递归所有文件
+    -t 制定压缩类型
+    -o 指定解压到的目录
+
 #### 示例
 ~$:7z a -t 7z -r myfile.7z  ~/myfile
 ~$:7z x myfile.7z -r -o ~/
@@ -108,6 +109,12 @@ tar [-cxtvfjzCpP]
 ~$:tar -cv -f /dev/st0 /home /root /etc     # 磁带机/dev/st0
 
 ## 备份
+- dump
+- restore
+- mkisofs
+- dd
+
+
 ### dump
 #### 参数介绍
 dump    [-SujvWf]

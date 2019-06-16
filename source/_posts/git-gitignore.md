@@ -20,9 +20,10 @@ mathjax: true
 在最开始的时候，没有写.gitignore文件，就把所有的python文件上传到了git，包括.idea文件，这时候，可以先在本地把.idea文件删了，然后commit一下，就把git上的.idea文件删了。这时候写.gitignore文件，以后就不会提交.idea文件了。
 执行以下命令：
 ``` shell
-find . -name '.idea' | xargs rm -rf
+find . -name '**idea' | xargs git rm -rf
+# 或者find . -name '*idea' | xargs git rm -rf
 git add .
-git commit -m "deleta .idea"
+git commit -m "deleta *idea"
 git push
 ```
 这里首先使用find找到当前目录下所有.idea文件夹，然后使用管道命令将其删除，再提交到git。
@@ -35,3 +36,4 @@ git push
 
 ## 参考文献
 1.https://segmentfault.com/q/1010000000720031
+

@@ -10,22 +10,14 @@ categories: git
 ## linux安装github
 ### 安装
 ~$:sudo apt-get install git git-core git-gui
-ssh -T git@gitgub.com
-如果看到
-``` txt
-Warning: Permanently added ‘github.com,204.232.175.90’ (RSA) to the list of known hosts. 
-Permission denied (publickey).
-```
-继续
 
-### ssh秘钥
+## 添加ssh公钥到github
 ~$:cd ~/.ssh
 查看是否有ssh keys，没有的话执行下一步	
 ~$:ssh-keygen -t rsa -C "github 邮箱"
 在github上登陆自己的账号，找到Settings->SSH Keys -> ADD SSH Key 将id_rsa.pub文件中的字符串复制进去，不含空格和回车。
-~$:ssh -T git$github.com
 
-### 本地配置
+## 配置本地文件
 ~$:git config  --gloabl user.name "github用户名"
 ~$:git config  --gloabl user.email "github邮箱"
 
@@ -38,18 +30,18 @@ Permission denied (publickey).
 ~$:git add Readme
 ~$:git commit -m 'add readme file'
 
-## 远程库
-~$:git remote add origin git@github.com:mxxhcm/testgit.git
-~$:git remote add origin https://github.com/github用户名/github仓库.git
-~$:git push -u origin master 把本地的master库和远程的master库连接起来，以后推送或者拉取就会简单
-输入github账号和密码
-　推送
-~$:git push origin master
-　拉取
-~$:git pull	
-
 还可以直接克隆一个已有的仓库，
 ~$:git clone https://github.com/github用户名/github仓库.git
+
+## push使用ssh，不用输入密码
+``` shell
+git remote -v  # 查看远程连接的方式
+git remote rm origin # 删除https的连接方式，如果是ssh的方式，就不需要了
+# 从github复制ssh地址
+git remote add origin git@github.com:mxxhcm/**.git # 添加ssh连接方式
+git push --set-upstream origin master
+git remote -v  # 再次查看远程连接的方式
+```
 
 ## 分支管理
 ~$:git branch dev 创建分支
@@ -85,8 +77,6 @@ commit xxxxxx
 
 git revert会提交一个新的版本，将回退当做新的一个push，之前的内容都会保留。
 
-
-## 脚本地址
 
 ## 参考文献
 1.https://blog.csdn.net/kongbaidepao/article/details/52253774

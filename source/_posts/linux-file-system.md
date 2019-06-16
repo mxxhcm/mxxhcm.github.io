@@ -156,3 +156,7 @@ superblock在0号blok ,但是superblock 只有1024b,所以为了防止空间浪�
 ## 查看文件的inode编号
 ~$:ls -i 
 目录并不一定只占一个block，当目录内的文件数太多时，会增加该目录的block
+
+## 参考文献
+1.《鸟哥的LINUX私房菜》
+
