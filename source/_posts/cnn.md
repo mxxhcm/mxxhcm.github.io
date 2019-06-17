@@ -348,18 +348,19 @@ model是否真的识别了object在image中的位置，还是仅仅使用了上�
 第二个实验保留前面的特征提取层和fc layers，将最后的softmax替换。
 
 
-## VGG(2014)
+## VGGNet(2014)
 论文名称：VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION
 论文地址：https://arxiv.org/pdf/1409.1556.pdf%20http://arxiv.org/abs/1409.1556.pdf
 VGG是Visual Geometry Group的缩写
 
 ### 概述
-这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。本文的主要contribution就是使用$3\times 3$的卷积核，增加网络深度，提高识别精度。
+这篇文章主要研究了CNN深度对大规模图像识别问题精度的影响。本文的主要contribution就是使用多层的$3\times 3$ filters替换大的filter，增加网络深度，提高识别精度。
 
 ### 方案
 #### 架构
-**训练**，输入$224\times 224$大小的RGB图片。对每张图片减去训练集上所有图片RGB 像素的均值。预处理后的图片被输入多层CNN中，CNN的filter是$3\times 3$的，作何也试了$1\times 1$的filter，相当于对输入做了一个线性变换，紧跟着一个non-linear 激活函数。stride设为$1$，添加padding使得卷积后的输出大小不变。同时使用了$5$个max-pooling层（并不是每一层cnn后面都有max-pooling)，max-pooling在$2\times 2$大小的窗口上，stride是$2$。
-多层CNN后面接的是三个FC layers，前两个是$4096$单元，最后一层是$1000$个单元的softmax。所有隐藏层都使用ReLu非线性激活函数。
+**训练**，输入$224\times 224$大小的RGB图片。对每张图片减去训练集上所有图片RGB 像素的均值。预处理后的图片被输入多层CNN中，CNN的filter是$3\times 3$的，作何也试了$1\times 1$的filter，相当于对输入做了一个线性变换，紧跟着一个non-linear 激活函数，这里的$1\times 1$的filter没有用于dimention reduction。stride设为$1$，添加padding使得卷积后的输出大小不变。同时使用了$5$个max-pooling层（并不是每一层cnn后面都有max-pooling)，max-pooling的window是$2\times 2$，stride是$2$。
+在训练的时候CNN后面接的是三个FC layers，前两个是$4096$单元，最后一层是$1000$个单元的softmax。所有隐藏层都使用ReLu非线性激活函数。
+在测试的时候使用fcn而不是直接flatten。
 
 #### 配置
 这篇文章给出了五个网络架构，用$A-E$表示，它们只有在深度上有所不同：从$11$层($8$个conv layers和$3$个FC layers)到$19$层（$16$个conv layers和$3$个FC layers）。Conv layers的channels很小，从第一层的$64$，每过一个max pooling layers，变成原理啊的两倍，直到$512$。具体如下表所示。
@@ -456,9 +457,9 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 之前作者的evaluation都是在单个的网络上进行的，作者还试了将不同网络的softmax输出做了平均。
 
 
-## GoogleLeNet
+## Inception V1(GoogleLeNet)
 ### 摘要
-提出一种方法能够在不增加计算代价的同时增加网络的深度和宽度。
+提出一种方法能够在不增加太多计算代价的同时增加网络的深度和宽度。
 
 ### motivation
 直接增加网络的深度和宽度有两个缺点：
@@ -486,28 +487,12 @@ Inception的idea是使用dense组件近似卷积的局部稀疏结构。本文�
 作者在GoogLeNet中还使用了两个额外的分类层辅助训练。通过观察得知相对shallower的网络有很好的性能，那么在反向传播时，深层网络的中间特征应该是很有判别力的。
 通过在网络中间添加辅助的classfiers，作者想要让网络底层也有判别力。在训练的时候，在$4a$和$4d$模块后添加分类器，然后将所有的loss乘上一个权重加到总的loss上，在test时，这些辅助网络被扔掉。
 
-##
+## Residual Network(2015)
+论文名称：Deep Residual Learning for Image Recognition
+论文地址：
 ### 概述
 ### 存在的问题
 ### 方案
-#### 背景
-#### 算法 
-#### 代码
-
-##
-### 概述 ### 存在的问题
-### 方案
-#### 背景
-#### 算法 
-#### 代码
-
-##
-### 概述
-### 存在的问题
-### 方案
-#### 背景
-#### 算法 
-#### 代码
 
 
 ## 参考文献

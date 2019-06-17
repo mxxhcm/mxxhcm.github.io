@@ -1,5 +1,5 @@
 ---
-title: linux pipe
+title: linux pipe and pipe command
 date: 2019-06-17 19:59:30
 tags:
  - linux
@@ -8,6 +8,8 @@ categories: linux
 
 ## PIPE
 管道命令仅会处理stdout并不会处理stderrout，管道命令必须要能接受前一个命令传回来的数据成为stdinput
+
+## head tail
 
 ## cut
 cut -d '分隔字符' -f (fields)fields为数字
@@ -20,8 +22,6 @@ cut -c 字符范围
 	export | cut -c 12-
 
 	不过cut 对于多个空格当做分隔字符的处理做的不够好
-
-	last最近登录的用户
 
 ## grep
 grep [-aincv] [--color=auto] '关键字' filename
