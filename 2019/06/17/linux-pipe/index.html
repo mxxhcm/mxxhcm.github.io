@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="PIPE管道命令仅会处理stdout并不会处理stderrout，管道命令必须要能接受前一个命令传回来的数据成为stdinput cutcut -d ‘分隔字符’ -f (fields)fields为数字cut -c 字符范围 cut -d &amp;#39;:&amp;#39; -f 2,3 echo $PATH | cut -d &amp;#39;:&amp;#39; -f 2,4  cut -c 20-30 export">
+<meta name="keywords" content="linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux pipe">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/06/17/linux-pipe/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="PIPE管道命令仅会处理stdout并不会处理stderrout，管道命令必须要能接受前一个命令传回来的数据成为stdinput cutcut -d ‘分隔字符’ -f (fields)fields为数字cut -c 字符范围 cut -d &amp;#39;:&amp;#39; -f 2,3 echo $PATH | cut -d &amp;#39;:&amp;#39; -f 2,4  cut -c 20-30 export">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-06-17T12:06:18.173Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="linux pipe">
+<meta name="twitter:description" content="PIPE管道命令仅会处理stdout并不会处理stderrout，管道命令必须要能接受前一个命令传回来的数据成为stdinput cutcut -d ‘分隔字符’ -f (fields)fields为数字cut -c 字符范围 cut -d &amp;#39;:&amp;#39; -f 2,3 echo $PATH | cut -d &amp;#39;:&amp;#39; -f 2,4  cut -c 20-30 export">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/06/17/linux-pipe/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>linux pipe | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/17/linux-pipe/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">linux pipe
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-06-17 19:59:30 / 修改时间：20:06:18" itemprop="dateCreated datePublished" datetime="2019-06-17T19:59:30+08:00">2019-06-17</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/06/17/linux-pipe/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/06/17/linux-pipe/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="PIPE"><a href="#PIPE" class="headerlink" title="PIPE"></a>PIPE</h2><p>管道命令仅会处理stdout并不会处理stderrout，管道命令必须要能接受前一个命令传回来的数据成为stdinput</p>
+<h2 id="cut"><a href="#cut" class="headerlink" title="cut"></a>cut</h2><p>cut -d ‘分隔字符’ -f (fields)fields为数字<br>cut -c 字符范围</p>
+<pre><code>cut -d &#39;:&#39; -f 2,3
+echo $PATH | cut -d &#39;:&#39; -f 2,4
+
+cut -c 20-30
+export | cut -c 12-
+
+不过cut 对于多个空格当做分隔字符的处理做的不够好
+
+last最近登录的用户
+</code></pre><h2 id="grep"><a href="#grep" class="headerlink" title="grep"></a>grep</h2><p>grep [-aincv] [—color=auto] ‘关键字’ filename<br>    -a 将binary文件以text的方式查找数据<br>    -i 忽略大小写<br>    -c 计算查找到的字符串的个数<br>    -n 顺便输出行号<br>    -v 反向选择</p>
+<h3 id="grep-n-‘-’-regular-express"><a href="#grep-n-‘-’-regular-express" class="headerlink" title="grep -n  ‘^$’ regular_express"></a>grep -n  ‘^$’ regular_express</h3><p>grep ‘^the’ file<br>grep ‘<sup><a href="#fn_[:lower:]" id="reffn_[:lower:]">[:lower:]</a></sup>‘ file<br>grep ‘.$’ file<br>grep ‘^<sup><a href="#fn_a-zA-Z" id="reffn_a-zA-Z">a-zA-Z</a></sup>‘ file<br>grep ‘go\{2,3\}g’ file</p>
+<p>对比<br>ls -l /etc/a<em><br>grep -n ‘^a.</em>/‘ </p>
+<h2 id="dmesg"><a href="#dmesg" class="headerlink" title="dmesg"></a>dmesg</h2><p>dmesg 查看内核信息<br>dmesg | grep -n A3 B2 ‘eth’<br>    A —after  B —before</p>
+<h2 id="last"><a href="#last" class="headerlink" title="last"></a>last</h2><p>last | grep ‘mxx’ | cut -d ‘’ -f 1</p>
+<h2 id="sort-wc-uniq"><a href="#sort-wc-uniq" class="headerlink" title="sort,wc,uniq"></a>sort,wc,uniq</h2><p>sort     排序<br>    [-fbMnrutk] [file]<br>        -f 不区分大小写<br>        -u uniq<br>        -t 分隔符<br>        -k 以第几个字段进行排序<br>        -n 以数字进行排序(默认是以字母)<br>        -m 反向排序<br>    eg:<br>    sort -t ‘:’ -k 3 -n /etc/passwd<br>    or<br>    cat /etc/passwd | sort -t ‘:’ -k 3 -n</p>
+<h2 id="uniq"><a href="#uniq" class="headerlink" title="uniq"></a>uniq</h2><p>uniq 去重<br>    [-il] [file]<br>    -i 不区分大小写<br>    -c 进行计数    </p>
+<pre><code>last | cut -d &#39; &#39; -f 1 | sort | uniq
+首先需要排序　才能去重    
+</code></pre><p>last | cut -d ‘ ‘ -f 1 | sort | uniq -c</p>
+<h2 id="tee"><a href="#tee" class="headerlink" title="tee"></a>tee</h2><p>tee双重重定向将一份数据可以同时传到文件内以及屏幕中<br>    last | tee last.list | sort </p>
+<h2 id="tr"><a href="#tr" class="headerlink" title="tr"></a>tr</h2><p>tr 删除一段文字或者对文字内容进行替换(如删除dos中的换行符^M)<br>    [-ds]<br>    -d 删除信息中的某个字串<br>    -s 替换重复字符</p>
+<pre><code>last | tr &#39;[a-z]&#39;  &#39;[A-Z]&#39;
+echo $PATH -d &#39;:/&#39;
+cat /root/passwd | tr -d &#39;\r&#39; &gt; passwd.linux
+</code></pre><h2 id="col"><a href="#col" class="headerlink" title="col"></a>col</h2><p>col 简单处理<br>    [-xb]<br>    -x 将tab键换成空格键</p>
+<pre><code>cat  manpath.config | col -x | cat -A | more
+</code></pre><h2 id="join"><a href="#join" class="headerlink" title="join"></a>join</h2><p>join 将两个文件中具有相同数据的一行相加<br>    join [-ti12] file1 file2<br>    -i 大小写忽视<br>    join -t ‘:’ passwd shadow<br>    join -t ‘:’ -1 4 passwd -2 3 group</p>
+<h2 id="paste"><a href="#paste" class="headerlink" title="paste"></a>paste</h2><p>paste直接将两行粘在一起，默认并以tab键分开<br>    -d后面可以加分隔字符默认以tab分隔<br>    -表示来自standard input的数据的意思<br>    paste shadow passwd<br>    cat shadow | paste passwd - | head -n 3</p>
+<h2 id="expand"><a href="#expand" class="headerlink" title="expand"></a>expand</h2><p>expand将tab键换成空格默认是8个空格<br>    -t 参数可以自行设定空格数<br>    nl file | expand -t 6 - | cat -A</p>
+<h2 id="split"><a href="#split" class="headerlink" title="split"></a>split</h2><p>split [-bl] file PREFIX<br>    -b后面加文件欲切割成的文件大小<br>    -l以行数来切割<br>    split -b 1M /etc/termcap termcap<br>    ls -l termcap*</p>
+<pre><code>cat termcap* &gt;&gt; termcapback
+
+ls -l / | spilt -l 10 -lsroot
+wc -l lsroot
+</code></pre><h2 id="xargs"><a href="#xargs" class="headerlink" title="xargs"></a>xargs</h2><p>xargs产生某个命令的参数<br>    [-pne0]<br>    -p 执行每个命令询问用户<br>    -e 是EOF的意思，后面可接一个字符，当xargs遇到这个字符，便会停止                操作<br>    -n 后面接次数，每次command命令执行时，要使用几个参数<br>-用来代替stdout以及stdin<br>tar -cvf - /home | tar xvf -    </p>
+<h2 id="sed-工具"><a href="#sed-工具" class="headerlink" title="sed 工具"></a>sed 工具</h2><p>[-in]<br>-i    直接修改文件内容<br>-n    静默<br>-e 直接在shell下编辑<br>-c replace<br>-a append<br>-p print</p>
+<p>nl file | sed ‘2,3d’<br>nl file | sed ‘$a add a test’<br>nl file | sed -n ‘5,7p’<br>nl file | sed ‘2,5c jkadfk\</p>
+<pre><code>        &gt;fdasf\
+        &gt;asfddf &#39;
+</code></pre><p>nl file | sed ‘s/s_place/s_replace/g’<br>nl file | sed ‘/^$/d’</p>
+<h2 id="egrep-扩展正则表达式"><a href="#egrep-扩展正则表达式" class="headerlink" title="egrep 扩展正则表达式"></a>egrep 扩展正则表达式</h2><p>egrep -n ‘^$|^#’ file<br>egrep -n ‘go?d’ file　0个或者一个?之前的字符<br>egrep -n ‘go+d’ file　一个及以上+之前的字符<br>grep -n ‘go<em>d’ file　0个或者0个以上</em>之前的字符</p>
+<h2 id="printf-格式化打印"><a href="#printf-格式化打印" class="headerlink" title="printf 格式化打印"></a>printf 格式化打印</h2><p>printf ‘%s\t %s\t %s\t \n’ $(cat file)<br>printf ‘%10s %5i %5i \n’ $(cat file)</p>
+<h2 id="awk"><a href="#awk" class="headerlink" title="awk"></a>awk</h2><p>last | awk ‘{print $1 “\t” S3 “\t” $4 NF NR}’<br>cat /etc/passwd | awk ‘BEGIN {FS=”:”} $3 &lt; 10 {print $1 “\t” $3 }’</p>
+<p>cat /etc/passwd | awk ‘NR==1{printf “%10s %10s %10s %10s “,$1,$2,$3,”tot        al”}<br>    NR&gt;=2{total=$2+$3;<br>        printf “%10s %10d %10d %## f”,$1,$2,$3,total”}’</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>《鸟哥的LINUX私房菜》</li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/linux/" rel="tag"># linux</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/16/linux-scp-vs-rsync/" rel="next" title="linux scp vs rsync">
+                <i class="fa fa-chevron-left"></i> linux scp vs rsync
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">141</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">14</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">121</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#PIPE"><span class="nav-number">1.</span> <span class="nav-text">PIPE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cut"><span class="nav-number">2.</span> <span class="nav-text">cut</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#grep"><span class="nav-number">3.</span> <span class="nav-text">grep</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#grep-n-‘-’-regular-express"><span class="nav-number">3.1.</span> <span class="nav-text">grep -n  ‘^$’ regular_express</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dmesg"><span class="nav-number">4.</span> <span class="nav-text">dmesg</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#last"><span class="nav-number">5.</span> <span class="nav-text">last</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sort-wc-uniq"><span class="nav-number">6.</span> <span class="nav-text">sort,wc,uniq</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#uniq"><span class="nav-number">7.</span> <span class="nav-text">uniq</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tee"><span class="nav-number">8.</span> <span class="nav-text">tee</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tr"><span class="nav-number">9.</span> <span class="nav-text">tr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#col"><span class="nav-number">10.</span> <span class="nav-text">col</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#join"><span class="nav-number">11.</span> <span class="nav-text">join</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#paste"><span class="nav-number">12.</span> <span class="nav-text">paste</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#expand"><span class="nav-number">13.</span> <span class="nav-text">expand</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#split"><span class="nav-number">14.</span> <span class="nav-text">split</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xargs"><span class="nav-number">15.</span> <span class="nav-text">xargs</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sed-工具"><span class="nav-number">16.</span> <span class="nav-text">sed 工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#egrep-扩展正则表达式"><span class="nav-number">17.</span> <span class="nav-text">egrep 扩展正则表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#printf-格式化打印"><span class="nav-number">18.</span> <span class="nav-text">printf 格式化打印</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#awk"><span class="nav-number">19.</span> <span class="nav-text">awk</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">20.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
