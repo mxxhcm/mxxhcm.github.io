@@ -17,6 +17,10 @@ STDOUT以及STDERR都会被显示在屏幕上，可以采用数据流重定向�
 tar -cvj -f ~/my.bak/etc20161006.tar.bz2 /etc > ~/tmp/log.txt 2>&1 &
 这样stdout以及stderr会被输入进~/tmp/log.txt
 
+
+## 示例
+~$:nohup sslocal -c /etc/shadowsocks_v6.json \</dev/null &\>\>~/.log/ss-local.log & 
+
 ## jobs
 jobs -l 查看运行的后台进程，当打开该进程的终端关闭时，就无法看到使用jobs查看该程序了。需要使用ps命令
 jobs [-lsr] 查看目前后台的jobs
@@ -28,7 +32,9 @@ jobs [-lsr] 查看目前后台的jobs
 fg(foreground)将后台的工作拿到前台
     fg %jobnumber
     fg +/- [jobnumber]表示第几个后台工作，+表示最后一个被丢入后台，-表示最后第二个被丢入后台，最后第三个以及以上不显示
-bg将程序放到后台
+
+bg继续后台运行某个程序
+
 ctrl+z挂起程序，将正在工作的程序放入后台(避免被ctrl+c终止,而非系统的后台)
 
 ## 参考文献

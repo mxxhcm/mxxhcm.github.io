@@ -148,6 +148,10 @@ ILSVRC-2010
 pytorch实现
 https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 
+## Maxout networks
+论文名称：Maxout Networks
+下载地址：https://arxiv.org/pdf/1302.4389.pdf
+
 ## NIN
 论文名称：Network In Network
 论文地址：https://arxiv.org/pdf/1312.4400.pdf
@@ -155,10 +159,10 @@ https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 ### 摘要
 这篇文章作者使用更复杂的micro神经网络代替CNN，用一个mlp实例化micro nn。CNN中的filter用的是generalized linear model(GLM)。本文使用nonlinear的FA，作者用一个multi layers perceptron 取代GLM。通过和cnn类似的操作对input进行sliding得到feature maps，然后传入下一层，deep NIN通过堆叠多层类似的结构生成。同时作者使用average pooling取代最后的fullcy connected layer。
 本文的两个contribution是：
-1. 使用MLP代替CNN中linear model
+1. 使用MLP代替CNN中linear model，引入$1\times 1$的filter
 2. 使用average pooling代替fully connected layer。
 
-在传统的CNN中，一个concept的不同variation可能需要多个filters，这样子会让下一层的的计算量太大。高层CNN的filters对应input的区域更大，高层的concept是通过对底层的concepts进行组合得到的。这里作者而提出在每层的local patch进行组合，而不是在高层才开始进行组合，在每一层中，micro network计算更加local patches更abstract的特征。
+在传统的CNN中，一个concept的不同variation可能需要多个filters，这样子会让下一层的的计算量太大。高层CNN的filters对应input的区域更大，高层的concept是通过对底层的concepts进行组合得到的。这里作者在每一层都对local patch进行组合，而不是在高层才开始进行组合，在每一层中，micro network计算更加local patches更abstract的特征。
 
 ### Network in Network
 #### MLP convolution layers
@@ -171,7 +175,8 @@ https://github.com/mxxhcm/myown_code/blob/master/CNN/alexnet.py
 
 MLP的公式如下。
 ![equ](equ.png)
-从跨channel(feature maps)的角度来看，上面的公式相当于在一个正常的conv layer上进行多次的pooling，每一个pooling layer对输入的feature map进行重新组合，经过一个relu层之后在下一层继续进行pooling。MLP其实就相当于一个普通的卷积加上了多个$1\times 1$的卷积，如下图所示：
+从cross channel(feature maps)的pooling角度来看，上面的公式相当于在一个正常的conv layer上进行多次的parametric pooling，每一个pooling layer对输入的feature map进行线性加权，经过一个relu层之后在下一层继续进行pooling。Cross channel pooled的feature maps在接下来的层中多次进行cross channel pooling。这个cross channel pooling的结构的作用是学习复杂的cross channel信息。
+其实整个cross channel的paramteric pooling结构相当于一个普通的卷积加上了多个$1\times 1$的卷积，如下图所示：
 ![11filter](11filter.png)
 
 #### Global average pooling
@@ -208,7 +213,7 @@ classification任务中，每个image都有一个label对应image中主要的obj
 
 ### FCN
 用卷积层代替全连接层。具体是什么意思呢。
-alexnet中，有5层卷积层，3层全连接层。假设第五层的输出是$5\times 5 \times 512$，$512$是output channels number，$5\times 5$是第五层的feature maps大小。如果使用全连接的话，假设第六层的输出单元是$N$个，第六层权重总共是$(5\times 5\times 512) \* (N)$，对于一个训练好的网络，图片的输入大小是固定的，因为第六层的输入需要固定。如果输入一个其他大小的图片，网络是会出错的，所以就有了Fully Convolutional networks，它可以处理不同大小的输入图片。
+alexnet中，有5层卷积层，3层全连接层。假设第五层的输出是$5\times 5 \times 512$，$512$是output channels number，$5\times 5$是第五层的feature maps的大小。如果使用全连接的话，假设第六层的输出单元是$N$个，第六层权重总共是$(5\times 5\times 512) \* (N)$，对于一个训练好的网络，图片的输入大小是固定的，因为第六层是一个全连接层，输入的大小是需要固定的。如果输入一个其他大小的图片，网络就会出错，所以就有了Fully Convolutional networks，它可以处理不同大小的输入图片。
 如下所示，使用某个大小的image训练的网络，在classifier处用卷积层替换全连接层，如果使用全连接层，首先将$(5, 5, out_channels)$的feature map进行flatten $5\times 5\times out_channels$，然后经过三层全连接，最后输出一个softmax的结果。而fcn使用卷积层代替全连接，使用$N$个$5\times 5$的卷积核，直接得到$1\tims 1 \times N$的结果，最后得到一个$1\times 1\times C$的输出，$C$代表图像类别，$N$代表全连接层中隐藏节点的数量。
 ![fcn](fcn.png)
 事实上，FCN和全连接的本质上都是一样的，只不过一个进行了flatten，一个直接对feature map进行操作，直接对feature map操作可以处理不同大小的输入，而flatten不行。
@@ -462,12 +467,24 @@ $S$抖动时，模型是在$S\in \[S\_{min},S\_{max}\]$上训练的，在$Q=\{S\
 
 如何解决这个问题呢？使用sparsity layers取代fully connetcted layers。但是现在的计算资源在处理non-uniform 的sparse data时是非常低效的，即使数值操作减小$100$倍，查找的时间也是很多的。而针对CPU和GPU的dense matrix计算能够加快fc layer的学习。现在绝大部分的机器学习视觉模型在sparsity spatial domain都仅仅利用了CNN，而convolution是和前一层patches的dense connection。1998年的convnet为了打破网络对称性，改善学习结果，使用的是random和sparse连接，而在alexnet中为了并行优化计算，使用了全连接。当前cv的state-of-the-art架构使用的都是unifrom structure，为了高效的进行dense计算，filters和batch size的数量都是很大的。
 稀疏性可以解决过拟合和资源消耗过多的问题，而稠密连接可以提高计算效率。所以接下来要做的是一个折中，利用filter维度的稀疏结构，同时利用硬件在dense matrices上的计算进行加速。
-Inception架构就是使用一个dense组件去近似一个sparse结构的例子。
+Inception架构就是使用一个dense组件去逼近sparse结构的例子。
 
 ### 算法 
-Inception的idea是使用dense组件近似卷积的局部稀疏结构。
+Inception的idea是使用dense组件近似卷积的局部稀疏结构。本文的旋转不变型是利用convolutional building blocks完成的，找到optimal local construction，然后不断堆叠。文章[11]中建议layer-by-layer的构建，分析上一层之间的关系，并将具有高相关性的units进行分组。这些相关的units cluster构建成了下一层的units，并且和上一层的units相连接。假设之前层中的每一个unit都对应输入图片中的一些region，这些units分组构成filter banks。这就意味着在靠近输入的层中我们会得到很多关于local regions相关的units。通过在下一层中使用$1\times 1$的卷积，可以找到关注于同一个region的很多个clusters。（这里加一些我自己的理解，$1\times 1$的卷积层可以找到那些重复的feature map？？）当然，也有可能有更大的cluster可以通过在更大的patches上进行卷积得到，所以这里同时在一层中同时使用$1\times 1, 3\times 3, 5\times 5$的filters，使用这些大小的filter仅仅是因为方便，然后将他们的输出进行组合当做下一层的输入。当然可以加上pooling，如下图所示。
+![](naive_inception.png)
+但是，这样子计算量还是很大，大量$3 \times 3, 5\times 5$在卷积时的计算量，如果再加上输入shape和输出shape相等的max pooling操作，下一层的输入维度相当大，计算开销j就爆炸了。这就使用了本文的第二个ides：使用$1\times 1$的filter降维减少计算量。在$3\times 3, 5\times 5$大小filter之前添加$1\times 1$的卷积进行降维。
+![](dr_inception.png)
 
-### 代码
+这个架构的好处：
+1. 在每一层都可以增加units的数量而不用担心计算量暴增。首先将上一层大量filters的输出进行进行降维，然后输入到下一层。
+2. visual信息用不同的scales进行处理，然后拼接起来，这样子在下一层可以同时从不同scales中提出features。
+
+### GoogLeNet
+作者给出了Inception的一个示例，叫GoogLeNet。网络具体配置如下：
+![](GoogLeNet.png)
+其中，"#$3 \times 3$ reduce"和"#$5 \times 5$ reduce"表示在$3\times 3, 5\times 5$卷积之前使用$1\times 1$的filters个数，pool proj这一列表示在max pooling之后的$1\times 1$的filters个数。 
+作者在GoogLeNet中还使用了两个额外的分类层辅助训练。通过观察得知相对shallower的网络有很好的性能，那么在反向传播时，深层网络的中间特征应该是很有判别力的。
+通过在网络中间添加辅助的classfiers，作者想要让网络底层也有判别力。在训练的时候，在$4a$和$4d$模块后添加分类器，然后将所有的loss乘上一个权重加到总的loss上，在test时，这些辅助网络被扔掉。
 
 ##
 ### 概述
@@ -504,3 +521,5 @@ Inception的idea是使用dense组件近似卷积的局部稀疏结构。
 8.https://stats.stackexchange.com/a/292064
 9.https://medium.com/coinmonks/paper-review-of-zfnet-the-winner-of-ilsvlc-2013-image-classification-d1a5a0c45103
 10.https://blog.csdn.net/C_chuxin/article/details/82929747
+11.Provable bounds for learning some deep representations.
+12.https://medium.com/coinmonks/paper-review-of-googlenet-inception-v1-winner-of-ilsvlc-2014-image-classification-c2b3565a64e7
