@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="服务(service):系统为了某些功能提供的一些服务(包括系统本身以及网络服务)daemon:实现service的程序叫做daemon 99.daemon的分类    a.stand_alone daemon        自行独立启动，不用通过其他机制，启动并加载到内存后就一直占用内存与系统资源。因此对于客户端的请求响应特别快。        WWW的daemon(httpd)，FTP的dae">
-<meta name="keywords" content="linux">
+  <meta name="description" content="service和daemon service（服务）：系统提供某些功能的一些服务(包括系统本身以及网络service) daemon：实现service的程序叫做daemon daemon的分类  stand alone daemon super daemon  stand_alone daemon 独立启动，启动并加载到内存后就一直占用内存与系统资源运行。因此对于客户端的请求响应特别快。比如WW">
+<meta name="keywords" content="linux,SystemD,serveice,daemon,initd">
 <meta property="og:type" content="article">
-<meta property="og:title" content="linux service">
+<meta property="og:title" content="linux service and daemon">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/05/07/linux-service/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="服务(service):系统为了某些功能提供的一些服务(包括系统本身以及网络服务)daemon:实现service的程序叫做daemon 99.daemon的分类    a.stand_alone daemon        自行独立启动，不用通过其他机制，启动并加载到内存后就一直占用内存与系统资源。因此对于客户端的请求响应特别快。        WWW的daemon(httpd)，FTP的dae">
+<meta property="og:description" content="service和daemon service（服务）：系统提供某些功能的一些服务(包括系统本身以及网络service) daemon：实现service的程序叫做daemon daemon的分类  stand alone daemon super daemon  stand_alone daemon 独立启动，启动并加载到内存后就一直占用内存与系统资源运行。因此对于客户端的请求响应特别快。比如WW">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-05-18T09:41:54.363Z">
+<meta property="og:updated_time" content="2019-06-23T11:51:28.972Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="linux service">
-<meta name="twitter:description" content="服务(service):系统为了某些功能提供的一些服务(包括系统本身以及网络服务)daemon:实现service的程序叫做daemon 99.daemon的分类    a.stand_alone daemon        自行独立启动，不用通过其他机制，启动并加载到内存后就一直占用内存与系统资源。因此对于客户端的请求响应特别快。        WWW的daemon(httpd)，FTP的dae">
+<meta name="twitter:title" content="linux service and daemon">
+<meta name="twitter:description" content="service和daemon service（服务）：系统提供某些功能的一些服务(包括系统本身以及网络service) daemon：实现service的程序叫做daemon daemon的分类  stand alone daemon super daemon  stand_alone daemon 独立启动，启动并加载到内存后就一直占用内存与系统资源运行。因此对于客户端的请求响应特别快。比如WW">
 
 
 
@@ -130,7 +130,7 @@
   };
 </script>
 
-  <title>linux service | mxxhcm's blog</title>
+  <title>linux service and daemon | mxxhcm's blog</title>
   
 
 
@@ -345,7 +345,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">linux service
+          <h1 class="post-title" itemprop="name headline">linux service and daemon
 
               
             
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-18 17:41:54" itemprop="dateModified" datetime="2019-05-18T17:41:54+08:00">2019-05-18</time>
+                <time title="修改时间：2019-06-23 19:51:28" itemprop="dateModified" datetime="2019-06-23T19:51:28+08:00">2019-06-23</time>
               
             
           </span>
@@ -449,89 +449,241 @@
       
 
       
-        <p>服务(service):系统为了某些功能提供的一些服务(包括系统本身以及网络服务)<br>daemon:实现service的程序叫做daemon</p>
-<p>99.daemon的分类<br>    a.stand_alone daemon<br>        自行独立启动，不用通过其他机制，启动并加载到内存后就一直占用内存与系统资源。因此对于客户端的请求响应特别快。<br>        WWW的daemon(httpd)，FTP的daemon(vsftpd)</p>
-<pre><code>b.super daemon
-    由一个统一的daemon来唤起服务，这个特殊的daemon叫做super daemon早期是inetd,后来被xinetd替代了。没有客户端请求时，服务被关闭，收到客户端请求时，super daemon唤醒相应的服务，请求结束后，这个服务就会关闭，服务反应时间会比较慢。常见的有telnet服务
+        <h2 id="service和daemon">service和daemon</h2>
+<p>service（服务）：系统提供某些功能的一些服务(包括系统本身以及网络service)<br>
+daemon：实现service的程序叫做daemon</p>
+<h2 id="daemon的分类">daemon的分类</h2>
+<ul>
+<li>stand alone daemon</li>
+<li>super daemon</li>
+</ul>
+<h3 id="stand-alone-daemon">stand_alone daemon</h3>
+<p>独立启动，启动并加载到内存后就一直占用内存与系统资源运行。因此对于客户端的请求响应特别快。比如WWW的daemon(httpd)，FTP的daemon(vsftpd)</p>
+<h3 id="super-daemon">super daemon</h3>
+<p>由一个统一daemon唤起的service，这个特殊的daemon叫做super daemon早期是inetd,后来被xinetd替代了。没有客户端请求时，service被关闭，收到客户端请求时，super daemon唤醒相应的service，请求结束后，这个service就会关闭，service反应时间会比较慢。常见的有telnetservice。<br>
+signal-control和interval-control，信号管理的daemon以及每隔一段时间主动执行某项job的daemon每一个service程序文件名都会加上d，d代表daemon。</p>
+<h2 id="sysvinit-service">SysVInit service</h2>
+<h3 id="配置文件路径">配置文件路径</h3>
+<ul>
+<li>/etc/rc.d/rcX.d/ (X 代表运行级别 0-6) # 不同runlevel的service存放位置</li>
+<li>/etc/rc.d/rc.local    # 用户自定义的service</li>
+</ul>
+<h3 id="配置文件示例">配置文件示例</h3>
+<p>创建/etc/init.d/shadowsocks_client service如下所示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">### BEGIN INIT INFO</span><br><span class="line"># Provides:          shadowsocks client</span><br><span class="line"># Required-Start:    $local_fs $remote_fs $network $syslog</span><br><span class="line"># Required-Stop:     $local_fs $remote_fs $network $syslog</span><br><span class="line"># Default-Start:     2 3 4 5</span><br><span class="line"># Default-Stop:      0 1 6</span><br><span class="line"># Short-Description: shadowsocks service</span><br><span class="line"># Description:       shadowsocks service daemon</span><br><span class="line">### END INIT INFO</span><br><span class="line">start()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d start</span><br><span class="line">&#125;</span><br><span class="line">stop()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d stop</span><br><span class="line">&#125;</span><br><span class="line">case “$1” in</span><br><span class="line">start)</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">stop)</span><br><span class="line">　　　stop</span><br><span class="line">　　　;;</span><br><span class="line">reload)</span><br><span class="line">　　　stop</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">\*)</span><br><span class="line">　　　echo “Usage: $0 &#123;start|reload|stop&#125;”</span><br><span class="line">　　　exit 1</span><br><span class="line">　　　;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+<p>然后执行以下命令进行更新<br>
+~$:sudo chomod a+x /etc/init.d/shadowsocks_client<br>
+~$:sudo update_rc.d shadowsocks defaults</p>
+<h3 id="运行方式">运行方式</h3>
+<p>service shadowsocks_client start</p>
+<h2 id="systemd">SystemD</h2>
+<h3 id="配置文件路径-v2">配置文件路径</h3>
+<p>比如vsftpd.service的配置文件路径<br>
+etc/systemd/system.control	Persistent and transient configuration created using the dbus API<br>
+/run/systemd/system.control<br>
+/run/systemd/transient	Dynamic configuration for transient units<br>
+/run/systemd/generator.early	Generated units with high priority (see early-dir in systemd.generator(7))<br>
+/etc/systemd/system	System units created by the administrator<br>
+/run/systemd/system	Runtime units<br>
+/run/systemd/generator	Generated units with medium priority (see normal-dir in systemd.generator(7))<br>
+/usr/local/lib/systemd/system	System units installed by the administrator<br>
+/usr/lib/systemd/system	System units installed by the distribution package manager<br>
+/run/systemd/generator.late	Generated units with low priority (see late-dir in systemd.generator(7))</p>
+<ul>
+<li>/etc/systemd/system/  大部分是软连接，指向/usr/lib/systemd/sytem</li>
+<li>/usr/lib/systemd/system/  配置文件存放路径；</li>
+<li>/etc/systemd/system/vsftpd.service.d/custom.conf：在 /etc/systemd/system 下面创建与配置文件相同文件名的目录，但是要加上 .d 的扩展名。然后在该目录下创建配置文件即可。另外，配置文件最好附文件名取名为.conf 较佳！ 在这个目录下的文件会“累加其他设置”进入 /usr/lib/systemd/system/vsftpd.service 内喔！</li>
+<li>/etc/systemd/system/vsftpd.service.wants/*：此目录内的文件为链接文件，设置相依服务的链接。意思是启动了 vsftpd.service 之后，最好再加上这目录下面建议的服务。</li>
+<li>/etc/systemd/system/vsftpd.service.requires/*：此目录内的文件为链接文件，设置相依服务的链接。意思是在启动 vsftpd.service 之前，需要事先启动哪些服务的意思。</li>
+</ul>
+<p>systemctl enable  xxx.service<br>
+systemctl disable xxx.service</p>
+<h3 id="unit文件的编写">Unit文件的编写</h3>
+<p>每个unit都有一个配置文件，定义了这个unit启动的条件。</p>
+<h4 id="unit格式">Unit格式</h4>
+<p>下面是 SSH service的unit文件，service unit文件以.service 为文件名后缀。<br>
+~$:cat /etc/systemd/system/sshd.service</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=OpenSSH server daemon</span><br><span class="line">[Service]</span><br><span class="line">EnvironmentFile=/etc/sysconfig/sshd</span><br><span class="line">ExecStartPre=/usr/sbin/sshd-keygen</span><br><span class="line">ExecStart=/usrsbin/sshd –D $OPTIONS</span><br><span class="line">ExecReload=/bin/kill –HUP $MAINPID</span><br><span class="line">KillMode=process</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartSec=42s</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>Unit部分仅仅有一个描述信息;Service中，ExecStartPre定义启动service之前应该运行的命令；ExecStart定义启动service的具体命令行语法；Install部分，WangtedBy 表明这个service是在多用户模式下所需要的，multi-user.target</p>
+<h4 id="unit的配置文件区块">Unit的配置文件区块</h4>
+<p>一个文件通常由[Unit]，[Service]（或者其他unit类型）和[Install]构成。<br>
+[Unit]区块通常是配置文件的第一个区块，用来定义 Unit 的元数据，以及配置与其他 Unit 的关系。它的主要字段如下。</p>
+<ul>
+<li>Description：简短描述</li>
+<li>Documentation：文档地址</li>
+<li>Requires：当前 Unit 依赖的其他 Unit，如果它们没有运行，当前 Unit 会启动失败</li>
+<li>Wants：与当前 Unit 配合的其他 Unit，如果它们没有运行，当前 Unit 不会启动失败</li>
+<li>BindsTo：与Requires类似，它指定的 Unit 如果退出，会导致当前 Unit 停止运行</li>
+<li>Before：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之后启动</li>
+<li>After：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之前启动</li>
+<li>Conflicts：这里指定的 Unit 不能与当前 Unit 同时运行</li>
+<li>Condition…：当前 Unit 运行必须满足的条件，否则不会运行</li>
+<li>Assert…：当前 Unit 运行必须满足的条件，否则会报启动失败</li>
+</ul>
+<p>[Install]通常是配置文件的最后一个区块，用来定义如何启动，以及是否开机启动。它的主要字段如下。</p>
+<ul>
+<li>WantedBy：它的值是一个或多个 Target，当前 Unit 激活时（enable）符号链接会放入/etc/systemd/system目录下面以 Target 名 + .wants后缀构成的子目录中</li>
+<li>RequiredBy：它的值是一个或多个 Target，当前 Unit 激活时，符号链接会放入/etc/systemd/system目录下面以 Target 名 + .required后缀构成的子目录中</li>
+<li>Alias：当前 Unit 可用于启动的别名</li>
+<li>Also：当前 Unit 激活（enable）时，会被同时激活的其他 Unit</li>
+</ul>
+<p>[Service]区块用来 Service 的配置，只有 Service 类型的 Unit 才有这个区块。它的主要字段如下。</p>
+<ul>
+<li>Type：定义启动时的进程行为。它有以下几种值。</li>
+<li>Type=simple：默认值，执行ExecStart指定的命令，启动主进程</li>
+<li>Type=forking：以 fork 方式从父进程创建子进程，创建后父进程会立即退出</li>
+<li>Type=oneshot：一次性进程，Systemd 会等当前服务退出，再继续往下执行</li>
+<li>Type=dbus：当前服务通过D-Bus启动</li>
+<li>Type=notify：当前服务启动完毕，会通知Systemd，再继续往下执行</li>
+<li>Type=idle：若有其他任务执行完毕，当前服务才会运行</li>
+<li>ExecStart：启动当前服务的命令</li>
+<li>ExecStartPre：启动当前服务之前执行的命令</li>
+<li>ExecStartPost：启动当前服务之后执行的命令</li>
+<li>ExecReload：重启当前服务时执行的命令</li>
+<li>ExecStop：停止当前服务时执行的命令</li>
+<li>ExecStopPost：停止当其服务之后执行的命令</li>
+<li>RestartSec：自动重启当前服务间隔的秒数</li>
+<li>Restart：定义何种情况 Systemd 会自动重启当前服务，可能的值包括always（总是重启）、on-success、on-failure、on-abnormal、on-abort、on-watchdog</li>
+<li>TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数</li>
+<li>Environment：指定环境变量</li>
+</ul>
+<h3 id="日志">日志</h3>
+<p>Systemd统一管理所有Unit的启动日志。带来的好处就是，可以只用journalctl一个命令，查看所有日志（内核日志和应用日志）。日志的配置文件是/etc/systemd/journald.conf。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看所有日志（默认情况下 ，只保存本次启动的日志）</span><br><span class="line"><span class="meta">$</span> sudo journalctl</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看内核日志（不显示应用日志）</span><br><span class="line"><span class="meta">$</span> sudo journalctl -k</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看系统本次启动的日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl -b</span><br><span class="line"><span class="meta">$</span> sudo journalctl -b -0</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看上一次启动的日志（需更改设置）</span><br><span class="line"><span class="meta">$</span> sudo journalctl -b -1</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看指定时间的日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl --since="2012-10-30 18:17:16"</span><br><span class="line"><span class="meta">$</span> sudo journalctl --since "20 min ago"</span><br><span class="line"><span class="meta">$</span> sudo journalctl --since yesterday</span><br><span class="line"><span class="meta">$</span> sudo journalctl --since "2015-01-10" --until "2015-01-11 03:00"</span><br><span class="line"><span class="meta">$</span> sudo journalctl --since 09:00 --until "1 hour ago"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 显示尾部的最新10行日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl -n</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 显示尾部指定行数的日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl -n 20</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 实时滚动显示最新日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl -f</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看指定服务的日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl /usr/lib/systemd/systemd</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看指定进程的日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl _PID=1</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看某个路径的脚本的日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl /usr/bin/bash</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看指定用户的日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl _UID=33 --since today</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看某个 Unit 的日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl -u nginx.service</span><br><span class="line"><span class="meta">$</span> sudo journalctl -u nginx.service --since today</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 实时滚动显示某个 Unit 的最新日志</span><br><span class="line"><span class="meta">$</span> sudo journalctl -u nginx.service -f</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 合并显示多个 Unit 的日志</span><br><span class="line"><span class="meta">$</span> journalctl -u nginx.service -u php-fpm.service --since today</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 查看指定优先级（及其以上级别）的日志，共有8级</span><br><span class="line"><span class="meta">#</span> 0: emerg</span><br><span class="line"><span class="meta">#</span> 1: alert</span><br><span class="line"><span class="meta">#</span> 2: crit</span><br><span class="line"><span class="meta">#</span> 3: err</span><br><span class="line"><span class="meta">#</span> 4: warning</span><br><span class="line"><span class="meta">#</span> 5: notice</span><br><span class="line"><span class="meta">#</span> 6: info</span><br><span class="line"><span class="meta">#</span> 7: debug</span><br><span class="line"><span class="meta">$</span> sudo journalctl -p err -b</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 日志默认分页输出，--no-pager 改为正常的标准输出</span><br><span class="line"><span class="meta">$</span> sudo journalctl --no-pager</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 以 JSON 格式（单行）输出</span><br><span class="line"><span class="meta">$</span> sudo journalctl -b -u nginx.service -o json</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 以 JSON 格式（多行）输出，可读性更好</span><br><span class="line"><span class="meta">$</span> sudo journalctl -b -u nginx.serviceqq</span><br><span class="line"> -o json-pretty</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 显示日志占据的硬盘空间</span><br><span class="line"><span class="meta">$</span> sudo journalctl --disk-usage</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 指定日志文件占据的最大空间</span><br><span class="line"><span class="meta">$</span> sudo journalctl --vacuum-size=1G</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 指定日志文件保存多久</span><br><span class="line"><span class="meta">$</span> sudo journalctl --vacuum-time=1years</span><br></pre></td></tr></table></figure>
+<h3 id="其他示例">其他示例</h3>
+<h4 id="multi-user-target">multi-user.target</h4>
+<p>~#:cat /lib/systemd/system/multi-user.target</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">#  SPDX-License-Identifier: LGPL-2.1+</span><br><span class="line">#</span><br><span class="line">#  This file is part of systemd.</span><br><span class="line">#</span><br><span class="line">#  systemd is free software; you can redistribute it and/or modify it</span><br><span class="line">#  under the terms of the GNU Lesser General Public License as published by</span><br><span class="line">#  the Free Software Foundation; either version 2.1 of the License, or</span><br><span class="line">#  (at your option) any later version.</span><br><span class="line"></span><br><span class="line">[Unit]</span><br><span class="line">Description=Multi-User System</span><br><span class="line">Documentation=man:systemd.special(7)</span><br><span class="line">Requires=basic.target</span><br><span class="line">Conflicts=rescue.service rescue.target</span><br><span class="line">After=basic.target rescue.service rescue.target</span><br><span class="line">AllowIsolate=yes</span><br></pre></td></tr></table></figure>
+<p>Requires定义multi-user.target启动的时候 basic.target 也必须被启动；另外 basic.target 停止的时候，multi-user.target 也必须停止。basic.target 又指定了 sysinit.target等其他的单元必须随之启动等等。采用这样的层层链接的结构，最终所有需要支持多用户模式的组件service都会被初始化启动好。<br>
+此外在/etc/systemd/system 目录下还可以看到诸如*.wants 的目录，放在该目录下的配置单元文件等同于在[Unit]小节中的 wants 关键字，即本单元启动时，还需要启动这些单元。比如您可以简单地把您自己写的 foo.service 文件放入 multi-user.target.wants 目录下，这样每次都会被默认启动了。</p>
+<h4 id="sys-kernel-debug-mount">sys-kernel-debug.mount</h4>
+<p>最后，让我们来看看 sys-kernel-debug.mount 文件，这个文件定义了一个文件挂载点：<br>
+~#:cat /lib/systemd/system/sys-kernel-debug.mount</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">#  SPDX-License-Identifier: LGPL-2.1+</span><br><span class="line">#</span><br><span class="line">#  This file is part of systemd.</span><br><span class="line">#</span><br><span class="line">#  systemd is free software; you can redistribute it and/or modify it</span><br><span class="line">#  under the terms of the GNU Lesser General Public License as published by</span><br><span class="line">#  the Free Software Foundation; either version 2.1 of the License, or</span><br><span class="line">#  (at your option) any later version.</span><br><span class="line"></span><br><span class="line">[Unit]</span><br><span class="line">Description=Kernel Debug File System</span><br><span class="line">Documentation=https://www.kernel.org/doc/Documentation/filesystems/debugfs.txt</span><br><span class="line">Documentation=https://www.freedesktop.org/wiki/Software/systemd/APIFileSystems</span><br><span class="line">DefaultDependencies=no</span><br><span class="line">ConditionPathExists=/sys/kernel/debug</span><br><span class="line">ConditionCapability=CAP_SYS_RAWIO</span><br><span class="line">Before=sysinit.target</span><br><span class="line"></span><br><span class="line">[Mount]</span><br><span class="line">What=debugfs</span><br><span class="line">Where=/sys/kernel/debug</span><br><span class="line">Type=debugfs</span><br></pre></td></tr></table></figure>
+<p>这个unit定义了一个挂载点。Mount里面配置了What，Where 和 Type 三个数据项。这都是挂载命令所必须的，例子中的配置等同于下面这个挂载命令：<br>
+~#:mount –t debugfs /sys/kernel/debug debugfs</p>
+<h3 id="systemctl-工具">systemctl 工具</h3>
+<p>~$:systemctl list-units     列出正在运行的 Unit<br>
+~$:systemctl list-units --all   列出所有Unit，包括没有找到配置文件的或者启动失败的<br>
+~$:systemctl list-units --all --state=inactive      列出所有没有运行的 Unit<br>
+~$:systemctl list-units --failed    列出所有加载失败的 Unit<br>
+~$:systemctl list-units --type=service  列出所有正在运行的、类型为 service 的 Unit<br>
+~$:systemctl list-unit-files    列出所有配置文件<br>
+~$:systemctl list-unit-files --type=service     列出指定类型的配置文件<br>
+~$:systemctl start foo.service	用来启动一个service (并不会重启现有的)<br>
+~$:systemctl stop foo.service	用来停止一个service (并不会重启现有的)。<br>
+~$:systemctl restart foo.service	用来停止并启动一个service。<br>
+~$:systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+~$:systemctl condrestart foo.service	如果service正在运行那么重启它。<br>
+~$:systemctl status foo.service	汇报service是否正在运行。<br>
+~$:systemctl list-unit-files --type=service	用来列出可以启动或停止的service列表。<br>
+~$:systemctl enable foo.service	在下次启动时或满足其他触发条件时设置service为启用<br>
+~$:systemctl disable foo.service	在下次启动时或满足其他触发条件时设置service为禁用<br>
+~$:systemctl is-enabled foo.service	用来检查一个service在当前环境下被配置为启用还是禁用。<br>
+~$:systemctl list-unit-files --type=service	输出在各个运行级别下service的启用和禁用情况<br>
+~$:systemctl daemon-reload	当您创建新service文件或者变更设置时使用。<br>
+~$:systemctl isolate multi-user.target (OR systemctl isolate runlevel3.target OR telinit 3)	改变至多用户运行级别。<br>
+~$:ls /etc/SystemD/system/*.wants/foo.service	用来列出该service在哪些运行级别下启用和禁用。</p>
+<h2 id="配置文件">配置文件</h2>
+<p>/etc/init.d/*　# 基本上所有的service启动脚本都被放置在该目录<br>
+/etc/rcX.d/    # X指的是数字，从$0-6$，代表不同的run-level，是/etc/init.d/目录下service的软连接<br>
+/etc/systemd/system     # systemd的service文件位置，是/usr/lib/systemd/sytem的软连接<br>
+/etc/default    # 一些配置文件<br>
+/etc/*  # 各service各自的配置文件</p>
+<h2 id="service-initctl-systemctl命令对照表">service，initctl，systemctl命令对照表</h2>
+<p>Service 命令|UpStart initctl 命令|SystemD 命令|备注<br>
+—|---|<br>
+service foo start|initctl start|systemctl start foo.service	用来启动一个service (并不会重启现有的)<br>
+service foo stop|initctl stop|systemctl stop foo.service	用来停止一个service (并不会重启现有的)<br>
+service foo reload|systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+service foo restart|initctl restart|systemctl restart foo.service	用来停止并启动一个service<br>
+service foo status|initctl status|systemctl status foo.service	汇报service是否正在运行。<br>
+service foo reload|initctl reload|systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+service foo condrestart||systemctl condrestart foo.service	如果service正在运行那么重启它。</p>
+<h2 id="xinted">xinted</h2>
+<p>xinted是/etc/init.d/目录中的一个脚本。<br>
+xinted 是inted的扩展，是super daemon，它本身管理了一系列的daemon，只有在用户调用时才由xinetd启动，他们要比独立的daemon启动晚。<br>
+!!!xinted默认在ubuntu中是不存在的,<br>
+~$:sudo apt-get install xinetd<br>
+/etc/xinetd.conf   #super daemon配置文件<br>
+/etc/xinetd.d/*    #它所管理的进程<br>
+/var/lib/*  各service产生的数据库<br>
+/var/run/*  各service的程序的pid记录处</p>
+<h3 id="stand-alone的启动">stand alone的启动</h3>
+<ol>
+<li>用/etc/init.d/*启动<br>
+~#:/etc/init.d/cron start|stop|status|restart|reload|force-reload</li>
+</ol>
+<p>2.用service [service-name] (start|…)启动<br>
+service-name必须与/etc/init.d/相照应<br>
+–status-all 将所有的stand_aloneservice列出来<br>
+~#:service --status-all<br>
+~#:service cron</p>
+<h3 id="super-daemon的启动方式">super daemon的启动方式</h3>
+<p>super daemon本身也是一个stand alone的service，但是它所管理的其他文件就不是了。<br>
+查看某个service是否可用。<br>
+~#:grep -i ‘disable’ /etc/xinted.d/* # disable表示取消，若为yes，表示该service未开启，no表示开启</p>
+<h4 id="示例">示例</h4>
+<p>开启timeservice<br>
+~#:vim /etc/xinted.d/time<br>
+将disable改为no<br>
+重新启动xinted service<br>
+~#:service xinted restart<br>
+!!!注意是重启xinted service</p>
+<p>查看该service的信息<br>
+~#:grep -i ‘time’ /etc/services<br>
+~#:netstat -nltp | grep ‘time port’</p>
+<h3 id="默认值配置文件以及参数介绍">默认值配置文件以及参数介绍</h3>
+<p>/etc/xinetd.conf<br>
+log_type    SYSLOG daemon info 日志文件的记录service类型<br>
+log_on_failure  发生错误时需要记录的信息<br>
+log_on_success  成功启动时的记录信息<br>
+cps 同一秒内的最大连接个数，若超过则暂停<br>
+instance    同一service的最大连接数<br>
+per_source  同一来源的客户端的最大连接数<br>
+v6only  是否运行ipv6<br>
+groups<br>
+umask</p>
+<p>/etc/xinetd.d/<br>
+service <service name><br>
+{<br>
+disable 启动与否<br>
+id  service识别<br>
+server  程序文件名  这个service的启动程序<br>
+server_args 程序参数    设置server_args=–daemon<br>
+user    service所属id<br>
+group   用户组<br>
+socket_type 数据包类型  stream|dgram|raw stream使用tcp,   udp使用dgram,raw代表erver需要与ip直接交互。<br>
+protocol    数据包类型  tcp|udp与socket_type重复，<br>
+wait    连接机制    yes(single) no(multi) 一般udp为yes，tcp为no<br>
+instances   最大连接数<br>
+per_source  单用户来源  (一个数字或者NULIMTED)<br>
+cps 新连接限制<br>
+log_type    日志文件类型    以什么日志选项记载和需要记载的等级(默认为info)<br>
+log_on_success,log_on_failure,设置值,[PID,HOST,USERID,EXIT,DURATION]<br>
+PID为service启动时的pid,host为远程主机的ip，userid为登陆者的账号，EXIT为离开时记录的项目，DURATION为该用户使用此service多久。<br>
+env 额外环境变量设置    设置环境变量<br>
+port    非正规端口号    设置不同的service与对应的端口号，port与service名必须与/etc/services的值相同<br>
+redirect    service转址    [IP port] 将客户端的请求转到另一台主机<br>
+includedir  调用外部设置    表示将某个目录所有文件都放入xinetd.conf中，<br>
+bind    service端口锁定    运行此service的适配卡<br>
+interface   与bind相同<br>
+only_from   [0.0.0.0,192.168.1.0/24,hostname,domainname]设置为这里面的ip或者主机名才能访问，0.0.0.0表示所有主机皆能访问，如果是192.168.1.0/24则表示为C　class的域，即由(192.168.1.1~192.168.1.255)皆可登录。另外，也可选择域名，如bit.edu.cn表示运行北理工的ip登录你的主机<br>
+no_acess    表示的是不可登录的主机<br>
+acess_time  时间控制    [00:00-24:00,HH:MM-HH:MM]<br>
+umask   设置用户新建目录或者文件时候的属性<br>
+}</service></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《鸟哥的LINUX私房菜》<br>
+2.<a href="https://askubuntu.com/questions/911525/difference-between-systemctl-init-d-and-service" target="_blank" rel="noopener">https://askubuntu.com/questions/911525/difference-between-systemctl-init-d-and-service</a><br>
+3.<a href="http://www.r9it.com/20180613/ubuntu-18.04-auto-start.html" target="_blank" rel="noopener">http://www.r9it.com/20180613/ubuntu-18.04-auto-start.html</a><br>
+4.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html</a><br>
+5.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-</a><br>
+6.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-</a><br>
+7.<a href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a><br>
+8.<a href="https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html" target="_blank" rel="noopener">https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html</a><br>
+9.<a href="https://www.freedesktop.org/software/systemd/man/systemd.unit.html" target="_blank" rel="noopener">https://www.freedesktop.org/software/systemd/man/systemd.unit.html</a></p>
 
-signal-control和interval-control
-信号管理的daemon以及每隔一段时间主动执行某项工作的daemon
-每一个服务程序文件名都会加上d，d代表daemon
-</code></pre><p>300./etc/services服务端口的对应<br>    查询service的端口号<br>    服务以及端口号<br>    ~#:grep ‘time’ /etc/services</p>
-<p>101.daemon的启动方式以及启动脚本</p>
-<p>　　a.一些配置文件<br>    /etc/init.d/<em>　 #基本上所有的服务启动脚本都被放置在该目录<br>    /etc/default    #一些配置文件<br>    /etc/</em>    #各服务各自的配置文件</p>
-<pre><code>!!!!xinted默认在ubuntu中是不存在的,
-~$:sudo apt-get install xinetd
-/etc/xinetd.conf   #super daemon配置文件
-/etc/xinetd.d/*       #它所管理的进程
-
-/var/lib/*    各服务产生的数据库
-/var/run/*    各服务的程序的pid记录处
-
-b.stand alone的启动
-用/etc/init.d/*启动
-~#:/etc/init.d/cron start|stop|status|restart|reload|force-reload
-
-用service [service-name] (start|...)启动
-
-service-name必须与/etc/init.d/相照应
---status-all 将所有的stand_alone服务列出来
-
-~#:service --status-all
-~#:service cron
-
-grep -i &#39;disable&#39; /etc/xined.d/*
-</code></pre><p>　　c.super daemon的启动方式<br>    super daemon本身也是一个stand　alone的服务，但是它所管理的其他文件就不是这样了</p>
-<pre><code>查看某个服务是否可用。
-~#:grep -i &#39;disable&#39; /etc/xinted.d/*
-disable表示取消，若为yes，表示该服务未开启，no表示开启
-
-若要开启time服务
-~#:vim /etc/xinted.d/time
-将disable改为no
-重新启动xinted服务
-~#:service xinted restart
-!!!!!注意是重启xinted服务
-
-查看该服务的信息
-~#:grep -i &#39;time&#39; /etc/services
-~#:netstat -nltp | grep &#39;time port&#39;
-</code></pre><p>　　 d.默认值配置文件以及一些参数的值<br>    /etc/xinetd.conf<br>    log_type    SYSLOG daemon info 日志文件的记录服务类型<br>    log_on_failure    发生错误时需要记录的信息<br>    log_on_success    成功启动时的记录信息<br>    cps    同一秒内的最大连接个数，若超过则暂停<br>    instance    同一服务的最大连接数<br>    per_source    同一来源的客户端的最大连接数<br>    v6only    是否运行ipv6<br>    groups<br>    umask</p>
-<pre><code>service &lt;service name&gt;
-{
-
-}
-
-disable    启动与否
-id    服务识别
-server    程序文件名    这个服务的启动程序
-server_args    程序参数    设置server_args=--daemon
-user    服务所属id
-group    用户组    
-socket_type    数据包类型    stream|dgram|raw stream使用tcp,   udp使用dgram,raw代表erver需要与ip直接交互。
-protocol    数据包类型    tcp|udp与socket_type重复，
-wait    连接机制    yes(single) no(multi) 一般udp为yes，tcp为no
-instances    最大连接数
-per_source    单用户来源    (一个数字或者NULIMTED)
-cps    新连接限制
-log_type    日志文件类型    以什么日志选项记载和需要记载的等级(默认为info)
-log_on_success,log_on_failure,设置值,[PID,HOST,USERID,EXIT,DURATION]
-    PID为服务启动时的pid,host为远程主机的ip，userid为登陆者的账号，EXIT为离开时记录的项目，DURATION为该用户使用此服务多久。
-env    额外环境变量设置    设置环境变量
-port    非正规端口号    设置不同的服务与对应的端口号，port与服务名必须与/etc/services的值相同
-redirect    服务转址    [IP port] 将客户端的请求转到另一台主机
-includedir    调用外部设置    表示将某个目录所有文件都放入xinetd.conf中，
-bind    服务端口锁定    运行此服务的适配卡
-interface    与bind相同
-only_from    [0.0.0.0,192.168.1.0/24,hostname,domainname]设置为这里面的ip或者主机名才能访问，0.0.0.0表示所有主机皆能访问，如果是192.168.1.0/24则表示为C　class的域，即由(192.168.1.1~192.168.1.255)皆可登录。另外，也可选择域名，如bit.edu.cn表示运行北理工的ip登录你的主机
-no_acess    表示的是不可登录的主机
-acess_time    时间控制    [00:00-24:00,HH:MM-HH:MM]
-umask    设置用户新建目录或者文件时候的属性
-
-e.端口号小于1024启动者身份一定要是root
-
-f.实际动手设置一个/etc/xinted.d/下的服务
-</code></pre>
       
     </div>
 
@@ -555,6 +707,14 @@ f.实际动手设置一个/etc/xinted.d/下的服务
         <div class="post-tags">
           
             <a href="/tags/linux/" rel="tag"># linux</a>
+          
+            <a href="/tags/SystemD/" rel="tag"># SystemD</a>
+          
+            <a href="/tags/serveice/" rel="tag"># serveice</a>
+          
+            <a href="/tags/daemon/" rel="tag"># daemon</a>
+          
+            <a href="/tags/initd/" rel="tag"># initd</a>
           
         </div>
       
@@ -631,8 +791,17 @@ f.实际动手设置一个/etc/xinted.d/下的服务
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <div class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -649,7 +818,7 @@ f.实际动手设置一个/etc/xinted.d/下的服务
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">141</span>
+                    <span class="site-state-item-count">144</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -945,7 +1114,33 @@ f.实际动手设置一个/etc/xinted.d/下的服务
                     
                       
                     
-                    <span class="site-state-item-count">121</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">134</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1003,6 +1198,22 @@ f.实际动手设置一个/etc/xinted.d/下的服务
         </div>
       </div>
 
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#service和daemon"><span class="nav-number">1.</span> <span class="nav-text">service和daemon</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#daemon的分类"><span class="nav-number">2.</span> <span class="nav-text">daemon的分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#stand-alone-daemon"><span class="nav-number">2.1.</span> <span class="nav-text">stand_alone daemon</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#super-daemon"><span class="nav-number">2.2.</span> <span class="nav-text">super daemon</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sysvinit-service"><span class="nav-number">3.</span> <span class="nav-text">SysVInit service</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置文件路径"><span class="nav-number">3.1.</span> <span class="nav-text">配置文件路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#配置文件示例"><span class="nav-number">3.2.</span> <span class="nav-text">配置文件示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运行方式"><span class="nav-number">3.3.</span> <span class="nav-text">运行方式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#systemd"><span class="nav-number">4.</span> <span class="nav-text">SystemD</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置文件路径-v2"><span class="nav-number">4.1.</span> <span class="nav-text">配置文件路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unit文件的编写"><span class="nav-number">4.2.</span> <span class="nav-text">Unit文件的编写</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#unit格式"><span class="nav-number">4.2.1.</span> <span class="nav-text">Unit格式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#unit的配置文件区块"><span class="nav-number">4.2.2.</span> <span class="nav-text">Unit的配置文件区块</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#日志"><span class="nav-number">4.3.</span> <span class="nav-text">日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他示例"><span class="nav-number">4.4.</span> <span class="nav-text">其他示例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#multi-user-target"><span class="nav-number">4.4.1.</span> <span class="nav-text">multi-user.target</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#sys-kernel-debug-mount"><span class="nav-number">4.4.2.</span> <span class="nav-text">sys-kernel-debug.mount</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#systemctl-工具"><span class="nav-number">4.5.</span> <span class="nav-text">systemctl 工具</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#配置文件"><span class="nav-number">5.</span> <span class="nav-text">配置文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#service-initctl-systemctl命令对照表"><span class="nav-number">6.</span> <span class="nav-text">service，initctl，systemctl命令对照表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xinted"><span class="nav-number">7.</span> <span class="nav-text">xinted</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#stand-alone的启动"><span class="nav-number">7.1.</span> <span class="nav-text">stand alone的启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#super-daemon的启动方式"><span class="nav-number">7.2.</span> <span class="nav-text">super daemon的启动方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#示例"><span class="nav-number">7.2.1.</span> <span class="nav-text">示例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#默认值配置文件以及参数介绍"><span class="nav-number">7.3.</span> <span class="nav-text">默认值配置文件以及参数介绍</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
       
 
       
