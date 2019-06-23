@@ -7,6 +7,8 @@ categories: linux
 mathjax: true
 ---
 
+jq 解析json字符串
+
 && || 命令从左到右依次执行　根据回传码$0的值，继续向右执行命令
 ## diff 文本比较，通常比较一个文件的不同版本	
 diff [-bBi] file1 file2
@@ -248,4 +250,4 @@ last最近登录的用户
 
 ## 参考文献
 1. 《鸟哥的LINUX私房菜》
-
+2.https://www.tomczhen.com/2017/10/15/parsing-json-with-shell-script/

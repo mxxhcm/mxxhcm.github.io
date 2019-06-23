@@ -34,4 +34,3 @@ categories: linux
 /var/log/wtmp		包含登录信息，找出谁正在登录进入系统以及谁用命令显示这个文件或者信息等
 /var/log/xorg.\*.log	来自X的日志信息
 
-

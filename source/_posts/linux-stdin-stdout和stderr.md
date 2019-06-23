@@ -79,6 +79,7 @@ command &> /dev/null
 
 ## 示例
 ~$:nohup sslocal -c /etc/shadowsocks_v6.json \</dev/null &\>\>~/.log/ss-local.log &  # 后台运行sslocal
+~$:nohup /home/mxxmhh/anaconda3/bin/python main.py >log_name 2>&1 &
 
 ## 参考文献
 1.https://unix.stackexchange.com/questions/27955/the-usage-of-dev-null-in-the-command-line

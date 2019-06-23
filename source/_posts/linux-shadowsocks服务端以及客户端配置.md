@@ -155,7 +155,7 @@ esac
 ## 服务端自动配置脚本
 [地址](https://github.com/mxxhcm/code/tree/master/shell/ss)
 首先将该文件中所有文件复制到vps上，然后执行
-~#:sh install_ssh.sh
+~#:sh install_ss_server.sh
 即可
 ### 补充说明
 该文件夹共包含五个文件
@@ -163,7 +163,7 @@ shadowsocks_v4.json为ipv4 ss配置文件，可根据自己的需要修改端口
 shadowsocks_v6.json为ipv6 ss配置文件，可根据自己的需要修改端口号和密码
 shadowsocks_v4为ipv4 ss自启动文件，无需修改
 shadowsocks_v6为ipv6 ss自启动文件，无需修改
-install_ssh.sh为安装脚本，该脚本同时配置ipv4和ipv6 ss server。可根据自己需要自行选择。
+install_ss_server.sh为安装脚本，该脚本同时配置ipv4和ipv6 ss server。可根据自己需要自行选择。
 
 ## 客户端配置
 ### Windows客户端配置

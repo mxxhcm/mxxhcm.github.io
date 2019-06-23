@@ -206,6 +206,7 @@ user1 yourgmail
 
 ### 测试
 ~$:echo "Hello." |mail -s "I love you." 18811376816@163.com
+这种方式应该是不支持中文的。。
 
 ## 附录
 更多at命令的TIME格式
