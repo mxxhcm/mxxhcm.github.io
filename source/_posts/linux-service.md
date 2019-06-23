@@ -31,7 +31,7 @@ signal-control和interval-control，信号管理的daemon以及每隔一段时�
 - /etc/rc.d/rcX.d/ (X 代表运行级别 0-6) # 不同runlevel的service存放位置
 - /etc/rc.d/rc.local    # 用户自定义的service
 
-### 配置文件示例
+### 自定义文件示例
 创建/etc/init.d/shadowsocks_client service如下所示
 ``` txt
 #!/bin/sh
@@ -68,6 +68,7 @@ reload)
 　　　;;
 esac
 ```
+
 然后执行以下命令进行更新
 ~$:sudo chomod a+x /etc/init.d/shadowsocks_client
 ~$:sudo update_rc.d shadowsocks defaults
@@ -75,30 +76,57 @@ esac
 ### 运行方式
 service shadowsocks_client start
 
-
 ## SystemD
 ### 配置文件路径
-比如vsftpd.service的配置文件路径
-etc/systemd/system.control	Persistent and transient configuration created using the dbus API
-/run/systemd/system.control
-/run/systemd/transient	Dynamic configuration for transient units
-/run/systemd/generator.early	Generated units with high priority (see early-dir in systemd.generator(7))
-/etc/systemd/system	System units created by the administrator
-/run/systemd/system	Runtime units
-/run/systemd/generator	Generated units with medium priority (see normal-dir in systemd.generator(7))
-/usr/local/lib/systemd/system	System units installed by the administrator
-/usr/lib/systemd/system	System units installed by the distribution package manager
-/run/systemd/generator.late	Generated units with low priority (see late-dir in systemd.generator(7))
-
-
-- /etc/systemd/system/  大部分是软连接，指向/usr/lib/systemd/sytem
-- /usr/lib/systemd/system/  配置文件存放路径；
-- /etc/systemd/system/vsftpd.service.d/custom.conf：在 /etc/systemd/system 下面创建与配置文件相同文件名的目录，但是要加上 .d 的扩展名。然后在该目录下创建配置文件即可。另外，配置文件最好附文件名取名为.conf 较佳！ 在这个目录下的文件会“累加其他设置”进入 /usr/lib/systemd/system/vsftpd.service 内喔！
-- /etc/systemd/system/vsftpd.service.wants/\*：此目录内的文件为链接文件，设置相依服务的链接。意思是启动了 vsftpd.service 之后，最好再加上这目录下面建议的服务。
+- /etc/systemd/system	系统service，不要动。大部分是软连接，指向/usr/lib/systemd/sytem
+- /run/systemd/system	Runtime units
+- /usr/local/lib/systemd/system	管理员安装的System units
+- /usr/lib/systemd/system	包管理器安装的System units(for centos)
+- /lib/systemd/system   包管理器安装的System units(for debian/ubuntu)
+- /etc/systemd/system/\*\*.service.wants/\*：此目录内的文件为链接文件，设置相依服务的链接。意思是启动了 \*\*.service 之后，最好再加上这目录下面建议的服务。
 - /etc/systemd/system/vsftpd.service.requires/\*：此目录内的文件为链接文件，设置相依服务的链接。意思是在启动 vsftpd.service 之前，需要事先启动哪些服务的意思。
 
-systemctl enable  xxx.service
-systemctl disable xxx.service
+### 自定义unit文件示例
+在/lib/systemd/system/创建ss_client.service，如下所示：
+``` txt
+[Unit]
+Description=ss v4 client daemon
+ 
+[Service]
+ExecStart=/usr/bin/sslocal -c /etc/shadowsocks_v4_client.json </dev/null &>>/home/mxxmhh/.log/ss-local.log 
+WorkingDirectory=/home/mxxmhh/
+# Restart=on-failure
+StartLimitBurst=2
+StartLimitInterval=30
+User=mxxmhh
+ExecReload=/bin/kill -SIGHUP $MAINPID
+ExecStop=/bin/kill -SIGINT $MAINPID
+ 
+[Install]
+WantedBy=multi-user.target
+```
+
+然后执行以下命令
+~$:sudo systemctl start ss-client.service
+~$:sudo systemctl enable ss-client.service 
+> Created symlink /etc/systemd/system/multi-user.target.wants/ss-client.service → /lib/systemd/system/ss-client.service.
+
+执行以下命令发现报错
+~$:sudo systemctl status ss-client.service
+``` txt
+ss-client.service: Start request repeated too
+ss-client.service: Failed with result 'exit-c
+```
+根据参考文献13使用下列命令常看详细log
+~$:journalctl -u ss-client.service
+发现报错：
+``` txt
+ss-client.service: Failed at step USER spawning /usr/bin/sslocal: No such proces
+```
+然后根据参考文献12发现可能是自己的文件写的有问题，最后发现是user复制的时候出错了，修改之后就好了。执行以下命令加载修改后的配置文件，然后restart服务。
+~$: sudo systemctl daemon-reload
+~$: sudo systemctl restart ss-client.service
+~$: sudo systemctl status ss-client.service
 
 ### Unit文件的编写
 每个unit都有一个配置文件，定义了这个unit启动的条件。
@@ -161,62 +189,33 @@ Unit部分仅仅有一个描述信息;Service中，ExecStartPre定义启动servi
 - TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数
 - Environment：指定环境变量
 
-
 ### 日志
 Systemd统一管理所有Unit的启动日志。带来的好处就是，可以只用journalctl一个命令，查看所有日志（内核日志和应用日志）。日志的配置文件是/etc/systemd/journald.conf。
 ``` shell
-
-# 查看所有日志（默认情况下 ，只保存本次启动的日志）
-$ sudo journalctl
-
-# 查看内核日志（不显示应用日志）
-$ sudo journalctl -k
-
+~$:sudo journalctl  # 查看所有日志（默认情况下 ，只保存本次启动的日志）
+~$: sudo journalctl -k    # 查看内核日志（不显示应用日志）
 # 查看系统本次启动的日志
-$ sudo journalctl -b
-$ sudo journalctl -b -0
-
-# 查看上一次启动的日志（需更改设置）
-$ sudo journalctl -b -1
-
+~$:sudo journalctl -b    
+~$:sudo journalctl -b -0
+~$:sudo journalctl -b -1 # 查看上一次启动的日志（需更改设置）
 # 查看指定时间的日志
-$ sudo journalctl --since="2012-10-30 18:17:16"
-$ sudo journalctl --since "20 min ago"
-$ sudo journalctl --since yesterday
-$ sudo journalctl --since "2015-01-10" --until "2015-01-11 03:00"
-$ sudo journalctl --since 09:00 --until "1 hour ago"
-
-# 显示尾部的最新10行日志
-$ sudo journalctl -n
-
-# 显示尾部指定行数的日志
-$ sudo journalctl -n 20
-
-# 实时滚动显示最新日志
-$ sudo journalctl -f
-
-# 查看指定服务的日志
-$ sudo journalctl /usr/lib/systemd/systemd
-
-# 查看指定进程的日志
-$ sudo journalctl _PID=1
-
-# 查看某个路径的脚本的日志
-$ sudo journalctl /usr/bin/bash
-
-# 查看指定用户的日志
-$ sudo journalctl _UID=33 --since today
-
+~$:sudo journalctl --since="2012-10-30 18:17:16"
+~$:sudo journalctl --since "20 min ago"
+~$:sudo journalctl --since yesterday
+~$:sudo journalctl --since "2015-01-10" --until "2015-01-11 03:00"
+~$:sudo journalctl --since 09:00 --until "1 hour ago"
+~$:sudo journalctl -n   # 显示尾部的最新10行日志
+~$:sudo journalctl -n 20    # 显示尾部指定行数的日志
+~$:sudo journalctl -f   # 实时滚动显示最新日志
+~$:sudo journalctl /usr/lib/systemd/systemd # 查看指定服务的日志
+~$:sudo journalctl _PID=1   # 查看指定进程的日志
+~$:sudo journalctl /usr/bin/bash    # 查看某个路径的脚本的日志
+~$:sudo journalctl _UID=33 --since today    # 查看指定用户的日志
 # 查看某个 Unit 的日志
-$ sudo journalctl -u nginx.service
-$ sudo journalctl -u nginx.service --since today
-
-# 实时滚动显示某个 Unit 的最新日志
-$ sudo journalctl -u nginx.service -f
-
-# 合并显示多个 Unit 的日志
-$ journalctl -u nginx.service -u php-fpm.service --since today
-
+~$:sudo journalctl -u nginx.service
+~$:sudo journalctl -u nginx.service --since today
+~$:sudo journalctl -u nginx.service -f  # 实时滚动显示某个 Unit 的最新日志
+~$:journalctl -u nginx.service -u php-fpm.service --since today # 合并显示多个 Unit 的日志
 # 查看指定优先级（及其以上级别）的日志，共有8级
 # 0: emerg
 # 1: alert
@@ -226,82 +225,14 @@ $ journalctl -u nginx.service -u php-fpm.service --since today
 # 5: notice
 # 6: info
 # 7: debug
-$ sudo journalctl -p err -b
-
-# 日志默认分页输出，--no-pager 改为正常的标准输出
-$ sudo journalctl --no-pager
-
-# 以 JSON 格式（单行）输出
-$ sudo journalctl -b -u nginx.service -o json
-
-# 以 JSON 格式（多行）输出，可读性更好
-$ sudo journalctl -b -u nginx.serviceqq
- -o json-pretty
-
-# 显示日志占据的硬盘空间
-$ sudo journalctl --disk-usage
-
-# 指定日志文件占据的最大空间
-$ sudo journalctl --vacuum-size=1G
-
-# 指定日志文件保存多久
-$ sudo journalctl --vacuum-time=1years
+~$:sudo journalctl -p err -b
+~$:sudo journalctl --no-pager   # 日志默认分页输出，--no-pager 改为正常的标准输出
+~$:sudo journalctl -b -u nginx.service -o json  # 以 JSON 格式（单行）输出
+~$:sudo journalctl -b -u nginx.serviceqq -o json-pretty # 以 JSON 格式（多行）输出，可读性更好
+~$:sudo journalctl --disk-usage # 显示日志占据的硬盘空间
+~$:sudo journalctl --vacuum-size=1G # 指定日志文件占据的最大空间
+~$:sudo journalctl --vacuum-time=1years # 指定日志文件保存多久
 ```
-
-### 其他示例
-#### multi-user.target
-~#:cat /lib/systemd/system/multi-user.target
-
-``` txt
-#  SPDX-License-Identifier: LGPL-2.1+
-#
-#  This file is part of systemd.
-#
-#  systemd is free software; you can redistribute it and/or modify it
-#  under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-[Unit]
-Description=Multi-User System
-Documentation=man:systemd.special(7)
-Requires=basic.target
-Conflicts=rescue.service rescue.target
-After=basic.target rescue.service rescue.target
-AllowIsolate=yes
-```
-Requires定义multi-user.target启动的时候 basic.target 也必须被启动；另外 basic.target 停止的时候，multi-user.target 也必须停止。basic.target 又指定了 sysinit.target等其他的单元必须随之启动等等。采用这样的层层链接的结构，最终所有需要支持多用户模式的组件service都会被初始化启动好。
-此外在/etc/systemd/system 目录下还可以看到诸如\*.wants 的目录，放在该目录下的配置单元文件等同于在[Unit]小节中的 wants 关键字，即本单元启动时，还需要启动这些单元。比如您可以简单地把您自己写的 foo.service 文件放入 multi-user.target.wants 目录下，这样每次都会被默认启动了。
-
-#### sys-kernel-debug.mount
-最后，让我们来看看 sys-kernel-debug.mount 文件，这个文件定义了一个文件挂载点：
-~#:cat /lib/systemd/system/sys-kernel-debug.mount 
-``` txt
-#  SPDX-License-Identifier: LGPL-2.1+
-#
-#  This file is part of systemd.
-#
-#  systemd is free software; you can redistribute it and/or modify it
-#  under the terms of the GNU Lesser General Public License as published by
-#  the Free Software Foundation; either version 2.1 of the License, or
-#  (at your option) any later version.
-
-[Unit]
-Description=Kernel Debug File System
-Documentation=https://www.kernel.org/doc/Documentation/filesystems/debugfs.txt
-Documentation=https://www.freedesktop.org/wiki/Software/systemd/APIFileSystems
-DefaultDependencies=no
-ConditionPathExists=/sys/kernel/debug
-ConditionCapability=CAP_SYS_RAWIO
-Before=sysinit.target
-
-[Mount]
-What=debugfs
-Where=/sys/kernel/debug
-Type=debugfs
-```
-这个unit定义了一个挂载点。Mount里面配置了What，Where 和 Type 三个数据项。这都是挂载命令所必须的，例子中的配置等同于下面这个挂载命令：
-~#:mount –t debugfs /sys/kernel/debug debugfs
 
 ### systemctl 工具
 ~$:systemctl list-units     列出正在运行的 Unit
@@ -318,7 +249,7 @@ Type=debugfs
 ~$:systemctl condrestart foo.service	如果service正在运行那么重启它。
 ~$:systemctl status foo.service	汇报service是否正在运行。
 ~$:systemctl list-unit-files --type=service	用来列出可以启动或停止的service列表。
-~$:systemctl enable foo.service	在下次启动时或满足其他触发条件时设置service为启用
+~$:systemctl enable foo.service	在下次启动时或满足其他触发条件时设置service为启用。创建一个符号链接从/etc/systemd/system/some_target.target.wants指向/lib/systemd/system或者/etc/systemd/system。
 ~$:systemctl disable foo.service	在下次启动时或满足其他触发条件时设置service为禁用
 ~$:systemctl is-enabled foo.service	用来检查一个service在当前环境下被配置为启用还是禁用。
 ~$:systemctl list-unit-files --type=service	输出在各个运行级别下service的启用和禁用情况
@@ -433,3 +364,7 @@ super daemon本身也是一个stand alone的service，但是它所管理的其�
 7.http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html
 8.https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html
 9.https://www.freedesktop.org/software/systemd/man/systemd.unit.html
+10.https://unix.stackexchange.com/questions/206315/whats-the-difference-between-usr-lib-systemd-system-and-etc-systemd-system
+11.https://stackoverflow.com/questions/35452591/start-request-repeated-too-quickly
+12.https://superuser.com/questions/1156676/what-causes-systemd-failed-at-step-user-spawning-usr-sbin-opendkim-no-such-p
+13.https://stackoverflow.com/questions/39202644/caddy-service-start-request-repeated-too-quickly
