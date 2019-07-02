@@ -12,35 +12,43 @@ categories: linux
 ## head tail
 
 ## cut
+### 参数说明
+``` txt
 cut -d '分隔字符' -f (fields)fields为数字
 cut -c 字符范围
+```
 
-	cut -d ':' -f 2,3
-	echo $PATH | cut -d ':' -f 2,4
-
-	cut -c 20-30
-	export | cut -c 12-
-
-	不过cut 对于多个空格当做分隔字符的处理做的不够好
+### 示例
+``` txt
+cut -d ':' -f 2,3
+echo $PATH | cut -d ':' -f 2,4
+cut -c 20-30
+export | cut -c 12-
+不过cut 对于多个空格当做分隔字符的处理做的不够好
+```
 
 ## grep
+### 参数说明
+``` txt
 grep [-aincv] [--color=auto] '关键字' filename
 	-a 将binary文件以text的方式查找数据
 	-i 忽略大小写
 	-c 计算查找到的字符串的个数
 	-n 顺便输出行号
 	-v 反向选择
-### grep -n  '^$' regular_express
+grep -n  '^$' regular_express
+```
+### 示例
+``` txt
 grep '^the' file
 grep '[^[:lower:]]' file
 grep '\.$' file
 grep '^[^a-zA-Z]' file
 grep 'go\{2,3\}g' file
-
 对比
 ls -l /etc/a*
 grep -n '^a.*/' 
-
+```
 
 ## dmesg
 dmesg 查看内核信息
@@ -51,6 +59,8 @@ dmesg | grep -n A3 B2 'eth'
 last | grep 'mxx' | cut -d '' -f 1
 
 ## sort,wc,uniq
+### 参数说明
+``` txt
 sort 	排序
 	[-fbMnrutk] [file]
 		-f 不区分大小写
@@ -59,10 +69,12 @@ sort 	排序
 		-k 以第几个字段进行排序
 		-n 以数字进行排序(默认是以字母)
 		-m 反向排序
-	eg:
-	sort -t ':' -k 3 -n /etc/passwd	
-	or
-	cat /etc/passwd | sort -t ':' -k 3 -n
+```
+### 示例
+``` txt
+sort -t ':' -k 3 -n /etc/passwd	
+cat /etc/passwd | sort -t ':' -k 3 -n
+```
 
 ## uniq
 uniq 去重

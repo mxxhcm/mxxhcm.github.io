@@ -493,8 +493,13 @@ y Reducing Internal Covariate Shift
 论文地址：https://arxiv.org/pdf/1502.03167.pdf
 
 ### 概述
+在训练深度神经网络的时候，随着训练的不断进行，网络权重在不停的变，除了第一层之外的每层输入也在不停的变，所以就使得权重每次都要去适应新的输入distributions。这就导致训练速度很慢，学习率的要很小，很难使用saturaing nonlinearities训练。作者把这个问题叫做internal covariate shift。作者提出了batch normalization解决这个问题，允许使用更高的学习率，对于参数初始化的要求也没那么高。
+BN可以看成一种正则化手段。
 
-### 
+### 简介
+SGD相对于单个样本的GD来说，使用mini-batch的梯度作为整个训练集的估计值，效果更好；同时并行计算提高了效率。之前的工作使用ReLU，更好的初始化以及小的学习率来解决梯度消失问题，而本文作者的想法是让非线性输入的分布尽可能稳定，从而解决梯度饱和等问题，加快训练。本文提出的batch normalization通过固定每一层输入的均值和方差减少internal covariate shift，同时减少了gradients对于初始参数的依赖性。在使用了BN的网络中，也可以使用如sigmod和tanh的saturating nonlirearities激活函数，并不是一定要用relu激活函数。
+
+###
 
 ## Residual Network(2015)
 论文名称：Deep Residual Learning for Image Recognition
@@ -555,9 +560,6 @@ C. 所有的shortcuts都是projection
 作者之前使用的都是$34$层的网络，这里他们还研究了更深的网络，通过使用$3$层的堆叠，而不是两层，$1\times 1, 3\times 3, 1\times 1$对应不同的层，第一个$1\times 1$用来降维，第二个$1\times 1$用来降维。如下图所示的两层和三层网络有相同的复杂度：
 ![differenet residual](residual_bottleneck.png)
 通过使用三层的block，作者构建了$50$层，$101, 152$层的网络，即使是$152$层的ResNets也比VGG-19的复杂度要低。
-
-
-##
 
 ## 参考文献
 1.https://www.zhihu.com/question/52668301/answer/194998098

@@ -15,21 +15,21 @@ categories: tensorflow
 ## 常用API
 ### 函数
 ``` python
-# 用来定义一个summary scalar op，同时会将这个op加入到tf.GraphKeys.SUMMARIES collection中。
+# 1.定义一个summary scalar op，同时会将这个op加入到tf.GraphKeys.SUMMARIES collection中。
 tf.summary.scalar(
 	name, 
 	tensor, # 一个实数型的Tensor，包含单个的值。
 	collections=None, # 可选项，是graph collections keys的list，新的summary op会被添加到这个list of collection。默认的list是[GraphKeys.SUMMARIES]。
 	family=None
 )
-# 定义一个summary histogram op，同时会将这个op加入到tf.GraphKeys.SUMMARIES collection中。
+# 2.定义一个summary histogram op，同时会将这个op加入到tf.GraphKeys.SUMMARIES collection中。
 tf.summary.histogram(
     name,
     values, # 一个实数型的Tensor，任意shape，用来生成直方图。
     collections=None, # 可选项，是graph collections keys的list，新的summary op会被添加到这个list of collection。默认的list是[GraphKeys.SUMMARIES].
     family=None
 )
-# 将所有定义的summary op集中到一块，如scalar，text，histogram等。
+# 3.将所有定义的summary op集中到一块，如scalar，text，histogram等。
 tf.summary.merge_all(
     key=tf.GraphKeys.SUMMARIES, #指定用哪个GraphKey来collect summaries。默认设置为GraphKeys.SUMMARIES.并不是说将他们加入到哪个GraphKey的意思，tf.summary.scalar()等会将op加入到相应的colleection。
     scope=None, #
@@ -37,11 +37,11 @@ tf.summary.merge_all(
 ) 
 ```
 
-### scalar和histogram的区别
+#### scalar和histogram的区别
 scalar记录的是一个标量。
 而histogram记录的是一个分布，可以是任何shape。
 
-### 函数示例
+#### 函数示例
 ``` python
 summary_loss = tf.summary.scalar('loss', loss)
 summary_weights = tf.summary.scalar('weights', weights)
@@ -73,7 +73,7 @@ tf.summary.FileWriter.add_summary(
 	global_step=None
 ) 
 ```
-### 类示例
+#### 类示例
 ``` python
 writer = tf.summary.FileWriter("./summary/")
 with tf.Session() as sess:
@@ -136,6 +136,13 @@ with tf.Session(graph=graph) as sess:
 ```
 
 使用tensorboard --logdir ./summary/打开tensorboard
+打开之后在每个图中会看到两个曲线，一个深色，一个浅色，浅色的是真实的值，深色的是在真实值的基础上进行了平滑。在左侧可以调整平滑系数，默认是0.6，如果是0表示不进行平滑，如果是1就成了一条直线。
+如果多次运行的话，多次的结果都会在图中显示出来，鼠标移动到图中只能看到最新的那次结果。浅色的线是最新运行的结果的真实值，深色的线是平滑后的，设置为0可以看到深色和浅色重合了。横轴STEP表示按步长，RELATIVE表示按相对时间，WALL表示将它们分开显示。
+对于histogram来说的话，这个它是把每一步中list的值做成了一个直方图，统计在每个范围内出现的值的个数，然后按照时间步展现出来每一步的直方图。但是这个直方图是做了一定优化的，如果拿几个值来测试，最后的结果跟你想的并不一定一样。
+所以histogram就是展现出了每一步list的值主要集中在哪个地方。有两个mode，overlay和offset，overlay是重叠的。
+overlay中横轴是bin的取值，纵轴是每个bin的频率，所有的时间步都在一起，每一条线都代表一个时间步的直方图，鼠标悬停上去会显示每一条线的时间步。
+offset中横轴是bin的取值，纵轴是时间步，所有的直方图按照时间步进行展开，每一时间步都是一条单独的线，鼠标悬停上去会显示每一条线的频率。
+。
 
 ### 官网示例
 加了一定注释，[可以点击查看](https://github.com/mxxhcm/code/blob/master/tf/ops/tf_summary_example.py)
@@ -170,3 +177,5 @@ with tf.Session(graph=graph) as sess:
 5.https://www.tensorflow.org/guide/graphs#visualizing_your_graph
 6.https://www.tensorflow.org/guide/summaries_and_tensorboard
 7.https://www.tensorflow.org/tensorboard/r1/histograms
+8.https://ask.csdn.net/questions/760881
+9.https://gaussic.github.io/2017/08/16/tensorflow-tensorboard/

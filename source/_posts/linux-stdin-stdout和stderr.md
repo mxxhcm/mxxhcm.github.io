@@ -63,8 +63,9 @@ ls. >> current_dir_list.txt
 ```
 
 ## 2>&1和&>
+2>&1是将stderr重定向到stdout，比如"command >/dev/null 2>&1"是先将comand的stdout重定向到/dev/null中，然后将stderr重定向到stdout，因为stdout已经指向了/dev/null，所以stderr就重定向到了/dev/null。"command >out.txt 2>&1"是先将stdout重定向到out.txt，然后将stderr重定向到stdout，也就是out.txt。
 ```
-command 2>&1 output_error.txt，
+command > output_error.txt 2>&1，
 #可以将2>&1看成将stderr重定向到stdout，如果写成2>1的话看起来像是将stderr重定向到一个名为$1$的文件。在redirece的上下文中，&可以看成file descriptor的意思。为什么不写成&2>&1，这会被解析成& 和2&1，第一个&会被解析成后台运行，然后剩下的就是2>&1了。
 # 将command的stdout和stderr都输出到该文件
 command &> /dev/null

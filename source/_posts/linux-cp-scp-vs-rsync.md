@@ -31,7 +31,9 @@ rsync [-zvra] source destination
     -r  递归拷贝
     -a  保留时间戳，owner,group
     -e ssh  使用ssh
+    --partial    单个文件的断点续传
     --progress  显示同步进度
+    -P等于--paritial和--progress一同使用
     --include   只同步某些目录
     --exclude   不同步某些目录
 

@@ -129,6 +129,10 @@ for i in range(3):
 
 #### numpy.linspace()
 
+### 创建bool类型数组
+np.ones([2, 2], dtype=bool)
+np.zeros([2, 2], dtype=bool)
+
 ### 改变数组数据类型
 将整形数组改为字符型
 ``` python
@@ -206,3 +210,4 @@ print(rand)
 
 参考文献
 1.https://stackoverflow.com/questions/47231852/np-random-rand-vs-np-random-random
+2.https://stackoverflow.com/questions/21174961/how-to-create-a-numpy-array-of-all-true-or-all-false

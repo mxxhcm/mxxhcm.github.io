@@ -12,8 +12,6 @@ categories: tensorflow
 
 
 ## 问题1-The value of a feed cannot be a tf.Tensor object
-
-
 ### 报错
 ``` txt
 TypeError: The value of a feed cannot be a tf.Tensor object
@@ -208,6 +206,93 @@ Can not convert a ndarray into a Tensor or Operation.
 ### 解决方法
 换个变量名字就行
 
+## 问题10-本地使用gpu server的tensorboard
+### 问题描述
+在gpu server跑的实验结果，然后summary的记录也在server上，但是又没办法可视化，只好在本地可视化。
+
+### 解决方法
+使用ssh进行映射好了。
+#### 本机设置
+~$:ssh -L 12345:10.1.114.50:6006 mxxmhh@127.0.0.1
+将本机的12345端口映射到10.1.114.50的6006端口，中间服务器使用的是本机。
+或者可以使用10.1.114.50作为中间服务器。
+~$:ssh -L 12345:10.1.114.50:6006 liuchi@10.1.114.50
+或者可以使用如下方法：
+~$:ssh -L 12345:127.0.0.1:6006 liuchi@10.1.114.50
+从这个方法中，可以看出127.0.0.1这个ip是中间服务器可以访问的ip。
+以上三种方法中，-L后的端口号12345可以随意设置，只要不冲突即可。
+
+#### 服务端设置
+然后在服务端运行以下命令：
+~$:tensorboard --logdir logdir -port 6006
+这个端口号也是可以任意设置的，不冲突即可。
+
+#### 运行
+然后在本机访问
+[https://127.0.0.1:12345](https://127.0.0.1:12345)即可。
+
+
+## 问题11-每一步summary一个list的每一个元素
+
+### 问题原因
+有一个tf list的placeholder，但是每一步只能生成其中的一个元素，所以怎么样summary中其中的某一个？
+
+### 解决方法
+``` shell
+import tensorflow as tf
+import numpy as np
+
+number = 3
+x_ph_list = []
+for i in range(number):
+    x_ph_list.append(tf.placeholder(tf.float32, shape=None))
+
+x_summary_list = []
+for i in range(number):
+    x_summary_list.append(tf.summary.scalar("x%s" % i, x_ph_list[i]))
+
+writer = tf.summary.FileWriter("./tf_summary/scalar_list_summary/sep")
+with tf.Session() as sess:
+    scope = 10
+    inputs = np.arange(scope*number)
+    inputs = inputs.reshape(scope, number)
+    # inputs = np.random.randn(scope, number)
+    for i in range(scope):
+        for j in range(number):
+            out, xj_s = sess.run([x_ph_list[j], x_summary_list[j]], feed_dict={x_ph_list[j]: inputs[i][j]})
+            writer.add_summary(xj_s, global_step=i)
+```
+
+## 问题12- for value in summary.value: AttributeError: 'list' object has no attribute 'value'
+
+### 问题描述
+writer.add_summary时报错
+
+### 报错
+``` txt
+File "/home/mxxmhh/anaconda3/lib/python3.7/site-packages/tensorflow/python/summary/writer/writer.py", line 127, in add_summary
+    for value in summary.value:
+AttributeError: 'list' object has no attribute 'value'
+```
+
+### 问题原因
+执行以下代码
+``` python
+    s_ = sess.run([loss_summary], feed_dict={p_losses_ph: inputs1, q_losses_ph: inputs2})
+    writer.add_summary(s_, global_step=1)
+```
+因为[loss_summary]加了方括号，就把它当成了一个list。。返回值也是list，就报错了
+
+### 解决方法
+- 方法1，在等号左边加一个逗号，取出list中的值
+``` python
+    s_, = sess.run([loss_summary], feed_dict={p_losses_ph: inputs1, q_losses_ph: inputs2})
+```
+- 方法2，去掉loss_summary外面的中括号。
+``` python
+    s_ = sess.run(loss_summary, feed_dict={p_losses_ph: inputs1, q_losses_ph: inputs2})
+```
+ 
 
 ## 参考文献
 1.https://github.com/tensorflow/tensorflow/issues/4842

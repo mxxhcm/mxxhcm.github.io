@@ -12,6 +12,14 @@ free [-bkmg] -t
     -t  输出结果中显示free和swap加在一起的总量
 free -h 
 
+``` shell
+~$:sudo dmidecode -t memory |grep "Number Of Devices" |awk '{print $NF}'    # 卡槽数量
+~$:sudo dmidecode -t memory |grep -A16 "Memory Device$" |grep 'Size:.*MB' |wc -l    # 内存数量
+~$:sudo dmidecode -t memory |grep -A16 "Memory Device$" |grep "Type:"  # 内存支持类型
+~$:sudo dmidecode -t memory |grep -A16 "Memory Device$" |grep "Speed:" # 每个内存频率
+~$:sudo dmidecode -t memory |grep -A16 "Memory Device$" |grep "Size:"  # 每个内存大小
+```
+
 ## 查看磁盘
 df -h 查看磁盘占用情况
 du -h --max-depth=2 统计当前目录下深度为2的文件和目录大小

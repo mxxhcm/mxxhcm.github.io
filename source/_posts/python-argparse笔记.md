@@ -48,8 +48,6 @@ if __name__ == "__main__":
     main(args_list)
 ```
 
-
-
 ## ArgumentParser objects
 > The ArgumentParser object will hold all the information necessary to parse the command line into python data types
 
