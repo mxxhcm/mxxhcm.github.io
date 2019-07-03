@@ -124,6 +124,16 @@ function proxyv6_off(){
 }
 ```
 
+## .bash_aliases
+在.bashrc文件中会发现下面几行：
+``` txt
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+```
+即.bashrc包含.bash_aliases文件。
+.bash_aliases放置常用的命令别名。
+
 ## vim自定义配置
 关于vim详细介绍，可以查看[linux-vim](https://mxxhcm.github.io/2019/05/07/linux-vim/)
 vimrc文件如下，[代码地址](https://github.com/mxxhcm/code/blob/master/shell/vimrc)
