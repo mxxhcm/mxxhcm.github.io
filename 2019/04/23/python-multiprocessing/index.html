@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="Pool 简介 指定占用的CPU核数，进程的个数可以多于CPU的核数，Pool会负责调用。如果CPU核数小于进程数，一般遵循FIFO的原则进行调用。 使用流程  创建Pool进程池，指定cpu核数 pool = Pool(cpu_core) 使用apply_async添加进程 processes = [p1, p2, p3] for p in processes: pool.apply_async">
+  <meta name="description" content="multiprocessing 概述    方法 并行 是否直接阻塞 目标函数 目标函数返回值     mp.Pool.apply 否 否 函数返回值 是   mp.Pool.apply_async 是 否 返回AysncResult对象，调用该对象的get()方法获得返回结果，get()方法也是阻塞方法 调用join()进行阻塞   mp.Pool.map 是 是 目标函数相同，参数不同。调用m">
 <meta name="keywords" content="python,Pool,Process,multiprocessing">
 <meta property="og:type" content="article">
 <meta property="og:title" content="python multiprocessing">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/04/23/python-multiprocessing/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="Pool 简介 指定占用的CPU核数，进程的个数可以多于CPU的核数，Pool会负责调用。如果CPU核数小于进程数，一般遵循FIFO的原则进行调用。 使用流程  创建Pool进程池，指定cpu核数 pool = Pool(cpu_core) 使用apply_async添加进程 processes = [p1, p2, p3] for p in processes: pool.apply_async">
+<meta property="og:description" content="multiprocessing 概述    方法 并行 是否直接阻塞 目标函数 目标函数返回值     mp.Pool.apply 否 否 函数返回值 是   mp.Pool.apply_async 是 否 返回AysncResult对象，调用该对象的get()方法获得返回结果，get()方法也是阻塞方法 调用join()进行阻塞   mp.Pool.map 是 是 目标函数相同，参数不同。调用m">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-03T15:54:18.162Z">
+<meta property="og:updated_time" content="2019-07-04T06:49:04.723Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="python multiprocessing">
-<meta name="twitter:description" content="Pool 简介 指定占用的CPU核数，进程的个数可以多于CPU的核数，Pool会负责调用。如果CPU核数小于进程数，一般遵循FIFO的原则进行调用。 使用流程  创建Pool进程池，指定cpu核数 pool = Pool(cpu_core) 使用apply_async添加进程 processes = [p1, p2, p3] for p in processes: pool.apply_async">
+<meta name="twitter:description" content="multiprocessing 概述    方法 并行 是否直接阻塞 目标函数 目标函数返回值     mp.Pool.apply 否 否 函数返回值 是   mp.Pool.apply_async 是 否 返回AysncResult对象，调用该对象的get()方法获得返回结果，get()方法也是阻塞方法 调用join()进行阻塞   mp.Pool.map 是 是 目标函数相同，参数不同。调用m">
 
 
 
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-07-03 23:54:18" itemprop="dateModified" datetime="2019-07-03T23:54:18+08:00">2019-07-03</time>
+                <time title="修改时间：2019-07-04 14:49:04" itemprop="dateModified" datetime="2019-07-04T14:49:04+08:00">2019-07-04</time>
               
             
           </span>
@@ -449,53 +449,156 @@
       
 
       
-        <h2 id="pool">Pool</h2>
+        <h2 id="multiprocessing">multiprocessing</h2>
+<h3 id="概述">概述</h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>并行</th>
+<th>是否直接阻塞</th>
+<th>目标函数</th>
+<th>目标函数返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mp.Pool.apply</td>
+<td>否</td>
+<td>否</td>
+<td>函数返回值</td>
+<td>是</td>
+</tr>
+<tr>
+<td>mp.Pool.apply_async</td>
+<td>是</td>
+<td>否</td>
+<td>返回AysncResult对象，调用该对象的get()方法获得返回结果，get()方法也是阻塞方法</td>
+<td>调用join()进行阻塞</td>
+</tr>
+<tr>
+<td>mp.Pool.map</td>
+<td>是</td>
+<td>是</td>
+<td>目标函数相同，参数不同。调用map()函数直接阻塞，等待所有processes完成后直接返回有序结果。</td>
+<td></td>
+</tr>
+<tr>
+<td>mp.Pool.map_async</td>
+<td>是</td>
+<td>否</td>
+<td>也是调用join()和get()都能阻塞</td>
+<td></td>
+</tr>
+<tr>
+<td>mp.Process</td>
+<td>是</td>
+<td>可以相同可以不同</td>
+<td>返回的结果需要借助mp.Queue()等工具，mp.Queue()存储的结果是无序的，mp.Manager()存储的结果是有序的。无序的结果可以使用特殊方法进行排序</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>mp.Pool.apply   适用于非并行，调用apply()直接阻塞，process执行结束后直接返回结果。<br>
+mp.Pool.apply_async 适用于并行，异步执行，目标函数可以相同可以不同，返回AysncResult对象。调用join()进行阻塞，调用get()方法获得返回结果，get()方法也是阻塞方法。<br>
+mp.Pool.map     适用于并行，异步，目标函数相同，参数不同。调用map()函数直接阻塞，等待所有processes完成后直接返回有序结果。<br>
+mp.Pool.map_async   也是调用join()和get()都能阻塞。<br>
+mp.Process  适用于并行，异步，目标函数可以相同可以不同，返回的结果需要借助mp.Queue()等工具，mp.Queue()存储的结果是无序的，mp.Manager()存储的结果是有序的。无序的结果可以使用特殊方法进行排序。</p>
+<h3 id="其他">其他</h3>
+<ol>
+<li>统计cpu数量</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cpus = mp.cpu_count()</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>实现并行</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式1</span></span><br><span class="line">Pool.apply_async</span><br><span class="line"><span class="comment"># 方式2</span></span><br><span class="line">Pool.map</span><br><span class="line"><span class="comment"># 方式3</span></span><br><span class="line">Pool.map_async</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>retrieve并行结果</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式1</span></span><br><span class="line">result = Pool.apply_async(f, args)</span><br><span class="line">resut.get()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式2</span></span><br><span class="line">results = Pool.map(f, iterable)</span><br></pre></td></tr></table></figure>
+<h2 id="pool">Pool</h2>
 <h3 id="简介">简介</h3>
 <p>指定占用的CPU核数，进程的个数可以多于CPU的核数，Pool会负责调用。如果CPU核数小于进程数，一般遵循FIFO的原则进行调用。</p>
+<h3 id="api">API</h3>
+<ul>
+<li>Pool.apply,</li>
+<li>Pool.apply_async,</li>
+<li>Pool.map,</li>
+<li>Pool.map_async。</li>
+</ul>
+<h4 id="python-apply">python apply</h4>
+<p>在老版本的python中，调用具有任意参数的function要使用apply函数，</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apply(f, args, kwargs)</span><br></pre></td></tr></table></figure>
+<p>甚至在2.7版本中还存在apply函数，但是基本上不怎么用了，3版本中已经没有了这种形式，现在都是直接使用函数名：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">f(*args, **kwargs)</span><br></pre></td></tr></table></figure>
+<h4 id="pool-apply-vs-apply-async">Pool.apply vs apply_async</h4>
+<p>multiprocessing.Pool中也有类似的interface。Pool.apply和python内置的apply挺像的，只不过Pool.apply会在一个单独的process执行，并且该函数会阻塞直到进程调用结束，所以Pool.apply不能异步执行。可以使用apply_async使用多个workers并行处理。<br>
+Pool.apply_async和apply基本一样，只不过它会在调用后立即返回一个AsyncResult对象，不用等到进程结束再返回。然后使用get()方法获得函数调用的返回值，get()方法会阻塞直到process结束。也就是说Pool.apply(func, args, kwargs)和pool.apply_async(func, args, kwargs).get()等价。Pool.apply_async可以调用很多个不同的函数。<br>
+Pool.apply_async返回值是无序的。</p>
+<h4 id="pool-map-vs-pool-map-async">Pool.map vs Pool.map_async</h4>
+<p>Pool.map应用于同一个函数的不同参数，它的返回值顺序和调用顺序是一致的。Pool.map(func, iterable)和Pool.map_async(func, iterable).get()是一样的。</p>
+<h4 id="pool-map-vs-pool-apply">Pool.map vs Pool.apply</h4>
+<p>Pool.apply(f, args): f函数仅仅被process pool中的一个worker执行。<br>
+Pool.map(f, iterable): 将iterable分割成多个单独的task，就是相当于同一个函数，给定不同的参数，每一组是一个task，然后使用pool中所有的processes执行这些taskes。所以map也能实现并行处理，而且是有序结果。</p>
+<h4 id="pool-map-vs-pool-apply-async">Pool.map vs Pool.apply_async</h4>
+<p>Pool.map返回的结果是有序的；<br>
+Pool.apply_async返回的结果是无序的。<br>
+Pool.map处理相同的函数，不同的参数；</p>
+<blockquote>
+<p>pool.map() is a completely different kind of animal, because it distributes a bunch of arguments to the same function (asynchronously), across the pool processes, and then waits until all function calls have completed before returning the list of results.<br>
+Pool.apply_async处理不同的参数。</p>
+</blockquote>
+<h3 id="retrieve-return-value">retrieve return value</h3>
+<p>Pool.apply()会直接返回结果。<br>
+Pool.apply_async()会返回一个AsyncResult，然后使用get()方法获得结果。</p>
 <h3 id="使用流程">使用流程</h3>
 <ol>
 <li>创建Pool进程池，指定cpu核数<br>
 pool = Pool(cpu_core)</li>
 <li>使用apply_async添加进程<br>
 processes = [p1, p2, p3]<br>
+results = []<br>
 for p in processes:<br>
-pool.apply_async(p, args=())</li>
+results.append(pool.apply_async(p, args=()))</li>
 <li>关闭进程池<br>
 pool.close()</li>
 <li>等待所有进程执行完毕<br>
 pool.join()</li>
+<li>访问结果<br>
+for res in results:<br>
+print(res.get())</li>
 </ol>
 <h3 id="代码示例">代码示例</h3>
 <p><a href>代码地址</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Pool</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">p1</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"A"</span>)</span><br><span class="line">    <span class="comment"># print("Run task %s (%s)" % (name, os.getpid()))</span></span><br><span class="line">    start = time.time()</span><br><span class="line">    print(<span class="string">"start time"</span>, start)</span><br><span class="line">    time.sleep(random.random()*<span class="number">3</span>)</span><br><span class="line">    end = time.time()</span><br><span class="line">    print(<span class="string">"task A runs %0.2f seconds."</span> % (end-start))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">p2</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"B"</span>)</span><br><span class="line">    <span class="comment"># print("Run task %s (%s)" % (name, os.getpid()))</span></span><br><span class="line">    start = time.time()</span><br><span class="line">    print(<span class="string">"start time"</span>, start)</span><br><span class="line">    time.sleep(random.random()*<span class="number">3</span>)</span><br><span class="line">    end = time.time()</span><br><span class="line">    print(<span class="string">"task B runs %0.2f seconds."</span> % (end-start))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">p3</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">"C"</span>)</span><br><span class="line">    <span class="comment"># print("Run task %s (%s)" % (name, os.getpid()))</span></span><br><span class="line">    start = time.time()</span><br><span class="line">    print(<span class="string">"start time"</span>, start)</span><br><span class="line">    time.sleep(random.random()*<span class="number">3</span>)</span><br><span class="line">    end = time.time()</span><br><span class="line">    print(<span class="string">"task C runs %0.2f seconds."</span> % (end-start))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    cpu_core = <span class="number">2</span></span><br><span class="line">    pool = Pool(cpu_core) </span><br><span class="line">    p = [p1, p2, p3]</span><br><span class="line">    <span class="keyword">for</span> h <span class="keyword">in</span> p:</span><br><span class="line">        pool.apply_async(h, args=())</span><br><span class="line">    pool.close()</span><br><span class="line">    pool.join()</span><br><span class="line">    print(<span class="string">"Done."</span>)</span><br></pre></td></tr></table></figure>
 <h2 id="process">Process</h2>
 <h3 id="简介-v2">简介</h3>
-<p>每个进程占用一个CPU核，进程核</p>
+<p>每个进程占用一个CPU核。</p>
+<h3 id="retrieve结果">retrieve结果</h3>
+<p>使用mp.Queue()或者mp.Pipe()等对象记录结果。Queue()不保证结果的顺序和task的执行顺序一致。</p>
+<h3 id="使用流程-v2">使用流程</h3>
 <h3 id="代码示例-v2">代码示例</h3>
 <p><a href>代码地址</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Process</span><br><span class="line"><span class="keyword">import</span> os,random,time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">proc1</span><span class="params">(name)</span>:</span></span><br><span class="line">    print(<span class="string">"Run child process %s (%s)"</span> % (name,os.getpid()))</span><br><span class="line">    print(time.time())</span><br><span class="line">    time.sleep(random.random())</span><br><span class="line">    print(<span class="string">"%s end"</span> % (name))</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">proc2</span><span class="params">(name)</span>:</span></span><br><span class="line">    print(<span class="string">"Run child process %s (%s)"</span> % (name,os.getpid()))</span><br><span class="line">    print(time.time())</span><br><span class="line">    time.sleep(random.random())</span><br><span class="line">    print(<span class="string">"%s end"</span> % (name))</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    <span class="comment"># 1.Process</span></span><br><span class="line">    print(<span class="string">"Parent process %s"</span> % os.getpid())</span><br><span class="line">    p1 = Process(target=proc1, args=(<span class="string">'p1'</span>,))</span><br><span class="line">    p2 = Process(target=proc2, args=(<span class="string">'p2'</span>,))</span><br><span class="line">    print(<span class="string">"child processes will start."</span>)</span><br><span class="line">    p1.start()</span><br><span class="line">    p2.start()</span><br><span class="line">    <span class="comment"># 上面两行代码意思是p1.start()有返回值时，开始执行p2.start()。p1.start()有返回值并不是说p1执行完了</span></span><br><span class="line">    p1.join()</span><br><span class="line">    p2.join()</span><br><span class="line">    <span class="comment"># 上面两行代码中，p1.join()执行完之后才会执行p2.join()。所以只有p1执行完之后，p2才能尝试结束。。</span></span><br><span class="line">    <span class="comment">#  The interpreter will, however, wait until P1 finishes before attempting to wait for P2 to finish.</span></span><br><span class="line">    print(<span class="string">"child processes end."</span>)</span><br></pre></td></tr></table></figure>
 <h2 id="pool-vs-process">Pool vs Process</h2>
 <ol>
-<li>Pool会负责对cpu进行调度，即tasks数量可以远大于process数量，一个process占用一个cpu核。而Process的task必须小于cpu核数，每个cpu核只能运行一个task。</li>
+<li>Pool会负责对cpu进行调度，即tasks数量可以远大于worker数量，一个worker占用一个cpu核。而Process的task必须小于worker，每个worker只能运行一个task。</li>
+<li>如果执行多个task的时候，Process一定会使用多个seperate workes，但是对于Pool来说，可能会使用同一个worker去执行多个task。如下示例，p1和p2一定是两个wrokers运行两个process，而pool中，pool中有两个worker，foo可以是第一个worker也可以是第二个worker运行的process解决的，而bar也可以是这两个中任意一个worker解决的，这种情况发生在foo已经运行结束了，两个worker都是空闲的，给bar任意分配一个worker。</li>
 </ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">foo</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">bar</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">p1 = Process(target=foo, args=())</span><br><span class="line">p2 = Process(target=bar, args=())</span><br><span class="line"></span><br><span class="line">p1.start()</span><br><span class="line">p2.start()</span><br><span class="line">p1.join()</span><br><span class="line">p2.join()</span><br><span class="line"></span><br><span class="line">pool = Pool(processes=<span class="number">2</span>)             </span><br><span class="line">r1 = pool.apply_async(foo)</span><br><span class="line">r2 = pool.apply_async(bar)</span><br></pre></td></tr></table></figure>
 <h2 id="join方法">join方法</h2>
-<p>用来阻塞当前进程，直到该进程执行完毕，再继续执行后续代码。如下示例<a href="https://github.com/mxxhcm/myown_code/blob/master/tools/process_thread/multiprocessing_join.py" target="_blank" rel="noopener">代码</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Process,Pool</span><br><span class="line"><span class="keyword">import</span> os,random,time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">run_proc</span><span class="params">(name)</span>:</span></span><br><span class="line">    time.sleep(<span class="number">2</span>)</span><br><span class="line">    print(<span class="string">"Run child process %s (%s)"</span> % (name,os.getpid()))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    print(<span class="string">"Parent process %s"</span> % os.getpid())</span><br><span class="line">    p = Process(target=run_proc, args=(<span class="string">'test'</span>,))</span><br><span class="line">    print(<span class="string">"child process will start."</span>)</span><br><span class="line">    p.start()</span><br><span class="line">    p.join()</span><br><span class="line">    print(<span class="string">"child process end."</span>)</span><br><span class="line"> </span><br><span class="line">    print(<span class="string">"Parent process %s"</span> % os.getpid())</span><br><span class="line">    p = Process(target=run_proc, args=(<span class="string">'test'</span>,))</span><br><span class="line">    print(<span class="string">"child process will start."</span>)</span><br><span class="line">    p.start()</span><br><span class="line">    <span class="comment"># p.join()</span></span><br><span class="line">    print(<span class="string">"child process end."</span>)</span><br></pre></td></tr></table></figure>
-<p>输出结果：</p>
-<blockquote>
-<p>Parent process 7092<br>
-child process will start.<br>
-Run child process test (7093)<br>
-child process end.<br>
-Parent process 7092<br>
-child process will start.<br>
-child process end.<br>
-Run child process test (7094)</p>
-</blockquote>
-<p>可以看出来，调用join()函数的时候，会等子进程执行完之后再继续执行；而不使用join()函数的话，在子进程开始执行的时候，就会继续向后执行了。</p>
+<h3 id="简介-v3">简介</h3>
+<p>用来阻塞当前进程，直到该进程执行完毕，再继续执行后续代码。</p>
+<h3 id="代码示例-v3">代码示例</h3>
+<p><a href="https://github.com/mxxhcm/myown_code/blob/master/tools/py_process_thread/mp/mp_join.py" target="_blank" rel="noopener">代码地址</a><br>
+可以看出来，调用join()函数的时候，会等子进程执行完之后再继续执行；而不使用join()函数的话，在子进程开始执行的时候，就会继续向后执行了。</p>
 <h2 id="参考文献">参考文献</h2>
 <p>1.<a href="https://www.cnblogs.com/lipijin/p/3709903.html" target="_blank" rel="noopener">https://www.cnblogs.com/lipijin/p/3709903.html</a><br>
-2.<a href="https://www.ellicium.com/python-multiprocessing-pool-process/" target="_blank" rel="noopener">https://www.ellicium.com/python-multiprocessing-pool-process/</a></p>
+2.<a href="https://www.ellicium.com/python-multiprocessing-pool-process/" target="_blank" rel="noopener">https://www.ellicium.com/python-multiprocessing-pool-process/</a><br>
+3.<a href="https://stackoverflow.com/questions/8533318/multiprocessing-pool-when-to-use-apply-apply-async-or-map" target="_blank" rel="noopener">https://stackoverflow.com/questions/8533318/multiprocessing-pool-when-to-use-apply-apply-async-or-map</a>&lt;mp Pool apply, apply_async, map用法&gt;<br>
+4.<a href="https://stackoverflow.com/questions/31711378/python-multiprocessing-how-to-know-to-use-pool-or-process" target="_blank" rel="noopener">https://stackoverflow.com/questions/31711378/python-multiprocessing-how-to-know-to-use-pool-or-process</a>&lt;mp Process和Pool.map获得不同目标函数process的结果，对mp.Process无序结果进行排序&gt;<br>
+5.<a href="https://stackoverflow.com/questions/18176178/python-multiprocessing-process-or-pool-for-what-i-am-doing" target="_blank" rel="noopener">https://stackoverflow.com/questions/18176178/python-multiprocessing-process-or-pool-for-what-i-am-doing</a>&lt;mp Pool.apply_async, Process不同函数的多process&gt;<br>
+6.<a href="https://stackoverflow.com/questions/10415028/how-can-i-recover-the-return-value-of-a-function-passed-to-multiprocessing-proce" target="_blank" rel="noopener">https://stackoverflow.com/questions/10415028/how-can-i-recover-the-return-value-of-a-function-passed-to-multiprocessing-proce</a>&lt;获得传递给mp Process函数返回值的方法&gt;<br>
+7.<a href="https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes" target="_blank" rel="noopener">https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes</a></p>
 
       
     </div>
@@ -1027,7 +1130,7 @@ Run child process test (7094)</p>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#pool"><span class="nav-number">1.</span> <span class="nav-text">Pool</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用流程"><span class="nav-number">1.2.</span> <span class="nav-text">使用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码示例"><span class="nav-number">1.3.</span> <span class="nav-text">代码示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#process"><span class="nav-number">2.</span> <span class="nav-text">Process</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介-v2"><span class="nav-number">2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码示例-v2"><span class="nav-number">2.2.</span> <span class="nav-text">代码示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pool-vs-process"><span class="nav-number">3.</span> <span class="nav-text">Pool vs Process</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#join方法"><span class="nav-number">4.</span> <span class="nav-text">join方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">5.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#multiprocessing"><span class="nav-number">1.</span> <span class="nav-text">multiprocessing</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-number">1.1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他"><span class="nav-number">1.2.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pool"><span class="nav-number">2.</span> <span class="nav-text">Pool</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#api"><span class="nav-number">2.2.</span> <span class="nav-text">API</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#python-apply"><span class="nav-number">2.2.1.</span> <span class="nav-text">python apply</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pool-apply-vs-apply-async"><span class="nav-number">2.2.2.</span> <span class="nav-text">Pool.apply vs apply_async</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pool-map-vs-pool-map-async"><span class="nav-number">2.2.3.</span> <span class="nav-text">Pool.map vs Pool.map_async</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pool-map-vs-pool-apply"><span class="nav-number">2.2.4.</span> <span class="nav-text">Pool.map vs Pool.apply</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#pool-map-vs-pool-apply-async"><span class="nav-number">2.2.5.</span> <span class="nav-text">Pool.map vs Pool.apply_async</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#retrieve-return-value"><span class="nav-number">2.3.</span> <span class="nav-text">retrieve return value</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用流程"><span class="nav-number">2.4.</span> <span class="nav-text">使用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码示例"><span class="nav-number">2.5.</span> <span class="nav-text">代码示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#process"><span class="nav-number">3.</span> <span class="nav-text">Process</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介-v2"><span class="nav-number">3.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#retrieve结果"><span class="nav-number">3.2.</span> <span class="nav-text">retrieve结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用流程-v2"><span class="nav-number">3.3.</span> <span class="nav-text">使用流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码示例-v2"><span class="nav-number">3.4.</span> <span class="nav-text">代码示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pool-vs-process"><span class="nav-number">4.</span> <span class="nav-text">Pool vs Process</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#join方法"><span class="nav-number">5.</span> <span class="nav-text">join方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介-v3"><span class="nav-number">5.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码示例-v3"><span class="nav-number">5.2.</span> <span class="nav-text">代码示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
