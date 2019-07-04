@@ -11,43 +11,46 @@ categories: python
 
 ## multiprocessing
 ### 概述
-方法| 并行|是否直接阻塞|目标函数|目标函数返回值
+方法| 并行|是否直接阻塞|目标函数|函数返回值
 --|--|--|--|--
-mp.Pool.apply|否|否|函数返回值|是|只能有一个函数|
-mp.Pool.apply_async|是|否|返回AysncResult对象，调用该对象的get()方法获得返回结果，get()方法也是阻塞方法|调用join()进行阻塞|可以相同可以不同
-mp.Pool.map|是|是|目标函数相同，参数不同。调用map()函数直接阻塞，等待所有processes完成后直接返回有序结果。
-mp.Pool.map_async|是| 否 |也是调用join()和get()都能阻塞|
-mp.Process|是|可以相同可以不同|返回的结果需要借助mp.Queue()等工具，mp.Queue()存储的结果是无序的，mp.Manager()存储的结果是有序的。无序的结果可以使用特殊方法进行排序|
+mp.Pool.apply|否|是|只能有一个函数|函数返回值
+mp.Pool.apply_async|是|否，调用join()进行阻塞|可以相同可以不同|返回AysncResult对象
+mp.Pool.map|是|是|目标函数相同，参数不同|所有processes完成后直接返回有序结果
+mp.Pool.map_async|是|否，调用join()阻塞|不知道。。|返回AysncResult对象
+mp.Process|是|否|可以相同可以不同|无直接返回值
 
 mp.Pool.apply   适用于非并行，调用apply()直接阻塞，process执行结束后直接返回结果。
-mp.Pool.apply_async 适用于并行，异步执行，目标函数可以相同可以不同，返回AysncResult对象。调用join()进行阻塞，调用get()方法获得返回结果，get()方法也是阻塞方法。
+mp.Pool.apply_async 适用于并行，异步执行，目标函数可以相同可以不同，返回AysncResult对象，因为AsyncResult对象是有序的，所以调用get得到的结果也是有序的。调用join()进行阻塞，调用get()方法获得返回结果，get()方法也是阻塞方法。
 mp.Pool.map     适用于并行，异步，目标函数相同，参数不同。调用map()函数直接阻塞，等待所有processes完成后直接返回有序结果。
 mp.Pool.map_async   也是调用join()和get()都能阻塞。
 mp.Process  适用于并行，异步，目标函数可以相同可以不同，返回的结果需要借助mp.Queue()等工具，mp.Queue()存储的结果是无序的，mp.Manager()存储的结果是有序的。无序的结果可以使用特殊方法进行排序。
 
 
-### 其他
-1. 统计cpu数量
+### 统计cpu数量
 ``` python
 cpus = mp.cpu_count()
 ```
-2. 实现并行
+### 实现并行的几种常用方法
 ``` python
 # 方式1
-Pool.apply_async
+pool.apply_async
 # 方式2
-Pool.map
+pool.map
 # 方式3
-Pool.map_async
+mp.Process
 ```
-3. retrieve并行结果 
+### retrieve并行结果 
 ``` python
 # 方式1
-result = Pool.apply_async(f, args)
-resut.get()
+results_obj = [pool.apply_async(f, args=(x,)) for x in range(3)]
+results = [result_obj.get() for result_obj in results_obj]
 
 # 方式2
-results = Pool.map(f, iterable)
+results = pool.map(f, range(7))
+
+# 方式3
+output = Queue()
+pool.Process(target=f, args=(output))
 ```
 
 ## Pool
@@ -166,3 +169,4 @@ r2 = pool.apply_async(bar)
 5.https://stackoverflow.com/questions/18176178/python-multiprocessing-process-or-pool-for-what-i-am-doing<mp Pool.apply_async, Process不同函数的多process>
 6.https://stackoverflow.com/questions/10415028/how-can-i-recover-the-return-value-of-a-function-passed-to-multiprocessing-proce<获得传递给mp Process函数返回值的方法>
 7.https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes
+8.https://sebastianraschka.com/Articles/2014_multiprocessing.html
