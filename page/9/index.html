@@ -1899,7 +1899,7 @@ $\qquad\qquad</script>Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-07-04 14:49:04" itemprop="dateModified" datetime="2019-07-04T14:49:04+08:00">2019-07-04</time>
+                <time title="修改时间：2019-07-04 15:31:35" itemprop="dateModified" datetime="2019-07-04T15:31:35+08:00">2019-07-04</time>
               
             
           </span>
@@ -1961,65 +1961,58 @@ $\qquad\qquad</script>Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_
 <th>并行</th>
 <th>是否直接阻塞</th>
 <th>目标函数</th>
-<th>目标函数返回值</th>
+<th>函数返回值</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>mp.Pool.apply</td>
 <td>否</td>
-<td>否</td>
-<td>函数返回值</td>
 <td>是</td>
+<td>只能有一个函数</td>
+<td>函数返回值</td>
 </tr>
 <tr>
 <td>mp.Pool.apply_async</td>
 <td>是</td>
-<td>否</td>
-<td>返回AysncResult对象，调用该对象的get()方法获得返回结果，get()方法也是阻塞方法</td>
-<td>调用join()进行阻塞</td>
+<td>否，调用join()进行阻塞</td>
+<td>可以相同可以不同</td>
+<td>返回AysncResult对象</td>
 </tr>
 <tr>
 <td>mp.Pool.map</td>
 <td>是</td>
 <td>是</td>
-<td>目标函数相同，参数不同。调用map()函数直接阻塞，等待所有processes完成后直接返回有序结果。</td>
-<td></td>
+<td>目标函数相同，参数不同</td>
+<td>所有processes完成后直接返回有序结果</td>
 </tr>
 <tr>
 <td>mp.Pool.map_async</td>
 <td>是</td>
-<td>否</td>
-<td>也是调用join()和get()都能阻塞</td>
-<td></td>
+<td>否，调用join()阻塞</td>
+<td>不知道。。</td>
+<td>返回AysncResult对象</td>
 </tr>
 <tr>
 <td>mp.Process</td>
 <td>是</td>
+<td>否</td>
 <td>可以相同可以不同</td>
-<td>返回的结果需要借助mp.Queue()等工具，mp.Queue()存储的结果是无序的，mp.Manager()存储的结果是有序的。无序的结果可以使用特殊方法进行排序</td>
-<td></td>
+<td>无直接返回值</td>
 </tr>
 </tbody>
 </table>
 <p>mp.Pool.apply   适用于非并行，调用apply()直接阻塞，process执行结束后直接返回结果。<br>
-mp.Pool.apply_async 适用于并行，异步执行，目标函数可以相同可以不同，返回AysncResult对象。调用join()进行阻塞，调用get()方法获得返回结果，get()方法也是阻塞方法。<br>
+mp.Pool.apply_async 适用于并行，异步执行，目标函数可以相同可以不同，返回AysncResult对象，因为AsyncResult对象是有序的，所以调用get得到的结果也是有序的。调用join()进行阻塞，调用get()方法获得返回结果，get()方法也是阻塞方法。<br>
 mp.Pool.map     适用于并行，异步，目标函数相同，参数不同。调用map()函数直接阻塞，等待所有processes完成后直接返回有序结果。<br>
 mp.Pool.map_async   也是调用join()和get()都能阻塞。<br>
 mp.Process  适用于并行，异步，目标函数可以相同可以不同，返回的结果需要借助mp.Queue()等工具，mp.Queue()存储的结果是无序的，mp.Manager()存储的结果是有序的。无序的结果可以使用特殊方法进行排序。</p>
-<h3 id="其他">其他</h3>
-<ol>
-<li>统计cpu数量</li>
-</ol>
+<h3 id="统计cpu数量">统计cpu数量</h3>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cpus = mp.cpu_count()</span><br></pre></td></tr></table></figure>
-<ol start="2">
-<li>实现并行</li>
-</ol>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式1</span></span><br><span class="line">Pool.apply_async</span><br><span class="line"><span class="comment"># 方式2</span></span><br><span class="line">Pool.map</span><br><span class="line"><span class="comment"># 方式3</span></span><br><span class="line">Pool.map_async</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>retrieve并行结果</li>
-</ol>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式1</span></span><br><span class="line">result = Pool.apply_async(f, args)</span><br><span class="line">resut.get()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式2</span></span><br><span class="line">results = Pool.map(f, iterable)</span><br></pre></td></tr></table></figure>
+<h3 id="实现并行的几种常用方法">实现并行的几种常用方法</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式1</span></span><br><span class="line">pool.apply_async</span><br><span class="line"><span class="comment"># 方式2</span></span><br><span class="line">pool.map</span><br><span class="line"><span class="comment"># 方式3</span></span><br><span class="line">mp.Process</span><br></pre></td></tr></table></figure>
+<h3 id="retrieve并行结果">retrieve并行结果</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 方式1</span></span><br><span class="line">results_obj = [pool.apply_async(f, args=(x,)) <span class="keyword">for</span> x <span class="keyword">in</span> range(<span class="number">3</span>)]</span><br><span class="line">results = [result_obj.get() <span class="keyword">for</span> result_obj <span class="keyword">in</span> results_obj]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式2</span></span><br><span class="line">results = pool.map(f, range(<span class="number">7</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 方式3</span></span><br><span class="line">output = Queue()</span><br><span class="line">pool.Process(target=f, args=(output))</span><br></pre></td></tr></table></figure>
 <h2 id="pool">Pool</h2>
 <h3 id="简介">简介</h3>
 <p>指定占用的CPU核数，进程的个数可以多于CPU的核数，Pool会负责调用。如果CPU核数小于进程数，一般遵循FIFO的原则进行调用。</p>
@@ -2101,7 +2094,8 @@ print(res.get())</li>
 4.<a href="https://stackoverflow.com/questions/31711378/python-multiprocessing-how-to-know-to-use-pool-or-process" target="_blank" rel="noopener">https://stackoverflow.com/questions/31711378/python-multiprocessing-how-to-know-to-use-pool-or-process</a>&lt;mp Process和Pool.map获得不同目标函数process的结果，对mp.Process无序结果进行排序&gt;<br>
 5.<a href="https://stackoverflow.com/questions/18176178/python-multiprocessing-process-or-pool-for-what-i-am-doing" target="_blank" rel="noopener">https://stackoverflow.com/questions/18176178/python-multiprocessing-process-or-pool-for-what-i-am-doing</a>&lt;mp Pool.apply_async, Process不同函数的多process&gt;<br>
 6.<a href="https://stackoverflow.com/questions/10415028/how-can-i-recover-the-return-value-of-a-function-passed-to-multiprocessing-proce" target="_blank" rel="noopener">https://stackoverflow.com/questions/10415028/how-can-i-recover-the-return-value-of-a-function-passed-to-multiprocessing-proce</a>&lt;获得传递给mp Process函数返回值的方法&gt;<br>
-7.<a href="https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes" target="_blank" rel="noopener">https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes</a></p>
+7.<a href="https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes" target="_blank" rel="noopener">https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes</a><br>
+8.<a href="https://sebastianraschka.com/Articles/2014_multiprocessing.html" target="_blank" rel="noopener">https://sebastianraschka.com/Articles/2014_multiprocessing.html</a></p>
 
           
         
