@@ -978,7 +978,7 @@ DNC有一个$N\times W$大小的memory matrix $M$，使用可导的attention mec
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-07 12:43:22" itemprop="dateModified" datetime="2019-06-07T12:43:22+08:00">2019-06-07</time>
+                <time title="修改时间：2019-07-10 16:01:19" itemprop="dateModified" datetime="2019-07-10T16:01:19+08:00">2019-07-10</time>
               
             
           </span>
@@ -1031,8 +1031,24 @@ DNC有一个$N\times W$大小的memory matrix $M$，使用可导的attention mec
       
         
           
-            <h2 id="nn-conv2d-vs-layers-con2d">nn.conv2d vs layers.con2d</h2>
-<p>tf.nn.conv2d需要手动创建tensor，传入filter的参数[kernel_height, kernel_width, in_channels, num_filters]。</p>
+            <h2 id="api">API</h2>
+<h3 id="tf-layer-conv2d">tf.layer.conv2d</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tf.layers.conv2d(inputs, filters, kernel_size, strides=(<span class="number">1</span>, <span class="number">1</span>), padding=<span class="string">'valid'</span>, data_format=<span class="string">'channels_last'</span>, dilation_rate=(<span class="number">1</span>, <span class="number">1</span>), activation=<span class="literal">None</span>, use_bias=<span class="literal">True</span>, kernel_initializer=<span class="literal">None</span>, bias_initializer=tf.zeros_initializer(), kernel_regularizer=<span class="literal">None</span>, bias_regularizer=<span class="literal">None</span>, activity_regularizer=<span class="literal">None</span>, trainable=<span class="literal">True</span>, name=<span class="literal">None</span>, reuse=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="tf-nn-conv2d">tf.nn.conv2d</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tf.nn.conv2d(input, filter, strides, padding, use_cudnn_on_gpu=<span class="literal">None</span>, data_format=<span class="literal">None</span>, name=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="nn-conv2d-vs-layers-conv2d">nn.conv2d vs layers.conv2d</h2>
+<p>tf.nn.conv2d需要手动创建filter的tensor，传入filter的参数[kernel_height, kernel_width, in_channels, num_filters]。<br>
+tf.layer.conv2d需要传入filter的维度即可。</p>
+<p>对于tf.nn.conv2d，<br>
+filter:和input的type一样，是一个4D的tensor，shape为[filter_height, filter_width, in_channels, out_channels]<br>
+对于tf.layers.conv2d，<br>
+filters:是整数，是需要多少个filters。</p>
+<p>可以使用tf.nn.conv2d来加载一个pretrained model，使用tf.layers.conv2d从头开始训练一个model。</p>
+<h2 id="用法">用法</h2>
+<h3 id="tf-layers-conv2d">tf.layers.conv2d</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Convolution Layer with 32 filters and a kernel size of 5</span></span><br><span class="line">conv1 = tf.layers.conv2d(x, <span class="number">32</span>, <span class="number">5</span>, activation=tf.nn.relu) </span><br><span class="line"><span class="comment"># Max Pooling (down-sampling) with strides of 2 and kernel size of 2</span></span><br><span class="line">conv1 = tf.layers.max_pooling2d(conv1, <span class="number">2</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="tf-nn-conv2d-v2">tf.nn.conv2d</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">strides = <span class="number">1</span></span><br><span class="line"><span class="comment"># Weights matrix looks like: [kernel_size(=5), kernel_size(=5), input_channels (=3), filters (= 32)]</span></span><br><span class="line"><span class="comment"># Similarly bias = looks like [filters (=32)]</span></span><br><span class="line">out = tf.nn.conv2d(input, weights, padding=<span class="string">"SAME"</span>, strides = [<span class="number">1</span>, strides, strides, <span class="number">1</span>])</span><br><span class="line">out = tf.nn.bias_add(out, bias)</span><br><span class="line">out = tf.nn.relu(out)</span><br></pre></td></tr></table></figure>
 <h2 id="参考文献">参考文献</h2>
 <p>1.<a href="https://stackoverflow.com/questions/42785026/tf-nn-conv2d-vs-tf-layers-conv2d" target="_blank" rel="noopener">https://stackoverflow.com/questions/42785026/tf-nn-conv2d-vs-tf-layers-conv2d</a><br>
 2.<a href="https://stackoverflow.com/a/53683545" target="_blank" rel="noopener">https://stackoverflow.com/a/53683545</a><br>
