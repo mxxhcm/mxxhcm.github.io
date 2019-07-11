@@ -287,7 +287,7 @@ alexnet中，对一张照片的$10$个views（中间，四个角和horizontal fl
 那么本文的contribution是什么呢？使用deconvnet进行可视化，通过分析特征行为，对alexnet进行fine tune提升模型性能。
 
 ### 使用deconvnet可视化
-什么是deconvnet？可以看成和convnet拥有同样组成部分（pooling, filter)等，但是是反过来进行的。如下图所示，convnet是把pixels映射到feature，或者到底层features映射到高层features，而deconvnet是把高层features映射到底层features，或者把features映射到pixels。在测试convnet中给定feature map的一个activation时，设置所有其他的activation为0，将这个feature map传入deconvnet网络中。
+什么是deconvnet？可以看成和convnet拥有同样组成部分（pooling, filter)等，但是是反过来进行的。如下图所示，convnet是把pixels映射到feature，或者到底层features映射到高层features，而deconvnet是把高层features映射到底层features，或者把features映射到pixels。在测试convnet中给定feature maps的一个activation时，设置所有其他的activation为0，将这个feature map传入deconvnet网络中。
 ![fig1](fig1.png)
 图片左上为deconv，右上为conv。conv的流程为filter-\>rectify-\>pooling；deconv的流程为unpool-\>rectify-\>filter。
 #### Unpooling
@@ -493,13 +493,41 @@ y Reducing Internal Covariate Shift
 论文地址：https://arxiv.org/pdf/1502.03167.pdf
 
 ### 概述
-在训练深度神经网络的时候，随着训练的不断进行，网络权重在不停的变，除了第一层之外的每层输入也在不停的变，所以就使得权重每次都要去适应新的输入distributions。这就导致训练速度很慢，学习率的要很小，很难使用saturaing nonlinearities训练。作者把这个问题叫做internal covariate shift。作者提出了batch normalization解决这个问题，允许使用更高的学习率，对于参数初始化的要求也没那么高。
+在训练深度神经网络的时候，随着训练的不断进行，网络权重在不停的变，除了第一层之外的每层输入也在不停的变，所以就使得权重每次都要去适应新的输入distributions。这就导致训练速度很慢，学习率的要很小，很难使用saturaing nonlinearities激活函数训练。作者把这个问题叫做internal covariate shift，提出了batch normalization解决该问题，bn对于参数初始化的要求没那么高，允许使用更高的学习率。
 BN可以看成一种正则化手段。
 
 ### 简介
 SGD相对于单个样本的GD来说，使用mini-batch的梯度作为整个训练集的估计值，效果更好；同时并行计算提高了效率。之前的工作使用ReLU，更好的初始化以及小的学习率来解决梯度消失问题，而本文作者的想法是让非线性输入的分布尽可能稳定，从而解决梯度饱和等问题，加快训练。本文提出的batch normalization通过固定每一层输入的均值和方差减少internal covariate shift，同时减少了gradients对于初始参数的依赖性。在使用了BN的网络中，也可以使用如sigmod和tanh的saturating nonlirearities激活函数，并不是一定要用relu激活函数。
 
+### Mini-Batch Normalization
+Whitening每一层的所有inputs需要很大的代价，而且并不是每个地方都是可导的。作者进行了两个简化。第一个是并不是对所有输入的features进行whiten，而是对每一个feautre单独的normalization，将他们转化成均值为0，方差为1的数据。对于一个d维的输入$x=(x^1,\cdots, x^d)，对每一维进行normalize：
+$$\hat{x}^k= \frac{x^k - \mathbb{E}\left[x^k\right]}{\sqrt{Var\left[x^k\right]}}$$
+其中的期望和方差是整个training set 的期望和方差。但是仅仅normalize每一层的输入可能改变这一层的表示。比如normalize sigmod的输入会将它们的输出限制在非线性的线性区域。为了解决这个问题，在网络中添加的这个transformation应该能够表示identity transform，作者对每个activation $x^k$引入了一对参数，$\gamma^k, \beta^k$，它们对normalized value进行scale和shift：
+$$y^k = \gamma^k \hat{x}^k + \beta^k$$
+这些参数和模型参数一块，都是学习出来的，如果学习到$\gamma^k=\sqrt{Var\left[x^k\right]},\beta^k = \mathbb{E}\left[x^k\right]$，就可以表示恒等变换了。。
+上面说的是使用整个training set的方差和期望进行normaliza，事实上，在sgd中这是不切合实际的。因此，就引入了第二个简化，使用每个mini-batch的方差和期望进行normalize，并且方差和期望是针对于每一个维度计算的。给出一个大小为$m$的batch $B$，normalization独立的应用于每一个维度。用$\hat{x}\_{1,\cdots, m}$表示normalized values，以及它们的linear transformation：$y\_{1,\cdots,m}$。这个transform表示为：$BN\_{\gamma, \beta}:x\_{1,\cdots, m} \rightarrow y\_{1,\cdots,m}$，称为Batch Normalization Transform，完整的算法如下：
+算法1 Batch Normalizing Transform
+输入：　mini-batch：$B={x\_{1,\cdots, m}}，要学习的参数$\gamma,\beta$
+输出：${y_i=BN\_{\gamma,\beta}(x_i)}$
+$\mu\leftarrow \frac{1}{m}\sum\_{i=1}^mx_i$  计算batch的mean
+$\sigma^2_B\leftarrow \sum\_{i=1}^m(x_i-\mu_B)^2$  计算batch的variance
+$\hat{x}\_i\leftarrow \frac{x_i-\mu_B}{\sqrt{\simga^2_B+\epsilon}}$ normalize 
+$y_i\leftarrow \gamma \hat{x}\_i+ \beta \equiv BN\_{\gamma, \beta}(x_i)$ scale以及shift。
+整个过程的loss还可以通过backpropagate进行传播，即它是可导的。
+
 ###
+
+### Batch-Normalized CNN
+原来的CNN是
+$$ z= g(Wu+b)$$
+现在在nonlinearity前加上BN transform。
+$$ z= g(BN(Wu+b))$$
+但是事实上，Wu+b和Wu的效果是一样的，因为normalized的时候会减去均值，所以最后就是：
+$$ z= g(BN(Wu))$$
+BN在Wu的每一个维度上单独使用BN，每一个维度有一对$\gamma^k,\beta^k$。
+
+### BN能使用更大的学习率
+### BN正则化模型
 
 ## Residual Network(2015)
 论文名称：Deep Residual Learning for Image Recognition

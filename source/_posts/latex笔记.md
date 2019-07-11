@@ -19,6 +19,13 @@ $\mmm{x}$
 $\bf{x}$
 
 ## 常用Latex符号
+
+### 等号
+$\sim$  \sim
+$\simeq$    \simeq
+$\approx$   \approx
+$\cong$ \cong
+$\equiv$    \equiv
 ### 各种乘法
 $\times$ \times
 $\*$ *

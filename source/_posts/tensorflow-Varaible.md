@@ -12,9 +12,11 @@ categories: tensorflow
 Tensorflow有两种方式创建Variable：tf.Variable()和tf.get_variable()，这两种方式获得的都是tensorflow.python.ops.variables.Variable类型的对象，但是他们的输入参数还有些不一样。
 ||tf.Variable()|tf.get_variable()|
 |:-:|:-:|:-:|
-|name|不需要|需要|
-|shape|不需要|需要|
-|初值|需要|不需要|
+|name|不需要，已存在的变量名，会在后面加上递增的数值用来区分|必须，已存在的会报错|
+|shape|不需要，或者说已经包含在初值中了|需要|
+|初值|必须|不需要|
+|复用|不可以|可以|
+
 
 两种方法事实上都可以指定name和初值。而tf.Variable()的初值中已经包含了shape，所以不需要再显示传入shape了。这里的需要和不需要指的是必要不必要，如果没有传入需要的参数，就会报错，不需要的参数则不会影响。
 

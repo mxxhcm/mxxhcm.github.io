@@ -10,10 +10,12 @@ tags:
  - kill
  - nice
 categories: linux
-mathjax: true
+mathjax: false
 ---
 
+## 概述
 这一节介绍和process相关的命令，包含ps,top,kill, pstree, nice, fuser, lsof, pidof, /proc/等
+
 ## ps查看进程
 ### 参数介绍
 ps [-Aauf] [xlj]    
@@ -24,18 +26,19 @@ f 用ASCII字符显示树状结构，表达进程间的关系
 x　通常与a这个参数一块使用，显示所有程序，不以终端机来区分
 l　较长，较详细的将该PID的信息列出
 j　工作的格式
+
 ### 示例
-~\\$:ps aux　查看系统所有的进程数据
-~\\$:ps -lA　查看所有系统的数据
-~\\$:ps axjf　连同部分进程树状态
-~\\$:ps aux | grep 'sslocal' #查看sslocal程序是否运行
-~\\$:ps ax # 显示当前系统进程的列表
-~\\$:ps aux #显示当前系统进程详细列表以及进程用户
-~\\$:ps -A  #列出进程号
-~\\$:ps aux |grep 2222'|grep -v grep  # 找出所有包含2222的进程，grep -v 过滤掉含有grep字符的行
+~$:ps aux　查看系统所有的进程数据
+~$:ps -lA　查看所有系统的数据
+~$:ps axjf　连同部分进程树状态
+~$:ps aux | grep 'sslocal' #查看sslocal程序是否运行
+~$:ps ax # 显示当前系统进程的列表
+~$:ps aux #显示当前系统进程详细列表以及进程用户
+~$:ps -A  #列出进程号
+~$:ps aux |grep 2222'|grep -v grep  # 找出所有包含2222的进程，grep -v 过滤掉含有grep字符的行
 
 ### aux 查看系统所有进程
-~\\$:ps aux     # 使用BSD格式显示进程
+~$:ps aux     # 使用BSD格式显示进程
 输出
 USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND
 USER    
