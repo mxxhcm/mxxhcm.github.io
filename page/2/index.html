@@ -327,6 +327,226 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/10/linux-ssh-tunnel内网穿透/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/06/10/linux-ssh-tunnel内网穿透/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">linux ssh tunnel内网穿透</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-06-10 21:33:16" itemprop="dateCreated datePublished" datetime="2019-06-10T21:33:16+08:00">2019-06-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-30 21:12:34" itemprop="dateModified" datetime="2019-06-30T21:12:34+08:00">2019-06-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="ssh-命令介绍">ssh 命令介绍</h2>
+<p>ssh是一种安全传输协议，此外还有tunnel转发功能，可以用来内网渗透。</p>
+<h3 id="参数介绍">参数介绍</h3>
+<p>-L port:host:hostport，访问本机的port端口就相当于访问host的hostport端口。<br>
+将本机的某个端口转发到远端指定机器的指定端口。本机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发出去。<br>
+-R port:host:hostport，将远程主机的某个端口转发到指定的本地机器的指定端口。远程主机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发到指定的本地机器的指定端口。<br>
+-N 不指定脚本或者命令<br>
+-f 后台认证，需要和-N连用</p>
+<p>-L和-R的区别，-L是ssh隧道，-R是ssh反向隧道。</p>
+<h2 id="示例">示例</h2>
+<h3 id="翻墙ssh-l">翻墙ssh -L</h3>
+<p>执行以下命令的本机(localhost)通过中间服务器(45.32.22.289)访问被屏蔽的网站(google)。<br>
+~$:ssh -L 1234:google_ip:80 root@45.32.22.289<br>
+拿这个举个例子，可能不是很恰当，但是有助于理解。我自己的机器(A)是不能访问google©的，但是我有一台vps(B)，地址为45.32.22.289是可以访问google的，可以通过ssh隧道将A的端口(1234)通过B映射到C的端口(80)。</p>
+<h3 id="本机访问局域网的tensorboard-server">本机访问局域网的tensorboard server</h3>
+<h4 id="本机设置">本机设置</h4>
+<p>~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:mxxmhh@127.0.0.1" target="_blank" rel="noopener">mxxmhh@127.0.0.1</a><br>
+将本机的12345端口映射到10.1.114.50的6006端口，中间服务器使用的是本机。<br>
+或者可以使用10.1.114.50作为中间服务器。<br>
+~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
+或者可以使用如下方法：<br>
+~$:ssh -L 12345:127.0.0.1:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
+从这个方法中，可以看出127.0.0.1这个ip是中间服务器可以访问的ip。<br>
+以上三种方法中，-L后的端口号12345可以随意设置，只要不冲突即可。</p>
+<h4 id="服务端设置">服务端设置</h4>
+<p>然后在服务端运行以下命令：<br>
+~$:tensorboard --logdir logdir -port 6006<br>
+这个端口号也是可以任意设置的，不冲突即可。</p>
+<h4 id="运行">运行</h4>
+<p>然后在本机访问<br>
+<a href="https://127.0.0.1:12345" target="_blank" rel="noopener">https://127.0.0.1:12345</a>即可。</p>
+<h3 id="内网穿透ssh-r">内网穿透ssh -R</h3>
+<p>外网A(123.123.123.123)访问处于内网B的(127.0.0.1)的机器。<br>
+~$:ssh -N -f -R 2222:127.0.0.1:22 <a href="mailto:root@123.123.123.123" target="_blank" rel="noopener">root@123.123.123.123</a></p>
+<p>可以在外网机器A(123.123.123.123)上通过如下命令访问(-R)指定的内网机器B：<br>
+~$:ssh -p 2222 userB@localhost</p>
+<h3 id="报错">报错</h3>
+<p>Host key verification failed<br>
+直接把/home/username/.ssh/known_hosts中相应的给删了。</p>
+<h3 id="内网访问内网-挖洞">内网访问内网（挖洞）</h3>
+<p>A是家里的内网（无公网IP）上机器(196.)，B是VPS（有公网IP）(45.32.)，C是公司内网（无公网IP）机器(10.)。<br>
+要在家里的内网访问公司的内网，即A访问C。在C上建立ssh反向隧道：<br>
+~$:ssh -N -f -R 2222:127.0.0.1:22 userB@B.ip<br>
+在A上访问：<br>
+~$:ssh -p  2222 userC@B.ip</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html" target="_blank" rel="noopener">https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html</a><br>
+2.<a href="https://blog.creke.net/722.html" target="_blank" rel="noopener">https://blog.creke.net/722.html</a><br>
+3.<a href="http://arondight.me/2016/02/17/%E4%BD%BF%E7%94%A8SSH%E5%8F%8D%E5%90%91%E9%9A%A7%E9%81%93%E8%BF%9B%E8%A1%8C%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" target="_blank" rel="noopener">http://arondight.me/2016/02/17/使用SSH反向隧道进行内网穿透/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/09/windows-IIS-ftp服务器/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2245,324 +2465,6 @@ standard error(file handle 2)：标准错误，process向这个file hanle写erro
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">reinforcement learning an introduction 第6章笔记</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-02 14:31:49" itemprop="dateCreated datePublished" datetime="2019-06-02T14:31:49+08:00">2019-06-02</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-07-11 23:05:16" itemprop="dateModified" datetime="2019-07-11T23:05:16+08:00">2019-07-11</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介">简介</h2>
-<p>TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。</p>
-<h2 id="temporal-difference-learning">Temporal-Difference Learning</h2>
-<p>本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP,TD,MC方法都是使用GPI方法解control问题，不同点在于prediction问题的解法。</p>
-<h2 id="td-prediction">TD prediction</h2>
-<p>TD和MC都是利用采样的experience中解prediction问题。给定policy $\pi$下的一个experience，TD和MC方法使用该experience中出现的non-terminal state $S_t$估计$v_{\pi}$的$V$。他们的不同之处在于MC需要等到整个experience的return知道以后，把这个return当做$V(S_t)$的target，every visit MC方法的更新规则如下：<br>
-$$V(S_t) = V(S_t) + \alpha \left[G_t - V(S_t)\right]\tag{1}$$<br>
-其中$G_t$是从时刻$t$到这个episode结束的return，$\alpha$是一个常数的步长，这个方法叫做$constant-\alpha$ MC。MC方法必须等到一个episode结束，才能进行更新，因为只有这个时候$G_t$才知道。为了更方便的训练，就有了TD方法。TD方法做的改进是使用$t+1$时刻state $V(S_{t+1})$的估计值和reward $R_{t+1}$的和作为target：<br>
-$$V(S_t) = V(S_t) + \alpha \left[R_{t+1}+\gamma V(S_{t+1}) - V(S_t)\right]\tag{2}$$<br>
-如果V在变的话，是不是应该是下面的公式？？<br>
-$$V_{t+1}(S_t) = V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]$$<br>
-即只要有了到$S_{t+1}$的transition并且接收到了reward $R_{t+1}$就可以进行上述更新。MC方法的target是$G_t$，而TD方法的target是$\gamma V(S_{t+1} + R_{t+1})$，这种TD方法叫做$TD-0$或者$one\ step\ TD$，它是$TD(\lambda)$和$n-step\ TD$的一种特殊情况。下面是$TD(0)$的完整算法：<br>
-算法1 Tabular TD(0) for $V$<br>
-输入： 待评估的policy $\pi$<br>
-算法参数：步长$\alpha \in (0,1]$<br>
-初始化： $V(s), \forall s\in S^{+}，V(terminal) = 0$<br>
-<strong>Loop</strong> for each episode<br>
-$\qquad$初始化$S$<br>
-$\qquad A\leftarrow \pi(a|S)$<br>
-$\qquad$<strong>Loop</strong> for each step of episode<br>
-$\qquad\qquad$执行action $A$，得到$S’$和$R$<br>
-$\qquad\qquad V(S) = V(S) + \alpha \left[R + \gamma V(S’) - V(S)\right]$<br>
-$\qquad\qquad$$S\leftarrow S’$<br>
-$\qquad$<strong>Until</strong> $S$ 是terminal state</p>
-<p>$TD(0)$是bootstrap方法，因为它基于其他state的估计value进行更新。从第三章中我们知道：<br>
-\begin{align*}<br>
-v_{\pi}(s) &amp; = \mathbb{E}_{\pi}\left[G_t\right]\tag{3}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}| S_t = s\right]\tag{4}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t = s\right]\tag{5}\\<br>
-\end{align*}<br>
-MC使用式子$(3)$的estimate作为target，而DP使用式子$(5)$的estimate作为target。MC方法用一个sample的return代替式子$(3)$中真实的未知expected return $G_t$；DP是用$V(S_{t+1})$作为$v_{\pi}(S_{t+1})$的一个估计，因为$v_{\pi}(S_{t+1})$的真实值是不知道的。TD结合了MC的采样以及DP的bootstrap，它对式子$(4)$的tranisition进行sample，同时使用$v_{\pi}$的估计值$V$进行计算。<br>
-<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png" alt="backup_TD"><br>
-TD的backup图如图所示。TD和MC updates被称为sample updates，因为这两个算法的更新都牵涉到采样一个sample successor state，使用这个state的value和它后继的这条路上的reward计算一个backed-up value，然后根据这个值更新该state的value。sample updates和DP之类的expected updates的不同在于，sample updates使用一个sample successor进行更新，expected updates使用所有可能的successors distribution进行更新。<br>
-$R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$可以看成一种error，衡量了$S_t$当前的estimated value $V(S_t)$和一个更好的estimated value之间的差异$R_{t+1} +\gamma V(S_{t+1})$，我们把它叫做$TD-error$，用$\delta_t$表示。$\delta_t$是$t$时刻的$TD-error$，在$t+1$时刻可用，用公式表示是：<br>
-$$\delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) \tag{6}$$<br>
-如果$V$在一个episode中改变的话，那么上述公式是不是应该写成：<br>
-$$\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)$$<br>
-应该在$t$时刻，计算的TD error是用来更新$t+1$时刻的value的。如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。<br>
-\begin{align*}<br>
-G_t - V(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V(S_t) + \gamma V(S_{t+1}) - \gamma V(S_{t+1})\\<br>
-&amp; = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
-&amp; = \delta_t + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
-&amp; = \delta_t + \gamma(G_{t+1} - V(S_{t+1}))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2(G_{t+2} - V(S_{t+2}))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(G_T-V(S_T))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(0-0)\\<br>
-&amp; = \sum_{k=t}^{T-1} \gamma^{k-t}\delta_k \tag{7}\\<br>
-\end{align*}<br>
-如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。<br>
-$$\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)$$<br>
-\begin{align*}<br>
-V_{t+1}(S_t) &amp;= V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]\\<br>
-&amp;= V_t(S_t) + \alpha \delta_t<br>
-\end{align*}</p>
-<p>\begin{align*}<br>
-G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t}) - \gamma V_{t+1}(S_{t})\\<br>
-&amp; = R_{t+1} + \gamma V_{t+1}(S_{t}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
-&amp; = R_{t+1} + \gamma (V_t(S_t) + \alpha \delta_t) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
-&amp; = R_{t+1} + \gamma V_t(S_t) - V_t(S_t) + \gamma \alpha \delta_t + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
-\end{align*}<br>
-然而上面是错误的，因为$\delta_t$需要的是$V_t(S_{t+1})$<br>
-\begin{align*}<br>
-G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t+1}) - \gamma V_{t+1}(S_{t+1})\\<br>
-&amp; = R_{t+1} + \gamma V_{t+1}(S_{t+1}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t+1})\\<br>
-\end{align*}<br>
-\begin{align*}<br>
-\delta_t &amp;= R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\\<br>
-\delta_{t+1} &amp;= R_{t+2} + \gamma V_{t+1}(S_{t+2}) - V_{t+1}(S_{t+1})\\<br>
-\delta_{t+2} &amp;= R_{t+3} + \gamma V_{t+2}(S_{t+3}) - V_{t+2}(S_{t+2})\\<br>
-\delta_{t+3} &amp;= R_{t+4} + \gamma V_{t+3}(S_{t+4}) - V_{t+3}(S_{t+3})\\<br>
-\end{align*}</p>
-<p>\begin{align*}<br>
-&amp;\delta_t+\delta_{t+1}+\delta_{t+2}+\delta_{t+3}\\<br>
-= &amp;R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\\<br>
-+&amp;R_{t+2} + \gamma V_{t+1}(S_{t+2}) - V_{t+1}(S_{t+1})\\<br>
-+&amp;R_{t+3} + \gamma V_{t+2}(S_{t+3}) - V_{t+2}(S_{t+2})\\<br>
-+&amp;R_{t+4} + \gamma V_{t+3}(S_{t+4}) - V_{t+3}(S_{t+3})\\<br>
-\end{align*}<br>
-OK。。。还是没有算出来。。<br>
-TD的一个例子。每天下班的时候，你会估计需要多久能到家。你回家的事件和星期，天气等相关。在周五的晚上6点，下班之后，你估计需要30分钟到家。到车旁边是$6:05$，而且天快下雨了。下雨的时候会有些堵车，所以估计从现在开始大概还需要$35$分钟才能到家。十五分钟后，下了高速，这个时候你估计总共的时间是$35$分钟（包括到达车里的$5$分钟）。然后就遇到了堵车，真正到达家里的街道是$6:40$，三分钟后到家了。</p>
-<table>
-<thead>
-<tr>
-<th>State</th>
-<th>Elapsed Time</th>
-<th>Predicted Time to Go</th>
-<th>Predicted Total Time</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>leaveing office</td>
-<td>0</td>
-<td>30</td>
-<td>30</td>
-</tr>
-<tr>
-<td>reach car</td>
-<td>5</td>
-<td>35</td>
-<td>40</td>
-</tr>
-<tr>
-<td>下高速</td>
-<td>20</td>
-<td>15</td>
-<td>35</td>
-</tr>
-<tr>
-<td>堵车</td>
-<td>30</td>
-<td>10</td>
-<td>40</td>
-</tr>
-<tr>
-<td>门口的街道</td>
-<td>40</td>
-<td>3</td>
-<td>43</td>
-</tr>
-<tr>
-<td>到家</td>
-<td>43</td>
-<td>0</td>
-<td>43</td>
-</tr>
-</tbody>
-</table>
-<p>rewards是每一个journey leg的elapsed times，这里我们研究的是evaluation问题，所以可以直接使用elapsed time，如果是control问题，要在elapsed times前加负号。state value是expected time。上面的第一列数值是reward，第二列是当前state的value估计值。<br>
-如果使用$\alpha = 1$的TD和MC方法。对于MC方法，对于$S_t$的所有state，都有：<br>
-\begin{align*}<br>
-V(S_t) &amp;= V(S_t) + (G_t - V(S_t))\\<br>
-&amp; = G_t \\<br>
-&amp; = 43<br>
-\end{align*}<br>
-对于TD方法，让$\gamma=1$，有：<br>
-\begin{align*}<br>
-V(S_t) &amp;= V_t(S_t) + \alpha (R_{t+1} +  \gamma V_t(S_{t+1}) - V(S_t))\\<br>
-&amp;= R_{t+1} + V_t(S_{t+1})<br>
-\end{align*}</p>
-<h2 id="td-prediction的好处">TD Prediction的好处</h2>
-<p>TD是bootstrap方法，相对于MC和DP来说，TD的好处有以下几个：</p>
-<ol>
-<li>相对于DP，不需要environment, reward model以及next-state probability distribution。</li>
-<li>相对于MC，TD是online，incremental的。MC需要等到一个episode结束，而TD并不需要</li>
-<li>TD在table-base case可以为证明收敛，而general linear function不一定收敛。</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2612,7 +2514,7 @@ V(S_t) &amp;= V_t(S_t) + \alpha (R_{t+1} +  \gamma V_t(S_{t+1}) - V(S_t))\\<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">147</span>
+                    <span class="site-state-item-count">148</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2952,7 +2854,9 @@ V(S_t) &amp;= V_t(S_t) + \alpha (R_{t+1} +  \gamma V_t(S_{t+1}) - V(S_t))\\<br>
                     
                       
                     
-                    <span class="site-state-item-count">144</span>
+                      
+                    
+                    <span class="site-state-item-count">145</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3221,41 +3125,9 @@ V(S_t) &amp;= V_t(S_t) + \alpha (R_{t+1} +  \gamma V_t(S_{t+1}) - V(S_t))\\<br>
       
     
       
-        
-      
     
   
 
-  
-    
-      <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      tex2jax: {
-        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-        processEscapes: true,
-        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-      },
-      TeX: {equationNumbers: { autoNumber: "AMS" }}
-    });
-</script>
-
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Queue(function() {
-      var all = MathJax.Hub.getAllJax(), i;
-        for (i=0; i < all.length; i += 1) {
-          all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-    });
-</script>
-<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-<style>
-.MathJax_Display {
-    overflow: auto hidden;
-}
-</style>
-
-    
   
 
 
