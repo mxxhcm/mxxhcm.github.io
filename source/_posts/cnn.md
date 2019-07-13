@@ -575,34 +575,6 @@ $F$的形式是很灵活的，可以像本文一样使用linear layers，当然�
 8. 测试时，对十个crop取平均，使用fcn，对多个scales上的scores进行平均。
 
 ### 结论
-关于degradation问题的出现，并不是因为vanishing gradients，使用了BN的网络能够确保反向传播的signal不为$0$，而且实际实验中也看到了梯度信号是正常的，作者猜测可能是由于普通网络呈现指数级低收敛速度导致的。
-
-#### Identity vs Projection shortcuts
-shortcut到底是使用identity还是使用一个projection。作者试了三种方案：
-A. 添加zero padding用来増维
-B. 使用projection用来升维
-C. 所有的shortcuts都是projection
-结果表明$C\gt B \gt A$，但是都差不多。
-
-#### Deeper Bottleneck architecture
-作者之前使用的都是$34$层的网络，这里他们还研究了更深的网络，通过使用$3$层的堆叠，而不是两层，$1\times 1, 3\times 3, 1\times 1$对应不同的层，第一个$1\times 1$用来降维，第二个$1\times 1$用来降维。如下图所示的两层和三层网络有相同的复杂度：
-![differenet residual](residual_bottleneck.png)
-通过使用三层的block，作者构建了$50$层，$101, 152$层的网络，即使是$152$层的ResNets也比VGG-19的复杂度要低。
-
-## 参考文献
-1.https://www.zhihu.com/question/52668301/answer/194998098
-2.https://stats.stackexchange.com/a/174438
-3.https://www.zhihu.com/question/264163033/answer/277481519
-4.https://stats.stackexchange.com/questions/145768/importance-of-local-response-normalization-in-cnn
-5.https://stats.stackexchange.com/a/386304
-6.https://blog.csdn.net/luoyang224/article/details/78088582/
-7.https://zhum.in/blog/project/TrafficSignRecognition/OverFeat%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/
-8.https://stats.stackexchange.com/a/292064
-9.https://medium.com/coinmonks/paper-review-of-zfnet-the-winner-of-ilsvlc-2013-image-classification-d1a5a0c45103
-10.https://blog.csdn.net/C_chuxin/article/details/82929747
-11.Provable bounds for learning some deep representations.
-12.https://medium.com/coinmonks/paper-review-of-googlenet-inception-v1-winner-of-ilsvlc-2014-image-classification-c2b3565a64e7
-13.https://medium.com/datadriveninvestor/residual-network-architecture-8e478adabfec
 14.https://www.quora.com/How-does-deep-residual-learning-work
 15.https://kharshit.github.io/blog/2018/09/07/skip-connections-and-residual-blocks
 16.https://stats.stackexchange.com/questions/56950/neural-network-with-skip-layer-connections
