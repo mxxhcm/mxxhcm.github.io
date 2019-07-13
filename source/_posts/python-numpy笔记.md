@@ -5,12 +5,11 @@ tags:
  - python
  - numpy
 categories: python
+mathjax: true
 ---
 
-## numpy数组初始化
-
-### numpy.ndarray
-#### attribute of the np.ndarray
+## numpy.ndarray
+### attribute of the np.ndarray
 ndarray.shape        #array的shape
 ndarray.ndim            #array的维度
 ndarray.size            #the number of ndarray in array
@@ -19,33 +18,93 @@ ndarray.itemsize        #size of the element in array
 ``` python
 array[array>0].size    #统计一个数组有多少个非零元素，不论array的维度是多少
 ```
+### 改变数组数据类型
+将整形数组改为字符型
+``` python
+a = numpy.zeros((3,4),dtype='i')
+a.astype('S')
+```
 
+### 将numpy转为list
+``` python
+a = np.zeros((3,4,5))
+b = a.tolist()
+print(b)
+print(len(b))
+print(len(b[0]))
+# [[[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]], [[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]], [[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]]]
+# 3
+# 4
+```
 
-### numpy.array(),numpy.zeros(),numpy.empty()
+### reshape
+``` python
+import numpy as np
+a = np.zeros((3,4,5))
+a.reshape(-1, 1)
+```
 
-#### numpy.array()
-> np.array(object,dtype=None,copy=True,order=False,subok=False,ndim=0)
+### flatten
+``` python
+import numpy as np
+a = np.zeros((3,4,5))
+a.flatten()
+```
 
-#### numpy.zeros()
-> np.zeros(shape,dtype=float,order='C')
+## numpy数组初始化
+- numpy.array()
+- numpy.zeros()
+- numpy.empty()
+- numpy.random()
 
-例子
+### numpy.array()
+#### API
+``` python
+np.array(
+    object,
+    dtype=None,
+    copy=True,
+    order=False,
+    subok=False,
+    ndim=0
+)
+```
+
+### numpy.zeros()
+#### API
+``` python
+np.zeros(
+    shape,
+    dtype=float,
+    order='C'
+)
+```
+
+#### 代码示例
+[代码地址]()
 ``` python
 np.zeros((3, 4),dtype='i')
 ``` 
 
-#### numpy.empty()
-> np.empty(shape,dtype=float,order='C')
-例子
+### numpy.empty()
+#### API
+``` python
+np.empty(
+    shape,
+    dtype=float,
+    order='C'
+)
+```
+#### 代码示例
+[代码地址]()
 ``` python
 np.empty((3, 4),dtype='f')
 ```
 
-### numpy.random()
-
+### numpy.random
 #### numpy.random.randn()
 返回标准正态分布的一个样本
-numpy.random.randn(d0,d1,...,dn)
+numpy.random.randn(d0, d1, ..., dn)
 例子
 ``` python
 np.random.randn(3,4)
@@ -124,52 +183,16 @@ for i in range(3):
 # 0.9726843599648843
 ```
 
+### 创建bool类型数组
+np.ones([2, 2], dtype=bool)
+np.zeros([2, 2], dtype=bool)
+
 ### others
 #### numpy.arange()
 
 #### numpy.linspace()
 
-### 创建bool类型数组
-np.ones([2, 2], dtype=bool)
-np.zeros([2, 2], dtype=bool)
-
-### 改变数组数据类型
-将整形数组改为字符型
-``` python
-a = numpy.zeros((3,4),dtype='i')
-a.astype('S')
-```
-
-### 将numpy转为list
-``` python
-a = np.zeros((3,4,5))
-b = a.tolist()
-print(b)
-print(len(b))
-print(len(b[0]))
-```
-> [[[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]], [[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]], [[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]]]
-3
-4
-
-## flatten ndarray
-
-### reshape()
-``` python
-import numpy as np
-a = np.zeros((3,4,5))
-a.reshape(-1,1)
-```
-
-### flatten
-``` python
-import numpy as np
-a = np.zeros((3,4,5))
-a.flatten()
-```
-
 ## np.random.binomial
-
 ### API
 ``` python
 numpy.random.binomial(
@@ -208,6 +231,68 @@ print(rand)
 # [2 2 3 3 2]
 ```
 
+## np.random.choice
+### API
+``` python
+numpy.random.choice(
+    a,  # 1d array或者int，如果是一个数组，从其中生成样本；如果是一个整数，从np.arange(a)中生成样本
+    size=None,  # output shape，比如是(m, n, k)的话，总共要m*n*k个样本，默认是None,返回一个样本。
+    replace=True,   # 是否使用replacement，设置为False的话所有元素不重复。
+    p=None  # 概率分布，相加必须等于1，默认是从一个均匀分布中采样。
+)
+```
+
+### 代码示例
+[代码地址]()
+``` python
+import numpy as np
+
+a0 = np.random.choice([8, 9, -1, 2, 0], 3)
+print(a0)
+
+# 从np.arange(5)从使用均匀分布采样一个shape为4的样本
+a1 = np.random.choice(5, 4)
+print(a1)
+
+a2 = np.random.choice(5, 8, p=[0.1, 0.2, 0.5, 0.2, 0])
+print(a2)
+
+# replace 设置为False，相当于np.random.permutation()
+a3 = np.random.choice([1, 2, 3, 8, 9], 5, replace=False)
+print(a3)
+```
+
+## np.random.permutation
+### API
+``` python
+np.random.permutation(
+    x   # int或者array，如果是int，置换np.arange(x)。如果是array，make a copy，随机打乱元素。
+)
+```
+### 简介
+对输入序列进行排列组合，如果输入是多维的话，只会在第一维重新排列。
+
+### 代码示例
+[代码地址]()
+``` python
+import numpy as np
+
+
+a1 = np.random.permutation(9)
+print(a1)
+
+a2 = np.random.permutation([1, 2, 4, 9, 8])
+print(a2)
+
+a3 = np.random.permutation(np.arange(9).reshape(3, 3))
+print(a3)
+```
+
+
+
+
 参考文献
 1.https://stackoverflow.com/questions/47231852/np-random-rand-vs-np-random-random
 2.https://stackoverflow.com/questions/21174961/how-to-create-a-numpy-array-of-all-true-or-all-false
+3.https://docs.scipy.org/doc/numpy/reference/generated/numpy.random.choice.html
+4.https://docs.scipy.org/doc/numpy/reference/generated/numpy.random.permutation.html

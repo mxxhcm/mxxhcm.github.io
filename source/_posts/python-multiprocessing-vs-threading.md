@@ -6,8 +6,17 @@ tags:
 - Pool
 - Process
 - multiprocessing
+- threading
 categories: python
 ---
+
+## multiprocessing vs multithread
+多个threads可以在一个process中。同一个process中的所有threads共享相同的memory。而不同的processes有不同的memory areas，每一个都有自己的variables，进程之间为了通信，需要使用其他的channels，比如files, pipes和sockets等。
+thread比process更容易创建和管理，thread之间的交流比processes之间的交流更快。
+
+## GIL
+但是thread有一个东西，叫做GIL(Global Interpreter Lock)，阻止了同一个process中不同threads的同时运行。举个例子，如果你有8个cores，使用8个threads，CPU的利用率不会达到800%，也不会快8倍。它会使用100%CPU，速度和原来相同，甚至会更慢，因为需要对多个threads进行调度。当然，有一些例外，如果大量的计算不是使用python运行的，而是使用一些自定义的C code进行GIL handling，就会得到你想要的性能。对于网络服务器或者GUI应用来说，大部分的事件都在等待，而不是在计算，这个时候就可以使用多个thread，相当于把他们都放在后台运行，而不需要终止相应的主线程。
+如果想用纯python代码进行大量的CPU计算，使用threads并不能起到什么作用。使用process就没有GIL的问题，每个process有自己的GIL。这个时候需要在多线程和多进程之间做个权衡，因为进程之间的通信比线程之间通信的代价大得多。
 
 ## multiprocessing
 ### 概述
@@ -127,7 +136,7 @@ for res in results:
 ### 使用流程
 
 ### 代码示例
-[代码地址]()
+[代码地址](Process.py)
 
 
 ## Pool vs Process
@@ -153,12 +162,18 @@ r1 = pool.apply_async(foo)
 r2 = pool.apply_async(bar)
 ```
 
+### 代码示例
+[代码地址](Pool_Process.py)
+
 ## join方法
 ### 简介
 用来阻塞当前进程，直到该进程执行完毕，再继续执行后续代码。
 ### 代码示例
 [代码地址](https://github.com/mxxhcm/myown_code/blob/master/tools/py_process_thread/mp/mp_join.py)
 可以看出来，调用join()函数的时候，会等子进程执行完之后再继续执行；而不使用join()函数的话，在子进程开始执行的时候，就会继续向后执行了。
+
+
+## threading 
 
 
 ## 参考文献

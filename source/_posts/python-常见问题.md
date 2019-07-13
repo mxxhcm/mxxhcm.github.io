@@ -5,6 +5,7 @@ tags:
  - python
  - gym
  - 常见问题
+ - pip源
 categories: python 
 ---
 
@@ -109,7 +110,37 @@ cannot import name tqdm
 
 ## 问题4-linux下python执行shell脚本输出重定向
 [详细介绍](https://mxxhcm.github.io/2019/06/03/linux-python调用shell脚本并将输出重定向到文件/)
- 
+
+## 问题4-ImportError: No module named conda.cli'
+### 问题描述
+anaconda的python版本是3.7，执行了conda install python=3.6之后，运行conda命令出错。报错如下：
+``` txt
+from conda.cli import main 
+ModuleNotFoundError: No module named 'conda'
+```
+
+## 解决方案
+找到anaconda安装包，加一个-u参数，如下所示。重新安装anaconda自带的package，自己安装的包不会丢失。
+~$:sh xxx.sh -u
+
+## 问题5-python-pip使用国内源
+### 暂时使用国内pip源
+使用清华源
+~\$:pip install -i https://pypi.tuna.tsinghua.edu.cn/simple package-name
+使用阿里源
+~\$:pip install -i https://mirrors.aliyun.com/pypi/simple package-name
+
+### 将国内pip源设为默认
+~\$:pip install pip -U
+~\$:pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+~\$:pip config set global.timeout 60
+> Writing to /home/username/.config/pip/pip.conf
+
+#### 查看pip配置文件
+~\$:find / -name pip.conf
+我的是在/home/username/.config/pip/pip.conf
+
+
 ## 参考文献
 1.https://www.cnblogs.com/timxgb/p/8905290.html
 2.https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects
@@ -118,3 +149,5 @@ cannot import name tqdm
 5.https://gym.openai.com/docs
 6.https://github.com/openai/baselines/issues/42
 7.https://blog.csdn.net/m0_37561765/article/details/78714603
+8.https://blog.csdn.net/u014432608/article/details/79066813
+9.https://mirrors.tuna.tsinghua.edu.cn/help/pypi/

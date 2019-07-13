@@ -17,17 +17,17 @@ TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接�
 TD和MC都是利用采样的experience中解prediction问题。给定policy $\pi$下的一个experience，TD和MC方法使用该experience中出现的non-terminal state $S_t$估计$v\_{\pi}$的$V$。他们的不同之处在于MC需要等到整个experience的return知道以后，把这个return当做$V(S_t)$的target，every visit MC方法的更新规则如下：
 $$V(S_t) = V(S_t) + \alpha \left[G_t - V(S_t)\right]\tag{1}$$
 其中$G_t$是从时刻$t$到这个episode结束的return，$\alpha$是一个常数的步长，这个方法叫做$constant-\alpha$ MC。MC方法必须等到一个episode结束，才能进行更新，因为只有这个时候$G_t$才知道。为了更方便的训练，就有了TD方法。TD方法做的改进是使用$t+1$时刻state $V(S\_{t+1})$的估计值和reward $R\_{t+1}$的和作为target：
-$$V(S_t) = V(S_t) + \alpha \left[R\_{t+1}+\gamma V(S\_{t+1}) - V(S_t)\right]\tag{2}$$
+$$V(S_t) = V(S_t) + \alpha \left[R_{t+1}+\gamma V(S_{t+1}) - V(S_t)\right]\tag{2}$$
 如果V在变的话，是不是应该是下面的公式？？
-$$V\_{t+1}(S_t) = V_t(S_t) + \alpha \left[R\_{t+1}+\gamma V_t(S\_{t+1}) - V_t(S_t)\right]$$
-即只要有了到$S\_{t+1}$的transition并且接收到了reward $R\_{t+1}$就可以进行上述更新。MC方法的target是$G_t$，而TD方法的target是$\gamma V(S\_{t+1}) + R\_{t+1})$，这种TD方法叫做$TD-0$或者$one step TD$，它是$TD(\lambda)$和$n-step TD$的一种特殊情况。下面是$TD(0)$的完整算法：
-算法1 Tabular TD(0) for V
+$$V_{t+1}(S_t) = V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]$$
+即只要有了到$S\_{t+1}$的transition并且接收到了reward $R\_{t+1}$就可以进行上述更新。MC方法的target是$G_t$，而TD方法的target是$\gamma V(S\_{t+1} + R\_{t+1})$，这种TD方法叫做$TD-0$或者$one\ step\ TD$，它是$TD(\lambda)$和$n-step\ TD$的一种特殊情况。下面是$TD(0)$的完整算法：
+算法1 Tabular TD(0) for $V$
 输入： 待评估的policy $\pi$
 算法参数：步长$\alpha \in (0,1\]$
-初始化： $V(s), \forall s\in S\^{+}，V(terminal) = 0$
+初始化： $V(s), \forall s\in S^{+}，V(terminal) = 0$
 **Loop** for each episode
 $\qquad$初始化$S$
-$\qquad$$A\leftarrow \pi(a|S)$
+$\qquad A\leftarrow \pi(a|S)$
 $\qquad$**Loop** for each step of episode
 $\qquad\qquad$执行action $A$，得到$S'$和$R$
 $\qquad\qquad V(S) = V(S) + \alpha \left[R + \gamma V(S') - V(S)\right]$
@@ -44,26 +44,79 @@ MC使用式子$(3)$的estimate作为target，而DP使用式子$(5)$的estimate�
 ![backup_TD](backup_td.png)
 TD的backup图如图所示。TD和MC updates被称为sample updates，因为这两个算法的更新都牵涉到采样一个sample successor state，使用这个state的value和它后继的这条路上的reward计算一个backed-up value，然后根据这个值更新该state的value。sample updates和DP之类的expected updates的不同在于，sample updates使用一个sample successor进行更新，expected updates使用所有可能的successors distribution进行更新。
 $R\_{t+1} + \gamma V(S\_{t+1}) - V(S_t)$可以看成一种error，衡量了$S_t$当前的estimated value $V(S_t)$和一个更好的estimated value之间的差异$R\_{t+1} +\gamma V(S\_{t+1})$，我们把它叫做$TD-error$，用$\delta_t$表示。$\delta_t$是$t$时刻的$TD-error$，在$t+1$时刻可用，用公式表示是：
-$$\delta_t = R\_{t+1} + \gamma V(S\_{t+1}) - V(S_t) \tag{6}$$
+$$\delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) \tag{6}$$
 如果$V$在一个episode中改变的话，那么上述公式是不是应该写成：
-$$\delta_t = R\_{t+1} + \gamma V_t(S\_{t+1}) - V_t(S_t)$$
+$$\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)$$
 应该在$t$时刻，计算的TD error是用来更新$t+1$时刻的value的。如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。
 \begin{align\*}
 G_t - V(S_t) & = R\_{t+1} + \gamma G\_{t+1} - V(S_t) + \gamma V(S\_{t+1}) - \gamma V(S\_{t+1})\\\\
 & = R\_{t+1} + \gamma V(S\_{t+1}) - V(S_t) + \gamma G\_{t+1} - \gamma V(S\_{t+1})\\\\
 & = \delta_t + \gamma G\_{t+1} - \gamma V(S\_{t+1})\\\\
 & = \delta_t + \gamma(G\_{t+1} - V(S\_{t+1}))\\\\
-& = \delta_t + \gamma\delta\_{t+1} + \gamma\^2(G\_{t+2} - V(S\_{t+2}))\\\\
-& = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma\^{T-t}(G_T-V(S_T))\\\\
-& = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma\^{T-t}(0-0)\\\\
-& = \sum\_{k=t}\^{T-1} \gamma\^{k-t}\delta_k \tag{7}\\\\
+& = \delta_t + \gamma\delta\_{t+1} + \gamma^2(G\_{t+2} - V(S\_{t+2}))\\\\
+& = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma^{T-t}(G_T-V(S_T))\\\\
+& = \delta_t + \gamma\delta\_{t+1} + \gamma^2\delta\_{t+2} + \cdots + \gamma^{T-t-1}\delta\_{T-1} + \gamma^{T-t}(0-0)\\\\
+& = \sum\_{k=t}^{T-1} \gamma^{k-t}\delta_k \tag{7}\\\\
 \end{align\*}
 如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。
-$$V\_{t+1}(S_t) = V_t(S_t) + \alpha \left[R\_{t+1}+\gamma V_t(S\_{t+1}) - V_t(S_t)\right]$$
-$$\delta_t = R\_{t+1} + \gamma V_t(S\_{t+1}) - V_t(S_t)$$
+$$\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)$$
+\begin{align\*}
+V\_{t+1}(S_t) &= V_t(S_t) + \alpha \left[R\_{t+1}+\gamma V_t(S\_{t+1}) - V_t(S_t)\right]\\\\
+&= V_t(S_t) + \alpha \delta_t
+\end{align\*}
 
+\begin{align\*}
+G_t - V_t(S_t) & = R\_{t+1} + \gamma G\_{t+1} - V_t(S_t) + \gamma V\_{t+1}(S\_{t}) - \gamma V\_{t+1}(S\_{t})\\\\
+& = R\_{t+1} + \gamma V\_{t+1}(S\_{t}) - V_t(S_t) + \gamma G\_{t+1}- \gamma V\_{t+1}(S\_{t})\\\\
+& = R\_{t+1} + \gamma (V_t(S_t) + \alpha \delta_t) - V_t(S_t) + \gamma G\_{t+1}- \gamma V\_{t+1}(S\_{t})\\\\
+& = R\_{t+1} + \gamma V_t(S_t) - V_t(S_t) + \gamma \alpha \delta_t + \gamma G\_{t+1}- \gamma V\_{t+1}(S\_{t})\\\\
+\end{align\*}
+然而上面是错误的，因为$\delta_t$需要的是$V_t(S\_{t+1})$
 \begin{align\*}
 G_t - V_t(S_t) & = R\_{t+1} + \gamma G\_{t+1} - V_t(S_t) + \gamma V\_{t+1}(S\_{t+1}) - \gamma V\_{t+1}(S\_{t+1})\\\\
 & = R\_{t+1} + \gamma V\_{t+1}(S\_{t+1}) - V_t(S_t) + \gamma G\_{t+1}- \gamma V\_{t+1}(S\_{t+1})\\\\
-&= R\_{t+1} + \gamma\left[V_t(S\_{t+1}) + \alpha \left[R\_{t+2}+\gamma V_t(S\_{t+2}) - V_t(S\_{t+1})\right]\\\\
 \end{align\*}
+\begin{align\*}
+\delta_t &= R\_{t+1} + \gamma V_t(S\_{t+1}) - V_t(S_t)\\\\
+\delta\_{t+1} &= R\_{t+2} + \gamma V\_{t+1}(S\_{t+2}) - V\_{t+1}(S\_{t+1})\\\\
+\delta\_{t+2} &= R\_{t+3} + \gamma V\_{t+2}(S\_{t+3}) - V\_{t+2}(S\_{t+2})\\\\
+\delta\_{t+3} &= R\_{t+4} + \gamma V\_{t+3}(S\_{t+4}) - V\_{t+3}(S\_{t+3})\\\\
+\end{align\*}
+
+\begin{align\*}
+&\delta_t+\delta\_{t+1}+\delta\_{t+2}+\delta\_{t+3}\\\\ 
+= &R\_{t+1} + \gamma V_t(S\_{t+1}) - V_t(S_t)\\\\
++&R\_{t+2} + \gamma V\_{t+1}(S\_{t+2}) - V\_{t+1}(S\_{t+1})\\\\
++&R\_{t+3} + \gamma V\_{t+2}(S\_{t+3}) - V\_{t+2}(S\_{t+2})\\\\
++&R\_{t+4} + \gamma V\_{t+3}(S\_{t+4}) - V\_{t+3}(S\_{t+3})\\\\
+\end{align\*}
+OK。。。还是没有算出来。。
+TD的一个例子。每天下班的时候，你会估计需要多久能到家。你回家的事件和星期，天气等相关。在周五的晚上6点，下班之后，你估计需要30分钟到家。到车旁边是$6:05$，而且天快下雨了。下雨的时候会有些堵车，所以估计从现在开始大概还需要$35$分钟才能到家。十五分钟后，下了高速，这个时候你估计总共的时间是$35$分钟（包括到达车里的$5$分钟）。然后就遇到了堵车，真正到达家里的街道是$6:40$，三分钟后到家了。
+State | Elapsed Time| Predicted Time to Go | Predicted Total Time
+--|--|--|--
+leaveing office| 0 | 30 | 30
+reach car | 5 | 35 |40
+下高速| 20 | 15 | 35
+堵车| 30|10 | 40
+门口的街道|40|3 | 43
+到家|43|0|43
+
+rewards是每一个journey leg的elapsed times，这里我们研究的是evaluation问题，所以可以直接使用elapsed time，如果是control问题，要在elapsed times前加负号。state value是expected time。上面的第一列数值是reward，第二列是当前state的value估计值。
+如果使用$\alpha = 1$的TD和MC方法。对于MC方法，对于$S_t$的所有state，都有：
+\begin{align\*}
+V(S_t) &= V(S_t) + (G_t - V(S_t))\\\\
+& = G_t \\\\
+& = 43
+\end{align\*}
+对于TD方法，让$\gamma=1$，有：
+\begin{align\*}
+V(S_t) &= V_t(S_t) + \alpha (R\_{t+1} +  \gamma V\_t(S\_{t+1}) - V(S_t))\\\\
+&= R\_{t+1} + V\_t(S\_{t+1})
+\end{align\*}
+
+## TD Prediction的好处
+TD是bootstrap方法，相对于MC和DP来说，TD的好处有以下几个：
+1. 相对于DP，不需要environment, reward model以及next-state probability distribution。
+2. 相对于MC，TD是online，incremental的。MC需要等到一个episode结束，而TD并不需要
+3. TD在table-base case可以为证明收敛，而general linear function不一定收敛。
+
