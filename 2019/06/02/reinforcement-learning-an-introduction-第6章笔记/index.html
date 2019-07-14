@@ -100,19 +100,19 @@
 
 
 
-  <meta name="description" content="简介TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。 Temporal-Difference Learning本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP,T">
+  <meta name="description" content="简介 TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。 Temporal-Difference Learning 本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP">
 <meta name="keywords" content="强化学习">
 <meta property="og:type" content="article">
 <meta property="og:title" content="reinforcement learning an introduction 第6章笔记">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="简介TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。 Temporal-Difference Learning本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP,T">
+<meta property="og:description" content="简介 TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。 Temporal-Difference Learning 本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png">
-<meta property="og:updated_time" content="2019-07-11T15:05:16.895Z">
+<meta property="og:updated_time" content="2019-07-13T12:48:21.987Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="reinforcement learning an introduction 第6章笔记">
-<meta name="twitter:description" content="简介TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。 Temporal-Difference Learning本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP,T">
+<meta name="twitter:description" content="简介 TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。 Temporal-Difference Learning 本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP">
 <meta name="twitter:image" content="http://mxxhcm.github.io/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png">
 
 
@@ -390,7 +390,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-07-11 23:05:16" itemprop="dateModified" datetime="2019-07-11T23:05:16+08:00">2019-07-11</time>
+                <time title="修改时间：2019-07-13 20:48:21" itemprop="dateModified" datetime="2019-07-13T20:48:21+08:00">2019-07-13</time>
               
             
           </span>
@@ -451,25 +451,157 @@
       
 
       
-        <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。</p>
-<h2 id="Temporal-Difference-Learning"><a href="#Temporal-Difference-Learning" class="headerlink" title="Temporal-Difference Learning"></a>Temporal-Difference Learning</h2><p>本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP,TD,MC方法都是使用GPI方法解control问题，不同点在于prediction问题的解法。</p>
-<h2 id="TD-prediction"><a href="#TD-prediction" class="headerlink" title="TD prediction"></a>TD prediction</h2><p>TD和MC都是利用采样的experience中解prediction问题。给定policy $\pi$下的一个experience，TD和MC方法使用该experience中出现的non-terminal state $S_t$估计$v_{\pi}$的$V$。他们的不同之处在于MC需要等到整个experience的return知道以后，把这个return当做$V(S_t)$的target，every visit MC方法的更新规则如下：</p>
-<script type="math/tex; mode=display">V(S_t) = V(S_t) + \alpha \left[G_t - V(S_t)\right]\tag{1}</script><p>其中$G_t$是从时刻$t$到这个episode结束的return，$\alpha$是一个常数的步长，这个方法叫做$constant-\alpha$ MC。MC方法必须等到一个episode结束，才能进行更新，因为只有这个时候$G_t$才知道。为了更方便的训练，就有了TD方法。TD方法做的改进是使用$t+1$时刻state $V(S_{t+1})$的估计值和reward $R_{t+1}$的和作为target：</p>
-<script type="math/tex; mode=display">V(S_t) = V(S_t) + \alpha \left[R_{t+1}+\gamma V(S_{t+1}) - V(S_t)\right]\tag{2}</script><p>如果V在变的话，是不是应该是下面的公式？？</p>
-<script type="math/tex; mode=display">V_{t+1}(S_t) = V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]</script><p>即只要有了到$S_{t+1}$的transition并且接收到了reward $R_{t+1}$就可以进行上述更新。MC方法的target是$G_t$，而TD方法的target是$\gamma V(S_{t+1} + R_{t+1})$，这种TD方法叫做$TD-0$或者$one step TD$，它是$TD(\lambda)$和$n-step TD$的一种特殊情况。下面是$TD(0)$的完整算法：<br>算法1 Tabular TD(0) for $V$<br>输入： 待评估的policy $\pi$<br>算法参数：步长$\alpha \in (0,1]$<br>初始化： $V(s), \forall s\in S^{+}，V(terminal) = 0$<br><strong>Loop</strong> for each episode<br>$\qquad$初始化$S$<br>$\qquad A\leftarrow \pi(a|S)$<br>$\qquad$<strong>Loop</strong> for each step of episode<br>$\qquad\qquad$执行action $A$，得到$S’$和$R$<br>$\qquad\qquad V(S) = V(S) + \alpha \left[R + \gamma V(S’) - V(S)\right]$<br>$\qquad\qquad$$S\leftarrow S’$<br>$\qquad$<strong>Until</strong> $S$ 是terminal state</p>
-<p>$TD(0)$是bootstrap方法，因为它基于其他state的估计value进行更新。从第三章中我们知道：<br>\begin{align*}<br>v_{\pi}(s) &amp; = \mathbb{E}_{\pi}\left[G_t\right]\tag{3}\\\\<br>&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}| S_t = s\right]\tag{4}\\\\<br>&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t = s\right]\tag{5}\\\\<br>\end{align*}<br>MC使用式子$(3)$的estimate作为target，而DP使用式子$(5)$的estimate作为target。MC方法用一个sample的return代替式子$(3)$中真实的未知expected return $G_t$；DP是用$V(S_{t+1})$作为$v_{\pi}(S_{t+1})$的一个估计，因为$v_{\pi}(S_{t+1})$的真实值是不知道的。TD结合了MC的采样以及DP的bootstrap，它对式子$(4)$的tranisition进行sample，同时使用$v_{\pi}$的估计值$V$进行计算。<br><img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png" alt="backup_TD"><br>TD的backup图如图所示。TD和MC updates被称为sample updates，因为这两个算法的更新都牵涉到采样一个sample successor state，使用这个state的value和它后继的这条路上的reward计算一个backed-up value，然后根据这个值更新该state的value。sample updates和DP之类的expected updates的不同在于，sample updates使用一个sample successor进行更新，expected updates使用所有可能的successors distribution进行更新。<br>$R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$可以看成一种error，衡量了$S_t$当前的estimated value $V(S_t)$和一个更好的estimated value之间的差异$R_{t+1} +\gamma V(S_{t+1})$，我们把它叫做$TD-error$，用$\delta_t$表示。$\delta_t$是$t$时刻的$TD-error$，在$t+1$时刻可用，用公式表示是：</p>
-<script type="math/tex; mode=display">\delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) \tag{6}</script><p>如果$V$在一个episode中改变的话，那么上述公式是不是应该写成：</p>
-<script type="math/tex; mode=display">\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)</script><p>应该在$t$时刻，计算的TD error是用来更新$t+1$时刻的value的。如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。<br>\begin{align*}<br>G_t - V(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V(S_t) + \gamma V(S_{t+1}) - \gamma V(S_{t+1})\\\\<br>&amp; = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) + \gamma G_{t+1} - \gamma V(S_{t+1})\\\\<br>&amp; = \delta_t + \gamma G_{t+1} - \gamma V(S_{t+1})\\\\<br>&amp; = \delta_t + \gamma(G_{t+1} - V(S_{t+1}))\\\\<br>&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2(G_{t+2} - V(S_{t+2}))\\\\<br>&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(G_T-V(S_T))\\\\<br>&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(0-0)\\\\<br>&amp; = \sum_{k=t}^{T-1} \gamma^{k-t}\delta_k \tag{7}\\\\<br>\end{align*}<br>如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。</p>
-<script type="math/tex; mode=display">\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)</script><p>\begin{align*}<br>V_{t+1}(S_t) &amp;= V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]\\\\<br>&amp;= V_t(S_t) + \alpha \delta_t<br>\end{align*}</p>
-<p>\begin{align*}<br>G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t}) - \gamma V_{t+1}(S_{t})\\\\<br>&amp; = R_{t+1} + \gamma V_{t+1}(S_{t}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\\\<br>&amp; = R_{t+1} + \gamma (V_t(S_t) + \alpha \delta_t) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\\\<br>&amp; = R_{t+1} + \gamma V_t(S_t) - V_t(S_t) + \gamma \alpha \delta_t + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\\\<br>\end{align*}<br>然而上面是错误的，因为$\delta_t$需要的是$V_t(S_{t+1})$<br>\begin{align*}<br>G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t+1}) - \gamma V_{t+1}(S_{t+1})\\\\<br>&amp; = R_{t+1} + \gamma V_{t+1}(S_{t+1}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t+1})\\\\<br>\end{align*}<br>\begin{align*}<br>\delta_t &amp;= R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\\\\<br>\delta_{t+1} &amp;= R_{t+2} + \gamma V_{t+1}(S_{t+2}) - V_{t+1}(S_{t+1})\\\\<br>\delta_{t+2} &amp;= R_{t+3} + \gamma V_{t+2}(S_{t+3}) - V_{t+2}(S_{t+2})\\\\<br>\delta_{t+3} &amp;= R_{t+4} + \gamma V_{t+3}(S_{t+4}) - V_{t+3}(S_{t+3})\\\\<br>\end{align*}</p>
-<p>\begin{align*}<br>&amp;\delta_t+\delta_{t+1}+\delta_{t+2}+\delta_{t+3}\\\ <br>= &amp;R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\\\\<br>+&amp;R_{t+2} + \gamma V_{t+1}(S_{t+2}) - V_{t+1}(S_{t+1})\\\\<br>+&amp;R_{t+3} + \gamma V_{t+2}(S_{t+3}) - V_{t+2}(S_{t+2})\\\\<br>+&amp;R_{t+4} + \gamma V_{t+3}(S_{t+4}) - V_{t+3}(S_{t+3})\\\\<br>\end{align*}<br>OK。。。还是没有算出来。。<br>TD的一个例子。每天下班的时候，你会估计需要多久能到家。你回家的事件和星期，天气等相关。在周五的晚上6点，下班之后，你估计需要30分钟到家。到车旁边是$6:05$，而且天快下雨了。下雨的时候会有些堵车，所以估计从现在开始大概还需要$35$分钟才能到家。十五分钟后，下了高速，这个时候你估计总共的时间是$35$分钟（包括到达车里的$5$分钟）。然后就遇到了堵车，真正到达家里的街道是$6:40$，三分钟后到家了。<br>State | Elapsed Time| Predicted Time to Go | Predicted Total Time<br>—|—|—|—<br>leaveing office| 0 | 30 | 30<br>reach car | 5 | 35 |40<br>下高速| 20 | 15 | 35<br>堵车| 30|10 | 40<br>门口的街道|40|3 | 43<br>到家|43|0|43</p>
-<p>rewards是每一个journey leg的elapsed times，这里我们研究的是evaluation问题，所以可以直接使用elapsed time，如果是control问题，要在elapsed times前加负号。state value是expected time。上面的第一列数值是reward，第二列是当前state的value估计值。<br>如果使用$\alpha = 1$的TD和MC方法。对于MC方法，对于$S_t$的所有state，都有：<br>\begin{align*}<br>V(S_t) &amp;= V(S_t) + (G_t - V(S_t))\\\\<br>&amp; = G_t \\\\<br>&amp; = 43<br>\end{align*}<br>对于TD方法，让$\gamma=1$，有：<br>\begin{align*}<br>V(S_t) &amp;= V_t(S_t) + \alpha (R_{t+1} +  \gamma V_t(S_{t+1}) - V(S_t))\\\\<br>&amp;= R_{t+1} + V_t(S_{t+1})<br>\end{align*}</p>
-<h2 id="TD-Prediction的好处"><a href="#TD-Prediction的好处" class="headerlink" title="TD Prediction的好处"></a>TD Prediction的好处</h2><p>TD是bootstrap方法，相对于MC和DP来说，TD的好处有以下几个：</p>
+        <h2 id="简介">简介</h2>
+<p>TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。</p>
+<h2 id="temporal-difference-learning">Temporal-Difference Learning</h2>
+<p>本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP,TD,MC方法都是使用GPI方法解control问题，不同点在于prediction问题的解法。</p>
+<h2 id="td-prediction">TD prediction</h2>
+<p>TD和MC都是利用采样的experience中解prediction问题。给定policy $\pi$下的一个experience，TD和MC方法使用该experience中出现的non-terminal state $S_t$估计$v_{\pi}$的$V$。他们的不同之处在于MC需要等到整个experience的return知道以后，把这个return当做$V(S_t)$的target，every visit MC方法的更新规则如下：<br>
+$$V(S_t) = V(S_t) + \alpha \left[G_t - V(S_t)\right]\tag{1}$$<br>
+其中$G_t$是从时刻$t$到这个episode结束的return，$\alpha$是一个常数的步长，这个方法叫做$constant-\alpha$ MC。MC方法必须等到一个episode结束，才能进行更新，因为只有这个时候$G_t$才知道。为了更方便的训练，就有了TD方法。TD方法做的改进是使用$t+1$时刻state $V(S_{t+1})$的估计值和reward $R_{t+1}$的和作为target：<br>
+$$V(S_t) = V(S_t) + \alpha \left[R_{t+1}+\gamma V(S_{t+1}) - V(S_t)\right]\tag{2}$$<br>
+如果V在变的话，是不是应该是下面的公式？？<br>
+$$V_{t+1}(S_t) = V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]$$<br>
+即只要有了到$S_{t+1}$的transition并且接收到了reward $R_{t+1}$就可以进行上述更新。MC方法的target是$G_t$，而TD方法的target是$\gamma V(S_{t+1} + R_{t+1})$，这种TD方法叫做$TD-0$或者$one\ step\ TD$，它是$TD(\lambda)$和$n-step\ TD$的一种特殊情况。</p>
+<h3 id="算法">算法</h3>
+<p>下面是$TD(0)$的完整算法：<br>
+算法1 Tabular TD(0) for $V$<br>
+输入： 待评估的policy $\pi$<br>
+算法参数：步长$\alpha \in (0,1]$<br>
+初始化： $V(s), \forall s\in S^{+}，V(terminal) = 0$<br>
+<strong>Loop</strong> for each episode<br>
+$\qquad$初始化$S$<br>
+$\qquad A\leftarrow \pi(a|S)$<br>
+$\qquad$<strong>Loop</strong> for each step of episode<br>
+$\qquad\qquad$执行action $A$，得到$S’$和$R$<br>
+$\qquad\qquad V(S) = V(S) + \alpha \left[R + \gamma V(S’) - V(S)\right]$<br>
+$\qquad\qquad$$S\leftarrow S’$<br>
+$\qquad$<strong>Until</strong> $S$ 是terminal state</p>
+<p>$TD(0)$是bootstrap方法，因为它基于其他state的估计value进行更新。从第三章中我们知道：<br>
+\begin{align*}<br>
+v_{\pi}(s) &amp; = \mathbb{E}_{\pi}\left[G_t\right]\tag{3}\\<br>
+&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}| S_t = s\right]\tag{4}\\<br>
+&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t = s\right]\tag{5}\\<br>
+\end{align*}<br>
+MC使用式子$(3)$的estimate作为target，而DP使用式子$(5)$的estimate作为target。MC方法用一个sample的return代替式子$(3)$中真实的未知expected return $G_t$；DP是用$V(S_{t+1})$作为$v_{\pi}(S_{t+1})$的一个估计，因为$v_{\pi}(S_{t+1})$的真实值是不知道的。TD结合了MC的采样以及DP的bootstrap，它对式子$(4)$的tranisition进行sample，同时使用$v_{\pi}$的估计值$V$进行计算。<br>
+<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png" alt="backup_TD"><br>
+TD的backup图如图所示。TD和MC updates被称为sample updates，因为这两个算法的更新都牵涉到采样一个sample successor state，使用这个state的value和它后继的这条路上的reward计算一个backed-up value，然后根据这个值更新该state的value。sample updates和DP之类的expected updates的不同在于，sample updates使用一个sample successor进行更新，expected updates使用所有可能的successors distribution进行更新。<br>
+$R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$可以看成一种error，衡量了$S_t$当前的estimated value $V(S_t)$和一个更好的estimated value之间的差异$R_{t+1} +\gamma V(S_{t+1})$，我们把它叫做$TD-error$，用$\delta_t$表示。$\delta_t$是$t$时刻的$TD-error$，在$t+1$时刻可用，用公式表示是：<br>
+$$\delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) \tag{6}$$<br>
+如果$V$在一个episode中改变的话，那么上述公式是不是应该写成：<br>
+$$\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)$$<br>
+应该在$t$时刻，计算的TD error是用来更新$t+1$时刻的value的。如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。<br>
+\begin{align*}<br>
+G_t - V(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V(S_t) + \gamma V(S_{t+1}) - \gamma V(S_{t+1})\\<br>
+&amp; = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
+&amp; = \delta_t + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
+&amp; = \delta_t + \gamma(G_{t+1} - V(S_{t+1}))\\<br>
+&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2(G_{t+2} - V(S_{t+2}))\\<br>
+&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(G_T-V(S_T))\\<br>
+&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(0-0)\\<br>
+&amp; = \sum_{k=t}^{T-1} \gamma^{k-t}\delta_k \tag{7}\\<br>
+\end{align*}<br>
+如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。<br>
+$$\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)$$<br>
+\begin{align*}<br>
+V_{t+1}(S_t) &amp;= V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]\\<br>
+&amp;= V_t(S_t) + \alpha \delta_t<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t}) - \gamma V_{t+1}(S_{t})\\<br>
+&amp; = R_{t+1} + \gamma V_{t+1}(S_{t}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
+&amp; = R_{t+1} + \gamma (V_t(S_t) + \alpha \delta_t) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
+&amp; = R_{t+1} + \gamma V_t(S_t) - V_t(S_t) + \gamma \alpha \delta_t + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
+\end{align*}<br>
+然而上面是错误的，因为$\delta_t$需要的是$V_t(S_{t+1})$<br>
+\begin{align*}<br>
+G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t+1}) - \gamma V_{t+1}(S_{t+1})\\<br>
+&amp; = R_{t+1} + \gamma V_{t+1}(S_{t+1}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t+1})\\<br>
+\end{align*}<br>
+\begin{align*}<br>
+\delta_t &amp;= R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\\<br>
+\delta_{t+1} &amp;= R_{t+2} + \gamma V_{t+1}(S_{t+2}) - V_{t+1}(S_{t+1})\\<br>
+\delta_{t+2} &amp;= R_{t+3} + \gamma V_{t+2}(S_{t+3}) - V_{t+2}(S_{t+2})\\<br>
+\delta_{t+3} &amp;= R_{t+4} + \gamma V_{t+3}(S_{t+4}) - V_{t+3}(S_{t+3})\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+&amp;\delta_t+\delta_{t+1}+\delta_{t+2}+\delta_{t+3}\\<br>
+= &amp;R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\\<br>
++&amp;R_{t+2} + \gamma V_{t+1}(S_{t+2}) - V_{t+1}(S_{t+1})\\<br>
++&amp;R_{t+3} + \gamma V_{t+2}(S_{t+3}) - V_{t+2}(S_{t+2})\\<br>
++&amp;R_{t+4} + \gamma V_{t+3}(S_{t+4}) - V_{t+3}(S_{t+3})\\<br>
+\end{align*}<br>
+OK。。。还是没有算出来。。</p>
+<h3 id="td例子">TD例子</h3>
+<p>TD的一个例子。每天下班的时候，你会估计需要多久能到家。你回家的事件和星期，天气等相关。在周五的晚上6点，下班之后，你估计需要30分钟到家。到车旁边是$6:05$，而且天快下雨了。下雨的时候会有些堵车，所以估计从现在开始大概还需要$35$分钟才能到家。十五分钟后，下了高速，这个时候你估计总共的时间是$35$分钟（包括到达车里的$5$分钟）。然后就遇到了堵车，真正到达家里的街道是$6:40$，三分钟后到家了。</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Elapsed Time</th>
+<th>Predicted Time to Go</th>
+<th>Predicted Total Time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>leaveing office</td>
+<td>0</td>
+<td>30</td>
+<td>30</td>
+</tr>
+<tr>
+<td>reach car</td>
+<td>5</td>
+<td>35</td>
+<td>40</td>
+</tr>
+<tr>
+<td>下高速</td>
+<td>20</td>
+<td>15</td>
+<td>35</td>
+</tr>
+<tr>
+<td>堵车</td>
+<td>30</td>
+<td>10</td>
+<td>40</td>
+</tr>
+<tr>
+<td>门口的街道</td>
+<td>40</td>
+<td>3</td>
+<td>43</td>
+</tr>
+<tr>
+<td>到家</td>
+<td>43</td>
+<td>0</td>
+<td>43</td>
+</tr>
+</tbody>
+</table>
+<p>rewards是每一个journey leg的elapsed times，这里我们研究的是evaluation问题，所以可以直接使用elapsed time，如果是control问题，要在elapsed times前加负号。state value是expected time。上面的第一列数值是reward，第二列是当前state的value估计值。<br>
+如果使用$\alpha = 1$的TD和MC方法。对于MC方法，对于$S_t$的所有state，都有：<br>
+\begin{align*}<br>
+V(S_t) &amp;= V(S_t) + (G_t - V(S_t))\\<br>
+&amp; = G_t \\<br>
+&amp; = 43<br>
+\end{align*}<br>
+对于TD方法，让$\gamma=1$，有：<br>
+\begin{align*}<br>
+V(S_t) &amp;= V_t(S_t) + \alpha (R_{t+1} +  \gamma V_t(S_{t+1}) - V(S_t))\\<br>
+&amp;= R_{t+1} + V_t(S_{t+1})<br>
+\end{align*}</p>
+<h2 id="td-prediction的好处">TD Prediction的好处</h2>
+<p>TD是bootstrap方法，相对于MC和DP来说，TD的好处有以下几个：</p>
 <ol>
 <li>相对于DP，不需要environment, reward model以及next-state probability distribution。</li>
 <li>相对于MC，TD是online，incremental的。MC需要等到一个episode结束，而TD并不需要</li>
 <li>TD在table-base case可以为证明收敛，而general linear function不一定收敛。</li>
 </ol>
+<h2 id="none"></h2>
 
       
     </div>
@@ -597,7 +729,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">149</span>
+                    <span class="site-state-item-count">150</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -941,7 +1073,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">146</span>
+                      
+                    
+                    <span class="site-state-item-count">147</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1009,7 +1143,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Temporal-Difference-Learning"><span class="nav-number">2.</span> <span class="nav-text">Temporal-Difference Learning</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TD-prediction"><span class="nav-number">3.</span> <span class="nav-text">TD prediction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TD-Prediction的好处"><span class="nav-number">4.</span> <span class="nav-text">TD Prediction的好处</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#temporal-difference-learning"><span class="nav-number">2.</span> <span class="nav-text">Temporal-Difference Learning</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#td-prediction"><span class="nav-number">3.</span> <span class="nav-text">TD prediction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#算法"><span class="nav-number">3.1.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#td例子"><span class="nav-number">3.2.</span> <span class="nav-text">TD例子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#td-prediction的好处"><span class="nav-number">4.</span> <span class="nav-text">TD Prediction的好处</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#none"><span class="nav-number">5.</span> <span class="nav-text"></span></a></li></ol></div>
             
 
           </div>
