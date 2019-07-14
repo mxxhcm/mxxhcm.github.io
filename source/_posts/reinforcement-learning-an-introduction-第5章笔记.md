@@ -70,10 +70,10 @@ MC control使用的还是GPI的想法，估计当前policy的action value，基�
 $$\pi(s) = arg\ max_a q(s,a)\tag{1}$$
 第$4$章给出了证明，即policy improvement theorem。在每一轮improvement中，对所有的$s\in $，执行：
 \begin{align\*}
-q\_{\pi_k}(s,\pi\_{k+1}(s)) &=q\_{\pi_k}(s, argmax_a q\_{\pi_k}(s,a))\\
-&max_a q\_{\pi_k}(s,a)\\
-&\gt q\_{\pi_k}(s, \pi_k(s))\\
-&\gt v\_{\pi_k}(s)
+q\_{\pi_k}(s,\pi\_{k+1}(s)) &=q\_{\pi_k}(s, argmax_a q\_{\pi_k}(s,a))\\\\
+&max_a q\_{\pi_k}(s,a)\\\\
+&\gt q\_{\pi_k}(s, \pi_k(s))\\\\
+&\gt v\_{\pi_k}(s)\\\\
 \end{align\*}
 为了给出MC算法的收敛保证，上述算法需要满足两个假设，一个是eploring start，一个是policy evaluation需要无限个episode的experience。但是现实中，这两个条件是不可能满足的，我们需要替换掉这些条件，使得效果并不会有太大的影响。
 无限个episode的假设比较容易去掉，在DP方法中也有这些问题。在DP和MC任务中，都有两种方法去掉无限episode的限制，第一种方法是像iterative policy evaluation一样，规定一个误差的bound，在每一次evaluation迭代，逼近$q\_{\pi_k}$，通过足够多的迭代确保误差小于bound，可能需要很多个episode才能达到这个bound。第二种是进行不完全的policy evaluation，和DP一样，使用小粒度的policy evaluation，可以只执行iterative policy evaluation的一次迭代，也可以执行一次单个state的improvement和evaluation。对于MC方法来说，很自然的就想到基于一个episode进行evaluation和improvement。每经历一个episode，执行该episode内相应state的evaluation和improvement。
@@ -207,7 +207,7 @@ $$\mathbb{E}\_b\left[\left(\prod\_{t=0}\^{T-1}\frac{\pi(A_t|S_t)}{b(A_t|S_t)}G_0
 \end{align\*}
 
 ## Incremental Implementation
-Monte Carlo prediction可以增量式实现，用episode-by-episode biase。
+Monte Carlo prediction可以增量式实现，用episode-by-episode bias。
 在on-policy算法中，$V_t$的估计通过直接对多个episode的$G_t$进行平均得到。
 $$V_n(s) = \frac{G_1 + G_2 + \cdots + G\_{n-1}}{n - 1} \tag{9}$$
 其中$V_n(s)$表示在第$n$个epsisode估计的state $s$的value function，$n-1$表示采样得到的总共$n-$个episode，$G_1$表示每个episode中第一次遇到$s$时的Return。
@@ -221,7 +221,7 @@ nV\_{n+1}(s)&= G_1 + G_2 + \cdots + G\_{n - 1} + G_n\tag{分解V\_{n+1}(s)}\\\\
 &= (n-1)V_n(s) + G_n\\\\
 \frac{nV\_{n+1}(s)}{n}&= \frac{(n-1)V_n(s) + G_n}{n}\tag{上式两边同时除以n}\\\\
 V\_{n+1}(s)&= \frac{(n-1)V_n(s) + G_n}{n}\\\\
-& = v_n(s) +\frac{G_n-V_n}{n} \tag{10}
+& = V_n(s) +\frac{G_n-V_n(s)}{n} \tag{10}
 \end{align\*}
 这个更新规则的一般形式如下：
 $$NewEstimate \leftarrow OldEstimate + StepSize \left[Target - OldEstimate\right] \tag{11}$$
@@ -294,5 +294,5 @@ MC相对于DP的好处
 3. 很容易focus在一个我们需要的subset上
 4. 不进行bootstrap
 
-在MC control算法中，估计的是action-value fucntion，因为action value function能够在不知道模型变化的情况下改进policy。
+在MC control算法中，估计的是action-value fucntion，因为action value function能够在不知道model dynamic的情况下改进policy。
  

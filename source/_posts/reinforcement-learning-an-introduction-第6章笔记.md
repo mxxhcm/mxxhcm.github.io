@@ -20,7 +20,9 @@ $$V(S_t) = V(S_t) + \alpha \left[G_t - V(S_t)\right]\tag{1}$$
 $$V(S_t) = V(S_t) + \alpha \left[R_{t+1}+\gamma V(S_{t+1}) - V(S_t)\right]\tag{2}$$
 如果V在变的话，是不是应该是下面的公式？？
 $$V_{t+1}(S_t) = V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]$$
-即只要有了到$S\_{t+1}$的transition并且接收到了reward $R\_{t+1}$就可以进行上述更新。MC方法的target是$G_t$，而TD方法的target是$\gamma V(S\_{t+1} + R\_{t+1})$，这种TD方法叫做$TD-0$或者$one\ step\ TD$，它是$TD(\lambda)$和$n-step\ TD$的一种特殊情况。下面是$TD(0)$的完整算法：
+即只要有了到$S\_{t+1}$的transition并且接收到了reward $R\_{t+1}$就可以进行上述更新。MC方法的target是$G_t$，而TD方法的target是$\gamma V(S\_{t+1} + R\_{t+1})$，这种TD方法叫做$TD-0$或者$one\ step\ TD$，它是$TD(\lambda)$和$n-step\ TD$的一种特殊情况。
+### 算法
+下面是$TD(0)$的完整算法：
 算法1 Tabular TD(0) for $V$
 输入： 待评估的policy $\pi$
 算法参数：步长$\alpha \in (0,1\]$
@@ -91,6 +93,7 @@ G_t - V_t(S_t) & = R\_{t+1} + \gamma G\_{t+1} - V_t(S_t) + \gamma V\_{t+1}(S\_{t
 +&R\_{t+4} + \gamma V\_{t+3}(S\_{t+4}) - V\_{t+3}(S\_{t+3})\\\\
 \end{align\*}
 OK。。。还是没有算出来。。
+### TD例子
 TD的一个例子。每天下班的时候，你会估计需要多久能到家。你回家的事件和星期，天气等相关。在周五的晚上6点，下班之后，你估计需要30分钟到家。到车旁边是$6:05$，而且天快下雨了。下雨的时候会有些堵车，所以估计从现在开始大概还需要$35$分钟才能到家。十五分钟后，下了高速，这个时候你估计总共的时间是$35$分钟（包括到达车里的$5$分钟）。然后就遇到了堵车，真正到达家里的街道是$6:40$，三分钟后到家了。
 State | Elapsed Time| Predicted Time to Go | Predicted Total Time
 --|--|--|--
@@ -120,3 +123,4 @@ TD是bootstrap方法，相对于MC和DP来说，TD的好处有以下几个：
 2. 相对于MC，TD是online，incremental的。MC需要等到一个episode结束，而TD并不需要
 3. TD在table-base case可以为证明收敛，而general linear function不一定收敛。
 
+## 
