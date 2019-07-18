@@ -58,7 +58,7 @@ git remote -v  # 再次查看远程连接的方式
 
 ### git commit后撤销
 ~$:git log # 查看提交记录
-找到相应commit的id
+找到相应commit的id，这个commit id不是刚才提交记录的id，而是他之前的那一个
 commit xxxxxx
 ~$:git reset commit_id # 回退到git add之前，所有代码保留
 ~$:git reset --hard commit_id # 回退到上一次commit后，所有之后的代码都删掉
