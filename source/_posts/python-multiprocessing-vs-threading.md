@@ -196,14 +196,15 @@ print("Done")
 
 ## multiprocessing
 ### 概述
-方法| 并行|是否直接阻塞|目标函数|函数返回值
+方法| 并行|是否直接阻塞|目标函数|函数返回值|适用场景
 --|--|--|--|--
-mp.Pool.apply|否|是|只能有一个函数|函数返回值
-mp.Pool.apply_async|是|否，调用join()进行阻塞|可以相同可以不同|返回AysncResult对象
-mp.Pool.map|是|是|目标函数相同，参数不同|所有processes完成后直接返回有序结果
-mp.Pool.map_async|是|否，调用join()阻塞|不知道。。|返回AysncResult对象
-mp.Process|是|否|可以相同可以不同|无直接返回值
+mp.Pool.apply|否|是|只能有一个函数|函数返回值|
+mp.Pool.apply_async|是|否，调用join()进行阻塞|可以相同可以不同|返回AysncResult对象|
+mp.Pool.map|是|是|目标函数相同，参数不同|所有processes完成后直接返回有序结果|
+mp.Pool.map_async|是|否，调用join()阻塞|不知道。。|返回AysncResult对象|
+mp.Process|是|否|可以相同可以不同|无直接返回值|适用于线程数量比较小
 
+mp.Pool适用于线程数量远大于cpu数量，mp.Process适用于线程数量小于或者等于cpu数量的场景。
 mp.Pool.apply   适用于非并行，调用apply()直接阻塞，process执行结束后直接返回结果。
 mp.Pool.apply_async 适用于并行，异步执行，目标函数可以相同可以不同，返回AysncResult对象，因为AsyncResult对象是有序的，所以调用get得到的结果也是有序的。调用join()进行阻塞，调用get()方法获得返回结果，get()方法也是阻塞方法。
 mp.Pool.map     适用于并行，异步，目标函数相同，参数不同。调用map()函数直接阻塞，等待所有processes完成后直接返回有序结果。
