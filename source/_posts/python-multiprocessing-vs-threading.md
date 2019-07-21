@@ -282,6 +282,27 @@ Pool.apply_async处理不同的参数。
 Pool.apply()会直接返回结果。
 Pool.apply_async()会返回一个AsyncResult，然后使用get()方法获得结果。
 
+### 其他问题
+pool.map传递多个参数，或者重复参数，使用他的另一个版本，pool.starmap()
+如下示例，[代码地址]()
+``` python
+from multiprocessing import Pool
+import time
+import os
+from itertools import repeat
+
+
+def f(string, x):
+    print(string)
+    return x*x
+
+if __name__ == "__main__":
+    with Pool(processes=4) as pool:
+        number = 10
+        s = "hello"
+        print(pool.starmap(f, zip(repeat(s), range(number))))
+```
+
 ### 使用流程
 1. 创建Pool进程池，指定cpu核数
 pool = Pool(cpu_core) 
