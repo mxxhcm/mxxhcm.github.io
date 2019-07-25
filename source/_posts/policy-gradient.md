@@ -13,17 +13,22 @@ mathjax: true
 ---
 
 ## dpg
-论文名称：
+论文名称：Deterministic policy gradient algorithms
 论文地址：
 
 ### 摘要
-本文提出了deterministic policy gradient 算法。它有一个很好的形式：它是action value function的expected gradient，即deterministic policy gradient可以比stochastic policy gradient更efficiently。为了保证足够的exploration，作者引入了off-policy的actor-critic算法学习determinitic target policy。
-本文的contributions，dpg比spg要好，尤其是high dimensional tasks，此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，用可导的policy，但是没有办法加noist，这种情况下dpg更合适。
+本文提出了deterministic policy gradient 算法。Deterministic实际上是action value function的expected gradient，这让deterministic policy gradient比stochastic policy gradient要更efficiently。为了保证足够的exploration，作者引入了off-policy的actor-critic算法学习determinitic target policy。
+本文的contributions，dpg比spg要好，尤其是high dimensional tasks，此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noist，这种情况下dpg更合适。
 
+### stochastic policy gradient vs deterministic policy gradiet
+#### (sotchastic) policy gradient
+Policy gradient的basic idea是用参数化的policy distribution $\pi_\theta(a|s) = \mathbb{P}\left[a|s,\theta\right]$表示policy，这个policy $\pi$在state $s$处根据$\theta$表示的policy随机的选择action $a$。Policy gradient通常对policy 进行采样，然后调整policy的参数$\theta$朝着使cumulative reward更大的方向移动。
+#### deterministic policy gradient
+一般来说，用$a=\mu_\theta(s)$表示deterministic policy。很自然能想到使用和stochastic policy gradient相同的方法能不能得到应用于deterministic policy gradient，即朝着使得cumulative reward更大的方向更新policy的参数。之前的一些工作认为deterministic policy gradient是不存在的，这篇文章证明了deterministic policy gradient是存在的，而且在某些情况下，deterministic policy gradient可以看成stochastic policy gradient的特殊情况。
 
-### spg vs dpg
-spg中policy gradient在action和state spaces，而dpg的policy gradient仅仅在state space上进行。计算spg需要更多样本，尤其是action spaces有很多维度的情况下。
-作者使用dpg推导了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后朝估计的action value function更新policy。
+#### spg vs dpg
+spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy gradient是在action和state spaces上进行积分的，而dpg的policy gradient仅仅在state space上进行积分。因此，计算spg需要更多samples，尤其是action spaces维度很高的情况下。
+使用stochastic policy是为了能够充分的explore整个state和action space。而对于deterministic policy，为了确保能够持续的进行explore，就需要引入off-policy的算法了。behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用dpg推导了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后朝估计的action value function更新policy。
 
 ### return,vuale function和performance objective
 更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
