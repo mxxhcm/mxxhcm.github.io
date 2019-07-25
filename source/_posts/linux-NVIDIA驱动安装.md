@@ -65,9 +65,9 @@ sudo reboot
 从CUDA 7.5版开始，支持gcc 4.8，在Ubuntu 14.04和Fedora 21上支持4.9。
 从CUDA 8版本开始，Ubuntu 16.06和Fedora 23支持gcc 5.3。
 从CUDA 9版本开始，Ubuntu 16.04，Ubuntu 17.04和Fedora 25支持gcc 6。
-使用update-alternativess修改默认gcc版本
-~$:sudo update--install /usr/bin/g++ g++ /usr/bin/g++-6 50
-~$:sudo update--install /usr/bin/gcc gcc /usr/bin/gcc-6 50
+使用update-alternatives修改默认gcc版本
+~$:sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 50
+~$:sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50
 
 然后继续安装：
 ~$:sudo sh cuda\*.run
