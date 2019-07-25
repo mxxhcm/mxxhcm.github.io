@@ -292,6 +292,40 @@ AttributeError: 'list' object has no attribute 'value'
 ``` python
     s_ = sess.run(loss_summary, feed_dict={p_losses_ph: inputs1, q_losses_ph: inputs2})
 ```
+
+## 问题13- tf.get_default_session() always returns None type:
+
+### 问题描述
+调用tf.get_default_session()时，返回的是None
+
+### 报错
+``` txt
+    tf.get_default_session().run(y)
+AttributeError: 'NoneType' object has no attribute 'run'
+```
+
+### 问题原因
+只有在设定default session之后，才能使用tf.get_default_session()获得当前的默认session，在我们写代码的时候，一般会按照下面的方式写：
+``` python
+import tensorflow as tf
+
+with tf.Session() as sess:
+    some operations
+    ... 
+```
+这种情况下已经把tf.Session()生成的session当做了默认session，但是如果仅仅使用以下代码：
+``` python
+import tensorflow as tf
+
+sess =  tf.Session()
+sess.run(some operations)
+... 
+```
+是没有把tf.Session()当成默认session的，即只有在with block内，才会将这个session当做默认session。
+
+### 解决方案
+
+
  
 
 ## 参考文献
@@ -303,3 +337,4 @@ AttributeError: 'list' object has no attribute 'value'
 6.https://stackoverflow.com/questions/34156639/tensorflow-python-valueerror-setting-an-array-element-with-a-sequence-in-t
 7.https://stackoverflow.com/questions/33679382/how-do-i-get-the-current-value-of-a-variable
 8.https://blog.csdn.net/michael__corleone/article/details/79007425
+9.https://stackoverflow.com/questions/47721792/tensorflow-tf-get-default-session-after-sess-tf-session-is-none

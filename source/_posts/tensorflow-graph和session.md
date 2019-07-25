@@ -7,6 +7,11 @@ tags:
 categories: tensorflow
 ---
 
+## tf.Graph和tf.Session
+Graph和Session之间的区别和联系。
+- Graph定义了如何进行计算，但是并没有进行计算，graph不会hold任何值，它仅仅定义code中指定的各种operation
+- Session用来执行graph或者graph的一部分。它会分配资源（一个机器或者多个机器），并且会保存中间结果和variables的值。在不同session的执行过程也是分开的。
+
 ## tf.Graph
 tf.Graph包含两类信息：
 - Node和Edge，用来表示各个op如何进行组合。
@@ -185,12 +190,33 @@ with tf.Session() as sess:
   # Print the timings of each operation that executed.
   print(metadata.step_stats)
 ```
+
+## 不同session的结果
+[代码地址]()
+```
+import tensorflow as tf
+
+graph = tf.Graph()
+
+with graph.as_default():
+    variable = tf.Variable(10, name="foo")
+    initialize = tf.global_variables_initializer()
+    assign = variable.assign(12)
+
+with tf.Session(graph=graph) as sess:
+    sess.run(initialize)
+    sess.run(assign)
+    print(sess.run(variable))
+
+with tf.Session(graph=graph) as sess:
+    print(sess.run(variable))
+```
+
 ## 访问当前sess的图。
 ``` python
 sess = tf.Session()
 sess.graph
 ```
-
 
 ## 可视化图
 使用图可视化工具。最简单的方法是传递tf.Graph到tf.summary.FileWriter中。如下示例：
@@ -250,3 +276,4 @@ assert sess_2.graph is g_2
 ## 参考文献
 1.https://www.tensorflow.org/guide/graphs?hl=zh_cn
 2.https://blog.csdn.net/shenxiaolu1984/article/details/52815641
+3.https://danijar.com/what-is-a-tensorflow-session/
