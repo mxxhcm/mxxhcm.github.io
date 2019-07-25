@@ -136,17 +136,33 @@ $$\frac{}{} = \sum_sd\^{\pi}(s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\
 #### (sotchastic) policy gradient
 Policy gradient的basic idea是用参数化的policy distribution $\pi_\theta(a|s) = \mathbb{P}\left[a|s,\theta\right]$表示policy，这个policy $\pi$在state $s$处根据$\theta$表示的policy随机的选择action $a$。Policy gradient通常对policy 进行采样，然后调整policy的参数$\theta$朝着使cumulative reward更大的方向移动。
 #### deterministic policy gradient
-一般来说，用$a=\mu_\theta(s)$表示deterministic policy。很自然能想到使用和stochastic policy gradient相同的方法能不能得到应用于deterministic policy gradient，即朝着使得cumulative reward更大的方向更新policy的参数。之前的一些工作认为deterministic policy gradient是不存在的，这篇文章证明了deterministic policy gradient是存在的，而且在某些情况下，deterministic policy gradient可以看成stochastic policy gradient的特殊情况。
+一般来说，用$a=\mu_\theta(s)$表示deterministic policy。很自然能想到使用和stochastic policy gradient相同的方法能不能得到应用于deterministic policy gradient，即朝着使得cumulative reward更大的方向更新policy的参数。之前的一些工作认为deterministic policy gradient是不存在的，这篇文章证明了deterministic policy gradient是存在的，并且有一种非常简单的形式，可以从action value function的梯度中获得。而且在某些情况下，deterministic policy gradient可以看成stochastic policy gradient的特殊情况。
 
 #### spg vs dpg
 spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy gradient是在action和state spaces上进行积分的，而dpg的policy gradient仅仅在state space上进行积分。因此，计算spg需要更多samples，尤其是action spaces维度很高的情况下。
-使用stochastic policy是为了能够充分的explore整个state和action space。而对于deterministic policy，为了确保能够持续的进行explore，就需要引入off-policy的算法了。behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用dpg推导了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后朝估计的action value function更新policy。
+使用stochastic polic目的y是充分的explore整个state和action space。而在使用deterministic policy时，为了确保能够持续的进行explore，就需要使用off-policy的算法了，behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用deterministic policy gradient推导出了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后利用这个function的梯度更新policy的参数，同时为了确保policy gradient没有bias，使用而来compatible function。
 
-### return,vuale function和performance objective
+### 一些terms，return,vuale function和performance objective
 更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
-return的定义是$r_t^{\gamma} = \sum_{i=t}^{\infty}\gamma^{i-t}r(s_i, a_i)$。
-state value function的定义是某个state处return的期望：$V^{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s;\pi\right]$，
-action value function的定义是在某个state采取某个action后return的期望：$V^{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s,A_1=a;\pi\right]$，
+- state space 
+所有state的可能取值，$S$
+- action space 
+所有action的可能取值，$A$
+- initial state distribution
+初始state服从的分布，$p_1(s_1)$
+- stationary transition dynamic distribution
+稳定的状态转换函数，$p(s_{t+1}|s_t,a_t)$
+- reward function
+$S\times A\rightarrow \mathbb{R}$，
+- policy
+用来选择action，stochastic policy表示为：$\pi_\theta: S\rightarrow P(A)$，其中$P(A)$是选择$A$中每个action的概率，$\theta$是policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取所有可能的action $a_t$的概率。
+- return
+return的定义是$r_t^{\gamma} = \sum_{i=t}^{\infty}\gamma^{i-t}r(s_i, a_i)$，表示从$t$时刻开始的累积折扣奖励。
+- value function
+value function的定义是所有的累积折扣奖励，即从$t=1$一直到最后的折扣奖励。
+state value function的定义是state $S_1=s,s\sim p_1$处return的期望：$V^{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s;\pi\right]$，
+action value function的定义是在state $S_1=s,s\sim p_1$采取某个action后return的期望：$V^{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s,A_1=a;\pi\right]$，
+- performance objective
 agents的目标就是找到一个最大化初始状态return的policy：$J(\pi)=\mathbb{E}\left[r_1^{\gamma}|\pi\right]$
 用$p(s\rightarrow s',t,\pi)$表示从$s$经过$t$个timesteps到$s'$的概率密度。用$\rho^{\pi}(s'):=\int_S \sum_{t=1}^{\infty}\gamma^{t-1}p_1(s)p(s\rightarrow s', t,\pi)ds$表示经过$t$个timesteps能够到达$s'$的所有state $s$的概率。从而将performance objective表示成期望：
 \begin{align\*}
@@ -154,6 +170,7 @@ J(\pi_{\theta}) &= \int_S \rho^{\pi}(s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\\\
 &= \mathbb{E}\_{s\sim \rho^{\pi}, a\sim \pi_{\theta}}\left[r(s,a)\right]\\\\ \tag{1}
 \end{align\*}
 其中$p_1(s)$是初始状态$s$服从的概率分布，$\mathbb{E}_{s\sim \rho^\pi}\left[\cdot\right]$表示在状态分布$\rho(s)$上的期望。注意，这里和reinforcement learing an introduction第13章中有一些不同。这里是对所有的state的return，而introdution中求得是初始状态的value期望。
+
 ### stochastic policy gradient theorem
 对$J(\pi_{\theta})$对$\theta$求导，得到：
 \begin{align\*}
