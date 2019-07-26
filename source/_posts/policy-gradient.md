@@ -42,7 +42,7 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 
 #### Average Reward(平均奖励)
 平均奖励是，策略根据每一步的长期期望奖励$\rho(\pi)$进行排名
-$$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\{r_1+r_2+\cdots+r_n|\pi\} = \sum_s d\{\pi}(s) \sum_a\pi(s,a)R_sa.$$
+$$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\left{r_1+r_2+\cdots+r_n|\pi\right} = \sum_s d^{\pi}(s) \sum_a\pi(s,a)R_sa.$$
 其中$d\{\pi}(s) = lim_{t\rightarrow \infty} Pr\{s_t=s|s_0,\pi\}$是我们假设的策略$\pi$下的固定分布，对于所有的策略都是独立于$s_0$的。这里，我想了一天都没有想明白，为什么？？？第一个等号，我可以理解，这里$r_n$表示的是在时间步$n$的immediate reward，所以第一个等号表示的是在策略$\pi$下$n$个时间步的imediate reward平均值的期望。
 而第二个等号中，$d{\pi}(s)$是从初始状态$s_0$经过$t$步之后所有state $s$可能取值的概率，第一个求和号对$s$求和，就相当于一个离散积分，求的是$s$的期望；然后对$a$的求和，也相当于一个离散积分，求的是关于$a$的期望，所以第二个等式后面求的其实就是$R(s,a)$的期望。
 state-action value定义为：
