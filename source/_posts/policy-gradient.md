@@ -43,7 +43,8 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 #### Average Reward(平均奖励)
 平均奖励是，策略根据每一步的长期期望奖励$\rho(\pi)$进行排名
 $$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\{r_1+r_2+\cdots+r_n|\pi\} = \sum_s d\{\pi}(s) \sum_a\pi(s,a)R_sa.$$
-其中$d\{\pi}(s) = lim_{t\rightarrow \infty} Pr\{s_t=s|s_0,\pi\}$是我们假设的策略$\pi$下的固定分布，对于所有的策略都是独立于$s_0$的。这里，我想了一天都没有想明白，为什么？？？第一个等号，我可以理解，这里$r_n$表示的是在时间步$n$的immediate reward，所以第一个等号表示的是在策略$\pi$下$n$个时间步的imediate reward平均值的期望。而第二个等号$d{\pi}(s)$到底是什么意思，是从初始状态$s_0$到$t$时刻状态$s$的概率吗，好像就是这样子的，但是为什么可以这么算呢？第一个求和号对$s$求和，相当于算的是所有从$s_0$到$t\rightarrow\infty$的$s$的所有取值，然后再对每一个$s$，计算所有可能采取的action。
+其中$d\{\pi}(s) = lim_{t\rightarrow \infty} Pr\{s_t=s|s_0,\pi\}$是我们假设的策略$\pi$下的固定分布，对于所有的策略都是独立于$s_0$的。这里，我想了一天都没有想明白，为什么？？？第一个等号，我可以理解，这里$r_n$表示的是在时间步$n$的immediate reward，所以第一个等号表示的是在策略$\pi$下$n$个时间步的imediate reward平均值的期望。
+而第二个等号中，$d{\pi}(s)$是从初始状态$s_0$经过$t$步之后所有state $s$可能取值的概率，第一个求和号对$s$求和，就相当于一个离散积分，求的是$s$的期望；然后对$a$的求和，也相当于一个离散积分，求的是关于$a$的期望，所以第二个等式后面求的其实就是$R(s,a)$的期望。
 state-action value定义为：
 $$Q\{\pi}(s,a) = \sum_{t=1}{\infty}\mathbb{E}\{r_t - \rho(\pi)|s_0=s,a_0=a,\pi\}, \forall s\in S, a\in A.$$
 
@@ -51,8 +52,9 @@ $$Q\{\pi}(s,a) = \sum_{t=1}{\infty}\mathbb{E}\{r_t - \rho(\pi)|s_0=s,a_0=a,\pi\}
 这种情况是指定一个开始状态$s_0$，然后我们只关心从这个状态得到的长期reward。
 $$\rho(\pi) = \mathbb{E}\{\sum_{t=1}\{\infty}\gamma{t-1}|s_0,\pi\},$$
 $$Q\{\pi}(s,a) = \mathbb{E}\{\sum_{k=1}{\infty}r_{t+k}|s_t=s,a_t=a,\pi\}.$$
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d\{\pi}(s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重：
-$d\{\pi}(s) = \sum_{t=1}{\infty}\gammatPr\{s_t = s|s_0,\pi\}.$
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
+$d^{\pi}(s) = \sum_{t=1}{\infty}\gamma^t Pr\{s_t = s|s_0,\pi}.$
+这里的$d^{\pi}$是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。
 
 #### Policy Gradient Theorem
 对于任何MDP，不论是平均奖励还是指定初始状态的形式，都有：
