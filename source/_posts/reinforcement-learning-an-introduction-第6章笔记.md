@@ -156,7 +156,7 @@ $\qquad$ until $S$是terminal
 
 ### Q-learning
 $$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma max Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]\tag{9}$$
-这一节介绍的是off-policy的TD contrl算法，Q-learning。对于off-policy算法来说，behaviour policy用来选择action，target policy是要用来评估的算法。在Q-learning算法中，直接学习的就是target policy的optimal action value function $q_{\*}$，和behaviour policy无关。完整的Q-learning算法如下：
+这一节介绍的是off-policy的TD contrl算法，Q-learning。对于off-policy算法来说，behaviour policy用来选择action，target policy是要评估的算法。在Q-learning算法中，直接学习的就是target policy的optimal action value function $q_{\*}$，和behaviour policy无关。完整的Q-learning算法如下：
 Q-learning算法(off-policy control) 估计$\pi \approx \pi_{\*}$
 对于所有$s\in S^{+}, a\in A(s)$，随机初始化$Q(s,a)$，$Q(terminal, \cdot) = 0$
 Loop for each episode
