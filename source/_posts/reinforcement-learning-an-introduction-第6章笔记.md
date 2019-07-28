@@ -193,18 +193,18 @@ on-policy的sarsa，policy一直在变（$\epsilon$在变），但是behaviour p
 
 ### Maximizaiton Bias出现的直观解释
 那么为什么会出现这种问题呢？
-用X1和X2表示reward的两组样本数据。如下所示：
+用$X1$和$X2$表示reward的两组样本数据。如下所示：
 ![maximization_bias](maximization_bias.png)
-在X1这组样本中，样本均值是$-0.43$，X2样本均值是$-0.36$。在增量式计算样本均值时，得到的最大样本均值的期望是$0.09$，而实际上计算出来的期望的最大值$\mathbb{E}(X)$是$-0.36$。要使用$\mathbb{E} \left[max (\mu)\right]$估计$max\ \mathbb{E}(X)$，显然它们的差距有点大，max($\mu$)是max E(X)的有偏估计。也就是说使用max Q(s',a')更新Q(s,a)时，Q(s,a)并没有朝着它的期望$-0.5$移动。估计这只是一个直观的解释，严格的证明可以从论文中找。
+在$X1$这组样本中，样本均值是$-0.43$，X2样本均值是$-0.36$。在增量式计算样本均值$\mu$时，得到的最大样本均值的期望是$0.09$，而实际上计算出来的期望的最大值$\mathbb{E}(X)$是$-0.36$。要使用$\mathbb{E} \left[max\ (\mu)\right]$估计$max\ \mathbb{E}(X)$，显然它们的差距有点大，$max(\mu)$是$max E(X)$的有偏估计。也就是说使用$max Q(s',a')$更新$Q(s,a)$时，$Q(s,a)$并没有朝着它的期望$-0.5$移动。估计这只是一个直观的解释，严格的证明可以从论文中找。
 
 ### 如何解决Maximization Bias问题
-那么怎么解决这个问题呢，就是同时学习两个Q函数$Q_1, Q_2$，这两个Q函数的地位是一样的，每次随机选择一个选择action，然后更新另一个。证明的话，Van Hasselt证明了$\mathbb{E}(Q2(s',a\*)\le max Q1(s',a\*)$，也就是说$Q1(s,a)$不再使用它自己的max value进行更新了。
-下面是Q-learning和Double Q-learning在训练过程中在A处选择left的统计：
+那么怎么解决这个问题呢，就是同时学习两个$Q$函数$Q_1, Q_2$，这两个$Q$函数的地位是一样的，每次随机选择一个选择action，然后更新另一个。证明的话，Van Hasselt证明了$\mathbb{E}(Q_2(s',a\*)\le max\ Q_1(s',a\*)$，也就是说$Q_1(s,a)$不再使用它自己的max value进行更新了。
+下面是$Q$-learning和Double $Q$-learning在训练过程中在A处选择left的统计：
 ![q_learning_vs_double_q_learning](q_learning_vs_double_q_learning.png)
-可以看出来，Double Q-learning要比Q-learning收敛的快和好。
+可以看出来，Double $Q$-learning要比$Q$-learning收敛的快和好。
 
 ## Afterstates
-之前介绍了state value function和action value function。这里介绍一个afterstate value function，afterstate value function就是在某个state采取了某个action之后再进行评估，一开始我想这步就是action value function。事实上不是的，action value function估计的是Q(s,a)，重点估计的是state和action，对于afterstate value来说，可能有很多个state和action都能到同一个next state，这个时候它们的作用是一样的，因为我们估计的是next state的value。
+之前介绍了state value function和action value function。这里介绍一个afterstate value function，afterstate value function就是在某个state采取了某个action之后再进行评估，一开始我想这步就是action value function。事实上不是的，action value function估计的是$Q(s,a)$，重点是state和action这些pair，对于afterstate value来说，可能有很多个state和action都能到同一个next state，这个时候它们的作用是一样的，因为我们估计的是next state的value。
 象棋就是一个这样的例子。。这里只是介绍一下，还有很多各种各样特殊的形式，它们可以用来解决各种各样的特殊问题。具体可以自己多了解一下。
 
 ## 总结
