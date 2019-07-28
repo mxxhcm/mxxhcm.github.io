@@ -120,7 +120,20 @@ V(S_t) &= V_t(S_t) + \alpha (R\_{t+1} +  \gamma V\_t(S\_{t+1}) - V(S_t))\\\\
 ## TD Prediction的好处
 TD是bootstrap方法，相对于MC和DP来说，TD的好处有以下几个：
 1. 相对于DP，不需要environment, reward model以及next-state probability distribution。
-2. 相对于MC，TD是online，incremental的。MC需要等到一个episode结束，而TD并不需要
+2. 相对于MC，TD是online，incremental的。MC需要等到一个episode结束，而TD只需要等一个时间步（本节介绍的TD0）。
 3. TD在table-base case可以为证明收敛，而general linear function不一定收敛。
 
-## 
+但是具体TD好还是MC好，目前还没有明确的数学上的理论证明。而实践上表明，TD往往要比constant $\alpha$ MC算法收敛的快。
+
+## TD(0)的优势
+如果我们只有很少的experience的话，比如有$10$个episodes，或者有$100$个timesteps。这种情况下，我们会重复的使用这些这些experience进行训练直到算法收敛。具体方法是，给定一个approximate value function $V$，在每一个只要不是terminal state的时间$t$处，计算MC和TD增量，最后使用所有增量之和只更新value function一次。举个例子好了，假如我们有三个episdoes，
+A,B,C
+B,A
+A,A
+更新的方法是，$V(A) = V(A) + \alpha(G_1 - V(A) + G_2 - V(A) + G_{31} - V(A) + G_{32} -V(A))$
+这种方法叫做batch updating，因为只有在一个batch完全处理完之后才进行更新，其实这个和DP挺像的，只不过DP直接利用的是environment dynamic，而我们使用的是样本。
+在batch updating中，TD(0)一定会收敛到一个与$\alpha$无关的结果，只要$\alpha$足够下即可，同理batch constant $\alpha$ MC算法同样条件下也会收敛到一个确定的结果，只不过和batch TD结果不同而已。Normal updating的方法并没有朝着整个batch increments的方法移动，但是大概方向差不多。其实就是一个把整个batch的所有experience的increment加起来一起更新，一个是每一个experience更新一次，就这么点区别。
+
+## 参考文献
+1.《reinforcement learning an introduction》第二版
+2.https://stats.stackexchange.com/a/297892
