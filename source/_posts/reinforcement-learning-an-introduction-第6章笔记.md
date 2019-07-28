@@ -168,10 +168,6 @@ $Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma max Q(S',A') - Q(S,A)\right]$
 $S\leftarrow S'$
 until S是terminal
 
-### Sarsa vs Q-learing
-on-policy的sarsa，policy一直在变（$\epsilon$在变），但是behaviour policy和target policy一直都是一样的。
-而off-policy的Q-learning，policy一直都不变（可能$\epsilon$会变，但是这个不是Q-learning的重点），behaviour policy保证exploration，target policy是greedy算法。为什么这个不需要importance sampling？？？
-
 ### Expected Sarsa
 Q-learning对所有next state-action pairs取了max操作。如果不是取max，而是取期望呢？
 \begin{align\*}
@@ -180,19 +176,23 @@ Q(S_t,A_T) & \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}_{\
 \end{align\*}
 其他的和Q-learning保持一致。给定next state $S_{t+1}$，算法在expectation上和sarsa移动的方向一样，所以被称为expected sarsa。这个算法可以是on-policy，也可以是off-policy的。比如，on-policy的话，policy使用$\epsilon$ greedy算法，off-policy的话，behaviour policy使用stochastic policy，而target policy使用greedy算法，这其实就是Q-learning算法了。所以，Expected Sarsa实际上是对Q-learning的一个归纳，同时又有对Sarsa的改进。
 
+### Sarsa vs Q-learing
+on-policy的sarsa，policy一直在变（$\epsilon$在变），但是behaviour policy和target policy一直都是一样的。
+而off-policy的Q-learning，policy一直都不变（可能$\epsilon$会变，但是这个不是Q-learning的重点），behaviour policy保证exploration，target policy是greedy算法。为什么这个不需要importance sampling？？？
+
 ## Maximization Bias和Double Learning
 目前介绍的所有control算法，都涉及到target polices的maximization操作。Q-learning中有greedy target policy，Sarsa的policy通常是$\epsilon$ greedy，也会牵扯到maximization。Max操作会引入一个问题，加入某一个state，它的许多action对应的$q(s,a)=0$，然后它的估计值$Q(s,a)$是不确定的，可能比$0$大，可能比$0$小，还可能就是$0$。如果使用max $Q(s,a)$的话，得到的值一定是大于等于$0$的，显然有一个positive bias，这就叫做maximization bias。
 给出如下的一个例子：
-![]()
+![example_6_7](example_6_7.png)
 这个MDP有四个state，A,B,C,D，C和D是terminal state，A总是start state，并且有left和right两个action，right action转换到C，reward是0,left action转换到B，reward是$0$，B有很多个actions，都是转换到$D$，但是rewards是不同，reward服从一个均值为$-0.5$，方差为$1.0$的正态分布。所以reward的期望是负的，$-0.5$。这就意味着在大量实验中，reward的均值往往是小于$0$的。
 基于这个假设，在A处总是选择left action是很蠢的，但是因为其中有一些reward是positive，如果使用max操作的话，整个policy会倾向于选择left action，这就造成了在一些episodes中，reward是正的，但是如果在long run中，通常会有一个负的reward。
 那么为什么会出现这种问题呢？
 用X1和X2表示reward的两组样本数据。如下所示：
-![]()
+![maximization_bias](maximization_bias.png)
 在X1这组样本中，样本均值是$-0.43$，X2样本均值是$-0.36$。在增量式计算样本均值时，得到的最大样本均值的期望是$0.09$，而实际上计算出来的期望的最大值$\mathbb{E}(X)$是$-0.36$。要使用$\mathbb{E} \left[max (\mu)\right]$估计$max\ \mathbb{E}(X)$，显然它们的差距有点大，max($\mu$)是max E(X)的有偏估计。也就是说使用max Q(s',a')更新Q(s,a)时，Q(s,a)并没有朝着它的期望$-0.5$移动。估计这只是一个直观的解释，严格的证明可以从论文中找。
 那么怎么解决这个问题呢，就是同时学习两个Q函数$Q_1, Q_2$，这两个Q函数的地位是一样的，每次随机选择一个选择action，然后更新另一个。证明的话，Van Hasselt证明了$\mathbb{E}(Q2(s',a\*)\le max Q1(s',a\*)$，也就是说$Q1(s,a)$不再使用它自己的max value进行更新了。
 下面是Q-learning和Double Q-learning在训练过程中在A处选择left的统计：
-![]()
+![q_learning_vs_double_q_learning](q_learning_vs_double_q_learning.png)
 
 ## Afterstates
 之前介绍了state value function和action value function。这里介绍一个afterstate value function，afterstate value function就是在某个state采取了某个action之后再进行评估，一开始我想这步就是action value function。事实上不是的，action value function估计的是Q(s,a)，重点估计的是state和action，对于afterstate value来说，可能有很多个state和action都能到同一个next state，这个时候它们的作用是一样的，因为我们估计的是next state的value。
