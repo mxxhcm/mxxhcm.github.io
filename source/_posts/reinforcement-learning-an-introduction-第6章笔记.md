@@ -138,41 +138,41 @@ A,A
 ## TD具体算法介绍
 ### Sarsa
 Sarsa是一个on-policy的 TD control算法。按照GPI的思路来，先进行policy evaluation，在进行policy improvement。首先解prediction问题，按照以下action value的$TD(0)$公式估计当前policy $\pi$下，所有action和state的$q$值$q_{\pi}(s,a)$：
-$$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]$$
+$$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right] \tag{8}$$
 当$S_{t+1} = 0$时，$Q(S_{t+1}, A_{t+1})=0$，相应的backup diagram如下图所示。
 ![f](ff.png)
 第二步解control问题，在on-policy的算法中，不断的估计behaviour policy $\pi$的$q_{\pi}$，同时改变$\pi$朝着$q_{\pi}$更大的方向移动。Sarsa算法中，behaviour policy和target policy是一样的，在不断的改变。完整的算法如下：
 Sarsa算法(on-policy control) 估计$Q\approx q_*$
 对于所有$s\in S^{+}, a\in A(s)$，随机初始化$Q(s,a)$，$Q(terminal, \cdot) = 0$
 Loop for each episode
-获得初始状态$S$
-使用policy（如$\epsilon$-greedy算法）根据state $S$选择当前动作$A$
-Loop for each step of episode
-采取action，得到R和S'
-使用policy（和上面的policy一样）根据S'选择A'
-$Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma Q(S',A') - Q(S,A)\right]$
-$S\leftarrow S', A\leftarrow A'$
-until S是terminal
+$\qquad$ 获得初始状态$S$
+$\qquad$ 使用policy（如$\epsilon$-greedy算法）根据state $S$选择当前动作$A$
+$\qquad$ Loop for each step of episode
+$\qquad\qquad$ 采取action，得到R和S'
+$\qquad\qquad$ 使用policy（和上面的policy一样）根据S'选择A'
+$\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma Q(S',A') - Q(S,A)\right]$
+$\qquad\qquad S\leftarrow S', A\leftarrow A'$
+$\qquad$ until $S$是terminal
 
 ### Q-learning
-$$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma max Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]$$
+$$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma max Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]\tag{9}$$
 这一节介绍的是off-policy的TD contrl算法，Q-learning。对于off-policy算法来说，behaviour policy用来选择action，target policy是要用来评估的算法。在Q-learning算法中，直接学习的就是target policy的optimal action value function $q_{\*}$，和behaviour policy无关。完整的Q-learning算法如下：
 Q-learning算法(off-policy control) 估计$\pi \approx \pi_{\*}$
 对于所有$s\in S^{+}, a\in A(s)$，随机初始化$Q(s,a)$，$Q(terminal, \cdot) = 0$
 Loop for each episode
-获得初始状态$S$
-Loop for each step of episode
-使用policy（如$\epsilon$-greedy算法）根据state $S$选择当前动作$A$
-执行action $A$，得到$R$和$S'$
-$Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma max Q(S',A') - Q(S,A)\right]$
-$S\leftarrow S'$
-until S是terminal
+$\qquad$ 获得初始状态$S$
+$\qquad$ Loop for each step of episode
+$\qquad\qquad$ 使用policy（如$\epsilon$-greedy算法）根据state $S$选择当前动作$A$
+$\qquad\qquad$ 执行action $A$，得到$R$和$S'$
+$\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma max Q(S',A') - Q(S,A)\right]$
+$\qquad\qquad S\leftarrow S'$
+$\qquad$ until $S$是terminal
 
 ### Expected Sarsa
 Q-learning对所有next state-action pairs取了max操作。如果不是取max，而是取期望呢？
 \begin{align\*}
 Q(S_t,A_T) & \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}_{\pi}\left[ Q(S_{t+1}, A_{t+1})| S_{t+1} \right] -Q(S_t,A_t)\right]\\\\
-&\leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q -Q(S_t,A_t)\right]
+&\leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q -Q(S_t,A_t)\right]\tag{10}
 \end{align\*}
 其他的和Q-learning保持一致。给定next state $S_{t+1}$，算法在expectation上和sarsa移动的方向一样，所以被称为expected sarsa。这个算法可以是on-policy，也可以是off-policy的。比如，on-policy的话，policy使用$\epsilon$ greedy算法，off-policy的话，behaviour policy使用stochastic policy，而target policy使用greedy算法，这其实就是Q-learning算法了。所以，Expected Sarsa实际上是对Q-learning的一个归纳，同时又有对Sarsa的改进。
 Q-learning和Expected Sarsa的backup diagram如下所示：
