@@ -136,7 +136,7 @@ A,A
 尽管cetrinty-equivalence是最优解，但是，但是，但是，cost太大了，如果有$n$个states，计算mle需要$n^2$的空间，计算value function时候，需要$n^3$的计算步数。当states太多的话，实际上并不可行，还是老老实实的使用TD把，只会用不超过$n$的空间。。
 
 ## TD具体算法介绍
-### Sarsa(state action reward state action) - On policy TD control
+### Sarsa
 Sarsa是一个on-policy的 TD control算法。按照GPI的思路来，先进行policy evaluation，在进行policy improvement。首先解prediction问题，按照以下action value的$TD(0)$公式估计当前policy $\pi$下，所有action和state的$q$值$q_{\pi}(s,a)$：
 $$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]$$
 当$S_{t+1} = 0$时，$Q(S_{t+1}, A_{t+1})=0$，相应的backup diagram如下图所示。
@@ -154,10 +154,10 @@ $Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma Q(S',A') - Q(S,A)\right]$
 $S\leftarrow S', A\leftarrow A'$
 until S是terminal
 
-### Q-learning: Off-policy TD Control
+### Q-learning
 $$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma max Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]$$
-这一节介绍的是off-policy的TD contrl算法，Q-learning。对于off-policy算法来说，behaviour policy用来选择action，target policy是要用来评估的算法。在Q-learning算法中，直接学习的就是target policy的optimal action value function $q_{*}$，和behaviour policy无关。完整的Q-learning算法如下：
-Q-learning算法(off-policy control) 估计$\pi \approx \pi_{*}$
+这一节介绍的是off-policy的TD contrl算法，Q-learning。对于off-policy算法来说，behaviour policy用来选择action，target policy是要用来评估的算法。在Q-learning算法中，直接学习的就是target policy的optimal action value function $q_{\*}$，和behaviour policy无关。完整的Q-learning算法如下：
+Q-learning算法(off-policy control) 估计$\pi \approx \pi_{\*}$
 对于所有$s\in S^{+}, a\in A(s)$，随机初始化$Q(s,a)$，$Q(terminal, \cdot) = 0$
 Loop for each episode
 获得初始状态$S$
@@ -175,7 +175,7 @@ on-policy的sarsa，policy一直在变（$\epsilon$在变），但是behaviour p
 ### Expected Sarsa
 Q-learning对所有next state-action pairs取了max操作。如果不是取max，而是取期望呢？
 \begin{align\*}
-Q(S_t,A_T) & \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}_{\pi}\left[ Q(S_{t+1}, A_{t+1})| S_{t+1} \right] -Q(S_t,A_t)\right]
+Q(S_t,A_T) & \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}_{\pi}\left[ Q(S_{t+1}, A_{t+1})| S_{t+1} \right] -Q(S_t,A_t)\right]\\\\
 &\leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q -Q(S_t,A_t)\right]
 \end{align\*}
 其他的和Q-learning保持一致。给定next state $S_{t+1}$，算法在expectation上和sarsa移动的方向一样，所以被称为expected sarsa。这个算法可以是on-policy，也可以是off-policy的。比如，on-policy的话，policy使用$\epsilon$ greedy算法，off-policy的话，behaviour policy使用stochastic policy，而target policy使用greedy算法，这其实就是Q-learning算法了。所以，Expected Sarsa实际上是对Q-learning的一个归纳，同时又有对Sarsa的改进。
@@ -189,7 +189,7 @@ Q(S_t,A_T) & \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}_{\
 那么为什么会出现这种问题呢？
 用X1和X2表示reward的两组样本数据。如下所示：
 ![]()
-在X1这组样本中，样本均值是$-0.43$，X2样本均值是$-0.36$。在增量式计算样本均值时，得到的最大样本均值的期望是$0.09$，而实际上计算出来的期望的最大值$\mathbb{E}(X)$是$-0.36$。要使用$\mathbb{E}\left[max ($\mu$)\right]$估计$max \mathbb{E}(X)$，显然它们的差距有点大，max($\mu$)是max E(X)的有偏估计。也就是说使用max Q(s',a')更新Q(s,a)时，Q(s,a)并没有朝着它的期望$-0.5$移动。估计这只是一个直观的解释，严格的证明可以从论文中找。
+在X1这组样本中，样本均值是$-0.43$，X2样本均值是$-0.36$。在增量式计算样本均值时，得到的最大样本均值的期望是$0.09$，而实际上计算出来的期望的最大值$\mathbb{E}(X)$是$-0.36$。要使用$\mathbb{E} \left[max (\mu)\right]$估计$max\ \mathbb{E}(X)$，显然它们的差距有点大，max($\mu$)是max E(X)的有偏估计。也就是说使用max Q(s',a')更新Q(s,a)时，Q(s,a)并没有朝着它的期望$-0.5$移动。估计这只是一个直观的解释，严格的证明可以从论文中找。
 那么怎么解决这个问题呢，就是同时学习两个Q函数$Q_1, Q_2$，这两个Q函数的地位是一样的，每次随机选择一个选择action，然后更新另一个。证明的话，Van Hasselt证明了$\mathbb{E}(Q2(s',a\*)\le max Q1(s',a\*)$，也就是说$Q1(s,a)$不再使用它自己的max value进行更新了。
 下面是Q-learning和Double Q-learning在训练过程中在A处选择left的统计：
 ![]()
