@@ -157,8 +157,6 @@ $\qquad$ until $S$是terminal
 
 #### 示例
 
-
-
 ### Q-learning
 $$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma max Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]\tag{9}$$
 这一节介绍的是off-policy的TD contrl算法，Q-learning。对于off-policy算法来说，behaviour policy用来选择action，target policy是要评估的算法。在Q-learning算法中，直接学习的就是target policy的optimal action value function $q_{\*}$，和behaviour policy无关。完整的Q-learning算法如下：
@@ -185,9 +183,9 @@ Q-learning和Expected Sarsa的backup diagram如下所示：
 
 ### Sarsa vs Q-learing vs Expected Sarsa
 on-policy的sarsa，policy一直在变（$\epsilon$在变），但是behaviour policy和target policy一直都是一样的。
-而off-policy的Q-learning，policy一直都不变（可能$\epsilon$会变，但是这个不是Q-learning的重点），behaviour policy保证exploration，target policy是greedy算法。为什么这个不需要importance sampling？Importance sampling的作用是为了使用policy $b$下观察到的rewards估计policy $\pi$下的expected rewards。
+而off-policy的Q-learning，target policy和behaviour policy一直都不变（可能$\epsilon$会变，但是这个不是Q-learning的重点），behaviour policy保证exploration，target policy是greedy算法。为什么这个不需要importance sampling？Importance sampling的作用是为了使用policy $b$下观察到的rewards估计policy $\pi$下的expected rewards。
 Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$中，action $a$已经被选择了，用哪个policy选择的是无关紧要的，TD error可以使用$Q(s',\*)$上的boostrap进行计算，而不需要behaviour policy。
-
+j
 ## Maximization Bias和Double Learning
 目前介绍的所有control算法，都涉及到target polices的maximization操作。Q-learning中有greedy target policy，Sarsa的policy通常是$\epsilon$ greedy，也会牵扯到maximization。Max操作会引入一个问题，加入某一个state，它的许多action对应的$q(s,a)=0$，然后它的估计值$Q(s,a)$是不确定的，可能比$0$大，可能比$0$小，还可能就是$0$。如果使用max $Q(s,a)$的话，得到的值一定是大于等于$0$的，显然有一个positive bias，这就叫做maximization bias。
 
@@ -195,7 +193,7 @@ Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$�
 给出如下的一个例子：
 ![example_6_7](example_6_7.png)
 这个MDP有四个state，A,B,C,D，C和D是terminal state，A总是start state，并且有left和right两个action，right action转换到C，reward是0,left action转换到B，reward是$0$，B有很多个actions，都是转换到$D$，但是rewards是不同，reward服从一个均值为$-0.5$，方差为$1.0$的正态分布。所以reward的期望是负的，$-0.5$。这就意味着在大量实验中，reward的均值往往是小于$0$的。
-基于这个假设，在A处总是选择left action是很蠢的，但是因为其中有一些reward是positive，如果使用max操作的话，整个policy会倾向于选择left action，这就造成了在一些episodes中，reward是正的，但是如果在long run中，通常会有一个负的reward。
+基于这个假设，在A处总是选择left action是很蠢的，但是因为其中有一些reward是positive，如果使用max操作的话，整个policy会倾向于选择left action，这就造成了在一些episodes中，reward是正的，但是如果在long run中，reward的期望就是负的。
 
 ### Maximizaiton Bias出现的直观解释
 那么为什么会出现这种问题呢？
@@ -208,6 +206,7 @@ Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$�
 下面是$Q$-learning和Double $Q$-learning在训练过程中在A处选择left的统计：
 ![q_learning_vs_double_q_learning](q_learning_vs_double_q_learning.png)
 可以看出来，Double $Q$-learning要比$Q$-learning收敛的快和好。
+当然，Sarsa和Expected Sarsa也有maximization bias问题，然后有对应的double版本，Double Sarsa和Double Expected Sarsa。
 
 ## Afterstates
 之前介绍了state value function和action value function。这里介绍一个afterstate value function，afterstate value function就是在某个state采取了某个action之后再进行评估，一开始我想这步就是action value function。事实上不是的，action value function估计的是$Q(s,a)$，重点是state和action这些pair，对于afterstate value来说，可能有很多个state和action都能到同一个next state，这个时候它们的作用是一样的，因为我们估计的是next state的value。
