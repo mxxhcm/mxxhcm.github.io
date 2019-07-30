@@ -137,6 +137,7 @@ A,A
 
 ## TD具体算法介绍
 ### Sarsa
+#### 介绍
 Sarsa是一个on-policy的 TD control算法。按照GPI的思路来，先进行policy evaluation，在进行policy improvement。首先解prediction问题，按照以下action value的$TD(0)$公式估计当前policy $\pi$下，所有action和state的$q$值$q_{\pi}(s,a)$：
 $$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right] \tag{8}$$
 当$S_{t+1} = 0$时，$Q(S_{t+1}, A_{t+1})=0$，相应的backup diagram如下图所示。
@@ -153,6 +154,10 @@ $\qquad\qquad$ 使用policy（和上面的policy一样）根据S'选择A'
 $\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma Q(S',A') - Q(S,A)\right]$
 $\qquad\qquad S\leftarrow S', A\leftarrow A'$
 $\qquad$ until $S$是terminal
+
+#### 示例
+
+
 
 ### Q-learning
 $$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma max Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]\tag{9}$$
@@ -174,13 +179,14 @@ Q-learning对所有next state-action pairs取了max操作。如果不是取max�
 Q(S_t,A_T) & \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}_{\pi}\left[ Q(S_{t+1}, A_{t+1})| S_{t+1} \right] -Q(S_t,A_t)\right]\\\\
 &\leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q -Q(S_t,A_t)\right]\tag{10}
 \end{align\*}
-其他的和Q-learning保持一致。给定next state $S_{t+1}$，算法在expectation上和sarsa移动的方向一样，所以被称为expected sarsa。这个算法可以是on-policy，也可以是off-policy的。比如，on-policy的话，policy使用$\epsilon$ greedy算法，off-policy的话，behaviour policy使用stochastic policy，而target policy使用greedy算法，这其实就是Q-learning算法了。所以，Expected Sarsa实际上是对Q-learning的一个归纳，同时又有对Sarsa的改进。
+其他的和Q-learning保持一致。给定next state $S_{t+1}$，算法在expectation上和sarsa移动的方向一样，所以被称为expected sarsa。这个算法可以是on-policy，但是通常它是是off-policy的。比如，on-policy的话，policy使用$\epsilon$ greedy算法，off-policy的话，behaviour policy使用stochastic policy，而target policy使用greedy算法，这其实就是Q-learning算法了。所以，Expected Sarsa实际上是对Q-learning的一个归纳，同时又有对Sarsa的改进。
 Q-learning和Expected Sarsa的backup diagram如下所示：
 ![q_learning_and_expected_Sarsa_backup_diagram](q_learning_and_expected_Sarsa_backup_diagram.png)
 
-### Sarsa vs Q-learing
+### Sarsa vs Q-learing vs Expected Sarsa
 on-policy的sarsa，policy一直在变（$\epsilon$在变），但是behaviour policy和target policy一直都是一样的。
-而off-policy的Q-learning，policy一直都不变（可能$\epsilon$会变，但是这个不是Q-learning的重点），behaviour policy保证exploration，target policy是greedy算法。为什么这个不需要importance sampling？？？
+而off-policy的Q-learning，policy一直都不变（可能$\epsilon$会变，但是这个不是Q-learning的重点），behaviour policy保证exploration，target policy是greedy算法。为什么这个不需要importance sampling？Importance sampling的作用是为了使用policy $b$下观察到的rewards估计policy $\pi$下的expected rewards。
+Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$中，action $a$已经被选择了，用哪个policy选择的是无关紧要的，TD error可以使用$Q(s',\*)$上的boostrap进行计算，而不需要behaviour policy。
 
 ## Maximization Bias和Double Learning
 目前介绍的所有control算法，都涉及到target polices的maximization操作。Q-learning中有greedy target policy，Sarsa的policy通常是$\epsilon$ greedy，也会牵扯到maximization。Max操作会引入一个问题，加入某一个state，它的许多action对应的$q(s,a)=0$，然后它的估计值$Q(s,a)$是不确定的，可能比$0$大，可能比$0$小，还可能就是$0$。如果使用max $Q(s,a)$的话，得到的值一定是大于等于$0$的，显然有一个positive bias，这就叫做maximization bias。
@@ -214,3 +220,4 @@ on-policy的sarsa，policy一直在变（$\epsilon$在变），但是behaviour p
 1.《reinforcement learning an introduction》第二版
 2.https://stats.stackexchange.com/a/297892
 3.https://towardsdatascience.com/double-q-learning-the-easy-way-a924c4085ec3
+4.https://stats.stackexchange.com/a/347090/254953
