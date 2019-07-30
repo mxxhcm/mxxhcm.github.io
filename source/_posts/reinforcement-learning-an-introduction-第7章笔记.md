@@ -40,20 +40,20 @@ n-step TD估计$V\approx v_{\pi}$
 算法参数：step size $\alpha \in (0, 1]$，正整数$n$
 随机初始化$V(s), \forall s\in S$
 Loop for each episode
-初始化 $S_0 \neq terminal$
-$T\leftarrow \infty$
-Loop for $t=0, 1, 2, \cdots:$
-If $t\lt T$, then
-根据$\pi(\cdot|S_t)$执行action
-接收并记录$R_{t+1}, S_{t+1}$
-如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$
-End if
-$\tau \leftarrow t - n + 1, \tau$是当前更新的时间
-If $\tau \ge 0$, then
-$G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$
-如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$
-$V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$
-End if 
+$\qquad$初始化 $S_0 \neq terminal$
+$\qquad$$T\leftarrow \infty$
+$\qquad$Loop for $t=0, 1, 2, \cdots:$
+$\qquad$ If $t\lt T$, then
+$\qquad$ 根据$\pi(\cdot|S_t)$执行action
+$\qquad$ 接收并记录$R_{t+1}, S_{t+1}$
+$\qquad$ 如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$
+$\qquad$ End if
+$\qquad$ $\tau \leftarrow t - n + 1, \tau$是当前更新的时间
+$\qquad$ If $\tau \ge 0$, then
+$\qquad$ $G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$
+$\qquad$ 如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$
+$\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$
+$\qquad$ End if 
 Until $\tau = T-1$
 
 ## n-step Sarsa

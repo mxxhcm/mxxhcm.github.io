@@ -10,6 +10,8 @@ mathjax: true
 ## TD Learning
 TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。
 本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v\_{\pi}$；然后研究control问题。DP,TD,MC方法都是使用GPI方法解control问题，不同点在于prediction问题的解法。
+为什么叫TD？
+因为TD更新是基于不同时间上两个estimate的估计进行的。
 
 ## TD prediction
 TD和MC都是利用采样获得的experience求解prediction问题。给定policy $\pi$下的一个experience，TD和MC方法使用该experience中出现的non-terminal state $S_t$估计$v\_{\pi}$的$V$。他们的不同之处在于MC需要等到整个experience的return知道以后，把这个return当做$V(S_t)$的target，every visit MC方法的更新规则如下：
