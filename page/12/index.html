@@ -327,6 +327,614 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/12/gym介绍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/12/gym介绍/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">gym介绍</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-12 16:54:44" itemprop="dateCreated datePublished" datetime="2019-04-12T16:54:44+08:00">2019-04-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介">简介</h2>
+<p>强化学习中最主要的两类对象是“智能体”和“environment”，然后有一些概念：“reward”、“return”、“state”、“action”、“value”、“policy”、“predict”、“control”等。这些概念把智能体和environment联系了起来。<br>
+总结起来，有这样几条关系：</p>
+<ol>
+<li>environment会对智能体采取的action做出回应。当智能体执行一个行为时，它需要根据environment本身的动力学来更新environment，也包括更新智能体状态，同时给以智能体一个反馈信息：即时奖励(immediate reward)。</li>
+<li>对于智能体来说，它并不知道整个environment的所有信息，只能通过观测(observation)来获得所需要的信息，它能观测到的信息取决于问题的设置；同样因为智能体需要通过action与environment进行交互，智能体能采取哪些action，也要由智能体和environment协商好。因此environment要确定智能体的观测空间和action空间。</li>
+<li>智能体还需要有一个决策功能，该功能根据当前observation来判断下一时刻该采取什么action，也就是决策过程。</li>
+<li>智能体能执行一个确定的action。（这个刚开始还没想明白，智能体执行什么action干嘛，一般我们写代码不都是env.step(action)，后来才想到是action本身就是智能体自己执行的，只不过代码是这么写，因为environment需要根据这个action，去更新智能体的状态以及environment的状态。）</li>
+<li>智能体应该能从与environment的交互中学到知识，进而在与environment交互时尽可能多的获取reward，最终达到最大化累积奖励(accumate reward)的目的。</li>
+<li>environment应该给智能体设置一个（些）终止条件，即当智能体处在这个状态或这些状态之一时，交互结束，即产生一个完整的Episode。随后重新开始一个Episode或者退出交互。</li>
+</ol>
+<h2 id="自己实现一个environment">自己实现一个environment</h2>
+<p>如果用代码表示上述关系，可以定义为如下式子：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Environment</span><span class="params">(object)</span>:</span></span><br><span class="line">  self.aget_state <span class="comment">#</span></span><br><span class="line">  self.states <span class="comment"># 所有可能的状态集合</span></span><br><span class="line">  self.observation_space <span class="comment"># 智能体的observation space</span></span><br><span class="line">  self.action_space <span class="comment"># 智能体体的action space</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># 给出智能体的immediate reward</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">reward</span><span class="params">(self)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># 根据智能体的动作，更新环境</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">step</span><span class="params">(self, action)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># 当前回合是否结束</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">is_episode_end</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># 生成智能体的obs</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">obs_for_agent</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Agent</span><span class="params">(object)</span>:</span></span><br><span class="line">   self.env = env <span class="comment"># 智能体依附于某一个环境</span></span><br><span class="line">   self.obs <span class="comment"># 智能体的obs</span></span><br><span class="line">   self.reward  <span class="comment"># 智能体获得的immediate reward</span></span><br><span class="line"></span><br><span class="line">   <span class="comment"># 根据当前的obs生成action</span></span><br><span class="line">   <span class="function"><span class="keyword">def</span> <span class="title">policy</span><span class="params">(self, obs)</span>:</span></span><br><span class="line">      self.action</span><br><span class="line"></span><br><span class="line">   <span class="comment"># 智能体观测到obs和reward</span></span><br><span class="line">   <span class="function"><span class="keyword">def</span> <span class="title">observe</span><span class="params">(self)</span>:</span></span><br><span class="line">     self.obs = </span><br><span class="line">     self.reward =</span><br></pre></td></tr></table></figure>
+<h2 id="gym">gym</h2>
+<p>gym库在设计environment和智能体的交互时基本上也是按照这几条关系来实现自己的规范和接口的。gym库的核心在文件core.py里，这里定义了两个最基本的类Env和Space。<br>
+Env类是所有environment类的基类，Space类是所有space类的基类。</p>
+<h2 id="spaces">Spaces</h2>
+<p>Space是一个抽象类，其中包含以下函数，以下几个全是abstract函数，需要在子类中实现</p>
+<ul>
+<li><strong>init</strong>(self, shape=None, dtype=None) 函数初始化shape和dtype以及初始化numpy随机数RandomState()对象。</li>
+<li>sample(self) 函数进行采样，实际上是调用了numpy的随机函数。</li>
+<li>seed(self, seed) 设置numpy随机数种子，这里使用的是RandomState对象，生成随机数，种子一定的情况下，采样的过程是一定的。</li>
+<li>contains(self, x) 函数判断某个对象x是否是这个space中的一个member。</li>
+<li>to_jsonable(self, sample_n)</li>
+<li>from_jsonable(self, sample_n)</li>
+</ul>
+<p>从Space基类派生出几个常用的Space子类，其中最主要的是Discrete类和Box类，其余的还有MultiBinary类，MultiDiscrete类，Tuple类等，每个子类重新实现了__repr__和__eq__以及几乎所有Space类中的函数。<br>
+最常见的Discrete和Box类，Discrete对应于一维离散空间，Box对应于多维连续空间。它们既可以应用在action space中，也可以用在state space，可以根据具体场景选择。<br>
+Discrete声明的时候需要给定一个整数，然后整个类的取值在${0, 1, \cdots, n-1}$之间。然后使用sample()函数采样，实际调用的是numpy的randint()进行采样，得到一个整数值。<br>
+示例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> gym <span class="keyword">import</span> spaces</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.Discrete</span></span><br><span class="line"><span class="comment"># 取值是&#123;0, 1, ..., n - 1&#125;</span></span><br><span class="line">print(<span class="string">"=================="</span>)</span><br><span class="line">dis = spaces.Discrete(<span class="number">8</span>)</span><br><span class="line">print(dis.shape)</span><br><span class="line">print(dis.n)</span><br><span class="line">print(dis)</span><br><span class="line">dis.seed(<span class="number">4</span>)</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    print(dis.sample())</span><br></pre></td></tr></table></figure>
+<p>输出结果是：</p>
+<blockquote>
+<p>==================<br>
+() # shape是None<br>
+8  # n为8<br>
+Discrete(8) # repr()函数的值<br>
+2<br>
+6<br>
+7<br>
+5<br>
+1</p>
+</blockquote>
+<p>而Box类应用于连续空间，有两种初始化方式，一种是给出最小值，最大值和shape，另一种是直接给出最小值矩阵和最大值矩阵。然后使用sample()函数采样，实际上调用的是numpy的uniform()函数。<br>
+示例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> gym <span class="keyword">import</span> spaces</span><br><span class="line"><span class="comment"># 2.Box</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">print(<span class="string">"=================="</span>)</span><br><span class="line"><span class="comment"># def __init__(self, low=None, high=None, shape=None, dtype=None):</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">Two kinds of valid input:</span></span><br><span class="line"><span class="string">    Box(low=-1.0, high=1.0, shape=(3,4)) # low and high are scalars, and shape is provided</span></span><br><span class="line"><span class="string">    Box(low=np.array([-1.0,-2.0]), high=np.array([2.0,4.0])) # low and high are arrays of the same shape</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line">box = spaces.Box(low=<span class="number">3.0</span>, high=<span class="number">4</span>, shape=(<span class="number">2</span>,<span class="number">2</span>))</span><br><span class="line">print(box) </span><br><span class="line">box.seed(<span class="number">4</span>)</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">2</span>):</span><br><span class="line">    print(box.sample())</span><br></pre></td></tr></table></figure>
+<p>输出结果是：</p>
+<blockquote>
+<p>==================<br>
+Box(2, 2) # repr()函数的值<br>
+[[3.9670298 3.5472322]<br>
+[3.9726844 3.714816 ]]<br>
+[[3.6977289 3.2160895]<br>
+[3.9762745 3.0062304]]</p>
+</blockquote>
+<p>这里给出一个应用场景，例如要描述一个$4\times 4$的网格世界，它一共有16个状态，每一个状态只需要用一个数字来描述即可，这样可以用Discrete(16)对象来表示这个问题的state space。<br>
+对于经典的小车爬山的问题，小车的state是用两个变量来描述，一个是小车对应目标旗杆的水平距离，另一个是小车的速度，因此environment要描述小车的state需要2个连续的变量。由于小车的state对智能体是完全可见的，因此小车的state space即是小车的observation space，此时不能用Discrete来表示，要用Box类，Box空间定义了多维空间，每一个维度用一个最小值和最大值来约束。同时小车作为智能体可以执行的action有3个：左侧加速、不加速、右侧加速。因此action space可以用Discrete来描述。最终，该environment类的观测空间和行为空间描述如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Env</span><span class="params">(obejct)</span>:</span></span><br><span class="line">  self.min_position = <span class="number">-1.2</span></span><br><span class="line">  self.max_position = <span class="number">0.6</span></span><br><span class="line">  self.max_speed = <span class="number">0.07</span></span><br><span class="line">  self.goal_position = <span class="number">0.5</span> </span><br><span class="line">  self.low = np.array([self.min_position, -self.max_speed])</span><br><span class="line">  self.high = np.array([self.max_position, self.max_speed])</span><br><span class="line">  self.action_space = spaces.Discrete(<span class="number">3</span>)  <span class="comment"># action space,是离散的</span></span><br><span class="line">  self.observation_space = spaces.Box(self.low, self.high) <span class="comment"># 状态空间是连续的</span></span><br></pre></td></tr></table></figure>
+<h2 id="env">Env</h2>
+<h3 id="组成">组成</h3>
+<p>OpenAI官方在gym.core.Env类中给出了如下的说明<br>
+The main OpenAI Gym class. It encapsulates an environment with arbitrary behind-the-scenes dynamics. An environment can be partially or fully observed.</p>
+<p>用户需要知道的方法主要有下面五个：<br>
+The main API methods that users of this class need to know are:</p>
+<ul>
+<li>step</li>
+<li>reset</li>
+<li>render</li>
+<li>close</li>
+<li>seed</li>
+</ul>
+<p>用户需要知道的属性主要有下面三个：<br>
+And set the following attributes:</p>
+<ul>
+<li>action_space: The Space object corresponding to valid actions</li>
+<li>observation_space: The Space object corresponding to valid observations</li>
+<li>reward_range: A tuple corresponding to the min and max possible rewards</li>
+</ul>
+<p>Note: a default reward range set to [-inf,+inf] already exists. Set it if you want a narrower range.</p>
+<p>The methods are accessed publicly as “step”, “reset”, etc… The non-underscored versions are wrapper methods to which we may add functionality over time.</p>
+<p>智能体主要通过环境的几个方法进行交互，用户如果要编写自己的环境的话，需要实现seed, reset, step, close, render等函数。</p>
+<h3 id="step函数执行一个时间步的更新">step函数执行一个时间步的更新。</h3>
+<p>Accepts an action and returns a tuple (observation, reward, done, info).<br>
+输入参数：<br>
+action (object):智能体执行的动作<br>
+返回值：</p>
+<ul>
+<li>observation (object): agent’s observation of the current environment</li>
+<li>reward (float) : amount of reward returned after previous action</li>
+<li>done (boolean): whether the episode has ended, in which case further step() calls will return undefined results</li>
+<li>info (dict): contains auxiliary diagnostic information (调试信息, and sometimes learning)</li>
+</ul>
+<h3 id="reset函数重置">reset函数重置</h3>
+<p>重置环境并返回初始的observation.<br>
+Returns: observation (object): 返回环境的初始observation</p>
+<h3 id="reder函数绘制">reder函数绘制</h3>
+<p>Renders the environment.</p>
+<h3 id="close函数回收garbge">close函数回收garbge</h3>
+<p>在使用完之后调用close函数清理内存</p>
+<h3 id="seed函数设置环境的随机数种子">seed函数设置环境的随机数种子</h3>
+<p>使用seed函数设置随机数种子，使得结果可以复现。</p>
+<h3 id="使用env类">使用Env类</h3>
+<p>在使用Env类的时候，一种是使用gym中自带的已经注册了的类，另一种是使用自己编写的类。<br>
+第一种的话，使用如下语句注册：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gym</span><br><span class="line">env = gym.make(<span class="string">"registered_env_name"</span>)</span><br></pre></td></tr></table></figure>
+<p>另一种自己编写的环境类是和普通的python 类对象声明一样。</p>
+<h2 id="some-issues">Some issues</h2>
+<p>1.&gt;gym.error.DeprecatedEnv: Env PongDeterministic-v4 not found (valid versions include [‘PongDeterministic-v3’, ‘PongDeterministic-v0’])<br>
+gym版本太老了，升级一下就行[2]。这个是gym$0.7.0$遇到的问题。<br>
+2.&gt;UserWarning: WARN: &lt;class ‘envs.AtariRescale42x42’&gt; doesn’t implement ‘observation’ method. Maybe it implements deprecated ‘_observation’ method.<br>
+这个是gym版本太新了，apis进行了重命名。这个是gym$0.12.0$遇到的问题。<br>
+上面两个问题都是在测试github上的一个<img src="https://github.com/ikostrikov/pytorch-a3c/" alt="A3C">代码遇到的。最后装了$0.9$版本的gym就没有警告了。（测试了一下，装$0.10$版本的也不行）</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://github.com/openai/gym" target="_blank" rel="noopener">https://github.com/openai/gym</a><br>
+2.<a href="https://github.com/ikostrikov/pytorch-a3c/issues/36" target="_blank" rel="noopener">https://github.com/ikostrikov/pytorch-a3c/issues/36</a><br>
+3.<a href="https://github.com/openai/roboschool/issues/169" target="_blank" rel="noopener">https://github.com/openai/roboschool/issues/169</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/07/reinforcement-learning-an-introduction-第4章笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/07/reinforcement-learning-an-introduction-第4章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">reinforcement learning an introduction 第4章笔记</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-07 23:46:17" itemprop="dateCreated datePublished" datetime="2019-04-07T23:46:17+08:00">2019-04-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-26 00:10:38" itemprop="dateModified" datetime="2019-05-26T00:10:38+08:00">2019-05-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="dynamic-programming">Dynamic Programming</h2>
+<p>DP指的是给定环境的模型，通常是一个MDP，计算智能体最优策略的一类算法。经典的DP算法应用场景有限，因为它需要环境的模型，以及很高的计算代价，但是DP的思路是很重要的。其他的许多算法都是在减少计算代价和环境信息的前提下尽可能获得和DP接近的性能。<br>
+通常我们假定环境是一个有限(finite)的MDP，也就是state, action, reward都是有限的。尽管DP可以应用于连续(continuous)的state和action space，但是只能应用在几个特殊的场景上。一个常见的做法是将连续state和action quantize(量化)，然后使用有限MDP。<br>
+DP关键在于使用value function寻找好的policy，在找到了满足Bellman optimal equation的optimal value function之后，可以找到optimal policy，参见<a href="https://mxxhcm.github.io/2018/12/21/reinforcement-learning-an-introduction-%E7%AC%AC3%E7%AB%A0%E7%AC%94%E8%AE%B0/">第三章推导</a>：<br>
+Bellman optimal equation:<br>
+\begin{align*}<br>
+v_{*}(s) &amp;= max_a\mathbb{E}\left[R_{t+1}+\gamma v_{*}(S_{t+1})|S_t=s,A_t=a\right] \<br>
+&amp;= max_a \sum_{s’,r} p(s’,r|s,a){*}\left[r+\gamma v_{*}(s’)\right]  \tag{1}<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+q_{*}(s,a) &amp;= \mathbb{E}\left[R_{t+1}+\gamma max_{a’}q_{*}(S_{t+1},a’)|S_t=s,A_t = a\right]\<br>
+&amp;= \sum_{s’,r} p(s’,r|s,a) \left[r + \gamma max_a q_{*}(s’,a’)\right] \tag{2}<br>
+\end{align*}</p>
+<h2 id="policy-evaluation-prediction">Policy Evaluation(Prediction)</h2>
+<p>给定一个policy，计算state value function的过程叫做policy evaluation或者prediction problem。<br>
+根据$v(s)$和它的后继状态$v(s’)$之间的关系：<br>
+\begin{align*}<br>
+v_{\pi}(s) &amp;= \mathbb{E}<em>{\pi}[G_t|S_t = s]\<br>
+&amp;= \mathbb{E}</em>{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\<br>
+&amp;= \sum_a \pi(a|s)\sum_{s’}\sum_rp(s’,r|s,a) \left[r + \gamma \mathbb{E}<em>{\pi}\left[G</em>{t+1}|S_{t+1}=s’\right]\right] \tag{3}\<br>
+&amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_{\pi}(s’) \right] \tag{4}\<br>
+\end{align*}<br>
+只要$\gamma \lt 1$或者存在terminal state，那么$v_{\pi}$的必然存在且唯一。这个我觉得是迭代法解方程的条件。数值分析上有证明。<br>
+如果环境的转换概率$p$是已知的，可以列出方程组，直接求解出每个状态$s$的$v(s)$。这里采用迭代法求解，随机初始化$v_0$，使用式子$(4)$进行更新：<br>
+\begin{align*}<br>
+v_{k+1}(s) &amp;= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})\ S_t=s\right]\<br>
+&amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_k(s’) \right] \tag{5}<br>
+\end{align*}<br>
+直到$v_k=v_{\pi}$到达fixed point，Bellman equation满足这个条件。当$k\rightarrow \infty$时收敛到$v_{\pi}$。这个算法叫做iterative policy evaluation。<br>
+在每一次$v_k$到$v_{k+1}$的迭代过程中，所有的$v(s)$都会被更新，$s$的旧值被后继状态$s’$的旧值加上reward替换，正如公式$(5)$中体现的那样。这个目标值被称为expected update，因为它是基于所有$s’$的期望计算出来的（利用环境的模型），而不是通过对$s’$采样计算的。<br>
+在实现iterative policy evaluation的时候，每一次迭代，都需要重新计算所有$s$的值。这里有一个问题，就是你在每次更新$s$的时候，使用的$s’$如果在本次迭代过程中已经被更新过了，那么是使用更新过的$s’$，还是使用没有更新的$s’$，这就和迭代法中的雅克比迭代以及高斯赛德尔迭代很像，如果使用更新后的$s’$，这里我们叫它in-place的算法，否则就不是。具体那种方法收敛的快，还是要看应用场景的，并不是in-place的就一定收敛的快，这是在数值分析上学到的。<br>
+下面给出in-place版本的iterative policy evation算法伪代码。<br>
+<strong>iterative policy evation 算法</strong><br>
+<strong>输入</strong>需要evaluation的policy $\pi$<br>
+给出算法的参数：阈值$\theta\gt 0$，当两次更新的差值小于这个阈值的时候，就停止迭代，随机初始化$V(s),\forall s\in S^{+}$，除了$V(terminal) = 0$。<br>
+<strong>Loop</strong><br>
+$\qquad \delta \leftarrow 0$<br>
+$\qquad$ <strong>for</strong> each $s\in S$<br>
+$\qquad\qquad v\leftarrow V(s)$ （保存迭代之前的$V(s)$）<br>
+$\qquad\qquad V(s)\leftarrow\sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_k(s’) \right] $<br>
+$\qquad\qquad \nabla \leftarrow max(\delta,|v-V(s)|)$<br>
+$\qquad$<strong>end for</strong><br>
+<strong>until</strong> $\delta \lt \theta$</p>
+<h2 id="policy-improvement">Policy Improvement</h2>
+<p>为什么要进行policy evaluation，或者说为什么要计算value function？<br>
+其中一个原因是为了找到更好的policy。假设我们已经知道了一个deterministic的策略$\pi$，但是在其中一些状态，我们想要知道是不是有更好的action选择，如$a\neq \pi(s)$的时候，是不是这个改变后的策略会更好。好该怎么取评价，这个时候就可以使用值函数进行评价了，在某个状态，我们选择$a \neq \pi(s)$，在其余状态，依然遵循策略$\pi$。用公式表示为：<br>
+\begin{align*}<br>
+q_{\pi}(s,a) &amp;= \mathbb{E}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t=s,A_t = a\right]\<br>
+&amp;=\sum_{s’,r}p(s’,r|s,a)\left[r+\gamma v_{\pi}(s’)\right] \tag{6}<br>
+\end{align*}<br>
+那么，这个值是是比$v(s)$要大还是要小呢？如果比$v(s)$要大，那么这个新的策略就比$\pi$要好。<br>
+用$\pi$和$\pi’$表示任意一对满足下式的deterministic policy：<br>
+$$q_{\pi}(s,\pi’(s)) \ge v_{\pi}(s) \tag{7}$$<br>
+那么$\pi’$至少和$\pi$一样好。可以证明，任意满足$(7)$的$s$都满足下式：<br>
+$$v_{\pi’}(s) \ge v_{\pi}(s) \tag{8}$$<br>
+对于我们提到的$\pi$和$\pi’$来说，除了在状态$s$处，$v_{\pi’}(s) = a \neq v_{\pi}(s)$，在其他状态处$\pi$和$\pi’$是一样的，都有$q_{\pi}(s,\pi’(s)) = v_{\pi}(s)$。而在状态$s$处，如果$q_{\pi}(s,a) \gt v_{\pi}(s)$，注意这里$a=\pi’(s)$，那么$\pi’$一定比$\pi$好。<br>
+证明：<br>
+\begin{align*}<br>
+v_{\pi}(s) &amp;\le q_{\pi}(s,\pi’(s))\<br>
+&amp; = \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s, A_t = \pi’(s) \right]\<br>
+&amp; = \mathbb{E}<em>{\pi’}\left[R</em>{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s \right]\<br>
+&amp; \le \mathbb{E}<em>{\pi’}\left[R</em>{t+1} + \gamma q_{\pi}(S_{t+1},\pi’(S_{t+1}))|S_t = s \right]\<br>
+&amp; = \mathbb{E}<em>{\pi’}\left[ R</em>{t+1} + \gamma \mathbb{E}<em>{\pi’}\left[R</em>{t+2} +\gamma v_{\pi}(S_{t+2})|S_{t+1}, A_{t+1}=\pi’(S_{t+1})|S_t = s \right]\right]\<br>
+&amp; = \mathbb{E}<em>{\pi’}\left[ R</em>{t+1} + \gamma R_{t+2} +\gamma^2 v_{\pi}(S_{t+2})|S_t = s \right]\<br>
+&amp; \le \mathbb{E}<em>{\pi’}\left[ R</em>{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 v_{\pi}(S_{t+3})|S_t = s \right]\<br>
+&amp; \le \mathbb{E}<em>{\pi’}\left[ R</em>{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 R_{t+4} + \cdots |S_t = s \right]\<br>
+&amp;=v_{\pi’}(s)<br>
+\end{align*}<br>
+所以，在计算出一个policy的value function的时候，很容易我们就直到某个状态$s$处的变化是好还是坏。扩展到所有状态和所有action的时候，在每个state，根据$q_{\pi}(s,a)$选择处最好的action，这样就得到了一个greedy策略$\pi’$，给出如下定义：<br>
+\begin{align*}<br>
+\pi’(s’) &amp;= argmax_{a} q_{\pi}(s,a)\<br>
+&amp; = argmax_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\<br>
+&amp; = argmax_{a} \sum_{s’,r}p(s’,r|s,a)\left[r+v_{\pi}(s’) \right]<br>
+\end{align*}<br>
+可以看出来，该策略的定义一定满足式子$(7)$，所以$\pi’$比$\pi$要好或者相等，这就叫做policy improvement。当$\pi’$和$\pi$相等时，，根据式子$(9)$我们有：<br>
+\begin{align*}<br>
+v_{\pi’}(s’)&amp; = max_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi’}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\<br>
+&amp; = max_{a} \sum_{s’,r}p(s’,r|s,a)\left[r+v_{\pi’}(s’) \right]<br>
+\end{align*}<br>
+这和贝尔曼最优等式是一样的？？？殊途同归！！！<br>
+但是，需要说的一点是，目前我们假设的$\pi$和$\pi’$是deterministic，当$\pi$是stochastic情况的时候，其实也是一样的。只不过，原来我们每次选择的是使得$v_{\pi}$最大的action。对于stochastic的情况来说，输出的是每个动作的概率，可能有几个动作都能使得value function最大，那就让这几个动作的概率一样大，比如是$n$个动作，都是$\frac{1}{n}$。</p>
+<h2 id="policy-iteration">Policy Iteration</h2>
+<p>我们已经讲了Policy Evaluation和Policy Improvement，Evalution会计算出一个固定$\pi$的value function，Improvment会根据value function改进这个policy，然后计算出一个新的policy $\pi’$，对于新的策略，我们可以再次进行Evaluation，然后在Improvement，就这样一直迭代，对于有限的MDP，我们可以求解出最优的value function和policy。这就是Policy Iteration算法。</p>
+<p><strong>Policy Iteration算法</strong><br>
+<strong>1.初始化</strong><br>
+$V(s)\in R,\pi(s) in A(s)$<br>
+$\qquad$<br>
+<strong>2.Policy Evaluation</strong><br>
+<strong>Loop</strong><br>
+$\qquad\Delta\leftarrow 0 $<br>
+$\qquad$ <strong>For</strong> each $s\in S$<br>
+$\qquad\qquad v\leftarrow V(s)$<br>
+$\qquad\qquad V(s)\leftarrow \sum_{s’,r}p(s’,r|s,a)\left[r+\gamma V(s’)\right]$<br>
+$\qquad\qquad \Delta \leftarrow max(\Delta, |v-V(s)|) $<br>
+<strong>until</strong> $\Delta \lt \theta$<br>
+<strong>3.Policy Improvement</strong><br>
+$policy-stable\leftarrow true$<br>
+<strong>For</strong> each $s \in S$<br>
+$\qquad old_action = \pi(s)$<br>
+$\qquad \pi(s) = argmax_a \sum_{s’,a’}p(s’,r|s,a)\left[r+\gamma V(s’)\right]$<br>
+$\qquad If\ old_action \neq \pi(s), policy-stable\leftarrow false$<br>
+<strong>If policy-stable</strong>，停止迭代，返回$V$和$\pi$，否则回到2.Policy Evalution继续执行。</p>
+<h2 id="value-iteration">Value Iteration</h2>
+<p>从Policy Iteration算法中我们可以看出来，整个算法分为两步，第一步是Policy Evaluation，第二步是Policy Improvement。而每一次Policy Evaluation都要等到Value function收敛到一定程度才结束，这样子就会非常慢。一个替代的策略是我们尝试每一次Policy Evaluation只进行几步的话，一种特殊情况就是每一个Policy Evaluation只进行一步，这种就叫做Value Iteration。给出如下定义：<br>
+\begin{align*}<br>
+v_{k+1}(s) &amp;= max_a \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\<br>
+&amp;= max_a \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_k(s’)\right] \tag{10}<br>
+\end{align*}<br>
+它其实就是把两个步骤给合在了一起，原来分开是：<br>
+\begin{align*}<br>
+v_{\pi}(s) &amp;= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\<br>
+&amp;= \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_k(s’)\right]\<br>
+v_{\pi’}(s) &amp;= max_a \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_{\pi}(s’)\right]\<br>
+\end{align*}<br>
+另一种方式理解式$(10)$可以把它看成是使用贝尔曼最优等式进行迭代更新，Policy Evaluation用的是贝尔曼期望等式进行更新。下面给出完整的Value Iteration算法</p>
+<p><strong>Value Iteration 算法</strong><br>
+<strong>初始化</strong><br>
+阈值$\theta$，以及随机初始化的$V(s), s\in S^{+}$，$V(terminal)=0$。<br>
+<strong>Loop</strong><br>
+$\qquad v\leftarrow V(s)$<br>
+$\qquad$<strong>Loop</strong> for each $s\in S$<br>
+$\qquad\qquad V(s) = max_a\sum_{s’,r}p(s’,r|s,a)\left[r+\gamma V(s’)\right]$<br>
+$\qquad\qquad\Delta \leftarrow max(Delta, |v-V(s)|)$<br>
+<strong>until</strong> $\Delta \lt \theta$<br>
+<strong>返回</strong> 输出一个策略$\pi\approx\pi_{*}$，这里书中说是deterministic，我觉得都可以，$\pi$也可以是stochastic的，最后得到的$\pi$满足:<br>
+$\pi(s) = argmax_a\sum_{s’,r}p(s’,r|s,a)\left[r+\gamma V(s’)\right]$</p>
+<h2 id="asychronous-dynamic-programming">Asychronous Dynamic Programming</h2>
+<p>之前介绍的这些DP方法，在每一次操作的时候，都有对所有的状态进行处理，这就很耗费资源。所以这里就产生了异步的DP算法，这类算法在更新的时候，不会使用整个的state set，而是使用部分state进行更新，其中一些state可能被访问了很多次，而另一些state一次也没有被访问过。<br>
+其中一种异步DP算法就是在plicy evalutaion的过程中，只使用一个state。<br>
+使用DP算法并不代表一定能减少计算量，他只是减少在策略没有改进之前陷入无意义的evaluation的可能。尽量选取那些重要的state用来进行更新。<br>
+同时，异步DP方便进行实时的交互。在使用异步DP更新的时候，同时使用一个真实场景中的agent经历进行更新。智能体的experience可以被用来确定使用哪些state进行更新，DP更新后的值也可以用来指导智能体的决策。</p>
+<h2 id="generalized-policy-iteration">Generalized Policy Iteration</h2>
+<p>之前介绍了三类方法，Policy Iteration,Value iteration以及Asychronous DP算法，它们都有两个过程在不断的迭代进行。一个是evaluation，一个是improvement，这类算法统一的被称为Generalized Policy Iteration(GPI)，可以根据不同的粒度进行细分。基本上所有的算法都是GPI，policy使用value function进行改进，value function朝着policy的真实值函数改进，如果value function和policy都稳定之后，那么说他们都是最优的了。<br>
+GPI中evalution和improvemetnt可以看成既有竞争又有合作。竞争是因为evaluation和improment的方向通常是相对的，policy改进意味着value function不适用于当前的policy,value function更新意味着policy不是greedy的。然后长期来说，他们共同作用，想要找到最优的值函数和policy。<br>
+GPI可以看成两个目标的交互过程，这两个目标不是正交的，改进一个目标也会使用另一个目标有所改进，直到最后，这两个交互过程使得总的目标变成最优的。</p>
+<h2 id="efficiency-of-dynamic-programming">Efficiency of Dynamic Programming</h2>
+<p>用$n$和$k$表示MDP的状态数和动作数，DP算法保证在多项式时间内找到最优解，即使策略的总数是$k^n$个。<br>
+DP比任何在policy space内搜索的算法要快上指数倍，因为policy space搜索需要检查每一个算法。Linear Programming算法也可以用来解MDP问题，在某些情况下最坏的情况还要比DP算法快，但是LP要比只适合解决state数量小的问题。而DP也能处理states很大的情况。</p>
+<h2 id="summary">Summary</h2>
+<ul>
+<li>使用贝尔曼公式更新值函数，可以使用backup diagram看他们的直观表示。</li>
+<li>基本上所有的强化学习算法都可以看成GPI(generalized policy iteraion)，先评估某个策略，然后改进这个策略，评估新的策略…这样子循环下去，直到收敛，找到一个不在变化的最优值函数和策略。<br>
+GPI不一定是收敛的，本章介绍的这些大多都是收敛的，但是还有一些没有被证明收敛。</li>
+<li>可以使用异步的DP算法。</li>
+<li>所有的DP算法都有一个属性叫做bootstrapping，即基于其他states的估计更新每一个state的值。因为每一个state value的更新都需要用到他们的successor state的估计。</li>
+</ul>
+<blockquote>
+<p>They update estimates onthe basis of other estimates。</p>
+</blockquote>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/04/reinforcement-learning-an-introduction-第9章笔记/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1979,667 +2587,6 @@ $$\frac{\partial f}{\partial l} = \lim_{\rho \to 0}\frac{f(x+\Delta x,y+\Delta y
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/18/python-pandas笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/18/python-pandas笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">pandas笔记</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-18 15:15:54" itemprop="dateCreated datePublished" datetime="2019-03-18T15:15:54+08:00">2019-03-18</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="pd-read">pd.read_***()</h2>
-<h3 id="pd-read-csv">pd.read_csv()</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas</span><br><span class="line">pandas.read_csv(filepath_or_buffer, sep=<span class="string">', '</span>, delimiter=<span class="literal">None</span>, header=<span class="string">'infer'</span>, names=<span class="literal">None</span>, index_col=<span class="literal">None</span>, usecols=<span class="literal">None</span>, squeeze=<span class="literal">False</span>, prefix=<span class="literal">None</span>, mangle_dupe_cols=<span class="literal">True</span>, dtype=<span class="literal">None</span>, engine=<span class="literal">None</span>, converters=<span class="literal">None</span>, true_values=<span class="literal">None</span>, false_values=<span class="literal">None</span>, skipinitialspace=<span class="literal">False</span>, skiprows=<span class="literal">None</span>, nrows=<span class="literal">None</span>, na_values=<span class="literal">None</span>, keep_default_na=<span class="literal">True</span>, na_filter=<span class="literal">True</span>, verbose=<span class="literal">False</span>, skip_blank_lines=<span class="literal">True</span>, parse_dates=<span class="literal">False</span>, infer_datetime_format=<span class="literal">False</span>, keep_date_col=<span class="literal">False</span>, date_parser=<span class="literal">None</span>, dayfirst=<span class="literal">False</span>, iterator=<span class="literal">False</span>, chunksize=<span class="literal">None</span>, compression=<span class="string">'infer'</span>, thousands=<span class="literal">None</span>, decimal=<span class="string">b'.'</span>, lineterminator=<span class="literal">None</span>, quotechar=<span class="string">'"'</span>, quoting=<span class="number">0</span>, escapechar=<span class="literal">None</span>, comment=<span class="literal">None</span>, encoding=<span class="literal">None</span>, dialect=<span class="literal">None</span>, tupleize_cols=<span class="literal">None</span>, error_bad_lines=<span class="literal">True</span>, warn_bad_lines=<span class="literal">True</span>, skipfooter=<span class="number">0</span>, skip_footer=<span class="number">0</span>, doublequote=<span class="literal">True</span>, delim_whitespace=<span class="literal">False</span>, as_recarray=<span class="literal">None</span>, compact_ints=<span class="literal">None</span>, use_unsigned=<span class="literal">None</span>, low_memory=<span class="literal">True</span>, buffer_lines=<span class="literal">None</span>, memory_map=<span class="literal">False</span>, float_precision=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
-<p>filepath_or_buffer: 文件路径，或者一个字符串，url等等<br>
-sep: str,分隔符，默认是’,'<br>
-delimiter: str,定界符，如果指定该参数，sep参数失效<br>
-delimiter_whitespace: boolean,指定是否吧空格作为分界符如果指定该参数，则delimiter失效<br>
-headers: int or list of ints,指定列名字，默认是header=0,表示把第一行当做列名，如果header=[0,3,4],表示吧第0,3,4行都当做列名，真正的数据从第二行开始，如果没有列名，指定header=None<br>
-index_col: int or sequence or False,指定哪几列作为index，index_col=[0,1],表示用前两列的值作为一个index，去访问后面几列的值。<br>
-prefix: str,如果header为None的话，可以指定列名。<br>
-parse_dates: boolean or list of ints or names,or list of lists, or dict 如果是True，解析index，如果是list of ints，把每一个int代表的列都分别当做一个日期解析，如果是list of lists，将list中的list作为一个日期解析，如果是字典的话，将dict中key作为一个新的列名，value为这个新的列的值。<br>
-keep_date_col: boolean,如果parser_dates中是将多个列合并为一个日期的话，是否保留原始列<br>
-date_parser: function,用来解析parse_dates中给出的日期列，是自己写的函数，函数参数个数和一个日期的列数相同。</p>
-<p>chunksize: 如果文件太大的话，分块读入</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">data = pd.read_csv(<span class="string">"input.csv"</span>,chunksize=<span class="number">1000</span>)</span><br><span class="line"><span class="keyword">for</span>  i  <span class="keyword">in</span>  data:</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
-<h2 id="dataframe">DataFrame</h2>
-<h3 id="声明一个dataframe">声明一个DataFrame</h3>
-<p>data = pandas.DataFrame(numpy.arange(16).reshape(4,4),index=list(‘abcd’),columns=(‘wxyz’)<br>
-w  x  y  z<br>
-a  0  1  2  3<br>
-b  4  5  6  7<br>
-c  8  9  10  11<br>
-d  12  13  14  15<br>
-index 是index列的值<br>
-columns 是列名</p>
-<h3 id="访问某一列">访问某一列</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">data = pandas.DataFrame(numpy.arange(<span class="number">16</span>).reshape(<span class="number">4</span>,<span class="number">4</span>),index=list(<span class="string">'abcd'</span>),columns=(<span class="string">'wxyz'</span>)</span><br><span class="line">data[<span class="string">'w'</span>]</span><br><span class="line">data.w</span><br></pre></td></tr></table></figure>
-<h3 id="写入某一列">写入某一列</h3>
-<p>只能先访问列 再访问行<br>
-data[‘w’] = []   # =左右两边shape必须一样<br>
-data[‘w’][0]  #某一列的第0行</p>
-<h3 id="groupby">groupby</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">data = pandas.DataFrame(np.arange(<span class="number">16</span>).reshape(<span class="number">4</span>,<span class="number">4</span>),index=list(<span class="string">'abcd'</span>),columns=(<span class="string">'wxyz'</span>))</span><br><span class="line"><span class="keyword">for</span> key,value <span class="keyword">in</span> data.groupby(<span class="string">"w"</span>):  <span class="comment"># group by 列名什么的，就是说某一列的值一样分一组</span></span><br><span class="line">  value = value.values  <span class="comment"># value是一个numpy数组</span></span><br><span class="line">  value_list = value.tolist()  <span class="comment">#将numpy数组转换为一个list</span></span><br><span class="line">  <span class="keyword">for</span> single_list <span class="keyword">in</span> value_list:</span><br><span class="line">     single_list = str(single_list)</span><br><span class="line">     ...</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/18/python-argparse笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/18/python-argparse笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">argparse笔记</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-18 15:15:41" itemprop="dateCreated datePublished" datetime="2019-03-18T15:15:41+08:00">2019-03-18</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-26 11:27:59" itemprop="dateModified" datetime="2019-06-26T11:27:59+08:00">2019-06-26</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简单的例子">简单的例子</h2>
-<h3 id="创建一个parser">创建一个parser</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parser = argparse.ArgumentParser(description=<span class="string">'Process Intergers'</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="添加参数">添加参数</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parser.add_argument(,,)</span><br></pre></td></tr></table></figure>
-<h3 id="解析参数">解析参数</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arglist = parser.parse_args()</span><br></pre></td></tr></table></figure>
-<h3 id="代码示例">代码示例</h3>
-<p>完整代码如下</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_args</span><span class="params">()</span>:</span></span><br><span class="line">    parser = argparse.ArgumentParser(<span class="string">"input parameters"</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--batch_size"</span>, type=int, default=<span class="number">32</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--episodes"</span>, type=int, default=<span class="number">1</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--lr"</span>, type=float, default=<span class="number">0.01</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--momentum"</span>, type=float, default=<span class="number">0.9</span>)</span><br><span class="line">    args_list = parser.parse_args()</span><br><span class="line">    <span class="keyword">return</span> args_list</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(args_list)</span>:</span></span><br><span class="line">	print(args_list.batch_size)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    args_list = parse_args()</span><br><span class="line">    main(args_list)</span><br></pre></td></tr></table></figure>
-<h2 id="argumentparser-objects">ArgumentParser objects</h2>
-<blockquote>
-<p>The ArgumentParser object will hold all the information necessary to parse the command line into python data types</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">argparse</span>.<span class="title">ArgumentParser</span><span class="params">(</span></span></span><br><span class="line"><span class="class"><span class="params">	prog=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	usage=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	description=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	epilog=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	parents=[],</span></span></span><br><span class="line"><span class="class"><span class="params">	formatter_class=argparse.HelpFormatter,</span></span></span><br><span class="line"><span class="class"><span class="params">	prefix_chars=<span class="string">'-'</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">	fromfile_prefix_chars=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	argument_default=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	conflict_handler=<span class="string">'error'</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">	add_help=True</span></span></span><br><span class="line"><span class="class"><span class="params">)</span></span></span><br></pre></td></tr></table></figure>
-<h3 id="创建一个名为test-py的程序如下">创建一个名为test.py的程序如下</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">args = parser.parse_args()</span><br></pre></td></tr></table></figure>
-<p>~#:python <a href="http://test.py" target="_blank" rel="noopener">test.py</a> -h</p>
-<blockquote>
-<p>usage: <a href="http://test.py" target="_blank" rel="noopener">test.py</a> [-h]<br>
-optional arguments:<br>
--h, --help  show this help message and exit</p>
-</blockquote>
-<h3 id="prog参数">prog参数</h3>
-<p>设置显示程序的名称</p>
-<h4 id="直接使用默认显示的程序名">直接使用默认显示的程序名</h4>
-<p>~#:python <a href="http://test.py" target="_blank" rel="noopener">test.py</a> -h</p>
-<blockquote>
-<p>usage: <a href="http://test.py" target="_blank" rel="noopener">test.py</a> [-h]<br>
-optional arguments:<br>
--h, --help  show this help message and exit</p>
-</blockquote>
-<h4 id="使用prog参数进行设置">使用prog参数进行设置</h4>
-<p>修改test.py的程序如下</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser(prog=<span class="string">"mytest"</span>)</span><br><span class="line">args = parser.parse_args()</span><br></pre></td></tr></table></figure>
-<p>~#:python <a href="http://test.py" target="_blank" rel="noopener">test.py</a> -h</p>
-<blockquote>
-<p>usage: mytest [-h]<br>
-optional arguments:<br>
--h, --help  show this help message and exit</p>
-</blockquote>
-<p>usage后的名称变为我们prog参数指定的名称</p>
-<h3 id="usage">usage</h3>
-<h4 id="使用默认的usage">使用默认的usage</h4>
-<h4 id="使用指定的usage">使用指定的usage</h4>
-<h3 id="description">description</h3>
-<h4 id="使用默认的description">使用默认的description</h4>
-<h4 id="使用指定的description">使用指定的description</h4>
-<h3 id="epilog">epilog</h3>
-<h4 id="使用默认的epilog">使用默认的epilog</h4>
-<h4 id="使用指定的epilog">使用指定的epilog</h4>
-<h3 id="parents">parents</h3>
-<h3 id="formatter-class">formatter_class</h3>
-<h3 id="prefix-chars">prefix_chars</h3>
-<p>指定其他的prefix，默认的是-，比如可以指定可选参数的前缀为+</p>
-<h3 id="fromfile-prefix-chars">fromfile_prefix_chars</h3>
-<h3 id="argument-default">argument_default</h3>
-<h3 id="conflict-handler">conflict_handler</h3>
-<p>将conflict_handler设置为resolve就可以防止override原来older arguments</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser(conflict_handler=<span class="string">'resolve'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,<span class="string">'-f'</span>,help=<span class="string">"old help"</span>)</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>,help=<span class="string">"new_help"</span>)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
-<h3 id="add-help">add_help</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser(add_help=<span class="literal">False</span>)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>usage: [-h]<br>
-optional arguments:<br>
--h, --help  show this help message and exit<br>
-将add_help设置为false</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser(add_help=<span class="literal">False</span>)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>usage:</p>
-</blockquote>
-<h2 id="the-add-argument-method">The add_argument() method</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ArgumentParser.add_argument(</span><br><span class="line">	name <span class="keyword">or</span> flags...</span><br><span class="line">	[,action],</span><br><span class="line">	[,nargs],</span><br><span class="line">	[,const],</span><br><span class="line">	[,default],</span><br><span class="line">	[,type],</span><br><span class="line">	[,choices],</span><br><span class="line">	[,required],</span><br><span class="line">	[,help],</span><br><span class="line">	[,metavar],</span><br><span class="line">	[,dest]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<h3 id="例子">例子</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>,<span class="string">'-foo'</span>,<span class="string">'-a'</span>, defaults=, type=, help=)</span><br><span class="line">parser.add_argument(<span class="string">'hello'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'hi'</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'Hello'</span>,<span class="string">'-f'</span>,<span class="string">'123'</span>,<span class="string">'Hi'</span>])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<h3 id="name-or-flags">name or flags</h3>
-<h4 id="添加可选参数">添加可选参数</h4>
-<p>parser.add_argument(’-f’, ‘–foo’, ‘-fooo’)</p>
-<h4 id="添加必选参数">添加必选参数</h4>
-<p>parser.add_argument(‘bar’)</p>
-<h4 id="调用parse-args">调用parse_args()</h4>
-<p>当parse_args()函数被调用的时候，可选参数会被-prefix所识别，剩下的参数会被分配给必选参数的位置。如下代码中，'3’对应的就是’hello’的参数，‘this is hi’对应的就是’hi’的参数，而’123’是’-f’的参数。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>,<span class="string">'-foo'</span>,<span class="string">'-a'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'hello'</span>, type=int)</span><br><span class="line">parser.add_argument(<span class="string">'hi'</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'3'</span>,<span class="string">'-f'</span>,<span class="string">'123'</span>,<span class="string">'this is hi'</span>])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(f=‘123’, hello=‘Hello’, hi=‘Hi’)</p>
-</blockquote>
-<h3 id="action">action</h3>
-<h4 id="store-the-default-action">store,the default action</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'--foo'</span>,<span class="string">'1'</span>])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(foo=‘1’)</p>
-</blockquote>
-<h4 id="store-const">store_const</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>, action=<span class="string">'store_const'</span>, const=<span class="number">42</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'--foo'</span>)</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(foo=42)</p>
-</blockquote>
-<h4 id="store-true-and-store-false">store_true and store_false</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>, action=<span class="string">'store_true'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--bar'</span>, action=<span class="string">'store_false'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--baz'</span>, action=<span class="string">'store_false'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo --bar'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(bar=False, baz=True, foo=True)</p>
-</blockquote>
-<p>这里为什么是这样呢，因为默认存储的都是True，当你调用–bar,–foo参数时，会执行action操作，会把action指定的动作执行</p>
-<h4 id="d-append">d.append</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>, action=<span class="string">'append'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 1 --foo 2 --foo 3'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(foo=[‘1’, ‘2’, ‘3’])</p>
-</blockquote>
-<h4 id="append-const">append_const</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--str'</span>, action=<span class="string">'append_const'</span>,const=str)</span><br><span class="line">parser.add_argument(<span class="string">'--int'</span>, action=<span class="string">'append_const'</span>,const=int)</span><br><span class="line">args = parser.parse_args(<span class="string">'--str --int'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(int=[&lt;class ‘int’&gt;], str=[&lt;class ‘str’&gt;])</p>
-</blockquote>
-<h4 id="count">count</h4>
-<p>统计一个keyword argument出现了多少次</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--co'</span>, <span class="string">'-c'</span>,action=<span class="string">'count'</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'-ccc'</span>])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(co=3)</p>
-</blockquote>
-<h4 id="help">help</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">args = parser.parse_args(<span class="string">'--help'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出，如果是交互式环境的话，会退出python</p>
-<blockquote>
-<p>usage: [-h]</p>
-</blockquote>
-<blockquote>
-<p>optional arguments:<br>
--h, --help  show this help message and exit</p>
-</blockquote>
-<h4 id="version">version</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--version'</span>, action=<span class="string">'version'</span>,version=<span class="string">'version 3'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'--version'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出,如果是交互式环境的话，会退出python</p>
-<blockquote>
-<p>version 3</p>
-</blockquote>
-<h3 id="nargs-指定参数个数">nargs 指定参数个数</h3>
-<h4 id="n">N</h4>
-<p>如果是可选参数的话，或者不指定这个参数，或者必须指定N个参数<br>
-如果是必选参数的话，必须指定N个参数，不能多也不能少，也不能为0个</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="number">3</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="number">4</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'bar 3 4 5'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(bar=[‘bar’, ‘3’, ‘4’, ‘5’], foo=None)</p>
-</blockquote>
-<h4 id="none">?</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="string">'?'</span>,const=<span class="string">'c'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'?'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'3'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'3 --foo'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(bar=‘3’, foo=‘d’)<br>
-Namespace(bar=‘3’, foo=‘c’)</p>
-</blockquote>
-<p>如果显式指定可选参数，但是不给它参数，那么如果有const的话，就会显示const的值，否则就会显示None</p>
-<h4 id="none-v2">*</h4>
-<p>nargs设置为*的话，不能直接用const=’'来设置const参数，需要使用其他方式</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="string">'*'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'*'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'3 --foo 3 4'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(bar=[‘3’], foo=[‘3’, ‘4’])</p>
-</blockquote>
-<h4 id="none-v3">+</h4>
-<p>nargs设置为+，参数个数必须大于等于1</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="string">'+'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'+'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'3 3'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 3'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(bar=[‘3’], foo=‘d’)<br>
-Namespace(bar=[‘3’], foo=[‘3’])</p>
-</blockquote>
-<h3 id="const">const</h3>
-<h4 id="action-store-const-or-action-append-const">action=’'store_const&quot; or action=“append_const”</h4>
-<p>the examples are in the action</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>, action=<span class="string">'store_const'</span>, const=<span class="number">42</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'--foo'</span>)</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(foo=42)</p>
-</blockquote>
-<h4 id="like-f-or-foo-and-nargs">like -f or --foo and nargs=’?’</h4>
-<p>the examples are the same as examples in the nargs=’?’</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="string">'?'</span>,const=<span class="string">'c'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'?'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'3'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'3 --foo'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(bar=‘3’, foo=‘d’)<br>
-Namespace(bar=‘3’, foo=‘c’)<br>
-如果显式指定可选参数，但是不给它参数，那么如果有const的话，就会显示const的值，否则就会显示None</p>
-</blockquote>
-<h3 id="default">default</h3>
-<p>default对于可选参数来说，是有用的，当可选参数没有在command line中显示出来时被使用，但是对于必选参数来说，只有nargs=?或者*才能起作用。</p>
-<h4 id="对于可选参数">对于可选参数</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,default=<span class="number">43</span>)</span><br><span class="line">args = parser.parse_args([])</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 3'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(foo=‘43’)<br>
-Namespace(foo=‘3’)</p>
-</blockquote>
-<h4 id="对于必选参数">对于必选参数</h4>
-<p>对于nargs=‘+’是会出错</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(&apos;bar&apos;,nargs=&apos;+&apos;,default=&apos;d&apos;)</span><br><span class="line">args = parser.parse_args([])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>usage: [-h] bar [bar …]<br>
-: error: the following arguments are required: bar</p>
-</blockquote>
-<p>对于nargs=‘*’或者nargs=’?'就行了</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'?'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args([])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(bar=‘d’)</p>
-</blockquote>
-<h3 id="type">type</h3>
-<p>将输入的字符串参数转换为你想要的参数类型<br>
-对于文件类型来说，这个文件必须在当前目录存在。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--door'</span>,type=int)</span><br><span class="line">parser.add_argument(<span class="string">'filename'</span>,type=file)</span><br><span class="line">parser.parse_args([<span class="string">'--door'</span>,<span class="string">'3'</span>,<span class="string">'hello.txt'</span>])</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(door=3)<br>
-这里的door就是int类型的</p>
-</blockquote>
-<h3 id="choices">choices</h3>
-<p>输入的参数必须在choices这个范围中，否则就会报错</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParse()</span><br><span class="line">parser.add_argument(<span class="string">'--door'</span>,type=int,choices=range(<span class="number">1</span>,<span class="number">9</span>))</span><br><span class="line">parser.parse_args([<span class="string">'--door'</span>,<span class="string">'3'</span>])</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(door=3)</p>
-</blockquote>
-<h3 id="required">required</h3>
-<p>如果将required设置为True的话，那么这个可选参数必须要设置的</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>, <span class="string">'--foo-bar'</span>, <span class="string">'--foo'</span>,required=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="help-v2">help</h3>
-<p>help可以设置某个参数的简要介绍。<br>
-使用help=argparse.SUPRESS可以在help界面中不显示这个参数的介绍</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>, <span class="string">'--foo-bar'</span>, <span class="string">'--foo'</span>,help=<span class="string">'fool you '</span>)</span><br><span class="line">parser.add_argument(<span class="string">'-xs'</span>, <span class="string">'--y'</span>,help=argparse.SUPPRESS)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>usage: [-h] [-f FOO_BAR]</p>
-</blockquote>
-<blockquote>
-<p>optional arguments:<br>
--h, --help            show this help message and exit<br>
--f FOO_BAR, --foo-bar FOO_BAR, --foo FOO_BAR<br>
-fool you</p>
-</blockquote>
-<h3 id="dest">dest</h3>
-<p>dest就是在help输出时显示的optional和positional参数后跟的名字（没有指定metavar时）<br>
-如下,dest就是FOO<br>
--foo FOO</p>
-<h4 id="positional-argument">positional argument</h4>
-<p>dest is normally supplied as the first argument to add_argument()</p>
-<h4 id="可选参数">可选参数</h4>
-<p>对于optional argument选择，–参数最长的一个作为dest，如果没有最长的，选择第一个出现的，如果没有–参数名，选择-参数。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>, <span class="string">'--foo-bar'</span>, <span class="string">'--foo'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'-xs'</span>, <span class="string">'--y'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'-f 1 -xs 2'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 1 --y 2'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(foo_bar=‘1’, y=‘2’)<br>
-Namespace(foo_bar=‘1’, y=‘2’)<br>
-usage: [-h] [-f FOO_BAR] [-xs Y]</p>
-</blockquote>
-<blockquote>
-<p>optional arguments:<br>
--h, --help            show this help message and exit<br>
--f FOO_BAR, --foo-bar FOO_BAR, --foo FOO_BAR<br>
--xs Y, --y Y</p>
-</blockquote>
-<h3 id="metavar">metavar</h3>
-<p>如果指定metavar变量名的话，那么help输出的postional和positional参数后跟的名字就是metavar的名字而不是dest的名字</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>, <span class="string">'--foo-bar'</span>, <span class="string">'--foo'</span>,metavar=<span class="string">"FOO"</span>)</span><br><span class="line">parser.add_argument(<span class="string">'-xs'</span>, <span class="string">'--y'</span>,metavar=<span class="string">'XY'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'-f 1 -xs 2'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 1 --y 2'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
-<p>输出</p>
-<blockquote>
-<p>Namespace(foo_bar=‘1’, y=‘2’)<br>
-Namespace(foo_bar=‘1’, y=‘2’)<br>
-usage: [-h] [-f FOO] [-xs XY]</p>
-</blockquote>
-<blockquote>
-<p>optional arguments:<br>
--h, --help            show this help message and exit<br>
--f FOO, --foo-bar FOO, --foo FOO<br>
--xs XY, --y XY</p>
-</blockquote>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2689,7 +2636,7 @@ usage: [-h] [-f FOO] [-xs XY]</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">151</span>
+                    <span class="site-state-item-count">153</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2730,7 +2677,9 @@ usage: [-h] [-f FOO] [-xs XY]</p>
                     
                       
                     
-                    <span class="site-state-item-count">14</span>
+                      
+                    
+                    <span class="site-state-item-count">15</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3049,7 +2998,15 @@ usage: [-h] [-f FOO] [-xs XY]</p>
                     
                       
                     
-                    <span class="site-state-item-count">153</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">157</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
