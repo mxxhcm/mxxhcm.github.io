@@ -60,6 +60,33 @@ $$max_{s}\|\mathbb{E}_{\pi}\left[G_{t:t+n}\|S_t = \right]- v_{\pi}(s)\| \le \gam
 所以所有的n-step TD方法都可以收敛到真实值，MC和one-step TD是其中的一种特殊情况。
 
 ## n-step Sarsa
+上一章介绍了one-step Sarsa，这一章介绍一下n-step Sarsa。n-step Sarsa的backup图如下所示：
+![n_step_sarsa](n_step_sarsa.png)
+就是将n-stepTD的state换成state-action就行了。定义action value的n-step returns如下：
+$$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+1} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^n Q_{t+n-1}(S_{t+n},A_{t+n}), n\ge 1, 0\le t\le T-n$$
+如果$t+n\ge T$，那么$G_{t:t+n} = G_t$。完整的$n$-step Sarsa如下所示：
+n-step Sarsa算法，估计$Q\approx q_{\*}$
+随机初始化$Q(s,a),\forall s\in S, a\in A$
+初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy
+算法参数：step size $\alpha \in (0,1\], \epsilon \gt 0$，一个正整数$n$
+Loop for each episode
+    初始化$S_0\neq$ terminal
+    选择action $A_0= \pi(\cdot| S_0)$
+$T\leftarrow \infty$
+Loop for $t=0,1,2,\cdots$
+If $t\le T$,then:
+采取action $A_t$，
+接收rewared $R_{t+1}$以及下一个state $S_{t+1}$
+如果$S_{t+1}$是terminal，那么
+$T\leftarrow t+1$
+否则选择$A_{t+1} = \pi(\cdot|S_{t+1})$
+$\tau \leftarrow t-n+1$
+If $\tau \ge 0$
+$G\leftarrow \sum_{i=\tau +1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$
+If $\tau+n \le T$,then
+$G\leftarrow G+\gamma^n Q(S_{\tau+n}, A_{\tau+n})$
+$$Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$$
+Until $\tau =T-1$
 ## n-step Off-policy Learning
 ## 
 ## 参考文献
