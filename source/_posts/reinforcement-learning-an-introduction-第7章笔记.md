@@ -44,17 +44,20 @@ $\qquad$初始化 $S_0 \neq terminal$
 $\qquad$$T\leftarrow \infty$
 $\qquad$Loop for $t=0, 1, 2, \cdots:$
 $\qquad$ If $t\lt T$, then
-$\qquad$ 根据$\pi(\cdot|S_t)$执行action
-$\qquad$ 接收并记录$R_{t+1}, S_{t+1}$
-$\qquad$ 如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$
+$\qquad\qquad$ 根据$\pi(\cdot|S_t)$执行action
+$\qquad\qquad$ 接收并记录$R_{t+1}, S_{t+1}$
+$\qquad\qquad$ 如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$
 $\qquad$ End if
 $\qquad$ $\tau \leftarrow t - n + 1, \tau$是当前更新的时间
-$\qquad$ If $\tau \ge 0$, then
-$\qquad$ $G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$
-$\qquad$ 如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$
-$\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$
+$\qquad\qquad$ If $\tau \ge 0$, then
+$\qquad\qquad$ $G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$
+$\qquad\qquad$ 如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$
+$\qquad\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$
 $\qquad$ End if 
 Until $\tau = T-1$
+n-step return有一个重要的属性叫做error reduction property，在最坏的情况下，n-step returns的期望也是一个比$V_{t+n-1}$更好的估计：
+$$max_{s}\|\mathbb{E}_{\pi}\left[G_{t:t+n}\|S_t = \right]- v_{\pi}(s)\| \le \gamma^n max_s \| V_{t+n-1}(s)-v_{\pi}(s)\|$$
+所以所有的n-step TD方法都可以收敛到真实值，MC和one-step TD是其中的一种特殊情况。
 
 ## n-step Sarsa
 ## n-step Off-policy Learning

@@ -13,7 +13,7 @@ mathjax: true
 打开Settings >> Dock，可以设置dock的位置和大小，以及自动隐藏。这些是ubuntu安装的默认配置。
 
 ### dconf安装
-为了更多的设置，需要安装dconf-editor
+为了更多的设置，需要安装dconf-editor，dconf相当于windows注册表的gnome，存储应用程序设置的gnome技术。
 ~\\$:sudo apt install dconf-tools
 按下Win键，搜索dconfig-editor，打开它。
 找到org>>gnome>>shell>>extensions>>dash-to-dock，然后就可以修改相应的配置了。也可以在命令行中进行相应的设置，这里就不说了，可以查看参考文献尝试。
@@ -34,38 +34,38 @@ mathjax: true
 ## 安装gnome-shell
 ### 安装gnome tweak tool
 ~\\$:sudo apt install gnome-tweak-tool
-gnome tweak 用来查看本地的gnome 插件。
+~\\$:gnome-shell --version
+gnome tweak用来查看本地的gnome 插件。
 
 ### 从ubuntu 仓库安装extensions
 ubuntu 提供了gnome-shell-extensions包，该包中有部分gnome扩展。然后可以使用gnome tweaks查看已经安装的程序。
 ~\\$:sudo apt install gnome-shell-extensions
 
 ### 在浏览器上安装gnome shell integration插件
-在firfox或者chrome上安装相应的gnome shell integration插件。
+在firfox或者chrome上安装相应的gnome shell integration插件，直接google搜索安装就行了。
 这个时候是不能添加插件的，因为还缺少一个东西，叫做native host connector
 这种方法和从ubuntu仓库中装extension的不同之处是，ubuntu包中的扩展是固定的一部分，这中方法可以自定义安装。
 安装完之后可以直接在浏览器的gnome shell integration插件上查看在浏览器上安装的gnome shell扩展，也可以使用gnome tweaks查看浏览器上安装的shell extensions。
 
-### 安装chrome-gnome-shell native host connector
+#### 安装chrome-gnome-shell native host connector
 执行以下命令进行安装，chrome-gnome-shell并不是代表chrome浏览器的意思，用任何浏览器都要执行以下命令
 ~\\$:sudo apt install chrome-gnome-shell
 查看gnome shell版本
 ~\\$:gnome-shell --version
 
-### 安装相应的插件
-#### 命令行下
+#### 安装浏览器附加组件
+##### 浏览器中安装
+直接打开gnome shell extensions图形化界面进行搜索安装
+
+##### 命令行安装
 搜索
 ~\\$:sudo apt search gnome-shell-extension
 安装
 ~\\$:sudo apt install gnome-shell-extension-package-name
 
-#### 浏览器中
-直接打开gnome shell extensions图形化界面进行搜索安装
-
 
 ### 插件推荐
 - Coverflow Alt-Tab 按alt tab切换程序效果[7]
-
 
 ## 修改主题
 下载系统主题文件，解压缩，放置在/usr/share/themes文件夹下。然后在tweaks中的Apperance选项修改。
