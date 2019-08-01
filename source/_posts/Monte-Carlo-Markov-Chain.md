@@ -43,7 +43,7 @@ $$sQ = s$$
 首先考虑，给定一个beta分布，如何进行采样？MCMC提供了从任意概率分布中采样的方法，尤其是当我们计算后验概率时极为有用。在贝叶斯公式中，如下图所示，我们需要从后验分布中进行采样，但是后验分布并不是那么好计算的，因为牵扯到$p(D)$的计算，根据全概率公式，需要进行积分，而beta分布的积分并不好解。
 ![bayesian](bayesian.png)
 
-Wikipedia上MCMC的定义：MCMC是一类方法的统称，MCMC方法构建一个Markov chain，这个Markov chain的stationary distribution是我们的目标distribution，然后进行采样。经过很多步之后的一个state可以看成是我们目标distribution的一个样本
+Wikipedia上MCMC的定义：MCMC是一类方法的统称，MCMC方法构建一个Markov chain，这个Markov chain的stationary distribution是我们的目标distribution，然后进行采样。经过很多步之后的一个state可以看成是我们目标distribution的一个样本。简单解释以下就是，给定一个概率分布$p(x)$，我们想要生成这个概率分布的一些样本。因为马尔科夫链能够收敛到stationary distribution，我们的想法就是构造一个转移矩阵为$P$的马尔科夫连，使得该马尔科夫的stationry distribution是$p(x)$，那么不管我们从任何初始状态$x_0$出发，得到一个马尔科夫链$x_0,x_1,\cdots, x_t,x_{t+1}, \cdots$，如果马尔科夫链在第$n$步已经到了stationary distribution，那么$t+1$后的states都可以看成$p(x)$的样本。
 
 ## 示例
 我们从Beta分布中进行采样，Beta分布的公式如下所示：
