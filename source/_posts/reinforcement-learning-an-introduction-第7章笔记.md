@@ -57,14 +57,14 @@ $\qquad\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$
 $\qquad$ End if 
 Until $\tau = T-1$
 n-step return有一个重要的属性叫做error reduction property，在最坏的情况下，n-step returns的期望也是一个比$V_{t+n-1}$更好的估计：
-$$max_{s}\|\mathbb{E}_{\pi}\left[G_{t:t+n}\|S_t = \right]- v_{\pi}(s)\| \le \gamma^n max_s \| V_{t+n-1}(s)-v_{\pi}(s)\|$$
+$$max_{s}|\mathbb{E}_{\pi}\left[G_{t:t+n}|S_t = s\right]- v_{\pi}(s)| \le \gamma^n max_s | V_{t+n-1}(s)-v_{\pi}(s)|$$
 所以所有的n-step TD方法都可以收敛到真实值，MC和one-step TD是其中的一种特殊情况。
 
 
 ## n-step Sarsa
 上一章介绍了one-step Sarsa，这一章介绍一下n-step Sarsa。n-step Sarsa的backup图如下所示：
 ![n_step_sarsa](n_step_sarsa.png)
-就是将n-stepTD的state换成state-action就行了。定义action value的n-step returns如下：
+就是将n-step TD的state换成state-action就行了。定义action value的n-step returns如下：
 $$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+1} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^n Q_{t+n-1}(S_{t+n},A_{t+n}), n\ge 1, 0\le t\le T-n$$
 如果$t+n\ge T$，那么$G_{t:t+n} = G_t$。
 完整的$n$-step Sarsa如下所示：

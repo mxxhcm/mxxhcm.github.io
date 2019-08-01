@@ -26,6 +26,7 @@ $\simeq$    \simeq
 $\approx$   \approx
 $\cong$ \cong
 $\equiv$    \equiv
+$\propto$ \propto
 ### 各种乘法
 $\times$ \times
 $\*$ *
@@ -76,6 +77,7 @@ $$\begin{Vmatrix}1&2\\\\3&4\end{Vmatrix}$$
 ### 希腊字母
 $\eta$ \eta
 $\gamma$ \gamma
+$\Gamma$ \Gamma
 $\epsilon$ \epsilon
 $\varepsilon$ \varepsilon
 $\lambda$ \lambda
