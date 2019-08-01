@@ -48,7 +48,7 @@ Wikipedia上MCMC的定义：MCMC是一类方法的统称，MCMC方法构建一�
 ## 示例
 我们从Beta分布中进行采样，Beta分布的公式如下所示：
 $$f(\theta;\alpha, \beta) = \frac{1}{B(\alpha, \beta)}\theta\^{\alpha-1}(1-\theta)\^{\beta-1},\alpha\gt 0,\beta\gt 0, x\in \left[0,1\right]$$
-其中，$\frac{1}{B(\alpha, \beta)} = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$，是$\alhpa,\beta$的函数，这里我们假设$\alpha,\beta$是固定的。
+其中，$\frac{1}{B(\alpha, \beta)} = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$，是$\alpha,\beta$的函数，这里我们假设$\alpha,\beta$是固定的。
 MCMC方法能够创建一个Markov chain，它的stationary distribution是Beta distribution。
 
 定义$s=(s_1,s_2,\cdots, s_M)$是desired stationary distribution。我们的目标是创建一个Markov Chain，它的stationary distribution是desitred stationary distribution。随机初始化一个具有$M$个states的Markov Chain，transition matrix 是$P$，$p_{ij}$代表从state $i$到$j$的概率。
