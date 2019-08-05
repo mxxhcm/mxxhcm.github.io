@@ -8,26 +8,23 @@ categories: 强化学习
 mathjax: true
 ---
 
-## 概述
-这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求，一种是on-policy的方法，使用soft的policy，即有一定概率随机选择action，其余情况下选择最好的action。这种情况下学习到的policy不是greedy的，同时也能进行exploration。一种是off-policy的方法，这种方法使用两个不同的policy，一个用来采样的behaviour policy，一个用来评估的target policy。target policy是一个deterministic policy，而behaviour policy用来exploration。
-
-## MC简介
-通过采样估计值函数。有三个优势，从真实experience中学习，从仿真环境中学习，以及每个state value的计算独立于其他state。
-
 ## MC Methods
-这一章介绍的是Monte Carlo方法，和DP不一样的是，它不需要环境的信息，只需要experience即可--从真实交互或者仿真环境中得到的state,action,reward序列都行。从真实交互中学习不需要环境的信息，从仿真环境中学习需要一个model，但是这个model只用于生成sample transition，并不需要像DP那样需要所有transition的完整概率分布。在很多情况下，生成experience sample要比显示的得到概率分布容易很多。
-
-蒙特卡洛算法基于average sample returns估计值函数。为了保证returns是可用的，这里定义蒙特卡洛算法是episodic的，即所有的experience都有一个terminal state。只有在一个episode结束的时候，value estimate和policy才会改变。蒙塔卡洛算法可以在episode和episode实现增量式，不能在step和step之间实现增量式。(Monte Carlo methods can thus be incremental in an episode-by-episode sense, but not in a step-by-step online sense.)
-蒙特卡洛算法通过从采样和average returns对每一个state-action进行评估。在一个state采取action得到的return取决于同一个episode后续状态的action，因为所有的action都是在不断学习中采取，从早期state的角度来看，这个问题是non-stationary的。为了解决non-stationary问题，采用GPI中的idea。DP从已知的MDP中计算value function，蒙特卡洛使用MDP的sample returns学习value function。然后value function和对应的policy交互获得好的value和policy。
-这一章就是把DP中的各种想法推广到了MC上，比如prediction和control问题，DP使用的是整个MDP，而MC使用的是MDP的采样。
-
+这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft policy，即有一定概率随机选择action，其余情况下选择最好的action。这种情况下学习到的policy不是greedy的，同时也能进行一定的exploration。一种是off-policy的方法，这种方法使用两个不同的policy，一个用来采样的behaviour policy，一个用来评估的target policy。target policy是一个deterministic policy，而behaviour policy用来exploration。
+MC方法通过采样估计值函数有三个优势，从真实experience中学习，从仿真环境中学习，以及每个state value的计算独立于其他state。
+MC和DP不一样的是，它不需要环境的信息，只需要experience即可，不管是从真实交互还是从仿真环境中得到的state,action,reward序列都行。从真实交互中学习不需要环境的信息，从仿真环境中学习需要一个model，但是这个model只用于生成sample transition，并不需要像DP那样需要所有transition的完整概率分布。在很多情况下，生成experience sample要比显示的得到概率分布容易很多。
+MC基于average sample returns估计值函数。为了保证returns是可用的，这里定义蒙特卡洛算法是episodic的，即所有的experience都有一个terminal state。只有在一个episode结束的时候，value estimate和policy才会改变。蒙塔卡洛算法可以在episode和episode实现增量式，不能在step和step之间实现增量式。(Monte Carlo methods can thus be incremental in an episode-by-episode sense, but not in a step-by-step online sense.)
+在一个state采取action得到的return取决于同一个episode后续状态的action，因为所有的action都是在不断学习中采取，从早期state的角度来看，这个问题是non-stationary的。为了解决non-stationary问题，采用GPI中的idea。DP从已知的MDP中计算value function，蒙特卡洛使用MDP的sample returns学习value function。然后value function和对应的policy交互获得好的value和policy。
+这一章就是把DP中的各种想法推广到了MC上，解决prediction和control问题，DP使用的是整个MDP，而MC使用的是MDP的采样。
 
 ## MC Prediction
-预测问题就是估计value function，从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。
+Prediction problem就是估计value function，value function又分为state value function和action value function。这里会分别给出state value function和action value function的估计方法。
 
-### First visti MC method
-这里主要介绍两个算法，一个叫做$first visit MC method$，另一个是$every visit MC method$。比如要估计策略$\pi$下的$v(s)$，通过采样一系列经过$s$的episodes，$s$在每一个episode中出现一次叫做一个$visit$，一个$s$可能在一个episode中出现多次。$first visit$就是只取第一次$visit$估计$v(s)$，$every visit$就是每一次$visit$都用。
-下面给出$first visit$的算法：
+### State value function
+从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。
+
+#### First visti MC method
+这里主要介绍两个算法，一个叫做first visit MC method，另一个是every visit MC method。比如要估计策略$\pi$下的$v(s)$，使用策略$\pi$采样一系列经过$s$的episodes，$s$在每一个episode中出现一次叫做一个visit，一个$s$可能在一个episode中出现多次。First visit就是只取第一次visit估计$v(s)$，every visit就是每一次visit都用。
+下面给出first visit的算法：
 算法1 **First visit MC preidction**
 **输入** 被评估的policy $\pi$
 **初始化**:
@@ -38,48 +35,47 @@ $\qquad$生成一个episode
 $\qquad G\leftarrow 0$
 $\qquad$**Loop** for each step, $t= T-1,T-2, \cdots, 1$
 $\qquad\qquad G\leftarrow G + \gamma R_t$
-$\qquad\qquad$ 如果$S_t$没有在$S_0, \cdots , S\_{t-1}$中出现过
+$\qquad\qquad$ IF $S_t$没有在$S_0, \cdots , S\_{t-1}$中出现过
 $\qquad\qquad\qquad Returns(S_t).apppend(G)$
 $\qquad\qquad\qquad V(S_t)\leftarrow average(Returns(S_t))$ 
-every visit的话，不用加上判断$S_t$是否出现过的那一句就行了。当$s$处的visit趋于无穷的时候，first vist和every visit算法中$v\_{\pi}(s)$都能收敛。
-first visit中，每一个return都是$v\_{\pi}(s)$的一个独立同分布估计。根据大数定律，估计平均值（$average(Returns(S_0),\cdots, average(Returns(S_t)$）的序列收敛于它的期望。每一个average都是它自己的一个无偏估计，标准差是$\frac{1}{\sqrt{n}}$。every visit的收敛更难直观的去理解，但是它二次收敛于$v\_{\pi}(s)$。
+$\qquad\qquad END IF$ 
+Every visit算法的话，不用判断$S_t$是否出现。当$s$的visit趋于无穷的时候，first vist和every visit算法$v\_{\pi}(s)$都能收敛。First visit中，每一个return都是$v\_{\pi}(s)$的一个独立同分布估计。根据大数定律，估计平均值（$average(Returns(S_0),\cdots, average(Returns(S_t)$）的序列收敛于它的期望。每一个average都是它自己的一个无偏估计，标准差是$\frac{1}{\sqrt{n}}$。every visit的收敛更难直观的去理解，但是它二次收敛于$v\_{\pi}(s)$。
 补充一点：
 大数定律：无论抽象分布如何，均值服从正态分布。
 中心极限定理：样本大了，抽样分布近似于整体分布。
 
 这里再次对比一下DP和MC，在扑克牌游戏中，我们知道环境的所有信息，但是我们不知道摸到下一张牌的概率，比如我们手里有很多牌了，我们知道下一张摸到什么牌会赢，但是我们不知道这件事发生的概率。使用MC可以采样获得，所以说，即使有时候知道环境信息，MC方法可能也比DP方法好。
 
-### MC backup diagram
+#### MC backup diagram
 能不能推广DP中的backup图到MC中？什么是backup图？backup图顶部是一个root节点，表示要被更新的节点，下面是所有的transitions，leaves是对于更新有用的reward或者estimated values。
-MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹，以terminal state为终止节点。
-MC图和DP图的对比，DP图展示了所有可能的transitions，而MC图只展示了采样的那个episode；DP图只包含一步的transitions，而MC图包含一个episode的所有序列。
+MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹，以terminal state为终止节点。DP backup diagram展示了所有可能的transitions，而MC backup diagram只展示了采样的那个episode；DP backup diagram只包含一步的transitions，而MC backup diagram包含一个episode的所有序列。
 ![mc backup]()
 ![dp backup page 59]()
 
-### MC的特点
+#### MC的特点
 DP中每个state的估计都依赖于它的后继state，而MC中每个state value的计算都不依赖于任何其他state value（MC算法不进行bootstrap），所以可以单独估计某一个state或者states的一个子集。而且估计单个state的计算复杂度和states的数量无关，我们可以只取感兴趣的states子集进行评估，这是MC的第三个优势。前两个优势是从actural experience中学习和从simulated的experience中学习。
 
-## MC Estimation of Q
-如果没有model的话，需要估计state-action value而不是state value。有model的话，只有state value就可以确定policy，可以估计一步，选择使reward和next_state value加起来最大的action。没有model的话，只用state value是不够的，因为不知道下一个state是什么。而只用action value是可以确定policy的，选择值最大的那个action value，采用相应的action即可。所以这一节的目标是学习action value function。
-和第一节介绍的方法不同的是，第一节求解的是state value，这里换成了aciton value。有一个问题是许多state-action可能从来没有被访问过，如果$\pi$是deterministic的，每一个state输出一个action，其他action的MC估计没有returns进行平均，就无法进行更新。所以，我们需要估计每一个state对应的所有action，这是exploration问题。
+### Action value function
+如果没有model的话，需要估计state-action value而不是state value。有model的话，只有state value就可以确定policy，选择使reward和next_state value加起来最大的action即可。没有model的话，只有state value是不够的，因为不知道下一个state是什么。而使用action value，就可以确定policy，选择$q$值最大的那个action value，取相应的action即可。
+所以这一节的目标是学习action value function。有一个问题是许多state-action可能一次也没有被访问过，如果$\pi$是deterministic的，每一个state只输出一个action，其他action的MC估计没有returns进行平均，就无法进行更新。所以，我们需要估计每一个state对应的所有action，这是exploration问题。
 对于action value的policy evaluation，必须保证continual exploration。一种实现方式是指定episode开始的state-action pair，每一个pair都有大于$0$的概率被选中,这就保证了每一个action-pair在无限个episode中会被访问无限次，这叫做exploring starts。这种假设有时候有用，但是在某些时候，我们无法控制环境产生的experience，可行的方法是使用stochastic policy。
 
 ## MC Control
-MC control使用的还是GPI的想法，估计当前policy的action value，基于action value改进policy，不断迭代。
-这里考虑经典的policy iteration，执行一次完全的iterative policy evaluation，再执行一次完全的policy improvement，不断迭代。对于policy evaluation，每次evaluation都使用多个episodes的experience，每次action value都会离true value function更近。这里我们假设有无限个exploring starts生成的episodes，满足这些条件时，对于任意$\pi_k$都会精确计算出$q\_{\pi_k}$。对于policy improvement，只要对于当前的action value function进行贪心即可，即：
+MC control使用的还是GPI的想法，估计当前policy的action value，基于action value改进policy，不断迭代。考虑经典的policy iteration，执行一次完全的iterative policy evaluation，再执行一次完全的policy improvement，不断迭代。对于policy evaluation，每次evaluation都使用多个episodes的experience，每次action value都会离true value function更近。假设我们有无限个exploring starts生成的episodes，满足这些条件时，对于任意$\pi_k$都会精确计算出$q\_{\pi_k}$。进行policy improvement时，只要对于当前的action value function进行贪心即可，即：
 $$\pi(s) = arg\ max_a q(s,a)\tag{1}$$
-第$4$章给出了证明，即policy improvement theorem。在每一轮improvement中，对所有的$s\in $，执行：
+第$4$章给出了证明，即policy improvement theorem。在每一轮improvement中，对所有的$s\in S$，执行：
 \begin{align\*}
 q\_{\pi_k}(s,\pi\_{k+1}(s)) &=q\_{\pi_k}(s, argmax_a q\_{\pi_k}(s,a))\\\\
-&max_a q\_{\pi_k}(s,a)\\\\
-&\gt q\_{\pi_k}(s, \pi_k(s))\\\\
-&\gt v\_{\pi_k}(s)\\\\
+&=max_a q\_{\pi_k}(s,a)\\\\
+&\ge q\_{\pi_k}(s, \pi_k(s))\\\\
+&\ge v\_{\pi_k}(s)\\\\
 \end{align\*}
-为了给出MC算法的收敛保证，上述算法需要满足两个假设，一个是eploring start，一个是policy evaluation需要无限个episode的experience。但是现实中，这两个条件是不可能满足的，我们需要替换掉这些条件，使得效果并不会有太大的影响。
-无限个episode的假设比较容易去掉，在DP方法中也有这些问题。在DP和MC任务中，都有两种方法去掉无限episode的限制，第一种方法是像iterative policy evaluation一样，规定一个误差的bound，在每一次evaluation迭代，逼近$q\_{\pi_k}$，通过足够多的迭代确保误差小于bound，可能需要很多个episode才能达到这个bound。第二种是进行不完全的policy evaluation，和DP一样，使用小粒度的policy evaluation，可以只执行iterative policy evaluation的一次迭代，也可以执行一次单个state的improvement和evaluation。对于MC方法来说，很自然的就想到基于一个episode进行evaluation和improvement。每经历一个episode，执行该episode内相应state的evaluation和improvement。
-也就是说一个是规定每次迭代的bound，一个是规定每次迭代的次数。
+MC算法的收敛保证需要满足两个假设，一个是exploring start，一个是policy evaluation需要无限个episode的experience。但是现实中，这两个条件是不可能满足的，我们需要替换掉这些条件近似接近最优解。
 
-### 伪代码
+### MC Control without infinte episodes
+无限个episodes的条件比较容易去掉，在DP方法中也有这些问题。在DP和MC任务中，都有两种方法去掉无限episode的限制，第一种方法是像iterative policy evaluation一样，规定一个误差的bound，在每一次evaluation迭代，逼近$q\_{\pi_k}$，通过足够多的迭代确保误差小于bound，可能需要很多个episode才能达到这个bound。第二种是进行不完全的policy evaluation，和DP一样，使用小粒度的policy evaluation，可以只执行iterative policy evaluation的一次迭代，也可以执行一次单个state的improvement和evaluation。对于MC方法来说，很自然的就想到基于一个episode进行evaluation和improvement。每经历一个episode，执行该episode内相应state的evaluation和improvement。也就是说一个是规定每次迭代的bound，一个是规定每次迭代的次数。
+
+#### 伪代码
 算法2 **First visit MCES**
 **初始化**
 $\qquad$任意初始化$\pi(s)\in A(s), \forall s\in S$
@@ -97,7 +93,7 @@ $\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$
 $\qquad\qquad\qquad \pi(S_t) \leftarrow argmax_a Q(S_t,a)$
 这个算法一定会收敛到全局最优解，因为如果收敛到一个suboptimal policy，value function在迭代过程中会收敛到该policy的true value function，接下来的policy improvement会改进该suboptimal policy。
 
-## MC Control without ES
+## On-policy MC Control without ES
 上节主要是去掉了无穷个episode的限制，这节需要去掉ES的限制，解决方法是需要agents一直能够去选择所有的actions。目前有两类方法实现，一种是on-policy，一种是off-policy。
 
 ### on-policy和off-policy
@@ -153,7 +149,7 @@ on policy更简单，off policy使用两个不同的policy，所以variance更�
 ### importance sampling和importance sampling ratio
 很多off policy方法使用importance sampling，利用一个distribution的samples估计另一个distribution的value function。Importance sampling通过计算trajectoried在target和behaviour policy中出现的概率比值对returns进行加权，这个相对概率称为importance sampling ratio。给定以$S_t$为初始状态的sate-action trajectory，它在任何一个policy $\pi$中发生的概率如下：
 \begin{align\*}
-&Pr\{A_t, S\_{t+1},A\_{t+1},\cdots,S_T|S_t,A\_{t:T-1}\~\pi\}\\\\
+&Pr\\{A_t, S\_{t+1},A\_{t+1},\cdots,S_T|A\_{t:T-1}\sim \pi,S_t\\}\\\\
 =&\pi(A_t|S_t)p(S\_{t+1}|S_t,A_t)\pi(A\_{t+1}|S_{t+1})\cdots p(S_T|S\_{T-1},A\_{T-1})\\\\
 =&\prod\_{k=t}^{T-1}\pi(A_k|S_k)p(S\_{k+1}|S_k,A_k)
 \end{align\*}
@@ -206,7 +202,7 @@ $$\mathbb{E}\_b\left[\left(\prod\_{t=0}\^{T-1}\frac{\pi(A_t|S_t)}{b(A_t|S_t)}G_0
 =&\infty \tag{8}\\\
 \end{align\*}
 
-## Incremental Implementation
+### Incremental Implementation
 Monte Carlo prediction可以增量式实现，用episode-by-episode bias。
 在on-policy算法中，$V_t$的估计通过直接对多个episode的$G_t$进行平均得到。
 $$V_n(s) = \frac{G_1 + G_2 + \cdots + G\_{n-1}}{n - 1} \tag{9}$$
@@ -243,6 +239,7 @@ V\_{n+1}&=\frac{\sum\_{k=1}\^{n}W_kG_k}{\sum\_{k=1}\^{n}W_k}\\\\
 \end{align\*}
 其中$C_0=0, C\_{n+1} = C_n + W\_{n+1}$，事实上，在$W_k=1$的情况下，即$\pi=b$时，上面的公式就变成了on-policy的公式。接下来给出一个episode-by-episode的MC  policy evaluation incremental algorithm，使用的是weighted importance sampling。
 
+### Off-policy MC Prediction 算法
 算法 4 Off-policy MC prediction(policy evaluation)
 输入: 一个任意的target policy $\pi$
 初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s)$
@@ -251,17 +248,18 @@ $\qquad$$b\leftarrow$ 任意覆盖target policy $\pi$的behaviour policy
 $\qquad$用behaviour policy $b$生成一个episode，$S_0,A_0,R_1,\cdots, S\_{T-1},A\_{T-1},R_T$
 $\qquad$$G\leftarrow 0$
 $\qquad$$W\leftarrow 1$
-$\qquad$**for** $t \in T-1,T-2,\cdots, 0$并且$W\neq 0$
+$\qquad$**FOR** $t \in T-1,T-2,\cdots, 0$并且$W\neq 0$
 $\qquad\qquad$$G\leftarrow G+\gamma R\_{t+1}$
-$\qquad\qquad$$W\leftarrow = W\cdot \frac{\pi(A_t|S_t}{b(A_t|S_t)}$！！！原书中这个是放在最后一行的，我怎么觉得应该放在这里。。
+$\qquad\qquad$$W\leftarrow = W\cdot \frac{\pi(A_t|S_t)}{b(A_t|S_t)}$！！！原书中这个是放在最后一行的，我怎么觉得应该放在这里。。
 $\qquad\qquad$$C(S_t, A_t)\leftarrow C(S_t, A_t)+W$
-$\qquad\qquad$$Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_t-Q(S_t,A_t)$
+$\qquad\qquad$$Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_t-Q(S_t,A_t))$
+$\qquad$**END FOR**
 **思考：这里怎么把它转换为first-visit的算法**
 
 ## Off-policy MC Control
 这一节给出一个off-policy的MC control算法，target policy是greedy算法，而behaviour policy是soft算法，在不同的episode中可以采用不同的behaviour policy。
 算法 5 Off-policy MC control
-初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s), \pi(s0\leftarrow arg max_aQ(s, a)$
+初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s), \pi(s)\leftarrow arg max_aQ(s, a)$
 **Loop** forever (for each episode)
 $\qquad$$b\leftarrow$ 任意覆盖target policy $\pi$的behaviour policy
 $\qquad$用behaviour policy $b$生成一个episode，$S_0,A_0,R_1,\cdots, S\_{T-1},A\_{T-1},R_T$
