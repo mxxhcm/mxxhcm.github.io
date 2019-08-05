@@ -442,48 +442,158 @@
       
         
           
-            <h2 id="例行性工作"><a href="#例行性工作" class="headerlink" title="例行性工作"></a>例行性工作</h2><ul>
+            <h2 id="例行性工作">例行性工作</h2>
+<ul>
 <li>at    仅执行一次</li>
 <li>cron  周期性执行</li>
 <li>anacron   适合不常开机的设置</li>
 </ul>
-<h2 id="at仅执行一次的工作调度"><a href="#at仅执行一次的工作调度" class="headerlink" title="at仅执行一次的工作调度"></a>at仅执行一次的工作调度</h2><h3 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h3><p>at [-lmdvc] TIME<br>    -m 当at完成时，即使没有输出信息，以mail通知用户<br>    -v 可以使用较明显的时间格式列出at调度中的工作<br>    -c 可以列出后面接的该项工作的实际命令内容<br>    -d 相当于atrm，可以取消一个at工作<br>    -l 相当于atq，列出目前系统上所有该用户的at调度<br>    -b 相当于batch<br>    TIME<br>        HH:MM    04:00<br>        HH:MM YYYY-MM-DD    05:00 2016-10-05<br>        HH:MM[pm|am] [Month] [Date] 04 January 10<br>        HH:MM [am|pm] + number [minutes|hours|days|weeks]<br>            now + 5 minutes<br>            05pm + 3days<br>            04pm + 10 days</p>
-<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><h4 id="创建一个job"><a href="#创建一个job" class="headerlink" title="创建一个job"></a>创建一个job</h4><p>~$:at now+1minutes<br>at>echo “create a job”<br>按ctrl+D结束<br>OK，但是这样子我找不到任何程序的输出在哪里。<br>所以可以改成这样子<br>at>echo “create a job” > at_job.output<br>或者<br>~$:echo “create a job” > at_job.output | at now</p>
-<h4 id="列出所有at-jobs"><a href="#列出所有at-jobs" class="headerlink" title="列出所有at jobs"></a>列出所有at jobs</h4><p>~$:at -l   # 列出at的所有任务<br>~$:atq</p>
-<h4 id="列出某个job"><a href="#列出某个job" class="headerlink" title="列出某个job"></a>列出某个job</h4><p>~$:at -c <a href="1, 2..">number</a> # 如果当前没有相应的job，会输出cannot find jobid x</p>
-<h4 id="删除某个job"><a href="#删除某个job" class="headerlink" title="删除某个job"></a>删除某个job</h4><p>~$:at -r 8<br>~$:atrm 1</p>
-<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p>/etc/at.allow   # 哪些人能使用<br>/etc/at.deny    # 哪些人不能使用<br>使用at命令的话，先查找at.allow，如果存在并且有内容，那么只有这些人能使用。如果不存在的话，就去找at.deny。</p>
-<h2 id="batch"><a href="#batch" class="headerlink" title="batch"></a>batch</h2><p>当空闲时执行，空闲指的是CPU占用率在$0.8$以下</p>
-<h2 id="crond例行性工作调度"><a href="#crond例行性工作调度" class="headerlink" title="crond例行性工作调度"></a>crond例行性工作调度</h2><h3 id="参数介绍"><a href="#参数介绍" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>crontab [-u user] [-ler]<br>    -u　只有root能设置这个参数<br>    -l　列出当前用户的所有crontab工作内容<br>    -e  编辑crontab的内容<br>    -r　删除所有crontab的内容</p>
-<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><h4 id="新建crontab"><a href="#新建crontab" class="headerlink" title="新建crontab"></a>新建crontab</h4><p><strong>注意：周与月日不可共存</strong><br>~$:crontab -e<br>* * * * * cmd<br>分钟　小时　日期　月份　星期<br>*表示任何取值，<br>-表示时间范围 0-59,<br>“,”表示分隔 3,6,9<br>“/n”，如*/5每过五个单位(分钟，小时，天)<br>比如添加每一小时给荟荟发一封邮件，需要添加以下内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* */1 * * * echo &quot;I love you.&quot; | mail -s &quot;huhui&quot; 18811367922@163.com</span><br></pre></td></tr></table></figure></p>
-<h4 id="删除一个crontab"><a href="#删除一个crontab" class="headerlink" title="删除一个crontab"></a>删除一个crontab</h4><p>~$:crontab -e<br>然后手动编辑要删除的crontab</p>
-<h4 id="删除所有crontab"><a href="#删除所有crontab" class="headerlink" title="删除所有crontab"></a>删除所有crontab</h4><p>~$:crontab -r # 删除所有的crontab</p>
-<h3 id="开启-var-log-cron-log"><a href="#开启-var-log-cron-log" class="headerlink" title="开启/var/log/cron.log"></a>开启/var/log/cron.log</h3><p>~$:vim /etc/rsyslog.d/50-default.conf<br>将rsylog文件中的#cron.*前的#去掉<br>~$:service rsyslog restart<br>~$:service cron restart<br>~$:vim /var/log/cron.log</p>
-<h3 id="系统任务"><a href="#系统任务" class="headerlink" title="系统任务"></a>系统任务</h3><p>/etc/crontab 为系统的例行性任务，它会执行以下run-parts</p>
+<h2 id="at仅执行一次的工作调度">at仅执行一次的工作调度</h2>
+<h3 id="参数说明">参数说明</h3>
+<p>at [-lmdvc] TIME<br>
+-m 当at完成时，即使没有输出信息，以mail通知用户<br>
+-v 可以使用较明显的时间格式列出at调度中的工作<br>
+-c 可以列出后面接的该项工作的实际命令内容<br>
+-d 相当于atrm，可以取消一个at工作<br>
+-l 相当于atq，列出目前系统上所有该用户的at调度<br>
+-b 相当于batch<br>
+TIME<br>
+HH:MM	04:00<br>
+HH:MM YYYY-MM-DD    05:00 2016-10-05<br>
+HH:MM[pm|am] [Month] [Date] 04 January 10<br>
+HH:MM [am|pm] + number [minutes|hours|days|weeks]<br>
+now + 5 minutes<br>
+05pm + 3days<br>
+04pm + 10 days</p>
+<h3 id="示例">示例</h3>
+<h4 id="创建一个job">创建一个job</h4>
+<p>~$:at now+1minutes<br>
+at&gt;echo &quot;create a job&quot;<br>
+按ctrl+D结束<br>
+OK，但是这样子我找不到任何程序的输出在哪里。<br>
+所以可以改成这样子<br>
+at&gt;echo “create a job” &gt; at_job.output<br>
+或者<br>
+~$:echo “create a job” &gt; at_job.output | at now</p>
+<h4 id="列出所有at-jobs">列出所有at jobs</h4>
+<p>~$:at -l   # 列出at的所有任务<br>
+~$:atq</p>
+<h4 id="列出某个job">列出某个job</h4>
+<p>~$:at -c [number](1, 2…) # 如果当前没有相应的job，会输出cannot find jobid x</p>
+<h4 id="删除某个job">删除某个job</h4>
+<p>~$:at -r 8<br>
+~$:atrm 1</p>
+<h3 id="配置文件">配置文件</h3>
+<p>/etc/at.allow   # 哪些人能使用<br>
+/etc/at.deny    # 哪些人不能使用<br>
+使用at命令的话，先查找at.allow，如果存在并且有内容，那么只有这些人能使用。如果不存在的话，就去找at.deny。</p>
+<h2 id="batch">batch</h2>
+<p>当空闲时执行，空闲指的是CPU占用率在$0.8$以下</p>
+<h2 id="crond例行性工作调度">crond例行性工作调度</h2>
+<h3 id="参数介绍">参数介绍</h3>
+<p>crontab [-u user] [-ler]<br>
+-u　只有root能设置这个参数<br>
+-l　列出当前用户的所有crontab工作内容<br>
+-e  编辑crontab的内容<br>
+-r　删除所有crontab的内容</p>
+<h3 id="示例-v2">示例</h3>
+<h4 id="新建crontab">新建crontab</h4>
+<p><strong>注意：周与月日不可共存</strong><br>
+~$:crontab -e<br>
+* * * * * cmd<br>
+分钟　小时　日期　月份　星期<br>
+*表示任何取值，<br>
+-表示时间范围 0-59,<br>
+&quot;,“表示分隔 3,6,9<br>
+”/n&quot;，如*/5每过五个单位(分钟，小时，天)<br>
+比如添加每一小时给荟荟发一封邮件，需要添加以下内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">* */1 * * * echo &quot;I love you.&quot; | mail -s &quot;huhui&quot; 18811367922@163.com</span><br></pre></td></tr></table></figure>
+<h4 id="删除一个crontab">删除一个crontab</h4>
+<p>~$:crontab -e<br>
+然后手动编辑要删除的crontab</p>
+<h4 id="删除所有crontab">删除所有crontab</h4>
+<p>~$:crontab -r # 删除所有的crontab</p>
+<h3 id="开启-var-log-cron-log">开启/var/log/cron.log</h3>
+<p>~$:vim /etc/rsyslog.d/50-default.conf<br>
+将rsylog文件中的#cron.*前的#去掉<br>
+~$:service rsyslog restart<br>
+~$:service cron restart<br>
+~$:vim /var/log/cron.log</p>
+<h3 id="系统任务">系统任务</h3>
+<p>/etc/crontab 为系统的例行性任务，它会执行以下run-parts</p>
 <ul>
 <li>/etc/cron.daily/</li>
 <li>/etc/cron.hourly/</li>
 <li>/etc/cron.monthly/</li>
 <li>/etc/cron.weekly/</li>
 </ul>
-<h3 id="自定义run-parts"><a href="#自定义run-parts" class="headerlink" title="自定义run-parts"></a>自定义run-parts</h3><p>直接编辑/etc/crontab文件，在其中添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># m h dom mon dow user	command</span><br><span class="line">\*/2 \* \* \* \* root   run-parts /etc/cron.minutely</span><br><span class="line">\*/5 \* \* \* \* root   run-parts /root/runcron</span><br><span class="line"># 上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本</span><br><span class="line">\* \* \* \* \* mxxmhh /bin/bash /home/mxxmhh/outputtime_minutes.sh</span><br></pre></td></tr></table></figure></p>
-<p>outputtime_minutes.sh脚本如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#! /bin/bash</span><br><span class="line">time=`date`</span><br><span class="line">echo $time &gt;&gt; /home/mxxmhh/test.log</span><br></pre></td></tr></table></figure></p>
-<h3 id="crontab-e-vs-vim-etc-crontab"><a href="#crontab-e-vs-vim-etc-crontab" class="headerlink" title="crontab -e vs vim /etc/crontab"></a>crontab -e vs vim /etc/crontab</h3><p>他们的格式不同，一个需要指定用户，一个不需要<br>只有root能够修改/etc/crontab，而crontab -e所有不在cron.deny中的用户都可以<br>/etc/crontab是系统的任务，crontab -e是用户的任务</p>
-<h3 id="配置文件-1"><a href="#配置文件-1" class="headerlink" title="配置文件"></a>配置文件</h3><p>ubuntu中没有下面两个配置项<br>/etc/cron.allow<br>/etc/cron.deny<br>即默认为所有用户都可以使用crontab</p>
-<h3 id="cron-spool"><a href="#cron-spool" class="headerlink" title="cron spool"></a>cron spool</h3><p>/var/spool/cron/crontabs/<br>该目录下为不同账号的crontab内容</p>
-<h2 id="anacron-处理非24小时开机的系统"><a href="#anacron-处理非24小时开机的系统" class="headerlink" title="anacron 处理非24小时开机的系统"></a>anacron 处理非24小时开机的系统</h2><h3 id="参数介绍-1"><a href="#参数介绍-1" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>anacron [-usfn] [job]<br>    -u 更新记录文件的时间戳<br>    -s 开始连续执行各项job，依据记录文件的时间戳判断是否进行<br>    -f 强制执行，不管时间戳<br>    -n 立即进行未进行的任务，而不延迟</p>
-<h3 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h3><p>系统的anacron文件都在目录/etc/cron*/*ana*存放<br>/etc/cron.daily/0anacron<br>0表示最先被执行，让时间戳先被更新，避免anacron误判<br>/etc/anacron    anacron的设置</p>
-<p>/var/spool/anacron/*<br>记录最近一次执行anacron的时间戳</p>
-<h2 id="mail命令介绍"><a href="#mail命令介绍" class="headerlink" title="mail命令介绍"></a>mail命令介绍</h2><p>mail -s “title” target_email_address<br>echo “content |mail -s “title” target_email_address<br>mail -s “title target_email_address &lt; file #将file的内容当做邮件正文</p>
-<h2 id="mail发送邮件"><a href="#mail发送邮件" class="headerlink" title="mail发送邮件"></a>mail发送邮件</h2><h3 id="安装相应软件"><a href="#安装相应软件" class="headerlink" title="安装相应软件"></a>安装相应软件</h3><p>~$:sudo apt-get install postfix mailutils libsasl2-2 ca-certificates libsasl2-modules<br>编辑/etc/postfix/main.cf文件，在文件末尾添加下列内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 指定默认的邮件发送服务器</span><br><span class="line">relayhost = [smtp.gmail.com]:587</span><br><span class="line"># 激活sasl认证</span><br><span class="line">smtp_sasl_auth_enable = yes</span><br><span class="line"># 指定sasl密码配置文件</span><br><span class="line">smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd</span><br><span class="line"># 非匿名登录</span><br><span class="line">smtp_sasl_security_options = noanonymous</span><br><span class="line"># linux用户与发件人的对应关系配置文件</span><br><span class="line">sender_canonical_maps = hash:/etc/postfix/sender_canonical </span><br><span class="line">smtp_tls_CApath = /etc/ssl/certs</span><br><span class="line">smtpd_tls_CApath = /etc/ssl/certs</span><br><span class="line">smtp_use_tls = yes</span><br></pre></td></tr></table></figure></p>
-<h3 id="创建密码配置文件"><a href="#创建密码配置文件" class="headerlink" title="创建密码配置文件"></a>创建密码配置文件</h3><p>~$:vim /etc/postfix/sasl_passwd<br>添加如下内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 163邮箱格式</span><br><span class="line">[smtp.163.com]:25 your163mail:your163mailpassword   #注意这里如果直接用passwd是会报错的，需要使用授权码</span><br><span class="line"># gamil邮箱格式</span><br><span class="line">[smtp.gmail.com]:587 yourgmail:yourgmailpassword</span><br></pre></td></tr></table></figure></p>
+<h3 id="自定义run-parts">自定义run-parts</h3>
+<p>直接编辑/etc/crontab文件，在其中添加</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># m h dom mon dow user	command</span><br><span class="line">\*/2 \* \* \* \* root   run-parts /etc/cron.minutely</span><br><span class="line">\*/5 \* \* \* \* root   run-parts /root/runcron</span><br><span class="line"># 上述两条命令中，需要对应的目录存在或者直接执行一个shell脚本</span><br><span class="line">\* \* \* \* \* mxxmhh /bin/bash /home/mxxmhh/outputtime_minutes.sh</span><br></pre></td></tr></table></figure>
+<p>outputtime_minutes.sh脚本如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#! /bin/bash</span><br><span class="line">time=`date`</span><br><span class="line">echo $time &gt;&gt; /home/mxxmhh/test.log</span><br></pre></td></tr></table></figure>
+<h3 id="crontab-e-vs-vim-etc-crontab">crontab -e vs vim /etc/crontab</h3>
+<p>他们的格式不同，一个需要指定用户，一个不需要<br>
+只有root能够修改/etc/crontab，而crontab -e所有不在cron.deny中的用户都可以<br>
+/etc/crontab是系统的任务，crontab -e是用户的任务</p>
+<h3 id="配置文件-v2">配置文件</h3>
+<p>ubuntu中没有下面两个配置项<br>
+/etc/cron.allow<br>
+/etc/cron.deny<br>
+即默认为所有用户都可以使用crontab</p>
+<h3 id="cron-spool">cron spool</h3>
+<p>/var/spool/cron/crontabs/<br>
+该目录下为不同账号的crontab内容</p>
+<h2 id="anacron-处理非24小时开机的系统">anacron 处理非24小时开机的系统</h2>
+<h3 id="参数介绍-v2">参数介绍</h3>
+<p>anacron [-usfn] [job]<br>
+-u 更新记录文件的时间戳<br>
+-s 开始连续执行各项job，依据记录文件的时间戳判断是否进行<br>
+-f 强制执行，不管时间戳<br>
+-n 立即进行未进行的任务，而不延迟</p>
+<h3 id="示例-v3">示例</h3>
+<p>系统的anacron文件都在目录/etc/cron*/*ana*存放<br>
+/etc/cron.daily/0anacron<br>
+0表示最先被执行，让时间戳先被更新，避免anacron误判<br>
+/etc/anacron	anacron的设置</p>
+<p>/var/spool/anacron/*	<br>
+记录最近一次执行anacron的时间戳</p>
+<h2 id="mail命令介绍">mail命令介绍</h2>
+<p>mail -s “title” target_email_address<br>
+echo &quot;content |mail -s “title” target_email_address<br>
+mail -s &quot;title target_email_address &lt; file #将file的内容当做邮件正文</p>
+<h2 id="mail发送邮件">mail发送邮件</h2>
+<h3 id="安装相应软件">安装相应软件</h3>
+<p>~$:sudo apt-get install postfix mailutils libsasl2-2 ca-certificates libsasl2-modules<br>
+编辑/etc/postfix/main.cf文件，在文件末尾添加下列内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># 指定默认的邮件发送服务器</span><br><span class="line">relayhost = [smtp.gmail.com]:587</span><br><span class="line"># 激活sasl认证</span><br><span class="line">smtp_sasl_auth_enable = yes</span><br><span class="line"># 指定sasl密码配置文件</span><br><span class="line">smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd</span><br><span class="line"># 非匿名登录</span><br><span class="line">smtp_sasl_security_options = noanonymous</span><br><span class="line"># linux用户与发件人的对应关系配置文件</span><br><span class="line">sender_canonical_maps = hash:/etc/postfix/sender_canonical </span><br><span class="line">smtp_tls_CApath = /etc/ssl/certs</span><br><span class="line">smtpd_tls_CApath = /etc/ssl/certs</span><br><span class="line">smtp_use_tls = yes</span><br></pre></td></tr></table></figure>
+<h3 id="创建密码配置文件">创建密码配置文件</h3>
+<p>~$:vim /etc/postfix/sasl_passwd<br>
+添加如下内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># 163邮箱格式</span><br><span class="line">[smtp.163.com]:25 your163mail:your163mailpassword   #注意这里如果直接用passwd是会报错的，需要使用授权码</span><br><span class="line"># gamil邮箱格式</span><br><span class="line">[smtp.gmail.com]:587 yourgmail:yourgmailpassword</span><br></pre></td></tr></table></figure>
 <p>~$:sudo postmap /etc/postfix/sasl_passwd</p>
-<h3 id="创建用户与发件人对应文件"><a href="#创建用户与发件人对应文件" class="headerlink" title="创建用户与发件人对应文件"></a>创建用户与发件人对应文件</h3><p>~$:vim /etc/postfix/sender_canonical<br>添加如下内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root your163mail</span><br><span class="line">user1 yourgmail</span><br></pre></td></tr></table></figure></p>
+<h3 id="创建用户与发件人对应文件">创建用户与发件人对应文件</h3>
+<p>~$:vim /etc/postfix/sender_canonical<br>
+添加如下内容</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root your163mail</span><br><span class="line">user1 yourgmail</span><br></pre></td></tr></table></figure>
 <p>~$:sudo postmap /etc/postfix/sender_canonical</p>
-<h3 id="重启postfix服务"><a href="#重启postfix服务" class="headerlink" title="重启postfix服务"></a>重启postfix服务</h3><p>~$:sudo /etc/init.d/postfix reload<br>或者<br>~$:sudo systemctl relaod postfix.service<br>或者<br>~$:sudo service postfix restart</p>
-<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>~$:echo “Hello.” |mail -s “I love you.” 18811376816@163.com<br>这种方式应该是不支持中文的。。</p>
-<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><p>更多at命令的TIME格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">noon	</span><br><span class="line">midnight	</span><br><span class="line">teatime	</span><br><span class="line">tomorrow	</span><br><span class="line">noon tomorrow	</span><br><span class="line">next week	</span><br><span class="line">next monday	</span><br><span class="line">fri	</span><br><span class="line">NOV	</span><br><span class="line">9:00 AM	</span><br><span class="line">2:30 PM	</span><br><span class="line">1430	</span><br><span class="line">2:30 PM tomorrow	</span><br><span class="line">2:30 PM next month	</span><br><span class="line">2:30 PM Fri	</span><br><span class="line">2:30 PM 10/21	</span><br><span class="line">2:30 PM Oct 21	</span><br><span class="line">2:30 PM 10/21/2014	</span><br><span class="line">2:30 PM 21.10.14	</span><br><span class="line">now + 30 minutes	</span><br><span class="line">now + 1 hour	</span><br><span class="line">now + 2 days	</span><br><span class="line">4 PM + 2 days	</span><br><span class="line">now + 3 weeks	</span><br><span class="line">now + 4 months	</span><br><span class="line">now + 5 years</span><br></pre></td></tr></table></figure></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《鸟哥的LINUX私房菜》<br>2.<a href="https://zhidao.baidu.com/question/249718018.html" target="_blank" rel="noopener">https://zhidao.baidu.com/question/249718018.html</a><br>3.<a href="https://askubuntu.com/questions/1112772/send-system-mail-ubuntu-18-04" target="_blank" rel="noopener">https://askubuntu.com/questions/1112772/send-system-mail-ubuntu-18-04</a><br>4.<a href="https://www.cnblogs.com/tugeler/p/6620150.html" target="_blank" rel="noopener">https://www.cnblogs.com/tugeler/p/6620150.html</a></p>
+<h3 id="重启postfix服务">重启postfix服务</h3>
+<p>~$:sudo /etc/init.d/postfix reload<br>
+或者<br>
+~$:sudo systemctl relaod postfix.service<br>
+或者<br>
+~$:sudo service postfix restart</p>
+<h3 id="测试">测试</h3>
+<p>~$:echo “Hello.” |mail -s “I love you.” <a href="mailto:18811376816@163.com" target="_blank" rel="noopener">18811376816@163.com</a><br>
+这种方式应该是不支持中文的。。</p>
+<h2 id="附录">附录</h2>
+<p>更多at命令的TIME格式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">noon	</span><br><span class="line">midnight	</span><br><span class="line">teatime	</span><br><span class="line">tomorrow	</span><br><span class="line">noon tomorrow	</span><br><span class="line">next week	</span><br><span class="line">next monday	</span><br><span class="line">fri	</span><br><span class="line">NOV	</span><br><span class="line">9:00 AM	</span><br><span class="line">2:30 PM	</span><br><span class="line">1430	</span><br><span class="line">2:30 PM tomorrow	</span><br><span class="line">2:30 PM next month	</span><br><span class="line">2:30 PM Fri	</span><br><span class="line">2:30 PM 10/21	</span><br><span class="line">2:30 PM Oct 21	</span><br><span class="line">2:30 PM 10/21/2014	</span><br><span class="line">2:30 PM 21.10.14	</span><br><span class="line">now + 30 minutes	</span><br><span class="line">now + 1 hour	</span><br><span class="line">now + 2 days	</span><br><span class="line">4 PM + 2 days	</span><br><span class="line">now + 3 weeks	</span><br><span class="line">now + 4 months	</span><br><span class="line">now + 5 years</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《鸟哥的LINUX私房菜》<br>
+2.<a href="https://zhidao.baidu.com/question/249718018.html" target="_blank" rel="noopener">https://zhidao.baidu.com/question/249718018.html</a><br>
+3.<a href="https://askubuntu.com/questions/1112772/send-system-mail-ubuntu-18-04" target="_blank" rel="noopener">https://askubuntu.com/questions/1112772/send-system-mail-ubuntu-18-04</a><br>
+4.<a href="https://www.cnblogs.com/tugeler/p/6620150.html" target="_blank" rel="noopener">https://www.cnblogs.com/tugeler/p/6620150.html</a></p>
 
           
         
@@ -655,41 +765,74 @@
       
         
           
-            <h2 id="service和daemon"><a href="#service和daemon" class="headerlink" title="service和daemon"></a>service和daemon</h2><p>service（服务）：系统提供某些功能的一些服务(包括系统本身以及网络service)<br>daemon：实现service的程序叫做daemon</p>
-<h2 id="daemon的分类"><a href="#daemon的分类" class="headerlink" title="daemon的分类"></a>daemon的分类</h2><ul>
+            <h2 id="service和daemon">service和daemon</h2>
+<p>service（服务）：系统提供某些功能的一些服务(包括系统本身以及网络service)<br>
+daemon：实现service的程序叫做daemon</p>
+<h2 id="daemon的分类">daemon的分类</h2>
+<ul>
 <li>stand alone daemon</li>
 <li>super daemon</li>
 </ul>
-<h3 id="stand-alone-daemon"><a href="#stand-alone-daemon" class="headerlink" title="stand_alone daemon"></a>stand_alone daemon</h3><p>独立启动，启动并加载到内存后就一直占用内存与系统资源运行。因此对于客户端的请求响应特别快。比如WWW的daemon(httpd)，FTP的daemon(vsftpd)</p>
-<h3 id="super-daemon"><a href="#super-daemon" class="headerlink" title="super daemon"></a>super daemon</h3><p>由一个统一daemon唤起的service，这个特殊的daemon叫做super daemon早期是inetd,后来被xinetd替代了。没有客户端请求时，service被关闭，收到客户端请求时，super daemon唤醒相应的service，请求结束后，这个service就会关闭，service反应时间会比较慢。常见的有telnetservice。<br>signal-control和interval-control，信号管理的daemon以及每隔一段时间主动执行某项job的daemon每一个service程序文件名都会加上d，d代表daemon。</p>
-<h2 id="SysVInit-service"><a href="#SysVInit-service" class="headerlink" title="SysVInit service"></a>SysVInit service</h2><h3 id="配置文件路径"><a href="#配置文件路径" class="headerlink" title="配置文件路径"></a>配置文件路径</h3><ul>
+<h3 id="stand-alone-daemon">stand_alone daemon</h3>
+<p>独立启动，启动并加载到内存后就一直占用内存与系统资源运行。因此对于客户端的请求响应特别快。比如WWW的daemon(httpd)，FTP的daemon(vsftpd)</p>
+<h3 id="super-daemon">super daemon</h3>
+<p>由一个统一daemon唤起的service，这个特殊的daemon叫做super daemon早期是inetd,后来被xinetd替代了。没有客户端请求时，service被关闭，收到客户端请求时，super daemon唤醒相应的service，请求结束后，这个service就会关闭，service反应时间会比较慢。常见的有telnetservice。<br>
+signal-control和interval-control，信号管理的daemon以及每隔一段时间主动执行某项job的daemon每一个service程序文件名都会加上d，d代表daemon。</p>
+<h2 id="sysvinit-service">SysVInit service</h2>
+<h3 id="配置文件路径">配置文件路径</h3>
+<ul>
 <li>/etc/rc.d/rcX.d/ (X 代表运行级别 0-6) # 不同runlevel的service存放位置</li>
 <li>/etc/rc.d/rc.local    # 用户自定义的service</li>
 </ul>
-<h3 id="自定义文件示例"><a href="#自定义文件示例" class="headerlink" title="自定义文件示例"></a>自定义文件示例</h3><p>创建/etc/init.d/shadowsocks_client service如下所示<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">### BEGIN INIT INFO</span><br><span class="line"># Provides:          shadowsocks client</span><br><span class="line"># Required-Start:    $local_fs $remote_fs $network $syslog</span><br><span class="line"># Required-Stop:     $local_fs $remote_fs $network $syslog</span><br><span class="line"># Default-Start:     2 3 4 5</span><br><span class="line"># Default-Stop:      0 1 6</span><br><span class="line"># Short-Description: shadowsocks service</span><br><span class="line"># Description:       shadowsocks service daemon</span><br><span class="line">### END INIT INFO</span><br><span class="line">start()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d start</span><br><span class="line">&#125;</span><br><span class="line">stop()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d stop</span><br><span class="line">&#125;</span><br><span class="line">case “$1” in</span><br><span class="line">start)</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">stop)</span><br><span class="line">　　　stop</span><br><span class="line">　　　;;</span><br><span class="line">reload)</span><br><span class="line">　　　stop</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">\*)</span><br><span class="line">　　　echo “Usage: $0 &#123;start|reload|stop&#125;”</span><br><span class="line">　　　exit 1</span><br><span class="line">　　　;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure></p>
-<p>然后执行以下命令进行更新<br>~$:sudo chomod a+x /etc/init.d/shadowsocks_client<br>~$:sudo update_rc.d shadowsocks defaults</p>
-<h3 id="运行方式"><a href="#运行方式" class="headerlink" title="运行方式"></a>运行方式</h3><p>service shadowsocks_client start</p>
-<h2 id="SystemD"><a href="#SystemD" class="headerlink" title="SystemD"></a>SystemD</h2><h3 id="配置文件路径-1"><a href="#配置文件路径-1" class="headerlink" title="配置文件路径"></a>配置文件路径</h3><ul>
-<li>/etc/systemd/system    系统service，不要动。大部分是软连接，指向/usr/lib/systemd/sytem</li>
-<li>/run/systemd/system    Runtime units</li>
-<li>/usr/local/lib/systemd/system    管理员安装的System units</li>
-<li>/usr/lib/systemd/system    包管理器安装的System units(for centos)</li>
+<h3 id="自定义文件示例">自定义文件示例</h3>
+<p>创建/etc/init.d/shadowsocks_client service如下所示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">### BEGIN INIT INFO</span><br><span class="line"># Provides:          shadowsocks client</span><br><span class="line"># Required-Start:    $local_fs $remote_fs $network $syslog</span><br><span class="line"># Required-Stop:     $local_fs $remote_fs $network $syslog</span><br><span class="line"># Default-Start:     2 3 4 5</span><br><span class="line"># Default-Stop:      0 1 6</span><br><span class="line"># Short-Description: shadowsocks service</span><br><span class="line"># Description:       shadowsocks service daemon</span><br><span class="line">### END INIT INFO</span><br><span class="line">start()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d start</span><br><span class="line">&#125;</span><br><span class="line">stop()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d stop</span><br><span class="line">&#125;</span><br><span class="line">case “$1” in</span><br><span class="line">start)</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">stop)</span><br><span class="line">　　　stop</span><br><span class="line">　　　;;</span><br><span class="line">reload)</span><br><span class="line">　　　stop</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">\*)</span><br><span class="line">　　　echo “Usage: $0 &#123;start|reload|stop&#125;”</span><br><span class="line">　　　exit 1</span><br><span class="line">　　　;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+<p>然后执行以下命令进行更新<br>
+~$:sudo chomod a+x /etc/init.d/shadowsocks_client<br>
+~$:sudo update_rc.d shadowsocks defaults</p>
+<h3 id="运行方式">运行方式</h3>
+<p>service shadowsocks_client start</p>
+<h2 id="systemd">SystemD</h2>
+<h3 id="配置文件路径-v2">配置文件路径</h3>
+<ul>
+<li>/etc/systemd/system	系统service，不要动。大部分是软连接，指向/usr/lib/systemd/sytem</li>
+<li>/run/systemd/system	Runtime units</li>
+<li>/usr/local/lib/systemd/system	管理员安装的System units</li>
+<li>/usr/lib/systemd/system	包管理器安装的System units(for centos)</li>
 <li>/lib/systemd/system   包管理器安装的System units(for debian/ubuntu)</li>
 <li>/etc/systemd/system/**.service.wants/*：此目录内的文件为链接文件，设置相依服务的链接。意思是启动了 **.service 之后，最好再加上这目录下面建议的服务。</li>
 <li>/etc/systemd/system/vsftpd.service.requires/*：此目录内的文件为链接文件，设置相依服务的链接。意思是在启动 vsftpd.service 之前，需要事先启动哪些服务的意思。</li>
 </ul>
-<h3 id="自定义unit文件示例"><a href="#自定义unit文件示例" class="headerlink" title="自定义unit文件示例"></a>自定义unit文件示例</h3><p>在/lib/systemd/system/创建ss_client.service，如下所示：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=ss v4 client daemon</span><br><span class="line"> </span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/usr/bin/sslocal -c /etc/shadowsocks_v4_client.json &lt;/dev/null &amp;&gt;&gt;/home/mxxmhh/.log/ss-local.log </span><br><span class="line">WorkingDirectory=/home/mxxmhh/</span><br><span class="line"># Restart=on-failure</span><br><span class="line">StartLimitBurst=2</span><br><span class="line">StartLimitInterval=30</span><br><span class="line">User=mxxmhh</span><br><span class="line">ExecReload=/bin/kill -SIGHUP $MAINPID</span><br><span class="line">ExecStop=/bin/kill -SIGINT $MAINPID</span><br><span class="line"> </span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure></p>
-<p>然后执行以下命令<br>~$:sudo systemctl start ss-client.service<br>~$:sudo systemctl enable ss-client.service </p>
+<h3 id="自定义unit文件示例">自定义unit文件示例</h3>
+<p>在/lib/systemd/system/创建ss_client.service，如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=ss v4 client daemon</span><br><span class="line"> </span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/usr/bin/sslocal -c /etc/shadowsocks_v4_client.json &lt;/dev/null &amp;&gt;&gt;/home/mxxmhh/.log/ss-local.log </span><br><span class="line">WorkingDirectory=/home/mxxmhh/</span><br><span class="line"># Restart=on-failure</span><br><span class="line">StartLimitBurst=2</span><br><span class="line">StartLimitInterval=30</span><br><span class="line">User=mxxmhh</span><br><span class="line">ExecReload=/bin/kill -SIGHUP $MAINPID</span><br><span class="line">ExecStop=/bin/kill -SIGINT $MAINPID</span><br><span class="line"> </span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>然后执行以下命令<br>
+~$:sudo systemctl start ss-client.service<br>
+~$:sudo systemctl enable ss-client.service</p>
 <blockquote>
 <p>Created symlink /etc/systemd/system/multi-user.target.wants/ss-client.service → /lib/systemd/system/ss-client.service.</p>
 </blockquote>
-<p>执行以下命令发现报错<br>~$:sudo systemctl status ss-client.service<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ss-client.service: Start request repeated too</span><br><span class="line">ss-client.service: Failed with result &apos;exit-c</span><br></pre></td></tr></table></figure></p>
-<p>根据参考文献13使用下列命令常看详细log<br>~$:journalctl -u ss-client.service<br>发现报错：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss-client.service: Failed at step USER spawning /usr/bin/sslocal: No such proces</span><br></pre></td></tr></table></figure></p>
-<p>然后根据参考文献12发现可能是自己的文件写的有问题，最后发现是user复制的时候出错了，修改之后就好了。执行以下命令加载修改后的配置文件，然后restart服务。<br>~$: sudo systemctl daemon-reload<br>~$: sudo systemctl restart ss-client.service<br>~$: sudo systemctl status ss-client.service</p>
-<h3 id="Unit文件的编写"><a href="#Unit文件的编写" class="headerlink" title="Unit文件的编写"></a>Unit文件的编写</h3><p>每个unit都有一个配置文件，定义了这个unit启动的条件。</p>
-<h4 id="Unit格式"><a href="#Unit格式" class="headerlink" title="Unit格式"></a>Unit格式</h4><p>下面是 SSH service的unit文件，service unit文件以.service 为文件名后缀。<br>~$:cat /etc/systemd/system/sshd.service<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=OpenSSH server daemon</span><br><span class="line">[Service]</span><br><span class="line">EnvironmentFile=/etc/sysconfig/sshd</span><br><span class="line">ExecStartPre=/usr/sbin/sshd-keygen</span><br><span class="line">ExecStart=/usrsbin/sshd –D $OPTIONS</span><br><span class="line">ExecReload=/bin/kill –HUP $MAINPID</span><br><span class="line">KillMode=process</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartSec=42s</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure></p>
-<p>Unit部分仅仅有一个描述信息;Service中，ExecStartPre定义启动service之前应该运行的命令；ExecStart定义启动service的具体命令行语法；Install部分，WangtedBy 表明这个service是在多用户模式下所需要的，multi-user.target </p>
-<h4 id="Unit的配置文件区块"><a href="#Unit的配置文件区块" class="headerlink" title="Unit的配置文件区块"></a>Unit的配置文件区块</h4><p>一个文件通常由[Unit]，[Service]（或者其他unit类型）和[Install]构成。<br>[Unit]区块通常是配置文件的第一个区块，用来定义 Unit 的元数据，以及配置与其他 Unit 的关系。它的主要字段如下。</p>
+<p>执行以下命令发现报错<br>
+~$:sudo systemctl status ss-client.service</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ss-client.service: Start request repeated too</span><br><span class="line">ss-client.service: Failed with result &apos;exit-c</span><br></pre></td></tr></table></figure>
+<p>根据参考文献13使用下列命令常看详细log<br>
+~$:journalctl -u ss-client.service<br>
+发现报错：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss-client.service: Failed at step USER spawning /usr/bin/sslocal: No such proces</span><br></pre></td></tr></table></figure>
+<p>然后根据参考文献12发现可能是自己的文件写的有问题，最后发现是user复制的时候出错了，修改之后就好了。执行以下命令加载修改后的配置文件，然后restart服务。<br>
+~$: sudo systemctl daemon-reload<br>
+~$: sudo systemctl restart ss-client.service<br>
+~$: sudo systemctl status ss-client.service</p>
+<h3 id="unit文件的编写">Unit文件的编写</h3>
+<p>每个unit都有一个配置文件，定义了这个unit启动的条件。</p>
+<h4 id="unit格式">Unit格式</h4>
+<p>下面是 SSH service的unit文件，service unit文件以.service 为文件名后缀。<br>
+~$:cat /etc/systemd/system/sshd.service</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=OpenSSH server daemon</span><br><span class="line">[Service]</span><br><span class="line">EnvironmentFile=/etc/sysconfig/sshd</span><br><span class="line">ExecStartPre=/usr/sbin/sshd-keygen</span><br><span class="line">ExecStart=/usrsbin/sshd –D $OPTIONS</span><br><span class="line">ExecReload=/bin/kill –HUP $MAINPID</span><br><span class="line">KillMode=process</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartSec=42s</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>Unit部分仅仅有一个描述信息;Service中，ExecStartPre定义启动service之前应该运行的命令；ExecStart定义启动service的具体命令行语法；Install部分，WangtedBy 表明这个service是在多用户模式下所需要的，multi-user.target</p>
+<h4 id="unit的配置文件区块">Unit的配置文件区块</h4>
+<p>一个文件通常由[Unit]，[Service]（或者其他unit类型）和[Install]构成。<br>
+[Unit]区块通常是配置文件的第一个区块，用来定义 Unit 的元数据，以及配置与其他 Unit 的关系。它的主要字段如下。</p>
 <ul>
 <li>Description：简短描述</li>
 <li>Documentation：文档地址</li>
@@ -729,68 +872,134 @@
 <li>TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数</li>
 <li>Environment：指定环境变量</li>
 </ul>
-<h3 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h3><p>Systemd统一管理所有Unit的启动日志。带来的好处就是，可以只用journalctl一个命令，查看所有日志（内核日志和应用日志）。日志的配置文件是/etc/systemd/journald.conf。<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">~$:sudo journalctl  # 查看所有日志（默认情况下 ，只保存本次启动的日志）</span><br><span class="line">~$: sudo journalctl -k    # 查看内核日志（不显示应用日志）</span><br><span class="line"><span class="meta">#</span> 查看系统本次启动的日志</span><br><span class="line">~$:sudo journalctl -b    </span><br><span class="line">~$:sudo journalctl -b -0</span><br><span class="line">~$:sudo journalctl -b -1 # 查看上一次启动的日志（需更改设置）</span><br><span class="line"><span class="meta">#</span> 查看指定时间的日志</span><br><span class="line">~$:sudo journalctl --since="2012-10-30 18:17:16"</span><br><span class="line">~$:sudo journalctl --since "20 min ago"</span><br><span class="line">~$:sudo journalctl --since yesterday</span><br><span class="line">~$:sudo journalctl --since "2015-01-10" --until "2015-01-11 03:00"</span><br><span class="line">~$:sudo journalctl --since 09:00 --until "1 hour ago"</span><br><span class="line">~$:sudo journalctl -n   # 显示尾部的最新10行日志</span><br><span class="line">~$:sudo journalctl -n 20    # 显示尾部指定行数的日志</span><br><span class="line">~$:sudo journalctl -f   # 实时滚动显示最新日志</span><br><span class="line">~$:sudo journalctl /usr/lib/systemd/systemd # 查看指定服务的日志</span><br><span class="line">~$:sudo journalctl _PID=1   # 查看指定进程的日志</span><br><span class="line">~$:sudo journalctl /usr/bin/bash    # 查看某个路径的脚本的日志</span><br><span class="line">~$:sudo journalctl _UID=33 --since today    # 查看指定用户的日志</span><br><span class="line"><span class="meta">#</span> 查看某个 Unit 的日志</span><br><span class="line">~$:sudo journalctl -u nginx.service</span><br><span class="line">~$:sudo journalctl -u nginx.service --since today</span><br><span class="line">~$:sudo journalctl -u nginx.service -f  # 实时滚动显示某个 Unit 的最新日志</span><br><span class="line">~$:journalctl -u nginx.service -u php-fpm.service --since today # 合并显示多个 Unit 的日志</span><br><span class="line"><span class="meta">#</span> 查看指定优先级（及其以上级别）的日志，共有8级</span><br><span class="line"><span class="meta">#</span> 0: emerg</span><br><span class="line"><span class="meta">#</span> 1: alert</span><br><span class="line"><span class="meta">#</span> 2: crit</span><br><span class="line"><span class="meta">#</span> 3: err</span><br><span class="line"><span class="meta">#</span> 4: warning</span><br><span class="line"><span class="meta">#</span> 5: notice</span><br><span class="line"><span class="meta">#</span> 6: info</span><br><span class="line"><span class="meta">#</span> 7: debug</span><br><span class="line">~$:sudo journalctl -p err -b</span><br><span class="line">~$:sudo journalctl --no-pager   # 日志默认分页输出，--no-pager 改为正常的标准输出</span><br><span class="line">~$:sudo journalctl -b -u nginx.service -o json  # 以 JSON 格式（单行）输出</span><br><span class="line">~$:sudo journalctl -b -u nginx.serviceqq -o json-pretty # 以 JSON 格式（多行）输出，可读性更好</span><br><span class="line">~$:sudo journalctl --disk-usage # 显示日志占据的硬盘空间</span><br><span class="line">~$:sudo journalctl --vacuum-size=1G # 指定日志文件占据的最大空间</span><br><span class="line">~$:sudo journalctl --vacuum-time=1years # 指定日志文件保存多久</span><br></pre></td></tr></table></figure></p>
-<h3 id="systemctl-工具"><a href="#systemctl-工具" class="headerlink" title="systemctl 工具"></a>systemctl 工具</h3><p>~$:systemctl list-units     列出正在运行的 Unit<br>~$:systemctl list-units —all   列出所有Unit，包括没有找到配置文件的或者启动失败的<br>~$:systemctl list-units —all —state=inactive      列出所有没有运行的 Unit<br>~$:systemctl list-units —failed    列出所有加载失败的 Unit<br>~$:systemctl list-units —type=service  列出所有正在运行的、类型为 service 的 Unit<br>~$:systemctl list-unit-files    列出所有配置文件<br>~$:systemctl list-unit-files —type=service     列出指定类型的配置文件<br>~$:systemctl start foo.service    用来启动一个service (并不会重启现有的)<br>~$:systemctl stop foo.service    用来停止一个service (并不会重启现有的)。<br>~$:systemctl restart foo.service    用来停止并启动一个service。<br>~$:systemctl reload foo.service    当支持时，重新装载配置文件而不中断等待操作。<br>~$:systemctl condrestart foo.service    如果service正在运行那么重启它。<br>~$:systemctl status foo.service    汇报service是否正在运行。<br>~$:systemctl list-unit-files —type=service    用来列出可以启动或停止的service列表。<br>~$:systemctl enable foo.service    在下次启动时或满足其他触发条件时设置service为启用。创建一个符号链接从/etc/systemd/system/some_target.target.wants指向/lib/systemd/system或者/etc/systemd/system。<br>~$:systemctl disable foo.service    在下次启动时或满足其他触发条件时设置service为禁用<br>~$:systemctl is-enabled foo.service    用来检查一个service在当前环境下被配置为启用还是禁用。<br>~$:systemctl list-unit-files —type=service    输出在各个运行级别下service的启用和禁用情况<br>~$:systemctl daemon-reload    当您创建新service文件或者变更设置时使用。<br>~$:systemctl isolate multi-user.target (OR systemctl isolate runlevel3.target OR telinit 3)    改变至多用户运行级别。<br>~$:ls /etc/SystemD/system/*.wants/foo.service    用来列出该service在哪些运行级别下启用和禁用。</p>
-<h2 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h2><p>/etc/init.d/*　# 基本上所有的service启动脚本都被放置在该目录<br>/etc/rcX.d/    # X指的是数字，从$0-6$，代表不同的run-level，是/etc/init.d/目录下service的软连接<br>/etc/systemd/system     # systemd的service文件位置，是/usr/lib/systemd/sytem的软连接<br>/etc/default    # 一些配置文件<br>/etc/*  # 各service各自的配置文件</p>
-<h2 id="service，initctl，systemctl命令对照表"><a href="#service，initctl，systemctl命令对照表" class="headerlink" title="service，initctl，systemctl命令对照表"></a>service，initctl，systemctl命令对照表</h2><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>Service 命令</th>
-<th>UpStart initctl 命令</th>
-<th>SystemD 命令</th>
-<th>备注</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>service foo start</td>
-<td>initctl start</td>
-<td>systemctl start foo.service    用来启动一个service (并不会重启现有的)</td>
-</tr>
-<tr>
-<td>service foo stop</td>
-<td>initctl stop</td>
-<td>systemctl stop foo.service    用来停止一个service (并不会重启现有的)</td>
-</tr>
-<tr>
-<td>service foo reload</td>
-<td>systemctl reload foo.service    当支持时，重新装载配置文件而不中断等待操作。</td>
-</tr>
-<tr>
-<td>service foo restart</td>
-<td>initctl restart</td>
-<td>systemctl restart foo.service    用来停止并启动一个service</td>
-</tr>
-<tr>
-<td>service foo status</td>
-<td>initctl status</td>
-<td>systemctl status foo.service    汇报service是否正在运行。</td>
-</tr>
-<tr>
-<td>service foo reload</td>
-<td>initctl reload</td>
-<td>systemctl reload foo.service    当支持时，重新装载配置文件而不中断等待操作。</td>
-</tr>
-<tr>
-<td>service foo condrestart</td>
-<td></td>
-<td>systemctl condrestart foo.service    如果service正在运行那么重启它。</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h2 id="xinted"><a href="#xinted" class="headerlink" title="xinted"></a>xinted</h2><p>xinted是/etc/init.d/目录中的一个脚本。<br>xinted 是inted的扩展，是super daemon，它本身管理了一系列的daemon，只有在用户调用时才由xinetd启动，他们要比独立的daemon启动晚。<br>!!!!xinted默认在ubuntu中是不存在的,<br>~$:sudo apt-get install xinetd<br>/etc/xinetd.conf   #super daemon配置文件<br>/etc/xinetd.d/*    #它所管理的进程<br>/var/lib/*  各service产生的数据库<br>/var/run/*  各service的程序的pid记录处</p>
-<h3 id="stand-alone的启动"><a href="#stand-alone的启动" class="headerlink" title="stand alone的启动"></a>stand alone的启动</h3><ol>
-<li>用/etc/init.d/*启动<br>~#:/etc/init.d/cron start|stop|status|restart|reload|force-reload</li>
+<h3 id="日志">日志</h3>
+<p>Systemd统一管理所有Unit的启动日志。带来的好处就是，可以只用journalctl一个命令，查看所有日志（内核日志和应用日志）。日志的配置文件是/etc/systemd/journald.conf。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">~$:sudo journalctl  # 查看所有日志（默认情况下 ，只保存本次启动的日志）</span><br><span class="line">~$: sudo journalctl -k    # 查看内核日志（不显示应用日志）</span><br><span class="line"><span class="meta">#</span> 查看系统本次启动的日志</span><br><span class="line">~$:sudo journalctl -b    </span><br><span class="line">~$:sudo journalctl -b -0</span><br><span class="line">~$:sudo journalctl -b -1 # 查看上一次启动的日志（需更改设置）</span><br><span class="line"><span class="meta">#</span> 查看指定时间的日志</span><br><span class="line">~$:sudo journalctl --since="2012-10-30 18:17:16"</span><br><span class="line">~$:sudo journalctl --since "20 min ago"</span><br><span class="line">~$:sudo journalctl --since yesterday</span><br><span class="line">~$:sudo journalctl --since "2015-01-10" --until "2015-01-11 03:00"</span><br><span class="line">~$:sudo journalctl --since 09:00 --until "1 hour ago"</span><br><span class="line">~$:sudo journalctl -n   # 显示尾部的最新10行日志</span><br><span class="line">~$:sudo journalctl -n 20    # 显示尾部指定行数的日志</span><br><span class="line">~$:sudo journalctl -f   # 实时滚动显示最新日志</span><br><span class="line">~$:sudo journalctl /usr/lib/systemd/systemd # 查看指定服务的日志</span><br><span class="line">~$:sudo journalctl _PID=1   # 查看指定进程的日志</span><br><span class="line">~$:sudo journalctl /usr/bin/bash    # 查看某个路径的脚本的日志</span><br><span class="line">~$:sudo journalctl _UID=33 --since today    # 查看指定用户的日志</span><br><span class="line"><span class="meta">#</span> 查看某个 Unit 的日志</span><br><span class="line">~$:sudo journalctl -u nginx.service</span><br><span class="line">~$:sudo journalctl -u nginx.service --since today</span><br><span class="line">~$:sudo journalctl -u nginx.service -f  # 实时滚动显示某个 Unit 的最新日志</span><br><span class="line">~$:journalctl -u nginx.service -u php-fpm.service --since today # 合并显示多个 Unit 的日志</span><br><span class="line"><span class="meta">#</span> 查看指定优先级（及其以上级别）的日志，共有8级</span><br><span class="line"><span class="meta">#</span> 0: emerg</span><br><span class="line"><span class="meta">#</span> 1: alert</span><br><span class="line"><span class="meta">#</span> 2: crit</span><br><span class="line"><span class="meta">#</span> 3: err</span><br><span class="line"><span class="meta">#</span> 4: warning</span><br><span class="line"><span class="meta">#</span> 5: notice</span><br><span class="line"><span class="meta">#</span> 6: info</span><br><span class="line"><span class="meta">#</span> 7: debug</span><br><span class="line">~$:sudo journalctl -p err -b</span><br><span class="line">~$:sudo journalctl --no-pager   # 日志默认分页输出，--no-pager 改为正常的标准输出</span><br><span class="line">~$:sudo journalctl -b -u nginx.service -o json  # 以 JSON 格式（单行）输出</span><br><span class="line">~$:sudo journalctl -b -u nginx.serviceqq -o json-pretty # 以 JSON 格式（多行）输出，可读性更好</span><br><span class="line">~$:sudo journalctl --disk-usage # 显示日志占据的硬盘空间</span><br><span class="line">~$:sudo journalctl --vacuum-size=1G # 指定日志文件占据的最大空间</span><br><span class="line">~$:sudo journalctl --vacuum-time=1years # 指定日志文件保存多久</span><br></pre></td></tr></table></figure>
+<h3 id="systemctl-工具">systemctl 工具</h3>
+<p>~$:systemctl list-units     列出正在运行的 Unit<br>
+~$:systemctl list-units --all   列出所有Unit，包括没有找到配置文件的或者启动失败的<br>
+~$:systemctl list-units --all --state=inactive      列出所有没有运行的 Unit<br>
+~$:systemctl list-units --failed    列出所有加载失败的 Unit<br>
+~$:systemctl list-units --type=service  列出所有正在运行的、类型为 service 的 Unit<br>
+~$:systemctl list-unit-files    列出所有配置文件<br>
+~$:systemctl list-unit-files --type=service     列出指定类型的配置文件<br>
+~$:systemctl start foo.service	用来启动一个service (并不会重启现有的)<br>
+~$:systemctl stop foo.service	用来停止一个service (并不会重启现有的)。<br>
+~$:systemctl restart foo.service	用来停止并启动一个service。<br>
+~$:systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+~$:systemctl condrestart foo.service	如果service正在运行那么重启它。<br>
+~$:systemctl status foo.service	汇报service是否正在运行。<br>
+~$:systemctl list-unit-files --type=service	用来列出可以启动或停止的service列表。<br>
+~$:systemctl enable foo.service	在下次启动时或满足其他触发条件时设置service为启用。创建一个符号链接从/etc/systemd/system/some_target.target.wants指向/lib/systemd/system或者/etc/systemd/system。<br>
+~$:systemctl disable foo.service	在下次启动时或满足其他触发条件时设置service为禁用<br>
+~$:systemctl is-enabled foo.service	用来检查一个service在当前环境下被配置为启用还是禁用。<br>
+~$:systemctl list-unit-files --type=service	输出在各个运行级别下service的启用和禁用情况<br>
+~$:systemctl daemon-reload	当您创建新service文件或者变更设置时使用。<br>
+~$:systemctl isolate multi-user.target (OR systemctl isolate runlevel3.target OR telinit 3)	改变至多用户运行级别。<br>
+~$:ls /etc/SystemD/system/*.wants/foo.service	用来列出该service在哪些运行级别下启用和禁用。</p>
+<h2 id="配置文件">配置文件</h2>
+<p>/etc/init.d/*　# 基本上所有的service启动脚本都被放置在该目录<br>
+/etc/rcX.d/    # X指的是数字，从$0-6$，代表不同的run-level，是/etc/init.d/目录下service的软连接<br>
+/etc/systemd/system     # systemd的service文件位置，是/usr/lib/systemd/sytem的软连接<br>
+/etc/default    # 一些配置文件<br>
+/etc/*  # 各service各自的配置文件</p>
+<h2 id="service-initctl-systemctl命令对照表">service，initctl，systemctl命令对照表</h2>
+<p>Service 命令|UpStart initctl 命令|SystemD 命令|备注<br>
+—|---|<br>
+service foo start|initctl start|systemctl start foo.service	用来启动一个service (并不会重启现有的)<br>
+service foo stop|initctl stop|systemctl stop foo.service	用来停止一个service (并不会重启现有的)<br>
+service foo reload|systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+service foo restart|initctl restart|systemctl restart foo.service	用来停止并启动一个service<br>
+service foo status|initctl status|systemctl status foo.service	汇报service是否正在运行。<br>
+service foo reload|initctl reload|systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+service foo condrestart||systemctl condrestart foo.service	如果service正在运行那么重启它。</p>
+<h2 id="xinted">xinted</h2>
+<p>xinted是/etc/init.d/目录中的一个脚本。<br>
+xinted 是inted的扩展，是super daemon，它本身管理了一系列的daemon，只有在用户调用时才由xinetd启动，他们要比独立的daemon启动晚。<br>
+!!!xinted默认在ubuntu中是不存在的,<br>
+~$:sudo apt-get install xinetd<br>
+/etc/xinetd.conf   #super daemon配置文件<br>
+/etc/xinetd.d/*    #它所管理的进程<br>
+/var/lib/*  各service产生的数据库<br>
+/var/run/*  各service的程序的pid记录处</p>
+<h3 id="stand-alone的启动">stand alone的启动</h3>
+<ol>
+<li>用/etc/init.d/*启动<br>
+~#:/etc/init.d/cron start|stop|status|restart|reload|force-reload</li>
 </ol>
-<p>2.用service [service-name] (start|…)启动<br>service-name必须与/etc/init.d/相照应<br>     —status-all 将所有的stand_aloneservice列出来<br>~#:service —status-all<br>~#:service cron</p>
-<h3 id="super-daemon的启动方式"><a href="#super-daemon的启动方式" class="headerlink" title="super daemon的启动方式"></a>super daemon的启动方式</h3><p>super daemon本身也是一个stand alone的service，但是它所管理的其他文件就不是了。<br>查看某个service是否可用。<br>~#:grep -i ‘disable’ /etc/xinted.d/* # disable表示取消，若为yes，表示该service未开启，no表示开启</p>
-<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>开启timeservice<br>~#:vim /etc/xinted.d/time<br>将disable改为no<br>重新启动xinted service<br>~#:service xinted restart<br>!!!!!注意是重启xinted service</p>
-<p>查看该service的信息<br>~#:grep -i ‘time’ /etc/services<br>~#:netstat -nltp | grep ‘time port’</p>
-<h3 id="默认值配置文件以及参数介绍"><a href="#默认值配置文件以及参数介绍" class="headerlink" title="默认值配置文件以及参数介绍"></a>默认值配置文件以及参数介绍</h3><p>/etc/xinetd.conf<br>    log_type    SYSLOG daemon info 日志文件的记录service类型<br>    log_on_failure  发生错误时需要记录的信息<br>    log_on_success  成功启动时的记录信息<br>    cps 同一秒内的最大连接个数，若超过则暂停<br>    instance    同一service的最大连接数<br>    per_source  同一来源的客户端的最大连接数<br>    v6only  是否运行ipv6<br>    groups<br>    umask</p>
-<p>/etc/xinetd.d/<br>    service <service name><br>    {<br>        disable 启动与否<br>        id  service识别<br>        server  程序文件名  这个service的启动程序<br>        server_args 程序参数    设置server_args=—daemon<br>        user    service所属id<br>        group   用户组<br>        socket_type 数据包类型  stream|dgram|raw stream使用tcp,   udp使用dgram,raw代表erver需要与ip直接交互。<br>        protocol    数据包类型  tcp|udp与socket_type重复，<br>        wait    连接机制    yes(single) no(multi) 一般udp为yes，tcp为no<br>        instances   最大连接数<br>        per_source  单用户来源  (一个数字或者NULIMTED)<br>        cps 新连接限制<br>        log_type    日志文件类型    以什么日志选项记载和需要记载的等级(默认为info)<br>        log_on_success,log_on_failure,设置值,[PID,HOST,USERID,EXIT,DURATION]<br>            PID为service启动时的pid,host为远程主机的ip，userid为登陆者的账号，EXIT为离开时记录的项目，DURATION为该用户使用此service多久。<br>        env 额外环境变量设置    设置环境变量<br>        port    非正规端口号    设置不同的service与对应的端口号，port与service名必须与/etc/services的值相同<br>        redirect    service转址    [IP port] 将客户端的请求转到另一台主机<br>        includedir  调用外部设置    表示将某个目录所有文件都放入xinetd.conf中，<br>        bind    service端口锁定    运行此service的适配卡<br>        interface   与bind相同<br>        only_from   [0.0.0.0,192.168.1.0/24,hostname,domainname]设置为这里面的ip或者主机名才能访问，0.0.0.0表示所有主机皆能访问，如果是192.168.1.0/24则表示为C　class的域，即由(192.168.1.1~192.168.1.255)皆可登录。另外，也可选择域名，如bit.edu.cn表示运行北理工的ip登录你的主机<br>        no_acess    表示的是不可登录的主机<br>        acess_time  时间控制    [00:00-24:00,HH:MM-HH:MM]<br>        umask   设置用户新建目录或者文件时候的属性<br>    }</service></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《鸟哥的LINUX私房菜》<br>2.<a href="https://askubuntu.com/questions/911525/difference-between-systemctl-init-d-and-service" target="_blank" rel="noopener">https://askubuntu.com/questions/911525/difference-between-systemctl-init-d-and-service</a><br>3.<a href="http://www.r9it.com/20180613/ubuntu-18.04-auto-start.html" target="_blank" rel="noopener">http://www.r9it.com/20180613/ubuntu-18.04-auto-start.html</a><br>4.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html</a><br>5.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-</a><br>6.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-</a><br>7.<a href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a><br>8.<a href="https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html" target="_blank" rel="noopener">https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html</a><br>9.<a href="https://www.freedesktop.org/software/systemd/man/systemd.unit.html" target="_blank" rel="noopener">https://www.freedesktop.org/software/systemd/man/systemd.unit.html</a><br>10.<a href="https://unix.stackexchange.com/questions/206315/whats-the-difference-between-usr-lib-systemd-system-and-etc-systemd-system" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/206315/whats-the-difference-between-usr-lib-systemd-system-and-etc-systemd-system</a><br>11.<a href="https://stackoverflow.com/questions/35452591/start-request-repeated-too-quickly" target="_blank" rel="noopener">https://stackoverflow.com/questions/35452591/start-request-repeated-too-quickly</a><br>12.<a href="https://superuser.com/questions/1156676/what-causes-systemd-failed-at-step-user-spawning-usr-sbin-opendkim-no-such-p" target="_blank" rel="noopener">https://superuser.com/questions/1156676/what-causes-systemd-failed-at-step-user-spawning-usr-sbin-opendkim-no-such-p</a><br>13.<a href="https://stackoverflow.com/questions/39202644/caddy-service-start-request-repeated-too-quickly" target="_blank" rel="noopener">https://stackoverflow.com/questions/39202644/caddy-service-start-request-repeated-too-quickly</a></p>
+<p>2.用service [service-name] (start|…)启动<br>
+service-name必须与/etc/init.d/相照应<br>
+–status-all 将所有的stand_aloneservice列出来<br>
+~#:service --status-all<br>
+~#:service cron</p>
+<h3 id="super-daemon的启动方式">super daemon的启动方式</h3>
+<p>super daemon本身也是一个stand alone的service，但是它所管理的其他文件就不是了。<br>
+查看某个service是否可用。<br>
+~#:grep -i ‘disable’ /etc/xinted.d/* # disable表示取消，若为yes，表示该service未开启，no表示开启</p>
+<h4 id="示例">示例</h4>
+<p>开启timeservice<br>
+~#:vim /etc/xinted.d/time<br>
+将disable改为no<br>
+重新启动xinted service<br>
+~#:service xinted restart<br>
+!!!注意是重启xinted service</p>
+<p>查看该service的信息<br>
+~#:grep -i ‘time’ /etc/services<br>
+~#:netstat -nltp | grep ‘time port’</p>
+<h3 id="默认值配置文件以及参数介绍">默认值配置文件以及参数介绍</h3>
+<p>/etc/xinetd.conf<br>
+log_type    SYSLOG daemon info 日志文件的记录service类型<br>
+log_on_failure  发生错误时需要记录的信息<br>
+log_on_success  成功启动时的记录信息<br>
+cps 同一秒内的最大连接个数，若超过则暂停<br>
+instance    同一service的最大连接数<br>
+per_source  同一来源的客户端的最大连接数<br>
+v6only  是否运行ipv6<br>
+groups<br>
+umask</p>
+<p>/etc/xinetd.d/<br>
+service <service name><br>
+{<br>
+disable 启动与否<br>
+id  service识别<br>
+server  程序文件名  这个service的启动程序<br>
+server_args 程序参数    设置server_args=–daemon<br>
+user    service所属id<br>
+group   用户组<br>
+socket_type 数据包类型  stream|dgram|raw stream使用tcp,   udp使用dgram,raw代表erver需要与ip直接交互。<br>
+protocol    数据包类型  tcp|udp与socket_type重复，<br>
+wait    连接机制    yes(single) no(multi) 一般udp为yes，tcp为no<br>
+instances   最大连接数<br>
+per_source  单用户来源  (一个数字或者NULIMTED)<br>
+cps 新连接限制<br>
+log_type    日志文件类型    以什么日志选项记载和需要记载的等级(默认为info)<br>
+log_on_success,log_on_failure,设置值,[PID,HOST,USERID,EXIT,DURATION]<br>
+PID为service启动时的pid,host为远程主机的ip，userid为登陆者的账号，EXIT为离开时记录的项目，DURATION为该用户使用此service多久。<br>
+env 额外环境变量设置    设置环境变量<br>
+port    非正规端口号    设置不同的service与对应的端口号，port与service名必须与/etc/services的值相同<br>
+redirect    service转址    [IP port] 将客户端的请求转到另一台主机<br>
+includedir  调用外部设置    表示将某个目录所有文件都放入xinetd.conf中，<br>
+bind    service端口锁定    运行此service的适配卡<br>
+interface   与bind相同<br>
+only_from   [0.0.0.0,192.168.1.0/24,hostname,domainname]设置为这里面的ip或者主机名才能访问，0.0.0.0表示所有主机皆能访问，如果是192.168.1.0/24则表示为C　class的域，即由(192.168.1.1~192.168.1.255)皆可登录。另外，也可选择域名，如bit.edu.cn表示运行北理工的ip登录你的主机<br>
+no_acess    表示的是不可登录的主机<br>
+acess_time  时间控制    [00:00-24:00,HH:MM-HH:MM]<br>
+umask   设置用户新建目录或者文件时候的属性<br>
+}</service></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《鸟哥的LINUX私房菜》<br>
+2.<a href="https://askubuntu.com/questions/911525/difference-between-systemctl-init-d-and-service" target="_blank" rel="noopener">https://askubuntu.com/questions/911525/difference-between-systemctl-init-d-and-service</a><br>
+3.<a href="http://www.r9it.com/20180613/ubuntu-18.04-auto-start.html" target="_blank" rel="noopener">http://www.r9it.com/20180613/ubuntu-18.04-auto-start.html</a><br>
+4.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html</a><br>
+5.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-</a><br>
+6.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-</a><br>
+7.<a href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a><br>
+8.<a href="https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html" target="_blank" rel="noopener">https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html</a><br>
+9.<a href="https://www.freedesktop.org/software/systemd/man/systemd.unit.html" target="_blank" rel="noopener">https://www.freedesktop.org/software/systemd/man/systemd.unit.html</a><br>
+10.<a href="https://unix.stackexchange.com/questions/206315/whats-the-difference-between-usr-lib-systemd-system-and-etc-systemd-system" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/206315/whats-the-difference-between-usr-lib-systemd-system-and-etc-systemd-system</a><br>
+11.<a href="https://stackoverflow.com/questions/35452591/start-request-repeated-too-quickly" target="_blank" rel="noopener">https://stackoverflow.com/questions/35452591/start-request-repeated-too-quickly</a><br>
+12.<a href="https://superuser.com/questions/1156676/what-causes-systemd-failed-at-step-user-spawning-usr-sbin-opendkim-no-such-p" target="_blank" rel="noopener">https://superuser.com/questions/1156676/what-causes-systemd-failed-at-step-user-spawning-usr-sbin-opendkim-no-such-p</a><br>
+13.<a href="https://stackoverflow.com/questions/39202644/caddy-service-start-request-repeated-too-quickly" target="_blank" rel="noopener">https://stackoverflow.com/questions/39202644/caddy-service-start-request-repeated-too-quickly</a></p>
 
           
         
@@ -962,7 +1171,33 @@
       
         
           
-            <h2 id="常见的日志文件"><a href="#常见的日志文件" class="headerlink" title="常见的日志文件"></a>常见的日志文件</h2><p>/var/log/cron.log    crontab调度有没有执行，有没有错误以及/etc/crontab是否正确编写<br>/var/log/lastlog    所有账号最后一次的登录信息，非ASCII文件<br>/var/log/mail.log    所有邮件的往来信息<br>/var/log/messages    各种错误信息<br>/var/log/secure<br>/var/log/wtmp        登录成功与识别的账号信息<br>/var/log/apport.log    应用程序崩溃记录<br>/var/log/apt/*        apt-get 安装卸载软件的日志<br>/var/log/auth.log    登录认证log(与/etc/var/secure挺像)<br>/var/log/boot.log    系统启动的日志<br>/var/log/btmp        记录所有失败者的信息<br>/var/log/cups/*<br>/var/log/dist-upgrade    dist-upgrade这种更新方式的日志<br>/var/log/dmesg        内核缓冲信息<br>/var/log/dpkg.log    安装或dpkg命令清除软件包的日志<br>/var/log/faillog    用户登录失败信息，错误登录命令也会显示<br>/var/log/fontconfig.log    字体设置有关的日志<br>/var/log/fsck        文件系统日志<br>/var/log/hp<br>/var/log/install<br>/var/log/kern.log    内核产生的日志<br>/var/log/samba        samba存储的信息<br>/var/log/syslog        系统登录信息<br>/var/log/upstart<br>/var/log/wtmp        包含登录信息，找出谁正在登录进入系统以及谁用命令显示这个文件或者信息等<br>/var/log/xorg.*.log    来自X的日志信息</p>
+            <h2 id="常见的日志文件">常见的日志文件</h2>
+<p>/var/log/cron.log	crontab调度有没有执行，有没有错误以及/etc/crontab是否正确编写<br>
+/var/log/lastlog	所有账号最后一次的登录信息，非ASCII文件<br>
+/var/log/mail.log	所有邮件的往来信息<br>
+/var/log/messages	各种错误信息<br>
+/var/log/secure		<br>
+/var/log/wtmp		登录成功与识别的账号信息<br>
+/var/log/apport.log	应用程序崩溃记录<br>
+/var/log/apt/*		apt-get 安装卸载软件的日志<br>
+/var/log/auth.log	登录认证log(与/etc/var/secure挺像)<br>
+/var/log/boot.log	系统启动的日志<br>
+/var/log/btmp		记录所有失败者的信息<br>
+/var/log/cups/* 		<br>
+/var/log/dist-upgrade	dist-upgrade这种更新方式的日志<br>
+/var/log/dmesg		内核缓冲信息<br>
+/var/log/dpkg.log	安装或dpkg命令清除软件包的日志<br>
+/var/log/faillog	用户登录失败信息，错误登录命令也会显示<br>
+/var/log/fontconfig.log	字体设置有关的日志<br>
+/var/log/fsck		文件系统日志<br>
+/var/log/hp		<br>
+/var/log/install	<br>
+/var/log/kern.log	内核产生的日志<br>
+/var/log/samba		samba存储的信息<br>
+/var/log/syslog		系统登录信息<br>
+/var/log/upstart	<br>
+/var/log/wtmp		包含登录信息，找出谁正在登录进入系统以及谁用命令显示这个文件或者信息等<br>
+/var/log/xorg.*.log	来自X的日志信息</p>
 
           
         
@@ -1116,11 +1351,29 @@
       
         
           
-            <h2 id="Linux的启动流程"><a href="#Linux的启动流程" class="headerlink" title="Linux的启动流程"></a>Linux的启动流程</h2><p>BIOS   MBR    boot loader    boot sector</p>
-<h2 id="BIOS"><a href="#BIOS" class="headerlink" title="BIOS"></a>BIOS</h2><p>BIOS(Basic Input Ouput System)是一套程序,它被写死到主板上面的一个内存芯片，这个内存芯片没有电时也能将数据记录下来，那就是一个ROM(Read Only Memory)。BIOS是系统开机时首先会去读取的一个小程序，它控制着开机时候的各项硬件参数的取得，它掌握了系统硬件的详细信息以及开机设备的选择，BIOS程序代码也会被适度修改，但是如果写在ROM中是无法修改的，现在多把BIOS写入Flash Memory 或者EEPROM中。</p>
+            <h2 id="linux的启动流程">Linux的启动流程</h2>
+<p>BIOS   MBR    boot loader    boot sector</p>
+<h2 id="bios">BIOS</h2>
+<p>BIOS(Basic Input Ouput System)是一套程序,它被写死到主板上面的一个内存芯片，这个内存芯片没有电时也能将数据记录下来，那就是一个ROM(Read Only Memory)。BIOS是系统开机时首先会去读取的一个小程序，它控制着开机时候的各项硬件参数的取得，它掌握了系统硬件的详细信息以及开机设备的选择，BIOS程序代码也会被适度修改，但是如果写在ROM中是无法修改的，现在多把BIOS写入Flash Memory 或者EEPROM中。</p>
 <p>BIOS通过硬件的INT13中断功能来读取MBR的，所以只要BIOS能检测到磁盘那么他就能够通过INT13这条信道来读取该磁盘的第一个扇区内的MBR，这样就能够执行boot loader</p>
-<h2 id="Boot-Loader"><a href="#Boot-Loader" class="headerlink" title="Boot Loader"></a>Boot Loader</h2><p>boot loader的最主要功能就是认识操作系统的文件格式并且加载该操作系统的内核到内存中执行。不同操作系统的文件类型不同，所以boot loader也是不同的，那么如果通过一个MBR来安装多操作系统呢。</p>
-<h2 id="Boot-Sector"><a href="#Boot-Sector" class="headerlink" title="Boot Sector"></a>Boot Sector</h2><p>对于文件系统来说，每个文件系统都会有保留一个引导扇区(boot sector)提供给操作系统来安装boot loader。<br>每个操作系统默认会安装一个boot loader到它的文件系统中。对于Linux来说，我们可以选择将boot loader安装到MBR，也可以不选择，那样boot loader只会安装在它自己的文件系统中的即是(boot sector)。但是Windows操作系统会默认直接将boot loader安装在MBR以及boot sector中，所以说安装双系统时，最好先装Windows，再装Linux，否则反过来的话，那么Windows的boot loader可能就会覆盖掉Linux的boot loader.<br>但是，系统的MBR只有一个，所以，如何执行boot sector中的boot loader呢，那就需要谈到boot loader的功能了。<br>boot loader的功能<br>        提供菜单<br>        加载内核文件<br>        转交其他loader<br>我们可以通过MBR中的boot loader选择其他的loader，这样就可以选择其他的操作系统运行了。<br>通过boot loader的管理读取了内核文件之后，那么就要进行工作了，重新检测硬件等。<br>但是从某些版本之后，内核是可以动态加载内核模块的，这些模块被放在/lib/modules/目录内，模块放置到磁盘根目录内，因此，启动过程中内核必须要挂载根目录，这样才能动态读取内核模块提供加载驱动程序的功能。<br>一般来说，非必要的功能可以编译成模块的内核功能，许多Linux会将内核编译成模块。USB，SATA,SCSI等设备的驱动程序都是通过模块的方式存在的。<br>那么问题来了，内核是不认识SATA硬盘的，所以根目录无法挂载，更无法通过根目录下的/lib/modules来驱动SATA硬盘了。这时候，就用到了虚拟文件系统(/boot/initrd)来管理。<br>虚拟文件系统能够通过boot loader加载到内存中，解压缩被当成一个根目录，从而通过该程序加载启动过程中所最需要的内核模块,通常是USB,RAID,LVM,SCSI等文件系统以及硬盘的驱动程序。<br>需要initrd的原因是因为启动时无法挂载根目录，如果根目录能被挂载，那么就不需要了，根目录再USB,SATA,SCSI等磁盘，或者文件系统比较特殊，为LVM，RAID等，那么是需要<br>载入这些模块之后，initd就会帮助内核重新调用/sbin/init进行后续正常的启动</p>
+<h2 id="boot-loader">Boot Loader</h2>
+<p>boot loader的最主要功能就是认识操作系统的文件格式并且加载该操作系统的内核到内存中执行。不同操作系统的文件类型不同，所以boot loader也是不同的，那么如果通过一个MBR来安装多操作系统呢。</p>
+<h2 id="boot-sector">Boot Sector</h2>
+<p>对于文件系统来说，每个文件系统都会有保留一个引导扇区(boot sector)提供给操作系统来安装boot loader。<br>
+每个操作系统默认会安装一个boot loader到它的文件系统中。对于Linux来说，我们可以选择将boot loader安装到MBR，也可以不选择，那样boot loader只会安装在它自己的文件系统中的即是(boot sector)。但是Windows操作系统会默认直接将boot loader安装在MBR以及boot sector中，所以说安装双系统时，最好先装Windows，再装Linux，否则反过来的话，那么Windows的boot loader可能就会覆盖掉Linux的boot loader.<br>
+但是，系统的MBR只有一个，所以，如何执行boot sector中的boot loader呢，那就需要谈到boot loader的功能了。<br>
+boot loader的功能<br>
+		提供菜单<br>
+		加载内核文件<br>
+		转交其他loader<br>
+我们可以通过MBR中的boot loader选择其他的loader，这样就可以选择其他的操作系统运行了。<br>
+通过boot loader的管理读取了内核文件之后，那么就要进行工作了，重新检测硬件等。<br>
+但是从某些版本之后，内核是可以动态加载内核模块的，这些模块被放在/lib/modules/目录内，模块放置到磁盘根目录内，因此，启动过程中内核必须要挂载根目录，这样才能动态读取内核模块提供加载驱动程序的功能。<br>
+一般来说，非必要的功能可以编译成模块的内核功能，许多Linux会将内核编译成模块。USB，SATA,SCSI等设备的驱动程序都是通过模块的方式存在的。<br>
+那么问题来了，内核是不认识SATA硬盘的，所以根目录无法挂载，更无法通过根目录下的/lib/modules来驱动SATA硬盘了。这时候，就用到了虚拟文件系统(/boot/initrd)来管理。<br>
+虚拟文件系统能够通过boot loader加载到内存中，解压缩被当成一个根目录，从而通过该程序加载启动过程中所最需要的内核模块,通常是USB,RAID,LVM,SCSI等文件系统以及硬盘的驱动程序。<br>
+需要initrd的原因是因为启动时无法挂载根目录，如果根目录能被挂载，那么就不需要了，根目录再USB,SATA,SCSI等磁盘，或者文件系统比较特殊，为LVM，RAID等，那么是需要<br>
+载入这些模块之后，initd就会帮助内核重新调用/sbin/init进行后续正常的启动</p>
 
           
         
@@ -1292,24 +1545,70 @@
       
         
           
-            <h2 id="查看cpu核数和cpu信息"><a href="#查看cpu核数和cpu信息" class="headerlink" title="查看cpu核数和cpu信息"></a>查看cpu核数和cpu信息</h2><p>~$:lscpu</p>
+            <h2 id="查看cpu核数和cpu信息">查看cpu核数和cpu信息</h2>
+<p>~$:lscpu</p>
 <blockquote>
-<p>Architecture:          x86_64<br>CPU op-mode(s):        32-bit, 64-bit<br>Byte Order:            Little Endian<br>CPU(s):                16<br>On-line CPU(s) list:   0-15<br>Thread(s) per core:    2<br>Core(s) per socket:    8<br>Socket(s):             1<br>NUMA node(s):          1<br>Vendor ID:             AuthenticAMD<br>CPU family:            23<br>Model:                 8<br>Model name:            AMD Ryzen 7 2700X Eight-Core Processor<br>Stepping:              2<br>CPU MHz:               3921.420<br>CPU max MHz:           3700.0000<br>CPU min MHz:           2200.0000<br>BogoMIPS:              7385.61<br>Virtualization:        AMD-V<br>L1d cache:             32K<br>L1i cache:             64K<br>L2 cache:              512K<br>L3 cache:              8192K<br>NUMA node0 CPU(s):     0-15<br>Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb hw_pstate sme ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt sha_ni xsaveopt xsavec xgetbv1 xsaves clzero irperf xsaveerptr arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overflow_recov succor smca</p>
+<p>Architecture:          x86_64<br>
+CPU op-mode(s):        32-bit, 64-bit<br>
+Byte Order:            Little Endian<br>
+CPU(s):                16<br>
+On-line CPU(s) list:   0-15<br>
+Thread(s) per core:    2<br>
+Core(s) per socket:    8<br>
+Socket(s):             1<br>
+NUMA node(s):          1<br>
+Vendor ID:             AuthenticAMD<br>
+CPU family:            23<br>
+Model:                 8<br>
+Model name:            AMD Ryzen 7 2700X Eight-Core Processor<br>
+Stepping:              2<br>
+CPU MHz:               3921.420<br>
+CPU max MHz:           3700.0000<br>
+CPU min MHz:           2200.0000<br>
+BogoMIPS:              7385.61<br>
+Virtualization:        AMD-V<br>
+L1d cache:             32K<br>
+L1i cache:             64K<br>
+L2 cache:              512K<br>
+L3 cache:              8192K<br>
+NUMA node0 CPU(s):     0-15<br>
+Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb hw_pstate sme ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt sha_ni xsaveopt xsavec xgetbv1 xsaves clzero irperf xsaveerptr arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overflow_recov succor smca</p>
 </blockquote>
-<p>总核数 = 物理CPU个数 X 每颗物理CPU的核数<br>总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数<br>拿我做测试的机器来说，一个cpu，每个cpu八核，每个核两个超线程。</p>
-<h2 id="查看物理CPU个数"><a href="#查看物理CPU个数" class="headerlink" title="查看物理CPU个数"></a>查看物理CPU个数</h2><p>~$:cat /proc/cpuinfo| grep “physical id”| sort| uniq |wc -l</p>
+<p>总核数 = 物理CPU个数 X 每颗物理CPU的核数<br>
+总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数<br>
+拿我做测试的机器来说，一个cpu，每个cpu八核，每个核两个超线程。</p>
+<h2 id="查看物理cpu个数">查看物理CPU个数</h2>
+<p>~$:cat /proc/cpuinfo| grep “physical id”| sort| uniq |wc -l</p>
 <blockquote>
 <p>1</p>
 </blockquote>
-<h2 id="查看每个物理CPU中core的个数-即核数"><a href="#查看每个物理CPU中core的个数-即核数" class="headerlink" title="查看每个物理CPU中core的个数(即核数)"></a>查看每个物理CPU中core的个数(即核数)</h2><p>~$:cat /proc/cpuinfo| grep “cpu cores”</p>
+<h2 id="查看每个物理cpu中core的个数-即核数">查看每个物理CPU中core的个数(即核数)</h2>
+<p>~$:cat /proc/cpuinfo| grep “cpu cores”</p>
 <blockquote>
 <p>8</p>
 </blockquote>
-<h2 id="查看逻辑CPU的个数"><a href="#查看逻辑CPU的个数" class="headerlink" title="查看逻辑CPU的个数"></a>查看逻辑CPU的个数</h2><p>~$:cat /proc/cpuinfo| grep “processor”| wc -l</p>
+<h2 id="查看逻辑cpu的个数">查看逻辑CPU的个数</h2>
+<p>~$:cat /proc/cpuinfo| grep “processor”| wc -l</p>
 <blockquote>
-<p>processor    : 0<br>processor    : 1<br>processor    : 2<br>processor    : 3<br>processor    : 4<br>processor    : 5<br>processor    : 6<br>processor    : 7<br>processor    : 8<br>processor    : 9<br>processor    : 10<br>processor    : 11<br>processor    : 12<br>processor    : 13<br>processor    : 14<br>processor    : 15</p>
+<p>processor	: 0<br>
+processor	: 1<br>
+processor	: 2<br>
+processor	: 3<br>
+processor	: 4<br>
+processor	: 5<br>
+processor	: 6<br>
+processor	: 7<br>
+processor	: 8<br>
+processor	: 9<br>
+processor	: 10<br>
+processor	: 11<br>
+processor	: 12<br>
+processor	: 13<br>
+processor	: 14<br>
+processor	: 15</p>
 </blockquote>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.鸟哥的Linux私房菜</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.鸟哥的Linux私房菜</p>
 
           
         
@@ -1481,14 +1780,33 @@
       
         
           
-            <h2 id="nohup"><a href="#nohup" class="headerlink" title="nohup"></a>nohup</h2><p>nohup　[command parameters] [&amp;] nohup不挂断地运行命令。<br>nohup命令忽略所有挂断（SIGHUP）信号，有&amp;表示在后台执行，没有&amp;表示在机前台执行，即使脱机或者注销系统后仍然会执行，输出为nohup.out</p>
-<h2 id="amp"><a href="#amp" class="headerlink" title="&amp;"></a>&amp;</h2><p>在后台运行。<br>一般nohup和&amp;会在一起使用。即nohup command &amp;，表示在后台不挂断的执行command命令<br>STDOUT以及STDERR都会被显示在屏幕上，可以采用数据流重定向将其输入文件<br>tar -cvj -f ~/my.bak/etc20161006.tar.bz2 /etc &gt; ~/tmp/log.txt 2&gt;&amp;1 &amp;<br>这样stdout以及stderr会被输入进~/tmp/log.txt</p>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>~$:nohup sslocal -c /etc/shadowsocks_v6.json \&lt;/dev/null &amp;>>~/.log/ss-local.log &amp; </p>
-<h2 id="jobs"><a href="#jobs" class="headerlink" title="jobs"></a>jobs</h2><p>jobs -l 查看运行的后台进程，当打开该进程的终端关闭时，就无法看到使用jobs查看该程序了。需要使用ps命令<br>jobs [-lsr] 查看目前后台的jobs<br>    -l 列出所有的后台jobs，包含pid<br>    -s 列出停止的后台jobs，<br>    -r 列出正在运行的jobs,</p>
-<h2 id="fg-bg-ctrl-z"><a href="#fg-bg-ctrl-z" class="headerlink" title="fg, bg, ctrl+z"></a>fg, bg, ctrl+z</h2><p>fg(foreground)将后台的工作拿到前台<br>    fg %jobnumber<br>    fg +/- [jobnumber]表示第几个后台工作，+表示最后一个被丢入后台，-表示最后第二个被丢入后台，最后第三个以及以上不显示</p>
+            <h2 id="nohup">nohup</h2>
+<p>nohup　[command parameters] [&amp;] nohup不挂断地运行命令。<br>
+nohup命令忽略所有挂断（SIGHUP）信号，有&amp;表示在后台执行，没有&amp;表示在机前台执行，即使脱机或者注销系统后仍然会执行，输出为nohup.out</p>
+<h2 id="none">&amp;</h2>
+<p>在后台运行。<br>
+一般nohup和&amp;会在一起使用。即nohup command &amp;，表示在后台不挂断的执行command命令<br>
+STDOUT以及STDERR都会被显示在屏幕上，可以采用数据流重定向将其输入文件<br>
+tar -cvj -f ~/my.bak/etc20161006.tar.bz2 /etc &gt; ~/tmp/log.txt 2&gt;&amp;1 &amp;<br>
+这样stdout以及stderr会被输入进~/tmp/log.txt</p>
+<h2 id="示例">示例</h2>
+<p>~$:nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp;</p>
+<h2 id="jobs">jobs</h2>
+<p>jobs -l 查看运行的后台进程，当打开该进程的终端关闭时，就无法看到使用jobs查看该程序了。需要使用ps命令<br>
+jobs [-lsr] 查看目前后台的jobs<br>
+-l 列出所有的后台jobs，包含pid<br>
+-s 列出停止的后台jobs，<br>
+-r 列出正在运行的jobs,</p>
+<h2 id="fg-bg-ctrl-z">fg, bg, ctrl+z</h2>
+<p>fg(foreground)将后台的工作拿到前台<br>
+fg %jobnumber<br>
+fg +/- [jobnumber]表示第几个后台工作，+表示最后一个被丢入后台，-表示最后第二个被丢入后台，最后第三个以及以上不显示</p>
 <p>bg继续后台运行某个程序</p>
 <p>ctrl+z挂起程序，将正在工作的程序放入后台(避免被ctrl+c终止,而非系统的后台)</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://baike.baidu.com/item/nohup/5683841?fr=aladdin" target="_blank" rel="noopener">https://baike.baidu.com/item/nohup/5683841?fr=aladdin</a><br>2.<a href="https://www.cnblogs.com/baby123/p/6477429.html" target="_blank" rel="noopener">https://www.cnblogs.com/baby123/p/6477429.html</a><br>3.<a href="https://www.cnblogs.com/hf8051/p/4494735.html" target="_blank" rel="noopener">https://www.cnblogs.com/hf8051/p/4494735.html</a></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://baike.baidu.com/item/nohup/5683841?fr=aladdin" target="_blank" rel="noopener">https://baike.baidu.com/item/nohup/5683841?fr=aladdin</a><br>
+2.<a href="https://www.cnblogs.com/baby123/p/6477429.html" target="_blank" rel="noopener">https://www.cnblogs.com/baby123/p/6477429.html</a><br>
+3.<a href="https://www.cnblogs.com/hf8051/p/4494735.html" target="_blank" rel="noopener">https://www.cnblogs.com/hf8051/p/4494735.html</a></p>
 
           
         
@@ -1660,12 +1978,27 @@
       
         
           
-            <h2 id="下载相应版本的安装包"><a href="#下载相应版本的安装包" class="headerlink" title="下载相应版本的安装包"></a>下载相应版本的安装包</h2><p>国科大源：<a href="https://mirrors.ustc.edu.cn/gnu/gcc/" target="_blank" rel="noopener">https://mirrors.ustc.edu.cn/gnu/gcc/</a><br>官网源：<a href="http://ftp.gnu.org/gnu/gcc/" target="_blank" rel="noopener">http://ftp.gnu.org/gnu/gcc/</a><br>我选择的是官方源，执行以下命令下载：<br>~\$:wget <a href="http://ftp.gnu.org/gnu/gcc/gcc-7.3.0.tar.gz" target="_blank" rel="noopener">http://ftp.gnu.org/gnu/gcc/gcc-7.3.0.tar.gz</a></p>
-<h2 id="解压"><a href="#解压" class="headerlink" title="解压"></a>解压</h2><p>~\$:tar xvf gcc-7.3.0.tar.gz<br>~\$:sudo cp -r gcc-7.3.0 /usr/local/src/<br>~\$:cd /usr/local/src/gcc-7.3.0/</p>
-<h2 id="创建安装目录"><a href="#创建安装目录" class="headerlink" title="创建安装目录"></a>创建安装目录</h2><p>~\$:sudo mkdir /usr/local/gcc-7.3.0<br>~\$:sudo mkdir /usr/local/src/gcc-7.3.0/build<br>~\$:cd /usr/local/src/gcc-7.3.0/build</p>
-<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>~\$:sudo ../configure —prefix=/usr/local/gcc-7.3.0/ —enable-threads=posix —disable-multilib —enable-languages=c,c++<br>~\$:sudo make -j8<br>~\$:sudo make install</p>
-<h2 id="修改gcc版本"><a href="#修改gcc版本" class="headerlink" title="修改gcc版本"></a>修改gcc版本</h2><p>~\$:sudo update-alternativess —install /usr/bin/cc cc /usr/local/gcc-4.6.0/bin/gcc-4.6 30<br>~\$:sudo update-alternativess —install /usr/bin/c++ c++ /usr/local/gcc-4.6.0/bin/g++-4.6 30</p>
-<p>~\$:sudo update-alternativess —config cc</p>
+            <h2 id="下载相应版本的安装包">下载相应版本的安装包</h2>
+<p>国科大源：<a href="https://mirrors.ustc.edu.cn/gnu/gcc/" target="_blank" rel="noopener">https://mirrors.ustc.edu.cn/gnu/gcc/</a><br>
+官网源：<a href="http://ftp.gnu.org/gnu/gcc/" target="_blank" rel="noopener">http://ftp.gnu.org/gnu/gcc/</a><br>
+我选择的是官方源，执行以下命令下载：<br>
+~$:wget <a href="http://ftp.gnu.org/gnu/gcc/gcc-7.3.0.tar.gz" target="_blank" rel="noopener">http://ftp.gnu.org/gnu/gcc/gcc-7.3.0.tar.gz</a></p>
+<h2 id="解压">解压</h2>
+<p>~$:tar xvf gcc-7.3.0.tar.gz<br>
+~$:sudo cp -r gcc-7.3.0 /usr/local/src/<br>
+~$:cd /usr/local/src/gcc-7.3.0/</p>
+<h2 id="创建安装目录">创建安装目录</h2>
+<p>~$:sudo mkdir /usr/local/gcc-7.3.0<br>
+~$:sudo mkdir /usr/local/src/gcc-7.3.0/build<br>
+~$:cd /usr/local/src/gcc-7.3.0/build</p>
+<h2 id="配置">配置</h2>
+<p>~$:sudo …/configure --prefix=/usr/local/gcc-7.3.0/ --enable-threads=posix --disable-multilib --enable-languages=c,c++<br>
+~$:sudo make -j8<br>
+~$:sudo make install</p>
+<h2 id="修改gcc版本">修改gcc版本</h2>
+<p>~$:sudo update-alternativess --install /usr/bin/cc cc /usr/local/gcc-4.6.0/bin/gcc-4.6 30<br>
+~$:sudo update-alternativess --install /usr/bin/c++ c++ /usr/local/gcc-4.6.0/bin/g+±4.6 30</p>
+<p>~$:sudo update-alternativess --config cc</p>
 
           
         
@@ -1838,9 +2171,31 @@
         
           
             <p>扩展linux的/boot分区</p>
-<h2 id="使用gpared或者fdisk创建一个新的partition"><a href="#使用gpared或者fdisk创建一个新的partition" class="headerlink" title="使用gpared或者fdisk创建一个新的partition"></a>使用gpared或者fdisk创建一个新的partition</h2><h2 id="find-the-uuid-of-the-new-partition"><a href="#find-the-uuid-of-the-new-partition" class="headerlink" title="find the uuid of the new partition"></a>find the uuid of the new partition</h2><p>使用命令<br>~$:ls -l /dev/disk/by-uuid/<br>获得分区的uuid<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 19d6c114-8859-4209-aef9-60ee3cc108c1 -&gt; ../../sda9<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 1C48-1828 -&gt; ../../sda2<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 2840620D4061E254 -&gt; ../../sda4<br>    lrwxrwxrwx 1 root root 11 11月 24 14:34 66ab484d-0bbc-41cb-b2ca-8f436a330e2b -&gt; ../../sda10<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 71640978-4b7b-49aa-9a3e-ef22c994a183 -&gt; ../../sda6<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 8856E16256E1518C -&gt; ../../sdb1<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 99f1b75b-eb7b-41bb-9aa8-3c5ab2446f01 -&gt; ../../sda7<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 B4CEF361CEF31A76 -&gt; ../../sdb2<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 B836469636465592 -&gt; ../../sda1<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 C14D581BDA18EBFA -&gt; ../../sda5<br>    lrwxrwxrwx 1 root root 10 11月 24 14:34 e9b32a21-5e8a-4c53-9982-a31cd67c464e -&gt; ../../sda8</p>
-<h2 id="更新配置文件-etc-fstab"><a href="#更新配置文件-etc-fstab" class="headerlink" title="更新配置文件/etc/fstab"></a>更新配置文件/etc/fstab</h2><p>通过改变uuid将/boot目录挂在到新的挂载点上<br>    from<br>       UUID=99f1b75b-eb7b-41bb-9aa8-3c5ab2446f01 /boot           ext4    defaults        0       2<br>    to<br>       UUID=66ab484d-0bbc-41cb-b2ca-8f436a330e2b /boot           ext4    defaults        0       2<br>    here we can use the device name /dev/sda10 but it may change if we add some other devices, uuid is unique so that it won’t change.</p>
-<h2 id="重启"><a href="#重启" class="headerlink" title="重启"></a>重启</h2>
+<h2 id="使用gpared或者fdisk创建一个新的partition">使用gpared或者fdisk创建一个新的partition</h2>
+<h2 id="find-the-uuid-of-the-new-partition">find the uuid of the new partition</h2>
+<p>使用命令<br>
+~$:ls -l /dev/disk/by-uuid/<br>
+获得分区的uuid<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 19d6c114-8859-4209-aef9-60ee3cc108c1 -&gt; …/…/sda9<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 1C48-1828 -&gt; …/…/sda2<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 2840620D4061E254 -&gt; …/…/sda4<br>
+lrwxrwxrwx 1 root root 11 11月 24 14:34 66ab484d-0bbc-41cb-b2ca-8f436a330e2b -&gt; …/…/sda10<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 71640978-4b7b-49aa-9a3e-ef22c994a183 -&gt; …/…/sda6<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 8856E16256E1518C -&gt; …/…/sdb1<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 99f1b75b-eb7b-41bb-9aa8-3c5ab2446f01 -&gt; …/…/sda7<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 B4CEF361CEF31A76 -&gt; …/…/sdb2<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 B836469636465592 -&gt; …/…/sda1<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 C14D581BDA18EBFA -&gt; …/…/sda5<br>
+lrwxrwxrwx 1 root root 10 11月 24 14:34 e9b32a21-5e8a-4c53-9982-a31cd67c464e -&gt; …/…/sda8</p>
+<h2 id="更新配置文件-etc-fstab">更新配置文件/etc/fstab</h2>
+<p>通过改变uuid将/boot目录挂在到新的挂载点上<br>
+from<br>
+UUID=99f1b75b-eb7b-41bb-9aa8-3c5ab2446f01 /boot           ext4    defaults        0       2<br>
+to<br>
+UUID=66ab484d-0bbc-41cb-b2ca-8f436a330e2b /boot           ext4    defaults        0       2<br>
+here we can use the device name /dev/sda10 but it may change if we add some other devices, uuid is unique so that it won’t change.</p>
+<h2 id="重启">重启</h2>
+
           
         
       
@@ -2011,7 +2366,7 @@
       
         
           
-            <h2 id="对应"><a href="#对应" class="headerlink" title="对应"></a>对应</h2><div class="table-container">
+            <h2 id="对应">对应</h2>
 <table>
 <thead>
 <tr>
@@ -2034,8 +2389,8 @@
 </tr>
 </tbody>
 </table>
-</div>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h2 id="参考文献">参考文献</h2>
+
           
         
       
@@ -2206,16 +2561,47 @@
       
         
           
-            <h2 id="SSD"><a href="#SSD" class="headerlink" title="SSD"></a>SSD</h2><h3 id="物理接口"><a href="#物理接口" class="headerlink" title="物理接口"></a>物理接口</h3><p>常见的物理接口，就是和主板相连的接口形状有SATA和M.2(NGFF)。<br>M.2接口也叫NGFF，有两种接口模式，socket2和socket3。socket2对应的接口是bkey，对应的是传输模式为SATA，对传输模式为SATA。而socket3对应的接口是mkey，走的是PCIE。</p>
-<h3 id="总线-bus-方式（协议通道）"><a href="#总线-bus-方式（协议通道）" class="headerlink" title="总线(bus)方式（协议通道）"></a>总线(bus)方式（协议通道）</h3><p>目前市面上SSD的总线有两种类型PCI-E和SATA。<br>PCIE是用来取代SATA的新总线接口。PCIE总线的上层协议可以是NVME，也可以是ACHI。比如著名的sm951，既有NVME协议的也有ACHI协议的版本。[4]</p>
-<h3 id="上层协议（逻辑设备接口标准）"><a href="#上层协议（逻辑设备接口标准）" class="headerlink" title="上层协议（逻辑设备接口标准）"></a>上层协议（逻辑设备接口标准）</h3><p>SSD的传输协议有NVME, IDE和AHCI。NVME是最新的高性能和优化协议，是用来取代AHCI的，NVME支持PCI-E，但是支持PCI-E的SSD不一定支持NVME协议。<br>NVME需要硬盘和主板M.2插槽都支持。<br>SATA采用AHCI协议，也支持IDE协议，是为寻道旋转磁盘而不是闪存设计的。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>M.2是物理接口形式，SATA可以指的是接口，也可以指的是总线方式。M.2接口也可以走SATA总线，本质上还是sata硬盘，只不过用的是m.2的接口，只有走PCIE总线的使用Nvme协议的m.2的固态硬盘才是真正跟stata硬盘有区别的。[2]<br>如下图所示，是所有接口，<br><img src="/2019/05/01/计算机硬件信息/ssd.jpg" alt="ssd"><br>上图来源见参考文献[3]。</p>
-<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><p>CPU后缀名字介绍</p>
-<h3 id="笔记本后缀"><a href="#笔记本后缀" class="headerlink" title="笔记本后缀"></a>笔记本后缀</h3><p>Y超低压处理器<br>U代表低电压<br>M代表标压<br>H高电压不可拆卸<br>X代表高性能<br>Q代表4核心至高性能处理器</p>
-<h3 id="台式机后缀"><a href="#台式机后缀" class="headerlink" title="台式机后缀"></a>台式机后缀</h3><p>X至高性能处理器<br>E嵌入式工程级处理器<br>S低电压处理器<br>K不锁倍频处理器<br>T超低电压处理器<br>P屏蔽集显处理器</p>
-<h2 id="GPU"><a href="#GPU" class="headerlink" title="GPU"></a>GPU</h2><p>显卡的话，好像也没啥要说的了。。。</p>
-<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>好吧，看了很多电脑，神舟现在缩水很厉害，把蓝天的p系列模具的散热管去掉了很多。买了gx9之后，还是有点后悔，看上了蓝天准系统，但是太贵了，总共要13000了，i7-8700+ rtx2070，自己暂时也完全发挥不了它的性能。就先这样子把。以后有钱了再说～。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.jianshu.com/p/6db2a47fdf60" target="_blank" rel="noopener">https://www.jianshu.com/p/6db2a47fdf60</a><br>2.<a href="https://www.zhihu.com/question/52811023/answer/132388287" target="_blank" rel="noopener">https://www.zhihu.com/question/52811023/answer/132388287</a><br>3.<a href="https://www.zhihu.com/question/52811023/answer/527580986" target="_blank" rel="noopener">https://www.zhihu.com/question/52811023/answer/527580986</a><br>4.<a href="https://www.zhihu.com/question/52811023/answer/132430870" target="_blank" rel="noopener">https://www.zhihu.com/question/52811023/answer/132430870</a></p>
+            <h2 id="ssd">SSD</h2>
+<h3 id="物理接口">物理接口</h3>
+<p>常见的物理接口，就是和主板相连的接口形状有SATA和M.2(NGFF)。<br>
+M.2接口也叫NGFF，有两种接口模式，socket2和socket3。socket2对应的接口是bkey，对应的是传输模式为SATA，对传输模式为SATA。而socket3对应的接口是mkey，走的是PCIE。</p>
+<h3 id="总线-bus-方式-协议通道">总线(bus)方式（协议通道）</h3>
+<p>目前市面上SSD的总线有两种类型PCI-E和SATA。<br>
+PCIE是用来取代SATA的新总线接口。PCIE总线的上层协议可以是NVME，也可以是ACHI。比如著名的sm951，既有NVME协议的也有ACHI协议的版本。[4]</p>
+<h3 id="上层协议-逻辑设备接口标准">上层协议（逻辑设备接口标准）</h3>
+<p>SSD的传输协议有NVME, IDE和AHCI。NVME是最新的高性能和优化协议，是用来取代AHCI的，NVME支持PCI-E，但是支持PCI-E的SSD不一定支持NVME协议。<br>
+NVME需要硬盘和主板M.2插槽都支持。<br>
+SATA采用AHCI协议，也支持IDE协议，是为寻道旋转磁盘而不是闪存设计的。</p>
+<h3 id="总结">总结</h3>
+<p>M.2是物理接口形式，SATA可以指的是接口，也可以指的是总线方式。M.2接口也可以走SATA总线，本质上还是sata硬盘，只不过用的是m.2的接口，只有走PCIE总线的使用Nvme协议的m.2的固态硬盘才是真正跟stata硬盘有区别的。[2]<br>
+如下图所示，是所有接口，<br>
+<img src="/2019/05/01/计算机硬件信息/ssd.jpg" alt="ssd"><br>
+上图来源见参考文献[3]。</p>
+<h2 id="cpu">CPU</h2>
+<p>CPU后缀名字介绍</p>
+<h3 id="笔记本后缀">笔记本后缀</h3>
+<p>Y超低压处理器<br>
+U代表低电压<br>
+M代表标压<br>
+H高电压不可拆卸<br>
+X代表高性能<br>
+Q代表4核心至高性能处理器</p>
+<h3 id="台式机后缀">台式机后缀</h3>
+<p>X至高性能处理器<br>
+E嵌入式工程级处理器<br>
+S低电压处理器<br>
+K不锁倍频处理器<br>
+T超低电压处理器<br>
+P屏蔽集显处理器</p>
+<h2 id="gpu">GPU</h2>
+<p>显卡的话，好像也没啥要说的了。。。</p>
+<h2 id="写在最后">写在最后</h2>
+<p>好吧，看了很多电脑，神舟现在缩水很厉害，把蓝天的p系列模具的散热管去掉了很多。买了gx9之后，还是有点后悔，看上了蓝天准系统，但是太贵了，总共要13000了，i7-8700+ rtx2070，自己暂时也完全发挥不了它的性能。就先这样子把。以后有钱了再说～。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.jianshu.com/p/6db2a47fdf60" target="_blank" rel="noopener">https://www.jianshu.com/p/6db2a47fdf60</a><br>
+2.<a href="https://www.zhihu.com/question/52811023/answer/132388287" target="_blank" rel="noopener">https://www.zhihu.com/question/52811023/answer/132388287</a><br>
+3.<a href="https://www.zhihu.com/question/52811023/answer/527580986" target="_blank" rel="noopener">https://www.zhihu.com/question/52811023/answer/527580986</a><br>
+4.<a href="https://www.zhihu.com/question/52811023/answer/132430870" target="_blank" rel="noopener">https://www.zhihu.com/question/52811023/answer/132430870</a></p>
 
           
         
