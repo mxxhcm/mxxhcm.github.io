@@ -43,11 +43,11 @@ sudo reboot
 ~$:sudo ubuntu-drivers devices
 ~$:sudo ubuntu-drivers autoinstall
 
-### 更新grub
+<!-- ### 更新grub
 ~$:sudo vim /etc/default/grub
 将"splash"改为"splash acpi_osi=linux"
 ~$:sudo update-grub
-
+-->
 
 ## 安装cuda 9.0
 到NVIDIA官网下载cuda 9.0的runfile，然后执行

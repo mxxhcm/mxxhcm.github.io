@@ -124,7 +124,7 @@ $\qquad\qquad\qquad$否则选择并记录$A_{t+1} \sim b(\cdot| S_{t+1})$
 $\qquad\qquad$END IF
 $\qquad\qquad$$\tau \leftarrow t-n +1$  (加$1$表示下标是从$0$开始的)
 $\qquad\qquad$IF $\tau \ge 0$
-$\qquad\qquad\qquad$$\rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n-1,T-1)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n-1}$，这里是不是写成了Expected Sarsa公式）
+$\qquad\qquad\qquad$$\rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n,T)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n}$，这里是不是写成了Expected Sarsa公式）
 $\qquad\qquad\qquad$$G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)}\gamma^{i-\tau -1}R_i$ （计算$n$个reward, $R_{\tau+1}+\cdots+R_{\tau+n}$）
 $\qquad\qquad\qquad$如果$\tau+n \lt T$，$G\leftarrow G + \gamma^n Q(S_{\tau+n},A_{\tau+n})$ （因为没有$Q(S_T,A_T)$）
 $\qquad\qquad\qquad$$Q(S_{\tau}, A_{\tau}) \leftarrow Q(S_{\tau}, A_{\tau})+\alpha \rho \left[G-Q(S_{\tau}, A_{\tau})\right]$（计算$Q(S_{\tau+n},A_{\tau+n})$）
