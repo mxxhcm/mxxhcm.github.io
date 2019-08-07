@@ -77,7 +77,7 @@ $\qquad$初始化$S_0\neq$ terminal
 $\qquad$ 选择action $A_0= \pi(\cdot| S_0)$
 $\qquad$ $T\leftarrow \infty$
 $\qquad$ Loop for $t=0,1,2,\cdots$
-$\qquad\qquad$ If $t\le T$,then:
+$\qquad\qquad$ If $t\lt T$,then:
 $\qquad\qquad\qquad$ 采取action $A_t$，
 $\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$
 $\qquad\qquad$ 如果$S_{t+1}$是terminal，那么
@@ -137,6 +137,49 @@ $\qquad$Until $\tau = T-1$
 ## $n$-step Tree Backup算法
 这一章介绍的是不适用importance sampling的off-policy算法，叫做tree-backup algorithm。如下图所示，是一个$3$-step的tree-backup diaqgram。
 沿着中间这条路走，有三个sample states和rewards以及两个sample actions。在旁边的是没有被选中的actions。对于这些没有选中的actions，因为没有采样，所以使用bootstrap计算target value。因为它的backup diagram有点像tree，所以就叫做tree backup upadte。或者更精确的说，backup update使用的是所用tree的叶子结点action value的估计值进行计算的。非叶子节点的action对应的是采样的action，不参与更新，所有叶子节点对于target的贡献都有一个权重正比于它在target policy下发生的概率。在$S_{t+1}$处的除了$A_{t+1}$之外所有action权重是$\pi(a|S_{t+1})$，$A_{t+1}$一点贡献没有；在$S_{t+2}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(a'|S_{t+2})$；在$S_{t+3}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(A_{t+2}|S_{t+2})\pi(a''|S_{t+3})$
+one-step Tree backup 算法其实就是Expected Sarsa：
+$$G_{t:t+1} = R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1 \tag{12}$$
+two-step Tree backup算法return计算公式如下：
+\begin{align\*}
+G_{t:t+2} &= R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})(R_{t+2} + \sum_{a} \pi(a|S_{t+2})Q(a, S_{t+2})\\\\
+&=R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})G_{t+1:t+2}, t \lt T-2
+\end{align\*}
+下面的形式给出了tree-backup的递归形式如下：
+$$G_{t:t+n} = R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a,S_{t+1}) + \gamma\pi(A_{t+1}|S_{t+1}) G_{t+1:t+n}, n\ge 2, t\lt T-1, \tag{13}$$
+当$n=1$时除了$G_{T-1:t+n} = R_T$，其他的和式子$12$一样。使用这个新的target代替$n$-step Sarsa中的target就可以得到$n$-step tree backup 算法。
+完整的算法如下所示：
+
+### $n$-step Tree Backup 算法
+随机初始化$Q(s,a),\forall s\in S, a\in A$
+初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy
+算法参数：step size $\alpha \in (0,1\], \epsilon \gt 0$，一个正整数$n$
+Loop for each episode
+$\qquad$初始化$S_0\neq$ terminal
+$\qquad$ 根据$S_0$随机选择action $A_0$
+$\qquad$ $T\leftarrow \infty$
+$\qquad$ Loop for $t=0,1,2,\cdots$
+$\qquad\qquad$ If $t\lt T$,then:
+$\qquad\qquad\qquad$ 采取action $A_t$，
+$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$
+$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么
+$\qquad\qquad$ $T\leftarrow t+1$
+$\qquad\qquad$ 根据$S_{t+1}$随机选择action $A_{t+1}$
+$\qquad\qquad$End if
+$\qquad\qquad$ $\tau \leftarrow t-n+1$
+$\qquad\qquad\qquad$ IF $\t+1(\tau+n)\ge T$ then
+$\qquad\qquad\qquad\qquad G\leftarrow R_T$
+$\qquad\qquad\qquad$ ELSE 
+$\qquad\qquad\qquad\qquad G\leftarrow R_{t+1}+\gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1})$ 
+$\qquad\qquad\qquad$ END IF 
+$\qquad\qquad\qquad$Loop for $k = min(t, T-1)$ down $\tau+1$
+$\qquad\qquad\qquad G\leftarrow R_k+\gamma^n\sum_{a\neq A_k}\pi(a|S_k)Q(a, S_k) + \gamma \pi(A_k|S_k) G$ 
+$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$
+$\qquad\qquad$End if
+$\qquad$ Until $\tau =T-1$
+
+## $n$-step $Q(\sigma)$
+现在已经讲了$n$-step Sarsa，$n$-step Expected Sarsa，$n$-step Tree Backup，$4$-step的一个backup diagram如下所示。它们其实有很多共同的特性，可以用一个框架把它们统一起来。
+具体的算法就不细说了。
 
 ## 参考文献
 1.《reinforcement learning an introduction》第二版

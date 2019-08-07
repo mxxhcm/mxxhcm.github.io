@@ -7,6 +7,11 @@ tags:
 - on-policy
 - off-policy
 - bootstrap
+- model-free
+- model-based
+- value based
+- policy gradient
+- actor critic
 - 强化学习
 categories: 强化学习
 ---
