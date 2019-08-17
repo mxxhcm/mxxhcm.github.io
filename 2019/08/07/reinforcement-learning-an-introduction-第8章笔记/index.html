@@ -100,23 +100,23 @@
 
 
 
-  <meta name="description" content="Planning and Learning with Tabular Methods 前面几章，介绍了MC算法，TD算法，最后又用一个框架把它们统一了起来，这些算法都属于model free的方法。这一章要介绍的是model based方法，Model based方法主要用于planning，而model free的方法主要用于learning。这两类方法虽然差异很大，但是也有很多相似性。 Mod">
+  <meta name="description" content="Planning and Learning with Tabular Methods 前面几章，介绍了MC算法，TD算法，再用$n$-step TD框架把它们统一了起来，此外，这些算法都属于model free的方法。这一章要介绍model based方法，model based方法主要用于planning，而model free的方法主要用于learning。 Models和Planning M">
 <meta name="keywords" content="强化学习,model based">
 <meta property="og:type" content="article">
 <meta property="og:title" content="reinforcement learning an introduction 第8章笔记">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="Planning and Learning with Tabular Methods 前面几章，介绍了MC算法，TD算法，最后又用一个框架把它们统一了起来，这些算法都属于model free的方法。这一章要介绍的是model based方法，Model based方法主要用于planning，而model free的方法主要用于learning。这两类方法虽然差异很大，但是也有很多相似性。 Mod">
+<meta property="og:description" content="Planning and Learning with Tabular Methods 前面几章，介绍了MC算法，TD算法，再用$n$-step TD框架把它们统一了起来，此外，这些算法都属于model free的方法。这一章要介绍model based方法，model based方法主要用于planning，而model free的方法主要用于learning。 Models和Planning M">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/model_learning.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/dyna.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/blocking_maze.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/shortcut_maze.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/seven_backup.png">
-<meta property="og:updated_time" content="2019-08-11T02:02:17.208Z">
+<meta property="og:updated_time" content="2019-08-17T13:05:24.062Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="reinforcement learning an introduction 第8章笔记">
-<meta name="twitter:description" content="Planning and Learning with Tabular Methods 前面几章，介绍了MC算法，TD算法，最后又用一个框架把它们统一了起来，这些算法都属于model free的方法。这一章要介绍的是model based方法，Model based方法主要用于planning，而model free的方法主要用于learning。这两类方法虽然差异很大，但是也有很多相似性。 Mod">
+<meta name="twitter:description" content="Planning and Learning with Tabular Methods 前面几章，介绍了MC算法，TD算法，再用$n$-step TD框架把它们统一了起来，此外，这些算法都属于model free的方法。这一章要介绍model based方法，model based方法主要用于planning，而model free的方法主要用于learning。 Models和Planning M">
 <meta name="twitter:image" content="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/model_learning.png">
 
 
@@ -394,7 +394,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-08-11 10:02:17" itemprop="dateModified" datetime="2019-08-11T10:02:17+08:00">2019-08-11</time>
+                <time title="修改时间：2019-08-17 21:05:24" itemprop="dateModified" datetime="2019-08-17T21:05:24+08:00">2019-08-17</time>
               
             
           </span>
@@ -456,29 +456,39 @@
 
       
         <h2 id="planning-and-learning-with-tabular-methods">Planning and Learning with Tabular Methods</h2>
-<p>前面几章，介绍了MC算法，TD算法，最后又用一个框架把它们统一了起来，这些算法都属于model free的方法。这一章要介绍的是model based方法，Model based方法主要用于planning，而model free的方法主要用于learning。这两类方法虽然差异很大，但是也有很多相似性。</p>
+<p>前面几章，介绍了MC算法，TD算法，再用$n$-step TD框架把它们统一了起来，此外，这些算法都属于model free的方法。这一章要介绍model based方法，model based方法主要用于planning，而model free的方法主要用于learning。</p>
 <h2 id="models和planning">Models和Planning</h2>
 <h3 id="model">Model</h3>
-<p>Environment的model是任何agents可以用来预测environment会如何对agent的action做出响应的东西。给定一个state和一个action，model可以预测下一个state和action。如果model是stochastic的话，可能有多个next states和rewards，每一个都有一定概率发生。计算所有可能性以及相应概率的models，我们成为distribution models。只计算一个可能的结果，根据概率进行采样的方法，我们叫做sample models。<br>
-Model可以用来模仿或者仿真。给定一个start state和action，sample model产生一个可能的transition，distribution model产生所有可能的结果，并使用概率进行加权。给定一个start state和一个policy，sample model产生一个episode，distribution model产生所有可能的episodes以及相应的概率。不论在哪种情况下，我们都可以说model被用来simulate environment或者用来产生simulated experience。<br>
-DP中使用的$p(s’, r|s,a)$就是distribution model。第五章中blackjack例子中使用的模型是sample model。distribution model要比sample model好，distribution model可以用来产生samples，但是sample model要比distribution models好获得。考虑投掷a dozen dice的和。distribution models计算所有可能的和以及相对应的概率。而sample model只计算根据概率产生的一个样本的和。</p>
+<h4 id="定义">定义</h4>
+<p>Environment的model是agents用来预测environment会如何对agent的action做出响应的任何东西。给定一个state和一个action，model可以预测下一个state和action。如果model是stochastic的话，有多个可能的next states和rewards，每一个都有一定概率。Distribution models计算所有可能性以及相应概率，sample models根据概率进行采样，只计算采样的结果。</p>
+<h4 id="用处">用处</h4>
+<p>Model可以用来模仿或者仿真。给定一个start state和action，sample model产生一个transition，distribution model产生所有可能的transitions，并使用概率进行加权。给定start state和一个policy，sample model产生一个episode，distribution model产生所有可能的episodes以及相应的概率。Model被用来模拟environment或者产生simulated experience。</p>
+<h4 id="示例">示例</h4>
+<p>DP中使用的$p(s’, r|s,a)$就是distribution model，第五章中blackjack例子中使用的模型是sample model。Distribution model可以用来产生samples，但是sample model要比distribution models好获得。考虑投掷很多骰子的和，distribution models计算所有可能值和相应的概率，而sample model只计算根据概率产生的一个样本。</p>
 <h3 id="planning">Planning</h3>
-<p>Planning的定义是给定model，不断的与environment交互生成或者改进poilcy的过程。有两种方法进行planning，State-space planning和plan-space planning。State space是在state space中进行search寻找一个optimal policy或者optimal path，是这本书中介绍的方法。而plan-space planning是在plans space中进行search。Plan-sapce 方法很难高效的应用到stochastic sequential decision problems，在这本书中不做过多介绍。<br>
-这一章要介绍的state-space planning方法结构相同，这个结构在learing和planning中都有。基本的想法是：所有的state-space planning方法都计算value funtions，并且通过应用simulated experience的update以及backup操作计算value functions。<br>
-DP方法显然遵循这个结构，首先扫描整个state space，然后生成每一个state可能的transitions的distribution，distribution用于计算update target，更新state’s estimated value。这一章会介绍其他不同的方法，也满足这个结构，只不过是计算target的方式顺序以及长度不同而已。<br>
-将planning方法表示成这种形式主要是为了强调planning方法和learning方法之间的联系。learning和planning的重点都是使用backup update op更新estimations of value functions。区别在于plannning使用了model生成的simulate experience，而learning使用environment生成的real experience。同时perfomance measure以及experience的灵活性也不同，但是由于相同的结构，许多learning的方法可以直接应用到planning上去，使用simulated experience代替real experience即可。给出一个利用sample model和Q-learning结合起来的planning算法如下：</p>
-<h3 id="random-sample-one-step-tabular-q-planning">Random-sample one-step tabular Q-planning</h3>
-<p>Loop forever<br>
+<h4 id="定义-v2">定义</h4>
+<p>Planning的定义是给定model，不断的与environment交互生成或者改进poilcy的过程。有两种planning的方法，state space在state space中寻找一个optimal policy或者optimal path，这本书中介绍的方法都是这类。Plan-space planning在plans space中search。Plan-sapce 方法很难高效的应用到stochastic sequential decision problems，在这本书中不做过多介绍。<br>
+这一章要介绍的state-space planning方法具有相同的结构，这个结构在learing和planning中都有。基本的想法是：计算value funtions，通过应用simulated experience的update以及backup操作计算value functions。</p>
+<h4 id="示例-v2">示例</h4>
+<p>如DP方法，扫描整个state space，然后生成每一个state可能的transitions的distribution，用于计算update target，更新state’s estimated value。这一章介绍的其他方法，也满足这个结构，只不过计算target的方式顺序以及长度不同而已。</p>
+<h4 id="planning和learning的关系">planning和learning的关系</h4>
+<p>将planning方法表示成这种形式主要是为了强调planning方法和learning方法之间的联系。learning和planning的重点都是使用backup update op更新estimations of value functions。区别在于plannning使用了model生成的simulate experience，而learning使用environment生成的real experience。同时perfomance measure以及experience的灵活性也不同，但是由于相同的结构，许多learning的方法可以直接应用到planning上去，使用simulated experience代替real experience即可。<br>
+给出一个利用sample model和Q-learning结合起来的planning算法：</p>
+<h3 id="learning算法示例">learning算法示例</h3>
+<p>Random-sample one-step tabular Q-planning<br>
+Loop forever<br>
 $\qquad 1.$随机选择初始state $S\in \mathbb{S}, A\in \mathbb{A}$<br>
 $\qquad 2.$将$S,A$发送给sample model，得到next state和reward $S’, R$<br>
 $\qquad 3.$应用one-step Q-learning更新公式：<br>
 $\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+\gamma mx_a Q(S’, a) - Q(S, A)\right]$</p>
-<h2 id="dyna-整合planning-acting以及learning">Dyna:整合planning, acting以及learning</h2>
-<p>Online的planning更新需要不断的与environment交互，会出现一系列的问题。从交互中获得的information可能会改变model，以及与environment的交互，所以可能model也需要不断的学习。如果decision making以及model learning都是需要计算资源的话，可能需要把资源分给两个过程。这一节主要介绍Dyna-Q，将online planning需要的内容都整合了起来。<br>
-Planning中real experience至少有两个作用，一个是改进model，叫做model-learning，另一个是使用之前章节介绍的learning的方法直接改进value function和policy，叫做direct reinforcement learning。相应的关系如下图所示：<br>
+<h2 id="dyna">Dyna</h2>
+<h3 id="简介">简介</h3>
+<p>Online的planning更新需要不断的与environment交互，从交互中获得的information可能会改变model，以及与environment的交互，所以可能model也需要不断的学习。这一节主要介绍Dyna-Q，将online planning需要的内容都整合了起来，Dyna算法中包含了planning, acting以及learning。<br>
+Planning中real experience至少有两个作用，一个是改进model，叫做model-learning，另一个是使用learning的方法直接改进value function和policy，叫做direct reinforcement learning。相应的关系如下图所示：<br>
 <img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/model_learning.png" alt="model_learning"><br>
-根据图中的内容，experience不仅可以直接改进value function，还可以通过model间接的改进value fucntion，叫做indirect reinforcement learning。Direct learning和indirect learning都各有优势。Indirect方法能够充分利用有限的experience，得到一个更好的policy。另一方面，direct方法更简单，不会受到model bias的影响。<br>
-Dyna-Q包含了所有planning, acting, model-learning和direct RL。planning是random-sample one-step tabular Q-planning；direct RL就是one-step tabular Q-learning，model-learning是table-based并且假设environment是deterministic，对于每一个transition $S_t,A_t\rightarrow R_{t+1}, S_{t+1}$，model用表格的形式记录下$S_t,A_t$的prediction值是$R_{t+1}, S_{t+1}$。如下图是Dyna算法的整体框架图（Dyna-Q是一个示例）。<br>
+如图所示，experience可以直接改进value function，也可以通过model间接改进value fucntion，叫做indirect reinforcement learning。Direct learning和indirect learning各有优势，indirect方法能够充分利用有限的experience，得到一个更好的policy；direct方法更简单，不会受到model bias的影响。</p>
+<h3 id="dyna-q-简介">Dyna-$Q$简介</h3>
+<p>Dyna-$Q$包含planning, acting, model-learning和direct RL。planning是random-sample one-step tabular Q-planning；direct RL就是one-step tabular Q-learning，model-learning是table-based并且假设environment是deterministic，对于每一个transition $S_t,A_t\rightarrow R_{t+1}, S_{t+1}$，model用表格的形式记录下$S_t,A_t$的prediction值是$R_{t+1}, S_{t+1}$。如下图是Dyna算法的整体框架图（Dyna-Q是一个示例）。<br>
 <img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/dyna.png" alt="dyna_q"><br>
 左边使用real experience进行direct RL，右边是model-based的方法，从real experience中学习出model，然后利用model生成simulated experience。search control指的是从model生成的simulated experiences中选择指定starting state和actions的experience。最后，planning使用simulated experience更新value function。从概念上来讲，Dyna agents中planning, acting, model-learning以及direct RL几乎同时发生。但是在实现的时候，还是需要串行的进行。Dyna-$Q$中，计算量主要集中在planning上。具体的算法如下：</p>
 <h3 id="tabular-dyna-q">Tabular Dyna-Q</h3>
@@ -486,7 +496,7 @@ Dyna-Q包含了所有planning, acting, model-learning和direct RL。planning是r
 Loop forever<br>
 $\qquad (a)S\leftarrow$ current state<br>
 $\qquad (b)A\leftarrow \epsilon$-greedy$(S,Q)$<br>
-$\qquad ©©$采取action $A$，得到下一时刻的state $S’$和reward $R$<br>
+$\qquad ( c )$采取action $A$，得到下一时刻的state $S’$和reward $R$<br>
 $\qquad (d)Q(S,A) \leftarrow Q(S,A) + \alpha\left[R+\gamma max_a Q(S’, a) -Q(S,A)\right]$<br>
 $\qquad (e)Model(S,A)\leftarrow R,S’$（假设deterministic environment)<br>
 $\qquad (f)$Loop repeat $n$ 次<br>
@@ -496,25 +506,27 @@ $\qquad\qquad R,S’\leftarrow Model(S,A)$<br>
 $\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha\left[R+\gamma max_a Q(S’, a) -Q(S,A)\right]$</p>
 <p>其中$Model(s,a)$表示预测$(s,a)$的next state。(d)是direct RL，(e)是model-learning，(f)是planning。如果忽略了(e,f)，就是one-step tabular Q-learning。</p>
 <h2 id="如果model出错">如果model出错</h2>
-<p>前面给的例子很简单，model是不会错的。但是如果environment是stochastic的，以及samples很少的话，或者function approximation效果不好，或者environment刚刚改变，新的behaviour还没有被观测到，model就可能会出错。当model是错的话，就可能会产生suboptimal policy。在一些情况下，suboptimal会发现并且纠正model的error。当模型预测的结果比真实的结果好的时候就会发生这种情况。这里给出两个例子。一个environment变坏，一个environment变好。<br>
+<p>前面给的例子很简单，model是不会错的。但是如果environment是stochastic的，或者samples很少的话，或者function approximation效果不好，或者environment刚刚改变，新的behaviour还没有被观测到，model就可能会出错。当model是错的话，就可能会产生suboptimal policy。在一些情况下，suboptimal会发现并且纠正model的error。当模型预测的结果比真实的结果好的时候就会发生这种情况。这里给出两个例子。一个environment变坏，一个environment变好。<br>
 第一个例子，有一个迷宫，如图所示。<br>
 <img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/blocking_maze.png" alt="blocking mase"><br>
 刚开始，路在右边，1000步之后，右边的路被堵上了，左边有一条新的路。<br>
 <img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/shortcut_maze.png" alt="blocking mase"><br>
 第二个例子，刚开始路在左边，3000步之后，右边有一条新的路，左边的路也被保留。<br>
-这又是一个exploration和exploitation问题。在planning中，exploration意味着尝试那些让model变得更好的actions，而exploitation意味着给定当前的model，选择optimal action。我们想要agents能够explore environment的变化，但是不影响performance。<br>
-Dyna-Q+ 使用了一个简单有效的heuristics，agent记录每一个state-action pair 在real environment中从上次使用到现在经历了多少个time steps，累计的时间步越多，说明这个pair改变的可能性越大，model不对的可能性越大。为了鼓励使用很久没有用的action，这里加了一个bonus reward，如果一个transition的reward是$r$，这个transition已经有$\tau$步没有试过，在planning进行update的时候，用一个新的reward $r + k\sqrt{\tau}$，$k$很小。不过新添加的bonus会有一定的cost，而且会对value function造成影响，但是在上面的两个例子中，这个cost比performance的提升要好。</p>
+这又是一个exploration和exploitation问题。在planning中，exploration意味着尝试那些让model变得更好的actions，而exploitation意味着给定当前的model，选择optimal action。我们想要agents能够explore environment的变化，但是不影响performance。</p>
+<h3 id="启发式搜索">启发式搜索</h3>
+<p>Dyna-Q+ 使用了一个简单有效的heuristics，agent记录每一个state-action pair 在real environment中从上次使用到现在经历了多少个time steps，累计的时间步越多，说明这个pair改变的可能性越大，model不对的可能性越大。为了鼓励使用很久没有用的action，这里加了一个bonus reward，如果一个transition的reward是$r$，这个transition已经有$\tau$步没有试过，在planning进行update的时候，用一个新的reward $r + k\sqrt{\tau}$，$k$很小。不过新添加的bonus会有一定的cost，而且会对value function造成影响，但是在上面的两个例子中，这个cost比performance的提升要好。</p>
 <h2 id="优先级">优先级</h2>
-<p>在Dyna agents planning时，所有的state-action pair被选中的概率是一样的，显然是不合理的，planning的效率太低，可以有效的集中在某些state-action pair中。举个例子，在dyna_maze例子中，在第二个episode开始的时候，只有goal state前的那个state会产生正的reward，其余的都仍然是$0$，这里意味着很多updates都是无意义的。从一个value为$0$的state转移到另一个value为$0$的state，这个updates是没有意义的。只有那些在goal前面的state才会被更新，或者，那些value不为$0$的state的前面的state的value的更新才有意义。在planning过程中，有用的更新变多了，但是离effcient还差得多。在真实应用中，states可能相当大，这种没有重点的更新是非常低效的。。<br>
-Dyna maze的例子给了我们一个提示，从goal state backward的进行更新。这里的goal state不是一个具体的goal state，指的是抽象的goal state。一般来说，包括goal state以及value改变的state。假设model的value都是正确的，如果agent发现了environment的一个变化以及相应state value的变化，首先更新这个state的predecessor states value，然后一直往前利用value改变的state进行更新就行了。这种想法叫做backward focusing。对于那些低效的state，不更新就是了。<br>
-Backward过程增长的很快，会有很多state-action被更新，但是并不是所有的pair是等价的。有的state value变化很大，有的变化很小。在stochastic环境中，对transiton probability变化的估计也会导致chagnge大小的变化和紧急性的变化。所以，根据紧急性对不同的pair排一个优先级，然后根据这个优先级进行更新。用一个queue记录如果更新某个state-action pair的话，它的estimated value会变多少，根据这个值的大小排优先级。队头的元素取出来进行更新以后，计算它的predecessor pair变化大小。如果这个大小大于某个阈值，就使用新的优先级，把它加入队列，如果queue中有这个pair了，queue中保存大的优先级。完整的算法如下所示：</p>
-<h3 id="prioritized-sweeping-for-a-deteriministic-environment">prioritized sweeping for a deteriministic environment</h3>
-<p>初始化$Q(s,a), Model(s,a), \forall s, a$，$PQueue$置为空<br>
+<p>在Dyna进行planning时，所有的state-action pair被选中的概率是一样的，显然是不合理的，planning的效率太低，可以有效的集中在某些state-action pair中。举个例子，在dyna_maze例子中，在第二个episode开始的时候，只有goal state前的那个state会产生正的reward，其余的都仍然是$0$，这里意味着很多updates都是无意义的。从一个value为$0$的state转移到另一个value为$0$的state，这个updates是没有意义的。只有那些在goal前面的state才会被更新，或者，那些value不为$0$的state的前面的state的value的更新才有意义。在planning过程中，有用的更新变多了，但是离effcient还差得多。在真实应用中，states可能相当大，这种没有重点的更新是非常低效的。。</p>
+<h3 id="backward-focusing">backward focusing</h3>
+<p>Dyna maze的例子给了我们一个提示，从goal state backward的进行更新。这里的goal state不是一个具体的goal state，指的是抽象的goal state。一般来说，包括goal state以及value改变的state。假设model的value都是正确的，如果agent发现了environment的一个变化以及相应state value的变化，首先更新这个state的predecessor states value，然后一直往前利用value改变的state进行更新就行了。这种想法叫做backward focusing。对于那些低效的state，不更新就是了。<br>
+Backward过程很快，会有很多state-action被更新，但并不是所有的pair是等价的。有的state value变化很大，有的变化很小。在stochastic环境中，对transiton probability变化的估计也会导致change大小的变化和紧急性的变化。所以，根据紧急性对不同的pair排一个优先级，然后根据这个优先级进行更新。用一个queue记录如果更新某个state-action pair的话，它的estimated value会变多少，根据这个值的大小排优先级。队头的元素取出来进行更新以后，计算它的predecessor pair变化大小。如果这个大小大于某个阈值，就使用新的优先级，把它加入队列，如果queue中有这个pair了，queue中保存大的优先级。完整的算法如下所示：</p>
+<h3 id="deteriministic-environment下的优先级">deteriministic environment下的优先级</h3>
+<p>初始化$Q(s,a), Model(s,a), \forall s, a$，置$PQueue$为空<br>
 Loop forever<br>
 $\qquad(a) S\leftarrow$ currnet state<br>
 $\qquad(b) A\leftarrow policy(S,Q)$<br>
-$\qquad$©采取action $A$；得到下一个reward $R$和state $S’$<br>
-$\qquad$(d)Model(S,A) \leftarrow R, S’<br>
+$\qquad( c )$采取action $A$；得到下一个reward $R$和state $S’$<br>
+$\qquad(d)Model(S,A) \leftarrow R, S’$<br>
 $\qquad(e) P\leftarrow |R+\gamma max_aQ(S’,a) - Q(S,A)|$<br>
 $\qquad$(f)如果$P\gt \theta$，将$S,A$以$P$的优先级插入$PQueue$<br>
 $\qquad$(g) Loop repeat $n$次，当$PQueue$非空的时候<br>
@@ -525,12 +537,12 @@ $\qquad$Loop for all 预计能到$S$的$\bar{S}, \bar{A} $<br>
 $\qquad\qquad \bar{R} \leftarrow $predicted reward for $\bar{S}, \bar{A}, S$<br>
 $\qquad\qquad P\leftarrow |\bar{R}+\gamma max_aQ(S,a) -Q(\bar{S}, \bar{A})$<br>
 $\qquad\qquad$如果$P\gt \theta$，将$\bar{S},\bar{A}$以$P$的优先级插入到$PQueue$</p>
-<p>推广到stochastic environment上的话，model记录state-action pair experience的次数，以及next state是什么，计算出来一个概率，然后进行expected update。Expected update有一个limitation，许多低概率transition上的无用计算。所以可以使用sample update。Expected update和sample update的异同点会在下一节介绍。<br>
-这里说一点sample update相对于expected update的好处，相当于将完整的backup分解成更小的单个的transition。这个idea是从van Seijen和Sutton(2013)的一篇论文中得到的，叫做&quot;small backups&quot;，使用单个的transition进行更新，像sample update，但是使用的是这个transition的概率，而不是sampling。</p>
+<p>推广到stochastic environment上，用model记录state-action pair experience的次数，以及next state，计算出概率，然后进行expected update。Expected update会计算许多低概率transition上，浪费资源，所以可以使用sample update。<br>
+Sample update相对于expected update的好处，相当于将完整的backup分解成单个更小的transition。这个idea是从van Seijen和Sutton(2013)的一篇论文中得到的，叫做&quot;small backups&quot;，使用单个的transition进行更新，像sample update，但是使用的是这个transition的概率，而不是sampling的$1$。</p>
 <h2 id="expected-updates和sample-updates">Expected updates和Sample updates</h2>
 <p>这本书介绍了不同的value function updates，这节介绍expected update和sample updates。就one-step方法来说，主要有三个binary dimensions。第一个是使用state value或者action values，第二个是估计optimal policy还是random policy的value。对应的组合有四种:$q_{*}, v_{*}, q_{\pi}, v_{\pi}$。第三个就是使用expected updates还是sample updates。总共有八种组合，其中七种对应具体的算法，如下图所示：<br>
 <img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/seven_backup.png" alt="seven_bakcup"><br>
-所有的这些算法都可以用来做planning，之前介绍的Dyna-$Q$使用的是$q_{*}$ sample update，也可以使用$q_{*}$ expected update，还可以使用$q_{\pi}$ sample updates。</p>
+这些算法都可以用来planning，之前介绍的Dyna-$Q$使用的是$q_{*}$ sample update，也可以用$q_{*}$ expected update，还可以用$q_{\pi}$ sample updates。</p>
 <h2 id="参考文献">参考文献</h2>
 <p>1.《reinforcement learning an introduction》第二版</p>
 
@@ -581,8 +593,8 @@ $\qquad\qquad$如果$P\gt \theta$，将$\bar{S},\bar{A}$以$P$的优先级插入
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/08/08/均值和方差/" rel="prev" title="均值和方差">
-                均值和方差 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/08/08/均值-方差-矩-协方差-独立-相关/" rel="prev" title="均值、方差、矩、协方差、独立和相关">
+                均值、方差、矩、协方差、独立和相关 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -1128,7 +1140,7 @@ $\qquad\qquad$如果$P\gt \theta$，将$\bar{S},\bar{A}$以$P$的优先级插入
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#planning-and-learning-with-tabular-methods"><span class="nav-number">1.</span> <span class="nav-text">Planning and Learning with Tabular Methods</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#models和planning"><span class="nav-number">2.</span> <span class="nav-text">Models和Planning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#model"><span class="nav-number">2.1.</span> <span class="nav-text">Model</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#planning"><span class="nav-number">2.2.</span> <span class="nav-text">Planning</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#random-sample-one-step-tabular-q-planning"><span class="nav-number">2.3.</span> <span class="nav-text">Random-sample one-step tabular Q-planning</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dyna-整合planning-acting以及learning"><span class="nav-number">3.</span> <span class="nav-text">Dyna:整合planning, acting以及learning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tabular-dyna-q"><span class="nav-number">3.1.</span> <span class="nav-text">Tabular Dyna-Q</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如果model出错"><span class="nav-number">4.</span> <span class="nav-text">如果model出错</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优先级"><span class="nav-number">5.</span> <span class="nav-text">优先级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#prioritized-sweeping-for-a-deteriministic-environment"><span class="nav-number">5.1.</span> <span class="nav-text">prioritized sweeping for a deteriministic environment</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#expected-updates和sample-updates"><span class="nav-number">6.</span> <span class="nav-text">Expected updates和Sample updates</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#planning-and-learning-with-tabular-methods"><span class="nav-number">1.</span> <span class="nav-text">Planning and Learning with Tabular Methods</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#models和planning"><span class="nav-number">2.</span> <span class="nav-text">Models和Planning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#model"><span class="nav-number">2.1.</span> <span class="nav-text">Model</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义"><span class="nav-number">2.1.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#用处"><span class="nav-number">2.1.2.</span> <span class="nav-text">用处</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#示例"><span class="nav-number">2.1.3.</span> <span class="nav-text">示例</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#planning"><span class="nav-number">2.2.</span> <span class="nav-text">Planning</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义-v2"><span class="nav-number">2.2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#示例-v2"><span class="nav-number">2.2.2.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#planning和learning的关系"><span class="nav-number">2.2.3.</span> <span class="nav-text">planning和learning的关系</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#learning算法示例"><span class="nav-number">2.3.</span> <span class="nav-text">learning算法示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dyna"><span class="nav-number">3.</span> <span class="nav-text">Dyna</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">3.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dyna-q-简介"><span class="nav-number">3.2.</span> <span class="nav-text">Dyna-$Q$简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tabular-dyna-q"><span class="nav-number">3.3.</span> <span class="nav-text">Tabular Dyna-Q</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如果model出错"><span class="nav-number">4.</span> <span class="nav-text">如果model出错</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#启发式搜索"><span class="nav-number">4.1.</span> <span class="nav-text">启发式搜索</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优先级"><span class="nav-number">5.</span> <span class="nav-text">优先级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#backward-focusing"><span class="nav-number">5.1.</span> <span class="nav-text">backward focusing</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#deteriministic-environment下的优先级"><span class="nav-number">5.2.</span> <span class="nav-text">deteriministic environment下的优先级</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#expected-updates和sample-updates"><span class="nav-number">6.</span> <span class="nav-text">Expected updates和Sample updates</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
