@@ -115,19 +115,19 @@ $$Q_{t+n}(S_t,A_t) = Q_{t+n-1}(S_t,A_t) + \alpha \rho_{t+1:t+n}\left[G_{t:t+n} -
 Loop for each episode
 $\qquad$初始化$S_0\neq terminal$
 $\qquad$选择并存储$A_0 \sim b(\cdot|S_0)$
-$\qquad$$T\leftarrow \infty$
+$\qquad T\leftarrow \infty$
 $\qquad$Loop for $t=0,1,2,\cdots$
 $\qquad\qquad$IF $t\lt T$,then
 $\qquad\qquad\qquad$执行action $A_t$，接收$R_{t+1}, S_{t+1}$
 $\qquad\qquad\qquad$如果$S_{t+1}$是terminal，那么$T\leftarrow t+1$
 $\qquad\qquad\qquad$否则选择并记录$A_{t+1} \sim b(\cdot| S_{t+1})$
 $\qquad\qquad$END IF
-$\qquad\qquad$$\tau \leftarrow t-n +1$  (加$1$表示下标是从$0$开始的)
-$\qquad\qquad$IF $\tau \ge 0$
-$\qquad\qquad\qquad$$\rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n,T)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n}$，这里是不是写成了Expected Sarsa公式）
-$\qquad\qquad\qquad$$G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)}\gamma^{i-\tau -1}R_i$ （计算$n$个reward, $R_{\tau+1}+\cdots+R_{\tau+n}$）
+$\qquad\qquad \tau \leftarrow t-n +1$  (加$1$表示下标是从$0$开始的)
+$\qquad\qquad$ IF $\tau \ge 0$
+$\qquad\qquad\qquad \rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n,T)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n}$，这里是不是写成了Expected Sarsa公式）
+$\qquad\qquad\qquad G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)}\gamma^{i-\tau -1}R_i$ （计算$n$个reward, $R_{\tau+1}+\cdots+R_{\tau+n}$）
 $\qquad\qquad\qquad$如果$\tau+n \lt T$，$G\leftarrow G + \gamma^n Q(S_{\tau+n},A_{\tau+n})$ （因为没有$Q(S_T,A_T)$）
-$\qquad\qquad\qquad$$Q(S_{\tau}, A_{\tau}) \leftarrow Q(S_{\tau}, A_{\tau})+\alpha \rho \left[G-Q(S_{\tau}, A_{\tau})\right]$（计算$Q(S_{\tau+n},A_{\tau+n})$）
+$\qquad\qquad\qquad Q(S_{\tau}, A_{\tau}) \leftarrow Q(S_{\tau}, A_{\tau})+\alpha \rho \left[G-Q(S_{\tau}, A_{\tau})\right]$（计算$Q(S_{\tau+n},A_{\tau+n})$）
 $\qquad\qquad\qquad$确保$\pi$是相对于$Q$的greedy policy
 $\qquad\qquad$ END IF
 $\qquad$Until $\tau = T-1$
@@ -164,9 +164,9 @@ $\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$
 $\qquad\qquad$ 如果$S_{t+1}$是terminal，那么
 $\qquad\qquad$ $T\leftarrow t+1$
 $\qquad\qquad$ 根据$S_{t+1}$随机选择action $A_{t+1}$
-$\qquad\qquad$End if
+$\qquad\qquad$End IF
 $\qquad\qquad$ $\tau \leftarrow t-n+1$
-$\qquad\qquad\qquad$ IF $\t+1(\tau+n)\ge T$ then
+$\qquad\qquad\qquad$ IF $\tau+n\ge T$ then
 $\qquad\qquad\qquad\qquad G\leftarrow R_T$
 $\qquad\qquad\qquad$ ELSE 
 $\qquad\qquad\qquad\qquad G\leftarrow R_{t+1}+\gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1})$ 

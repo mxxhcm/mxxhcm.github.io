@@ -18,7 +18,7 @@ filepath_or_buffer: 文件路径，或者一个字符串，url等等
 sep: str,分隔符，默认是','
 delimiter: str,定界符，如果指定该参数，sep参数失效
 delimiter_whitespace: boolean,指定是否吧空格作为分界符如果指定该参数，则delimiter失效
-headers: int or list of ints,指定列名字，默认是header=0,表示把第一行当做列名，如果header=[0,3,4],表示吧第0,3,4行都当做列名，真正的数据从第二行开始，如果没有列名，指定header=None
+header: int or list of ints,指定列名字，默认是header=0,表示把第一行当做列名，如果header=[0,3,4],表示吧第0,3,4行都当做列名，真正的数据从第二行开始，如果没有列名，指定header=None
 index_col: int or sequence or False,指定哪几列作为index，index_col=[0,1],表示用前两列的值作为一个index，去访问后面几列的值。
 prefix: str,如果header为None的话，可以指定列名。
 parse_dates: boolean or list of ints or names,or list of lists, or dict 如果是True，解析index，如果是list of ints，把每一个int代表的列都分别当做一个日期解析，如果是list of lists，将list中的list作为一个日期解析，如果是字典的话，将dict中key作为一个新的列名，value为这个新的列的值。
