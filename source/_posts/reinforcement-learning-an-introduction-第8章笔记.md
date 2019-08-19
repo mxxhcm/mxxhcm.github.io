@@ -157,7 +157,12 @@ $$v_{k+1}(s) = \max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]$$
 如果满足这些条件，RTDP一定会收敛到relevant states的optimal policy。
 
 ## 决策时进行planning
-进行planning至少有两种方法。第一种是已经介绍的DP和Dyna这类，使用planning基于从model得到的simulated experience不断的改进policy和value function。通过比较某一个state处不同state-action pairs value值的大小选择actionZZ
+进行planning至少有两种方法。第一种是已经介绍的DP和Dyna这些算法，使用planning基于从model得到的simulated experience不断的改进policy和value function。通过比较某一个state处不同state-action pairs value值的大小选择action。在action被选择之前，planning更新所有的$Q$值。这里的planning被很多个states用来选择action。
+第二种方法是使用planning输出单个state的action，遇到一个新的state $S_t$，输出是单个的action $A_t$，然后再下一个时间步根据$S_{t+1}$继续计算$A_{t+1}$。最简单的一个例子是当只有states value可以使用的时候，通过比较model预测每一个action能够到达的后继state的value（也就是使用after state value）选择相应的action，。
+
+## 启发式搜索
+## 
+
 ## 参考文献
 1.《reinforcement learning an introduction》第二版
 
