@@ -148,7 +148,16 @@ $$v_{k+1}(s) = \max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]$$
 
 ### irrelevant states
 如果trajectories可以仅仅从指定的states开始，我们感兴趣的仅仅是给定policy下states的value，on-policy trajectory sampling可以完全跳过给定policy下不能到达的states。这些states跟prediction问题无关。对于control问题，目标是找到optimal policy而不是evaluating一个给定的policy，可能存在无论从哪个start states开始都无法到达的states，所以就没有必要给出这些无关states的action。我们需要的是一个optimal partial policy，对于relevant states，给出optimal policy，而对于irrelevant states，给出任意的actions。
-找到这样一个policy，按道理来说需要访问所有的state-action pairs无数次，包括那些无关状态。
+找到这样一个policy，按道理来说需要访问所有的state-action pairs无数次，包括那些无关状态。[Korf](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.137.1955&rep=rep1&type=pdf)证明了在满足以下条件的时候，能够在很少访问relevant states甚至不访问的时候，找到这样一个policy。
+1. goal state的初始value为$0$
+2. 存在至少一个policy保证从任何start state都能到达goal state
+3. 所有到达的非goal states的reward是严格为负的
+4. 所有states的初始value要大于等于optimal values（可以设置为$0$，一定比负值大）
 
+如果满足这些条件，RTDP一定会收敛到relevant states的optimal policy。
+
+## 决策时进行planning
+进行planning至少有两种方法。第一种是已经介绍的DP和Dyna这类，使用planning基于从model得到的simulated experience不断的改进policy和value function。通过比较某一个state处不同state-action pairs value值的大小选择actionZZ
 ## 参考文献
 1.《reinforcement learning an introduction》第二版
+
