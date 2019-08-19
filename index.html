@@ -835,7 +835,7 @@ $$\mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y) = Cov(X,Y) = 0$$</p>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-08-17 21:05:24" itemprop="dateModified" datetime="2019-08-17T21:05:24+08:00">2019-08-17</time>
+                <time title="修改时间：2019-08-18 19:45:59" itemprop="dateModified" datetime="2019-08-18T19:45:59+08:00">2019-08-18</time>
               
             
           </span>
@@ -973,9 +973,41 @@ $\qquad\qquad$如果$P\gt \theta$，将$\bar{S},\bar{A}$以$P$的优先级插入
 <p>推广到stochastic environment上，用model记录state-action pair experience的次数，以及next state，计算出概率，然后进行expected update。Expected update会计算许多低概率transition上，浪费资源，所以可以使用sample update。<br>
 Sample update相对于expected update的好处，相当于将完整的backup分解成单个更小的transition。这个idea是从van Seijen和Sutton(2013)的一篇论文中得到的，叫做&quot;small backups&quot;，使用单个的transition进行更新，像sample update，但是使用的是这个transition的概率，而不是sampling的$1$。</p>
 <h2 id="expected-updates和sample-updates">Expected updates和Sample updates</h2>
-<p>这本书介绍了不同的value function updates，这节介绍expected update和sample updates。就one-step方法来说，主要有三个binary dimensions。第一个是使用state value或者action values，第二个是估计optimal policy还是random policy的value。对应的组合有四种:$q_{*}, v_{*}, q_{\pi}, v_{\pi}$。第三个就是使用expected updates还是sample updates。总共有八种组合，其中七种对应具体的算法，如下图所示：<br>
+<p>这本书介绍了不同的value function updates，就one-step方法来说，主要有三个binary dimensions。第一个是估计state values还是action values；第二个是估计optimal policy还是random policy的value，对应四种组合:$q_{*}, v_{*}, q_{\pi}, v_{\pi}$；第三个是使用expected updates还是sample updates，也是这节的内容。总共有八种组合，其中七种对应具体的算法，如下图所示：<br>
 <img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/seven_backup.png" alt="seven_bakcup"><br>
 这些算法都可以用来planning，之前介绍的Dyna-$Q$使用的是$q_{*}$ sample update，也可以用$q_{*}$ expected update，还可以用$q_{\pi}$ sample updates。</p>
+<h3 id="简介和比较">简介和比较</h3>
+<p>Expected update对于每一个$(s,a)$ pair，考虑所有可能的next state和next action $(s’,a’)$，需要distributions model进行精确计算；而sample update仅仅需要sample model，考虑一个next state，会有采样误差。所以expected upadte一定要比sample update好，但是需要的计算量也大。当环境是deteriministic的话，expected udpaet和sample update其实是一样的，只有在stochastic环境下才有区别。<br>
+假设每一个state有$b$个next state，expected upadte要比sample update的计算量大$b$倍。如果有足够的时间进行完全的expected update，进行一次完全的expected update一定比进行$b$次sample update好，因为虽然计算次数相等，但是sample update有sampling error；如果没有足够的时间的话，在计算次数小于$b$次的时候，sample update要比expected update好，sample update至少进行了一部分improvement，而sample update只有完全进行$b$次计算后才会得到正确的value function。而当state-action pairs很多的情况下，进行完全的expected update是不可能的，sample update是一个可行的方案。<br>
+给定一个state-action pair，到底是进行一些（小于$b$次）expected update好呢，还是进行$b$次sample updates好呢？如下图所示，展示了expected update和sample update在不同的$b$下，estimation error关于计算次数的函数。<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/fig_8_7.png" alt="fig_8_7"><br>
+在这个例子中，所有$b$个后继状态出现的可能性相等，开始的error为$1$。假设所有的next state value都是正确的，expected update完成之后，error从$1$变成了$0$。而sample updates根据$\sqrt{\frac{b-1}{bt}}$减少error。对于$b$很大的值来说，进行$b$的很小比例次数的更新，error就会下降很快。</p>
+<h3 id="sample-updates的好处">Sample updates的好处</h3>
+<p>上图中，sample update的结果可能要比实际结果差一些。在实际问题中，后继状态的value会被它们自身更新。他们的estimate value会更精确，从后继状态进行backup也会更精确。</p>
+<h3 id="结论">结论</h3>
+<p>在stochastic环境下，如果每个state处可能的next state数量非常多，并且有很多个states，那么sample update可能要比expected update好。</p>
+<h2 id="trajectory-sampling">Trajectory Sampling</h2>
+<p>这里比较两种distributing updates。<br>
+DP进行update的时候，每一次扫描整个state spaces，很多state其实是没有用的，没有focus，所有的states地位一样。原则上，只要确保收敛，任何distributed方法都行，然而在实际上常用的是exhaustive sweep。<br>
+第二种是根据一些distributions从state space或者state action space中进行采样。Dyna-$Q$使用均匀分布采样，和exhaustive sweep问题一样，没有focus。使用on-policy distribution是一种很不错的想法，根据当前的policy不断的与model交互，产生一个trajectory。Sample state transitions以及reward是model给出来的，sample action是当前的policy给出来的。这种方法叫做generating experience和update trajectory sampling。</p>
+<h3 id="原因">原因</h3>
+<p>如果on-policy的distribution是已知的，可以根据这个distribution对所有的states进行加权，但是这和exhaustive sweeps的计算量差不多。或者从distribution中采样state-action paris，这比simulating trajectories好在哪里呢？事实上我们不知道distribution，当policy改变，计算distribution的计算量和policy evaluation相等。</p>
+<h3 id="分析">分析</h3>
+<p>使用on-policy distribution可以去掉很多我们不感兴趣的内容，或者一遍又一遍的进行无用的重复更新。通过一个小例子分析它的效果。使用one-step expected updates，公式如下：<br>
+$$Q(s,a) \leftarrow \sum_{s’,r} \hat{p}(s’,r|s,a)\left[r+\gamma max_{a’}Q(s’,a’)\right]$$<br>
+使用均匀分布的时候，对所有的state-action pair进行in place的expected update更新；使用on-policy的时候，使用当前$\epsilon$-greedy policy（$\epsilon=0.1$）直接生成episodes，对episodes中出现的state-action pair进行expected update。也就是说一个是随机选的，一个是on-policy中出现的，选择的方式不一样，但是都是进行expected update。<br>
+简单介绍一下environment。每个state都有两个action，等可能性的到达$b$个next states，$b$对于所有state-action pair都是一样的，所有的transition都有$0.1$的概率到达terminal state。Expected reward服从均值为$0$,方差为$1$的高斯分布。<br>
+在planning过程中的任何一步都可以停止，根据当前估计的action value，计算greedy policy $\hat{\pi}$下start state的value $v_{\hat{\pi}}(s_0)$，也就是说告诉我们使用greedy重新开始一个新的episodes，agent的表现会怎么样。（假设model是正确的）。<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/fig_8_8.png" alt="fig_8_8"><br>
+上半部分是进行了$200$次sample任务，$1000$个states，$b$分别为$1,3,10$的结果。在图中根据on-policy 采样更新的方法，一开始很快，时间一长，就慢下来了。当$b$越小的时候，效果越好，越快。另一个实验中表明，随着states数量的增加，on-policy distribution采样的效果也在变好。<br>
+使用on-policy distribtion进行采样，能够帮助我们关注start state的后继状态。如果states很多，并且$b$很小，这个效果很好并且会持续很久。在长时间的计算中，使用on-policy distribution采样可能会有副作用，因为一直在更新那些value已经正确的states。对它们进行采样没用了，还不如采样一些其他的states。这就是为什么在长时间的运行中使用均匀分布进行采样的效果更好。</p>
+<h2 id="real-time-dp">Real-time DP</h2>
+<p>Real time DP是DP的on-policy trajectory sampling版本。RLDP和上一节介绍的on-policy expected update的区别在update的方式不同，上一届实际上使用的是state-action pair，而这一节DP用的是state，它的更新公式是：<br>
+$$v_{k+1}(s) = \max_a \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_k(s’)\right]$$<br>
+一个是更新action value function，一个是更新state valut function。</p>
+<h3 id="irrelevant-states">irrelevant states</h3>
+<p>如果trajectories可以仅仅从指定的states开始，我们感兴趣的仅仅是给定policy下states的value，on-policy trajectory sampling可以完全跳过给定policy下不能到达的states。这些states跟prediction问题无关。对于control问题，目标是找到optimal policy而不是evaluating一个给定的policy，可能存在无论从哪个start states开始都无法到达的states，所以就没有必要给出这些无关states的action。我们需要的是一个optimal partial policy，对于relevant states，给出optimal policy，而对于irrelevant states，给出任意的actions。<br>
+找到这样一个policy，按道理来说需要访问所有的state-action pairs无数次，包括那些无关状态。</p>
 <h2 id="参考文献">参考文献</h2>
 <p>1.《reinforcement learning an introduction》第二版</p>
 
