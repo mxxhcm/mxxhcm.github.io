@@ -157,11 +157,46 @@ $$v_{k+1}(s) = \max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]$$
 如果满足这些条件，RTDP一定会收敛到relevant states的optimal policy。
 
 ## 决策时进行planning
-进行planning至少有两种方法。第一种是已经介绍的DP和Dyna这些算法，使用planning基于从model得到的simulated experience不断的改进policy和value function。通过比较某一个state处不同state-action pairs value值的大小选择action。在action被选择之前，planning更新所有的$Q$值。这里的planning被很多个states用来选择action。
-第二种方法是使用planning输出单个state的action，遇到一个新的state $S_t$，输出是单个的action $A_t$，然后再下一个时间步根据$S_{t+1}$继续计算$A_{t+1}$。最简单的一个例子是当只有states value可以使用的时候，通过比较model预测每一个action能够到达的后继state的value（也就是使用after state value）选择相应的action，。
+### backgroud planning
+进行planning至少有两种方法。第一种是已经介绍的DP和Dyna这些算法，使用planning基于从model得到的simulated experience不断的改进policy和value function。通过比较某一个state处不同state-action pairs value值的大小选择action。在action被选择之前，planning更新所有的$Q$值。这里planning的结果被很多个states用来选择action。这种planning叫做background planning。
+
+### decision-time planning
+第二种方法是使用planning输出单个state的action，遇到一个新的state $S_t$，输出是单个的action $A_t$，然后再下一个时间步根据$S_{t+1}$继续计算$A_{t+1}$。最简单的一个例子是当只有states value可以使用的时候，通过比较model预测每一个action能够到达的后继state的value（也就是使用after state value）选择相应的action，。这种方法叫做decision-time planning。
+事实上，decision-time planning和background planning的流程是一样的，都是使用simulated experience到backup values再到policy。只不过decision-time planning只是对当前可访问的单个state和action的value和policy进行planning。在许多decision-time planning的过程中，用于选择当前state对应的action时，使用到的value和policy用过以后都被丢弃了，这并不会造成太大的计算损失，因为在大部分任务中很多states在短时间内都不会被再次访问到。
+
+### 应用场景
+decision-time planning适用于不需要快速实时相应的场景，比如各种下棋。如果需要快速响应的，那么最好使用backgroud planning计算一个policy可以快速应用到新的states。
 
 ## 启发式搜索
-## 
+AI中经典的state-space方法都是decision-time planning方法，统称为heuristic search。在启发式搜索中，会使用树进行搜索，近似的value function应用到叶子节点，进行backup到根节点（当前state），相应的backup diagram和optimal的expected updates类似。根据计算的backed-up值，选择相应的action之后，丢弃这些值。
+传统的启发式搜索并不保存backup value，它更像是多步的greedy policy，目的是更好的选择actions。如果我们有一个perfect model以及imperfect action value function，搜索的越深结果越好。如果search沿着所有可能的路一直到episode结束，那么imperfect value function的结果被抵消了，选出来的action也是optimal。如果搜索的深度$k$足够深，$\gamma^k$接近于$0$,那么找到的action也是近乎于最优的。当然，搜索的深度越深，需要的计算资源就越多。
+启发式搜索的的updates集中在current state，它的search tree集中在接下来可能的states和actions，这也是它的结果为什么很好的原因。在某些特殊的情况下，我们可以将具体的启发式搜索算法构建出一个tree，自底向上的执行one-step update，如下图所示：
+![heuristic_search_tree](heuristic_search_tree.png)
+如果update是有序的，并且使用tabular representation，整个updates可以看成深搜，所有的state-space搜索可以看成很多个one-step updates的组合。我们得出了一个结论，搜索深度越深，性能越好的原因不是multistep updates的使用，因为它实际上使用的是多个one-step update。真正的原因是更新都集中在current state downstream的states和actions上，所有的计算都集中在candidate actions相关的states和actions上。
+
+## Rollout算法
+
+### 什么是Rollout算法
+Rollout算法是将Monte Carlo Control应用到从current state开始的simulate trajectories上的decision-time planning算法。Rollout算法根据给定的policy，这个policy叫做rolloutpolicy，从当前state可能采取的所有action开始生成很多simulated trajectories，对得到的returns进行平均估计aciton values。当action value估计的足够精确的时候，选择最大的那个action执行。
+和MC Control的区别在于，MC Control的目的是估计整个action value function $q_{\pi}$或者$q_{\*}$，而Rollout算法的目的是对于每一个current state，在一个给定policy下估计每一个可能的action的value。Rollout是decision-time planning算法，计算完相应的estimate action value之后，就丢弃它们。
+
+### Rollout算法做了什么
+Rollout算法和policy iteration差不多。在policy improvement theorem理论中，如果在一个state处采取新的action，它的value要比原来的value高，那么就说这个新的policy要比老的policy好。Rollout算法在每个current state处，估计不同的state action value，然后选择最好的，其实就相当于one-step的policy iteration，或者更像on-step的asynchronous value iteration。
+也就是说，rollout算法的目的是改进rollout policy，而不是寻找最优的policy。Rollout算法非常有效，但是它的效果也取决于rollout policy，roloout policy越好，最后算法生成的policy就越好。
+
+### 如何选择好的rollout policy
+更好的rollout policy也就需要更多的资源，因为是decision-time算法，时间约束一定要满足，rollout算法的计算时间取决于每一个decision需要选择的action数量，sample trajectories的长度，rollout policy做决策的事件，以及足够的sample trajectories的数量。接下来给出几种方法去权衡这些影响因素：
+第一个方法，MC trials都是独立的，所以可以使用多个分开的处理器运行多个trials。第二个方法是在simulated trajectories结束之前截断，通过一个分类评估函数对truncated returns进行修正。第三个方法是剪枝，剪掉那些不可能是最优的actions，或者那些和当前最优结果没啥差别的acitons。
+
+### rollout算法和learning算法的关系
+Rollout算法并不是learning算法，因为它没有保存values和polices。但是rollout算法具有rl很多好的特征。作为MC Control的应用，他们使用sample trajectories，避免了DP的exhausstive sweeps，同时不需要使用distributin models，使用sample models。最后，rollout算法还使用了policy improvement property，即选择当前estimate action values最大的action。
+
+## Monte Carlo Tree Search
+MCTS是decision-time planning算法，实际上，MCTS是一个rollout算法，它在上一节介绍的rollout算法上，加上了acucumulating value estimates的均值。MCTS是AlphaGO的基础算法。
+每到达一个新的state，MCTS根据state选择action，到达新的state，再选择action，持续下去。在大多数情况下，simulated trajectories使用rollout policy生成actions。当model和rollout policy都不需要大量计算的时候，可以在短时间内生成大量simulated trajectories。只保留在接下来的几步内最后可能访问到的state-action pairs的子集，形成一棵树，如下图所示。任意simulated trajectory都会经过这棵树，并且从叶子节点退出。在tree的外边，使用rollout policy选择actions，在tree的内部使用一个新的policy，称为tree policy，平衡exploration和exploitation。Tree policy可以使用$\epsilon$-greedy算法。
+![mcts](mcts.png)
+MCTS总共有四个部分，一直在迭代进行，第一步是Selection，根据tree policy生成一个episode的前半部分；第二步是expansion，从选中的叶子节点处的上一个节点探索其他没有探索过的节点；第三步是simulation，从选中节点，或者第二步中增加的节点处，使用rollout policy生成一个episode的后半部分；第四步是backup，从第一二三步得到的episode进行backup。这四步一直迭代下去，等到资源耗尽，或者没有time的时候，就退出，然后根据生成的tree中的信息选择相应的aciton，比如可以选择root node处action value最大的action，也可以选择最经常访问的action。
+MCTS是一种rollout算法，所以它拥有online，incremental，sample-based和policy improvement等优点。同时，它保存了tree边上的estimate action value，并且使用sample update进行更新。优势是让trivals的初始部分集中在之前simulated的high-return trajectories的公共部分。然后不断的expanding这个tree，高效增长相关的action value table，通过这样子，MCTS避免了全局近似value funciton，同时又能够利用过去的experience指定exploraion。
 
 ## 参考文献
 1.《reinforcement learning an introduction》第二版
