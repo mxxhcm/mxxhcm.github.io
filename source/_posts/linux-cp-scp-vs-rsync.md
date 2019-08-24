@@ -39,6 +39,7 @@ rsync [-zvra] source destination
 
 ### 示例
 ~$:rsync -avc --exclude=\*\*__pycache__  --exclude=\*\*data --exclude=\*\*tmp --exclude=\*\*result_pictures experimental/ ~/
+~$:rsync -rP source_dir target_dir
 
 ## 参考文献
 1.https://stackoverflow.com/questions/4585929/how-to-use-cp-command-to-exclude-a-specific-directory
