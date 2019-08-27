@@ -36,6 +36,7 @@ Left nullspace是column space的正交补（$\mathbb{R}^m$上）。
 
 ## Projections
 如下图所示，左边是投影到一条直线上的结果，右边是投影到一个subspace上的结果
+![]()
 
 ## $A^TA$是可逆的，当且仅当$A$有linear independent columns时
 证明：
@@ -60,6 +61,29 @@ $b=p+e$，$e$在$A$的nullspace上，$Ax=b=p+e$我们解不出来，$A\bar{x} = 
 
 ### 抛物线拟合
 
-## Orthogonal Bases和Gram-Schmidi正交化
+## Orthogonal Bases
+### 定义
+一组向量$q_1, q_2, \cdots , q_n$如果满足以下条件：
+$q_i^T q_j\begin{cases}0, i\neq j \\\\1, i=j\end{cases}$
 
+我们称这一组向量是正交向量，由正交column vectors构成的矩阵用一个特殊字母$Q$表示。如果columns仅仅正交，而不是单位向量的话，点乘仍然会得到一个对角矩阵，但是它的性质没有那么好。
+
+### 性质
+1. 满足$Q^TQ=I$。
+2. 如果$Q$是方阵，那么$Q^T=Q^{-1}$，即转置等于逆。
+
+## 用$Q$取代$A$进行正交投影
+假设矩阵$A$的所有column vectors都是orthonormal的，$a$就变成了$q$，$A^TA$就变成了$Q^TQ=I$，所以$Ax=b$的解变成了$\bar{x} = Q^T b$，而投影矩阵变成了$P=QQ^T$。
+
+## Gram-Schmidi正交化
+Gram-Schmidt正交化过程就相当于是在不断的进行投影，这个方法的想法是从$n$个独立的column vector出发，构建$n$个正交向量，然后再单位化。拿$3$个过程举个例子。用$a,b,c$表示初始的$3$个独立向量，$A,B,C$表示三个正交向量，$q_1, q_2,q_3$表示三个正交单位向量。
+第一个正交向量，直接对第一个向量单位化
+$A=a, q_1 = \frac{A}{\vert A\vert}$
+第二个正交向量，将第二个向量投影到第一个向量上，计算出一个和第二个向量正交的向量。
+$B=b-\frac{A^TB}{A^TA}A , q_2 = \frac{B}{\vert B\vert}$
+第三个正交向量，将第三个向量分别投影到第一个和第二个正交向量上，计算处第三个正交向量。
+$C=c - \frac{A^TC}{A^TA}A - \frac{B^TC}{B^TB}B , q_2 = \frac{C}{\vert C\vert}$
+![]()
+
+## QR分解
 
