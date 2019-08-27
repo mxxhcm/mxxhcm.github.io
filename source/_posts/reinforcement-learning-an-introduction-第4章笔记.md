@@ -8,6 +8,10 @@ categories: 强化学习
 mathjax: true
 ---
 
+## 原理
+Policy iteration有两种方式实现，一种是使用两个数组，一个保存原来的值，一个用来进行更新，这种方法是雅克比方法，或者叫同步的方法，因为他可以并行的进行。
+In-place的方法是高斯赛德尔方法。就是用来解方程组的迭代法。
+
 ## Dynamic Programming
 DP指的是给定环境的模型，通常是一个MDP，计算智能体最优策略的一类算法。经典的DP算法应用场景有限，因为它需要环境的模型，以及很高的计算代价，但是DP的思路是很重要的。其他的许多算法都是在减少计算代价和环境信息的前提下尽可能获得和DP接近的性能。
 通常我们假定环境是一个有限(finite)的MDP，也就是state, action, reward都是有限的。尽管DP可以应用于连续(continuous)的state和action space，但是只能应用在几个特殊的场景上。一个常见的做法是将连续state和action quantize(量化)，然后使用有限MDP。
