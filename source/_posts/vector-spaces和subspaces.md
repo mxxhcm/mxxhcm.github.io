@@ -46,11 +46,11 @@ Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。
 
 ### 性质
 1. 当且仅当$b$在$A$的column space中，$Ax=b$才有解。
-2. 假设A$是$m\times n$矩阵，$A$的column space是$R^m$的subspace。
+2. 假设$A$是$m\times n$矩阵，$A$的column space是$\mathbb{R}^m $的subspace。
 
-## Null Space
+## Nullspace
 ### 定义
-矩阵$A$的null space是所有$Ax=0$的解构成的vector space，用$N(A)$表示。$N(A)$是$\mathbb{R}^n $的subspace，因为$x$是在$\mathbb{R}^n $中的$n$维向量，所以是$\mathbb{R}^n $的subspace。
+矩阵$A$的nullspace是所有$Ax=0$的解构成的vector space，用$N(A)$表示。$N(A)$是$\mathbb{R}^n $的subspace，因为$x$是在$\mathbb{R}^n $中的$n$维向量，所以是$\mathbb{R}^n $的subspace。
 
 ## Special solution, Pivot variables和free variables, Pivot columns和free columns
 ### special solution

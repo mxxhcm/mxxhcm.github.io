@@ -40,7 +40,7 @@ Left nullspace是column space的正交补（$\mathbb{R}^m$上）。
 ## $A^TA$是可逆的，当且仅当$A$有linear independent columns时
 证明：
 $A^TA$是一个$n\times n$的方阵，$A$的nullspace和$A^T A$的nullspace相等。
-如果$Ax= 0$，那么$A^T Ax = 0$，所以$x$也在$A^T A$的nullspace中。如果$A^T Ax=0$，那么我们要证明$Ax=0$，在左右两边同乘$x^T$得$x^T A^T Ax=0$，则$(AX)^T AX =0$，所以$\vert Ax\vert^2 =0$。也即是说如果$A^T Ax=0$，那么$Ax$的长度为$0$，也就是$Ax=0$。
+如果$Ax= 0$，那么$A^T Ax = 0$，所以$x$也在$A^T A$的nullspace中。如果$A^T Ax=0$，那么我们要证明$Ax=0$，在左右两边同乘$x^T $得$x^T A^T Ax=0$，则$(AX)^T AX =0$，所以$\vert Ax\vert^2 =0$。也即是说如果$A^T Ax=0$，那么$Ax$的长度为$0$，也就是$Ax=0$。
 如果$A^T A$的columns是独立的，也就是说nullspace为空，所以$A$的columns也是独立的；同理，如果$A$的columns是独立的，那么$A^T $的columns也是独立的。
 
 ## Least Squares Approximations
