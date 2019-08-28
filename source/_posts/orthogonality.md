@@ -72,8 +72,10 @@ $$q_i^T q_j\begin{cases}0, i\neq j \\\\1, i=j\end{cases}$$
 我们称这一组向量是正交向量，由正交column vectors构成的矩阵用一个特殊字母$Q$表示。如果这组正交向量同时还是单位向量，我们叫它单位正交向量。如果columns仅仅正交，而不是单位向量的话，点乘仍然会得到一个对角矩阵，但是它的性质没有那么好。
 
 ### 性质
-1. 满足$Q^TQ=I$。
+1. 满足$Q^T Q=I$。
 2. 如果$Q$是方阵，那么$Q^T = Q^{-1}$，即转置等于逆。
+3. 如果$Q$是方阵的话，$QQ^T = Q^T Q= I$。
+4. 如果$Q$是rectangular的话，$QQ^T =I$不成立，而$Q^T Q =I$依然成立。 
 
 ## 用$Q$取代$A$进行正交投影
 假设矩阵$A$的所有column vectors都是orthonormal的，$a$就变成了$q$，$A^T A$就变成了$Q^T Q=I$，所以$Ax=b$的解变成了$\bar{x} = Q^T b$，而投影矩阵变成了$P=QQ^T $。
