@@ -16,8 +16,8 @@ mathjax: true
 证明：
 因为$Ax_1 = \lambda_1 x_1,\cdots,Ax_n = \lambda_n x_n$,
 所以
-\begin{align\*}AS &= A\begin{bmatrix}x_1& \cdots&x_n\end{bmatrix}\\ 
-&=\begin{bmatrix} \lambda_1x_1&\cdots&\lambda x_n\end{bmatrix}\\
+\begin{align\*}AS &= A\begin{bmatrix}x_1& \cdots&x_n\end{bmatrix}\\\\
+&=\begin{bmatrix} \lambda_1x_1&\cdots&\lambda x_n\end{bmatrix}\\\\
 &= \begin{bmatrix}x_1& \cdots&x_n\end{bmatrix} \begin{bmatrix}\lambda_1&&&\\&\lambda_2&&\\&&\cdots&\\&&&\lambda_n\end{bmatrix}\\
 &= S\Lambda
 \end{align\*}
