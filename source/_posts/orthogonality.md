@@ -36,7 +36,7 @@ Left nullspace是column space的正交补（$\mathbb{R}^m$上）。
 
 ## Projections
 如下图所示，左边是投影到一条直线上的结果，右边是投影到一个subspace上的结果
-![]()
+![projection](projection.jpg)
 
 ## $A^TA$是可逆的，当且仅当$A$有linear independent columns时
 证明：
@@ -83,7 +83,7 @@ $A=a, q_1 = \frac{A}{\vert A\vert}$
 $B=b-\frac{A^TB}{A^TA}A , q_2 = \frac{B}{\vert B\vert}$
 第三个正交向量，将第三个向量分别投影到第一个和第二个正交向量上，计算处第三个正交向量。
 $C=c - \frac{A^TC}{A^TA}A - \frac{B^TC}{B^TB}B , q_2 = \frac{C}{\vert C\vert}$
-![]()
+![gram_schmidi](gram_schmidi.jpg)
 
 ## QR分解
 
