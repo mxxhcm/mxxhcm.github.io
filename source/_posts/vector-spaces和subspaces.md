@@ -9,19 +9,20 @@ categories: 线性代数
 mathjax: true
 ---
 
-## Linear of Combinations
-线性组合有两种：加法和数乘。
+## 向量空间和子空间（vector spaces and subspaces）
+这一件介绍和space相关的概念以及很多其他的基础知识。
 
+## 线性组合（Linear of Combinations）
+线性组合有两种：加法和数乘。
 ### 定义
 如果$v$和$w$是column vectors，$c,d$是标量，那么$cv+dw$是$v$和$w$的线性组合。
 
-
-## Spaces
+## 向量空间（Vector Spaces）
 Vector spaces是向量的集合，通常表示为$\mathbb{R}^1 , \mathbb{R}^2 , \mathbb{R}^n $。$\mathbb{R}^5 $表示所有$5$维的column vectors。
 ### 定义
 Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。
 
-## Subspaces
+## 子空间（Subspaces）
 ### 定义
 某个vector space的subspace是满足以下条件的vectors的集合，如果$v$和$w$是subspace中的vectors，并且$c$是任意的salar，
 1. $v+w$还在subspace中
@@ -38,7 +39,7 @@ Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。
     2. $S\cap T$是一个subspace，证明
     假设$v,w$是$S\cap T$的，则$v,w\in S, v,w\in T$，$v+w\in S, v+w\in T, cv+dw \in S, cv+dw \in T$，所以$cv+dw \in S\cap T$
 
-## Column Space
+## 列空间（Column Space）
 ### 创建矩阵的subspace
 取矩阵$A$的column vectors，计算它们的所有线性组合，借得到了一个subspace
 
@@ -49,11 +50,11 @@ Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。
 1. 当且仅当$b$在$A$的column space中，$Ax=b$才有解。
 2. 假设$A$是$m\times n$矩阵，$A$的column space是$\mathbb{R}^m $的subspace。
 
-## Nullspace
+## 零空间（Nullspace）
 ### 定义
 矩阵$A$的nullspace是所有$Ax=0$的解构成的vector space，用$N(A)$表示。$N(A)$是$\mathbb{R}^n $的subspace，因为$x$是在$\mathbb{R}^n $中的$n$维向量，所以是$\mathbb{R}^n $的subspace。
 
-## Special solution, Pivot variables和free variables, Pivot columns和free columns
+## special solution，主元，自由变量（Special solution, Pivot variables和free variables, Pivot columns和free columns）
 ### special solution
 如果方程数量小于未知数数量，那么这个方程（组）有无穷多个解，为了表示这个方程组，指定special solution来表示它。
 如方程组
@@ -64,7 +65,7 @@ Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。
 ### 主元，主元列，自由变量，自由列
 我们通常把选定的两个变量叫做free variables，其他的那些变量叫做pivot variables。比如第一个例子中，$x_2$是free variable，$x_1$是pivot variable。第二个例子中，$x_2, x_3$是free variables，$x_1$是pivot variables。主元所在的column叫做pivot column，free variables所在的column叫做free columns。
 
-## 秩
+## 秩（rank）
 矩阵$A$的秩（rank），用$r(A)$表示，它等于pivots的数量，等于column space的维度，等于row space的维度。
 
 ## 消元法解$Ax=0$
@@ -78,7 +79,7 @@ Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。
 $$N = \begin{bmatrix} -F\\\\I\end{bmatrix}$$
 其中$F$为free variables取特值的时候，pivtos的取值，$I$为free variables的取值。
 
-## Thre reduced row echelon matrix（行简化阶梯形矩阵）
+## 行简化阶梯形矩阵（Thre reduced row echelon matrix）
 行简化阶梯形矩阵是pivot colunmn恰好构成单位矩阵的矩阵，如：
 $$U = \begin{bmatrix}1&1&0&1\\\\0&0&1&1\\\\0&0&0&0\end{bmatrix}$$
 所有的pivots都是$1$，主元所在列的其余位置都是$0$。
@@ -129,39 +130,37 @@ $$R = \begin{bmatrix}I&F\end{bmatrix}=\begin{bmatrix}m\times m 单位矩阵&F\en
 3. $r\lt m, r=m$,瘦高，$Ax=b$没有或者只有一个解，如果$b$恰好在$A$的column space中有一个解，如果$b$恰好不在$A$的column space中无解，因为column vectors是相互独立的，所以$Ax=0$只有零解，$R=\begin{bmatrix}I\\\\0\end{bmatrix}$
 4. $r\lt m, r\lt n$,并不满秩，$Ax=b$无解或者有无穷多个解，无解的情况是不在$A$的column space中，有解的情况是 在$A$的column space中，而在这部分中，又有无穷多个零解，所以要不无解要不无穷多个解。$R=\begin{bmatrix}I&F\\\\0&0\end{bmatrix}$
 
-
-## Linear independence
+## 线性独立（Linear independence）
 矩阵$A$的columns是linear independent的，当且仅当$Ax=0$的唯一解是$x=0$时。也就是说$A$的nullspace只有零向量的时候。
 ### 定义
 给定一系列向量$v_1, \cdots, v_n$，$c_1 v_1 +\cdots+c_n v_n=0$当且仅当$c_1, \cdots, c_n=0$时候成立。
 
-## Span
+## 生成（Span）
 ### 定义
 使用一系列vectors生成space的过程就叫做span。
 
-## Row Space
+## 行空间（Row Space）
 ### 定义
 使用矩阵的row vector生成的subspace就叫做row space，表示维$C(A^T)$，它和$A^T$的column space是相同的。
 
-## Basis
+## 基（Basis）
 ### 定义
 生成space的最小vectors的independent vectors叫做这个space的一组basis，basis不是唯一的。
 
 ### 示例
 矩阵的pivot columns是它的column space的一组basis。
 
-## Dimension
+## 维度（Dimension）
 ### 定义
 Space的dimension指的是每组basis中向量的个数。对于一个space，不同的baisis，它们的vectors不同，但是向量的个数都是相同的，这是space的属性。
 
 
-## Rank和dimension的关系
+## 秩和维度的关系
 和矩阵$A$相关的主要有四个subspace，分别是column space, nullspace, row space以及left nullspace。它们四个具有的属性如下所示：
 1. row space和column space的dimension都是$r$
 2. nullspace和left nullspace的dimension是$n-r, m-r$，为什么是$n-r,m-r$，解$Ax=0$得到$x$是$n$维向量，也就是nullspace是$\mathbb{R}^n$的subspace，$A$的column space的dimension是$r$，free variables，free columns的个数就是$n-r$，special solutions的个数就是$n-r$，而nullspace的basis其实就是所有的special solutions，所以nullspace的dimension就是$n-r$，$m-r$同理。
 
-
-## $A$和$R$ dimension和basis的关系
+## $A$和$R$的维度和基的关系
 这里的$A$是矩阵，$R$是行间化阶梯形矩阵
 1. $A$和$R$的row space相同，dimension相同，为$r$，basis相同
 2. $A$和$R$的column space不同，dimension相同，也为$r$，basis不同

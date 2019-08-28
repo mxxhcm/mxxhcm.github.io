@@ -9,10 +9,13 @@ categories: 线性代数
 mathjax: true
 ---
 
-## Orthogonal vectors
+## 正交性（Orthogonality）
+这一章主要介绍正交性相关的内容。包括正交向量，投影，正交子空间，正交基以及如果求一组正交基，最后介绍QR分解求线性方程组。
+
+## 正交向量（Orthogonal vectors）
 给定向量$v,w$，如果$v^T w = 0$，那么这两个向量就是正交向量。
 
-### Orthogonal subspaces
+## 正交子空间（Orthogonal subspaces）
 如果对于$\forall v\in V, \forall w\in W$，都有$v^tw = 0$，那么我们称subspaces $V,W$是orthogonal subspaces。
 
 ## Column space, nullsapce, row space, left nullspace的正交性
@@ -25,7 +28,7 @@ $$x^T (A^T y) = (Ax)^T y = 0^T y = 0$$
 
 2. Column space和nullspace是正交的。
 
-## Orthogonal complements
+## 正交补（Orthogonal complements）
 ### 定义
 如果一个subspace包含所有和subspace $V$正交的向量，称这个subspace是$V$的orthogonal complements（正交补）。
 
@@ -34,17 +37,18 @@ Nullspace是row space的正交补（$\mathbb{R}^n$上）。
 Left nullspace是column space的正交补（$\mathbb{R}^m$上）。
 
 
-## Projections
+## 投影（Projections）
 如下图所示，左边是投影到一条直线上的结果，右边是投影到一个subspace上的结果
 ![projection](projection.jpg)
 
-## $A^TA$是可逆的，当且仅当$A$有linear independent columns时
+##  $A^T A$
+$A^T A$是可逆的，当且仅当$A$有linear independent columns时
 证明：
 $A^TA$是一个$n\times n$的方阵，$A$的nullspace和$A^T A$的nullspace相等。
 如果$Ax= 0$，那么$A^T Ax = 0$，所以$x$也在$A^T A$的nullspace中。如果$A^T Ax=0$，那么我们要证明$Ax=0$，在左右两边同乘$x^T $得$x^T A^T Ax=0$，则$(AX)^T AX =0$，所以$\vert Ax\vert^2 =0$。也即是说如果$A^T Ax=0$，那么$Ax$的长度为$0$，也就是$Ax=0$。
 如果$A^T A$的columns是独立的，也就是说nullspace为空，所以$A$的columns也是独立的；同理，如果$A$的columns是独立的，那么$A^T $的columns也是独立的。
 
-## Least Squares Approximations
+## 最小二乘法（Least Squares Approximations）
 $Ax=b$无解的情况，通常是等式个数大于未知数的个数，即$m\gt n$，$b$不在$A$的column space内。我们的目标是想让$e=b-Ax$为$0$，当这个目标不能实现的时候，可以在方程左右两边同时乘上$A^T$，求出一个近似的$\hat{x}$：
 $$A^TAx = A^Tb$$
 如何推导出这个结果，有以下几种方法：
@@ -61,7 +65,7 @@ $b=p+e$，$e$在$A$的nullspace上，$Ax=b=p+e$我们解不出来，$A\bar{x} = 
 
 ### 抛物线拟合
 
-## Orthogonal Bases
+## 正交基（Orthogonal Bases）
 ### 定义
 一组向量$q_1, q_2, \cdots , q_n$如果满足以下条件：
 $$q_i^T q_j\begin{cases}0, i\neq j \\\\1, i=j\end{cases}$$
@@ -85,6 +89,8 @@ $C=c - \frac{A^T C}{A^T A}A - \frac{B^T C}{B^T B}B , q_2 = \frac{C}{\vert C\vert
 ![gram_schmidi](gram_schmidi.jpg)
 
 ## QR分解
+假设一个矩阵$A$的列向量分别为$a,b,c$，最后经过一个三角矩阵$R$化简成一个正交矩阵$Q$，相应的列向量分别为$q_1,q_2,q_3$。
+首先根据Gram-Schmidi计算处一组正交基$Q = \begin{bmatrix}q_1&q_2&q_3 \end{bmatrix}$。根据$A$，能直接计算出$Q$，那么如何得到$R$呢？我们假设$A=QR$，在$A$和$Q$已知的情况下，并且满足$Q^T Q = I$，我们可以左右两边同时乘上$Q^T $，就有$Q^T A = Q^T QR = R$，即$R=Q^T A$。
 
 ## 参考文献
 1.MIT线性代数公开课
