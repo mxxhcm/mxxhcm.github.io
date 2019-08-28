@@ -33,8 +33,8 @@ Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。
 2. 通过原点的直线都是subspace。
 3. 包含$v$和$w$的subspace一定得包含所有的线性组合$cv+dw$
 4. 给定两个subspace $S,T$
-    1. S\cup T不是一个subspace
-    2. S\cap T是一个subspace，证明
+    1. $S\cup T$不是一个subspace
+    2. $S\cap T$是一个subspace，证明
     假设$v,w$是$S\cap T$的，则$v,w\in S, v,w\in T$，$v+w\in S, v+w\in T, cv+dw \in S, cv+dw \in T$，所以$cv+dw \in S\cap T$
 
 ## Column Space
@@ -123,13 +123,10 @@ $$R = \begin{bmatrix}I&F\end{bmatrix}=\begin{bmatrix}m\times m 单位矩阵&F\en
 
 
 ## 秩和方程解个数之间的关系
-1. $r=m, r=n$,可逆方阵，$Ax=b$有且只有一个解；
-2. $r=m, r\lt n$,矮胖，$Ax=b$有无穷多个解，一个particular solution加上nullspace中的无穷个。
-3. $r\lt m, r=m$,瘦高，$Ax=b$没有或者只有一个解，如果$b$恰好在$A$的column space中有一个解，如果$b$恰好不在$A$的column space中无解，因为column vectors是相互独立的，所以$Ax=0$只有零解。
-4. $r\l tm, r\lt n$,并不满秩，$Ax=b$无解或者有无穷多个解，无解的情况是不在$A$的column space中，有解的情况是 在$A$的column space中，而在这部分中，又有无穷多个零解，所以要不无解要不无穷多个解。
-
-对应的行间化阶梯形矩阵如下所示：
-$\begin{bmatrix}I\end{bmatrix},\begin{bmatrix}I&F\end{bmatrix},\begin{bmatrix}I\\\\0\end{bmatrix},\begin{bmatrix}I&F\\\\0&0\end{bmatrix}$
+1. $r=m, r=n$,可逆方阵，$Ax=b$有且只有一个解，$R=\begin{bmatrix}I\end{bmatrix}$
+2. $r=m, r\lt n$,矮胖，$Ax=b$有无穷多个解，一个particular solution加上nullspace中的无穷个，$R=\begin{bmatrix}I&F\end{bmatrix}$
+3. $r\lt m, r=m$,瘦高，$Ax=b$没有或者只有一个解，如果$b$恰好在$A$的column space中有一个解，如果$b$恰好不在$A$的column space中无解，因为column vectors是相互独立的，所以$Ax=0$只有零解，$R=\begin{bmatrix}I\\\\0\end{bmatrix}$
+4. $r\lt m, r\lt n$,并不满秩，$Ax=b$无解或者有无穷多个解，无解的情况是不在$A$的column space中，有解的情况是 在$A$的column space中，而在这部分中，又有无穷多个零解，所以要不无解要不无穷多个解。$R=\begin{bmatrix}I&F\\\\0&0\end{bmatrix}$
 
 
 ## Linear independence
