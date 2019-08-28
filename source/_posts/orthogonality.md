@@ -6,6 +6,7 @@ tags:
  - orthogonality
  - 线性代数
 categories: 线性代数
+mathjax: true
 ---
 
 ## Orthogonal vectors
@@ -85,3 +86,5 @@ $C=c - \frac{A^T C}{A^T A}A - \frac{B^T C}{B^T B}B , q_2 = \frac{C}{\vert C\vert
 
 ## QR分解
 
+## 参考文献
+1.MIT线性代数公开课

@@ -6,6 +6,7 @@ tags:
  - subspaces
  - 线性代数
 categories: 线性代数
+mathjax: true
 ---
 
 ## Linear of Combinations
