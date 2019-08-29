@@ -4,7 +4,7 @@ date: 2019-06-09 10:45:35
 tags:
  - ftp
  - windows
-categories: 工具
+categories: windows
 ---
 
 
