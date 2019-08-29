@@ -4,7 +4,7 @@ date: 2018-12-22 13:44:11
 tags: 
   - 凸优化 
   - convex optimization 
-categories: 凸优化笔记
+categories: 凸优化
 mathjax: true
 ---
 

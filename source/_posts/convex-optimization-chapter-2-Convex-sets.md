@@ -6,7 +6,7 @@ tags:
  - affine sets
  - cones
  - 凸优化
-categories: 凸优化笔记
+categories: 凸优化
 mathjax: true
 ---
 

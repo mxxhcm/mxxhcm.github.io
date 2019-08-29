@@ -1,5 +1,5 @@
 ---
-title: orthogonality
+title: orthogonality（正交性）
 date: 2019-08-27 19:21:44
 tags:
  - 正交
@@ -83,11 +83,11 @@ $$q_i^T q_j\begin{cases}0, i\neq j \\\\1, i=j\end{cases}$$
 ## Gram-Schmidi正交化
 Gram-Schmidt正交化过程就相当于是在不断的进行投影，这个方法的想法是从$n$个独立的column vector出发，构建$n$个正交向量，然后再单位化。拿$3$个过程举个例子。用$a,b,c$表示初始的$3$个独立向量，$A,B,C$表示三个正交向量，$q_1, q_2,q_3$表示三个正交单位向量。
 第一个正交向量，直接对第一个向量单位化
-$A=a, q_1 = \frac{A}{\vert A\vert}$
+$$A=a, q_1 = \frac{A}{\vert A\vert}$$
 第二个正交向量，将第二个向量投影到第一个向量上，计算出一个和第二个向量正交的向量。
-$B=b-\frac{A^T B}{A^T A}A , q_2 = \frac{B}{\vert B\vert}$
+$$B=b-\frac{A^T B}{A^T A}A , q_2 = \frac{B}{\vert B\vert}$$
 第三个正交向量，将第三个向量分别投影到第一个和第二个正交向量上，计算处第三个正交向量。
-$C=c - \frac{A^T C}{A^T A}A - \frac{B^T C}{B^T B}B , q_2 = \frac{C}{\vert C\vert}$
+$$C=c - \frac{A^T C}{A^T A}A - \frac{B^T C}{B^T B}B , q_2 = \frac{C}{\vert C\vert}$$
 ![gram_schmidi](gram_schmidi.jpg)
 
 ## QR分解

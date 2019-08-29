@@ -3,8 +3,9 @@ title: 花书第二章
 date: 2019-08-22 16:44:26
 tags:
  - Deep Learning
+ - 深度学习
  - 线性代数
-categories: Deep Learning
+categories: 深度学习
 ---
 
 ## 线性代数

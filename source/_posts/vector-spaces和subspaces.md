@@ -1,5 +1,5 @@
 ---
-title: vector spaces和subspaces
+title: vector spaces和subspaces（向量空间和子空间）
 date: 2019-08-26 19:17:41
 tags:
  - spaces

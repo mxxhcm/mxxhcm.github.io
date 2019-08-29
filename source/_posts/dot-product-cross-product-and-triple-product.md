@@ -15,7 +15,7 @@ mathjax: true
 ## 点积(dot product)
 ### 定义
 点积，又叫数量积，定义为$a\cdot b = x_1 x_2 + y_1y_2 + z_1z_2$。
-另一种定义方式是$v\cdot w = \vert a \vert \vert b \vert cos \<a, b\>$`
+另一种定义方式是$a\cdot b = \vert a \vert \vert b \vert cos \<a, b\>$`
 这两种定义方式实际上是一样的：
 ![dot_product](dot_product.jpg)
 
