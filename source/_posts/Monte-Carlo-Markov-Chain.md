@@ -2,16 +2,33 @@
 title: Monte Carlo Markov Chain
 date: 2019-08-01 20:07:38
 tags:
- - 机器学习
+ - 强化学习
  - 蒙特卡洛
  - MCMC
-categories: 机器学习
+ - 概率论
+categories: 强化学习
 mathjax: true
 ---
 
 ## 概述
 Monte Carlo方法在很多地方都出现过，但是它具体到底是干什么的，之前从来没有仔细了解过，这次正好趁着这个机会好好学习一下。
 统计模拟中有一个重要的问题就是给定一个概率分布$p(x)$，生成它的样本。对于一些简单的分布，可以使用均匀分布产生的样本进行样本。但是对于一些复杂的样本，单单使用均匀分布就不行了，需要使用更加复杂的随机模拟方法。Markov Chain Monte Carlo就是一种随机模拟方法(simple simulation)，我们常见的gibbs sampling也是。通过多次模拟，产生多组实验数据，进行积分啊什么的。
+
+## Markov Matrices
+### 定义
+马尔科夫矩阵满足两个条件
+1. 所有元素大于$0$
+2. 行向量之和为$1$
+
+### 属性
+1. $\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&b\\\\c&d\\\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&b\\\\c&d - 1\\\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。
+2. 所有其他的特征值小于$1$。
+
+### 马尔科夫矩阵的幂
+$u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到
+$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$
+如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightaroow \infty, \lambda_k \neq 1$。即能得到一个稳态。
+
 
 ## Markov Property
 简单的来说，就是下一时刻的状态只取决于当前状态，跟之前所有时刻的状态无关，即：

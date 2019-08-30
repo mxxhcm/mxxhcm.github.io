@@ -23,6 +23,6 @@ categories: 机器学习
 在AI这本书中，贝叶斯网络中的变量被分为了证据变量(evidence variable)，隐变量(hidden variable)和查询变量(query variable)。
 而在PRML这本书中，贝叶斯网络中的变量被分为了观测变量(observed variable)和隐变量(latent variable,hidden variable)。
 
-## 
 具体的可以看另外两篇笔记有详细的记录。
+
 

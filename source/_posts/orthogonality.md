@@ -16,12 +16,12 @@ mathjax: true
 给定向量$v,w$，如果$v^T w = 0$，那么这两个向量就是正交向量。
 
 ## 正交子空间（Orthogonal subspaces）
-如果对于$\forall v\in V, \forall w\in W$，都有$v^tw = 0$，那么我们称subspaces $V,W$是orthogonal subspaces。
+如果对于$\forall v\in V, \forall w\in W$，都有$v^T w = 0$，那么我们称subspaces $V,W$是orthogonal subspaces。
 
 ## Column space, nullsapce, row space, left nullspace的正交性
 1. Row space和nullspace是正交的。
 举个例子来证明吧，有$A= \begin{bmatrix}c1&c2\end{bmatrix} = \begin{bmatrix}r1\\\\r2\end{bmatrix} = \begin{bmatrix}1&1&2&4\\\\0&0&1&3\end{bmatrix}$
-因为row spaces是row vector的linear combination，即$c_1 r_1+c_2 r_2$，而nullspace是$Ax=0$的所有解，即$x_1 c_1+x_2c_2  = 0$，这里的$0$是向量，可以推出来$r_1x = 0, r_2x =0 $，所以$c_1 r_1 x =0, c_2 r_2x = 0$，也就是说row space中的任意vector和nullspace中的vector都正交。  
+因为row space是row vector的linear combination，即$c_1 r_1+c_2 r_2$，而nullspace是$Ax=0$的所有解，即$x_1 c_1+x_2c_2  = 0$，这里的$0$是向量，可以推出来$r_1x = 0, r_2x =0 $，所以$c_1 r_1 x =0, c_2 r_2x = 0$，也就是说row space中的任意vector和nullspace中的vector都正交。  
 使用数值方法证明：
 $x$表示$Ax=0$中的$x$，$A^Ty$表示row space，那么有
 $$x^T (A^T y) = (Ax)^T y = 0^T y = 0$$

@@ -289,7 +289,7 @@ $$S_{WS}(\mathbf{z},\mathbf{e})w(\mathbf{z},\mathbf{e}) = \prod_{i=1}^lP(z_i|par
 可能性加权算法使用了所有生成的样本，它比拒绝假设算法更高效。然而，随着证据变量的增加，算法性能会退化(degradation)，这是因为很多样本的权重都会很小，因此加权估计可能会受一小部分权重很大的样本的影响(dominated)。如果证据变量在非证据变量的后边，这个问题会加剧，因为它们的父节点或者祖先节点没有证据变量来指导样本的生成。这就意味着生成的样本和证据变量支撑的真实情况可能差距很大(bear little resemblance)。
 
 ### 马尔科夫链仿真推理(Inference by Markov chain simulation)
-马尔科夫链蒙特卡洛(Markov chain Monte Carlo,MCMC)算法和拒绝采样以及可能性加权很不一样。那两个方法每次都从头开始生成样本，而MCMC算法在之前的样本上做一些随机的变化。可以将MCMC算法看成指定了每一个变量值的特殊当前状态(current state)，通过对当前状态(current state)做任意的改变生成下一个状态(next state)。这一节要介绍的一种MCMC算法是吉布森采样(Gibbs sampling)。
+[马尔科夫链蒙特卡洛(Markov chain Monte Carlo,MCMC)](https://mxxhcm.github.io/2019/08/01/Monte-Carlo-Markov-Chain/)算法和拒绝采样以及可能性加权很不一样。那两个方法每次都从头开始生成样本，而MCMC算法在之前的样本上做一些随机的变化。可以将MCMC算法看成指定了每一个变量值的特殊当前状态(current state)，通过对当前状态(current state)做任意的改变生成下一个状态(next state)。这一节要介绍的一种MCMC算法是吉布森采样(Gibbs sampling)。
 
 #### 贝叶斯网络中的吉布森采样(Gibbs sampling in Bayesian networks)
 ##### 算法

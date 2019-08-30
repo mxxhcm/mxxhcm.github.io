@@ -16,7 +16,7 @@ mathjax: true
 $Ax=\lambda x $，满足该式子的$x$称为矩阵$A$的特征向量，相应的$\lambda$称为特征值。
 
 ### 求解
-将$Ax=\lambda x$进行移项，得到$(A-\lambda I) x =0$，其中$A-\lambda I$必须是sigular（即不可逆），否则$x$必须为$0$向量。令$det (A-\lambda I)=0$，求出相应的$\lambda$和$x$。
+将$Ax=\lambda x$进行移项，得到$(A-\lambda I) x =0$，其中$A-\lambda I$必须是sigular（即不可逆），如果$A - \lambda I$是非奇异矩阵，也就是说它的列向量相互独立，那么只有零解，无意义。令$det (A-\lambda I)=0$，求出相应的$\lambda$和$x$。
 
 ### 属性
 1. $n$个特征值的乘积等于行列式。
@@ -43,13 +43,38 @@ $$AS = A\left[x_1, \cdots, x_n\right] = \left[\lambda_1 x_1, \cdots, \lambda_n x
 矩阵可逆和特征值是否为$0$有关，而矩阵可对角化与特征向量有关，是否有足够的线性无关的特征向量。
 
 ## 矩阵的幂
+### 矩阵幂
 $A= S\Lambda S^{-1} $, 
 $A^2 = S\Lambda S^{-1}S\Lambda S^{-1} = S\Lambda^2 S^{-1} $, 
 $A^k = S\Lambda^k S^{-1}$
 所以，$A^k $和$A$的特征向量相同，特征值是$\Lambda^k $。当$k\rightarrow \infty$时，如果所有的特征值$\lambda_i \lt 1$，那么$A^k \rightarrow 0$。 
+
+### 以解方程组$u_{k+1} = Au_k$
+从给定的向量$u_0$开始，$u_1 = Au_0, u_2 = Au_1, u_k = A^k u_0$
+假设$u_0 = c_1 x_1 + c_2 x_2 + \cdots + c_nx_n$，$x_1, \cdots, x_n$是一组正交基。
+$Au_0 =  c_1 \lambda_1 x_1 + \cdots + c_n\lambda_n x_n$
+$u_{100} = A^{100} u_0 = c_1 \lambda_1^{100} x_1 + \cdots + c_n \lambda_n^{100} x_n$
+$u_{100} = A^{100} u_0 = \Lambda^{100} S c$
+
+
 ## 微分方程
 
 ## 指数矩阵
+
+## Markov Matrices
+### 定义
+马尔科夫矩阵满足两个条件
+1. 所有元素大于$0$
+2. 行向量之和为$1$
+
+### 属性
+1. $\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&b\\\\c&d\\\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&b\\\\c&d - 1\\\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。
+2. 所有其他的特征值小于$1$。
+
+### 马尔科夫矩阵的幂
+$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$
+如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightaroow \infty, \lambda_k \neq 1$。
+
 
 ## 对称矩阵
 ### 定义
