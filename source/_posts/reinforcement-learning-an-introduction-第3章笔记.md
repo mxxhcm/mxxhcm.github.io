@@ -25,7 +25,7 @@ $\gamma\$称为折扣因子(discount factor), $\gamma \epsilon [0,1]$.**为什�
 
 ### 回报(return)
 回报是累积的未来的reward,其计算公式如下:
-$$G_t = R_{t+1} + R_{t+2} + ... = \sum_{k=0}^{\infty}{\gamma^k R_{t+k+1}} \tag{1}$$
+$$G_t = R_{t+1} + R_{t+2} + ... = \sum_{k=0}^{\infty} {\gamma^k R_{t+k+1}} \tag{1}$$
 它是一个马尔科夫链上从t时刻开始往后所有奖励的有衰减(带折扣因子)的总和。
 
 ### 值函数(value function)
@@ -36,22 +36,22 @@ MRP的value function和MDP的value function是不同的, MRP的value function是
 
 ### 马尔科夫奖励过程的贝尔曼方程(bellman equation for MRP)
 \begin{align\*}
-v(s) &= \mathbb{E}[G_t|S_t = s]\\ 
-&= \mathbb{E}[R_{t+1} + \gamma R_{t+2} + ... | S_t = s]\\
-&= \mathbb{E}[R_{t+1} + \gamma (R_{t+2} + \gamma R_{t+3} + ...|S_t = s]\\
-&= \mathbb{E}[R_{t+1} + \gamma G_{t+1} |S_t = s]\\
-&= \mathbb{E}[R_{t+1} + \gamma v(S_{t+1})|S_t = s]\\
+v(s) &= \mathbb{E}[G_t|S_t = s]\\\\
+&= \mathbb{E}[R_{t+1} + \gamma R_{t+2} + ... | S_t = s]\\\\
+&= \mathbb{E}[R_{t+1} + \gamma (R_{t+2} + \gamma R_{t+3} + ...|S_t = s]\\\\
+&= \mathbb{E}[R_{t+1} + \gamma G_{t+1} |S_t = s]\\\\
+&= \mathbb{E}[R_{t+1} + \gamma v(S_{t+1})|S_t = s]\\\\
 v(s) &= \mathbb{E}[R_{t+1} + \gamma v(S_{t+1})|S_t = s]
 \end{align\*}
 v(s)由两部分组成，一部分是immediate reward的期望(expectation)，$\mathbb{E}[R_{t+1}]$, 只与当前时刻state有关；另一部分是下一时刻state的value function的expectation。如果用s'表示s状态下一时刻的state，那么bellman equation可以写成：
 $$v(s) = R_s + \gamma \sum_{s' \epsilon S} P_{ss'}v(s')$$
 我们最终的目的是通过迭代使得t轮迭代时的v(s)和第t+1轮迭代时的v(s)相等。将其写成矩阵形式为：
 $$v_t = R + \gamma P v_{t+1}$$
-$$(v_1,v_2,...,v_n)^T = (R_1,R_2,...,R_n)^T + \gamma \begin{bmatrix}P_{11}&P_{12}&...&P_{1n}\\P_{21}&P_{22}&...&P_{2n}\\&&...&\\P_{n1}&P_{n2}&...&P_{nn}\end{bmatrix} (v_1,v_2,...,v_n)^T $$
+$$(v_1,v_2,...,v_n)^T = (R_1,R_2,...,R_n)^T + \gamma \begin{bmatrix}P_{11}&P_{12}&...&P_{1n}\\\\P_{21}&P_{22}&...&P_{2n}\\\\&&...&\\\\P_{n1}&P_{n2}&...&P_{nn}\end{bmatrix} (v_1,v_2,...,v_n)^T $$
 MRP的Bellman方程组是线性的，可以直接求解:
 \begin{align\*}
-v &= R + \gamma Pv\\
-(1-\gamma P) &= R\\
+v &= R + \gamma Pv\\\\
+(1-\gamma P) &= R\\\\
 v &= (1 - \gamma P)^{-1} R
 \end{align\*}
 可以直接解方程，但是复杂度为$O(n^3)$，对于大的MRP方程组不适用，可以通过迭代法求解，常用的迭代法有动态规划,蒙特卡洛算法和时序差分算法等求解(动态规划是迭代法吗？）
@@ -59,7 +59,7 @@ v &= (1 - \gamma P)^{-1} R
 ## 马尔科夫决策过程(markov decision process) 
 马尔科夫决策过程，比markov reward process多了一个A,它也是一个tuple $\lt S,A,P,R,\gamma\gt$, 在MRP中奖励R仅仅和状态S相关，在MDP中奖励R和概率P对应的是某个状态S和某个动作A的组合。
 \begin{align\*}
-P_{ss'}^a &= P[S_{t+1} = s' | S_t = s, A_t = a]\\
+P_{ss'}^a &= P[S_{t+1} = s' | S_t = s, A_t = a]\\\\
 R_s^a &= \mathbb{E}[R_{t+1} | S_t = s, A_t = a]
 \end{align\*}
 这里的reward不仅仅与state相关，而是与tuple $\lt state，action\gt$相关。
@@ -67,12 +67,12 @@ R_s^a &= \mathbb{E}[R_{t+1} | S_t = s, A_t = a]
 ### 回报
 MDP中的$G_t$和式子$(1)$的$G_t$是一样的，将$G_t$写成和后继时刻相关的形式如下：
 \begin{align\*}
-G_t &= R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \gamma^3 R_{t+4} + ...\\
-&= R_{t+1} + \gamma (R_{t+2} + \gamma^1 R_{t+3} + \gamma^2 R_{t+4} + ...)\\
+G_t &= R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \gamma^3 R_{t+4} + ...\\\\
+&= R_{t+1} + \gamma (R_{t+2} + \gamma^1 R_{t+3} + \gamma^2 R_{t+4} + ...)\\\\
 &= R_{t+1} + \gamma G_{t+1} \tag{2}
 \end{align\*}
 这里引入$\gamma$之后，即使是在continuing情况下，只要$G_t$是非零常数，$G_t$也可以通过等比数列求和公式进行计算，即:
-$$G_t = \sum_{k=1}^{\infty}\gamma^k = \frac{1}{1-\gamma} \tag{3}$$
+$$G_t = \sum_{k=1}^{\infty} \gamma^k = \frac{1}{1-\gamma} \tag{3}$$
 
 ### 策略(policy)
 策略$\pi$的定义:给定状态时采取各个动作的概率分布。
@@ -83,50 +83,50 @@ $$\pi(a|s) = P[A_t = a | S_t = a] \tag{4}$$
 MDP的值函数有两种，状态值函数(state value function)和动作值函数(action value function), 这两种值函数的含义其实是一样的，也可以相互转换。具体来说, 值函数定义为给定一个policy $\pi$，得到的回报的期望(expected return)。
 一个MDP的状态s对应的值函数(state value function) $v_{\pi}(s)$是从状态s开始采取策略$\pi$得到的回报的期望。
 \begin{align\*}
-v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
-&=\mathbb{E}_{\pi}[\sum_{k=0}^{\infty} \gamma^{k}R_{t+k+1}|S_t=s] \tag{5}
+v_{\pi}(s) &= \mathbb{E}\_{\pi}[G_t|S_t = s]\\\\
+&=\mathbb{E}\_{\pi}[\sum_{k=0}^{\infty} \gamma^{k} R_{t+k+1}|S_t=s] \tag{5}
 \end{align\*}
 这里的$G_t$是式子(2)中的回报。
 一个MDP过程中动作值函数(action value function) $q_{\pi}(s,a)$是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。
 <action value function $q_{\pi}(s,a)$ is the expected return starting from states, taking action a, and then following policy \pi.>
 \begin{align\*}
-q_{\pi}(s,a) &= \mathbb{E}_{\pi}\left[G_t | S_t = s, A_t = a\right]\\
-&= \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} \gamma^{k}R_{t+k+1}|S_t=s, A_t=a\right] \tag{6}
+q_{\pi}(s,a) &= \mathbb{E}\_{\pi}\left[G_t | S_t = s, A_t = a\right]\\\\
+&= \mathbb{E}\_{\pi}\left[\sum_{k=0}^{\infty} \gamma^{k} R_{t+k+1}|S_t=s, A_t=a\right] \tag{6}
 \end{align\*}
 
 #### 状态值函数(state value function)
 \begin{align\*}
-v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) q_{\pi} (s,a) \tag{7}\\
-v_{\pi}(s) &= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right] \tag{8}\\
+v_{\pi}(s) &= \sum_{a \epsilon A} \pi(a|s) q_{\pi} (s,a) \tag{7}\\\\
+v_{\pi}(s) &= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right] \tag{8}\\\\
 \end{align\*}
 式子$(7)$是$v(s)$和$q(s,a)$的关系，式子$(8)$是$v(s)$和它的后继状态$v(s')$的关系。
 式子$(8)$的推导如下：
 \begin{align\*}
-v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
-&= \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\\
-&= \sum_a \pi(a|s)\sum_{s'}\sum_rp(s',r|s,a) \left[r + \gamma \mathbb{E}_{\pi}\left[G_{t+1}|S_{t+1}=s'\right]\right]\\
-&= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right]\\
+v_{\pi}(s) &= \mathbb{E}\_{\pi}[G_t|S_t = s]\\\\
+&= \mathbb{E}\_{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\\\\
+&= \sum_a \pi(a|s)\sum_{s'}\sum_rp(s',r|s,a) \left[r + \gamma \mathbb{E}\_{\pi}\left[G_{t+1}|S_{t+1}=s'\right]\right]\\\\
+&= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right]\\\\
 \end{align\*}
 
 #### 动作值函数(action value function)
 \begin{align\*}
-q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  v_{\pi}(s')) \\
-q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',a')) \tag{10}\\
+q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  v_{\pi}(s')) \tag{9}\\\\
+q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',a')) \tag{10}\\\\
 \end{align\*}
 式子$(9)$是$q(s,a)$和$v(s)$的关系，式子$(10)$是$q(s,a)$和它的后继状态$q(s',a')$的关系。
 以上都是针对MDP来说的，在MDP中，给定policy $\pi$下，状态s下选择a的action value function，$q_{\pi}(s,a)$类似MRP里面的v(s)，而MDP中的v(s)是要考虑在state s下采率各个action后的情况。
 
 ### 贝尔曼期望方程(Bellmam expectation equation)
 \begin{align\*}
-v_{\pi}(s) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s] \tag{11}\\
-v_{\pi}(s) &= \mathbb{E}_{\pi}\left[q_{\pi}(S_t,A_t)|S_t=s,A_t=a\right]\tag{12}\\
-q_{\pi}(s,a)&= \mathbb{E}_{\pi}\left[R+\gamma v_{\pi}(S_{t+1}) |S_t=s,A_t=a\right]\tag{13}\\
-q_{\pi}(s,a) &= \mathbb{E}_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{14}
+v_{\pi}(s) &= \mathbb{E}\_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s] \tag{11}\\\\
+v_{\pi}(s) &= \mathbb{E}\_{\pi}\left[q_{\pi}(S_t,A_t)|S_t=s,A_t=a\right]\tag{12}\\\\
+q_{\pi}(s,a)&= \mathbb{E}\_{\pi}\left[R+\gamma v_{\pi}(S_{t+1}) |S_t=s,A_t=a\right]\tag{13}\\\\
+q_{\pi}(s,a) &= \mathbb{E}\_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{14}
 \end{align\*}
 #### 矩阵形式
 \begin{align\*}
-v_{\pi} &= R^{\pi} + \gamma P^{\pi} v_{\pi}\\
-v_{\pi} &= (I-\gamma P^{\pi})^{-1} R^{\pi}
+v_{\pi} &= R^{\pi} + \gamma P^{\pi} v_{\pi}\\\\
+v_{\pi} &= (I-\gamma P^{\pi} )^{-1} R^{\pi}
 \end{align\*}
 
 ## 最优策程的求解(how to find optimal policy)
@@ -144,26 +144,24 @@ $q_{\*}(s,a) = max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value func
 
 ### 寻找最优策略
 寻找optimal policy可以通过寻找optimal action value function来实现： 
-$${\pi}_{*}(a|s) = 
-\begin{cases}
-1, &if\quad a = argmax\ q_{*}(s,a)\\
-0, &otherwise\end{cases}$$
+$${\pi}\_{\*}(a|s) = 
+\begin{cases}1, &if\quad a = argmax\ q\_{\*}(s,a)\\\\0, &otherwise\end{cases}$$
 
 ### 贝尔曼最优方程(bellman optimal equation)
 \*号表示最优的策略。
 #### 最优状态值函数(state value function)
 \begin{align\*}
-v_{\*}(s) &= max_a q_{\*}(s,a)\\
-&= max_a\mathbb{E}_{\pi_{\*}}\left[G_t|S_t=s,A_t=a\right]\\
-&= max_a\mathbb{E}_{\pi_{\*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\
-&= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\
-&= max_a \left[\sum_{s',r} p(s',r|s,a){\*}(r+\gamma v_{\*}(s') )\right] \tag{15}\\
+v_{\*}(s) &= max_a q_{\*}(s,a)\\\\
+&= max_a\mathbb{E}\_{\pi\_{\*}}\left[G_t|S_t=s,A_t=a\right]\\\\
+&= max_a\mathbb{E}\_{\pi\_{\*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\\\
+&= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\\\
+&= max_a \left[\sum_{s',r} p(s',r|s,a)(r+\gamma v_{\*}(s') )\right] \tag{15}\\\\
 \end{align\*}
 #### 最优动作值函数(action value function)
 \begin{align\*}
-q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\
-&= \sum_{s',r} p(s',r|s,a) (r + \gamma max_{a'} q_{\*}(s',a'))\\
-&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\tag{16}\\
+q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\\\
+&= \sum_{s',r} p(s',r|s,a) (r + \gamma max_{a'} q_{\*}(s',a'))\\\\
+&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\tag{16}\\\\
 \end{align\*}
 
 ### 贝尔曼最优方程的求解(solution to Bellman optimal equation)

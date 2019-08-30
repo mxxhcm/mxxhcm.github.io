@@ -6,6 +6,7 @@ tags:
  - 蒙特卡洛
  - MCMC
 categories: 机器学习
+mathjax: true
 ---
 
 ## 概述

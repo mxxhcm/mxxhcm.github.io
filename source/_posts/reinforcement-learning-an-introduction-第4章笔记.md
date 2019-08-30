@@ -18,12 +18,12 @@ DP指的是给定环境的模型，通常是一个MDP，计算智能体最优策
 DP关键在于使用value function寻找好的policy，在找到了满足Bellman optimal equation的optimal value function之后，可以找到optimal policy，参见[第三章推导](https://mxxhcm.github.io/2018/12/21/reinforcement-learning-an-introduction-%E7%AC%AC3%E7%AB%A0%E7%AC%94%E8%AE%B0/)：
 Bellman optimal equation:
 \begin{align\*}
-v_{\*}(s) &= max_a\mathbb{E}\left[R_{t+1}+\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right] \\
+v_{\*}(s) &= max_a\mathbb{E}\left[R_{t+1}+\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right] \\\\
 &= max_a \sum_{s',r} p(s',r|s,a){\*}\left[r+\gamma v_{\*}(s')\right]  \tag{1}
 \end{align\*}
 
 \begin{align\*}
-q_{\*}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t = a\right]\\
+q_{\*}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t = a\right]\\\\
 &= \sum_{s',r} p(s',r|s,a) \left[r + \gamma max_a q\_{\*}(s',a')\right] \tag{2}
 \end{align\*}
 
@@ -31,15 +31,15 @@ q_{\*}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A
 给定一个policy，计算state value function的过程叫做policy evaluation或者prediction problem。
 根据$v(s)$和它的后继状态$v(s')$之间的关系：
 \begin{align\*}
-v_{\pi}(s) &= \mathbb{E}_{\pi}[G_t|S_t = s]\\
-&= \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\\
-&= \sum_a \pi(a|s)\sum_{s'}\sum_rp(s',r|s,a) \left[r + \gamma \mathbb{E}_{\pi}\left[G_{t+1}|S_{t+1}=s'\right]\right] \tag{3}\\
-&= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right] \tag{4}\\
+v_{\pi}(s) &= \mathbb{E}\_{\pi}[G_t|S_t = s]\\\\
+&= \mathbb{E}\_{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\\\\
+&= \sum_a \pi(a|s)\sum_{s'}\sum_rp(s',r|s,a) \left[r + \gamma \mathbb{E}\_{\pi}\left[G_{t+1}|S_{t+1}=s'\right]\right] \tag{3}\\\\
+&= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_{\pi}(s') \right] \tag{4}\\\\
 \end{align\*}
 只要$\gamma \lt 1$或者存在terminal state，那么$v_{\pi}$的必然存在且唯一。这个我觉得是迭代法解方程的条件。数值分析上有证明。
 如果环境的转换概率$p$是已知的，可以列出方程组，直接求解出每个状态$s$的$v(s)$。这里采用迭代法求解，随机初始化$v_0$，使用式子$(4)$进行更新：
 \begin{align\*}
-v_{k+1}(s) &= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})\ S_t=s\right]\\
+v_{k+1}(s) &= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})\ S_t=s\right]\\\\
 &= \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a) \left[r + \gamma v_k(s') \right] \tag{5}
 \end{align\*}
 直到$v_k=v_{\pi}$到达fixed point，Bellman equation满足这个条件。当$k\rightarrow \infty$时收敛到$v_{\pi}$。这个算法叫做iterative policy evaluation。
@@ -62,7 +62,7 @@ $\qquad$**end for**
 为什么要进行policy evaluation，或者说为什么要计算value function？
 其中一个原因是为了找到更好的policy。假设我们已经知道了一个deterministic的策略$\pi$，但是在其中一些状态，我们想要知道是不是有更好的action选择，如$a\neq \pi(s)$的时候，是不是这个改变后的策略会更好。好该怎么取评价，这个时候就可以使用值函数进行评价了，在某个状态，我们选择$a \neq \pi(s)$，在其余状态，依然遵循策略$\pi$。用公式表示为：
 \begin{align\*}
-q_{\pi}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t=s,A_t = a\right]\\
+q_{\pi}(s,a) &= \mathbb{E}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t=s,A_t = a\right]\\\\
 &=\sum_{s',r}p(s',r|s,a)\left[r+\gamma v_{\pi}(s')\right] \tag{6}
 \end{align\*}
 那么，这个值是是比$v(s)$要大还是要小呢？如果比$v(s)$要大，那么这个新的策略就比$\pi$要好。
@@ -73,25 +73,25 @@ $$v_{\pi'}(s) \ge v_{\pi}(s) \tag{8}$$
 对于我们提到的$\pi$和$\pi'$来说，除了在状态$s$处，$v_{\pi'}(s) = a \neq v_{\pi}(s)$，在其他状态处$\pi$和$\pi'$是一样的，都有$q_{\pi}(s,\pi'(s)) = v_{\pi}(s)$。而在状态$s$处，如果$q_{\pi}(s,a) \gt v_{\pi}(s)$，注意这里$a=\pi'(s)$，那么$\pi'$一定比$\pi$好。
 证明：
 \begin{align\*}
-v_{\pi}(s) &\le q_{\pi}(s,\pi'(s))\\
-& = \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s, A_t = \pi'(s) \right]\\
-& = \mathbb{E}_{\pi'}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s \right]\\
-& \le \mathbb{E}_{\pi'}\left[R_{t+1} + \gamma q_{\pi}(S_{t+1},\pi'(S_{t+1}))|S_t = s \right]\\
-& = \mathbb{E}_{\pi'}\left[ R_{t+1} + \gamma \mathbb{E}_{\pi'}\left[R_{t+2} +\gamma v_{\pi}(S_{t+2})|S_{t+1}, A_{t+1}=\pi'(S_{t+1})|S_t = s \right]\right]\\
-& = \mathbb{E}_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 v_{\pi}(S_{t+2})|S_t = s \right]\\
-& \le \mathbb{E}_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 v_{\pi}(S_{t+3})|S_t = s \right]\\
-& \le \mathbb{E}_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 R_{t+4} + \cdots |S_t = s \right]\\
+v_{\pi}(s) &\le q_{\pi}(s,\pi'(s))\\\\
+& = \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s, A_t = \pi'(s) \right]\\\\
+& = \mathbb{E}\_{\pi'}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s \right]\\\\
+& \le \mathbb{E}\_{\pi'}\left[R_{t+1} + \gamma q_{\pi}(S_{t+1},\pi'(S_{t+1}))|S_t = s \right]\\\\
+& = \mathbb{E}\_{\pi'}\left[ R_{t+1} + \gamma \mathbb{E}\_{\pi'}\left[R_{t+2} +\gamma v_{\pi}(S_{t+2})|S_{t+1}, A_{t+1}=\pi'(S_{t+1})|S_t = s \right]\right]\\\\
+& = \mathbb{E}\_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 v_{\pi}(S_{t+2})|S_t = s \right]\\\\
+& \le \mathbb{E}\_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 v_{\pi}(S_{t+3})|S_t = s \right]\\\\
+& \le \mathbb{E}\_{\pi'}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 R_{t+4} + \cdots |S_t = s \right]\\\\
 &=v_{\pi'}(s)
 \end{align\*}
 所以，在计算出一个policy的value function的时候，很容易我们就直到某个状态$s$处的变化是好还是坏。扩展到所有状态和所有action的时候，在每个state，根据$q_{\pi}(s,a)$选择处最好的action，这样就得到了一个greedy策略$\pi'$，给出如下定义：
 \begin{align\*}
-\pi'(s') &= argmax_{a} q_{\pi}(s,a)\\
-& = argmax_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\\
+\pi'(s') &= argmax_{a} q_{\pi}(s,a)\\\\
+& = argmax_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\\\\
 & = argmax_{a} \sum_{s',r}p(s',r|s,a)\left[r+v_{\pi}(s') \right]
 \end{align\*}
 可以看出来，该策略的定义一定满足式子$(7)$，所以$\pi'$比$\pi$要好或者相等，这就叫做policy improvement。当$\pi'$和$\pi$相等时，，根据式子$(9)$我们有：
 \begin{align\*}
-v_{\pi'}(s')& = max_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi'}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\\
+v_{\pi'}(s')& = max_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi'}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\\\\
 & = max_{a} \sum_{s',r}p(s',r|s,a)\left[r+v_{\pi'}(s') \right]
 \end{align\*}
 这和贝尔曼最优等式是一样的？？？殊途同归！！！
@@ -124,14 +124,14 @@ $\qquad If\ old\_action \neq \pi(s), policy\-stable\leftarrow false$
 ## Value Iteration
 从Policy Iteration算法中我们可以看出来，整个算法分为两步，第一步是Policy Evaluation，第二步是Policy Improvement。而每一次Policy Evaluation都要等到Value function收敛到一定程度才结束，这样子就会非常慢。一个替代的策略是我们尝试每一次Policy Evaluation只进行几步的话，一种特殊情况就是每一个Policy Evaluation只进行一步，这种就叫做Value Iteration。给出如下定义：
 \begin{align\*}
-v_{k+1}(s) &= max_a \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\
+v_{k+1}(s) &= max_a \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\\\
 &= max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right] \tag{10}
 \end{align\*}
 它其实就是把两个步骤给合在了一起，原来分开是：
 \begin{align\*}
-v_{\pi}(s) &= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\
-&= \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]\\
-v_{\pi'}(s) &= max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_{\pi}(s')\right]\\
+v_{\pi}(s) &= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\\\
+&= \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]\\\\
+v_{\pi'}(s) &= max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_{\pi}(s')\right]\\\\
 \end{align\*} 
 另一种方式理解式$(10)$可以把它看成是使用贝尔曼最优等式进行迭代更新，Policy Evaluation用的是贝尔曼期望等式进行更新。下面给出完整的Value Iteration算法
 

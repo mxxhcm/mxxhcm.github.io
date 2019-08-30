@@ -176,7 +176,7 @@ $\qquad$ until $S$是terminal
 ### Expected Sarsa
 Q-learning对所有next state-action pairs取了max操作。如果不是取max，而是取期望呢？
 \begin{align\*}
-Q(S_t,A_T) & \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}_{\pi}\left[ Q(S_{t+1}, A_{t+1})| S_{t+1} \right] -Q(S_t,A_t)\right]\\\\
+Q(S_t,A_T) & \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}\_{\pi}\left[ Q(S_{t+1}, A_{t+1})| S_{t+1} \right] -Q(S_t,A_t)\right]\\\\
 &\leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q -Q(S_t,A_t)\right]\tag{10}
 \end{align\*}
 其他的和Q-learning保持一致。给定next state $S_{t+1}$，算法在expectation上和sarsa移动的方向一样，所以被称为expected sarsa。这个算法可以是on-policy，但是通常它是是off-policy的。比如，on-policy的话，policy使用$\epsilon$ greedy算法，off-policy的话，behaviour policy使用stochastic policy，而target policy使用greedy算法，这其实就是Q-learning算法了。所以，Expected Sarsa实际上是对Q-learning的一个归纳，同时又有对Sarsa的改进。
