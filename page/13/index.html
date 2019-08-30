@@ -1111,7 +1111,7 @@ gym版本太老了，升级一下就行[2]。这个是gym$0.7.0$遇到的问题�
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-08-28 10:21:30" itemprop="dateModified" datetime="2019-08-28T10:21:30+08:00">2019-08-28</time>
+                <time title="修改时间：2019-08-30 11:40:06" itemprop="dateModified" datetime="2019-08-30T11:40:06+08:00">2019-08-30</time>
               
             
           </span>
@@ -1173,26 +1173,26 @@ In-place的方法是高斯赛德尔方法。就是用来解方程组的迭代法
 DP关键在于使用value function寻找好的policy，在找到了满足Bellman optimal equation的optimal value function之后，可以找到optimal policy，参见<a href="https://mxxhcm.github.io/2018/12/21/reinforcement-learning-an-introduction-%E7%AC%AC3%E7%AB%A0%E7%AC%94%E8%AE%B0/">第三章推导</a>：<br>
 Bellman optimal equation:<br>
 \begin{align*}<br>
-v_{*}(s) &amp;= max_a\mathbb{E}\left[R_{t+1}+\gamma v_{*}(S_{t+1})|S_t=s,A_t=a\right] \<br>
+v_{*}(s) &amp;= max_a\mathbb{E}\left[R_{t+1}+\gamma v_{*}(S_{t+1})|S_t=s,A_t=a\right] \\<br>
 &amp;= max_a \sum_{s’,r} p(s’,r|s,a){*}\left[r+\gamma v_{*}(s’)\right]  \tag{1}<br>
 \end{align*}</p>
 <p>\begin{align*}<br>
-q_{*}(s,a) &amp;= \mathbb{E}\left[R_{t+1}+\gamma max_{a’}q_{*}(S_{t+1},a’)|S_t=s,A_t = a\right]\<br>
+q_{*}(s,a) &amp;= \mathbb{E}\left[R_{t+1}+\gamma max_{a’}q_{*}(S_{t+1},a’)|S_t=s,A_t = a\right]\\<br>
 &amp;= \sum_{s’,r} p(s’,r|s,a) \left[r + \gamma max_a q_{*}(s’,a’)\right] \tag{2}<br>
 \end{align*}</p>
 <h2 id="policy-evaluation-prediction">Policy Evaluation(Prediction)</h2>
 <p>给定一个policy，计算state value function的过程叫做policy evaluation或者prediction problem。<br>
 根据$v(s)$和它的后继状态$v(s’)$之间的关系：<br>
 \begin{align*}<br>
-v_{\pi}(s) &amp;= \mathbb{E}<em>{\pi}[G_t|S_t = s]\<br>
-&amp;= \mathbb{E}</em>{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\<br>
-&amp;= \sum_a \pi(a|s)\sum_{s’}\sum_rp(s’,r|s,a) \left[r + \gamma \mathbb{E}<em>{\pi}\left[G</em>{t+1}|S_{t+1}=s’\right]\right] \tag{3}\<br>
-&amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_{\pi}(s’) \right] \tag{4}\<br>
+v_{\pi}(s) &amp;= \mathbb{E}_{\pi}[G_t|S_t = s]\\<br>
+&amp;= \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\\<br>
+&amp;= \sum_a \pi(a|s)\sum_{s’}\sum_rp(s’,r|s,a) \left[r + \gamma \mathbb{E}_{\pi}\left[G_{t+1}|S_{t+1}=s’\right]\right] \tag{3}\\<br>
+&amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_{\pi}(s’) \right] \tag{4}\\<br>
 \end{align*}<br>
 只要$\gamma \lt 1$或者存在terminal state，那么$v_{\pi}$的必然存在且唯一。这个我觉得是迭代法解方程的条件。数值分析上有证明。<br>
 如果环境的转换概率$p$是已知的，可以列出方程组，直接求解出每个状态$s$的$v(s)$。这里采用迭代法求解，随机初始化$v_0$，使用式子$(4)$进行更新：<br>
 \begin{align*}<br>
-v_{k+1}(s) &amp;= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})\ S_t=s\right]\<br>
+v_{k+1}(s) &amp;= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})\ S_t=s\right]\\<br>
 &amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_k(s’) \right] \tag{5}<br>
 \end{align*}<br>
 直到$v_k=v_{\pi}$到达fixed point，Bellman equation满足这个条件。当$k\rightarrow \infty$时收敛到$v_{\pi}$。这个算法叫做iterative policy evaluation。<br>
@@ -1214,7 +1214,7 @@ $\qquad$<strong>end for</strong><br>
 <p>为什么要进行policy evaluation，或者说为什么要计算value function？<br>
 其中一个原因是为了找到更好的policy。假设我们已经知道了一个deterministic的策略$\pi$，但是在其中一些状态，我们想要知道是不是有更好的action选择，如$a\neq \pi(s)$的时候，是不是这个改变后的策略会更好。好该怎么取评价，这个时候就可以使用值函数进行评价了，在某个状态，我们选择$a \neq \pi(s)$，在其余状态，依然遵循策略$\pi$。用公式表示为：<br>
 \begin{align*}<br>
-q_{\pi}(s,a) &amp;= \mathbb{E}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t=s,A_t = a\right]\<br>
+q_{\pi}(s,a) &amp;= \mathbb{E}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t=s,A_t = a\right]\\<br>
 &amp;=\sum_{s’,r}p(s’,r|s,a)\left[r+\gamma v_{\pi}(s’)\right] \tag{6}<br>
 \end{align*}<br>
 那么，这个值是是比$v(s)$要大还是要小呢？如果比$v(s)$要大，那么这个新的策略就比$\pi$要好。<br>
@@ -1225,25 +1225,25 @@ $$v_{\pi’}(s) \ge v_{\pi}(s) \tag{8}$$<br>
 对于我们提到的$\pi$和$\pi’$来说，除了在状态$s$处，$v_{\pi’}(s) = a \neq v_{\pi}(s)$，在其他状态处$\pi$和$\pi’$是一样的，都有$q_{\pi}(s,\pi’(s)) = v_{\pi}(s)$。而在状态$s$处，如果$q_{\pi}(s,a) \gt v_{\pi}(s)$，注意这里$a=\pi’(s)$，那么$\pi’$一定比$\pi$好。<br>
 证明：<br>
 \begin{align*}<br>
-v_{\pi}(s) &amp;\le q_{\pi}(s,\pi’(s))\<br>
-&amp; = \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s, A_t = \pi’(s) \right]\<br>
-&amp; = \mathbb{E}<em>{\pi’}\left[R</em>{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s \right]\<br>
-&amp; \le \mathbb{E}<em>{\pi’}\left[R</em>{t+1} + \gamma q_{\pi}(S_{t+1},\pi’(S_{t+1}))|S_t = s \right]\<br>
-&amp; = \mathbb{E}<em>{\pi’}\left[ R</em>{t+1} + \gamma \mathbb{E}<em>{\pi’}\left[R</em>{t+2} +\gamma v_{\pi}(S_{t+2})|S_{t+1}, A_{t+1}=\pi’(S_{t+1})|S_t = s \right]\right]\<br>
-&amp; = \mathbb{E}<em>{\pi’}\left[ R</em>{t+1} + \gamma R_{t+2} +\gamma^2 v_{\pi}(S_{t+2})|S_t = s \right]\<br>
-&amp; \le \mathbb{E}<em>{\pi’}\left[ R</em>{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 v_{\pi}(S_{t+3})|S_t = s \right]\<br>
-&amp; \le \mathbb{E}<em>{\pi’}\left[ R</em>{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 R_{t+4} + \cdots |S_t = s \right]\<br>
+v_{\pi}(s) &amp;\le q_{\pi}(s,\pi’(s))\\<br>
+&amp; = \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s, A_t = \pi’(s) \right]\\<br>
+&amp; = \mathbb{E}_{\pi’}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s \right]\\<br>
+&amp; \le \mathbb{E}_{\pi’}\left[R_{t+1} + \gamma q_{\pi}(S_{t+1},\pi’(S_{t+1}))|S_t = s \right]\\<br>
+&amp; = \mathbb{E}_{\pi’}\left[ R_{t+1} + \gamma \mathbb{E}_{\pi’}\left[R_{t+2} +\gamma v_{\pi}(S_{t+2})|S_{t+1}, A_{t+1}=\pi’(S_{t+1})|S_t = s \right]\right]\\<br>
+&amp; = \mathbb{E}_{\pi’}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 v_{\pi}(S_{t+2})|S_t = s \right]\\<br>
+&amp; \le \mathbb{E}_{\pi’}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 v_{\pi}(S_{t+3})|S_t = s \right]\\<br>
+&amp; \le \mathbb{E}_{\pi’}\left[ R_{t+1} + \gamma R_{t+2} +\gamma^2 R_{t+3}  +\gamma^3 R_{t+4} + \cdots |S_t = s \right]\\<br>
 &amp;=v_{\pi’}(s)<br>
 \end{align*}<br>
 所以，在计算出一个policy的value function的时候，很容易我们就直到某个状态$s$处的变化是好还是坏。扩展到所有状态和所有action的时候，在每个state，根据$q_{\pi}(s,a)$选择处最好的action，这样就得到了一个greedy策略$\pi’$，给出如下定义：<br>
 \begin{align*}<br>
-\pi’(s’) &amp;= argmax_{a} q_{\pi}(s,a)\<br>
-&amp; = argmax_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\<br>
+\pi’(s’) &amp;= argmax_{a} q_{\pi}(s,a)\\<br>
+&amp; = argmax_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\\<br>
 &amp; = argmax_{a} \sum_{s’,r}p(s’,r|s,a)\left[r+v_{\pi}(s’) \right]<br>
 \end{align*}<br>
 可以看出来，该策略的定义一定满足式子$(7)$，所以$\pi’$比$\pi$要好或者相等，这就叫做policy improvement。当$\pi’$和$\pi$相等时，，根据式子$(9)$我们有：<br>
 \begin{align*}<br>
-v_{\pi’}(s’)&amp; = max_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi’}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\<br>
+v_{\pi’}(s’)&amp; = max_{a} \mathbb{E}\left[R_{t+1} + \gamma v_{\pi’}(S_{t+1} |S_t=a,A_t=a)\right] \tag{9}\\<br>
 &amp; = max_{a} \sum_{s’,r}p(s’,r|s,a)\left[r+v_{\pi’}(s’) \right]<br>
 \end{align*}<br>
 这和贝尔曼最优等式是一样的？？？殊途同归！！！<br>
@@ -1272,14 +1272,14 @@ $\qquad If\ old_action \neq \pi(s), policy-stable\leftarrow false$<br>
 <h2 id="value-iteration">Value Iteration</h2>
 <p>从Policy Iteration算法中我们可以看出来，整个算法分为两步，第一步是Policy Evaluation，第二步是Policy Improvement。而每一次Policy Evaluation都要等到Value function收敛到一定程度才结束，这样子就会非常慢。一个替代的策略是我们尝试每一次Policy Evaluation只进行几步的话，一种特殊情况就是每一个Policy Evaluation只进行一步，这种就叫做Value Iteration。给出如下定义：<br>
 \begin{align*}<br>
-v_{k+1}(s) &amp;= max_a \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\<br>
+v_{k+1}(s) &amp;= max_a \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\<br>
 &amp;= max_a \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_k(s’)\right] \tag{10}<br>
 \end{align*}<br>
 它其实就是把两个步骤给合在了一起，原来分开是：<br>
 \begin{align*}<br>
-v_{\pi}(s) &amp;= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\<br>
-&amp;= \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_k(s’)\right]\<br>
-v_{\pi’}(s) &amp;= max_a \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_{\pi}(s’)\right]\<br>
+v_{\pi}(s) &amp;= \mathbb{E}\left[R_{t+1} + \gamma v_k(S_{t+1})| S_t=s, A_t = a\right]\\<br>
+&amp;= \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_k(s’)\right]\\<br>
+v_{\pi’}(s) &amp;= max_a \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_{\pi}(s’)\right]\\<br>
 \end{align*}<br>
 另一种方式理解式$(10)$可以把它看成是使用贝尔曼最优等式进行迭代更新，Policy Evaluation用的是贝尔曼期望等式进行更新。下面给出完整的Value Iteration算法</p>
 <p><strong>Value Iteration 算法</strong><br>
@@ -1434,7 +1434,7 @@ GPI不一定是收敛的，本章介绍的这些大多都是收敛的，但是�
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+                <time title="修改时间：2019-08-30 11:44:59" itemprop="dateModified" datetime="2019-08-30T11:44:59+08:00">2019-08-30</time>
               
             
           </span>
@@ -1490,7 +1490,7 @@ GPI不一定是收敛的，本章介绍的这些大多都是收敛的，但是�
             <h2 id="on-policy-prediction-with-approximation">On-policy Prediction with Approximation</h2>
 <p>这一章讲的是利用on-policy的数据估计函数形式的值函数，on-policy就是说利用一个已知的policy $\pi$生成的experience来估计$v_{\pi}$。和之前讲的不同的是，前面几章讲的是表格形式的值函数，而这一章是使用参数为$\mathbf{w}\in R^d$的函数表示。即$\hat{v}(s,\mathbf{w})\approx v_{\pi}(s)$表示给定一个权值vector $\mathbf{w}$，state $s$的状态值。这个函数可以是任何形式的，可以是线性函数，也可以是神经网络，还可以是决策树。</p>
 <h2 id="值函数估计">值函数估计</h2>
-<p>目前这本书介绍的所有prediction方法都是更新某一个state的估计值函数向backed-up value（或者叫update target）值移动。我们用符号$s\mapsto u$表示一次更新。其中$s$是要更新的状态，$u$是$s$的估计值函数的update target。例如，Monte Carlo更新的value prediction是：$S_t \mapsto G_t$，TD(0)的update是：$S_t \mapsto R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w}<em>t)$，$n$-step TD update是：$S_t \mapsto G</em>{t:t+n}$。在DP policy evaluation update中是：$s\mapsto E_{\pi}[R_{t+1}+\gamma\hat{v}(S_{t+1}, \mathbf{w}_t)| S_t =s]$，任意一个状态$s$被更新了，同时在其他真实experience中遇到的$S_t$也被更新了。</p>
+<p>目前这本书介绍的所有prediction方法都是更新某一个state的估计值函数向backed-up value（或者叫update target）值移动。我们用符号$s\mapsto u$表示一次更新。其中$s$是要更新的状态，$u$是$s$的估计值函数的update target。例如，Monte Carlo更新的value prediction是：$S_t \mapsto G_t$，TD(0)的update是：$S_t \mapsto R_{t+1} + \gamma \hat{v}(S_{t+1}, \mathbf{w}_t)$，$n$-step TD update是：$S_t \mapsto G_{t:t+n}$。在DP policy evaluation update中是：$s\mapsto E_{\pi}[R_{t+1}+\gamma\hat{v}(S_{t+1}, \mathbf{w}_t)| S_t =s]$，任意一个状态$s$被更新了，同时在其他真实experience中遇到的$S_t$也被更新了。</p>
 <p>之前表格的更新太trivial了，更次更新$s$向$u$移动，其他状态的值都保持不变。现在使用函数实现更新，在状态$s$处的更新，可以一次性更新很多个其他状态的值。就像监督学习学习input和output之间的映射一样，我们可以把$s\mapsto g$的更新看做一个训练样本。这样就可以使用很多监督学习的方法学习这样一个函数。<br>
 但是并不是所有的方法都适用于强化学习，因为许多复杂的神经网络和统计学方法都假设训练集是静态不变的。然而强化学习中，学习是online的，即智能体不断地与环境进行交互产生新的数据，这就需要这个方法能够从不断增加的数据中高效的学习。<br>
 此外，强化学习通常需要function approximation能够处理target function不稳定的情况，即target function随着事件在不断的变化。比如，在基于GPI的control方法中，在$\pi$不断变化的情况下，我们想要学习出$q_{\pi}$。即使policy保持不变，如果使用booststrapping方法（DP和TD学习），训练样本的target value也在不断的改变，因为下一个state的value值在不断的改变。所以不能处理这些不稳定情况的方法有点不适合强化学习。</p>
