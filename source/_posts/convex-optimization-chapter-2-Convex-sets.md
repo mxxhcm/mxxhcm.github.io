@@ -119,8 +119,13 @@ $$D(x,\epsilon) = \{y\in \mathbb{R}^n \big|d(x,y) \lt \epsilon\}$$
 #### 内部(interior)
 ##### 定义
 **给定集合$A\subset \mathbb{R}^n $,点$x \in A$，如果有一个开集$U$使得$x \in U\subset A$,那么该点就称为$A$的一个内点。或者说对于$x\in A$，有一个$\epsilon \gt 0$使得$D(x,\epsilon)\subset A$。$A$的所有内点组成的集合叫做$A$的内部(interior)，记做$int(A)$。**
-集合内部可能是空的，单点的内部就是空的。单位圆的内部是不包含边界的单位圆。事实上$A$的内部是$A$所有开子集的并，由开集的定理得$A$的内部是开的，且$A$的内部是$A$的最大的开集。
-简单来说，就是集合内所有开集还在这个集合内的点 的并。
+##### 属性
+1. 集合内部可能是空的，单点的内部就是空的。
+2. 单位圆的内部是不包含边界的单位圆。
+3. 事实上$A$的内部是$A$所有开子集的并，由开集的定理得$A$的内部是开的，且$A$的内部是$A$的最大的开集。
+4. 当且仅当$A$的内部等于$A$的时候，$A$是开集（$A$可能是闭集）。
+5. 只需要寻找集合内$\epsilon$邻域还在这个集合内的点即可。
+
 ##### 示例
 1. 给定集合$S=\{(x,y)\in \mathbb{R}^2 \big| 0 \lt x \le 1\}$，$int(S) = \{(x,y)\big|0 \lt x \lt 1\}$。因为区间$(0,1)$中的点都满足它们的$\epsilon$邻域在$S$中。
 2. $int(A) \cup int(B) \ne int(A\cup B)$。在实数轴上，$A=[0,1],B=[1,2]$，那么$int(A) = (0,1),int(B) = (1,2)$，所以$int(A) \cup int(B) = (0,1)\cup (1,2) = (0,2)\backslash \{1\}$，而$int(A\cup B) = int[0,2] = (0,2)$。
@@ -148,7 +153,7 @@ $$D(x,\epsilon) = \{y\in \mathbb{R}^n \big|d(x,y) \lt \epsilon\}$$
 当且仅当集合$S$的所有聚点属于$S$时，$S\subset \mathbb{R}^n $是闭集。
 ##### 示例
 1. 给定集合$S=\{x\in R\big|x\in [0,1]且x是有理数\}$，$S$的聚点为$[0,1]$中所有点。任何不属于$[0,1]$的点都不是聚点，因为这类点有一个包含它的$\epsilon$邻域与$[0,1]$不相交。
-2. 给定集合$S=\{(x,y)\in \mathbb{R}^2 \big| 0 \le x\le or\ x = 2\}$, 它的聚点是它本身，因为它是闭集。
+2. 给定集合$S=\{(x,y)\in \mathbb{R}^2 \big| 0 \le  x\le 1\ or\ \ x = 2\}$, 它的聚点是它本身，因为它是闭集。
 3. 给定集合$S=\{(x,y)\in \mathbb{R}^2 \big|y \lt x^2 + 1\}$，S的聚点为集合$\{(x,y)\in \mathbb{R}^2 \big|y \le x^2 + 1\}$，
 
 #### 闭包(closure)
@@ -157,7 +162,7 @@ $$D(x,\epsilon) = \{y\in \mathbb{R}^n \big|d(x,y) \lt \epsilon\}$$
 ##### 定理
 给定$A\subset \mathbb{R}^n $，那么$cl(A)$由$A$和$A$的所有聚点组成。
 ##### 示例
-1. $R$中$S=\[0,1)\cup \{2\}$的闭包是$[0,1]$和$\{2\}$,S聚点是$[0,1]$,所以S的闭包是$[0,1]\cup\{2\}$。
+1. $R$中$S=\[0,1)\cup \{2\}$的闭包是$[0,1]$和$\{2\}$。$S$的聚点是$[0,1]$，再并上$S$得到$S$的闭包是$[0,1]\cup\{2\}$。
 2. 对于任意$S\subset \mathbb{R}^n $，$\mathbb{R}^n \backslash cl(S)$是开集。因为$cl(S)$是闭集，所以它的补集是开集。 
 3. $cl(A\cap B) \ne cl(A)\cap cl(B)$。比如$A=(0,1),B(1,2),cl(A)=[0,1],cl(B)=[1,2]$,$A\cap B = \varnothing$,$cl(A\cap B) = \varnothing$,而$cl(A)\cap cl(B) = \{1\}$。
 
