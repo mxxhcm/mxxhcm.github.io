@@ -20,7 +20,7 @@ mathjax: true
 #### 线性优化(linear program)
 目标函数和约束函数$f_0,\cdots,f_m$是线性的, 它们满足不等式： 
 $$f_i(\alpha x+\beta y) = \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in R$。 
+对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in\mathbb{R}$。 
 线性优化是凸优化的一个特殊形式, 它的目标函数和约束函数都是线性的等式或者不等式。
 
 #### 非线性问题(non-linear problem)
@@ -118,7 +118,7 @@ $$minimize \quad max_{i=1,\cdots,k}|a_i^T x-b_i|$$
 \end{align\*}
 其中函数$f_0,\cdots,f_m:\mathbb{R}^n \rightarrow \mathbb{R}$是凸的(convex), 如满足
 $$f_i(\alpha x+ \beta y) \le \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in R$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
+对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in \mathbb{R}$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
 或者：
 $$f_i(\theta x+ (1-\theta) y) \le \theta f_i(x) + (1 - \theta) f_i(y)$$
 其中$\theta \in [0,1]$。
