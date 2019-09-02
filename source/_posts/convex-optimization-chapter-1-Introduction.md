@@ -96,7 +96,7 @@ $$\sum_{i=1}^k (a_i^T x-b_i)^2 + \rho \sum_{i=1}^n x_i^2 ,$$
 &minimize \quad c^T x\\\\
 &subject \ to \quad a_i^T \le b_i, i = 1, \cdots, m.
 \end{align\*}
-其中向量$c,a_1,\cdots,a_m \epsilon \mathbb{R}^n $, 和标量$b_1,\cdots, b_m \epsilon R$是指定目标函数和约束函数条件的参数。
+其中向量$c,a_1,\cdots,a_m \epsilon \mathbb{R}^n $, 和标量$b_1,\cdots, b_m \epsilon \mathbb{R}$是指定目标函数和约束函数条件的参数。
 
 #### 求解线性规划(solving linear programs)
 - 除了一个特例，没有解析解公式(和least-squares不同)；
@@ -107,7 +107,7 @@ $$\sum_{i=1}^k (a_i^T x-b_i)^2 + \rho \sum_{i=1}^n x_i^2 ,$$
 #### 应用(using linear programs)
 一些应用直接使用线性规划的标准形式,或者其中一个标准形式。在很多时候，原始的优化问题没有一个标准的线性规划形式，但是可以被转化为等价的线性规划形式。比如切米雪夫近似问题(Chebyshev approximation problem)。它的形式如下：
 $$minimize \quad max_{i=1,\cdots,k}|a_i^T x-b_i|$$
-其中$x\epsilon \mathbb{R}^n $是变量，$a_1,\cdots,a_k \epsilon \mathbb{R}^n , b_1,\cdots,b_k \epsilon R$是实例化的问题参数,和least-squares相似的是，它们的目标函数都是项$a^T_i x-b_i$。不同之处在于，least-squares用的是该项的平方和作为目标函数，而Chebyshev approximation中用的是绝对值的最大值。Chebyshev approximation problem的目标函数是不可导的(max operation), least-squares problem的目标函数是二次的(quadratic), 因此可导的(differentiable)。
+其中$x\epsilon \mathbb{R}^n $是变量，$a_1,\cdots,a_k \epsilon \mathbb{R}^n , b_1,\cdots,b_k \epsilon \mathbb{R}$是实例化的问题参数,和least-squares相似的是，它们的目标函数都是项$a^T_i x-b_i$。不同之处在于，least-squares用的是该项的平方和作为目标函数，而Chebyshev approximation中用的是绝对值的最大值。Chebyshev approximation problem的目标函数是不可导的(max operation), least-squares problem的目标函数是二次的(quadratic), 因此可导的(differentiable)。
 
 ## 凸优化(Convex optimization)
 凸优化问题是优化问题的一种,它的目标函数和优化函数都是凸的。
