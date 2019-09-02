@@ -25,4 +25,4 @@ return 0;
 ./hello_world
 
 ## 参考文献
-1.file:///home/mxxmhh/Downloads/gcc-five-minutes.pdf
+1.https://legacy.gitbook.com/download/pdf/book/lexdene/gcc-five-minutes
