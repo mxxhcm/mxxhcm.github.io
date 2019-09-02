@@ -323,7 +323,7 @@ $\Vert \cdot\Vert$是$\mathbb{R}^n $上的范数。一个范数球(norm ball)可
 二阶锥(second-order cone)是欧几里得范数对应的范数锥，如图所示，其表达式为：
 \begin{align\*}
 C &=\{(x,t)\in \mathbb{R}^{n+1} \big| \Vert x\Vert_2 \le t\}\\\\
-&= \left\{ \begin{bmatrix}x\\\\t\end{bmatrix}\big| \begin{bmatrix}x\\\\t\end{bmatrix}^T \begin{bmatrix}I&0\\\\0&-1\end{bmatrix}\begin{bmatrix}x\\\\t\end{bmatrix}\le 0, t \gt 0 \right\}
+&= \left\{ \begin{bmatrix}x\\\\t\end{bmatrix} \big| \begin{bmatrix}x\\\\t\end{bmatrix}^T \begin{bmatrix}I&0\\\\ 0&-1\end{bmatrix} \begin{bmatrix}x\\\\t\end{bmatrix}\le 0, t \gt 0 \right\}
 \end{align\*}
 这个二阶锥也被称为二次锥(quadratic cone)，因为它是通过一个二次不等式定义的，也被叫做Lorentz cone或者冰激凌锥(ice-cream cone)。
 
@@ -403,7 +403,7 @@ $$X=\begin{bmatrix}x&y\\\\y&z\end{bmatrix}\in S\_{+}^2 \Leftrightarrow x\ge 0,z\
 ## 保凸运算(operations that preserve convexity)
 这一小节介绍的是一些保留集合凸性，或者从一些集合中构造凸集的运算。这些运算和simplex形成了凸集的积分去确定或者建立集合的凸性。
 ### 集合交(intersection)
-凸集求交集可以保留凸性：如果$S_1$和$S_2$是凸集，那么$S_1\cup S_2$是凸集。扩展到无限个集合就是：如果$\forall \alpha \in A,S_{\alpha}$都是凸的，那么$\cup_{\alpha\in A S_{\alpha}$是凸的
+凸集求交集可以保留凸性：如果$S_1$和$S_2$是凸集，那么$S_1\cup S_2$是凸集。扩展到无限个集合就是：如果$\forall \alpha \in A,S_{\alpha}$都是凸的，那么$\cup_{\alpha\in A S_{\alpha}}$是凸的
 ### 仿射函数(affine functions)
 ### 线性分式(linear-fractional)和视角函数(perspective functions)
 #### 线性分式(linear-fractional)
