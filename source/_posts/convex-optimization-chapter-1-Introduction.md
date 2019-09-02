@@ -15,12 +15,12 @@ mathjax: true
 &minimize \quad f_0(x)\\\\
 &subject \ to \quad f_i(x) \le b_i, i = 1,\cdots,m.
 \end{align\*}
-其中$x = (x_1, \cdots, x_m)$被称为优化变量(optimization variables), 或者决策变量(decision variables)。 $f_0(x):\mathbb{R}^n\rightarrow R$是目标函数(object function), $f_i(x):\mathbb{R}^n\rightarrow R,i =1,\cdots,m$是约束函数(constraint functions)。 常量(constraints) $b_1,\cdots,b_m$是约束的限界(limits)或者边界(bounds), $b_i$可以为0，这个可以通过移项构造出新的$f_i(x)$实现。如果向量$x$使得目标函数取得最小的值，并且满足所有的约束条件，那么这个向量被称为最优解$x^\*$。 
+其中$x = (x_1, \cdots, x_m)$被称为优化变量(optimization variables), 或者决策变量(decision variables)。 $f_0(x):\mathbb{R}^n \rightarrow \mathbb{R}$是目标函数(object function), $f_i(x):\mathbb{R}^n \rightarrow \mathbb{R},i =1,\cdots,m$是约束函数(constraint functions)。 常量(constraints) $b_1,\cdots,b_m$是约束的限界(limits)或者边界(bounds), $b_i$可以为$0$，这个可以通过移项构造出新的$f_i(x)$实现。如果向量$x$使得目标函数取得最小的值，并且满足所有的约束条件，那么这个向量被称为最优解$x^{\*} $。 
 
 #### 线性优化(linear program)
 目标函数和约束函数$f_0,\cdots,f_m$是线性的, 它们满足不等式： 
 $$f_i(\alpha x+\beta y) = \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \epsilon \mathbb{R}^n$和所有的$\alpha, \beta \epsilon R$。 
+对于所有的$x,y \epsilon \mathbb{R}^n $和所有的$\alpha, \beta \epsilon R$。 
 线性优化是凸优化的一个特殊形式, 它的目标函数和约束函数都是线性的等式或者不等式。
 
 #### 非线性问题(non-linear problem)
@@ -29,7 +29,7 @@ $$f_i(\alpha x+\beta y) = \alpha f_i(x) + \beta f_i(y)$$
 #### 凸问题(convex problem)
 凸问题是目标函数和约束函数都是凸的的优化问题，它们满足：
 $$f_i(\alpha x + \beta y) \le \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \epsilon \mathbb{R}^n$和所有的$\alpha, \beta  \epsilon R$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
+对于所有的$x,y \epsilon \mathbb{R}^n $和所有的$\alpha, \beta  \epsilon\mathbb{R}$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
 凸性比线性的范围更广，不等式取代了更加严格的等式，不等式只有在$\alpha$和$\beta$取一些特定值时才成立。凸优化和线性问题以及非线性问题都有交集，它是线性问题的超集(superset)，是非线性问题的子集(subset)。技术上来说，nonlinear problem包括convex optimization(除了linear programming), 可以用来描述不确定是非凸的问题。
 Nonlinear program > convex problem > linear problem
 
@@ -64,15 +64,15 @@ Nonlinear program > convex problem > linear problem
 least-squares和linear programming是凸优化问题中最有名的两个子问题。
 
 ### 最小二乘问题(least-squares problems)
-最小二乘问题是一个无约束的优化问题，它的目标函数是项$a_i^Tx-b_i$的平方和。
+最小二乘问题是一个无约束的优化问题，它的目标函数是项$a_i^T x-b_i$的平方和。
 \begin{align\*}
-minimize \quad f_0(x) &= {||Ax-b||}^2_2\\\\
-&=\sum_{i=1}^k(a_i^Tx-b_i)^2
+minimize \quad f_0(x) &= {||Ax-b||}^2_2 \\\\
+&=\sum_{i=1}^k (a_i^T x-b_i)^2
 \end{align\*}
 
 #### 求解(solving least-squares problems)
-- 最小二乘问题的解可以转换为求线性方程组$(A^TA)x = A^Tb$的解。线性代数上我们学过该方程组的解析解为$x=(A^TA)^{-1}A^Tb$。
-- 时间复杂度是$n^2k = n\*k\*n+n\*k+n\*n\*n, (k > n)$(转置，求逆，矩阵乘法)。
+- 最小二乘问题的解可以转换为求线性方程组$(A^T A)x = A^T b$的解。线性代数上我们学过该方程组的解析解为$x=(A^T A)^{-1} A^T b$。
+- 时间复杂度是$n^2 k = n\*k\*n+n\*k+n\*n\*n, (k > n)$(转置，求逆，矩阵乘法)。
 - 该问题具有可靠且高效的求解算法。
 - 是一个很成熟的算法
 
@@ -81,33 +81,33 @@ minimize \quad f_0(x) &= {||Ax-b||}^2_2\\\\
 
 ##### 加权最小二乘(weighted least-squares)
 加权最小二乘形式如下:
-$$\sum_{i=1}^k \omega_i(a_i^Tx-b_i)^2,$$
-其中$\omega_1,\cdots,\omega_k$是正的，被最小化。 这里选出权重$\omega$来体现不同项$a_i^Tx-b_i$的比重, 或者仅仅用来影响结果。
+$$\sum_{i=1}^k \omega_i(a_i^T x-b_i)^2 ,$$
+其中$\omega_1,\cdots,\omega_k$是正的，被最小化。 这里选出权重$\omega$来体现不同项$a_i^T x-b_i$的比重, 或者仅仅用来影响结果。
 
 ##### 正则化(regularization)
 目标函数中被加入了额外项, 形式如下：
-$$\sum_{i=1}^k(a_i^Tx-b_i)^2 + \rho \sum_{i=1}^n x_i^2,$$
-正则项是用来惩罚大的$x$, 求出一个仅仅最小化第一个求和项的不出来的好结果。合理的选择参数$\rho$在原始的目标函数和正则化项之间做一个trade-off, 使得$\sum_{k=1}^i(a_i^T - b_i)^2$和$\rho \sum_{k=1}^n x_i^2$都很小。
+$$\sum_{i=1}^k (a_i^T x-b_i)^2 + \rho \sum_{i=1}^n x_i^2 ,$$
+正则项是用来惩罚大的$x$, 求出一个仅仅最小化第一个求和项的不出来的好结果。合理的选择参数$\rho$在原始的目标函数和正则化项之间做一个trade-off, 使得$\sum_{k=1}^i (a_i^T - b_i)^2 $和$\rho \sum_{k=1}^n  x_i^2 $都很小。
 正则化项和加权最小二乘会在第六章中讲到，它们的统计解释在第七章给出。
 
 ### 线性规划(linear programming)
 线性规划问题装目标函数和约束函数都是线性的：
 \begin{align\*}
-&minimize \quad c^Tx\\\\
+&minimize \quad c^T x\\\\
 &subject \ to \quad a_i^T \le b_i, i = 1, \cdots, m.
 \end{align\*}
-其中向量$c,a_1,\cdots,a_m \epsilon \mathbb{R}^n$, 和标量$b_1,\cdots, b_m \epsilon R$是指定目标函数和约束函数条件的参数。
+其中向量$c,a_1,\cdots,a_m \epsilon \mathbb{R}^n $, 和标量$b_1,\cdots, b_m \epsilon R$是指定目标函数和约束函数条件的参数。
 
 #### 求解线性规划(solving linear programs)
 - 除了一个特例，没有解析解公式(和least-squares不同)；
 - 有可靠且高效的算法实现；
-- 时间复杂度是$O(n^2m)$, m是约束条件的个数, m是维度$；
+- 时间复杂度是$O(n^2 m)$, m是约束条件的个数, m是维度$；
 - 是一个成熟的方法。
 
 #### 应用(using linear programs)
 一些应用直接使用线性规划的标准形式,或者其中一个标准形式。在很多时候，原始的优化问题没有一个标准的线性规划形式，但是可以被转化为等价的线性规划形式。比如切米雪夫近似问题(Chebyshev approximation problem)。它的形式如下：
-$$minimize \quad max_{i=1,\cdots,k}|a_i^Tx-b_i|$$
-其中$x\epsilon \mathbb{R}^n$是变量，$a_1,\cdots,a_k \epsilon \mathbb{R}^n, b_1,\cdots,b_k \epsilon R$是实例化的问题参数,和least-squares相似的是，它们的目标函数都是项$a^T_ix-b_i$。不同之处在于，least-squares用的是该项的平方和作为目标函数，而Chebyshev approximation中用的是绝对值的最大值。Chebyshev approximation problem的目标函数是不可导的(max operation), least-squares problem的目标函数是二次的(quadratic), 因此可导的(differentiable)。
+$$minimize \quad max_{i=1,\cdots,k}|a_i^T x-b_i|$$
+其中$x\epsilon \mathbb{R}^n $是变量，$a_1,\cdots,a_k \epsilon \mathbb{R}^n , b_1,\cdots,b_k \epsilon R$是实例化的问题参数,和least-squares相似的是，它们的目标函数都是项$a^T_i x-b_i$。不同之处在于，least-squares用的是该项的平方和作为目标函数，而Chebyshev approximation中用的是绝对值的最大值。Chebyshev approximation problem的目标函数是不可导的(max operation), least-squares problem的目标函数是二次的(quadratic), 因此可导的(differentiable)。
 
 ## 凸优化(Convex optimization)
 凸优化问题是优化问题的一种,它的目标函数和优化函数都是凸的。
@@ -118,7 +118,7 @@ $$minimize \quad max_{i=1,\cdots,k}|a_i^Tx-b_i|$$
 \end{align\*}
 其中函数$f_0,\cdots,f_m:\mathbb{R}^n \rightarrow \mathbb{R}$是凸的(convex), 如满足
 $$f_i(\alpha x+ \beta y) \le \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \epsilon \mathbb{R}^n$和所有的$\alpha, \beta \epsilon R$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
+对于所有的$x,y \epsilon \mathbb{R}^n $和所有的$\alpha, \beta \epsilon R$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
 或者：
 $$f_i(\theta x+ (1-\theta) y) \le \theta f_i(x) + (1 - \theta) f_i(y)$$
 其中$\theta \epsilon [0,1]$。
@@ -128,7 +128,7 @@ The least-squares和linear programming problem都是convex optimization problem�
 ### 凸优化求解(solving convex optimization problems)
 - 没有解析解；
 - 有可靠且有效的算法；
-- 时间复杂度正比于$max{n^3, n^2m,F},$F$是评估$f$和计算一阶导数和二阶导数的时间；
+- 时间复杂度正比于$max{n^3 , n^2 m,F},$F$是评估$f$和计算一阶导数和二阶导数的时间；
 - 有成熟的方法，如interior-point methods。
 
 ### 凸优化的应用(using convex optimization)
