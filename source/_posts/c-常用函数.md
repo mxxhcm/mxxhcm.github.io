@@ -39,6 +39,19 @@ strcpy(des, src);
 ``` c++
 strncpy(des, src+n, len);
 ```
+#### 结束符
+``` c++
+sub[len] = '\0';
+```
+#### new字符串数组
+``` c++
+char *str = new char[100];
+```
+
+#### delete字符串数组
+``` c++
+delete []str;
+```
 
 ### vector
 #### 向量长度
