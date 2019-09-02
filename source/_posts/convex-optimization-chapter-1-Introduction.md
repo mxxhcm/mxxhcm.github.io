@@ -20,7 +20,7 @@ mathjax: true
 #### 线性优化(linear program)
 目标函数和约束函数$f_0,\cdots,f_m$是线性的, 它们满足不等式： 
 $$f_i(\alpha x+\beta y) = \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \epsilon \mathbb{R}^n $和所有的$\alpha, \beta \epsilon R$。 
+对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in R$。 
 线性优化是凸优化的一个特殊形式, 它的目标函数和约束函数都是线性的等式或者不等式。
 
 #### 非线性问题(non-linear problem)
@@ -29,7 +29,7 @@ $$f_i(\alpha x+\beta y) = \alpha f_i(x) + \beta f_i(y)$$
 #### 凸问题(convex problem)
 凸问题是目标函数和约束函数都是凸的的优化问题，它们满足：
 $$f_i(\alpha x + \beta y) \le \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \epsilon \mathbb{R}^n $和所有的$\alpha, \beta  \epsilon\mathbb{R}$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
+对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in \mathbb{R}$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
 凸性比线性的范围更广，不等式取代了更加严格的等式，不等式只有在$\alpha$和$\beta$取一些特定值时才成立。凸优化和线性问题以及非线性问题都有交集，它是线性问题的超集(superset)，是非线性问题的子集(subset)。技术上来说，nonlinear problem包括convex optimization(除了linear programming), 可以用来描述不确定是非凸的问题。
 Nonlinear program > convex problem > linear problem
 
@@ -96,7 +96,7 @@ $$\sum_{i=1}^k (a_i^T x-b_i)^2 + \rho \sum_{i=1}^n x_i^2 ,$$
 &minimize \quad c^T x\\\\
 &subject \ to \quad a_i^T \le b_i, i = 1, \cdots, m.
 \end{align\*}
-其中向量$c,a_1,\cdots,a_m \epsilon \mathbb{R}^n $, 和标量$b_1,\cdots, b_m \epsilon \mathbb{R}$是指定目标函数和约束函数条件的参数。
+其中向量$c,a_1,\cdots,a_m \in \mathbb{R}^n $, 和标量$b_1,\cdots, b_m \in \mathbb{R}$是指定目标函数和约束函数条件的参数。
 
 #### 求解线性规划(solving linear programs)
 - 除了一个特例，没有解析解公式(和least-squares不同)；
@@ -107,7 +107,7 @@ $$\sum_{i=1}^k (a_i^T x-b_i)^2 + \rho \sum_{i=1}^n x_i^2 ,$$
 #### 应用(using linear programs)
 一些应用直接使用线性规划的标准形式,或者其中一个标准形式。在很多时候，原始的优化问题没有一个标准的线性规划形式，但是可以被转化为等价的线性规划形式。比如切米雪夫近似问题(Chebyshev approximation problem)。它的形式如下：
 $$minimize \quad max_{i=1,\cdots,k}|a_i^T x-b_i|$$
-其中$x\epsilon \mathbb{R}^n $是变量，$a_1,\cdots,a_k \epsilon \mathbb{R}^n , b_1,\cdots,b_k \epsilon \mathbb{R}$是实例化的问题参数,和least-squares相似的是，它们的目标函数都是项$a^T_i x-b_i$。不同之处在于，least-squares用的是该项的平方和作为目标函数，而Chebyshev approximation中用的是绝对值的最大值。Chebyshev approximation problem的目标函数是不可导的(max operation), least-squares problem的目标函数是二次的(quadratic), 因此可导的(differentiable)。
+其中$x\in \mathbb{R}^n $是变量，$a_1,\cdots,a_k \in \mathbb{R}^n , b_1,\cdots,b_k \in \mathbb{R}$是实例化的问题参数,和least-squares相似的是，它们的目标函数都是项$a^T_i x-b_i$。不同之处在于，least-squares用的是该项的平方和作为目标函数，而Chebyshev approximation中用的是绝对值的最大值。Chebyshev approximation problem的目标函数是不可导的(max operation), least-squares problem的目标函数是二次的(quadratic), 因此可导的(differentiable)。
 
 ## 凸优化(Convex optimization)
 凸优化问题是优化问题的一种,它的目标函数和优化函数都是凸的。
@@ -118,10 +118,10 @@ $$minimize \quad max_{i=1,\cdots,k}|a_i^T x-b_i|$$
 \end{align\*}
 其中函数$f_0,\cdots,f_m:\mathbb{R}^n \rightarrow \mathbb{R}$是凸的(convex), 如满足
 $$f_i(\alpha x+ \beta y) \le \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \epsilon \mathbb{R}^n $和所有的$\alpha, \beta \epsilon R$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
+对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in R$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
 或者：
 $$f_i(\theta x+ (1-\theta) y) \le \theta f_i(x) + (1 - \theta) f_i(y)$$
-其中$\theta \epsilon [0,1]$。
+其中$\theta \in [0,1]$。
 课上有人问这里为$\theta$是0和1, 有没有什么物理意义，Stephen Boyd回答说这是定义，就是这么定义的。
 The least-squares和linear programming problem都是convex optimization problem的特殊形式。线性函数(linear functions)也是convex，它们正处在边界上，它们的曲率(curvature)为0。一种方式是用正曲率去描述凸性。
 
