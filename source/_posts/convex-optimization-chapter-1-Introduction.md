@@ -21,7 +21,7 @@ mathjax: true
 目标函数和约束函数$f_0,\cdots,f_m$是线性的, 它们满足不等式： 
 $$f_i(\alpha x+\beta y) = \alpha f_i(x) + \beta f_i(y)$$
 对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in\mathbb{R}$。 
-线性优化是凸优化的一个特殊形式, 它的目标函数和约束函数都是线性的等式或者不等式。
+线性优化是凸优化的一个特殊形式, 它的目标函数和约束函数都是线性的等式。
 
 #### 非线性问题(non-linear problem)
 如果优化问题不是线性的，就是非线性问题。只要目标函数或者约束函数至少有一个不是线性的，那么这个优化问题就是非线性优化问题。
@@ -29,7 +29,7 @@ $$f_i(\alpha x+\beta y) = \alpha f_i(x) + \beta f_i(y)$$
 #### 凸问题(convex problem)
 凸问题是目标函数和约束函数都是凸的的优化问题，它们满足：
 $$f_i(\alpha x + \beta y) \le \alpha f_i(x) + \beta f_i(y)$$
-对于所有的$x,y \in \mathbb{R}^n $和所有的$\alpha, \beta \in \mathbb{R}$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
+对于所有的$x,y \in \mathbb{r}^n $和所有的$\alpha, \beta \in \mathbb{r}$且$\alpha + \beta = 1, \alpha \ge 0, \beta \ge 0$。
 凸性比线性的范围更广，不等式取代了更加严格的等式，不等式只有在$\alpha$和$\beta$取一些特定值时才成立。凸优化和线性问题以及非线性问题都有交集，它是线性问题的超集(superset)，是非线性问题的子集(subset)。技术上来说，nonlinear problem包括convex optimization(除了linear programming), 可以用来描述不确定是非凸的问题。
 Nonlinear program > convex problem > linear problem
 
