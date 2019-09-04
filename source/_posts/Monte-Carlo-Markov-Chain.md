@@ -27,7 +27,7 @@ Monte Carlo方法在很多地方都出现过，但是它具体到底是干什么
 ### 马尔科夫矩阵的幂
 $u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到
 $u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$
-如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightaroow \infty, \lambda_k \neq 1$。即能得到一个稳态。
+如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightarrow \infty, \lambda_k \neq 1$。即能得到一个稳态。
 
 
 ## Markov Property
@@ -55,7 +55,7 @@ $$s_{t+2} = s_t Q\^2$$
 这样一直计算下去，可以到达一个state:
 $$sQ = s$$
 对于这个例子来说，就是$s = (0.625, 0.3125, 0.0625)\^T$，不管从什么初始状态开始，最后都会到达这个$s$状态。
-那么这个stationary distribution有什么用呢？它能够给出一个process在任意时刻某个state出现的概率，比如牛市出现的概率是$62.5%$，熊市出现的概率是$31.25%$。
+那么这个stationary distribution有什么用呢？它能够给出一个process在任意时刻某个state出现的概率，比如牛市出现的概率是$62.5\%$，熊市出现的概率是$31.25\%$。
 
 ### 马尔科夫链的稳定性
 如果一个非周期性马尔科夫连有转移矩阵$P$，并且它的任意两个状态都是连通的，那么$lim_{n\rightarrow \infty} P_{ij}\^m$存在，且与$i$无关，记为$lim_{n\rightarrow \infty }P_{ij}^n = \pi(j)$，即矩阵$P\^n$的所有第$j$列都是$\pi(j)$，与$P$的初始值无关。那么有：

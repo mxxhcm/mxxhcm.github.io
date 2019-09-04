@@ -37,23 +37,23 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。
 
 ### Policy Gradient Therorem
-智能体的在每一步的action由policy决定：$\pi(s,a,\mathbf{\theta})=Pr\{a_t=a|s_t=s,\mathbf{\theta}\},\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}\l$。假设$\pi$是可导的，即，$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。
+智能体的在每一步的action由policy决定：$\pi(s,a,\mathbf{\theta})=Pr\[a_t=a|s_t=s,\mathbf{\theta}\],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即，$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。
 这里有两种方式定义智能体的objective，一种是average reward，一种是从指定状态获得的长期奖励。
 
 #### Average Reward(平均奖励)
 平均奖励是，策略根据每一步的长期期望奖励$\rho(\pi)$进行排名
-$$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\left{r_1+r_2+\cdots+r_n|\pi\right} = \sum_s d^{\pi}(s) \sum_a\pi(s,a)R_sa.$$
-其中$d\{\pi}(s) = lim_{t\rightarrow \infty} Pr\{s_t=s|s_0,\pi\}$是我们假设的策略$\pi$下的固定分布，对于所有的策略都是独立于$s_0$的。这里，我想了一天都没有想明白，为什么？？？第一个等号，我可以理解，这里$r_n$表示的是在时间步$n$的immediate reward，所以第一个等号表示的是在策略$\pi$下$n$个时间步的imediate reward平均值的期望。
+$$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\[r_1+r_2+\cdots+r_n|\pi\] = \sum_s d^{\pi}(s) \sum_a\pi(s,a)R_sa.$$
+其中$d\{\pi}(s) = lim_{t\rightarrow \infty} Pr\[s_t=s|s_0,\pi\]$是我们假设的策略$\pi$下的固定分布，对于所有的策略都是独立于$s_0$的。这里，我想了一天都没有想明白，为什么？？？第一个等号，我可以理解，这里$r_n$表示的是在时间步$n$的immediate reward，所以第一个等号表示的是在策略$\pi$下$n$个时间步的imediate reward平均值的期望。
 而第二个等号中，$d{\pi}(s)$是从初始状态$s_0$经过$t$步之后所有state $s$可能取值的概率，第一个求和号对$s$求和，就相当于一个离散积分，求的是$s$的期望；然后对$a$的求和，也相当于一个离散积分，求的是关于$a$的期望，所以第二个等式后面求的其实就是$R(s,a)$的期望。
 state-action value定义为：
-$$Q\{\pi}(s,a) = \sum_{t=1}{\infty}\mathbb{E}\{r_t - \rho(\pi)|s_0=s,a_0=a,\pi\}, \forall s\in S, a\in A.$$
+$$Q\{\pi}(s,a) = \sum_{t=1}^{\infty} \mathbb{E}\[r_t - \rho(\pi)|s_0=s,a_0=a,\pi\], \forall s\in S, a\in A.$$
 
 #### Long-tern Accumated Reward from Designated State(从指定状态开始的累计奖励)
 这种情况是指定一个开始状态$s_0$，然后我们只关心从这个状态得到的长期reward。
-$$\rho(\pi) = \mathbb{E}\{\sum_{t=1}\{\infty}\gamma{t-1}|s_0,\pi\},$$
-$$Q\{\pi}(s,a) = \mathbb{E}\{\sum_{k=1}{\infty}r_{t+k}|s_t=s,a_t=a,\pi\}.$$
+$$\rho(\pi) = \mathbb{E}\[\sum_{t=1}^\{\infty} \gamma{t-1}|s_0,\pi\],$$
+$$Q\{\pi}(s,a) = \mathbb{E}\[\sum_{k=1}^{\infty} r_{t+k}|s_t=s,a_t=a,\pi\].$$
 其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
-$d^{\pi}(s) = \sum_{t=1}{\infty}\gamma^t Pr\{s_t = s|s_0,\pi}.$
+$d^{\pi}(s) = \sum_{t=1}^{\infty} \gamma^t Pr\[s_t = s|s_0,\pi\].$
 这里的$d^{\pi}$是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。
 
 #### Policy Gradient Theorem
@@ -101,11 +101,11 @@ $$\sum_sd\{\pi}(s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{
 &\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)q_{\pi}(s,a)
 \end{align\*}
 
-从式子(2)可以看出来，这个梯度和$\frac{\partial d\{\pi}(s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty}r_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty}\gamma^{k-1}r_{t+k}-\rho(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。
+从式子(2)可以看出来，这个梯度和$\frac{\partial d\{\pi}(s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty} r_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} r_{t+k}-\rho(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。
 
 ### Policy Gradient with Approximation(使用近似的策略梯度)
 如果$Q\{\pi}$也用一个学习的函数来近似，然后我们希望用近似的函数代替式子(2)中的$Q{\pi}$，并大致给出梯度的方向。
-用$f_w:S\times A \rightarrow R$表示$Q\{\pi}$的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]2 \propto \left[\hat{Q}^{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w}$，其中$\hat{Q}^{\pi}(s_t,a_t)$是$Q^{\pi}(s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：
+用$f_w:S\times A \rightarrow R$表示$Q\{\pi}$的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]2 \propto \left[\hat{Q}^{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w}$，其中$\hat{Q}^{\pi} (s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：
 $$\sum_sd\{\pi}(s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{3}$$
 
 #### Policy Gradient with Approximation Theorem
