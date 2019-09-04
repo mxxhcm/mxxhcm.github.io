@@ -1103,7 +1103,7 @@ display:none表示完全不可见，不占据页面空间，而visible: hidden�
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-04 09:27:07" itemprop="dateModified" datetime="2019-09-04T09:27:07+08:00">2019-09-04</time>
+                <time title="修改时间：2019-09-04 10:01:36" itemprop="dateModified" datetime="2019-09-04T10:01:36+08:00">2019-09-04</time>
               
             
           </span>
@@ -1156,113 +1156,47 @@ display:none表示完全不可见，不占据页面空间，而visible: hidden�
       
         
           
-            <h2 id="概述">概述</h2>
-<p>Monte Carlo方法在很多地方都出现过，但是它具体到底是干什么的，之前从来没有仔细了解过，这次正好趁着这个机会好好学习一下。<br>
-统计模拟中有一个重要的问题就是给定一个概率分布$p(x)$，生成它的样本。对于一些简单的分布，可以使用均匀分布产生的样本进行样本。但是对于一些复杂的样本，单单使用均匀分布就不行了，需要使用更加复杂的随机模拟方法。Markov Chain Monte Carlo就是一种随机模拟方法(simple simulation)，我们常见的gibbs sampling也是。通过多次模拟，产生多组实验数据，进行积分啊什么的。</p>
-<h2 id="markov-matrices">Markov Matrices</h2>
-<h3 id="定义">定义</h3>
-<p>马尔科夫矩阵满足两个条件</p>
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Monte Carlo方法在很多地方都出现过，但是它具体到底是干什么的，之前从来没有仔细了解过，这次正好趁着这个机会好好学习一下。<br>统计模拟中有一个重要的问题就是给定一个概率分布$p(x)$，生成它的样本。对于一些简单的分布，可以使用均匀分布产生的样本进行样本。但是对于一些复杂的样本，单单使用均匀分布就不行了，需要使用更加复杂的随机模拟方法。Markov Chain Monte Carlo就是一种随机模拟方法(simple simulation)，我们常见的gibbs sampling也是。通过多次模拟，产生多组实验数据，进行积分啊什么的。</p>
+<h2 id="Markov-Matrices"><a href="#Markov-Matrices" class="headerlink" title="Markov Matrices"></a>Markov Matrices</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>马尔科夫矩阵满足两个条件</p>
 <ol>
 <li>所有元素大于$0$</li>
 <li>行向量之和为$1$</li>
 </ol>
-<h3 id="属性">属性</h3>
-<ol>
-<li>$\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&amp;b\\c&amp;d\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&amp;b\\c&amp;d - 1\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。</li>
+<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><ol>
+<li>$\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&amp;b\\\\c&amp;d\\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&amp;b\\\\c&amp;d - 1\\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。</li>
 <li>所有其他的特征值小于$1$。</li>
 </ol>
-<h3 id="马尔科夫矩阵的幂">马尔科夫矩阵的幂</h3>
-<p>$u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到<br>
-$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$<br>
-如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightarrow \infty, \lambda_k \neq 1$。即能得到一个稳态。</p>
-<h2 id="markov-property">Markov Property</h2>
-<p>简单的来说，就是下一时刻的状态只取决于当前状态，跟之前所有时刻的状态无关，即：<br>
-$$P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t)$$</p>
-<h2 id="markov-chain-process">Markov Chain(Process)</h2>
-<p>如果一个Chain(process)是Markov的，就叫它Markov Chain(Process)。</p>
-<h2 id="stationary-distribution">Stationary Distribution</h2>
-<p>为什么要用Markov Chain呢？因为它有一个很好的性质，叫做stationary distribution。简单的来说，就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。举个例子，股票有牛市和熊市，还有波动状态，它们的转换关系如下所示：<br>
-<img src="/2019/08/01/Monte-Carlo-Markov-Chain/markov_transition.png" alt="markov_transition"><br>
-状态转义矩阵矩阵如下表所示：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center"></th>
-<th style="text-align:center">牛市</th>
-<th style="text-align:center">熊市</th>
-<th style="text-align:center">波动</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">牛市</td>
-<td style="text-align:center">0.9</td>
-<td style="text-align:center">0.075</td>
-<td style="text-align:center">0.025</td>
-</tr>
-<tr>
-<td style="text-align:center">熊市</td>
-<td style="text-align:center">0.15</td>
-<td style="text-align:center">0.8</td>
-<td style="text-align:center">0.05</td>
-</tr>
-<tr>
-<td style="text-align:center">波动</td>
-<td style="text-align:center">0.25</td>
-<td style="text-align:center">0.25</td>
-<td style="text-align:center">0.5</td>
-</tr>
-</tbody>
-</table>
-<p>假如从熊市开始，初始state是[牛市，熊市，波动]，用数值表示就是$(0, 1, 0)^T$。根据当前时刻计算下一时刻的公式为：<br>
-$$s_{t+1} = s_t Q$$<br>
-相应结果为$s_{t+1} = (0.15, 0.8, 0.05)^T$<br>
-$t+2$时刻的计算公式为：<br>
-$$s_{t+2} = s_t Q^2$$<br>
-这样一直计算下去，可以到达一个state:<br>
-$$sQ = s$$<br>
-对于这个例子来说，就是$s = (0.625, 0.3125, 0.0625)^T$，不管从什么初始状态开始，最后都会到达这个$s$状态。<br>
-那么这个stationary distribution有什么用呢？它能够给出一个process在任意时刻某个state出现的概率，比如牛市出现的概率是$62.5%$，熊市出现的概率是$31.25%$。</p>
-<h3 id="马尔科夫链的稳定性">马尔科夫链的稳定性</h3>
-<p>如果一个非周期性马尔科夫连有转移矩阵$P$，并且它的任意两个状态都是连通的，那么$lim_{n\rightarrow \infty} P_{ij}^m$存在，且与$i$无关，记为$lim_{n\rightarrow \infty }P_{ij}^n = \pi(j)$，即矩阵$P^n$的所有第$j$列都是$\pi(j)$，与$P$的初始值无关。那么有：</p>
-<h2 id="monte-carlov-markov-chain">Monte Carlov Markov Chain</h2>
-<p>首先考虑，给定一个beta分布，如何进行采样？MCMC提供了从任意概率分布中采样的方法，尤其是当我们计算后验概率时极为有用。在贝叶斯公式中，如下图所示，我们需要从后验分布中进行采样，但是后验分布并不是那么好计算的，因为牵扯到$p(D)$的计算，根据全概率公式，需要进行积分，而beta分布的积分并不好解。<br>
-<img src="/2019/08/01/Monte-Carlo-Markov-Chain/bayesian.png" alt="bayesian"></p>
+<h3 id="马尔科夫矩阵的幂"><a href="#马尔科夫矩阵的幂" class="headerlink" title="马尔科夫矩阵的幂"></a>马尔科夫矩阵的幂</h3><p>$u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到<br>$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$<br>如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightarrow \infty, \lambda_k \neq 1$。即能得到一个稳态。</p>
+<h2 id="Markov-Property"><a href="#Markov-Property" class="headerlink" title="Markov Property"></a>Markov Property</h2><p>简单的来说，就是下一时刻的状态只取决于当前状态，跟之前所有时刻的状态无关，即：</p>
+<script type="math/tex; mode=display">P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t)</script><h2 id="Markov-Chain-Process"><a href="#Markov-Chain-Process" class="headerlink" title="Markov Chain(Process)"></a>Markov Chain(Process)</h2><p>如果一个Chain(process)是Markov的，就叫它Markov Chain(Process)。</p>
+<h2 id="Stationary-Distribution"><a href="#Stationary-Distribution" class="headerlink" title="Stationary Distribution"></a>Stationary Distribution</h2><p>为什么要用Markov Chain呢？因为它有一个很好的性质，叫做stationary distribution。简单的来说，就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。举个例子，股票有牛市和熊市，还有波动状态，它们的转换关系如下所示：<br><img src="/2019/08/01/Monte-Carlo-Markov-Chain/markov_transition.png" alt="markov_transition"><br>状态转义矩阵矩阵如下表所示：<br>||牛市|熊市|波动|<br>|:-:|:-:|:-:|:-:|<br>|牛市|0.9|0.075|0.025|<br>|熊市|0.15|0.8|0.05|<br>|波动|0.25|0.25|0.5|</p>
+<p>假如从熊市开始，初始state是[牛市，熊市，波动]，用数值表示就是$(0, 1, 0)\^T$。根据当前时刻计算下一时刻的公式为：</p>
+<script type="math/tex; mode=display">s_{t+1} = s_t Q</script><p>相应结果为$s_{t+1} = (0.15, 0.8, 0.05)\^T$<br>$t+2$时刻的计算公式为：</p>
+<script type="math/tex; mode=display">s_{t+2} = s_t Q\^2</script><p>这样一直计算下去，可以到达一个state:</p>
+<script type="math/tex; mode=display">sQ = s</script><p>对于这个例子来说，就是$s = (0.625, 0.3125, 0.0625)\^T$，不管从什么初始状态开始，最后都会到达这个$s$状态。<br>那么这个stationary distribution有什么用呢？它能够给出一个process在任意时刻某个state出现的概率，比如牛市出现的概率是$62.5\%$，熊市出现的概率是$31.25\%$。</p>
+<h3 id="马尔科夫链的稳定性"><a href="#马尔科夫链的稳定性" class="headerlink" title="马尔科夫链的稳定性"></a>马尔科夫链的稳定性</h3><p>如果一个非周期性马尔科夫连有转移矩阵$P$，并且它的任意两个状态都是连通的，那么$lim_{n\rightarrow \infty} P_{ij}\^m$存在，且与$i$无关，记为$lim_{n\rightarrow \infty }P_{ij}^n = \pi(j)$，即矩阵$P\^n$的所有第$j$列都是$\pi(j)$，与$P$的初始值无关。那么有：</p>
+<h2 id="Monte-Carlov-Markov-Chain"><a href="#Monte-Carlov-Markov-Chain" class="headerlink" title="Monte Carlov Markov Chain"></a>Monte Carlov Markov Chain</h2><p>首先考虑，给定一个beta分布，如何进行采样？MCMC提供了从任意概率分布中采样的方法，尤其是当我们计算后验概率时极为有用。在贝叶斯公式中，如下图所示，我们需要从后验分布中进行采样，但是后验分布并不是那么好计算的，因为牵扯到$p(D)$的计算，根据全概率公式，需要进行积分，而beta分布的积分并不好解。<br><img src="/2019/08/01/Monte-Carlo-Markov-Chain/bayesian.png" alt="bayesian"></p>
 <p>Wikipedia上MCMC的定义：MCMC是一类方法的统称，MCMC方法构建一个Markov chain，这个Markov chain的stationary distribution是我们的目标distribution，然后进行采样。经过很多步之后的一个state可以看成是我们目标distribution的一个样本。简单解释以下就是，给定一个概率分布$p(x)$，我们想要生成这个概率分布的一些样本。因为马尔科夫链能够收敛到stationary distribution，我们的想法就是构造一个转移矩阵为$P$的马尔科夫连，使得该马尔科夫的stationry distribution是$p(x)$，那么不管我们从任何初始状态$x_0$出发，得到一个马尔科夫链$x_0,x_1,\cdots, x_t,x_{t+1}, \cdots$，如果马尔科夫链在第$n$步已经到了stationary distribution，那么$t+1$后的states都可以看成$p(x)$的样本。</p>
-<h2 id="示例">示例</h2>
-<p>我们从Beta分布中进行采样，Beta分布的公式如下所示：<br>
-$$f(\theta;\alpha, \beta) = \frac{1}{B(\alpha, \beta)}\theta^{\alpha-1}(1-\theta)^{\beta-1},\alpha\gt 0,\beta\gt 0, x\in \left[0,1\right]$$<br>
-其中，$\frac{1}{B(\alpha, \beta)} = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$，是$\alpha,\beta$的函数，这里我们假设$\alpha,\beta$是固定的。<br>
-MCMC方法能够创建一个Markov chain，它的stationary distribution是Beta distribution。</p>
-<p>定义$s=(s_1,s_2,\cdots, s_M)$是desired stationary distribution。我们的目标是创建一个Markov Chain，它的stationary distribution是desitred stationary distribution。随机初始化一个具有$M$个states的Markov Chain，transition matrix 是$P$，$p_{ij}$代表从state $i$到$j$的概率。<br>
-随机初始化的Markov Chain肯定有一个stationary distribution，但是不是我们想要的哪个。我们的目标就是改变这个Markov Chain让它的stationary distribution是我们想要的。为了实现这个目的：</p>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>我们从Beta分布中进行采样，Beta分布的公式如下所示：</p>
+<script type="math/tex; mode=display">f(\theta;\alpha, \beta) = \frac{1}{B(\alpha, \beta)}\theta\^{\alpha-1}(1-\theta)\^{\beta-1},\alpha\gt 0,\beta\gt 0, x\in \left[0,1\right]</script><p>其中，$\frac{1}{B(\alpha, \beta)} = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$，是$\alpha,\beta$的函数，这里我们假设$\alpha,\beta$是固定的。<br>MCMC方法能够创建一个Markov chain，它的stationary distribution是Beta distribution。</p>
+<p>定义$s=(s_1,s_2,\cdots, s_M)$是desired stationary distribution。我们的目标是创建一个Markov Chain，它的stationary distribution是desitred stationary distribution。随机初始化一个具有$M$个states的Markov Chain，transition matrix 是$P$，$p_{ij}$代表从state $i$到$j$的概率。<br>随机初始化的Markov Chain肯定有一个stationary distribution，但是不是我们想要的哪个。我们的目标就是改变这个Markov Chain让它的stationary distribution是我们想要的。为了实现这个目的：</p>
 <ol>
 <li>随机选择一个初始state $i$</li>
 <li>根据$P$的第$i$行随机选择一个新的proposal state</li>
-<li>计算一个measure称作Acceptance Probabiliby：<br>
-$$a_{ij} = min(\frac{s_j p_{ji}}{s_ip_{ij}},1)$$</li>
+<li>计算一个measure称作Acceptance Probabiliby：<script type="math/tex; mode=display">a_{ij} = min(\frac{s_j p_{ji}}{s_ip_{ij}},1)</script></li>
 <li>投掷一枚正面向上概率为$a_{ij}$的硬币，如果正面向上，accept这个proposal，移动到下一个state，否则，reject 这个proposal，留在当前state。</li>
 <li>重复下去</li>
 </ol>
 <p>经过很长时间以后，这个chain会收敛，我们可以使用这个chain的states作为从任意distribution的采样。不同的分布，使用的acceptance probability不同而已，其实就是根据给出的分布计算一个接收概率而已。</p>
-<h3 id="从beta分布中采样">从beta分布中采样</h3>
-<p>Beta分布是定义在$[0,1]$上的连续分布，它有$[0,1]$上的无穷多个states。假设具有$[0,1]$上无限个states的markov chain的transition matrix $P$是一个对称矩阵，即$p_{ij}=p_{ji}$，acceptance probability中的$p_{ij}$项就可以消掉。<br>
-接下来我们要做的是：</p>
+<h3 id="从beta分布中采样"><a href="#从beta分布中采样" class="headerlink" title="从beta分布中采样"></a>从beta分布中采样</h3><p>Beta分布是定义在$[0,1]$上的连续分布，它有$[0,1]$上的无穷多个states。假设具有$[0,1]$上无限个states的markov chain的transition matrix $P$是一个对称矩阵，即$p_{ij}=p_{ji}$，acceptance probability中的$p_{ij}$项就可以消掉。<br>接下来我们要做的是：</p>
 <ol>
 <li>从均匀分布$(0,1)$中随机选择一个初始state $i$</li>
 <li>根据$P$的第$i$行值随机选择一个新的proposal state。</li>
-<li>计算Acceptance Probability：<br>
-$$a_{ij} = min(\frac{s_j p_{ji}}{s_ip_{ij}},1)$$<br>
-可以化简为：<br>
-$$a_{ij} = min(\frac{s_j}{s_i},1)$$<br>
-其中$s_i = Ci^{\alpha-1} (1-i)^{\beta-1},s_j = Cj^{\alpha-1} (1-j)^{\beta-1}$，</li>
+<li>计算Acceptance Probability：<script type="math/tex; mode=display">a_{ij} = min(\frac{s_j p_{ji}}{s_ip_{ij}},1)</script>可以化简为：<script type="math/tex; mode=display">a_{ij} = min(\frac{s_j}{s_i},1)</script>其中$s_i = Ci\^{\alpha-1} (1-i)\^{\beta-1},s_j = Cj\^{\alpha-1} (1-j)\^{\beta-1}$，</li>
 <li>投掷一枚正面向上概率为$a_{ij}$的硬币，如果正面向上，accept这个proposal，移动到下一个state，否则，reject 这个proposal，留在当前state。</li>
 <li>重复下去</li>
 </ol>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson</a><br>
-2.<a href="https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1" target="_blank" rel="noopener">https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1</a><br>
-3.<a href="http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf" target="_blank" rel="noopener">http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA数学八卦.pdf</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson</a><br>2.<a href="https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1" target="_blank" rel="noopener">https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1</a><br>3.<a href="http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf" target="_blank" rel="noopener">http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf</a><br>4.<a href="https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/" target="_blank" rel="noopener">https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/</a></p>
 
           
         
@@ -2243,7 +2177,7 @@ $\qquad$ Until $\tau =T-1$</p>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-04 09:38:40" itemprop="dateModified" datetime="2019-09-04T09:38:40+08:00">2019-09-04</time>
+                <time title="修改时间：2019-09-04 09:43:34" itemprop="dateModified" datetime="2019-09-04T09:43:34+08:00">2019-09-04</time>
               
             
           </span>
@@ -2296,273 +2230,85 @@ $\qquad$ Until $\tau =T-1$</p>
       
         
           
-            <h2 id="policy-gradient">policy gradient</h2>
-<h3 id="abstract">Abstract</h3>
-<p>强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。<br>
-本文的贡献主要有两个，第一个是给出估计的action-value function或者advantage函数，梯度可以表示成experience的估计，第二个是证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。</p>
-<h3 id="introduction">Introduction</h3>
-<h4 id="值函数方法的缺点">值函数方法的缺点</h4>
-<p>基于值函数的方法，在估计出值函数之后，每次通过greedy算法选择action。这种方法有两个缺点。</p>
+            <h2 id="policy-gradient"><a href="#policy-gradient" class="headerlink" title="policy gradient"></a>policy gradient</h2><h3 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h3><p>强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。<br>本文的贡献主要有两个，第一个是给出估计的action-value function或者advantage函数，梯度可以表示成experience的估计，第二个是证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。</p>
+<h3 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h3><h4 id="值函数方法的缺点"><a href="#值函数方法的缺点" class="headerlink" title="值函数方法的缺点"></a>值函数方法的缺点</h4><p>基于值函数的方法，在估计出值函数之后，每次通过greedy算法选择action。这种方法有两个缺点。</p>
 <ul>
 <li>基于值函数的方法会找到一个deterministic的策略，但是很多时候optimal policy可能是stochastic的。</li>
 <li>某个action的估计值函数稍微改变一点就可能导致这个动作被选中或者不被选中，这种不连续是保证值函数收敛的一大障碍。</li>
 </ul>
-<h4 id="本文的工作">本文的工作</h4>
-<h5 id="用函数表示stochastic-policy">用函数表示stochastic policy</h5>
-<p>本文提出的policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：<br>
-$$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{1}$$<br>
-这里$\alpha$是步长，按照(1)式子进行更新，$\theta$可以确保收敛到J的局部最优值对应的local optimal policy。这里$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。</p>
-<h5 id="使用值函数辅助学习policy">使用值函数辅助学习policy</h5>
-<p>本文证明了通过使用满足特定属性的辅助近似值函数，使用experience可以得到(1)的一个无偏估计。另一个方法REINFORCE也找到了(1)的一个无偏估计，但是没有使用辅助的值函数。REINFORCE的学习速度要比使用值函数的方法慢很多。此外学习一个值函数，并用它取减少方差对快速学习是很重要的。</p>
-<h5 id="证明policy-iteration收敛性">证明policy iteration收敛性</h5>
-<p>本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。</p>
-<h3 id="policy-gradient-therorem">Policy Gradient Therorem</h3>
-<p>智能体的在每一步的action由policy决定：$\pi(s,a,\mathbf{\theta})=Pr[a_t=a|s_t=s,\mathbf{\theta}],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即，$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。<br>
-这里有两种方式定义智能体的objective，一种是average reward，一种是从指定状态获得的长期奖励。</p>
-<h4 id="average-reward-平均奖励">Average Reward(平均奖励)</h4>
-<p>平均奖励是，策略根据每一步的长期期望奖励$\rho(\pi)$进行排名<br>
-$$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}[r_1+r_2+\cdots+r_n|\pi] = \sum_s d^{\pi}(s) \sum_a\pi(s,a)R_sa.$$<br>
-其中$d{\pi}(s) = lim_{t\rightarrow \infty} Pr[s_t=s|s_0,\pi]$是我们假设的策略$\pi$下的固定分布，对于所有的策略都是独立于$s_0$的。这里，我想了一天都没有想明白，为什么？？？第一个等号，我可以理解，这里$r_n$表示的是在时间步$n$的immediate reward，所以第一个等号表示的是在策略$\pi$下$n$个时间步的imediate reward平均值的期望。<br>
-而第二个等号中，$d{\pi}(s)$是从初始状态$s_0$经过$t$步之后所有state $s$可能取值的概率，第一个求和号对$s$求和，就相当于一个离散积分，求的是$s$的期望；然后对$a$的求和，也相当于一个离散积分，求的是关于$a$的期望，所以第二个等式后面求的其实就是$R(s,a)$的期望。<br>
-state-action value定义为：<br>
-$$Q{\pi}(s,a) = \sum_{t=1}^{\infty} \mathbb{E}[r_t - \rho(\pi)|s_0=s,a_0=a,\pi], \forall s\in S, a\in A.$$</p>
-<h4 id="long-tern-accumated-reward-from-designated-state-从指定状态开始的累计奖励">Long-tern Accumated Reward from Designated State(从指定状态开始的累计奖励)</h4>
-<p>这种情况是指定一个开始状态$s_0$，然后我们只关心从这个状态得到的长期reward。<br>
-$$\rho(\pi) = \mathbb{E}[\sum_{t=1}^{\infty} \gamma{t-1}|s_0,\pi],$$<br>
-$$Q{\pi}(s,a) = \mathbb{E}[\sum_{k=1}^{\infty} r_{t+k}|s_t=s,a_t=a,\pi].$$<br>
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：<br>
-$d^{\pi}(s) = \sum_{t=1}^{\infty} \gamma^t Pr[s_t = s|s_0,\pi].$<br>
-这里的$d^{\pi}$是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。</p>
-<h4 id="policy-gradient-theorem">Policy Gradient Theorem</h4>
-<p>对于任何MDP，不论是平均奖励还是指定初始状态的形式，都有：<br>
-$$\frac{\partial J}{\partial \mathbf{\theta}} = \sum_ad{\pi}(s)\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a), \tag{2}$$<br>
-证明：<br>
-平均奖励<br>
-\begin{align*}<br>
-\nabla v_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\<br>
-&amp;= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a)\right], \\<br>
-&amp;= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)\right] \\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \left[r-\rho(\pi)+\sum_{s’,r}p(s’,r|s,a)v_{\pi}(s’)\right]\right] \\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \rho(\pi)+\nabla \sum_{s’,r}p(s’,r|s,a)v_{\pi}(s’)\right]\right], \nabla r = 0\\<br>
-\end{align*}<br>
-而由$\sum_s\pi(s,a)=1$，我们得到：<br>
-$$\nabla v_{\pi}(s)=\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \nabla \sum_{s’,r}p(s’,r|s,a)v_{\pi}(s’)\right] - \nabla v_{\pi}(s)$$<br>
-同时在上式两边对$d{\pi}$进行求和，得到：<br>
-$$\sum_sd{\pi}(s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s’,r}p(s’,r|s,a)v_{\pi}(s’)\right] - \sum_sd^{\pi}(s)\nabla v_{\pi}(s)$$<br>
-因为$d{\pi}$是稳定的，<br>
-$$\sum_sd{\pi}(s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s’,r}p(s’,r|s,a)v_{\pi}(s’)\right] - \sum_sd^{\pi}(s)\nabla v_{\pi}(s)$$<br>
-那么:<br>
-\begin{align*}<br>
-\end{align*}<br>
-指定初始状态$s_0$:<br>
-\begin{align*}<br>
-\nabla v_{\pi}(s) &amp;= \nabla [ \sum_a \pi(a|s)q_{\pi}(s,a)], \forall s\in S \\<br>
-&amp;= \sum_a [\nabla\pi(a|s)q_{\pi}(s,a)], \forall s\in S \\<br>
-&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)] \\<br>
-&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \sum_{s’,r}p(s’,r|s,a)(r+\gamma v_{\pi}(s’))] \\<br>
-&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s) \nabla \sum_{s’,r}p(s’,r|s,a)r + \pi(a|s)\nabla \sum_{s’,r}p(s’,r|s,a)\gamma v_{\pi}(s’))] \\<br>
-&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\nabla v_{\pi}(s’) ] \\<br>
-&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\\<br>
-&amp;\ \ \ \ \ \ \ \ \sum_{a’}[\nabla\pi(a’|s’)q_{\pi}(s’,a’) + \pi(a’|s’)\sum_{s’’}\gamma p(s’’|s’,a’)\nabla v_{\pi}(s’’))] ],  展开\\<br>
-&amp;= \sum_{x\in S}\sum_{k=0}{\infty}Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)q_{\pi}(x,a)<br>
-\end{align*}<br>
-第(5)式使用了$v_{\pi}(s) = \sum_a\pi(a|s)q(s,a)$进行展开。第(6)式将梯度符号放进求和里面。第(7)步使用product rule对q(s,a)求导。第(8)步利用$q_{\pi}(s, a) =\sum_{s’,r}p(s’,r|s,a)(r+v_{\pi}(s’)$ 对$q_{\pi}(s,a)$进行展开。第(9)步将(8)式进行分解。第(10)步对式(9)进行计算，因为$\sum_{s’,r}p(s’,r|s,a)r$是一个定制，求偏导之后为$0$。第(11)步对生成的$v_{\pi}(s’)$重复(5)-(10)步骤，得到式子(11)。如果对式子(11)中的$v_{\pi}(s)$一直展开，就得到了式子(12)。式子(12)中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，这里我有一个问题，就是为什么，$k$可以取到$\infty$，后来想了想，因为对第(11)步进行展开以后，可能会有重复的state，重复的意思就是从状态$s$开始，可能会多次到达某一个状态$x$，$k$就能取很多次，大不了$k=\infty$的概率为$0$就是了。</p>
-<p>所以，对于$v_{\pi}(s_0)$，就有：<br>
-\begin{align*}<br>
-\nabla J(\mathbf{\theta}) &amp;= \nabla_{v_{\pi}}(s_0)\\<br>
-&amp;= \sum_{s\in S}( \sum_{k=0}{\infty}Pr(s_0\rightarrow s,k,\pi) ) \sum_a\nabla_{\pi}(a|s)q_{\pi}(s,a)\\<br>
-&amp;=\sum_{s\in S}\eta(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\<br>
-&amp;=\sum_{s’\in S}\eta(s’)\sum_s\frac{\eta(s)}{\sum_{s’}\eta(s’)}\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\<br>
-&amp;=\sum_{s’\in S}\eta(s’)\sum_s\mu(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\<br>
-&amp;\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)q_{\pi}(s,a)<br>
-\end{align*}</p>
-<p>从式子(2)可以看出来，这个梯度和$\frac{\partial d{\pi}(s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty} r_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} r_{t+k}-\rho(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。</p>
-<h3 id="policy-gradient-with-approximation-使用近似的策略梯度">Policy Gradient with Approximation(使用近似的策略梯度)</h3>
-<p>如果$Q{\pi}$也用一个学习的函数来近似，然后我们希望用近似的函数代替式子(2)中的$Q{\pi}$，并大致给出梯度的方向。<br>
-用$f_w:S\times A \rightarrow R$表示$Q{\pi}$的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]2 \propto \left[\hat{Q}^{\pi}(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w}$，其中$\hat{Q}^{\pi} (s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：<br>
-$$\sum_sd{\pi}(s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{3}$$</p>
-<h4 id="policy-gradient-with-approximation-theorem">Policy Gradient with Approximation Theorem</h4>
-<p>如果$f_w$满足式子(3)，并且在某种意义上与policy parameterization兼容：<br>
-$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\tag{4}$$<br>
-那么有：<br>
-$$\frac{}{} = \sum_sd{\pi}(s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{5}$$</p>
-<p>证明：<br>
-将(4)代入(3)得到：<br>
-\begin{align*}<br>
-&amp;\sum_sd{\pi}(s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w} = 0\\<br>
-&amp;\sum_sd{\pi}(s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}= 0\\<br>
-&amp;\sum_sd{\pi}(s)\sum_a\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}= 0 \tag{6}\\<br>
-\end{align*}<br>
-从这个式子中，我们能够从式子(6)中得到</p>
-<h3 id="convergence-of-policy-iteration-with-function-approximation-使用函数近似的策略迭代的收敛性">Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</h3>
-<h3 id="policy-iteration-with-function-apprpximation-theorem">Policy Iteration with Function Apprpximation Theorem</h3>
-<p>用$\pi$和$f_w$表示策略和值函数的任意可导函数，并且满足式子(4)中的条件，Z</p>
-<h2 id="deterministic-policy-gradient">deterministic policy gradient</h2>
-<p>论文名称：Deterministic policy gradient algorithms<br>
-论文地址：</p>
-<h3 id="摘要">摘要</h3>
-<p>本文提出了deterministic policy gradient 算法。Deterministic实际上是action value function的expected gradient，这让deterministic policy gradient比stochastic policy gradient要更efficiently。为了保证足够的exploration，作者引入了off-policy的actor-critic算法学习determinitic target policy。<br>
-本文的contributions，dpg比spg要好，尤其是high dimensional tasks，此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noist，这种情况下dpg更合适。</p>
-<h3 id="stochastic-policy-gradient-vs-deterministic-policy-gradiet">stochastic policy gradient vs deterministic policy gradiet</h3>
-<h4 id="sotchastic-policy-gradient">(sotchastic) policy gradient</h4>
-<p>Policy gradient的basic idea是用参数化的policy distribution $\pi_\theta(a|s) = \mathbb{P}\left[a|s,\theta\right]$表示policy，这个policy $\pi$在state $s$处根据$\theta$表示的policy随机的选择action $a$。Policy gradient通常对policy 进行采样，然后调整policy的参数$\theta$朝着使cumulative reward更大的方向移动。</p>
-<h4 id="deterministic-policy-gradient-v2">deterministic policy gradient</h4>
-<p>一般来说，用$a=\mu_\theta(s)$表示deterministic policy。很自然能想到使用和stochastic policy gradient相同的方法能不能得到应用于deterministic policy gradient，即朝着使得cumulative reward更大的方向更新policy的参数。之前的一些工作认为deterministic policy gradient是不存在的，这篇文章证明了deterministic policy gradient是存在的，并且有一种非常简单的形式，可以从action value function的梯度中获得。而且在某些情况下，deterministic policy gradient可以看成stochastic policy gradient的特殊情况。</p>
-<h4 id="spg-vs-dpg">spg vs dpg</h4>
-<p>spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy gradient是在action和state spaces上进行积分的，而dpg的policy gradient仅仅在state space上进行积分。因此，计算spg需要更多samples，尤其是action spaces维度很高的情况下。<br>
-使用stochastic polic目的y是充分的explore整个state和action space。而在使用deterministic policy时，为了确保能够持续的进行explore，就需要使用off-policy的算法了，behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用deterministic policy gradient推导出了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后利用这个function的梯度更新policy的参数，同时为了确保policy gradient没有bias，使用而来compatible function。</p>
-<h3 id="一些terms-return-vuale-function和performance-objective">一些terms，return,vuale function和performance objective</h3>
-<p>更多介绍可以点击查看<a href>reinforcement learning an introduction 第三章</a></p>
+<h4 id="本文的工作"><a href="#本文的工作" class="headerlink" title="本文的工作"></a>本文的工作</h4><h5 id="用函数表示stochastic-policy"><a href="#用函数表示stochastic-policy" class="headerlink" title="用函数表示stochastic policy"></a>用函数表示stochastic policy</h5><p>本文提出的policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：</p>
+<script type="math/tex; mode=display">\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{1}</script><p>这里$\alpha$是步长，按照(1)式子进行更新，$\theta$可以确保收敛到J的局部最优值对应的local optimal policy。这里$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。</p>
+<h5 id="使用值函数辅助学习policy"><a href="#使用值函数辅助学习policy" class="headerlink" title="使用值函数辅助学习policy"></a>使用值函数辅助学习policy</h5><p>本文证明了通过使用满足特定属性的辅助近似值函数，使用experience可以得到(1)的一个无偏估计。另一个方法REINFORCE也找到了(1)的一个无偏估计，但是没有使用辅助的值函数。REINFORCE的学习速度要比使用值函数的方法慢很多。此外学习一个值函数，并用它取减少方差对快速学习是很重要的。</p>
+<h5 id="证明policy-iteration收敛性"><a href="#证明policy-iteration收敛性" class="headerlink" title="证明policy iteration收敛性"></a>证明policy iteration收敛性</h5><p>本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。</p>
+<h3 id="Policy-Gradient-Therorem"><a href="#Policy-Gradient-Therorem" class="headerlink" title="Policy Gradient Therorem"></a>Policy Gradient Therorem</h3><p>智能体的在每一步的action由policy决定：$\pi(s,a,\mathbf{\theta})=Pr[a_t=a|s_t=s,\mathbf{\theta}],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即，$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。<br>这里有两种方式定义智能体的objective，一种是average reward，一种是从指定状态获得的长期奖励。</p>
+<h4 id="Average-Reward-平均奖励"><a href="#Average-Reward-平均奖励" class="headerlink" title="Average Reward(平均奖励)"></a>Average Reward(平均奖励)</h4><p>平均奖励是，策略根据每一步的长期期望奖励$\rho(\pi)$进行排名</p>
+<script type="math/tex; mode=display">\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\[r_1+r_2+\cdots+r_n|\pi\] = \sum_s d^{\pi}(s) \sum_a\pi(s,a)R_sa.</script><p>其中$d\{\pi}(s) = lim_{t\rightarrow \infty} Pr[s_t=s|s_0,\pi]$是我们假设的策略$\pi$下的固定分布，对于所有的策略都是独立于$s_0$的。这里，我想了一天都没有想明白，为什么？？？第一个等号，我可以理解，这里$r_n$表示的是在时间步$n$的immediate reward，所以第一个等号表示的是在策略$\pi$下$n$个时间步的imediate reward平均值的期望。<br>而第二个等号中，$d{\pi}(s)$是从初始状态$s_0$经过$t$步之后所有state $s$可能取值的概率，第一个求和号对$s$求和，就相当于一个离散积分，求的是$s$的期望；然后对$a$的求和，也相当于一个离散积分，求的是关于$a$的期望，所以第二个等式后面求的其实就是$R(s,a)$的期望。<br>state-action value定义为：</p>
+<script type="math/tex; mode=display">Q\{\pi}(s,a) = \sum_{t=1}^{\infty} \mathbb{E}\[r_t - \rho(\pi)|s_0=s,a_0=a,\pi\], \forall s\in S, a\in A.</script><h4 id="Long-tern-Accumated-Reward-from-Designated-State-从指定状态开始的累计奖励"><a href="#Long-tern-Accumated-Reward-from-Designated-State-从指定状态开始的累计奖励" class="headerlink" title="Long-tern Accumated Reward from Designated State(从指定状态开始的累计奖励)"></a>Long-tern Accumated Reward from Designated State(从指定状态开始的累计奖励)</h4><p>这种情况是指定一个开始状态$s_0$，然后我们只关心从这个状态得到的长期reward。</p>
+<script type="math/tex; mode=display">\rho(\pi) = \mathbb{E}\[\sum_{t=1}^\{\infty} \gamma{t-1}|s_0,\pi\],</script><script type="math/tex; mode=display">Q\{\pi}(s,a) = \mathbb{E}\[\sum_{k=1}^{\infty} r_{t+k}|s_t=s,a_t=a,\pi\].</script><p>其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：<br>$d^{\pi}(s) = \sum_{t=1}^{\infty} \gamma^t Pr[s_t = s|s_0,\pi].$<br>这里的$d^{\pi}$是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。</p>
+<h4 id="Policy-Gradient-Theorem"><a href="#Policy-Gradient-Theorem" class="headerlink" title="Policy Gradient Theorem"></a>Policy Gradient Theorem</h4><p>对于任何MDP，不论是平均奖励还是指定初始状态的形式，都有：</p>
+<script type="math/tex; mode=display">\frac{\partial J}{\partial \mathbf{\theta}} = \sum_ad\{\pi}(s)\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a), \tag{2}</script><p>证明：<br>平均奖励<br>\begin{align*}<br>\nabla v_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\\\<br>&amp;= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a)\right], \\\\<br>&amp;= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)\right] \\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \left[r-\rho(\pi)+\sum_{s’,r}p(s’,r|s,a)v_{\pi}(s’)\right]\right] \\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \rho(\pi)+\nabla \sum_{s’,r}p(s’,r|s,a)v_{\pi}(s’)\right]\right], \nabla r = 0\\\\<br>\end{align*}<br>而由$\sum_s\pi(s,a)=1$，我们得到：</p>
+<script type="math/tex; mode=display">\nabla v_{\pi}(s)=\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \nabla v_{\pi}(s)</script><p>同时在上式两边对$d\{\pi}$进行求和，得到：</p>
+<script type="math/tex; mode=display">\sum_sd\{\pi}(s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi}(s)\nabla v_{\pi}(s)</script><p>因为$d\{\pi}$是稳定的，</p>
+<script type="math/tex; mode=display">\sum_sd\{\pi}(s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi}(s)\nabla v_{\pi}(s)</script><p>那么:<br>\begin{align*}<br>\end{align*}<br>指定初始状态$s_0$:<br>\begin{align*}<br>\nabla v_{\pi}(s) &amp;= \nabla [ \sum_a \pi(a|s)q_{\pi}(s,a)], \forall s\in S \\\\<br>&amp;= \sum_a [\nabla\pi(a|s)q_{\pi}(s,a)], \forall s\in S \\\\<br>&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)] \\\\<br>&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \sum_{s’,r}p(s’,r|s,a)(r+\gamma v_{\pi}(s’))] \\\\<br>&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s) \nabla \sum_{s’,r}p(s’,r|s,a)r + \pi(a|s)\nabla \sum_{s’,r}p(s’,r|s,a)\gamma v_{\pi}(s’))] \\\\<br>&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\nabla v_{\pi}(s’) ] \\\\<br>&amp;= \sum_a[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\\\\<br>&amp;        \sum_{a’}[\nabla\pi(a’|s’)q_{\pi}(s’,a’) + \pi(a’|s’)\sum_{s’’}\gamma p(s’’|s’,a’)\nabla v_{\pi}(s’’))] ],  展开\\\\<br>&amp;= \sum_{x\in S}\sum_{k=0}\{\infty}Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)q_{\pi}(x,a)<br>\end{align*}<br>第(5)式使用了$v_{\pi}(s) = \sum_a\pi(a|s)q(s,a)$进行展开。第(6)式将梯度符号放进求和里面。第(7)步使用product rule对q(s,a)求导。第(8)步利用$q_{\pi}(s, a) =\sum_{s’,r}p(s’,r|s,a)(r+v_{\pi}(s’)$ 对$q_{\pi}(s,a)$进行展开。第(9)步将(8)式进行分解。第(10)步对式(9)进行计算，因为$\sum_{s’,r}p(s’,r|s,a)r$是一个定制，求偏导之后为$0$。第(11)步对生成的$v_{\pi}(s’)$重复(5)-(10)步骤，得到式子(11)。如果对式子(11)中的$v_{\pi}(s)$一直展开，就得到了式子(12)。式子(12)中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，这里我有一个问题，就是为什么，$k$可以取到$\infty$，后来想了想，因为对第(11)步进行展开以后，可能会有重复的state，重复的意思就是从状态$s$开始，可能会多次到达某一个状态$x$，$k$就能取很多次，大不了$k=\infty$的概率为$0$就是了。</p>
+<p>所以，对于$v_{\pi}(s_0)$，就有：<br>\begin{align*}<br>\nabla J(\mathbf{\theta}) &amp;= \nabla_{v_{\pi}}(s_0)\\\\<br>&amp;= \sum_{s\in S}( \sum_{k=0}\{\infty}Pr(s_0\rightarrow s,k,\pi) ) \sum_a\nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\<br>&amp;=\sum_{s\in S}\eta(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\<br>&amp;=\sum_{s’\in S}\eta(s’)\sum_s\frac{\eta(s)}{\sum_{s’}\eta(s’)}\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\<br>&amp;=\sum_{s’\in S}\eta(s’)\sum_s\mu(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\<br>&amp;\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)q_{\pi}(s,a)<br>\end{align*}</p>
+<p>从式子(2)可以看出来，这个梯度和$\frac{\partial d\{\pi}(s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty} r_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} r_{t+k}-\rho(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。</p>
+<h3 id="Policy-Gradient-with-Approximation-使用近似的策略梯度"><a href="#Policy-Gradient-with-Approximation-使用近似的策略梯度" class="headerlink" title="Policy Gradient with Approximation(使用近似的策略梯度)"></a>Policy Gradient with Approximation(使用近似的策略梯度)</h3><p>如果$Q^{\pi} $也用一个学习的函数来近似，然后我们希望用近似的函数代替式子(2)中的$Q^{\pi} $，并大致给出梯度的方向。<br>用$f_w:S\times A \rightarrow R$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q^{\pi} }(s_t,a_t) - f_w(s_t,a_t)\right]2 \propto \left[\hat{Q^{\pi} }(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w}$，其中$\hat{Q^{\pi} }(s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：</p>
+<script type="math/tex; mode=display">\sum_sd\{\pi}(s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{3}</script><h4 id="Policy-Gradient-with-Approximation-Theorem"><a href="#Policy-Gradient-with-Approximation-Theorem" class="headerlink" title="Policy Gradient with Approximation Theorem"></a>Policy Gradient with Approximation Theorem</h4><p>如果$f_w$满足式子(3)，并且在某种意义上与policy parameterization兼容：</p>
+<script type="math/tex; mode=display">\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\tag{4}</script><p>那么有：</p>
+<script type="math/tex; mode=display">\frac{}{} = \sum_sd\{\pi}(s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{5}</script><p>证明：<br>将(4)代入(3)得到：<br>\begin{align*}<br>&amp;\sum_sd\{\pi}(s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w} = 0\\\\<br>&amp;\sum_sd\{\pi}(s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}= 0\\\\<br>&amp;\sum_sd\{\pi}(s)\sum_a\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}= 0 \tag{6}\\\\<br>\end{align*}<br>从这个式子中，我们能够从式子(6)中得到</p>
+<h3 id="Convergence-of-Policy-Iteration-with-Function-Approximation-使用函数近似的策略迭代的收敛性"><a href="#Convergence-of-Policy-Iteration-with-Function-Approximation-使用函数近似的策略迭代的收敛性" class="headerlink" title="Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)"></a>Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</h3><h3 id="Policy-Iteration-with-Function-Apprpximation-Theorem"><a href="#Policy-Iteration-with-Function-Apprpximation-Theorem" class="headerlink" title="Policy Iteration with Function Apprpximation Theorem"></a>Policy Iteration with Function Apprpximation Theorem</h3><p>用$\pi$和$f_w$表示策略和值函数的任意可导函数，并且满足式子(4)中的条件，Z</p>
+<h2 id="deterministic-policy-gradient"><a href="#deterministic-policy-gradient" class="headerlink" title="deterministic policy gradient"></a>deterministic policy gradient</h2><p>论文名称：Deterministic policy gradient algorithms<br>论文地址：</p>
+<h3 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h3><p>本文提出了deterministic policy gradient 算法。Deterministic实际上是action value function的expected gradient，这让deterministic policy gradient比stochastic policy gradient要更efficiently。为了保证足够的exploration，作者引入了off-policy的actor-critic算法学习determinitic target policy。<br>本文的contributions，dpg比spg要好，尤其是high dimensional tasks，此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noist，这种情况下dpg更合适。</p>
+<h3 id="stochastic-policy-gradient-vs-deterministic-policy-gradiet"><a href="#stochastic-policy-gradient-vs-deterministic-policy-gradiet" class="headerlink" title="stochastic policy gradient vs deterministic policy gradiet"></a>stochastic policy gradient vs deterministic policy gradiet</h3><h4 id="sotchastic-policy-gradient"><a href="#sotchastic-policy-gradient" class="headerlink" title="(sotchastic) policy gradient"></a>(sotchastic) policy gradient</h4><p>Policy gradient的basic idea是用参数化的policy distribution $\pi_\theta(a|s) = \mathbb{P}\left[a|s,\theta\right]$表示policy，这个policy $\pi$在state $s$处根据$\theta$表示的policy随机的选择action $a$。Policy gradient通常对policy 进行采样，然后调整policy的参数$\theta$朝着使cumulative reward更大的方向移动。</p>
+<h4 id="deterministic-policy-gradient-1"><a href="#deterministic-policy-gradient-1" class="headerlink" title="deterministic policy gradient"></a>deterministic policy gradient</h4><p>一般来说，用$a=\mu_\theta(s)$表示deterministic policy。很自然能想到使用和stochastic policy gradient相同的方法能不能得到应用于deterministic policy gradient，即朝着使得cumulative reward更大的方向更新policy的参数。之前的一些工作认为deterministic policy gradient是不存在的，这篇文章证明了deterministic policy gradient是存在的，并且有一种非常简单的形式，可以从action value function的梯度中获得。而且在某些情况下，deterministic policy gradient可以看成stochastic policy gradient的特殊情况。</p>
+<h4 id="spg-vs-dpg"><a href="#spg-vs-dpg" class="headerlink" title="spg vs dpg"></a>spg vs dpg</h4><p>spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy gradient是在action和state spaces上进行积分的，而dpg的policy gradient仅仅在state space上进行积分。因此，计算spg需要更多samples，尤其是action spaces维度很高的情况下。<br>使用stochastic polic目的y是充分的explore整个state和action space。而在使用deterministic policy时，为了确保能够持续的进行explore，就需要使用off-policy的算法了，behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用deterministic policy gradient推导出了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后利用这个function的梯度更新policy的参数，同时为了确保policy gradient没有bias，使用而来compatible function。</p>
+<h3 id="一些terms，return-vuale-function和performance-objective"><a href="#一些terms，return-vuale-function和performance-objective" class="headerlink" title="一些terms，return,vuale function和performance objective"></a>一些terms，return,vuale function和performance objective</h3><p>更多介绍可以点击查看<a href>reinforcement learning an introduction 第三章</a></p>
 <ul>
-<li>state space<br>
-所有state的可能取值，$S$</li>
-<li>action space<br>
-所有action的可能取值，$A$</li>
-<li>initial state distribution<br>
-初始state服从的分布，$p_1(s_1)$</li>
-<li>stationary transition dynamic distribution<br>
-稳定的状态转换函数，$p(s_{t+1}|s_t,a_t)$</li>
-<li>reward function<br>
-$S\times A\rightarrow \mathbb{R}$，</li>
-<li>policy<br>
-用来选择action，stochastic policy表示为：$\pi_\theta: S\rightarrow P(A)$，其中$P(A)$是选择$A$中每个action的概率，$\theta$是policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取所有可能的action $a_t$的概率。</li>
-<li>return<br>
-return的定义是$r_t{\gamma} = \sum_{i=t}<sup>{\infty}\gamma</sup>{i-t}r(s_i, a_i)$，表示从$t$时刻开始的累积折扣奖励。</li>
-<li>value function<br>
-value function的定义是所有的累积折扣奖励，即从$t=1$一直到最后的折扣奖励。<br>
-state value function的定义是state $S_1=s,s\sim p_1$处return的期望：$V{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s;\pi\right]$，<br>
-action value function的定义是在state $S_1=s,s\sim p_1$采取某个action后return的期望：$V{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s,A_1=a;\pi\right]$，</li>
-<li>performance objective<br>
-agents的目标就是找到一个最大化初始状态return的policy：$J(\pi)=\mathbb{E}\left[r_1{\gamma}|\pi\right]$<br>
-用$p(s\rightarrow s’,t,\pi)$表示从$s$经过$t$个timesteps到$s’$的概率密度。用$\rho{\pi}(s’):=\int_S \sum_{t=1}<sup>{\infty}\gamma</sup>{t-1}p_1(s)p(s\rightarrow s’, t,\pi)ds$表示$s’$服从的概率分布，通过对所有经过$t$个timesteps能够到达$s’$的state $s$积分得到。我们可以将performance objective表示成在$\rho^\pi$和$\pi_\theta$上的期望：<br>
-\begin{align*}<br>
-J(\pi_{\theta}) &amp;= \int_S \rho{\pi}(s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\<br>
-&amp;= \mathbb{E}_{s\sim \rho{\pi}, a\sim \pi_{\theta}}\left[r(s,a)\right]\\ \tag{1}<br>
-\end{align*}<br>
-其中$p_1(s)$是初始状态$s$服从的概率分布，$\mathbb{E}_{s\sim \rho\pi}\left[\cdot\right]$表示在状态分布$\rho(s)$上的期望。注意，这里和reinforcement learing an introduction第13章中有一些不同。这里是对所有的state的return，而introdution中求得是初始状态的value期望。</li>
+<li>state space<br>所有state的可能取值，$S$</li>
+<li>action space<br>所有action的可能取值，$A$</li>
+<li>initial state distribution<br>初始state服从的分布，$p_1(s_1)$</li>
+<li>stationary transition dynamic distribution<br>稳定的状态转换函数，$p(s_{t+1}|s_t,a_t)$</li>
+<li>reward function<br>$S\times A\rightarrow \mathbb{R}$，</li>
+<li>policy<br>用来选择action，stochastic policy表示为：$\pi_\theta: S\rightarrow P(A)$，其中$P(A)$是选择$A$中每个action的概率，$\theta$是policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取所有可能的action $a_t$的概率。</li>
+<li>return<br>return的定义是$r_t{\gamma} = \sum_{i=t}^{\infty}\gamma^{i-t}r(s_i, a_i)$，表示从$t$时刻开始的累积折扣奖励。</li>
+<li>value function<br>value function的定义是所有的累积折扣奖励，即从$t=1$一直到最后的折扣奖励。<br>state value function的定义是state $S_1=s,s\sim p_1$处return的期望：$V{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s;\pi\right]$，<br>action value function的定义是在state $S_1=s,s\sim p_1$采取某个action后return的期望：$V{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s,A_1=a;\pi\right]$，</li>
+<li>performance objective<br>agents的目标就是找到一个最大化初始状态return的policy：$J(\pi)=\mathbb{E}\left[r_1{\gamma}|\pi\right]$<br>用$p(s\rightarrow s’,t,\pi)$表示从$s$经过$t$个timesteps到$s’$的概率密度。用$\rho{\pi}(s’):=\int_S \sum_{t=1}^{\infty}\gamma^{t-1}p_1(s)p(s\rightarrow s’, t,\pi)ds$表示$s’$服从的概率分布，通过对所有经过$t$个timesteps能够到达$s’$的state $s$积分得到。我们可以将performance objective表示成在$\rho^\pi$和$\pi_\theta$上的期望：<br>\begin{align*}<br>J(\pi_{\theta}) &amp;= \int_S \rho{\pi}(s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\\\<br>&amp;= \mathbb{E}_{s\sim \rho{\pi}, a\sim \pi_{\theta}}\left[r(s,a)\right]\\\ \tag{1}<br>\end{align*}<br>其中$p_1(s)$是初始状态$s$服从的概率分布，$\mathbb{E}_{s\sim \rho\pi}\left[\cdot\right]$表示在状态分布$\rho(s)$上的期望。注意，这里和reinforcement learing an introduction第13章中有一些不同。这里是对所有的state的return，而introdution中求得是初始状态的value期望。</li>
 </ul>
-<h3 id="stochastic-policy-gradient-theorem">stochastic policy gradient theorem</h3>
-<p>spg的基本想法就是调整policy的参数朝着$J$的梯度方向移动。<br>
-对$J(\pi_{\theta})$对$\theta$求导，得到：<br>
-\begin{align*}<br>
-\nabla_{\theta} J(\pi_{\theta})&amp;=\int_S\rho\pi(s) \int_A\nabla_\theta\pi_\theta (a|s)Q^\pi(s,a) dads \\<br>
-&amp;=\mathbb{E}<em>{s\sim \rho\pi, a\sim \pi</em>\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^\pi(s,a)\right] \tag{2}<br>
-\end{align*}<br>
-这就是policy gradient，很简单。state distribution $\rho\pi(s)$取决于policy parameters，但是policy gradient不依赖于state distribution的gradient。<br>
-这个理论有很重要的实用价值，因为它将performance gradient的计算变成了一个期望。然后可以通过sampling估计这个期望。这个方法中需要使用$Q\pi(s,a)$，估计$Q$不同方法就是不同的算法，最简单的使用sample return $r_t<sup>\gamma$估计$Q</sup>\pi(s_t,a_t)$，就是REINFORCE算法。</p>
-<h3 id="stochastic-actor-critic-算法">stochastic actor-critic 算法</h3>
-<p>actor-critic是一个基于policy gradient theorem的结构。actor-critic包含两个组件。一个acotr通过stochastic gradient ascent调整stochastic policy $\pi_\theta(s)$的参数$\theta$，同时使用一个action-value function $Qw(s,a)$近似$Q\pi(s,a)$, $w$是function approximation的参数。Critic一般使用policy evaluation方法进行学习，比如使用td和mc等估计action value function $Q^w(s,a)\approx Q<sup>\pi(s,a)$。一般来说，使用$Q</sup>w(s,a)$代替真实的$Q^\pi(s,a)$会引入bias，但是，如果function approximator是compatible，即满足以下两个条件：</p>
+<h3 id="stochastic-policy-gradient-theorem"><a href="#stochastic-policy-gradient-theorem" class="headerlink" title="stochastic policy gradient theorem"></a>stochastic policy gradient theorem</h3><p>spg的基本想法就是调整policy的参数朝着$J$的梯度方向移动。<br>对$J(\pi_{\theta})$对$\theta$求导，得到：<br>\begin{align*}<br>\nabla_{\theta} J(\pi_{\theta})&amp;=\int_S\rho\pi(s) \int_A\nabla_\theta\pi_\theta (a|s)Q^\pi(s,a) dads \\\\<br>&amp;=\mathbb{E}_{s\sim \rho\pi, a\sim \pi_\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^\pi(s,a)\right] \tag{2}<br>\end{align*}<br>这就是policy gradient，很简单。state distribution $\rho\pi(s)$取决于policy parameters，但是policy gradient不依赖于state distribution的gradient。<br>这个理论有很重要的实用价值，因为它将performance gradient的计算变成了一个期望。然后可以通过sampling估计这个期望。这个方法中需要使用$Q\pi(s,a)$，估计$Q$不同方法就是不同的算法，最简单的使用sample return $r_t^\gamma$估计$Q^\pi(s_t,a_t)$，就是REINFORCE算法。</p>
+<h3 id="stochastic-actor-critic-算法"><a href="#stochastic-actor-critic-算法" class="headerlink" title="stochastic actor-critic 算法"></a>stochastic actor-critic 算法</h3><p>actor-critic是一个基于policy gradient theorem的结构。actor-critic包含两个组件。一个acotr通过stochastic gradient ascent调整stochastic policy $\pi_\theta(s)$的参数$\theta$，同时使用一个action-value function $Qw(s,a)$近似$Q\pi(s,a)$, $w$是function approximation的参数。Critic一般使用policy evaluation方法进行学习，比如使用td和mc等估计action value function $Q^w(s,a)\approx Q^\pi(s,a)$。一般来说，使用$Q^w(s,a)$代替真实的$Q^\pi(s,a)$会引入bias，但是，如果function approximator是compatible，即满足以下两个条件：</p>
 <ol>
 <li>$Qw(s,a) = \nabla_\theta log\pi_\theta(a|s)^Tw$</li>
-<li>参数$w$最小化mse: $\epsilon2(w)=\mathbb{E}<em>{s\sim \rho^\pi,a\sim \pi</em>\theta}\left[(Q<sup>w(s.a)-Q</sup>\pi(s,a))^2\right]$，这样就没有bias了，即：<br>
-$$\nabla_\theta J(\pi_\theta)=\mathbb{E}<em>{s\sim \rho\pi, a\sim \pi</em>\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^w(s,a)\right] \tag{3}$$</li>
+<li>参数$w$最小化mse: $\epsilon2(w)=\mathbb{E}_{s\sim \rho^\pi,a\sim \pi_\theta}\left[(Q^w(s.a)-Q^\pi(s,a))^2\right]$，这样就没有bias了，即：<script type="math/tex; mode=display">\nabla_\theta J(\pi_\theta)=\mathbb{E}_{s\sim \rho\pi, a\sim \pi_\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^w(s,a)\right] \tag{3}</script></li>
 </ol>
 <p>直观上来说，条件1说的是compatible function approximators是stochastic policy梯度$\nabla_\theta log\pi_\theta(a|s)$的线性features，条件2需要满足$Qw(s,a)$是$Q^\pi(s,a)$的linear regression soulution。在实际应用中，条件2会放宽，使用如TD之类policy evaluation算法更efficiently的估计value function。事实上，如果条件1和2都满足的话，整个算法等价于没有使用critic，和REINFORCE算法很像。</p>
-<h3 id="off-policy-actor-critic">off-policy actor critic</h3>
-<p>在off-policy设置中，performance objective通常改成target policy的value function在behaviour policy的state distribution上进行平均，用$\beta(a|s)$表示behaviour policy：<br>
-\begin{align*}<br>
-J_\beta(\pi_\theta) &amp;= \int_S\rho\beta(s) V^\pi(s)ds\\<br>
-&amp;=\int_S\int_A\rho\beta(s)\pi_\theta(a|s)Q^\pi(s,a)dads<br>
-\end{align*}<br>
-对其求导和近似，得到：<br>
-\begin{align*}<br>
-\nabla_\theta J_\beta(\pi_\theta) &amp;\approx \int_S\int_A\rho\beta(s)\nabla_\theta\pi_\theta(a|s) Q^\pi(s,a)dads\tag{4} \\<br>
-&amp;=\mathbb{E}_{s\sim \rho\beta, a\sim \beta}\left[\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}\nabla_\theta log\pi_\theta(a|s) Q^\pi(s,a) \right]\tag{5}<br>
-\end{align*}<br>
-这个近似去掉了一项：$\nabla_\theta Q\pi(s,a)$，有人说这样子可以保留局部最小值。。Off-policy actor-critic算法使用behaviour policy $\beta$生成trajectories，critic off-policy的从那些trajectories中估计state value function $V^v(s)\approx v^\pi(s)$。actor使用sgd从这些trajectories中off policy的更新policy paramters $\theta$，同时使用TD-error估计$Q^\pi(s,a)$。actor和critic都是用importance sampling ratio $\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}$。</p>
-<h3 id="gradients-of-deterministic-policies">Gradients of deterministic policies</h3>
-<p>这一节主要介绍的是deterministic policy gradient theorem。首先给出直观上的解释，然后给定formal的证明。</p>
-<h3 id="action-value-gradients">action value gradients</h3>
-<p>绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。所以，一个简单的想法是使用让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，美誉每一个访问到的state $s$，policy parameters $\theta{k+1}$的更新正比于$\nabla_\theta Q<sup>{\mu</sup>k}(s, \mu_\theta(s)$。如果每一个state给出一个不同的方向，如果使用state distribution $\rho^\mu(s)$求期望，最终的方向可能会被平均了：<br>
-$$\theta{k+1} = \theta^k + \alpha \mathbb{E}<em>{s\sim \rho<sup>{\mu</sup>k}}\left[\nabla</em>\theta Q<sup>{\mu</sup>k}(s, \mu_\theta(s))\right] \tag{6}$$<br>
-通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：<br>
-$$\theta{k+1} = \theta^k + \alpha \mathbb{E}<em>{s\sim \rho<sup>{\mu</sup>k}}\left[\nabla</em>\theta\mu_\theta(s)\nabla_a Q<sup>{\mu</sup>k}(s,a)|<em>{a=\mu</em>\theta(s0)}\right] \tag{7}$$<br>
-按照惯例来说，$\nabla_\theta\mu_\theta(s)$是一个jacobian matrix，每一列是policy的$dth$ action对于$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。然而，如果改变了policy，访问不同的states，state distribution　$\rho\mu$也会改变。最终不考虑distribution的变化的话，这个方法是保证收敛的。但是这里给给出的证明，和sgd一样，不需要计算state distributiond的gradient。</p>
-<h3 id="deterministic-policy-gradient-theorem">deterministic policy gradient theorem</h3>
-<p>deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}n$。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[r_1^\gamma|\mu\right]$，定义概率分布维$p(s\rightarrow s’, t,u)$以及state distribution $\rho^\mu(s)$和stochastic case一样。将performance objective写成expectation如下：<br>
-\begin{align*}<br>
-J(\mu_\theta) &amp; = \int_S\rho\mu(s) r(s,\mu_\theta(s)) ds\\<br>
-&amp;= \mathbb{E}<em>{s\sim \rho\mu}\left[r(s, \mu</em>\theta(s))\right] \tag{8}<br>
-\end{align*}<br>
-给出deterministic policy gradient theorem：<br>
-假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q\mu(s,a)$存在，那么deterministic policy gradient存在，<br>
-\begin{align*}<br>
-\nabla_\theta J(\mu_\theta) &amp;= \int_S\rho\mu(s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu(s,a)|<em>{a=\mu</em>\theta(s)}ds\\<br>
-&amp;=\mathbb{E}<em>{s\sim \rho\mu}\left[\nabla</em>\theta\mu_\theta(s)\nabla_aQ^\mu(s,a)|<em>{a=\mu</em>\theta(s)}\right] \tag{9}<br>
-\end{align*}</p>
-<h3 id="spg的limit">spg的limit</h3>
-<p>dpg theorem看起来和spg theorem很不像，事实上，对于一大类stochastic polices来说，dpg事实上是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。<br>
-考虑一个stochastic policy $\pi_{\mu_{\theta,\sigma}}$让$\pi_{\mu_{\theta,\sog,a}}(s,a)=v_\sigma(\mu_\theta(s),a)$，其中$\sigam$是控制方差的参数，并且$v_\sigma$满足条件B.1，以及MDP满足条件A.1和A.2，那么<br>
-$$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla_\theta J(\mu_\thtea) \tag{10} $$<br>
-其中左边的gradient是标准spg的gradient，右边是dpg的gradient。<br>
-这就说明spg的很多方法同样也是适用于dpg的。</p>
-<h3 id="deterministic-actor-critic">deterministic actor-critic</h3>
-<p>接下来使用dpg theorem推到on-policy和off-policy的actor-critic算法。从最简单的on-policy更新，使用Sarsa critic开始，然后考虑off-policy算法，使用Q-learning critic描述核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入的biases问题，以及off-policy引入的不稳定。然后介绍使用compatiable function approximation的方法以及gradient td learning。</p>
-<h3 id="on-policy-deterministic-actor-critic">on-policy deterministic actor-critic</h3>
-<h3 id="off-policy-deterministic-actor-critic">off-policy deterministic actor-critic</h3>
-<h3 id="compatible-function-approximation">compatible function approximation</h3>
-<h2 id="ddpg">ddpg</h2>
-<p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>
-论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
-<h3 id="摘要-v2">摘要</h3>
-<p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
-<h3 id="简介">简介</h3>
-<p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>
-简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。<br>
-$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}$$<br>
-（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>
-许多rl方法使用bellman方程递归的更新Q:<br>
-$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}_{a_{t+1}\sim\pi}\left[Q^{\pi}(s_{t+1},a_{t+1})\right]\right]\tag{2}$$<br>
-如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：<br>
-$$Q{\mu}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu}(s_{t+1},\mu(s_{t+1}))\right] \tag{3}$$<br>
-而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>
-在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
-<h3 id="ddpg-v2">DDPG</h3>
-<p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>
-DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>
-\begin{align*}<br>
-\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho<sup>{\beta}}\left[\nabla_{\theta</sup>{\mu}}Q(s,a|\theta^Q)|_{s=s_t, a= \mu(s_t|\theta^{\mu})}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta<sup>Q)}{\partial\theta</sup>{\mu}}|_{s=s_t, a= \mu(s_t|\theta^{\mu})}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q)}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta<sup>{\mu})}{\partial\theta</sup>{\mu}}|_{s=s_t}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q)|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\ \tag{4}<br>
-\end{align*}<br>
-中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
-<h4 id="contributions">Contributions</h4>
-<p>本文的几个改进：</p>
+<h3 id="off-policy-actor-critic"><a href="#off-policy-actor-critic" class="headerlink" title="off-policy actor critic"></a>off-policy actor critic</h3><p>在off-policy设置中，performance objective通常改成target policy的value function在behaviour policy的state distribution上进行平均，用$\beta(a|s)$表示behaviour policy：<br>\begin{align*}<br>J_\beta(\pi_\theta) &amp;= \int_S\rho\beta(s) V^\pi(s)ds\\\\<br>&amp;=\int_S\int_A\rho\beta(s)\pi_\theta(a|s)Q^\pi(s,a)dads<br>\end{align*}<br>对其求导和近似，得到：<br>\begin{align*}<br>\nabla_\theta J_\beta(\pi_\theta) &amp;\approx \int_S\int_A\rho\beta(s)\nabla_\theta\pi_\theta(a|s) Q^\pi(s,a)dads\tag{4} \\\\<br>&amp;=\mathbb{E}_{s\sim \rho\beta, a\sim \beta}\left[\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}\nabla_\theta log\pi_\theta(a|s) Q^\pi(s,a) \right]\tag{5}<br>\end{align*}<br>这个近似去掉了一项：$\nabla_\theta Q\pi(s,a)$，有人说这样子可以保留局部最小值。。Off-policy actor-critic算法使用behaviour policy $\beta$生成trajectories，critic off-policy的从那些trajectories中估计state value function $V^v(s)\approx v^\pi(s)$。actor使用sgd从这些trajectories中off policy的更新policy paramters $\theta$，同时使用TD-error估计$Q^\pi(s,a)$。actor和critic都是用importance sampling ratio $\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}$。</p>
+<h3 id="Gradients-of-deterministic-policies"><a href="#Gradients-of-deterministic-policies" class="headerlink" title="Gradients of deterministic policies"></a>Gradients of deterministic policies</h3><p>这一节主要介绍的是deterministic policy gradient theorem。首先给出直观上的解释，然后给定formal的证明。</p>
+<h3 id="action-value-gradients"><a href="#action-value-gradients" class="headerlink" title="action value gradients"></a>action value gradients</h3><p>绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。所以，一个简单的想法是使用让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，美誉每一个访问到的state $s$，policy parameters $\theta{k+1}$的更新正比于$\nabla_\theta Q^{\mu^k}(s, \mu_\theta(s)$。如果每一个state给出一个不同的方向，如果使用state distribution $\rho^\mu(s)$求期望，最终的方向可能会被平均了：</p>
+<script type="math/tex; mode=display">\theta{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{\mu^k}}\left[\nabla_\theta Q^{\mu^k}(s, \mu_\theta(s))\right] \tag{6}</script><p>通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：</p>
+<script type="math/tex; mode=display">\theta{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{\mu^k}}\left[\nabla_\theta\mu_\theta(s)\nabla_a Q^{\mu^k}(s,a)|_{a=\mu_\theta(s0)}\right] \tag{7}</script><p>按照惯例来说，$\nabla_\theta\mu_\theta(s)$是一个jacobian matrix，每一列是policy的$dth$ action对于$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。然而，如果改变了policy，访问不同的states，state distribution　$\rho\mu$也会改变。最终不考虑distribution的变化的话，这个方法是保证收敛的。但是这里给给出的证明，和sgd一样，不需要计算state distributiond的gradient。</p>
+<h3 id="deterministic-policy-gradient-theorem"><a href="#deterministic-policy-gradient-theorem" class="headerlink" title="deterministic policy gradient theorem"></a>deterministic policy gradient theorem</h3><p>deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}n$。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[r_1^\gamma|\mu\right]$，定义概率分布维$p(s\rightarrow s’, t,u)$以及state distribution $\rho^\mu(s)$和stochastic case一样。将performance objective写成expectation如下：<br>\begin{align*}<br>J(\mu_\theta) &amp; = \int_S\rho\mu(s) r(s,\mu_\theta(s)) ds\\\\<br>&amp;= \mathbb{E}_{s\sim \rho\mu}\left[r(s, \mu_\theta(s))\right] \tag{8}<br>\end{align*}<br>给出deterministic policy gradient theorem：<br>假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q\mu(s,a)$存在，那么deterministic policy gradient存在，<br>\begin{align*}<br>\nabla_\theta J(\mu_\theta) &amp;= \int_S\rho\mu(s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu(s,a)|_{a=\mu_\theta(s)}ds\\\\<br>&amp;=\mathbb{E}_{s\sim \rho\mu}\left[\nabla_\theta\mu_\theta(s)\nabla_aQ^\mu(s,a)|_{a=\mu_\theta(s)}\right] \tag{9}<br>\end{align*}</p>
+<h3 id="spg的limit"><a href="#spg的limit" class="headerlink" title="spg的limit"></a>spg的limit</h3><p>dpg theorem看起来和spg theorem很不像，事实上，对于一大类stochastic polices来说，dpg事实上是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。<br>考虑一个stochastic policy $\pi_{\mu_{\theta,\sigma}}$让$\pi_{\mu_{\theta,\sog,a}}(s,a)=v_\sigma(\mu_\theta(s),a)$，其中$\sigam$是控制方差的参数，并且$v_\sigma$满足条件B.1，以及MDP满足条件A.1和A.2，那么</p>
+<script type="math/tex; mode=display">\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla_\theta J(\mu_\thtea) \tag{10}</script><p>其中左边的gradient是标准spg的gradient，右边是dpg的gradient。<br>这就说明spg的很多方法同样也是适用于dpg的。</p>
+<h3 id="deterministic-actor-critic"><a href="#deterministic-actor-critic" class="headerlink" title="deterministic actor-critic"></a>deterministic actor-critic</h3><p>接下来使用dpg theorem推到on-policy和off-policy的actor-critic算法。从最简单的on-policy更新，使用Sarsa critic开始，然后考虑off-policy算法，使用Q-learning critic描述核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入的biases问题，以及off-policy引入的不稳定。然后介绍使用compatiable function approximation的方法以及gradient td learning。</p>
+<h3 id="on-policy-deterministic-actor-critic"><a href="#on-policy-deterministic-actor-critic" class="headerlink" title="on-policy deterministic actor-critic"></a>on-policy deterministic actor-critic</h3><h3 id="off-policy-deterministic-actor-critic"><a href="#off-policy-deterministic-actor-critic" class="headerlink" title="off-policy deterministic actor-critic"></a>off-policy deterministic actor-critic</h3><h3 id="compatible-function-approximation"><a href="#compatible-function-approximation" class="headerlink" title="compatible function approximation"></a>compatible function approximation</h3><h2 id="ddpg"><a href="#ddpg" class="headerlink" title="ddpg"></a>ddpg</h2><p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h3 id="摘要-1"><a href="#摘要-1" class="headerlink" title="摘要"></a>摘要</h3><p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。</p>
+<script type="math/tex; mode=display">Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}</script><p>（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>许多rl方法使用bellman方程递归的更新Q:</p>
+<script type="math/tex; mode=display">Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}\_{a_{t+1}\sim\pi}\left[Q^{\pi}(s_{t+1},a_{t+1})\right]\right]\tag{2}</script><p>如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：</p>
+<script type="math/tex; mode=display">Q{\mu}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu}(s_{t+1},\mu(s_{t+1}))\right] \tag{3}</script><p>而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
+<h3 id="DDPG"><a href="#DDPG" class="headerlink" title="DDPG"></a>DDPG</h3><p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>\begin{align*}<br>\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta}}\left[\nabla_{\theta^{\mu}}Q(s,a|\theta^Q)|_{s=s_t, a= \mu(s_t|\theta^{\mu})}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q)}{\partial\theta^{\mu}}|_{s=s_t, a= \mu(s_t|\theta^{\mu})}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q)}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu})}{\partial\theta^{\mu}}|_{s=s_t}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q)|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\\ \tag{4}<br>\end{align*}<br>中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
+<h4 id="Contributions"><a href="#Contributions" class="headerlink" title="Contributions"></a>Contributions</h4><p>本文的几个改进：</p>
 <ol>
 <li>使用replay buffer，</li>
 <li>使用target network解决不稳定的问题。</li>
 <li>使用了batch-normalization。</li>
-<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<br>
-$$\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}$$</li>
+<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<script type="math/tex; mode=display">\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}</script></li>
 </ol>
-<h4 id="算法">算法</h4>
-<p>算法1 DDPG<br>
-随机初始化critic 网络$Q(s,a |\thetaQ)$，和actor网络$\mu(s|\theta<sup>{\mu})$的权重$\theta</sup>Q$和$\theta^{\mu}$<br>
-初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta<sup>Q,\theta</sup>{\mu’} \leftarrow \theta^{\mu}$<br>
-初始化replay buffer $R$<br>
-<strong>for</strong> episode = 1, M <strong>do</strong><br>
-初始化一个随机process $N$用于exploration<br>
-receive initial observation state $s_1$<br>
-for $t=1, T$ do<br>
-根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>
-执行action $a_t$，得到$r_t$和$s_{t+1}$<br>
-将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>
-从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>
-设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’})$<br>
-使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\thetaQ))^2$更新critic<br>
-使用sampled policy gradient 更新acotr:<br>
-$$\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q)|_{s=s_i, a=\mu(s_i)}\nabla_{\theta<sup>{\mu}}\mu(s|\theta</sup>{\mu})|_{s_i}$$<br>
-更新target networks:<br>
-$$\theta’\leftarrow \tau \theta + (1-\tau) \theta’$$<br>
-end for<br>
-end for</p>
-<h3 id="实验">实验</h3>
-<p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>
-在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>
-作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h4 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h4><p>算法1 DDPG<br>随机初始化critic 网络$Q(s,a |\thetaQ)$，和actor网络$\mu(s|\theta^{\mu})$的权重$\theta^Q$和$\theta^{\mu}$<br>初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q,\theta^{\mu’} \leftarrow \theta^{\mu}$<br>初始化replay buffer $R$<br><strong>for</strong> episode = 1, M <strong>do</strong><br>初始化一个随机process $N$用于exploration<br>receive initial observation state $s_1$<br>for $t=1, T$ do<br>根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>执行action $a_t$，得到$r_t$和$s_{t+1}$<br>将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’})$<br>使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\thetaQ))^2$更新critic<br>使用sampled policy gradient 更新acotr:</p>
+<script type="math/tex; mode=display">\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q)|\_{s=s_i, a=\mu(s_i)}\nabla\_{\theta^{\mu}}\mu(s|\theta^{\mu})|\_{s_i}</script><p>更新target networks:</p>
+<script type="math/tex; mode=display">\theta'\leftarrow \tau \theta + (1-\tau) \theta'</script><p>end for<br>end for</p>
+<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
 
           
         
