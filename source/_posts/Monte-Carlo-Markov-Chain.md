@@ -102,4 +102,4 @@ $$a_{ij} = min(\frac{s_j}{s_i},1)$$
 1.https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson
 2.https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1
 3.http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf
-
+4.https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/
