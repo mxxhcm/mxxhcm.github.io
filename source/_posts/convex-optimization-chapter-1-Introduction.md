@@ -162,3 +162,7 @@ The least-squares和linear programming problem都是convex optimization problem�
 ### 算法(part three: Algorithms) 
 第三部分给出了凸优化的数值解法，如牛顿法(Newton's algorithm)和内点法(interior-point)。
 第三部分有三章，分别包含了无约束优化，等式约束优化和不等式约束优化。章节之间是递进的，解一个问题被分解为解一系列简单问题。二次优化问题(包括，如least-squares)是最底层的基石，它可以通过线性方程组精确求解。牛顿法，在第十章和第十一章介绍到，是下个层次，无约束问题或者等式约束问题被转化成一系列二次优化问题的求解。第十一章介绍了内点法，是最顶层, 这些方法将不等式约束问题转化为一系列无约束或者等式约束的问题。
+
+## 参考文献
+1.stephen boyd. Convex optimization
+
