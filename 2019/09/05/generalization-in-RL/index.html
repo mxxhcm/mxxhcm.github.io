@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Gotta Learn Fast: A New Benchmark for Generalization in RL 下载地址 https://arxiv.org/pdf/1804.03720.pdf 摘要 这篇文章基于Sonic the Hedgehog视频游戏提出了Gym Retro rl benchmark。这个benchmark主要用于评估RL领域的transfer learning和fe">
+<meta name="keywords" content="强化学习,reinforcement learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="generalization in RL">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/09/05/generalization-in-RL/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="Gotta Learn Fast: A New Benchmark for Generalization in RL 下载地址 https://arxiv.org/pdf/1804.03720.pdf 摘要 这篇文章基于Sonic the Hedgehog视频游戏提出了Gym Retro rl benchmark。这个benchmark主要用于评估RL领域的transfer learning和fe">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-09-05T08:42:37.317Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="generalization in RL">
+<meta name="twitter:description" content="Gotta Learn Fast: A New Benchmark for Generalization in RL 下载地址 https://arxiv.org/pdf/1804.03720.pdf 摘要 这篇文章基于Sonic the Hedgehog视频游戏提出了Gym Retro rl benchmark。这个benchmark主要用于评估RL领域的transfer learning和fe">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/09/05/generalization-in-RL/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>generalization in RL | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/05/generalization-in-RL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">generalization in RL
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-05 12:25:40 / 修改时间：16:42:37" itemprop="dateCreated datePublished" datetime="2019-09-05T12:25:40+08:00">2019-09-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/09/05/generalization-in-RL/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/09/05/generalization-in-RL/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="gotta-learn-fast-a-new-benchmark-for-generalization-in-rl">Gotta Learn Fast: A New Benchmark for Generalization in RL</h2>
+<h3 id="下载地址">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>这篇文章基于Sonic the Hedgehog视频游戏提出了Gym Retro rl benchmark。这个benchmark主要用于评估RL领域的transfer learning和few-shot learning算法。</p>
+<h3 id="简介">简介</h3>
+<p>像ALE之类的RL benchmark并不是一个理想的测试相似任务之间泛化性能的benchmark。RL相当于在测试集上进行训练，然后展现出和训练环境相同环境下算法的最终性能。所以，这篇文章给出了一个benchmark，和监督学习一样，区分了train和test环境。<br>
+作者给出的benchmark设计了一个meta-learning的RL dataset，从单个任务分布中采样很多个相似的任务，可以作为few-shot RL算法的test bed。除了few-shot learning，这个benchmark还可以用来衡量cross-task generalization，train set和test set的设置可以用来在一些levels训练，然后迁移到另一些levels。<br>
+Gym Retro 和Retro Learning Environment以及Arcade Learning Environment都有关，但是，Gym Retro更灵活，更容易扩展，有相当多的environments。OpenAI想要做的是RL中的Omniglot和mini-ImageNet。<br>
+在之前RL领域的transfer learning中，主要有两种evaluation techniques，在人工设计的task上进行evaluation，或者在ALE上进行evaluation。人工设计的任务中，许多不同的算法难以进行比较，而ALE中，不同的任务之间差异太大，使用transfer learning不可能获得太大的improvements。</p>
+<h3 id="sonic-benchmark">Sonic benchmark</h3>
+<p>这一章详细介绍了Sonic benchmark，从technical details到高维的特征设计。</p>
+<h4 id="gym-repo">Gym Repo</h4>
+<p>Sonic benchmark的底层是Gym Retro，一个video games仿真RL environments项目。Gym Retro的核心是gym-retro python包，它将各种emulated games都封装成Gym environments，使用统一的接口进行操作。Gym-Retro中的每一个游戏都由一个ROM，一个或多个svae state，一个或多个scenarios以及一个data file组成。</p>
+<ul>
+<li>ROM，组成游戏的data和code，通过一个emulator进行加载。</li>
+<li>Save state，游戏的在某个console状态的截图。</li>
+<li>Data file，描述在console memory中各种各样的信息，比如包含分数在哪里存储。</li>
+<li>Scenario，描述完成条件以及奖励函数。</li>
+</ul>
+<h4 id="the-sonic-video-game">The Sonic Video Game</h4>
+<p>Sonic benchmark包含三个相似的游戏：Sonic The Hedgehog, Sonic The Hedgehog2,Sonic 3 Knuckles。这三个游戏的规则和操作都很像，当然还是有一些差别。通过使用这几个游戏获得尽可能多的environments作为datasets。<br>
+每一个sonic game被划分为zones，每一个zone又进一步划分为acts，相当于我们说的关卡的意思。整个游戏的规则和目的都是一样的，每一个zone都有独特的textures和objects，一个zone中的不同acts share textures和objects，但是空间布局不同。作者把(ROM, zone, act)称为一个level。</p>
+<h4 id="games-and-levels">Games and Levels</h4>
+<p>整个benchmark包含$3$个游戏的$58$个save states，每一个save states都有different level开始时的player。许多原始游戏中的acts没有被使用，因为它们只包含打boss或者和设计的reward function不兼容。<br>
+随机的选择包含超过一个act的zones，然后随机的从选中的zone中选择act。Test set包含绝大数在train sets中出现的objects和objects，但是layouts不同。<br>
+Test levels如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">ROM</th>
+<th style="text-align:center">one</th>
+<th style="text-align:center">Act</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">SpringYardZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">GreenHillZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">StarLightZone</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">ScrapBrainZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">MetropolisZone</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">HillTopZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">CasinoNightZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">LavaReefZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">FlyingBatteryZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">HydrocityZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">AngelIslandZone</td>
+<td style="text-align:center">2</td>
+</tr>
+</tbody>
+</table>
+<h4 id="frame-skip">Frame Skip</h4>
+<p>原生的gym-retro environments每隔$\frac{1}{60}$秒调用一次step()方法。在ALE环境的实践中，通常使用长为$4$的fram skip of $4$。使用timesteps作为测量游戏内时间的主要单位，则使用长为$4$的frame skip，一个timesteps代表一秒的$\frac{1}{15}$。而deterministic environments容易受到trivial scripted solutions的影响，作者使用了sticky fram skip，即每一个action有$0.25$的概率延迟一个frame，也就是说这个action aplly了$5$次。</p>
+<h4 id="episode-boundaries">Episode Boundaries</h4>
+<p>游戏中的experience被划分成episodes，对应于存活，在每一个episode的结束，environment重置为save states。每个episode在遇到以下任何一个条件时结束：</p>
+<ul>
+<li>成功的完成这个level，在这个benchmark中，完成一个level对应于通过这个level内一个确定的水平offset。</li>
+<li>玩家失败。</li>
+<li>当前episodes经过了4500个episodes，大概有$300$s，$5$分钟。</li>
+</ul>
+<p>如果满足以上任意一个条件，environment都应该被重置，agents不应该使用任何特殊的APIs告诉environments开始一个新的episode。这个benchmark取消了打boss这一环节，这个难度太大了。</p>
+<h4 id="observations">Observations</h4>
+<p>Gym-Retro环境在每一个timestep开始前产生一个observation，这个observation是一个三通道的图像，不同的游戏维度不同，对于Sonic，images是$320\times 224$大小的。</p>
+<h2 id="quantifying-generalization-in-reinforcement-learning">Quantifying Generalization in Reinforcement Learning</h2>
+<h3 id="下载地址-v2">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+<h3 id="摘要-v2">摘要</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a><br>
+2.<a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/强化学习/" rel="tag"># 强化学习</a>
+          
+            <a href="/tags/reinforcement-learning/" rel="tag"># reinforcement learning</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/04/convex-optimization-chapter-3-convex-functions/" rel="next" title="convex optimization chapter 3 convex functions">
+                <i class="fa fa-chevron-left"></i> convex optimization chapter 3 convex functions
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">169</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">195</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#gotta-learn-fast-a-new-benchmark-for-generalization-in-rl"><span class="nav-number">1.</span> <span class="nav-text">Gotta Learn Fast: A New Benchmark for Generalization in RL</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#下载地址"><span class="nav-number">1.1.</span> <span class="nav-text">下载地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#摘要"><span class="nav-number">1.2.</span> <span class="nav-text">摘要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">1.3.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sonic-benchmark"><span class="nav-number">1.4.</span> <span class="nav-text">Sonic benchmark</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#gym-repo"><span class="nav-number">1.4.1.</span> <span class="nav-text">Gym Repo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#the-sonic-video-game"><span class="nav-number">1.4.2.</span> <span class="nav-text">The Sonic Video Game</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#games-and-levels"><span class="nav-number">1.4.3.</span> <span class="nav-text">Games and Levels</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#frame-skip"><span class="nav-number">1.4.4.</span> <span class="nav-text">Frame Skip</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#episode-boundaries"><span class="nav-number">1.4.5.</span> <span class="nav-text">Episode Boundaries</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#observations"><span class="nav-number">1.4.6.</span> <span class="nav-text">Observations</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#quantifying-generalization-in-reinforcement-learning"><span class="nav-number">2.</span> <span class="nav-text">Quantifying Generalization in Reinforcement Learning</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#下载地址-v2"><span class="nav-number">2.1.</span> <span class="nav-text">下载地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#摘要-v2"><span class="nav-number">2.2.</span> <span class="nav-text">摘要</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -327,6 +327,439 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/05/generalization-in-RL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/09/05/generalization-in-RL/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">generalization in RL</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-05 12:25:40 / 修改时间：16:42:37" itemprop="dateCreated datePublished" datetime="2019-09-05T12:25:40+08:00">2019-09-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="gotta-learn-fast-a-new-benchmark-for-generalization-in-rl">Gotta Learn Fast: A New Benchmark for Generalization in RL</h2>
+<h3 id="下载地址">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>这篇文章基于Sonic the Hedgehog视频游戏提出了Gym Retro rl benchmark。这个benchmark主要用于评估RL领域的transfer learning和few-shot learning算法。</p>
+<h3 id="简介">简介</h3>
+<p>像ALE之类的RL benchmark并不是一个理想的测试相似任务之间泛化性能的benchmark。RL相当于在测试集上进行训练，然后展现出和训练环境相同环境下算法的最终性能。所以，这篇文章给出了一个benchmark，和监督学习一样，区分了train和test环境。<br>
+作者给出的benchmark设计了一个meta-learning的RL dataset，从单个任务分布中采样很多个相似的任务，可以作为few-shot RL算法的test bed。除了few-shot learning，这个benchmark还可以用来衡量cross-task generalization，train set和test set的设置可以用来在一些levels训练，然后迁移到另一些levels。<br>
+Gym Retro 和Retro Learning Environment以及Arcade Learning Environment都有关，但是，Gym Retro更灵活，更容易扩展，有相当多的environments。OpenAI想要做的是RL中的Omniglot和mini-ImageNet。<br>
+在之前RL领域的transfer learning中，主要有两种evaluation techniques，在人工设计的task上进行evaluation，或者在ALE上进行evaluation。人工设计的任务中，许多不同的算法难以进行比较，而ALE中，不同的任务之间差异太大，使用transfer learning不可能获得太大的improvements。</p>
+<h3 id="sonic-benchmark">Sonic benchmark</h3>
+<p>这一章详细介绍了Sonic benchmark，从technical details到高维的特征设计。</p>
+<h4 id="gym-repo">Gym Repo</h4>
+<p>Sonic benchmark的底层是Gym Retro，一个video games仿真RL environments项目。Gym Retro的核心是gym-retro python包，它将各种emulated games都封装成Gym environments，使用统一的接口进行操作。Gym-Retro中的每一个游戏都由一个ROM，一个或多个svae state，一个或多个scenarios以及一个data file组成。</p>
+<ul>
+<li>ROM，组成游戏的data和code，通过一个emulator进行加载。</li>
+<li>Save state，游戏的在某个console状态的截图。</li>
+<li>Data file，描述在console memory中各种各样的信息，比如包含分数在哪里存储。</li>
+<li>Scenario，描述完成条件以及奖励函数。</li>
+</ul>
+<h4 id="the-sonic-video-game">The Sonic Video Game</h4>
+<p>Sonic benchmark包含三个相似的游戏：Sonic The Hedgehog, Sonic The Hedgehog2,Sonic 3 Knuckles。这三个游戏的规则和操作都很像，当然还是有一些差别。通过使用这几个游戏获得尽可能多的environments作为datasets。<br>
+每一个sonic game被划分为zones，每一个zone又进一步划分为acts，相当于我们说的关卡的意思。整个游戏的规则和目的都是一样的，每一个zone都有独特的textures和objects，一个zone中的不同acts share textures和objects，但是空间布局不同。作者把(ROM, zone, act)称为一个level。</p>
+<h4 id="games-and-levels">Games and Levels</h4>
+<p>整个benchmark包含$3$个游戏的$58$个save states，每一个save states都有different level开始时的player。许多原始游戏中的acts没有被使用，因为它们只包含打boss或者和设计的reward function不兼容。<br>
+随机的选择包含超过一个act的zones，然后随机的从选中的zone中选择act。Test set包含绝大数在train sets中出现的objects和objects，但是layouts不同。<br>
+Test levels如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">ROM</th>
+<th style="text-align:center">one</th>
+<th style="text-align:center">Act</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">SpringYardZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">GreenHillZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">StarLightZone</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">ScrapBrainZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">MetropolisZone</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">HillTopZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">CasinoNightZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">LavaReefZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">FlyingBatteryZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">HydrocityZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">AngelIslandZone</td>
+<td style="text-align:center">2</td>
+</tr>
+</tbody>
+</table>
+<h4 id="frame-skip">Frame Skip</h4>
+<p>原生的gym-retro environments每隔$\frac{1}{60}$秒调用一次step()方法。在ALE环境的实践中，通常使用长为$4$的fram skip of $4$。使用timesteps作为测量游戏内时间的主要单位，则使用长为$4$的frame skip，一个timesteps代表一秒的$\frac{1}{15}$。而deterministic environments容易受到trivial scripted solutions的影响，作者使用了sticky fram skip，即每一个action有$0.25$的概率延迟一个frame，也就是说这个action aplly了$5$次。</p>
+<h4 id="episode-boundaries">Episode Boundaries</h4>
+<p>游戏中的experience被划分成episodes，对应于存活，在每一个episode的结束，environment重置为save states。每个episode在遇到以下任何一个条件时结束：</p>
+<ul>
+<li>成功的完成这个level，在这个benchmark中，完成一个level对应于通过这个level内一个确定的水平offset。</li>
+<li>玩家失败。</li>
+<li>当前episodes经过了4500个episodes，大概有$300$s，$5$分钟。</li>
+</ul>
+<p>如果满足以上任意一个条件，environment都应该被重置，agents不应该使用任何特殊的APIs告诉environments开始一个新的episode。这个benchmark取消了打boss这一环节，这个难度太大了。</p>
+<h4 id="observations">Observations</h4>
+<p>Gym-Retro环境在每一个timestep开始前产生一个observation，这个observation是一个三通道的图像，不同的游戏维度不同，对于Sonic，images是$320\times 224$大小的。</p>
+<h2 id="quantifying-generalization-in-reinforcement-learning">Quantifying Generalization in Reinforcement Learning</h2>
+<h3 id="下载地址-v2">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+<h3 id="摘要-v2">摘要</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a><br>
+2.<a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/04/convex-optimization-chapter-3-convex-functions/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/09/04/convex-optimization-chapter-3-convex-functions/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">convex optimization chapter 3 convex functions</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-04 20:49:37 / 修改时间：21:44:30" itemprop="dateCreated datePublished" datetime="2019-09-04T20:49:37+08:00">2019-09-04</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/凸优化/" itemprop="url" rel="index"><span itemprop="name">凸优化</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="凸函数-convex-functions">凸函数(convex functions)</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.stephen boyd. Convex optimization</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/31/c-常用函数/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2155,518 +2588,6 @@ $$R = \begin{bmatrix}I&amp;F\end{bmatrix}=\begin{bmatrix}m\times m 单位矩阵&
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/22/Deep-Learning-第二章/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/08/22/Deep-Learning-第二章/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">花书第二章</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-08-22 16:44:26" itemprop="dateCreated datePublished" datetime="2019-08-22T16:44:26+08:00">2019-08-22</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-29 12:01:23" itemprop="dateModified" datetime="2019-08-29T12:01:23+08:00">2019-08-29</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/深度学习/" itemprop="url" rel="index"><span itemprop="name">深度学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="线性代数">线性代数</h2>
-<p>这一章介绍一些线性代数的知识</p>
-<h2 id="标量-向量-矩阵和张量">标量，向量，矩阵和张量</h2>
-<p>标量，单个的数，用不加粗小写斜体字母表示。<br>
-向量，有序的一维数组，用加粗小写斜体字母表示，向量的每一个元素加下标访问。一般一个$n$维的向量表示为：<br>
-$$\mathbf{x} = \begin{bmatrix}x_1\\ \cdots x_n\end{bmatrix} = (x_1,\cdots, x_n)^T$$<br>
-矩阵：二维数组，用加粗大写斜体字母表示，向量的每个元素需要使用两个索引才能定位。<br>
-张量：多维数组，用加粗大写非斜体字母表示，访问一个$k$维的张量，需要使用$k$个索引才能进行定位。</p>
-<h2 id="向量和矩阵乘法">向量和矩阵乘法</h2>
-<h3 id="矩阵乘法">矩阵乘法</h3>
-<p>矩阵乘法要求两个矩阵的shape满足第一个矩阵的第二维和第二个矩阵的第一维相等。Shape为$m\times n$的矩阵$A$和shape维$n\times p$的矩阵$B$，使用矩阵相乘得到一个$m\times p$的矩阵$C$，计算公式如下：<br>
-$$C_{i,j} = \sum_{k=1}^n A_{i,k}B_{k,j}$$</p>
-<h3 id="hadamard乘法-element-wise乘法">Hadamard乘法(element-wise乘法)</h3>
-<p>Hadamrad乘法要求两个矩阵的shape必须相同。Shape为$m\times n$的矩阵$A$和shape维$m\times n$的矩阵$B$，使用矩阵相乘得到一个$m\times n$的矩阵$C$，计算公式如下：<br>
-$$C_{i,j} = A_{i,j}B_{i,j}$$</p>
-<h3 id="向量点乘">向量点乘</h3>
-<p>向量点乘要求两个向量$x$和$y$的维度相同，点乘的结果可以看成$1\times n$的矩阵和$n\times 1$的矩阵进行矩阵乘法的结果。</p>
-<h3 id="矩阵乘向量">矩阵乘向量</h3>
-<p>矩阵乘向量需要满足矩阵的第二维和向量的维度一致，得到新向量的维度和原来的向量维度一样：<br>
-$$Ax= b$$</p>
-<h3 id="其他定律">其他定律</h3>
-<p>矩阵乘法有分配率，结合律，但是没有交换律。<br>
-转置的一个公式<br>
-$$(AB)^T = B^T A^T $$</p>
-<h2 id="单位矩阵和可逆矩阵">单位矩阵和可逆矩阵</h2>
-<p>除了对角线上为$1$所有其他位置都为$0$的矩阵被称为单位矩阵，用$I_n$表示。矩阵$A$的可逆矩阵被表示为$A^{-1}$，定位为：<br>
-$$A^{-1}A= I_n$$<br>
-如果矩阵$A$的逆存在，那么$Ax=b$的解就是$x = A^{-1}b$。</p>
-<h2 id="线性独立和线性生成子空间-span">线性独立和线性生成子空间（span）</h2>
-<p>如果$Ax=b$有且只有一个解，那么$A^{-1}$一定存在。但是有时候会没有解或者无穷多个解。不可能存在大于一个但是小于无穷多个解的情况，如果$x,y$是$Ax=b$的解，那么<br>
-$\alpha x + (1 - \alpha) y$也一定是$Ax=b$的解。<br>
-<strong>线性组合</strong>：对于向量集中的每个向量乘上一个系数再相加得到的结果就是一个线性组合。最简单的形式：$ax+by$就是一个线性组合，它的结果就是一个span（线性生成子空间）。$Ax$也是一个线性组合，它有一个特殊的名字，叫做$A$的column space，如果$b$在$A$的colum中，那么这个方程组有且只有一个解。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/08/均值-方差-矩-协方差-独立-相关/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/08/08/均值-方差-矩-协方差-独立-相关/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">均值、方差、矩、协方差、独立和相关</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-08-08 19:01:15" itemprop="dateCreated datePublished" datetime="2019-08-08T19:01:15+08:00">2019-08-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-17 19:46:57" itemprop="dateModified" datetime="2019-08-17T19:46:57+08:00">2019-08-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论/" itemprop="url" rel="index"><span itemprop="name">概率论</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="均值-期望">均值（期望）</h2>
-<h3 id="简单介绍">简单介绍</h3>
-<p>在概率论和统计学中，一个离散型随机变量的期望值是试验中每次可能的结果乘以相应概率的加和。<br>
-换句话说，期望值是变量取值的加权平均。期望并不一定包含于变量的值域内。</p>
-<h3 id="定义">定义</h3>
-<p>如果$X$是概率空间$(\Omega, F,P)$中的随机变量，它的期望值$\mathbb{E}(X)$定义为：<br>
-$$\mathbb{E}(X) = \int_{\Omega} XdP$$<br>
-如果$X$是离散的随机变量，取值$x_1,x_2,\cdots$的概率分别为$p_1, p_2, \cdots, p_1+p_2+\cdots = 1$，它的期望定义为：<br>
-$$\mathbb{E}(X) = \sum_i x_ip_i$$</p>
-<h3 id="性质">性质</h3>
-<ul>
-<li>$\mathbb{E}(cX) = c\mathbb{E}(X)$</li>
-<li>$\mathbb{E}(X+c) = \mathbb{E}(X) + c$</li>
-<li>$\mathbb{E}(X+Y) = \mathbb{E}(X) + \mathbb{E}(Y)$</li>
-<li>$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，（$X,Y$独立）</li>
-<li>$\mathbb{E}(aX+bY) = a\mathbb{E}(X) + b\mathbb{E}(Y)$</li>
-</ul>
-<h2 id="方差">方差</h2>
-<h3 id="简单介绍-v2">简单介绍</h3>
-<p>方差描述的是一个随机变量的离散程度。</p>
-<h3 id="定义-v2">定义</h3>
-<p>假设$X$是服从分布$F$的随机变量，用$\mu=\mathbb{E}(X)$表示随机变量$X$的期望。<br>
-随机变量$X$的方差为：<br>
-$$Var(X) = \mathbb{E}\left[(X-\mu)^2\right]$$</p>
-<h3 id="性质-v2">性质</h3>
-<ol>
-<li>方差总是大于等于$0$的<br>
-$$Var(X)\ge 0$$</li>
-<li>常数的方差为$0$<br>
-$$Var ( c ) = 0$$</li>
-<li>随机变量$X$加上一个常数$c$，它的方差不变<br>
-\begin{align*}<br>
-Var(X+c) &amp;= \mathbb{E}\left[(X+c - \mathbb{E}(X+c))^2\right]\\<br>
-&amp;= \mathbb{E}\left[(X-\mathbb{E}(X))^2\right]\\<br>
-&amp;=Var(X)<br>
-\end{align*}</li>
-<li>随机变量$X$乘上一个常数$c$，它的方差变为原来的$c^2$倍。<br>
-\begin{align*}<br>
-Var(cX) &amp;= \mathbb{E}\left[(cX - \mathbb{E}(cX))^2\right]\\<br>
-&amp;= \mathbb{E}\left[c^2 X^2 - 2c^2 X \mathbb{E}(X) + (\mathbb{E}(cX))^2\right]\\<br>
-&amp; = c^2 \mathbb{E}\left[X^2 - 2X \mathbb{E}(X) + \mathbb{E}(X)\cdot \mathbb{E}(X)\right]\\<br>
-&amp;=c^2 Var(x)<br>
-\end{align*}</li>
-</ol>
-<h2 id="期望和方差关系">期望和方差关系</h2>
-<p>\begin{align*}<br>
-Var(X) &amp;= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])^2\right]\\<br>
-&amp;= \mathbb{E}\left[(X^2 - 2X \mathbb{E} \cdot \left[X\right]+\mathbb{E}\left[X\right] \cdot \mathbb{E}\left[X\right] )\right]\\<br>
-&amp;= \mathbb{E}\left[(X^2) \right] - 2\mathbb{E}\left[(X \cdot \mathbb{E}\left[ X \right]) \right]+\mathbb{E}\left[(\mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right])\right]\\<br>
-&amp;= \mathbb{E}    \left[(X^2) \right] -     \mathbb{E}\left[(\mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right])\right]\\<br>
-&amp;= \mathbb{E}    \left[(X^2) \right] -  \mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right]\\<br>
-\end{align*}</p>
-<h2 id="均值和样本均值">均值和样本均值</h2>
-<p>样本均值是均值的无偏估计。<br>
-假设用随机变量$X$表示所有男性的身高，得到一组样本值为$x_1, x_2, \cdots, x_n$，样本均值的计算方式如下：<br>
-$$\bar{X} = \frac{x_1 + \cdots +x_n}{n}$$<br>
-$\bar{X}$是对$\mu$的一个估计，真实的$\mu$我们不知道，但是我们能根据多个样本计算出来多个样本均值，这些样本均值的均值会收敛于均值。所以叫它无偏估计。</p>
-<h2 id="方差和样本方差">方差和样本方差</h2>
-<p>样本方差的分母如果是$n$的话，是方差的有偏估计，如果分母是$n-1$的话，是方差的无偏估计。<br>
-随机变量$X$方差的计算公式为：<br>
-$$Var(X) = \mathbb{E}\left[(X-\mu)^2\right]$$<br>
-但是我们往往不知道$X$的真实分布，所以经常用样本方差$S^2$来估计真实方差$Var(X)$：<br>
-$$S^2 = \frac{\sum_{i=1}^n (X_i - \mu)^2}{n}$$<br>
-而均值$\mu$往往也是不知道的，用样本均值$\bar{X}$代替均值$\mu$，得到<br>
-$$S^2 = \frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2$$<br>
-为什么是$\frac{1}{n-1}$呢？<br>
-这里先给出几个辅助计算：</p>
-<ol>
-<li>样本均值的方差是样本方差的$\frac{1}{n}$<br>
-\begin{align*}<br>
-Var(\bar{X}) &amp;= Var(\frac{\sum_{i=1}^n X_i}{n})\\<br>
-&amp; = \frac{1}{n^2} Var(\sum_{i=1}^n X_i)\\<br>
-&amp; =  \frac{1}{n^2} \sum_{i=1}^n Var(X_i)\\<br>
-&amp; = \frac{n\sigma^2 }{n^2 }\\<br>
-&amp;=\frac{\sigma^2 }{n}<br>
-\end{align*}</li>
-</ol>
-<p>如果使用$\frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2$进行计算<br>
-\begin{align*}<br>
-\mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2\right]&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}+\mu-\mu\right)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\mu - (\bar{X} - \mu)\right)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left((X_i-\mu)^2 - 2(X_i-\mu)(\bar{X} - \mu) + (\bar{X} - \mu)^2 \right)\right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - \frac{2}{n}\sum_{i=1}^n (X_i-\mu)(\bar{X} - \mu) + \frac{1}{n}\sum_{i=1}^n (\bar{X} - \mu)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - 2(\bar{X}-\mu)(\bar{X} - \mu) + \frac{1}{n}\sum_{i=1}^n (\bar{X} - \mu)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - 2(\bar{X}-\mu)^2 +  (\bar{X} - \mu)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - (\bar{X}-\mu)^2\right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 \right]-\mathbb{E}\left[ (\bar{X}-\mu)^2\right]\\<br>
-&amp;= Var(X) - Var(\bar{X})\\<br>
-&amp;= \sigma^2 - \frac{\sigma^2}{n}\\<br>
-&amp;= \frac{n-1}{n}\sigma^2<br>
-\end{align*}<br>
-最后得到$\mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2  \right] = \frac{n-1}{n}\sigma^2 $，少算了$\frac{1}{n}\sigma^2 $，<br>
-所以，如果取$\mathbb{E}\left[S^2 \right] =\mathbb{E}\left[\frac{1}{n-1}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2 \right]$，最后能得到$\mathbb{E}\left[S^2 \right] =\sigma^2$，是无偏估计。</p>
-<h2 id="矩">矩</h2>
-<p>设$X$为随机变量，$c$为常数，$k$为正整数，称$\mathbb{E}\left[(x-c)^k\right]$为$X$关于$c$的$k$阶矩。</p>
-<ol>
-<li>$c=0, \alpha_k=\mathbb{E}\left[X^k\right]$称为$X$的$k$阶原点矩。</li>
-<li>$c=\mathbb{E}\left[X\right],\mu_k=\mathbb{E}\left[(X-\mathbb{E}(X))^k\right]$称为$X$的$k$阶中心矩。</li>
-</ol>
-<p>一阶原点矩为期望，二阶中心矩为方差。</p>
-<h2 id="协方差">协方差</h2>
-<h3 id="定义-v3">定义</h3>
-<p>$\mathbb{E}\left[(X-\mathbb{E}(X))(Y-\mathbb{E}(Y)\right]$称为$X,Y$的协方差，记为$Cov(X,Y)$。</p>
-<h3 id="属性">属性</h3>
-<ol>
-<li>\begin{align*}<br>
-Cov(c_1X+c_2, c_3Y + c_4) &amp;= \mathbb{E}\left[(c_1X +c_2 - \mathbb{E}(c_1X+c_2))(c_3Y +c_4 - \mathbb{E}(c_3Y+c_4))\right]\\<br>
-&amp;= \mathbb{E}\left[(c_1X - c_1\mathbb{E}\left[X\right])(c_3Y - c_3\mathbb{E}\left[Y\right])\right]\\<br>
-&amp;= c_1c_3\mathbb{E}\left[(X - \mathbb{E}\left[X\right])(Y - \mathbb{E}\left[Y\right])\right]\\<br>
-&amp;= c_1c_3Cov(X,Y)\\<br>
-\end{align*}</li>
-<li>\begin{align*}<br>
-Cov(X,Y) &amp;= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])(Y-\mathbb{E}\left[Y\right])\right]\\<br>
-&amp;= \mathbb{E}\left[XY - \mathbb{E}\left[Y\right]X - \mathbb{E}\left[X\right]Y + \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\right]\\<br>
-&amp;= \mathbb{E}\left[XY\right] - \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\\<br>
-\end{align*}</li>
-</ol>
-<h3 id="独立与协方差之间的关系">独立与协方差之间的关系</h3>
-<p>若$X,Y$独立，则$Cov(X,Y) = 0$，因为独立变量有$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，所以：<br>
-$$\mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y) = Cov(X,Y) = 0$$</p>
-<h2 id="相关系数">相关系数</h2>
-<h3 id="定义-v4">定义</h3>
-<p>称$Cov(X,Y)/(\sigma_1,\sigma_2)$为$X,Y$的相关系数，记为$Corr(X,Y)$。</p>
-<h3 id="性质-v3">性质</h3>
-<ol>
-<li>若$X,Y$独立，则$Covv(X,Y) = 0$</li>
-<li>$\Vert Corr(X,Y)\Vert \le 1$，等号当且仅当$X$和$Y$有严格线性关系时取到</li>
-<li>当$Corr(X,Y)= 0$或者$Cov(X,Y) = 0$时，称$X,Y$不相关。</li>
-</ol>
-<h2 id="独立和相关">独立和相关</h2>
-<p>$X,Y$独立能够推出他们不相关，因为$Corr(X,Y) = 0$，满足不相关的定义。而$Corr(X,Y) = 0$不一定能推出$X,Y$独立。<br>
-即独立一定相关，但是相关不一定独立。有一个特例是正太分布，独立和相关互为充要条件。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://zh.wikipedia.org/wiki/%E6%9C%9F%E6%9C%9B%E5%80%BC" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/期望值</a><br>
-2.<a href="https://zh.wikipedia.org/wiki/%E6%96%B9%E5%B7%AE" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/方差</a><br>
-3.<a href="https://www.zhihu.com/question/22983179/answer/404391738" target="_blank" rel="noopener">https://www.zhihu.com/question/22983179/answer/404391738</a><br>
-4.<a href="https://www.matongxue.com/madocs/607.html" target="_blank" rel="noopener">https://www.matongxue.com/madocs/607.html</a><br>
-5.<a href="https://math.stackexchange.com/a/2113753/629287" target="_blank" rel="noopener">https://math.stackexchange.com/a/2113753/629287</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2716,7 +2637,7 @@ $$\mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y) = Cov(X,Y) = 0$$</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">167</span>
+                    <span class="site-state-item-count">169</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3144,7 +3065,25 @@ $$\mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y) = Cov(X,Y) = 0$$</p>
                     
                       
                     
-                    <span class="site-state-item-count">186</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">195</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3397,9 +3336,9 @@ $$\mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y) = Cov(X,Y) = 0$$</p>
       
     
       
-    
-      
         
+      
+    
       
     
       
