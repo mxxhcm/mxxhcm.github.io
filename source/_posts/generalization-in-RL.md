@@ -66,6 +66,42 @@ Sonic 3 & Knuckles| AngelIslandZone| 2
 #### Observations
 Gym-Retro环境在每一个timestep开始前产生一个observation，这个observation是一个三通道的图像，不同的游戏维度不同，对于Sonic，images是$320\times 224$大小的。
 
+#### Actions
+
+#### Rewards
+Reward由两部分组成：一个水平offset和一个完成任务的bonus，每个level的horizontal offset被归一化了，如果它通过了作为终点的那个horizontal offset，每个agent总的reward是$9000$。这样子便于不同长度的level之间进行比较。完成的bonus是$1000$，在$4500$个timesteps内线性减少为$0$，这是为了鼓励agents尽可能快的完成这个游戏。
+
+
+#### Evaluation
+使用test set中所有levels的mean score作为metric。步骤入如下：
+1. 训练时候，使用尽可能少的训练集训练
+2. 测试的时候，每一个test levels执行$100$万个timesteps。在test每一个level的时候都是分开的。
+3. 对每个level的$100$万个timesteps中所有episode的total rewards进行平均。
+4. 对所有test level的scores进行平均。
+
+这个$100$万是怎么选出来的？在无限个timestep的场景下，没有证明meta-learning或者transfer-learning是必要的，但是在有限个timestep的场景下，transfer learning对于得到好的performance是很必要的。
+
+### Baselines
+作者给出了几个方法在benchmark上的效果，包含人类，没有使用训练集的一些方法以及使用joint training加上fine tunning的一些迁移学习方法。
+
+1. 人类
+有四个人，每个人先在训练集上玩两个小时，然后在每个test level上玩一个小时。
+2. Rainbow
+Rainbow是DQN的变种，加了各种各样的trick。
+这里对Rainbow做了一些改变：设置$V_{max} = 200$；buffer size为$0.5M$；直接使用了rainbow中的参数初始化方式，没有系列化实验。
+3. JERK
+4. PPO
+每一个PPO单独运行在一个test level上。action和observation space都和rainbow一样，相同的reward preprocessing。同时还使用了一个小的常数对reward进行缩放。CNN结构和dqn一样。
+5. Joint PPO
+在所有的training levels上训练一个policy，然后用它作为test levels的初值。
+在训练过程中，训练一个policy，使用188个parallel的workers，每一个都对应training set中的一个level。在每一gradient step，所有的workers平均梯度，确保policy是在整个训练集上得到的。整个训练过程需要几百万个timesteps才收敛，除了训练的setting不同，其他参数和常规的PPO一样。
+6. Joint Rainbow
+没有joint training的Rainbow超过了PPO，但是joint Rainbow没有超过joint PPO。在整个训练集上训练单个Rainbow的时候，使用了$32$个GPUs。每一个GPU对应一个单个的worker，每一个worker有自己的replay buffer和$8$个环境。环境也是joint environments，在每一个episode开始的时候采样一个新的tranining level。
+除了batch size和distributed worker，其他的超参数和常规的Rainbow一样。
+
+### 结果
+本文提出了一个benchmark，并用这个benchmark评估了几个baselines。结果表明最好的transfer结果没有比重头开始训练的结果好多少。而且离最好的的score（设计时是$9000$到$10000$）有一定距离。
+
 
 ## Quantifying Generalization in Reinforcement Learning 
 ### 下载地址
