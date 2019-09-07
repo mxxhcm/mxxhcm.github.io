@@ -94,11 +94,15 @@ $\zeta$ \zeta
 $\xi$ \xi
 
 ### 字体
+粗体
 $\mathbf{A}$ \mathbf{A}
 $\boldsymbol{A}$ \boldsymbol{A}
 $\mathit{A}$ \mathit{A}
 $\mathrm{A}$ \mathrm{A}
+花体
 $\mathcal{A}$ \mathcal{A}
+$\mathcal{S}$ \mathcal{S}
+
 
 ### 数学运算
 求积$\prod$ \prod

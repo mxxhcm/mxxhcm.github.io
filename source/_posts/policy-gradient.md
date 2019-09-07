@@ -13,6 +13,30 @@ categories: 强化学习
 mathjax: true
 ---
 
+## 术语定义
+1. 状态集合
+$\mathcal{S}是有限states set
+2. 动作集合
+$\mathcal{A}$是有限actions set
+3. 转换概率
+$P:\mathcal{S}\times \mathcal{A}\times \mathcal{S} \rightarrow \mathbb{R}$是transition probability distribution
+4. 奖励函数
+$r:\mathcal{S}\rightarrow \mathbb{R}$是reward function
+5. 折扣因子
+$\gamma \in (0, 1)$
+6. 带折扣因子的MDP
+定义为tuple $\left(\mathcal{S},\mathcal{A},P,r,\rho, \gamma\right)$
+7. 随机策略
+$\pi: \mathcal{S}\times \mathcal{A}\rightarrow \left[0,1\right]$是stochastic policy。
+8. 期望折扣回报
+$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots}\left[\sum_{t=0}^{\infty}\gamma^t r(s_t)\right]，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$
+9. 状态价值函数
+$Q^{\pi} (s_t, a_t) = \mathbb{E}_{s_{t+1}, a_{t+1},\cdots}\left[\sum_{l=0}^{\infty} \gamma^l r(s_{t+l}) \right]$
+10. 动作值函数
+$Q^{\pi} (s_t, a_t) = \mathbb{E}_{a_{t}, s_{t+1},\cdots}\left[\sum_{l=0}^{\infty} \gamma^l r(s_{t+l}) \right]$
+11. 优势函数
+$A_{\pi} (s,a) = Q_{\pi}(s,a) -V_{\pi}(s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
+
 ## policy gradient
 ### Abstract
 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。
@@ -310,8 +334,31 @@ end for
 在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。
 作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。
 
+## Trust Region Policy Optimization
+为了优化function approximators，需要将解强化学习问题分解为一系列优化问题。这个分解是nontrivial的，因为state distribution取决于policy。TRPO在尽可能少的改变policy的同时，尽可能的改善一个surrogate objective。TRPO通过KL散度衡量不同分布之间的差异，通过bounding policy update的大小bounding state distributions的变化，即使使用non-trivial step size也能保证policy improvement。
+根据这个理论，作者进行了一系列的理论验证，提出了TRPO算法，这里介绍两个变种算法：single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。这些算法的扩展性良好，可以优化参数成千上万的nonlinear policies。
+
+一个有用的公式！恩！就是！
+$$\eta(\hat{\sim}) = \eta(\pi) + \mathbb{E}_{s_0, a_0, \cdots \sim \hat{\pi} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right] \tag{}$$
+将策略$\hat{\pi}$的期望回报表示为另一个策略$\pi$的期望回报和$\hat{\pi}$相对于$\pi$的优势在时间上的累积和。其中$\mathbb{E}_{s_0, a_0,\cdots, \sim \hat{\pi}}\left[\cdots\right]$表示actions是从$a_t\sim\hat{\pi}(\cdot|s_t)$得到的，这个公式的证明在TRPO那一节进行证明。
+用$\rho_{\pi}$表示没有归一化的访问频率：
+$\rho_{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots $
+其中$s_0\sim \rho_0$，actions是根据$\pi$选择的。将上面公式中的期望换成求和写成下式：
+\begin{align\*}
+\eta(\hat{\sim}) &= \eta(\pi) + \mathbb{E}_{s_0, a_0, \cdots \sim \hat{\pi} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right]
+&=\eta{\pi} +\sum_{t=0}^{\infty}\sum_s P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)\gamma^t A_{\pi}(s,a)
+&=\eta{\pi} +\sum_s\sum_{t=0}^{\infty} \gamma^t P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)A_{\pi}(s,a)
+&=\eta{\pi} + \sum_s \rho_{\hat{\pi}}(s) \sum_a \hat{\pi}(a|s) A^{\pi} (s,a)
+\end{align\*}
+这里在每一个$t$处，$s_t=s$都是有概率的，也就是$\rho_{\pi}(s)$表示的东西。从上面的推导我们可以看出来，任何从$\pi$到$\hat{\pi}$的更新，只要在每个state $s$处的expected advantage是非负的，也就是说$\sum_a \hat{\pi}(a|s) A_{\pi}(s,a)\ge -$，就能保证performance $\eta$的提高或者不变。然而在上式中，因为估计或者近似误差，会有一些state的expected advantage是负的，而且由于$\rho_{\hat{\pi}}$依赖的是$\hat{\pi}$，很难直接优化，就进行一个近似：
+$L_{\pi} (\hat{\pi}) = eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$
+就是用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，忽略因为policy改变导致的state 访问频率的改变。
 
 ## 参考文献
+Policy Gradient
 1.https://arxiv.org/pdf/1509.02971.pdf
 2.https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146
 3.https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b
+Trust Region Policy Optimization
+4.https://zhuanlan.zhihu.com/p/26308073
+5.http://joschu.net/docs/thesis.pdf
