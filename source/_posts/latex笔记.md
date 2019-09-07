@@ -19,6 +19,9 @@ $\mmm{x}$
 $\bf{x}$
 
 ## 常用Latex符号
+### 上标
+$\bar{x}$ \bar{x}
+$\hat{x}$ \hat{x}
 
 ### 等号
 $\sim$  \sim
