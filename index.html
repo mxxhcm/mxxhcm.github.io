@@ -442,30 +442,116 @@
       
         
           
-            <h2 id="Gotta-Learn-Fast-A-New-Benchmark-for-Generalization-in-RL"><a href="#Gotta-Learn-Fast-A-New-Benchmark-for-Generalization-in-RL" class="headerlink" title="Gotta Learn Fast: A New Benchmark for Generalization in RL"></a>Gotta Learn Fast: A New Benchmark for Generalization in RL</h2><h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p><a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a></p>
-<h3 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h3><p>这篇文章基于Sonic the Hedgehog视频游戏提出了Gym Retro rl benchmark。这个benchmark主要用于评估RL领域的transfer learning和few-shot learning算法。</p>
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>像ALE之类的RL benchmark并不是一个理想的测试相似任务之间泛化性能的benchmark。RL相当于在测试集上进行训练，然后展现出和训练环境相同环境下算法的最终性能。所以，这篇文章给出了一个benchmark，和监督学习一样，区分了train和test环境。<br>作者给出的benchmark设计了一个meta-learning的RL dataset，从单个任务分布中采样很多个相似的任务，可以作为few-shot RL算法的test bed。除了few-shot learning，这个benchmark还可以用来衡量cross-task generalization，train set和test set的设置可以用来在一些levels训练，然后迁移到另一些levels。<br>Gym Retro 和Retro Learning Environment以及Arcade Learning Environment都有关，但是，Gym Retro更灵活，更容易扩展，有相当多的environments。OpenAI想要做的是RL中的Omniglot和mini-ImageNet。<br>在之前RL领域的transfer learning中，主要有两种evaluation techniques，在人工设计的task上进行evaluation，或者在ALE上进行evaluation。人工设计的任务中，许多不同的算法难以进行比较，而ALE中，不同的任务之间差异太大，使用transfer learning不可能获得太大的improvements。</p>
-<h3 id="Sonic-benchmark"><a href="#Sonic-benchmark" class="headerlink" title="Sonic benchmark"></a>Sonic benchmark</h3><p>这一章详细介绍了Sonic benchmark，从technical details到高维的特征设计。</p>
-<h4 id="Gym-Repo"><a href="#Gym-Repo" class="headerlink" title="Gym Repo"></a>Gym Repo</h4><p>Sonic benchmark的底层是Gym Retro，一个video games仿真RL environments项目。Gym Retro的核心是gym-retro python包，它将各种emulated games都封装成Gym environments，使用统一的接口进行操作。Gym-Retro中的每一个游戏都由一个ROM，一个或多个svae state，一个或多个scenarios以及一个data file组成。</p>
+            <h2 id="gotta-learn-fast-a-new-benchmark-for-generalization-in-rl">Gotta Learn Fast: A New Benchmark for Generalization in RL</h2>
+<h3 id="下载地址">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>这篇文章基于Sonic the Hedgehog视频游戏提出了Gym Retro rl benchmark。这个benchmark主要用于评估RL领域的transfer learning和few-shot learning算法。</p>
+<h3 id="简介">简介</h3>
+<p>像ALE之类的RL benchmark并不是一个理想的测试相似任务之间泛化性能的benchmark。RL相当于在测试集上进行训练，然后展现出和训练环境相同环境下算法的最终性能。所以，这篇文章给出了一个benchmark，和监督学习一样，区分了train和test环境。<br>
+作者给出的benchmark设计了一个meta-learning的RL dataset，从单个任务分布中采样很多个相似的任务，可以作为few-shot RL算法的test bed。除了few-shot learning，这个benchmark还可以用来衡量cross-task generalization，train set和test set的设置可以用来在一些levels训练，然后迁移到另一些levels。<br>
+Gym Retro 和Retro Learning Environment以及Arcade Learning Environment都有关，但是，Gym Retro更灵活，更容易扩展，有相当多的environments。OpenAI想要做的是RL中的Omniglot和mini-ImageNet。<br>
+在之前RL领域的transfer learning中，主要有两种evaluation techniques，在人工设计的task上进行evaluation，或者在ALE上进行evaluation。人工设计的任务中，许多不同的算法难以进行比较，而ALE中，不同的任务之间差异太大，使用transfer learning不可能获得太大的improvements。</p>
+<h3 id="sonic-benchmark">Sonic benchmark</h3>
+<p>这一章详细介绍了Sonic benchmark，从technical details到高维的特征设计。</p>
+<h4 id="gym-repo">Gym Repo</h4>
+<p>Sonic benchmark的底层是Gym Retro，一个video games仿真RL environments项目。Gym Retro的核心是gym-retro python包，它将各种emulated games都封装成Gym environments，使用统一的接口进行操作。Gym-Retro中的每一个游戏都由一个ROM，一个或多个svae state，一个或多个scenarios以及一个data file组成。</p>
 <ul>
 <li>ROM，组成游戏的data和code，通过一个emulator进行加载。</li>
 <li>Save state，游戏的在某个console状态的截图。</li>
 <li>Data file，描述在console memory中各种各样的信息，比如包含分数在哪里存储。</li>
 <li>Scenario，描述完成条件以及奖励函数。</li>
 </ul>
-<h4 id="The-Sonic-Video-Game"><a href="#The-Sonic-Video-Game" class="headerlink" title="The Sonic Video Game"></a>The Sonic Video Game</h4><p>Sonic benchmark包含三个相似的游戏：Sonic The Hedgehog, Sonic The Hedgehog2,Sonic 3 Knuckles。这三个游戏的规则和操作都很像，当然还是有一些差别。通过使用这几个游戏获得尽可能多的environments作为datasets。<br>每一个sonic game被划分为zones，每一个zone又进一步划分为acts，相当于我们说的关卡的意思。整个游戏的规则和目的都是一样的，每一个zone都有独特的textures和objects，一个zone中的不同acts share textures和objects，但是空间布局不同。作者把(ROM, zone, act)称为一个level。</p>
-<h4 id="Games-and-Levels"><a href="#Games-and-Levels" class="headerlink" title="Games and Levels"></a>Games and Levels</h4><p>整个benchmark包含$3$个游戏的$58$个save states，每一个save states都有different level开始时的player。许多原始游戏中的acts没有被使用，因为它们只包含打boss或者和设计的reward function不兼容。<br>随机的选择包含超过一个act的zones，然后随机的从选中的zone中选择act。Test set包含绝大数在train sets中出现的objects和objects，但是layouts不同。<br>Test levels如下表所示：<br>ROM |one|Act<br>:—:|:—:|:—:<br>Sonic The Hedgehog| SpringYardZone| 1<br>Sonic The Hedgehog| GreenHillZone| 2<br>Sonic The Hedgehog| StarLightZone| 3<br>Sonic The Hedgehog| ScrapBrainZone| 1<br>Sonic The Hedgehog 2| MetropolisZone| 3<br>Sonic The Hedgehog 2| HillTopZone| 2<br>Sonic The Hedgehog 2| CasinoNightZone| 2<br>Sonic 3 &amp; Knuckles| LavaReefZone| 1<br>Sonic 3 &amp; Knuckles| FlyingBatteryZone| 2<br>Sonic 3 &amp; Knuckles| HydrocityZone| 1<br>Sonic 3 &amp; Knuckles| AngelIslandZone| 2</p>
-<h4 id="Frame-Skip"><a href="#Frame-Skip" class="headerlink" title="Frame Skip"></a>Frame Skip</h4><p>原生的gym-retro environments每隔$\frac{1}{60}$秒调用一次step()方法。在ALE环境的实践中，通常使用长为$4$的fram skip of $4$。使用timesteps作为测量游戏内时间的主要单位，则使用长为$4$的frame skip，一个timesteps代表一秒的$\frac{1}{15}$。而deterministic environments容易受到trivial scripted solutions的影响，作者使用了sticky fram skip，即每一个action有$0.25$的概率延迟一个frame，也就是说这个action aplly了$5$次。</p>
-<h4 id="Episode-Boundaries"><a href="#Episode-Boundaries" class="headerlink" title="Episode Boundaries"></a>Episode Boundaries</h4><p>游戏中的experience被划分成episodes，对应于存活，在每一个episode的结束，environment重置为save states。每个episode在遇到以下任何一个条件时结束：</p>
+<h4 id="the-sonic-video-game">The Sonic Video Game</h4>
+<p>Sonic benchmark包含三个相似的游戏：Sonic The Hedgehog, Sonic The Hedgehog2,Sonic 3 Knuckles。这三个游戏的规则和操作都很像，当然还是有一些差别。通过使用这几个游戏获得尽可能多的environments作为datasets。<br>
+每一个sonic game被划分为zones，每一个zone又进一步划分为acts，相当于我们说的关卡的意思。整个游戏的规则和目的都是一样的，每一个zone都有独特的textures和objects，一个zone中的不同acts share textures和objects，但是空间布局不同。作者把(ROM, zone, act)称为一个level。</p>
+<h4 id="games-and-levels">Games and Levels</h4>
+<p>整个benchmark包含$3$个游戏的$58$个save states，每一个save states都有different level开始时的player。许多原始游戏中的acts没有被使用，因为它们只包含打boss或者和设计的reward function不兼容。<br>
+随机的选择包含超过一个act的zones，然后随机的从选中的zone中选择act。Test set包含绝大数在train sets中出现的objects和objects，但是layouts不同。<br>
+Test levels如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">ROM</th>
+<th style="text-align:center">one</th>
+<th style="text-align:center">Act</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">SpringYardZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">GreenHillZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">StarLightZone</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog</td>
+<td style="text-align:center">ScrapBrainZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">MetropolisZone</td>
+<td style="text-align:center">3</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">HillTopZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic The Hedgehog 2</td>
+<td style="text-align:center">CasinoNightZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">LavaReefZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">FlyingBatteryZone</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">HydrocityZone</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
+<td style="text-align:center">AngelIslandZone</td>
+<td style="text-align:center">2</td>
+</tr>
+</tbody>
+</table>
+<h4 id="frame-skip">Frame Skip</h4>
+<p>原生的gym-retro environments每隔$\frac{1}{60}$秒调用一次step()方法。在ALE环境的实践中，通常使用长为$4$的fram skip of $4$。使用timesteps作为测量游戏内时间的主要单位，则使用长为$4$的frame skip，一个timesteps代表一秒的$\frac{1}{15}$。而deterministic environments容易受到trivial scripted solutions的影响，作者使用了sticky fram skip，即每一个action有$0.25$的概率延迟一个frame，也就是说这个action aplly了$5$次。</p>
+<h4 id="episode-boundaries">Episode Boundaries</h4>
+<p>游戏中的experience被划分成episodes，对应于存活，在每一个episode的结束，environment重置为save states。每个episode在遇到以下任何一个条件时结束：</p>
 <ul>
 <li>成功的完成这个level，在这个benchmark中，完成一个level对应于通过这个level内一个确定的水平offset。</li>
 <li>玩家失败。</li>
 <li>当前episodes经过了4500个episodes，大概有$300$s，$5$分钟。</li>
 </ul>
 <p>如果满足以上任意一个条件，environment都应该被重置，agents不应该使用任何特殊的APIs告诉environments开始一个新的episode。这个benchmark取消了打boss这一环节，这个难度太大了。</p>
-<h4 id="Observations"><a href="#Observations" class="headerlink" title="Observations"></a>Observations</h4><p>Gym-Retro环境在每一个timestep开始前产生一个observation，这个observation是一个三通道的图像，不同的游戏维度不同，对于Sonic，images是$320\times 224$大小的。</p>
-<h4 id="Actions"><a href="#Actions" class="headerlink" title="Actions"></a>Actions</h4><h4 id="Rewards"><a href="#Rewards" class="headerlink" title="Rewards"></a>Rewards</h4><p>Reward由两部分组成：一个水平offset和一个完成任务的bonus，每个level的horizontal offset被归一化了，如果它通过了作为终点的那个horizontal offset，每个agent总的reward是$9000$。这样子便于不同长度的level之间进行比较。完成的bonus是$1000$，在$4500$个timesteps内线性减少为$0$，这是为了鼓励agents尽可能快的完成这个游戏。</p>
-<h4 id="Evaluation"><a href="#Evaluation" class="headerlink" title="Evaluation"></a>Evaluation</h4><p>使用test set中所有levels的mean score作为metric。步骤入如下：</p>
+<h4 id="observations">Observations</h4>
+<p>Gym-Retro环境在每一个timestep开始前产生一个observation，这个observation是一个三通道的图像，不同的游戏维度不同，对于Sonic，images是$320\times 224$大小的。</p>
+<h4 id="actions">Actions</h4>
+<h4 id="rewards">Rewards</h4>
+<p>Reward由两部分组成：一个水平offset和一个完成任务的bonus，每个level的horizontal offset被归一化了，如果它通过了作为终点的那个horizontal offset，每个agent总的reward是$9000$。这样子便于不同长度的level之间进行比较。完成的bonus是$1000$，在$4500$个timesteps内线性减少为$0$，这是为了鼓励agents尽可能快的完成这个游戏。</p>
+<h4 id="evaluation">Evaluation</h4>
+<p>使用test set中所有levels的mean score作为metric。步骤入如下：</p>
 <ol>
 <li>训练时候，使用尽可能少的训练集训练</li>
 <li>测试的时候，每一个test levels执行$100$万个timesteps。在test每一个level的时候都是分开的。</li>
@@ -473,34 +559,74 @@
 <li>对所有test level的scores进行平均。</li>
 </ol>
 <p>这个$100$万是怎么选出来的？在无限个timestep的场景下，没有证明meta-learning或者transfer-learning是必要的，但是在有限个timestep的场景下，transfer learning对于得到好的performance是很必要的。</p>
-<h3 id="Baselines"><a href="#Baselines" class="headerlink" title="Baselines"></a>Baselines</h3><p>作者给出了几个方法在benchmark上的效果，包含人类，没有使用训练集的一些方法以及使用joint training加上fine tunning的一些迁移学习方法。</p>
+<h3 id="baselines">Baselines</h3>
+<p>作者给出了几个方法在benchmark上的效果，包含人类，没有使用训练集的一些方法以及使用joint training加上fine tunning的一些迁移学习方法。</p>
 <ol>
-<li>人类<br>有四个人，每个人先在训练集上玩两个小时，然后在每个test level上玩一个小时。</li>
-<li>Rainbow<br>Rainbow是DQN的变种，加了各种各样的trick。<br>这里对Rainbow做了一些改变：设置$V_{max} = 200$；buffer size为$0.5M$；直接使用了rainbow中的参数初始化方式，没有系列化实验。</li>
+<li>人类<br>
+有四个人，每个人先在训练集上玩两个小时，然后在每个test level上玩一个小时。</li>
+<li>Rainbow<br>
+Rainbow是DQN的变种，加了各种各样的trick。<br>
+这里对Rainbow做了一些改变：设置$V_{max} = 200$；buffer size为$0.5M$；直接使用了rainbow中的参数初始化方式，没有系列化实验。</li>
 <li>JERK</li>
-<li>PPO<br>每一个PPO单独运行在一个test level上。action和observation space都和rainbow一样，相同的reward preprocessing。同时还使用了一个小的常数对reward进行缩放。CNN结构和dqn一样。</li>
-<li>Joint PPO<br>在所有的training levels上训练一个policy，然后用它作为test levels的初值。<br>在训练过程中，训练一个policy，使用188个parallel的workers，每一个都对应training set中的一个level。在每一gradient step，所有的workers平均梯度，确保policy是在整个训练集上得到的。整个训练过程需要几百万个timesteps才收敛，除了训练的setting不同，其他参数和常规的PPO一样。</li>
-<li>Joint Rainbow<br>没有joint training的Rainbow超过了PPO，但是joint Rainbow没有超过joint PPO。在整个训练集上训练单个Rainbow的时候，使用了$32$个GPUs。每一个GPU对应一个单个的worker，每一个worker有自己的replay buffer和$8$个环境。环境也是joint environments，在每一个episode开始的时候采样一个新的tranining level。<br>除了batch size和distributed worker，其他的超参数和常规的Rainbow一样。</li>
+<li>PPO<br>
+每一个PPO单独运行在一个test level上。action和observation space都和rainbow一样，相同的reward preprocessing。同时还使用了一个小的常数对reward进行缩放。CNN结构和dqn一样。</li>
+<li>Joint PPO<br>
+在所有的training levels上训练一个policy，然后用它作为test levels的初值。<br>
+在训练过程中，训练一个policy，使用188个parallel的workers，每一个都对应training set中的一个level。在每一gradient step，所有的workers平均梯度，确保policy是在整个训练集上得到的。整个训练过程需要几百万个timesteps才收敛，除了训练的setting不同，其他参数和常规的PPO一样。</li>
+<li>Joint Rainbow<br>
+没有joint training的Rainbow超过了PPO，但是joint Rainbow没有超过joint PPO。在整个训练集上训练单个Rainbow的时候，使用了$32$个GPUs。每一个GPU对应一个单个的worker，每一个worker有自己的replay buffer和$8$个环境。环境也是joint environments，在每一个episode开始的时候采样一个新的tranining level。<br>
+除了batch size和distributed worker，其他的超参数和常规的Rainbow一样。</li>
 </ol>
-<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><p>本文提出了一个benchmark，并用这个benchmark评估了几个baselines。结果表明最好的transfer结果没有比重头开始训练的结果好多少。而且离最好的的score（设计时是$9000$到$10000$）有一定距离。</p>
-<h2 id="Quantifying-Generalization-in-Reinforcement-Learning"><a href="#Quantifying-Generalization-in-Reinforcement-Learning" class="headerlink" title="Quantifying Generalization in Reinforcement Learning"></a>Quantifying Generalization in Reinforcement Learning</h2><h3 id="下载地址-1"><a href="#下载地址-1" class="headerlink" title="下载地址"></a>下载地址</h3><p><a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
-<h3 id="摘要-1"><a href="#摘要-1" class="headerlink" title="摘要"></a>摘要</h3><p>这篇文章研究的是drl中的overfitting问题。在绝大多数的RL benchmark中，训练和测试都习惯性的在相同环境中，这就让agent’s的泛化能力不够优秀。本文通过程序生成环境构建不同的训练集和测试集解决这个问题。本文设计了一个新的CoinRun环境用于RL的generalization。<br>作者实验证明更深的cnn能够改善generalization，监督学习中常用的一些方法，如$L2$正则化，dropout，data augmentation以及batch normalization。<br>这篇文章的贡献：</p>
+<h3 id="结果">结果</h3>
+<p>本文提出了一个benchmark，并用这个benchmark评估了几个baselines。结果表明最好的transfer结果没有比重头开始训练的结果好多少。而且离最好的的score（设计时是$9000$到$10000$）有一定距离。</p>
+<h2 id="quantifying-generalization-in-reinforcement-learning">Quantifying Generalization in Reinforcement Learning</h2>
+<h3 id="下载地址-v2">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+<h3 id="摘要-v2">摘要</h3>
+<p>这篇文章研究的是drl中的overfitting问题。在绝大多数的RL benchmark中，训练和测试都习惯性的在相同环境中，这就让agent’s的泛化能力不够优秀。本文通过程序生成环境构建不同的训练集和测试集解决这个问题。本文设计了一个新的CoinRun环境用于RL的generalization。<br>
+作者实验证明更深的cnn能够改善generalization，监督学习中常用的一些方法，如$L2$正则化，dropout，data augmentation以及batch normalization。<br>
+这篇文章的贡献：</p>
 <ol>
 <li>transfer需要的训练环境数量要远远高于之前的工作中使用到的。</li>
 <li>使用CoinRun benchmark提出了一个generalization metric。</li>
 <li>找到了不同网络结构和正则化项中最好的那些设置。</li>
 </ol>
-<h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><p>尽管RL agents能解决很复杂的任务，将experience迁移到新环境，或者在不同的RL tasks之间进行泛化是很困难的。即使已经掌握了$10$ video game的agents，在初次遇到第$11$级时也会失败，agents在训练的时候只学习到了和这个环境相关的知识。<br>RL agents的训练其实是过拟合的，但是绝大多数的benchmark还是鼓励在相同的环境中进行train和evaluation。和Sonic Benchmark一样，作者认为分train和test集是必要的，同时作者认为量化agent的泛化能力也是很有用的。<br>Sonic Benchmark通过对环境划分训练集和测试集，解决了在测试集上训练的问题。而Farebrother认识到，没有划分训练集和测试集，使得RL训练中缺乏正则化手段，通过使用监督学习中的$L2$正则化和dropout，使得agents能够学习更多泛化特征。<br>Zhang等利用程序生成划分train和test环境，他们在gridworld mase上进行实验，得出了许多RL agents为什么过拟合的结论。通过让agents记住在训练集中具体的levels，以及stick actions，random starts，可以减少过拟合的发生。</p>
-<h3 id="Quantifying-Generalization"><a href="#Quantifying-Generalization" class="headerlink" title="Quantifying Generalization"></a>Quantifying Generalization</h3><h4 id="CoinRun"><a href="#CoinRun" class="headerlink" title="CoinRun"></a>CoinRun</h4><p>CoinRun环境很简单，一个智能体，从最左边，一直往右走，收集在最右边的金币，中间或均匀或随机的散布着一些障碍，只有得到金币后有一个常数的reward。当agent死亡，或者采集到金币，或者$1000$个timesteps后自动结束。<br>CoinRun和Sonic很像，但是更简单，更容易泛化。每一个level都是从一个给定的seed中顺序生成的，能够给智能体相当多并且易于量化提供的训练数据。不同的level之间难度差异很大，所以levels的分布相当于agents的学习课程。</p>
-<h4 id="CoinRun泛化曲线"><a href="#CoinRun泛化曲线" class="headerlink" title="CoinRun泛化曲线"></a>CoinRun泛化曲线</h4><p>使用CoinRun可以衡量agents从给定的training level中训练迁移到没有见过的test levels上的效果。随着training中使用的levels数量增多，我们期望在test set上的性能变好，即使是训练固定的timesteps时。test时，作者在test set上进行了zero-shot performance评估，即没有在test set上进行fine-tuning。<br>作者训练了$9$个agents 运行CoinRun，每一个都在具有不同levels数量的训练集上运行。训练过程中，每一个episode从相应的set中随机采样一个level。前$8$个agents使用的train sets中level的数量从$100$到$16000$，最后一个agent在无限个levels的训练集上。Level的seed是$2^32$，所以几乎不可能发生冲突。训练集包含$2M$个独一无二的levels，在test的时候仍然不会遇到已经遇到过的level。整个实验进行了$5$次，每次重新生成training sets。<br>首先使用nature-dqn中的三层CNN进行训练，然后使用$8$个workers的PPO总共训练了$256M$步。每个agents都训练相同的timesteps，然后在每个mini-batch的$8$个works上取gradients的均值。<br>最后的结果中，对$10000#个episodes的final performance进行平均，我们可以看出来，在$4000$个levels以内，过拟合很严重，即使是$1600$个training levels，过拟合也是很多的。当agents遇到的都是新的levels时，表现最好。</p>
-<h3 id="Evaluating-Architectures"><a href="#Evaluating-Architectures" class="headerlink" title="Evaluating Architectures"></a>Evaluating Architectures</h3><p>比较Nature-CNN和IMPALA-CNN，结果证明IMPALA-CNN要好一些。为了评估generalization performance，可以直接在无限个levels的train set上训练agents，然后比较learning curves。在这个settings中，智能体不可能过拟合某一些levels的子集，每一个level都是新的。因为Impala-cnn的记过更好，所以作者尝试了更深的网络，发现效果更好，新的网络使用了$5$个residual blocks，每层的channels数量是原来的两倍。再进一步增加网络深度的时候，发现了returns逐渐变小，同时花费的时间也更多了。<br>当然，使用无限的training set并不会总是会带来性能的提升。选择好的超参数能够加快训练速度，但是并不一定会改善generalization的性能。通常来讲，在固定levels的训练集上训练，能产生一个更有用的metric。</p>
-<h3 id="Evaluating-Regularization"><a href="#Evaluating-Regularization" class="headerlink" title="Evaluating Regularization"></a>Evaluating Regularization</h3><p>正则化在监督学习中有很重要的作用，因为监督学习更关心的是generalization。监督学习的数据集通常分为训练集和数据集，有很多正则化技巧可以用来减少generalization gap。但是因为RL中训练集和测试集通常是同一个，所以正则化技术就没什么效果。<br>现在既然RL中要衡量generalization，可能正则化技术就能起到作用。作者分别在CoinRun environment中试了$L2$正则化，dropout，data augmentation以及batch normalization。<br>这一节中，所有的agents都是在$500$个levels的CoinRun环境中进行的。我们可以看到有过拟合发生，所以就希望这个setting能够evaluating出不同正则化技术的效果。所有接下来实验的均值和方差都是runs$3$次得到的。使用的是有$3$个残差块的IMPALA-CNN。</p>
-<h4 id="Dropout和L2正则化"><a href="#Dropout和L2正则化" class="headerlink" title="Dropout和L2正则化"></a>Dropout和L2正则化</h4><p>作者分别试了dropout为$p\in {0, 0.05, 0.10, 0.15, 0.20, 0.25}$，以及L2正则化权重$w\in {0, 0.5, 1.0, 1.5, 2.0, 2.5}\times 10^{-1}$，一次只试了一个。最终找到了$p=0.1$以及$w=10^{-4}$。使用$L2$正则化训练了$256M$ timesteps，使用dropout训练了$512M$ timesteps，dropout更难收敛，而且效果没有$L2$正则化好用。</p>
-<h4 id="Data-Augmentation"><a href="#Data-Augmentation" class="headerlink" title="Data Augmentation"></a>Data Augmentation</h4><p>监督学习中，数据增强的手段主要用于图像，包括变换，旋转，亮度调整，锐化等等。不同的数据集可能需要使用不同的augmentations。这里作用使用的是Cutout的一个变形。对于每一个observation，可变大小的矩阵区别被masked掉，这些masked的区域给一个随机的颜色，这个和domain randomization非常相似，用于机器人从仿真到真实世界的transfer。</p>
-<h4 id="Batch-Normalization"><a href="#Batch-Normalization" class="headerlink" title="Batch Normalization"></a>Batch Normalization</h4><p>在IMPALA-CNN架构中每层CNN之后使用batch normalization。</p>
-<h4 id="Stochasticity"><a href="#Stochasticity" class="headerlink" title="Stochasticity"></a>Stochasticity</h4><p>这个随机性很有意思哦。作者考虑了两种方法，一种是改变环境的stochasticity，另一个是改变policy的stochasticity。首先，使用$\epsilon$-greedy action selection算法向环境中加入stochasticity，在每一个timestep中，有$\epsilon$的概率，使用random action代替policy的action。在之前的一些研究中，$\epsilon$-greedy用来鼓励exploration和防止overfitting。然后，通过改变PPO中的entropy bonus控制policy stochasticity。Baseline中使用的entropy bonus是$k_H = 0.01$。<br>同时增加训练时间步到$512M$个timesteps。单独向环境或者policy加入stochasticity都能改善generalization。</p>
-<h4 id="Combining-Regularization-Methods"><a href="#Combining-Regularization-Methods" class="headerlink" title="Combining Regularization Methods"></a>Combining Regularization Methods</h4><p>作者尝试将data augmentation,batch normalization和L2结合起来，结果表明比任意单独的一种都要好，但是提升的大小并不是很大，可以说这三种方法解决的过拟合问题差不多。<br>由于某些未知的原因，将stochastic和正则化手段结合起来的效果不理想。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a><br>2.<a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+<h3 id="简介-v2">简介</h3>
+<p>尽管RL agents能解决很复杂的任务，将experience迁移到新环境，或者在不同的RL tasks之间进行泛化是很困难的。即使已经掌握了$10$ video game的agents，在初次遇到第$11$级时也会失败，agents在训练的时候只学习到了和这个环境相关的知识。<br>
+RL agents的训练其实是过拟合的，但是绝大多数的benchmark还是鼓励在相同的环境中进行train和evaluation。和Sonic Benchmark一样，作者认为分train和test集是必要的，同时作者认为量化agent的泛化能力也是很有用的。<br>
+Sonic Benchmark通过对环境划分训练集和测试集，解决了在测试集上训练的问题。而Farebrother认识到，没有划分训练集和测试集，使得RL训练中缺乏正则化手段，通过使用监督学习中的$L2$正则化和dropout，使得agents能够学习更多泛化特征。<br>
+Zhang等利用程序生成划分train和test环境，他们在gridworld mase上进行实验，得出了许多RL agents为什么过拟合的结论。通过让agents记住在训练集中具体的levels，以及stick actions，random starts，可以减少过拟合的发生。</p>
+<h3 id="quantifying-generalization">Quantifying Generalization</h3>
+<h4 id="coinrun">CoinRun</h4>
+<p>CoinRun环境很简单，一个智能体，从最左边，一直往右走，收集在最右边的金币，中间或均匀或随机的散布着一些障碍，只有得到金币后有一个常数的reward。当agent死亡，或者采集到金币，或者$1000$个timesteps后自动结束。<br>
+CoinRun和Sonic很像，但是更简单，更容易泛化。每一个level都是从一个给定的seed中顺序生成的，能够给智能体相当多并且易于量化提供的训练数据。不同的level之间难度差异很大，所以levels的分布相当于agents的学习课程。</p>
+<h4 id="coinrun泛化曲线">CoinRun泛化曲线</h4>
+<p>使用CoinRun可以衡量agents从给定的training level中训练迁移到没有见过的test levels上的效果。随着training中使用的levels数量增多，我们期望在test set上的性能变好，即使是训练固定的timesteps时。test时，作者在test set上进行了zero-shot performance评估，即没有在test set上进行fine-tuning。<br>
+作者训练了$9$个agents 运行CoinRun，每一个都在具有不同levels数量的训练集上运行。训练过程中，每一个episode从相应的set中随机采样一个level。前$8$个agents使用的train sets中level的数量从$100$到$16000$，最后一个agent在无限个levels的训练集上。Level的seed是$2^32$，所以几乎不可能发生冲突。训练集包含$2M$个独一无二的levels，在test的时候仍然不会遇到已经遇到过的level。整个实验进行了$5$次，每次重新生成training sets。<br>
+首先使用nature-dqn中的三层CNN进行训练，然后使用$8$个workers的PPO总共训练了$256M$步。每个agents都训练相同的timesteps，然后在每个mini-batch的$8$个works上取gradients的均值。<br>
+最后的结果中，对$10000#个episodes的final performance进行平均，我们可以看出来，在$4000$个levels以内，过拟合很严重，即使是$1600$个training levels，过拟合也是很多的。当agents遇到的都是新的levels时，表现最好。</p>
+<h3 id="evaluating-architectures">Evaluating Architectures</h3>
+<p>比较Nature-CNN和IMPALA-CNN，结果证明IMPALA-CNN要好一些。为了评估generalization performance，可以直接在无限个levels的train set上训练agents，然后比较learning curves。在这个settings中，智能体不可能过拟合某一些levels的子集，每一个level都是新的。因为Impala-cnn的记过更好，所以作者尝试了更深的网络，发现效果更好，新的网络使用了$5$个residual blocks，每层的channels数量是原来的两倍。再进一步增加网络深度的时候，发现了returns逐渐变小，同时花费的时间也更多了。<br>
+当然，使用无限的training set并不会总是会带来性能的提升。选择好的超参数能够加快训练速度，但是并不一定会改善generalization的性能。通常来讲，在固定levels的训练集上训练，能产生一个更有用的metric。</p>
+<h3 id="evaluating-regularization">Evaluating Regularization</h3>
+<p>正则化在监督学习中有很重要的作用，因为监督学习更关心的是generalization。监督学习的数据集通常分为训练集和数据集，有很多正则化技巧可以用来减少generalization gap。但是因为RL中训练集和测试集通常是同一个，所以正则化技术就没什么效果。<br>
+现在既然RL中要衡量generalization，可能正则化技术就能起到作用。作者分别在CoinRun environment中试了$L2$正则化，dropout，data augmentation以及batch normalization。<br>
+这一节中，所有的agents都是在$500$个levels的CoinRun环境中进行的。我们可以看到有过拟合发生，所以就希望这个setting能够evaluating出不同正则化技术的效果。所有接下来实验的均值和方差都是runs$3$次得到的。使用的是有$3$个残差块的IMPALA-CNN。</p>
+<h4 id="dropout和l2正则化">Dropout和L2正则化</h4>
+<p>作者分别试了dropout为$p\in {0, 0.05, 0.10, 0.15, 0.20, 0.25}$，以及L2正则化权重$w\in {0, 0.5, 1.0, 1.5, 2.0, 2.5}\times 10<sup>{-1}$，一次只试了一个。最终找到了$p=0.1$以及$w=10</sup>{-4}$。使用$L2$正则化训练了$256M$ timesteps，使用dropout训练了$512M$ timesteps，dropout更难收敛，而且效果没有$L2$正则化好用。</p>
+<h4 id="data-augmentation">Data Augmentation</h4>
+<p>监督学习中，数据增强的手段主要用于图像，包括变换，旋转，亮度调整，锐化等等。不同的数据集可能需要使用不同的augmentations。这里作用使用的是Cutout的一个变形。对于每一个observation，可变大小的矩阵区别被masked掉，这些masked的区域给一个随机的颜色，这个和domain randomization非常相似，用于机器人从仿真到真实世界的transfer。</p>
+<h4 id="batch-normalization">Batch Normalization</h4>
+<p>在IMPALA-CNN架构中每层CNN之后使用batch normalization。</p>
+<h4 id="stochasticity">Stochasticity</h4>
+<p>这个随机性很有意思哦。作者考虑了两种方法，一种是改变环境的stochasticity，另一个是改变policy的stochasticity。首先，使用$\epsilon$-greedy action selection算法向环境中加入stochasticity，在每一个timestep中，有$\epsilon$的概率，使用random action代替policy的action。在之前的一些研究中，$\epsilon$-greedy用来鼓励exploration和防止overfitting。然后，通过改变PPO中的entropy bonus控制policy stochasticity。Baseline中使用的entropy bonus是$k_H = 0.01$。<br>
+同时增加训练时间步到$512M$个timesteps。单独向环境或者policy加入stochasticity都能改善generalization。</p>
+<h4 id="combining-regularization-methods">Combining Regularization Methods</h4>
+<p>作者尝试将data augmentation,batch normalization和L2结合起来，结果表明比任意单独的一种都要好，但是提升的大小并不是很大，可以说这三种方法解决的过拟合问题差不多。<br>
+由于某些未知的原因，将stochastic和正则化手段结合起来的效果不理想。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a><br>
+2.<a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
 
           
         
@@ -660,7 +786,9 @@
       
         
           
-            <h2 id="凸函数-convex-functions"><a href="#凸函数-convex-functions" class="headerlink" title="凸函数(convex functions)"></a>凸函数(convex functions)</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.stephen boyd. Convex optimization</p>
+            <h2 id="凸函数-convex-functions">凸函数(convex functions)</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.stephen boyd. Convex optimization</p>
 
           
         
@@ -814,44 +942,55 @@
       
         
           
-            <h2 id="命令空间"><a href="#命令空间" class="headerlink" title="命令空间"></a>命令空间</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cin</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cout</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure>
-<h2 id="常用库函数"><a href="#常用库函数" class="headerlink" title="常用库函数"></a>常用库函数</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt; vector&gt;</span></span></span><br></pre></td></tr></table></figure>
-<h2 id="字符串"><a href="#字符串" class="headerlink" title="字符串"></a>字符串</h2><h3 id="string"><a href="#string" class="headerlink" title="string"></a>string</h3><ol>
-<li><p>导包</p>
+            <h2 id="命令空间">命令空间</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cin</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cout</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="常用库函数">常用库函数</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt; vector&gt;</span></span></span><br></pre></td></tr></table></figure>
+<h2 id="字符串">字符串</h2>
+<h3 id="string">string</h3>
+<ol>
+<li>导包</li>
+</ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>string转字符串数组</p>
+<ol start="2">
+<li>string转字符串数组</li>
+</ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span>.c_str()</span><br></pre></td></tr></table></figure>
-</li>
+<h3 id="c类型字符串">c类型字符串</h3>
+<ol>
+<li>导包</li>
 </ol>
-<h3 id="c类型字符串"><a href="#c类型字符串" class="headerlink" title="c类型字符串"></a>c类型字符串</h3><ol>
-<li><p>导包</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstring&gt;</span></span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>完整字符串复制</p>
+<ol start="2">
+<li>完整字符串复制</li>
+</ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">strcpy</span>(des, src);</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>部分字符串复制</p>
+<ol start="3">
+<li>部分字符串复制</li>
+</ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">strncpy</span>(des, src+n, len);</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>结束符</p>
+<ol start="4">
+<li>结束符</li>
+</ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sub[len] = <span class="string">'\0'</span>;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>new字符串数组</p>
+<ol start="5">
+<li>new字符串数组</li>
+</ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *str = <span class="keyword">new</span> <span class="keyword">char</span>[<span class="number">100</span>];</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>delete字符串数组</p>
+<ol start="6">
+<li>delete字符串数组</li>
+</ol>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> []str;</span><br></pre></td></tr></table></figure>
-</li>
+<h2 id="vector">vector</h2>
+<ol>
+<li>向量长度</li>
 </ol>
-<h2 id="vector"><a href="#vector" class="headerlink" title="vector"></a>vector</h2><ol>
-<li><p>向量长度</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vector.size()</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>访问元素</p>
-</li>
+<ol start="2">
+<li>访问元素</li>
 </ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+<h2 id="参考文献">参考文献</h2>
+
           
         
       
@@ -1022,11 +1161,14 @@
       
         
           
-            <h2 id="快速入门"><a href="#快速入门" class="headerlink" title="快速入门"></a>快速入门</h2><ol>
-<li><p>保存c++源文件为helloworld.cpp</p>
+            <h2 id="快速入门">快速入门</h2>
+<ol>
+<li>保存c++源文件为helloworld.cpp</li>
+</ol>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;<span class="string">"Hello World"</span>&lt;&lt;<span class="built_in">endl</span>;</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>使用g++ 编译</p>
+<ol start="2">
+<li>使用g++ 编译</li>
+</ol>
 <blockquote>
 <blockquote>
 <blockquote>
@@ -1034,10 +1176,12 @@
 </blockquote>
 </blockquote>
 </blockquote>
-</li>
-<li>执行编译后的源文件<br>./hello_world</li>
+<ol start="3">
+<li>执行编译后的源文件<br>
+./hello_world</li>
 </ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://legacy.gitbook.com/download/pdf/book/lexdene/gcc-five-minutes" target="_blank" rel="noopener">https://legacy.gitbook.com/download/pdf/book/lexdene/gcc-five-minutes</a></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://legacy.gitbook.com/download/pdf/book/lexdene/gcc-five-minutes" target="_blank" rel="noopener">https://legacy.gitbook.com/download/pdf/book/lexdene/gcc-five-minutes</a></p>
 
           
         
@@ -1210,16 +1354,28 @@
         
           
             <p>先给出已知条件，两个列向量$a= (x_1,y_1, z_1), w=(x_2,y_2, z_2)$。</p>
-<h2 id="点积-dot-product"><a href="#点积-dot-product" class="headerlink" title="点积(dot product)"></a>点积(dot product)</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>点积，又叫数量积，定义为$a\cdot b = x_1 x_2 + y_1y_2 + z_1z_2$。<br>另一种定义方式是$a\cdot b = \vert a \vert \vert b \vert cos \<a, b\>$`<br>这两种定义方式实际上是一样的：<br><img src="/2019/08/28/dot-product-cross-product-and-triple-product/dot_product.jpg" alt="dot_product"></a,></p>
-<h2 id="叉积-cross-product"><a href="#叉积-cross-product" class="headerlink" title="叉积(cross product)"></a>叉积(cross product)</h2><h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>叉积，又叫向量积，定义为$\vert a\times b \vert = \vert a \vert \vert b \vert sin \<a, b\>$，最后得到一个方向和$a,b$都正交的向量，并且方向符合右手规则。向量积的大小等于$a,b$构成的平行四边形的面积。</a,></p>
-<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><ol>
+<h2 id="点积-dot-product">点积(dot product)</h2>
+<h3 id="定义">定义</h3>
+<p>点积，又叫数量积，定义为$a\cdot b = x_1 x_2 + y_1y_2 + z_1z_2$。<br>
+另一种定义方式是$a\cdot b = \vert a \vert \vert b \vert cos &lt;a, b&gt;$`<br>
+这两种定义方式实际上是一样的：<br>
+<img src="/2019/08/28/dot-product-cross-product-and-triple-product/dot_product.jpg" alt="dot_product"></p>
+<h2 id="叉积-cross-product">叉积(cross product)</h2>
+<h3 id="定义-v2">定义</h3>
+<p>叉积，又叫向量积，定义为$\vert a\times b \vert = \vert a \vert \vert b \vert sin &lt;a, b&gt;$，最后得到一个方向和$a,b$都正交的向量，并且方向符合右手规则。向量积的大小等于$a,b$构成的平行四边形的面积。</p>
+<h3 id="属性">属性</h3>
+<ol>
 <li>$a\times b, b\times a$是方向相反的</li>
 <li>$a,b$的叉积垂直于$a$和$b$</li>
 <li>任意向量和它自己的叉积为$0$。</li>
 </ol>
-<h2 id="混合积-trple-product"><a href="#混合积-trple-product" class="headerlink" title="混合积(trple product)"></a>混合积(trple product)</h2><h3 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h3><p>混合积定义为$(a\times b) \cdot c$，它的绝对值等于以$a,b,c$三个向量构成的形状的体积。</p>
-<h3 id="属性-1"><a href="#属性-1" class="headerlink" title="属性"></a>属性</h3><p>向量$a\times b$是一个向量，$a\times b$的大小相当于底面积，方向垂直于$a,b$所有的平面，再和$c$点乘，乘上了$c$投影到$a,b$点乘结果所在的直线上，相当于乘上了高。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.MIT线性代数公开课</p>
+<h2 id="混合积-trple-product">混合积(trple product)</h2>
+<h3 id="定义-v3">定义</h3>
+<p>混合积定义为$(a\times b) \cdot c$，它的绝对值等于以$a,b,c$三个向量构成的形状的体积。</p>
+<h3 id="属性-v2">属性</h3>
+<p>向量$a\times b$是一个向量，$a\times b$的大小相当于底面积，方向垂直于$a,b$所有的平面，再和$c$点乘，乘上了$c$投影到$a,b$点乘结果所在的直线上，相当于乘上了高。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课</p>
 
           
         
@@ -1391,41 +1547,92 @@
       
         
           
-            <h2 id="特征值和特征向量"><a href="#特征值和特征向量" class="headerlink" title="特征值和特征向量"></a>特征值和特征向量</h2><p>这里介绍的东西都是针对于方阵来说的。</p>
-<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>$Ax=\lambda x $，满足该式子的$x$称为矩阵$A$的特征向量，相应的$\lambda$称为特征值。</p>
-<h3 id="求解"><a href="#求解" class="headerlink" title="求解"></a>求解</h3><p>将$Ax=\lambda x$进行移项，得到$(A-\lambda I) x =0$，其中$A-\lambda I$必须是sigular（即不可逆），如果$A - \lambda I$是非奇异矩阵，也就是说它的列向量相互独立，那么只有零解，无意义。令$det (A-\lambda I)=0$，求出相应的$\lambda$和$x$。</p>
-<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><ol>
+            <h2 id="特征值和特征向量">特征值和特征向量</h2>
+<p>这里介绍的东西都是针对于方阵来说的。</p>
+<h3 id="定义">定义</h3>
+<p>$Ax=\lambda x $，满足该式子的$x$称为矩阵$A$的特征向量，相应的$\lambda$称为特征值。</p>
+<h3 id="求解">求解</h3>
+<p>将$Ax=\lambda x$进行移项，得到$(A-\lambda I) x =0$，其中$A-\lambda I$必须是sigular（即不可逆），如果$A - \lambda I$是非奇异矩阵，也就是说它的列向量相互独立，那么只有零解，无意义。令$det (A-\lambda I)=0$，求出相应的$\lambda$和$x$。</p>
+<h3 id="属性">属性</h3>
+<ol>
 <li>$n$个特征值的乘积等于行列式。</li>
 <li>$n$个特征值之和等于对角线元素之和。</li>
 </ol>
-<h2 id="迹"><a href="#迹" class="headerlink" title="迹"></a>迹</h2><h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>主对角线元素之和叫做迹（trace）。</p>
-<script type="math/tex; mode=display">\lambda_1 +\cdots + \lambda_n = trace = a_{11} + \cdots + a_{nn}</script><h2 id="矩阵对角化"><a href="#矩阵对角化" class="headerlink" title="矩阵对角化"></a>矩阵对角化</h2><h3 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h3><p>如果合适的使用矩阵$A$的特征向量，可以把$A$转换成一个对角矩阵。<br>假设$n\times n$的矩阵$A$有$n$个线性独立的特征向量$x_1,\cdots, x_n$，把它们当做列向量，构成一个新的矩阵$S=\left[x_1, \cdots, x_n\right]$。</p>
-<script type="math/tex; mode=display">AS = A\left[x_1, \cdots, x_n\right] = \left[\lambda_1 x_1, \cdots, \lambda_n x_n\right] = \left[x_1, \cdots, x_n\right] \begin{bmatrix} \lambda_1 &\cdots & 0 \\\\ \vdots&\lambda_i & \vdots\\\\ 0& \cdots & \lambda_n\end{bmatrix} = S\Lambda</script><p>即$AS = S\Lambda$，所以有$S^{-1} AS = \Lambda, A = S\Lambda S^{-1} $，这里我们假设$A$的$n$个特征向量都是线性无关的。$A, \Lambda$的特征值相同，特征向量不同。$A$的特征向量用来对角化$A$。</p>
-<h3 id="属性-1"><a href="#属性-1" class="headerlink" title="属性"></a>属性</h3><p>如果一个矩阵有$n$个不同的实特征值，那么它一定可对角化。<br>如果存在重复的特征值，可能但不一定可对角化，单位矩阵就有重复特征值，但可对角化。</p>
-<h2 id="可逆和对角化"><a href="#可逆和对角化" class="headerlink" title="可逆和对角化"></a>可逆和对角化</h2><p>矩阵可逆和矩阵可对角化之间没有关联。<br>矩阵可逆和特征值是否为$0$有关，而矩阵可对角化与特征向量有关，是否有足够的线性无关的特征向量。</p>
-<h2 id="矩阵的幂"><a href="#矩阵的幂" class="headerlink" title="矩阵的幂"></a>矩阵的幂</h2><h3 id="矩阵幂"><a href="#矩阵幂" class="headerlink" title="矩阵幂"></a>矩阵幂</h3><p>$A= S\Lambda S^{-1} $,<br>$A^2 = S\Lambda S^{-1}S\Lambda S^{-1} = S\Lambda^2 S^{-1} $,<br>$A^k = S\Lambda^k S^{-1}$<br>所以，$A^k $和$A$的特征向量相同，特征值是$\Lambda^k $。当$k\rightarrow \infty$时，如果所有的特征值$\lambda_i \lt 1$，那么$A^k \rightarrow 0$。 </p>
-<h3 id="以解方程组-u-k-1-Au-k"><a href="#以解方程组-u-k-1-Au-k" class="headerlink" title="以解方程组$u_{k+1} = Au_k$"></a>以解方程组$u_{k+1} = Au_k$</h3><p>从给定的向量$u_0$开始，$u_1 = Au_0, u_2 = Au_1, u_k = A^k u_0$<br>假设$u_0 = c_1 x_1 + c_2 x_2 + \cdots + c_nx_n$，$x_1, \cdots, x_n$是一组正交基。<br>$Au_0 =  c_1 \lambda_1 x_1 + \cdots + c_n\lambda_n x_n$<br>$u_{100} = A^{100} u_0 = c_1 \lambda_1^{100} x_1 + \cdots + c_n \lambda_n^{100} x_n$<br>$u_{100} = A^{100} u_0 = \Lambda^{100} S c$</p>
-<h2 id="微分方程"><a href="#微分方程" class="headerlink" title="微分方程"></a>微分方程</h2><h2 id="指数矩阵"><a href="#指数矩阵" class="headerlink" title="指数矩阵"></a>指数矩阵</h2><h2 id="Markov-Matrices"><a href="#Markov-Matrices" class="headerlink" title="Markov Matrices"></a>Markov Matrices</h2><h3 id="定义-3"><a href="#定义-3" class="headerlink" title="定义"></a>定义</h3><p>马尔科夫矩阵满足两个条件</p>
+<h2 id="迹">迹</h2>
+<h3 id="定义-v2">定义</h3>
+<p>主对角线元素之和叫做迹（trace）。<br>
+$$\lambda_1 +\cdots + \lambda_n = trace = a_{11} + \cdots + a_{nn}$$</p>
+<h2 id="矩阵对角化">矩阵对角化</h2>
+<h3 id="定义-v3">定义</h3>
+<p>如果合适的使用矩阵$A$的特征向量，可以把$A$转换成一个对角矩阵。<br>
+假设$n\times n$的矩阵$A$有$n$个线性独立的特征向量$x_1,\cdots, x_n$，把它们当做列向量，构成一个新的矩阵$S=\left[x_1, \cdots, x_n\right]$。<br>
+$$AS = A\left[x_1, \cdots, x_n\right] = \left[\lambda_1 x_1, \cdots, \lambda_n x_n\right] = \left[x_1, \cdots, x_n\right] \begin{bmatrix} \lambda_1 &amp;\cdots &amp; 0 \\ \vdots&amp;\lambda_i &amp; \vdots\\ 0&amp; \cdots &amp; \lambda_n\end{bmatrix} = S\Lambda$$<br>
+即$AS = S\Lambda$，所以有$S^{-1} AS = \Lambda, A = S\Lambda S^{-1} $，这里我们假设$A$的$n$个特征向量都是线性无关的。$A, \Lambda$的特征值相同，特征向量不同。$A$的特征向量用来对角化$A$。</p>
+<h3 id="属性-v2">属性</h3>
+<p>如果一个矩阵有$n$个不同的实特征值，那么它一定可对角化。<br>
+如果存在重复的特征值，可能但不一定可对角化，单位矩阵就有重复特征值，但可对角化。</p>
+<h2 id="可逆和对角化">可逆和对角化</h2>
+<p>矩阵可逆和矩阵可对角化之间没有关联。<br>
+矩阵可逆和特征值是否为$0$有关，而矩阵可对角化与特征向量有关，是否有足够的线性无关的特征向量。</p>
+<h2 id="矩阵的幂">矩阵的幂</h2>
+<h3 id="矩阵幂">矩阵幂</h3>
+<p>$A= S\Lambda S^{-1} $,<br>
+$A^2 = S\Lambda S^{-1}S\Lambda S^{-1} = S\Lambda^2 S^{-1} $,<br>
+$A^k = S\Lambda^k S^{-1}$<br>
+所以，$A^k $和$A$的特征向量相同，特征值是$\Lambda^k $。当$k\rightarrow \infty$时，如果所有的特征值$\lambda_i \lt 1$，那么$A^k \rightarrow 0$。</p>
+<h3 id="以解方程组-u-k-1-au-k">以解方程组$u_{k+1} = Au_k$</h3>
+<p>从给定的向量$u_0$开始，$u_1 = Au_0, u_2 = Au_1, u_k = A^k u_0$<br>
+假设$u_0 = c_1 x_1 + c_2 x_2 + \cdots + c_nx_n$，$x_1, \cdots, x_n$是一组正交基。<br>
+$Au_0 =  c_1 \lambda_1 x_1 + \cdots + c_n\lambda_n x_n$<br>
+$u_{100} = A^{100} u_0 = c_1 \lambda_1^{100} x_1 + \cdots + c_n \lambda_n^{100} x_n$<br>
+$u_{100} = A^{100} u_0 = \Lambda^{100} S c$</p>
+<h2 id="微分方程">微分方程</h2>
+<h2 id="指数矩阵">指数矩阵</h2>
+<h2 id="markov-matrices">Markov Matrices</h2>
+<h3 id="定义-v4">定义</h3>
+<p>马尔科夫矩阵满足两个条件</p>
 <ol>
 <li>所有元素大于$0$</li>
 <li>行向量之和为$1$</li>
 </ol>
-<h3 id="属性-2"><a href="#属性-2" class="headerlink" title="属性"></a>属性</h3><ol>
-<li>$\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&amp;b\\\\c&amp;d\\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&amp;b\\\\c&amp;d - 1\\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。</li>
+<h3 id="属性-v3">属性</h3>
+<ol>
+<li>$\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&amp;b\\c&amp;d\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&amp;b\\c&amp;d - 1\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。</li>
 <li>所有其他的特征值小于$1$。</li>
 </ol>
-<h3 id="马尔科夫矩阵的幂"><a href="#马尔科夫矩阵的幂" class="headerlink" title="马尔科夫矩阵的幂"></a>马尔科夫矩阵的幂</h3><p>$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$<br>如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightaroow \infty, \lambda_k \neq 1$。</p>
-<h2 id="对称矩阵"><a href="#对称矩阵" class="headerlink" title="对称矩阵"></a>对称矩阵</h2><h3 id="定义-4"><a href="#定义-4" class="headerlink" title="定义"></a>定义</h3><p>满足$A= A^T $的矩阵$A$被称为对称矩阵。</p>
-<h3 id="属性-3"><a href="#属性-3" class="headerlink" title="属性"></a>属性</h3><ol>
-<li>实对称矩阵的特征值都是实数<br>证明：由$Ax= \lambda x$，得到$A\bar{x} = \bar{\lambda} \bar{x}$，$\bar{x}$是$x$的共轭，转置得：<script type="math/tex; mode=display">\bar{x}^T A^T = \bar{x}^T A = \bar{x}^T \bar{\lambda}</script>$Ax = \lambda x$的左边乘上$\bar{x}^T $，在$\bar{x}^T A = \bar{x}^T \lambda$的右边同时乘上$x$：<script type="math/tex; mode=display">\bar{x}^T Ax = \bar{x}^T \lambda x = \bar{x}^T A x= \bar{x}^T \bar{\lambda} x</script>即$\bar{x}^T \lambda x = \bar{x}^T \bar{\lambda} x$，而$\bar{x}^T x= \vert x\vert \ge 0 $，如果$x\neq 0$，则$\lambda = \bar{\lambda}$，即$\lambda$的虚部为$0$，即特征值都是实数。</li>
-<li>对称矩阵有单位正交的特征向量。<br>证明：假设$S = \left[v_1, \cdots, v_i, \cdots, v_n\right]$是矩阵$A$的特征向量矩阵，根据矩阵对角化公式：<script type="math/tex; mode=display">A = S \Lambda S^{-1}</script>而$A=A^T $，所以得到<script type="math/tex; mode=display">S\Lambda S^{-1} = A = A^T = \left(S \Lambda S^{-1} \right)^T = S^{-T} \Lambda^T S^T = S^{-T} \Lambda S^T</script>可以得出$S^T = S^{-1} $，所以$S S^T = I$，即$v_i^T v_i = 1, v_i^T v_j = 0, \forall i\neq j$。</li>
+<h3 id="马尔科夫矩阵的幂">马尔科夫矩阵的幂</h3>
+<p>$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$<br>
+如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightaroow \infty, \lambda_k \neq 1$。</p>
+<h2 id="对称矩阵">对称矩阵</h2>
+<h3 id="定义-v5">定义</h3>
+<p>满足$A= A^T $的矩阵$A$被称为对称矩阵。</p>
+<h3 id="属性-v4">属性</h3>
+<ol>
+<li>实对称矩阵的特征值都是实数<br>
+证明：由$Ax= \lambda x$，得到$A\bar{x} = \bar{\lambda} \bar{x}$，$\bar{x}$是$x$的共轭，转置得：<br>
+$$\bar{x}^T A^T = \bar{x}^T A = \bar{x}^T \bar{\lambda}$$<br>
+$Ax = \lambda x$的左边乘上$\bar{x}^T $，在$\bar{x}^T A = \bar{x}^T \lambda$的右边同时乘上$x$：<br>
+$$\bar{x}^T Ax = \bar{x}^T \lambda x = \bar{x}^T A x= \bar{x}^T \bar{\lambda} x$$<br>
+即$\bar{x}^T \lambda x = \bar{x}^T \bar{\lambda} x$，而$\bar{x}^T x= \vert x\vert \ge 0 $，如果$x\neq 0$，则$\lambda = \bar{\lambda}$，即$\lambda$的虚部为$0$，即特征值都是实数。</li>
+<li>对称矩阵有单位正交的特征向量。<br>
+证明：假设$S = \left[v_1, \cdots, v_i, \cdots, v_n\right]$是矩阵$A$的特征向量矩阵，根据矩阵对角化公式：<br>
+$$A = S \Lambda S^{-1}  $$<br>
+而$A=A^T $，所以得到<br>
+$$S\Lambda S^{-1} = A = A^T = \left(S \Lambda S^{-1} \right)^T = S^{-T} \Lambda^T S^T = S^{-T} \Lambda S^T $$<br>
+可以得出$S^T = S^{-1} $，所以$S S^T = I$，即$v_i^T v_i = 1, v_i^T v_j = 0, \forall i\neq j$。</li>
 <li>所有的对称矩阵都是可对角化的。</li>
 </ol>
-<h3 id="谱定理（Spectral-Theorem）"><a href="#谱定理（Spectral-Theorem）" class="headerlink" title="谱定理（Spectral Theorem）"></a>谱定理（Spectral Theorem）</h3><p>对称矩阵的对角化可以从$A=S\Lambda S^{-1} $变成$A=Q\Lambda Q^{-1} =Q\Lambda Q^T $。<br>谱定理：每一个对称矩阵都有以下分解$A = Q\Lambda Q^T $，$\Lambda$是实特征值，$Q$是单位正交向量矩阵。</p>
-<script type="math/tex; mode=display">A = Q\Lambda Q^{-1} = Q\Lambda Q^T</script><p>$A$是对称的，$Q \Lambda Q^T $也是对称的。</p>
-<h2 id="正定矩阵"><a href="#正定矩阵" class="headerlink" title="正定矩阵"></a>正定矩阵</h2><p>正定矩阵，负定矩阵，半正定矩阵，半负定矩阵都是对于对称矩阵来说的。</p>
-<h3 id="定义-5"><a href="#定义-5" class="headerlink" title="定义"></a>定义</h3><p>如果对于所有的非零向量$x$，$x^T Ax$都是大于$0$的，我们称矩阵$A$是正定矩阵。</p>
-<h3 id="属性-4"><a href="#属性-4" class="headerlink" title="属性"></a>属性</h3><ol>
+<h3 id="谱定理-spectral-theorem">谱定理（Spectral Theorem）</h3>
+<p>对称矩阵的对角化可以从$A=S\Lambda S^{-1} $变成$A=Q\Lambda Q^{-1} =Q\Lambda Q^T $。<br>
+谱定理：每一个对称矩阵都有以下分解$A = Q\Lambda Q^T $，$\Lambda$是实特征值，$Q$是单位正交向量矩阵。<br>
+$$A = Q\Lambda Q^{-1} = Q\Lambda Q^T $$<br>
+$A$是对称的，$Q \Lambda Q^T $也是对称的。</p>
+<h2 id="正定矩阵">正定矩阵</h2>
+<p>正定矩阵，负定矩阵，半正定矩阵，半负定矩阵都是对于对称矩阵来说的。</p>
+<h3 id="定义-v6">定义</h3>
+<p>如果对于所有的非零向量$x$，$x^T Ax$都是大于$0$的，我们称矩阵$A$是正定矩阵。</p>
+<h3 id="属性-v5">属性</h3>
+<ol>
 <li>所有的$n$个特征值都是正的</li>
 <li>所有的$n$个左上行列式都是正的</li>
 <li>所有的$n$个主元都是正的</li>
@@ -1433,10 +1640,17 @@
 <li>$A=R^T R$，$R$是一个具有$n$个独立column的矩阵。</li>
 </ol>
 <p>如果任意矩阵$A$拥有以上属性中的任意一个，那么它就有其他四个性质，或者说上面五个属性都可以用来判定矩阵是否为正定矩阵。</p>
-<h3 id="半正定矩阵"><a href="#半正定矩阵" class="headerlink" title="半正定矩阵"></a>半正定矩阵</h3><p>如果对于所有的非零向量$x$，$x^T Ax$都是大于等于$0$的，我们称矩阵$A$是半正定矩阵。</p>
-<h3 id="属性-5"><a href="#属性-5" class="headerlink" title="属性"></a>属性</h3><p>对于任何矩阵$A$，$A^T A$和$A A^T $都是对称矩阵，并且它们一定是半正定矩阵。<br>假设$A = \begin{bmatrix} a&amp;b\\\\c&amp;d\end{bmatrix}$，如何判断$A^T A$是不是正定的？根据定义，判断$x^T (A^T A) x$的符号：</p>
-<script type="math/tex; mode=display">x^T (A^T A) x = x^T A^T Ax = (Ax)^T (Ax) = \vert Ax \vert</script><p>相当于计算向量$Ax$的模长，它一定是大于等于$0$的。<br>同理$A A^T $的二次型相当于计算$A^T x$的模长，大于等于$0$。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.MIT线性代数公开课<br>2.<a href="http://maecourses.ucsd.edu/~mdeolive/mae280a/lecture11.pdf" target="_blank" rel="noopener">http://maecourses.ucsd.edu/~mdeolive/mae280a/lecture11.pdf</a></p>
+<h3 id="半正定矩阵">半正定矩阵</h3>
+<p>如果对于所有的非零向量$x$，$x^T Ax$都是大于等于$0$的，我们称矩阵$A$是半正定矩阵。</p>
+<h3 id="属性-v6">属性</h3>
+<p>对于任何矩阵$A$，$A^T A$和$A A^T $都是对称矩阵，并且它们一定是半正定矩阵。<br>
+假设$A = \begin{bmatrix} a&amp;b\\c&amp;d\end{bmatrix}$，如何判断$A^T A$是不是正定的？根据定义，判断$x^T (A^T A) x$的符号：<br>
+$$x^T (A^T A) x = x^T A^T Ax = (Ax)^T (Ax) = \vert Ax \vert $$<br>
+相当于计算向量$Ax$的模长，它一定是大于等于$0$的。<br>
+同理$A A^T $的二次型相当于计算$A^T x$的模长，大于等于$0$。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课<br>
+2.<a href="http://maecourses.ucsd.edu/~mdeolive/mae280a/lecture11.pdf" target="_blank" rel="noopener">http://maecourses.ucsd.edu/~mdeolive/mae280a/lecture11.pdf</a></p>
 
           
         
@@ -1608,43 +1822,74 @@
       
         
           
-            <h2 id="行列式（Determinants）"><a href="#行列式（Determinants）" class="headerlink" title="行列式（Determinants）"></a>行列式（Determinants）</h2><p>这一章介绍行列式相关知识，行列式的一些属性等等。</p>
+            <h2 id="行列式-determinants">行列式（Determinants）</h2>
+<p>这一章介绍行列式相关知识，行列式的一些属性等等。</p>
 <ul>
 <li>矩阵不可逆，行列式为$0$。</li>
 <li>主元的乘积是行列式。</li>
 <li>交换任意两行和两列，行列式的符号改变。</li>
 <li>行列式的绝对值等于这个矩阵描述的space的体积。</li>
-<li>行列式的计算公式有三个：<ol>
+<li>行列式的计算公式有三个：
+<ol>
 <li>主元公式，就是所有主元的乘积</li>
 <li>big formula</li>
 <li>cofact formula</li>
 </ol>
 </li>
 </ul>
-<h2 id="定义以及性质"><a href="#定义以及性质" class="headerlink" title="定义以及性质"></a>定义以及性质</h2><p>行列式用det表示，给出以下的几个属性：</p>
+<h2 id="定义以及性质">定义以及性质</h2>
+<p>行列式用det表示，给出以下的几个属性：</p>
 <ol>
-<li>$n\times n$的单位矩阵$I$的行列式$det I = I$<script type="math/tex; mode=display">\begin{vmatrix}1&0\\\\0&1 \end{vmatrix} = 1</script></li>
-<li>交换任意两行，行列式符号取反。<script type="math/tex; mode=display">\begin{vmatrix}a&b\\\\c&d \end{vmatrix} = - \begin{vmatrix}c&d\\\\a&b \end{vmatrix}</script></li>
-<li>行列式是每一行的线性函数<script type="math/tex; mode=display">\begin{vmatrix}ta&tb\\\\c&d \end{vmatrix} = t \begin{vmatrix}a&b\\\\c&d \end{vmatrix}</script><script type="math/tex; mode=display">\begin{vmatrix}a+a'&b+b'\\\\c&d \end{vmatrix} = \begin{vmatrix}a'&b'\\\\c&d \end{vmatrix}+\begin{vmatrix}a&b\\\\c&d \end{vmatrix}</script></li>
+<li>$n\times n$的单位矩阵$I$的行列式$det I = I$<br>
+$$\begin{vmatrix}1&amp;0\\0&amp;1 \end{vmatrix} = 1$$</li>
+<li>交换任意两行，行列式符号取反。<br>
+$$\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix} = - \begin{vmatrix}c&amp;d\\a&amp;b \end{vmatrix}$$</li>
+<li>行列式是每一行的线性函数<br>
+$$\begin{vmatrix}ta&amp;tb\\c&amp;d \end{vmatrix} = t \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$<br>
+$$\begin{vmatrix}a+a’&amp;b+b’\\c&amp;d \end{vmatrix} = \begin{vmatrix}a’&amp;b’\\c&amp;d \end{vmatrix}+\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$</li>
 </ol>
 <p>以上的三个属性是行列式的性质，事实上，它们定义了行列式是什么，从这几个基本属性出发，我们能推导出更多的属性。</p>
-<ol>
-<li>如果$A$的两行相等，那么$det A=0$，交换两行，还是矩阵$A$，行列式变号，所以行列式只能为$0$。<br>假设$A = \begin{bmatrix}a&amp;b\\\\a&amp;b \end{bmatrix}$，$\begin{vmatrix}a&amp;b\\\\a&amp;b \end{vmatrix}= - \begin{vmatrix}a&amp;b\\\\a&amp;b \end{vmatrix}$</li>
-<li>从某一行减去其他行的倍数，行列式不变<script type="math/tex; mode=display">\begin{vmatrix}a&b\\\\c- la&d-lb \end{vmatrix}= \begin{vmatrix}a&b\\\\c&d \end{vmatrix} -l \begin{vmatrix}a&b\\\\a&b\end{vmatrix}   = \begin{vmatrix}a&b\\\\c&d \end{vmatrix}</script></li>
-<li>某一行为$0$矩阵，行列式为$0$。<script type="math/tex; mode=display">\begin{vmatrix}0&0\\\\c&d \end{vmatrix} = \begin{vmatrix}c&d\\\\c&d \end{vmatrix} = 0</script></li>
-<li>如果$A$是三角矩阵，行列式的值等于对角元素乘积。<script type="math/tex; mode=display">\begin{vmatrix}a&b\\\\0&d \end{vmatrix} = \begin{vmatrix}a&0\\\\c&d \end{vmatrix} = \begin{vmatrix}a&0\\\\0&d \end{vmatrix} = ad \begin{vmatrix}1&0\\\\0&1 \end{vmatrix} = ad</script></li>
-<li>当且仅当$A$不可逆的时候，$det A\neq 0$<br>$det A = det U$，如果$A$不可逆，$U$中有零行，从$6$我们知道，行列式为$0$。如果$A$可逆，行列式的值等于主元的乘积。</li>
-<li>矩阵$AB$的行列式等于矩阵$A$的行列式以及矩阵$B$的行列式。<script type="math/tex; mode=display">\begin{vmatrix}a&b\\\\c&d \end{vmatrix}\begin{vmatrix}p&q\\\\r&s \end{vmatrix} = \begin{vmatrix}ap+br&aq+bs\\\\cp+dr&cq+ds \end{vmatrix}</script>证明：<br>对于$2\times 2$的情况，有$\begin{vmatrix}A\end{vmatrix}\begin{vmatrix}B\end{vmatrix} = (ad - bc) ( ps - qr) = (ap + br) (cq+ds) - (aq+bs)(cp+dr) \begin{vmatrix}AB \end{vmatrix}$<br>当$B$是$A^{-1} $的时候，有$det (A A^{-1}) = det (I) = 1 = det (A) det(A^{-1} )$，所以$det A^{-1} = \frac{1}{det A}$</li>
-<li>$A^T$和$A$的行列式相同。<br>$PA=LU, A^T P^T = U^T L^T$，$det L = det L^T = 1, det U = det U^T $，$L$是对角线元素为$1$的对角矩阵，$U$是对角矩阵，$P$是置换矩阵，$P^T P = I$，$det P det P^T = 1$，则$det P = det P^T = 1$，这个为什么？我有点不明明白。最后有$det A = det A^T $。</li>
+<ol start="4">
+<li>如果$A$的两行相等，那么$det A=0$，交换两行，还是矩阵$A$，行列式变号，所以行列式只能为$0$。<br>
+假设$A = \begin{bmatrix}a&amp;b\\a&amp;b \end{bmatrix}$，$\begin{vmatrix}a&amp;b\\a&amp;b \end{vmatrix}= - \begin{vmatrix}a&amp;b\\a&amp;b \end{vmatrix}$</li>
+<li>从某一行减去其他行的倍数，行列式不变<br>
+$$\begin{vmatrix}a&amp;b\\c- la&amp;d-lb \end{vmatrix}= \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix} -l \begin{vmatrix}a&amp;b\\a&amp;b\end{vmatrix}   = \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$</li>
+<li>某一行为$0$矩阵，行列式为$0$。<br>
+$$\begin{vmatrix}0&amp;0\\c&amp;d \end{vmatrix} = \begin{vmatrix}c&amp;d\\c&amp;d \end{vmatrix} = 0$$</li>
+<li>如果$A$是三角矩阵，行列式的值等于对角元素乘积。<br>
+$$\begin{vmatrix}a&amp;b\\0&amp;d \end{vmatrix} = \begin{vmatrix}a&amp;0\\c&amp;d \end{vmatrix} = \begin{vmatrix}a&amp;0\\0&amp;d \end{vmatrix} = ad \begin{vmatrix}1&amp;0\\0&amp;1 \end{vmatrix} = ad$$</li>
+<li>当且仅当$A$不可逆的时候，$det A\neq 0$<br>
+$det A = det U$，如果$A$不可逆，$U$中有零行，从$6$我们知道，行列式为$0$。如果$A$可逆，行列式的值等于主元的乘积。</li>
+<li>矩阵$AB$的行列式等于矩阵$A$的行列式以及矩阵$B$的行列式。<br>
+$$\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}\begin{vmatrix}p&amp;q\\r&amp;s \end{vmatrix} = \begin{vmatrix}ap+br&amp;aq+bs\\cp+dr&amp;cq+ds \end{vmatrix}$$<br>
+证明：<br>
+对于$2\times 2$的情况，有$\begin{vmatrix}A\end{vmatrix}\begin{vmatrix}B\end{vmatrix} = (ad - bc) ( ps - qr) = (ap + br) (cq+ds) - (aq+bs)(cp+dr) \begin{vmatrix}AB \end{vmatrix}$<br>
+当$B$是$A^{-1} $的时候，有$det (A A^{-1}) = det (I) = 1 = det (A) det(A^{-1} )$，所以$det A^{-1} = \frac{1}{det A}$</li>
+<li>$A^T$和$A$的行列式相同。<br>
+$PA=LU, A^T P^T = U^T L^T$，$det L = det L^T = 1, det U = det U^T $，$L$是对角线元素为$1$的对角矩阵，$U$是对角矩阵，$P$是置换矩阵，$P^T P = I$，$det P det P^T = 1$，则$det P = det P^T = 1$，这个为什么？我有点不明明白。最后有$det A = det A^T $。</li>
 </ol>
-<h2 id="行列式的计算"><a href="#行列式的计算" class="headerlink" title="行列式的计算"></a>行列式的计算</h2><h3 id="主元公式"><a href="#主元公式" class="headerlink" title="主元公式"></a>主元公式</h3><p>行列式等于主元的乘积。</p>
-<h3 id="大公式"><a href="#大公式" class="headerlink" title="大公式"></a>大公式</h3><p>$n=2$的情况下：</p>
-<script type="math/tex; mode=display">A= \begin{bmatrix} a & b\\\\c&d\\\\\end{bmatrix}</script><script type="math/tex; mode=display">det A = \begin{vmatrix}a&0\\\\c&d\end{vmatrix}+\begin{vmatrix}0&b\\\\c&d\end{vmatrix} = \begin{vmatrix}a&0\\\\c&0\end{vmatrix}+\begin{vmatrix}a&0\\\\0&d\end{vmatrix}+\begin{vmatrix}0&b\\\\c&0\end{vmatrix} \begin{vmatrix}0&b\\\\0&d\end{vmatrix} = ad - bc</script><p>$n=3$的情况下，最后有六项不为$0$的取值，$3!= 3\times 2\times 1= 6$<br>在$n$的情况下，有$n!$个项，将它们加起来求和。</p>
-<h3 id="代数余子式（Cofactors）"><a href="#代数余子式（Cofactors）" class="headerlink" title="代数余子式（Cofactors）"></a>代数余子式（Cofactors）</h3><h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>用$C$表示代数余子式，用$M_{ij}$表示划去$i$行，$j$列的子矩阵，</p>
-<script type="math/tex; mode=display">C_{ij} = (-1)^{i+j} det  M_{ij}</script><h4 id="计算行列式"><a href="#计算行列式" class="headerlink" title="计算行列式"></a>计算行列式</h4><p>行列式可以沿着任意一行或者任意一列，利用代数余子式进行计算，<br>沿着第$i$行计算的公式如下：</p>
-<script type="math/tex; mode=display">det A = \sum_{j=1}^n a_{ij} C_{ij}</script><p>沿着第$j$列计算的公式如下：</p>
-<script type="math/tex; mode=display">det A = \sum_{i=1}^m a_{ij} C_{ij}</script><p>可以递归下去进行计算。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.MIT线性代数公开课视频</p>
+<h2 id="行列式的计算">行列式的计算</h2>
+<h3 id="主元公式">主元公式</h3>
+<p>行列式等于主元的乘积。</p>
+<h3 id="大公式">大公式</h3>
+<p>$n=2$的情况下：<br>
+$$A= \begin{bmatrix} a &amp; b\\c&amp;d\\\end{bmatrix}$$<br>
+$$det A = \begin{vmatrix}a&amp;0\\c&amp;d\end{vmatrix}+\begin{vmatrix}0&amp;b\\c&amp;d\end{vmatrix} = \begin{vmatrix}a&amp;0\\c&amp;0\end{vmatrix}+\begin{vmatrix}a&amp;0\\0&amp;d\end{vmatrix}+\begin{vmatrix}0&amp;b\\c&amp;0\end{vmatrix} \begin{vmatrix}0&amp;b\\0&amp;d\end{vmatrix} = ad - bc$$<br>
+$n=3$的情况下，最后有六项不为$0$的取值，$3!= 3\times 2\times 1= 6$<br>
+在$n$的情况下，有$n!$个项，将它们加起来求和。</p>
+<h3 id="代数余子式-cofactors">代数余子式（Cofactors）</h3>
+<h4 id="定义">定义</h4>
+<p>用$C$表示代数余子式，用$M_{ij}$表示划去$i$行，$j$列的子矩阵，<br>
+$$C_{ij} = (-1)^{i+j} det  M_{ij} $$</p>
+<h4 id="计算行列式">计算行列式</h4>
+<p>行列式可以沿着任意一行或者任意一列，利用代数余子式进行计算，<br>
+沿着第$i$行计算的公式如下：<br>
+$$ det A = \sum_{j=1}^n a_{ij} C_{ij}$$<br>
+沿着第$j$列计算的公式如下：<br>
+$$ det A = \sum_{i=1}^m a_{ij} C_{ij}$$<br>
+可以递归下去进行计算。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课视频</p>
 
           
         
@@ -1816,43 +2061,89 @@
       
         
           
-            <h2 id="正交性（Orthogonality）"><a href="#正交性（Orthogonality）" class="headerlink" title="正交性（Orthogonality）"></a>正交性（Orthogonality）</h2><p>这一章主要介绍正交性相关的内容。包括正交向量，投影，正交子空间，正交基以及如果求一组正交基，最后介绍QR分解求线性方程组。</p>
-<h2 id="正交向量（Orthogonal-vectors）"><a href="#正交向量（Orthogonal-vectors）" class="headerlink" title="正交向量（Orthogonal vectors）"></a>正交向量（Orthogonal vectors）</h2><p>给定向量$v,w$，如果$v^T w = 0$，那么这两个向量就是正交向量。</p>
-<h2 id="正交子空间（Orthogonal-subspaces）"><a href="#正交子空间（Orthogonal-subspaces）" class="headerlink" title="正交子空间（Orthogonal subspaces）"></a>正交子空间（Orthogonal subspaces）</h2><p>如果对于$\forall v\in V, \forall w\in W$，都有$v^T w = 0$，那么我们称subspaces $V,W$是orthogonal subspaces。</p>
-<h2 id="Column-space-nullsapce-row-space-left-nullspace的正交性"><a href="#Column-space-nullsapce-row-space-left-nullspace的正交性" class="headerlink" title="Column space, nullsapce, row space, left nullspace的正交性"></a>Column space, nullsapce, row space, left nullspace的正交性</h2><ol>
-<li><p>Row space和nullspace是正交的。<br>举个例子来证明吧，有$A= \begin{bmatrix}c1&amp;c2\end{bmatrix} = \begin{bmatrix}r1\\\\r2\end{bmatrix} = \begin{bmatrix}1&amp;1&amp;2&amp;4\\\\0&amp;0&amp;1&amp;3\end{bmatrix}$<br>因为row space是row vector的linear combination，即$c_1 r_1+c_2 r_2$，而nullspace是$Ax=0$的所有解，即$x_1 c_1+x_2c_2  = 0$，这里的$0$是向量，可以推出来$r_1x = 0, r_2x =0 $，所以$c_1 r_1 x =0, c_2 r_2x = 0$，也就是说row space中的任意vector和nullspace中的vector都正交。<br>使用数值方法证明：<br>$x$表示$Ax=0$中的$x$，$A^Ty$表示row space，那么有</p>
-<script type="math/tex; mode=display">x^T (A^T y) = (Ax)^T y = 0^T y = 0</script></li>
-<li><p>Column space和nullspace是正交的。</p>
+            <h2 id="正交性-orthogonality">正交性（Orthogonality）</h2>
+<p>这一章主要介绍正交性相关的内容。包括正交向量，投影，正交子空间，正交基以及如果求一组正交基，最后介绍QR分解求线性方程组。</p>
+<h2 id="正交向量-orthogonal-vectors">正交向量（Orthogonal vectors）</h2>
+<p>给定向量$v,w$，如果$v^T w = 0$，那么这两个向量就是正交向量。</p>
+<h2 id="正交子空间-orthogonal-subspaces">正交子空间（Orthogonal subspaces）</h2>
+<p>如果对于$\forall v\in V, \forall w\in W$，都有$v^T w = 0$，那么我们称subspaces $V,W$是orthogonal subspaces。</p>
+<h2 id="column-space-nullsapce-row-space-left-nullspace的正交性">Column space, nullsapce, row space, left nullspace的正交性</h2>
+<ol>
+<li>
+<p>Row space和nullspace是正交的。<br>
+举个例子来证明吧，有$A= \begin{bmatrix}c1&amp;c2\end{bmatrix} = \begin{bmatrix}r1\\r2\end{bmatrix} = \begin{bmatrix}1&amp;1&amp;2&amp;4\\0&amp;0&amp;1&amp;3\end{bmatrix}$<br>
+因为row space是row vector的linear combination，即$c_1 r_1+c_2 r_2$，而nullspace是$Ax=0$的所有解，即$x_1 c_1+x_2c_2  = 0$，这里的$0$是向量，可以推出来$r_1x = 0, r_2x =0 $，所以$c_1 r_1 x =0, c_2 r_2x = 0$，也就是说row space中的任意vector和nullspace中的vector都正交。<br>
+使用数值方法证明：<br>
+$x$表示$Ax=0$中的$x$，$A^Ty$表示row space，那么有<br>
+$$x^T (A^T y) = (Ax)^T y = 0^T y = 0$$</p>
+</li>
+<li>
+<p>Column space和nullspace是正交的。</p>
 </li>
 </ol>
-<h2 id="正交补（Orthogonal-complements）"><a href="#正交补（Orthogonal-complements）" class="headerlink" title="正交补（Orthogonal complements）"></a>正交补（Orthogonal complements）</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>如果一个subspace包含所有和subspace $V$正交的向量，称这个subspace是$V$的orthogonal complements（正交补）。</p>
-<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>Nullspace是row space的正交补（$\mathbb{R}^n$上）。<br>Left nullspace是column space的正交补（$\mathbb{R}^m$上）。</p>
-<h2 id="投影（Projections）"><a href="#投影（Projections）" class="headerlink" title="投影（Projections）"></a>投影（Projections）</h2><p>如下图所示，左边是投影到一条直线上的结果，右边是投影到一个subspace上的结果<br><img src="/2019/08/27/orthogonality/projection.jpg" alt="projection"></p>
-<h2 id="A-T-A"><a href="#A-T-A" class="headerlink" title="$A^T A$"></a>$A^T A$</h2><p>$A^T A$是可逆的，当且仅当$A$有linear independent columns时<br>证明：<br>$A^TA$是一个$n\times n$的方阵，$A$的nullspace和$A^T A$的nullspace相等。<br>如果$Ax= 0$，那么$A^T Ax = 0$，所以$x$也在$A^T A$的nullspace中。如果$A^T Ax=0$，那么我们要证明$Ax=0$，在左右两边同乘$x^T $得$x^T A^T Ax=0$，则$(AX)^T AX =0$，所以$\vert Ax\vert^2 =0$。也即是说如果$A^T Ax=0$，那么$Ax$的长度为$0$，也就是$Ax=0$。<br>如果$A^T A$的columns是独立的，也就是说nullspace为空，所以$A$的columns也是独立的；同理，如果$A$的columns是独立的，那么$A^T $的columns也是独立的。</p>
-<h2 id="最小二乘法（Least-Squares-Approximations）"><a href="#最小二乘法（Least-Squares-Approximations）" class="headerlink" title="最小二乘法（Least Squares Approximations）"></a>最小二乘法（Least Squares Approximations）</h2><p>$Ax=b$无解的情况，通常是等式个数大于未知数的个数，即$m\gt n$，$b$不在$A$的column space内。我们的目标是想让$e=b-Ax$为$0$，当这个目标不能实现的时候，可以在方程左右两边同时乘上$A^T$，求出一个近似的$\hat{x}$：</p>
-<script type="math/tex; mode=display">A^TAx = A^Tb</script><p>如何推导出这个结果，有以下几种方法：</p>
-<h3 id="最小化误差"><a href="#最小化误差" class="headerlink" title="最小化误差"></a>最小化误差</h3><ol>
-<li>几何上<br>$Ax=b$的最好近似是$A\bar{x} = p$，最小的可能误差是$e=b-p$，$b$上的点的投影都在$p$上，而$p$在$A$的column space上，从直线拟合的角度上来看，$\bar{x}$给出了最好的结果。</li>
-<li><p>代数上<br>$b=p+e$，$e$在$A$的nullspace上，$Ax=b=p+e$我们解不出来，$A\bar{x} = p$我们可以解出来。</p>
+<h2 id="正交补-orthogonal-complements">正交补（Orthogonal complements）</h2>
+<h3 id="定义">定义</h3>
+<p>如果一个subspace包含所有和subspace $V$正交的向量，称这个subspace是$V$的orthogonal complements（正交补）。</p>
+<h3 id="示例">示例</h3>
+<p>Nullspace是row space的正交补（$\mathbb{R}^n$上）。<br>
+Left nullspace是column space的正交补（$\mathbb{R}^m$上）。</p>
+<h2 id="投影-projections">投影（Projections）</h2>
+<p>如下图所示，左边是投影到一条直线上的结果，右边是投影到一个subspace上的结果<br>
+<img src="/2019/08/27/orthogonality/projection.jpg" alt="projection"></p>
+<h2 id="a-t-a">$A^T A$</h2>
+<p>$A^T A$是可逆的，当且仅当$A$有linear independent columns时<br>
+证明：<br>
+$A^TA$是一个$n\times n$的方阵，$A$的nullspace和$A^T A$的nullspace相等。<br>
+如果$Ax= 0$，那么$A^T Ax = 0$，所以$x$也在$A^T A$的nullspace中。如果$A^T Ax=0$，那么我们要证明$Ax=0$，在左右两边同乘$x^T $得$x^T A^T Ax=0$，则$(AX)^T AX =0$，所以$\vert Ax\vert^2 =0$。也即是说如果$A^T Ax=0$，那么$Ax$的长度为$0$，也就是$Ax=0$。<br>
+如果$A^T A$的columns是独立的，也就是说nullspace为空，所以$A$的columns也是独立的；同理，如果$A$的columns是独立的，那么$A^T $的columns也是独立的。</p>
+<h2 id="最小二乘法-least-squares-approximations">最小二乘法（Least Squares Approximations）</h2>
+<p>$Ax=b$无解的情况，通常是等式个数大于未知数的个数，即$m\gt n$，$b$不在$A$的column space内。我们的目标是想让$e=b-Ax$为$0$，当这个目标不能实现的时候，可以在方程左右两边同时乘上$A^T$，求出一个近似的$\hat{x}$：<br>
+$$A^TAx = A^Tb$$<br>
+如何推导出这个结果，有以下几种方法：</p>
+<h3 id="最小化误差">最小化误差</h3>
+<ol>
+<li>
+<p>几何上<br>
+$Ax=b$的最好近似是$A\bar{x} = p$，最小的可能误差是$e=b-p$，$b$上的点的投影都在$p$上，而$p$在$A$的column space上，从直线拟合的角度上来看，$\bar{x}$给出了最好的结果。</p>
 </li>
-<li><p>积分</p>
+<li>
+<p>代数上<br>
+$b=p+e$，$e$在$A$的nullspace上，$Ax=b=p+e$我们解不出来，$A\bar{x} = p$我们可以解出来。</p>
+</li>
+<li>
+<p>积分</p>
 </li>
 </ol>
-<h3 id="直线拟合"><a href="#直线拟合" class="headerlink" title="直线拟合"></a>直线拟合</h3><h3 id="抛物线拟合"><a href="#抛物线拟合" class="headerlink" title="抛物线拟合"></a>抛物线拟合</h3><h2 id="正交基（Orthogonal-Bases）"><a href="#正交基（Orthogonal-Bases）" class="headerlink" title="正交基（Orthogonal Bases）"></a>正交基（Orthogonal Bases）</h2><h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>一组向量$q_1, q_2, \cdots , q_n$如果满足以下条件：</p>
-<script type="math/tex; mode=display">q_i^T q_j\begin{cases}0, i\neq j \\\\1, i=j\end{cases}</script><p>我们称这一组向量是正交向量，由正交column vectors构成的矩阵用一个特殊字母$Q$表示。如果这组正交向量同时还是单位向量，我们叫它单位正交向量。如果columns仅仅正交，而不是单位向量的话，点乘仍然会得到一个对角矩阵，但是它的性质没有那么好。</p>
-<h3 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h3><ol>
+<h3 id="直线拟合">直线拟合</h3>
+<h3 id="抛物线拟合">抛物线拟合</h3>
+<h2 id="正交基-orthogonal-bases">正交基（Orthogonal Bases）</h2>
+<h3 id="定义-v2">定义</h3>
+<p>一组向量$q_1, q_2, \cdots , q_n$如果满足以下条件：<br>
+$$q_i^T q_j\begin{cases}0, i\neq j \\1, i=j\end{cases}$$<br>
+我们称这一组向量是正交向量，由正交column vectors构成的矩阵用一个特殊字母$Q$表示。如果这组正交向量同时还是单位向量，我们叫它单位正交向量。如果columns仅仅正交，而不是单位向量的话，点乘仍然会得到一个对角矩阵，但是它的性质没有那么好。</p>
+<h3 id="性质">性质</h3>
+<ol>
 <li>满足$Q^T Q=I$。</li>
 <li>如果$Q$是方阵，那么$Q^T = Q^{-1}$，即转置等于逆。</li>
 <li>如果$Q$是方阵的话，$QQ^T = Q^T Q= I$。</li>
-<li>如果$Q$是rectangular的话，$QQ^T =I$不成立，而$Q^T Q =I$依然成立。 </li>
+<li>如果$Q$是rectangular的话，$QQ^T =I$不成立，而$Q^T Q =I$依然成立。</li>
 </ol>
-<h2 id="用-Q-取代-A-进行正交投影"><a href="#用-Q-取代-A-进行正交投影" class="headerlink" title="用$Q$取代$A$进行正交投影"></a>用$Q$取代$A$进行正交投影</h2><p>假设矩阵$A$的所有column vectors都是orthonormal的，$a$就变成了$q$，$A^T A$就变成了$Q^T Q=I$，所以$Ax=b$的解变成了$\bar{x} = Q^T b$，而投影矩阵变成了$P=QQ^T $。</p>
-<h2 id="Gram-Schmidi正交化"><a href="#Gram-Schmidi正交化" class="headerlink" title="Gram-Schmidi正交化"></a>Gram-Schmidi正交化</h2><p>Gram-Schmidt正交化过程就相当于是在不断的进行投影，这个方法的想法是从$n$个独立的column vector出发，构建$n$个正交向量，然后再单位化。拿$3$个过程举个例子。用$a,b,c$表示初始的$3$个独立向量，$A,B,C$表示三个正交向量，$q_1, q_2,q_3$表示三个正交单位向量。<br>第一个正交向量，直接对第一个向量单位化</p>
-<script type="math/tex; mode=display">A=a, q_1 = \frac{A}{\vert A\vert}</script><p>第二个正交向量，将第二个向量投影到第一个向量上，计算出一个和第二个向量正交的向量。</p>
-<script type="math/tex; mode=display">B=b-\frac{A^T B}{A^T A}A , q_2 = \frac{B}{\vert B\vert}</script><p>第三个正交向量，将第三个向量分别投影到第一个和第二个正交向量上，计算处第三个正交向量。</p>
-<script type="math/tex; mode=display">C=c - \frac{A^T C}{A^T A}A - \frac{B^T C}{B^T B}B , q_2 = \frac{C}{\vert C\vert}</script><p><img src="/2019/08/27/orthogonality/gram_schmidi.jpg" alt="gram_schmidi"></p>
-<h2 id="QR分解"><a href="#QR分解" class="headerlink" title="QR分解"></a>QR分解</h2><p>假设一个矩阵$A$的列向量分别为$a,b,c$，最后经过一个三角矩阵$R$化简成一个正交矩阵$Q$，相应的列向量分别为$q_1,q_2,q_3$。<br>首先根据Gram-Schmidi计算处一组正交基$Q = \begin{bmatrix}q_1&amp;q_2&amp;q_3 \end{bmatrix}$。根据$A$，能直接计算出$Q$，那么如何得到$R$呢？我们假设$A=QR$，在$A$和$Q$已知的情况下，并且满足$Q^T Q = I$，我们可以左右两边同时乘上$Q^T $，就有$Q^T A = Q^T QR = R$，即$R=Q^T A$。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.MIT线性代数公开课</p>
+<h2 id="用-q-取代-a-进行正交投影">用$Q$取代$A$进行正交投影</h2>
+<p>假设矩阵$A$的所有column vectors都是orthonormal的，$a$就变成了$q$，$A^T A$就变成了$Q^T Q=I$，所以$Ax=b$的解变成了$\bar{x} = Q^T b$，而投影矩阵变成了$P=QQ^T $。</p>
+<h2 id="gram-schmidi正交化">Gram-Schmidi正交化</h2>
+<p>Gram-Schmidt正交化过程就相当于是在不断的进行投影，这个方法的想法是从$n$个独立的column vector出发，构建$n$个正交向量，然后再单位化。拿$3$个过程举个例子。用$a,b,c$表示初始的$3$个独立向量，$A,B,C$表示三个正交向量，$q_1, q_2,q_3$表示三个正交单位向量。<br>
+第一个正交向量，直接对第一个向量单位化<br>
+$$A=a, q_1 = \frac{A}{\vert A\vert}$$<br>
+第二个正交向量，将第二个向量投影到第一个向量上，计算出一个和第二个向量正交的向量。<br>
+$$B=b-\frac{A^T B}{A^T A}A , q_2 = \frac{B}{\vert B\vert}$$<br>
+第三个正交向量，将第三个向量分别投影到第一个和第二个正交向量上，计算处第三个正交向量。<br>
+$$C=c - \frac{A^T C}{A^T A}A - \frac{B^T C}{B^T B}B , q_2 = \frac{C}{\vert C\vert}$$<br>
+<img src="/2019/08/27/orthogonality/gram_schmidi.jpg" alt="gram_schmidi"></p>
+<h2 id="qr分解">QR分解</h2>
+<p>假设一个矩阵$A$的列向量分别为$a,b,c$，最后经过一个三角矩阵$R$化简成一个正交矩阵$Q$，相应的列向量分别为$q_1,q_2,q_3$。<br>
+首先根据Gram-Schmidi计算处一组正交基$Q = \begin{bmatrix}q_1&amp;q_2&amp;q_3 \end{bmatrix}$。根据$A$，能直接计算出$Q$，那么如何得到$R$呢？我们假设$A=QR$，在$A$和$Q$已知的情况下，并且满足$Q^T Q = I$，我们可以左右两边同时乘上$Q^T $，就有$Q^T A = Q^T QR = R$，即$R=Q^T A$。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课</p>
 
           
         
@@ -2024,46 +2315,77 @@
       
         
           
-            <h2 id="向量空间和子空间（vector-spaces-and-subspaces）"><a href="#向量空间和子空间（vector-spaces-and-subspaces）" class="headerlink" title="向量空间和子空间（vector spaces and subspaces）"></a>向量空间和子空间（vector spaces and subspaces）</h2><p>这一件介绍和space相关的概念以及很多其他的基础知识。</p>
-<h2 id="线性组合（Linear-of-Combinations）"><a href="#线性组合（Linear-of-Combinations）" class="headerlink" title="线性组合（Linear of Combinations）"></a>线性组合（Linear of Combinations）</h2><p>线性组合有两种：加法和数乘。</p>
-<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>如果$v$和$w$是column vectors，$c,d$是标量，那么$cv+dw$是$v$和$w$的线性组合。</p>
-<h2 id="向量空间（Vector-Spaces）"><a href="#向量空间（Vector-Spaces）" class="headerlink" title="向量空间（Vector Spaces）"></a>向量空间（Vector Spaces）</h2><p>Vector spaces是向量的集合，通常表示为$\mathbb{R}^1 , \mathbb{R}^2 , \mathbb{R}^n $。$\mathbb{R}^5 $表示所有$5$维的column vectors。</p>
-<h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。</p>
-<h2 id="子空间（Subspaces）"><a href="#子空间（Subspaces）" class="headerlink" title="子空间（Subspaces）"></a>子空间（Subspaces）</h2><h3 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h3><p>某个vector space的subspace是满足以下条件的vectors的集合，如果$v$和$w$是subspace中的vectors，并且$c$是任意的salar，</p>
+            <h2 id="向量空间和子空间-vector-spaces-and-subspaces">向量空间和子空间（vector spaces and subspaces）</h2>
+<p>这一件介绍和space相关的概念以及很多其他的基础知识。</p>
+<h2 id="线性组合-linear-of-combinations">线性组合（Linear of Combinations）</h2>
+<p>线性组合有两种：加法和数乘。</p>
+<h3 id="定义">定义</h3>
+<p>如果$v$和$w$是column vectors，$c,d$是标量，那么$cv+dw$是$v$和$w$的线性组合。</p>
+<h2 id="向量空间-vector-spaces">向量空间（Vector Spaces）</h2>
+<p>Vector spaces是向量的集合，通常表示为$\mathbb{R}^1 , \mathbb{R}^2 , \mathbb{R}^n $。$\mathbb{R}^5 $表示所有$5$维的column vectors。</p>
+<h3 id="定义-v2">定义</h3>
+<p>Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。</p>
+<h2 id="子空间-subspaces">子空间（Subspaces）</h2>
+<h3 id="定义-v3">定义</h3>
+<p>某个vector space的subspace是满足以下条件的vectors的集合，如果$v$和$w$是subspace中的vectors，并且$c$是任意的salar，</p>
 <ol>
 <li>$v+w$还在subspace中</li>
 <li>$cv$还在subspace</li>
 </ol>
 <p>也就是说subspace是对加法和数乘封闭的vectors set，所有的线性组合仍然还在这个subspace。</p>
-<h3 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h3><ol>
+<h3 id="例子">例子</h3>
+<ol>
 <li>所有的subspace都包括zero vector。</li>
 <li>通过原点的直线都是subspace。</li>
 <li>包含$v$和$w$的subspace一定得包含所有的线性组合$cv+dw$</li>
-<li>给定两个subspace $S,T$<ol>
+<li>给定两个subspace $S,T$
+<ol>
 <li>$S\cup T$不是一个subspace</li>
-<li>$S\cap T$是一个subspace，证明<br>假设$v,w$是$S\cap T$的，则$v,w\in S, v,w\in T$，$v+w\in S, v+w\in T, cv+dw \in S, cv+dw \in T$，所以$cv+dw \in S\cap T$</li>
+<li>$S\cap T$是一个subspace，证明<br>
+假设$v,w$是$S\cap T$的，则$v,w\in S, v,w\in T$，$v+w\in S, v+w\in T, cv+dw \in S, cv+dw \in T$，所以$cv+dw \in S\cap T$</li>
 </ol>
 </li>
 </ol>
-<h2 id="列空间（Column-Space）"><a href="#列空间（Column-Space）" class="headerlink" title="列空间（Column Space）"></a>列空间（Column Space）</h2><h3 id="创建矩阵的subspace"><a href="#创建矩阵的subspace" class="headerlink" title="创建矩阵的subspace"></a>创建矩阵的subspace</h3><p>取矩阵$A$的column vectors，计算它们的所有线性组合，借得到了一个subspace</p>
-<h3 id="定义-3"><a href="#定义-3" class="headerlink" title="定义"></a>定义</h3><p>给定矩阵$A$，$A$的所有column vectors的linear combinations组成的subspace称为column space，用$C(A)$表示。$C(A)$由$Ax$的所有可能取值构成。</p>
-<h3 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h3><ol>
+<h2 id="列空间-column-space">列空间（Column Space）</h2>
+<h3 id="创建矩阵的subspace">创建矩阵的subspace</h3>
+<p>取矩阵$A$的column vectors，计算它们的所有线性组合，借得到了一个subspace</p>
+<h3 id="定义-v4">定义</h3>
+<p>给定矩阵$A$，$A$的所有column vectors的linear combinations组成的subspace称为column space，用$C(A)$表示。$C(A)$由$Ax$的所有可能取值构成。</p>
+<h3 id="性质">性质</h3>
+<ol>
 <li>当且仅当$b$在$A$的column space中，$Ax=b$才有解。</li>
 <li>假设$A$是$m\times n$矩阵，$A$的column space是$\mathbb{R}^m $的subspace。</li>
 </ol>
-<h2 id="零空间（Nullspace）"><a href="#零空间（Nullspace）" class="headerlink" title="零空间（Nullspace）"></a>零空间（Nullspace）</h2><h3 id="定义-4"><a href="#定义-4" class="headerlink" title="定义"></a>定义</h3><p>矩阵$A$的nullspace是所有$Ax=0$的解构成的vector space，用$N(A)$表示。$N(A)$是$\mathbb{R}^n $的subspace，因为$x$是在$\mathbb{R}^n $中的$n$维向量，所以是$\mathbb{R}^n $的subspace。</p>
-<h2 id="special-solution，主元，自由变量（Special-solution-Pivot-variables和free-variables-Pivot-columns和free-columns）"><a href="#special-solution，主元，自由变量（Special-solution-Pivot-variables和free-variables-Pivot-columns和free-columns）" class="headerlink" title="special solution，主元，自由变量（Special solution, Pivot variables和free variables, Pivot columns和free columns）"></a>special solution，主元，自由变量（Special solution, Pivot variables和free variables, Pivot columns和free columns）</h2><h3 id="special-solution"><a href="#special-solution" class="headerlink" title="special solution"></a>special solution</h3><p>如果方程数量小于未知数数量，那么这个方程（组）有无穷多个解，为了表示这个方程组，指定special solution来表示它。<br>如方程组<br>\begin{cases}x_1+2x_2=0\\\\3x_1+6x_2 = 0 \end{cases}<br>上面的方程组其实是一个方程$x_1+2x_2=0$，两个未知数。随便的选择一个变量，让它的值为$1$，求出另一个$x$。比如令$x_2 = 1$，那么$x_1 = -2$。我们就称$(x_1=-2,x_2=1)$为一个special solution。<br>再给一个例子，$x+2y+3z=0$，有两个special solution，随机选择两个变量，分别让其中一个取$1$，剩余的另一个取$0$，求解出来最后的一个变量。</p>
-<h3 id="主元，主元列，自由变量，自由列"><a href="#主元，主元列，自由变量，自由列" class="headerlink" title="主元，主元列，自由变量，自由列"></a>主元，主元列，自由变量，自由列</h3><p>我们通常把选定的两个变量叫做free variables，其他的那些变量叫做pivot variables。比如第一个例子中，$x_2$是free variable，$x_1$是pivot variable。第二个例子中，$x_2, x_3$是free variables，$x_1$是pivot variables。主元所在的column叫做pivot column，free variables所在的column叫做free columns。</p>
-<h2 id="秩（rank）"><a href="#秩（rank）" class="headerlink" title="秩（rank）"></a>秩（rank）</h2><p>矩阵$A$的秩（rank），用$r(A)$表示，它等于pivots的数量，等于column space的维度，等于row space的维度。</p>
-<h2 id="消元法解-Ax-0"><a href="#消元法解-Ax-0" class="headerlink" title="消元法解$Ax=0$"></a>消元法解$Ax=0$</h2><p>两个步骤：</p>
+<h2 id="零空间-nullspace">零空间（Nullspace）</h2>
+<h3 id="定义-v5">定义</h3>
+<p>矩阵$A$的nullspace是所有$Ax=0$的解构成的vector space，用$N(A)$表示。$N(A)$是$\mathbb{R}^n $的subspace，因为$x$是在$\mathbb{R}^n $中的$n$维向量，所以是$\mathbb{R}^n $的subspace。</p>
+<h2 id="special-solution-主元-自由变量-special-solution-pivot-variables和free-variables-pivot-columns和free-columns">special solution，主元，自由变量（Special solution, Pivot variables和free variables, Pivot columns和free columns）</h2>
+<h3 id="special-solution">special solution</h3>
+<p>如果方程数量小于未知数数量，那么这个方程（组）有无穷多个解，为了表示这个方程组，指定special solution来表示它。<br>
+如方程组<br>
+\begin{cases}x_1+2x_2=0\\3x_1+6x_2 = 0 \end{cases}<br>
+上面的方程组其实是一个方程$x_1+2x_2=0$，两个未知数。随便的选择一个变量，让它的值为$1$，求出另一个$x$。比如令$x_2 = 1$，那么$x_1 = -2$。我们就称$(x_1=-2,x_2=1)$为一个special solution。<br>
+再给一个例子，$x+2y+3z=0$，有两个special solution，随机选择两个变量，分别让其中一个取$1$，剩余的另一个取$0$，求解出来最后的一个变量。</p>
+<h3 id="主元-主元列-自由变量-自由列">主元，主元列，自由变量，自由列</h3>
+<p>我们通常把选定的两个变量叫做free variables，其他的那些变量叫做pivot variables。比如第一个例子中，$x_2$是free variable，$x_1$是pivot variable。第二个例子中，$x_2, x_3$是free variables，$x_1$是pivot variables。主元所在的column叫做pivot column，free variables所在的column叫做free columns。</p>
+<h2 id="秩-rank">秩（rank）</h2>
+<p>矩阵$A$的秩（rank），用$r(A)$表示，它等于pivots的数量，等于column space的维度，等于row space的维度。</p>
+<h2 id="消元法解-ax-0">消元法解$Ax=0$</h2>
+<p>两个步骤：</p>
 <ol>
 <li>将矩阵$A$化为三交矩阵$U$</li>
 <li>解$Ux=0$或者$Rx=0$</li>
 </ol>
-<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>矩阵$A= \begin{bmatrix}1&amp;1&amp;2&amp;3\\\\2&amp;2&amp;8&amp;10\\\ 3&amp;3&amp;10&amp;13\end{bmatrix}$化成三角矩阵为：$U= \begin{bmatrix}1&amp;1&amp;2&amp;3\\\\0&amp;0&amp;4&amp;4\\\ 0&amp;0&amp;0&amp;0\end{bmatrix}$，第一列和第三列是pivot columns，第二列和第四列是free columns，然后求出special solutions，再计算出通解。<br>对于每个free variabled都有一个special solution，$Ax=0$共有$r$个pivots，以及$n-r$个free variables，$A$的nullspace $N(A)$包含$n-r$个special solutions，$N(A)$具有如下的形式：</p>
-<script type="math/tex; mode=display">N = \begin{bmatrix} -F\\\\I\end{bmatrix}</script><p>其中$F$为free variables取特值的时候，pivtos的取值，$I$为free variables的取值。</p>
-<h2 id="行简化阶梯形矩阵（Thre-reduced-row-echelon-matrix）"><a href="#行简化阶梯形矩阵（Thre-reduced-row-echelon-matrix）" class="headerlink" title="行简化阶梯形矩阵（Thre reduced row echelon matrix）"></a>行简化阶梯形矩阵（Thre reduced row echelon matrix）</h2><p>行简化阶梯形矩阵是pivot colunmn恰好构成单位矩阵的矩阵，如：</p>
-<script type="math/tex; mode=display">U = \begin{bmatrix}1&1&0&1\\\\0&0&1&1\\\\0&0&0&0\end{bmatrix}</script><p>所有的pivots都是$1$，主元所在列的其余位置都是$0$。<br>行简化阶梯形矩阵给出了很多有用信息：</p>
+<h3 id="示例">示例</h3>
+<p>矩阵$A= \begin{bmatrix}1&amp;1&amp;2&amp;3\\2&amp;2&amp;8&amp;10\\ 3&amp;3&amp;10&amp;13\end{bmatrix}$化成三角矩阵为：$U= \begin{bmatrix}1&amp;1&amp;2&amp;3\\0&amp;0&amp;4&amp;4\\ 0&amp;0&amp;0&amp;0\end{bmatrix}$，第一列和第三列是pivot columns，第二列和第四列是free columns，然后求出special solutions，再计算出通解。<br>
+对于每个free variabled都有一个special solution，$Ax=0$共有$r$个pivots，以及$n-r$个free variables，$A$的nullspace $N(A)$包含$n-r$个special solutions，$N(A)$具有如下的形式：<br>
+$$N = \begin{bmatrix} -F\\I\end{bmatrix}$$<br>
+其中$F$为free variables取特值的时候，pivtos的取值，$I$为free variables的取值。</p>
+<h2 id="行简化阶梯形矩阵-thre-reduced-row-echelon-matrix">行简化阶梯形矩阵（Thre reduced row echelon matrix）</h2>
+<p>行简化阶梯形矩阵是pivot colunmn恰好构成单位矩阵的矩阵，如：<br>
+$$U = \begin{bmatrix}1&amp;1&amp;0&amp;1\\0&amp;0&amp;1&amp;1\\0&amp;0&amp;0&amp;0\end{bmatrix}$$<br>
+所有的pivots都是$1$，主元所在列的其余位置都是$0$。<br>
+行简化阶梯形矩阵给出了很多有用信息：</p>
 <ol>
 <li>pivot columns</li>
 <li>pivot rows</li>
@@ -2071,52 +2393,78 @@
 <li>zero rows显示这一行是其他rows的lihear combination</li>
 <li>free columns</li>
 </ol>
-<h2 id="Ax-b-的通解"><a href="#Ax-b-的通解" class="headerlink" title="$Ax=b$的通解"></a>$Ax=b$的通解</h2><p>先求出particular solution，让所有的free variables取$0$，求解出pivots，得到一个solution，我们称它为particular solution。然后求出所有的special solutions，则$Ax=b$的通解可以表示为：</p>
-<script type="math/tex; mode=display">x = x_p + a x_{special_solution_1} + b x_{special_solution} + \cdots=x_p+x_n</script><p>即particular solution加上nullspace组成的新的vector sets。当没有free variables的时候，也就没有special solutions，nullspace为空。</p>
+<h2 id="ax-b-的通解">$Ax=b$的通解</h2>
+<p>先求出particular solution，让所有的free variables取$0$，求解出pivots，得到一个solution，我们称它为particular solution。然后求出所有的special solutions，则$Ax=b$的通解可以表示为：<br>
+$$x = x_p + a x_{special_solution_1} + b x_{special_solution} + \cdots=x_p+x_n$$<br>
+即particular solution加上nullspace组成的新的vector sets。当没有free variables的时候，也就没有special solutions，nullspace为空。</p>
 <!--当$b=0$的时候，我们可以求出通解$x$，当$b\neq 0$时，有点难。通过使用增广矩阵：$\left[A\ b\right]$，然后进行消元，得到$\left[R\ d\right]$，$R$是行间化阶梯形矩阵，$d$是$b$做了和$A$一样的变换后的结果。-->
-<h2 id="列满秩"><a href="#列满秩" class="headerlink" title="列满秩"></a>列满秩</h2><h3 id="定义-5"><a href="#定义-5" class="headerlink" title="定义"></a>定义</h3><p>对于$m\times n$的矩阵$A$，每一列都有一个pivot，rank $r=n$，matrix是瘦高的$(m\ge n)$，其实就相当于每一个column vector都用到了，没有多余的column vector。可以用以下的形式表示：</p>
-<script type="math/tex; mode=display">R = \begin{bmatrix}I\\\\0\end{bmatrix}=\begin{bmatrix}n\times n 单位矩阵\\\\m-n行零向量\end{bmatrix}</script><h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><p>当$A$列满秩的时候，有以下结论：</p>
+<h2 id="列满秩">列满秩</h2>
+<h3 id="定义-v6">定义</h3>
+<p>对于$m\times n$的矩阵$A$，每一列都有一个pivot，rank $r=n$，matrix是瘦高的$(m\ge n)$，其实就相当于每一个column vector都用到了，没有多余的column vector。可以用以下的形式表示：<br>
+$$R = \begin{bmatrix}I\\0\end{bmatrix}=\begin{bmatrix}n\times n 单位矩阵\\m-n行零向量\end{bmatrix}$$</p>
+<h3 id="属性">属性</h3>
+<p>当$A$列满秩的时候，有以下结论：</p>
 <ol>
 <li>$A$的所有columns都是pivot columns</li>
 <li>没有free variables，free columns和special solutions</li>
-<li>Nullspace只有$x=0$ </li>
+<li>Nullspace只有$x=0$</li>
 <li>如果$Ax=b$有解，那么它只有一个解，或者一个解都没有</li>
 </ol>
-<h2 id="行满秩"><a href="#行满秩" class="headerlink" title="行满秩"></a>行满秩</h2><h3 id="定义-6"><a href="#定义-6" class="headerlink" title="定义"></a>定义</h3><p>对于$m\times n$的矩阵$A$，如果$r=m$的话，$A$是一个矮胖的矩阵$(m\le n)$，每一行都有一个pivot。</p>
-<script type="math/tex; mode=display">R = \begin{bmatrix}I&F\end{bmatrix}=\begin{bmatrix}m\times m 单位矩阵&F\end{bmatrix}</script><h3 id="属性-1"><a href="#属性-1" class="headerlink" title="属性"></a>属性</h3><p>当$A$行满秩的时候，有以下结论：</p>
+<h2 id="行满秩">行满秩</h2>
+<h3 id="定义-v7">定义</h3>
+<p>对于$m\times n$的矩阵$A$，如果$r=m$的话，$A$是一个矮胖的矩阵$(m\le n)$，每一行都有一个pivot。<br>
+$$R = \begin{bmatrix}I&amp;F\end{bmatrix}=\begin{bmatrix}m\times m 单位矩阵&amp;F\end{bmatrix}$$</p>
+<h3 id="属性-v2">属性</h3>
+<p>当$A$行满秩的时候，有以下结论：</p>
 <ol>
 <li>$A$的所有row都有pivots，$R$没有$0$向量</li>
 <li>对于任何$b$，$Ax=b$都有解</li>
 <li>column space就是整个$\mathbb{R}^m$</li>
 <li>总共有$n-r= n-m$个special solutions。</li>
 </ol>
-<h2 id="秩和方程解个数之间的关系"><a href="#秩和方程解个数之间的关系" class="headerlink" title="秩和方程解个数之间的关系"></a>秩和方程解个数之间的关系</h2><ol>
+<h2 id="秩和方程解个数之间的关系">秩和方程解个数之间的关系</h2>
+<ol>
 <li>$r=m, r=n$,可逆方阵，$Ax=b$有且只有一个解，$R=\begin{bmatrix}I\end{bmatrix}$</li>
 <li>$r=m, r\lt n$,矮胖，$Ax=b$有无穷多个解，一个particular solution加上nullspace中的无穷个，$R=\begin{bmatrix}I&amp;F\end{bmatrix}$</li>
-<li>$r\lt m, r=m$,瘦高，$Ax=b$没有或者只有一个解，如果$b$恰好在$A$的column space中有一个解，如果$b$恰好不在$A$的column space中无解，因为column vectors是相互独立的，所以$Ax=0$只有零解，$R=\begin{bmatrix}I\\\\0\end{bmatrix}$</li>
-<li>$r\lt m, r\lt n$,并不满秩，$Ax=b$无解或者有无穷多个解，无解的情况是不在$A$的column space中，有解的情况是 在$A$的column space中，而在这部分中，又有无穷多个零解，所以要不无解要不无穷多个解。$R=\begin{bmatrix}I&amp;F\\\\0&amp;0\end{bmatrix}$</li>
+<li>$r\lt m, r=m$,瘦高，$Ax=b$没有或者只有一个解，如果$b$恰好在$A$的column space中有一个解，如果$b$恰好不在$A$的column space中无解，因为column vectors是相互独立的，所以$Ax=0$只有零解，$R=\begin{bmatrix}I\\0\end{bmatrix}$</li>
+<li>$r\lt m, r\lt n$,并不满秩，$Ax=b$无解或者有无穷多个解，无解的情况是不在$A$的column space中，有解的情况是 在$A$的column space中，而在这部分中，又有无穷多个零解，所以要不无解要不无穷多个解。$R=\begin{bmatrix}I&amp;F\\0&amp;0\end{bmatrix}$</li>
 </ol>
-<h2 id="线性独立（Linear-independence）"><a href="#线性独立（Linear-independence）" class="headerlink" title="线性独立（Linear independence）"></a>线性独立（Linear independence）</h2><p>矩阵$A$的columns是linear independent的，当且仅当$Ax=0$的唯一解是$x=0$时。也就是说$A$的nullspace只有零向量的时候。</p>
-<h3 id="定义-7"><a href="#定义-7" class="headerlink" title="定义"></a>定义</h3><p>给定一系列向量$v_1, \cdots, v_n$，$c_1 v_1 +\cdots+c_n v_n=0$当且仅当$c_1, \cdots, c_n=0$时候成立。</p>
-<h2 id="生成（Span）"><a href="#生成（Span）" class="headerlink" title="生成（Span）"></a>生成（Span）</h2><h3 id="定义-8"><a href="#定义-8" class="headerlink" title="定义"></a>定义</h3><p>使用一系列vectors生成space的过程就叫做span。</p>
-<h2 id="行空间（Row-Space）"><a href="#行空间（Row-Space）" class="headerlink" title="行空间（Row Space）"></a>行空间（Row Space）</h2><h3 id="定义-9"><a href="#定义-9" class="headerlink" title="定义"></a>定义</h3><p>使用矩阵的row vector生成的subspace就叫做row space，表示维$C(A^T)$，它和$A^T$的column space是相同的。</p>
-<h2 id="基（Basis）"><a href="#基（Basis）" class="headerlink" title="基（Basis）"></a>基（Basis）</h2><h3 id="定义-10"><a href="#定义-10" class="headerlink" title="定义"></a>定义</h3><p>生成space的最小vectors的independent vectors叫做这个space的一组basis，basis不是唯一的。</p>
-<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><p>矩阵的pivot columns是它的column space的一组basis。</p>
-<h2 id="维度（Dimension）"><a href="#维度（Dimension）" class="headerlink" title="维度（Dimension）"></a>维度（Dimension）</h2><h3 id="定义-11"><a href="#定义-11" class="headerlink" title="定义"></a>定义</h3><p>Space的dimension指的是每组basis中向量的个数。对于一个space，不同的baisis，它们的vectors不同，但是向量的个数都是相同的，这是space的属性。</p>
-<h2 id="秩和维度的关系"><a href="#秩和维度的关系" class="headerlink" title="秩和维度的关系"></a>秩和维度的关系</h2><p>和矩阵$A$相关的主要有四个subspace，分别是column space, nullspace, row space以及left nullspace。它们四个具有的属性如下所示：</p>
+<h2 id="线性独立-linear-independence">线性独立（Linear independence）</h2>
+<p>矩阵$A$的columns是linear independent的，当且仅当$Ax=0$的唯一解是$x=0$时。也就是说$A$的nullspace只有零向量的时候。</p>
+<h3 id="定义-v8">定义</h3>
+<p>给定一系列向量$v_1, \cdots, v_n$，$c_1 v_1 +\cdots+c_n v_n=0$当且仅当$c_1, \cdots, c_n=0$时候成立。</p>
+<h2 id="生成-span">生成（Span）</h2>
+<h3 id="定义-v9">定义</h3>
+<p>使用一系列vectors生成space的过程就叫做span。</p>
+<h2 id="行空间-row-space">行空间（Row Space）</h2>
+<h3 id="定义-v10">定义</h3>
+<p>使用矩阵的row vector生成的subspace就叫做row space，表示维$C(A<sup>T)$，它和$A</sup>T$的column space是相同的。</p>
+<h2 id="基-basis">基（Basis）</h2>
+<h3 id="定义-v11">定义</h3>
+<p>生成space的最小vectors的independent vectors叫做这个space的一组basis，basis不是唯一的。</p>
+<h3 id="示例-v2">示例</h3>
+<p>矩阵的pivot columns是它的column space的一组basis。</p>
+<h2 id="维度-dimension">维度（Dimension）</h2>
+<h3 id="定义-v12">定义</h3>
+<p>Space的dimension指的是每组basis中向量的个数。对于一个space，不同的baisis，它们的vectors不同，但是向量的个数都是相同的，这是space的属性。</p>
+<h2 id="秩和维度的关系">秩和维度的关系</h2>
+<p>和矩阵$A$相关的主要有四个subspace，分别是column space, nullspace, row space以及left nullspace。它们四个具有的属性如下所示：</p>
 <ol>
 <li>row space和column space的dimension都是$r$</li>
 <li>nullspace和left nullspace的dimension是$n-r, m-r$，为什么是$n-r,m-r$，解$Ax=0$得到$x$是$n$维向量，也就是nullspace是$\mathbb{R}^n$的subspace，$A$的column space的dimension是$r$，free variables，free columns的个数就是$n-r$，special solutions的个数就是$n-r$，而nullspace的basis其实就是所有的special solutions，所以nullspace的dimension就是$n-r$，$m-r$同理。</li>
 </ol>
-<h2 id="A-和-R-的维度和基的关系"><a href="#A-和-R-的维度和基的关系" class="headerlink" title="$A$和$R$的维度和基的关系"></a>$A$和$R$的维度和基的关系</h2><p>这里的$A$是矩阵，$R$是行间化阶梯形矩阵</p>
+<h2 id="a-和-r-的维度和基的关系">$A$和$R$的维度和基的关系</h2>
+<p>这里的$A$是矩阵，$R$是行间化阶梯形矩阵</p>
 <ol>
 <li>$A$和$R$的row space相同，dimension相同，为$r$，basis相同</li>
 <li>$A$和$R$的column space不同，dimension相同，也为$r$，basis不同</li>
 <li>$A$和$R$的nullspace相同，dimension相同，为$n-r$,basis相同</li>
 <li>$A$和$R$的left nullspace不同，dimension相同，为$m-r$</li>
 </ol>
-<p>Row space和nullspace都是$\mathbb{R}^n $的subspace，它们的dimension加起来等于n，但是这两个subspace加起来并不是$\mathbb{R}^n $。Row space是对$r$个$n$维pivot row vectors进行linear combination，而nullspace是对$n-r$个$n$维的解向量$x$进行linear combination，这里虽然都出现了$n$，但是第一个$n$是row vector的长度$n$，而第二个$n$是解向量的$n$。<br>同理，可以得column space和left nullspace都是$\mathbb{R}^m$的subspace。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.MIT线性代数公开课</p>
+<p>Row space和nullspace都是$\mathbb{R}^n $的subspace，它们的dimension加起来等于n，但是这两个subspace加起来并不是$\mathbb{R}^n $。Row space是对$r$个$n$维pivot row vectors进行linear combination，而nullspace是对$n-r$个$n$维的解向量$x$进行linear combination，这里虽然都出现了$n$，但是第一个$n$是row vector的长度$n$，而第二个$n$是解向量的$n$。<br>
+同理，可以得column space和left nullspace都是$\mathbb{R}^m$的subspace。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课</p>
 
           
         
@@ -2276,7 +2624,14 @@
       
         
           
-            <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>0.<a href="https://datascience.stackexchange.com/questions/27506/back-propagation-in-cnn" target="_blank" rel="noopener">https://datascience.stackexchange.com/questions/27506/back-propagation-in-cnn</a><br>1.<a href="https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c" target="_blank" rel="noopener">https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c</a><br>2.<a href="https://medium.com/@pavisj/convolutions-and-backpropagations-46026a8f5d2c" target="_blank" rel="noopener">https://medium.com/@pavisj/convolutions-and-backpropagations-46026a8f5d2c</a><br>3.<a href="https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199" target="_blank" rel="noopener">https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199</a><br>4.<a href="http://www.robots.ox.ac.uk/~vgg/practicals/cnn/" target="_blank" rel="noopener">http://www.robots.ox.ac.uk/~vgg/practicals/cnn/</a><br>5.<a href="https://www.researchgate.net/post/How_backpropagation_works_for_learning_filters_in_CNN" target="_blank" rel="noopener">https://www.researchgate.net/post/How_backpropagation_works_for_learning_filters_in_CNN</a><br>6.<a href="https://github.com/ivallesp/awesome-optimizers" target="_blank" rel="noopener">https://github.com/ivallesp/awesome-optimizers</a></p>
+            <h2 id="参考文献">参考文献</h2>
+<p>0.<a href="https://datascience.stackexchange.com/questions/27506/back-propagation-in-cnn" target="_blank" rel="noopener">https://datascience.stackexchange.com/questions/27506/back-propagation-in-cnn</a><br>
+1.<a href="https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c" target="_blank" rel="noopener">https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c</a><br>
+2.<a href="https://medium.com/@pavisj/convolutions-and-backpropagations-46026a8f5d2c" target="_blank" rel="noopener">https://medium.com/@pavisj/convolutions-and-backpropagations-46026a8f5d2c</a><br>
+3.<a href="https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199" target="_blank" rel="noopener">https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199</a><br>
+4.<a href="http://www.robots.ox.ac.uk/~vgg/practicals/cnn/" target="_blank" rel="noopener">http://www.robots.ox.ac.uk/~vgg/practicals/cnn/</a><br>
+5.<a href="https://www.researchgate.net/post/How_backpropagation_works_for_learning_filters_in_CNN" target="_blank" rel="noopener">https://www.researchgate.net/post/How_backpropagation_works_for_learning_filters_in_CNN</a><br>
+6.<a href="https://github.com/ivallesp/awesome-optimizers" target="_blank" rel="noopener">https://github.com/ivallesp/awesome-optimizers</a></p>
 
           
         
