@@ -32,30 +32,30 @@ $\rho_0$是初始状态$s_0$服从的distribution，$s_0\sim \rho_0$
 8. 随机策略
 选择action，stochastic policy表示为：$\pi_\theta: \mathcal{S}\rightarrow P(\mathcal{A})$，其中$P(\mathcal{A})$是选择$\mathcal{A}$中每个action的概率，$\theta$表示policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取action $a_t$的概率
 9. 期望折扣回报
-定义$r_t = \sum_{k=t}^{\infty}\gamma^{k-t}R_{k+1}$为expected discounted returns，表示从$t$时刻开始的expected discounted return，
-用$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty}\gamma^t R_{t+1}\right]$表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$
+定义$r_t = \sum_{k=t}^{\infty} \gamma^{k-t} R_{k+1}$为expected discounted returns，表示从$t$时刻开始的expected discounted return，
+用$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right]$表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$
 10. 状态值函数
 state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：
-$$V^{\pi} (s_t) = \mathbb{E}_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
+$$V^{\pi} (s_t) = \mathbb{E}\_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
 或者有时候也定义成从$t=0$开始的expected return：
-$$V^{\pi}(s) = \mathbb{E}_{\pi}\left[r_0|S_0=s;\pi\right]=\mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s;\pi \right]$$
+$$V^{\pi} (s) = \mathbb{E}\_{\pi}\left[r_0|S_0=s;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s;\pi \right]$$
 11. 动作值函数
 action value function定义为从$t$时刻的$s_t, a_t$开始的累计期望折扣奖励：
-$$Q^{\pi} (s_t, a_t) = \mathbb{E}_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
+$$Q^{\pi} (s_t, a_t) = \mathbb{E}\_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
 或者有时候也定义为从$t=0$开始的return的期望：
-$$Q^{\pi} (s_0, a_0) = \mathbb{E}_{\pi}\left[r_0|S_0=s,A_0=a;\pi\right]=\mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s,A_0=a;\pi \right]$$
+$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[r_0|S_0=s,A_0=a;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s,A_0=a;\pi \right]$$
 12. 优势函数
-$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi}(s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
-$V^{\pi}(s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi}(s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
+$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
+$V^{\pi} (s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi} (s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
 13. 目标函数
-Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}_{\pi} \left[r_0|\pi\right]$，用$p(s\rightarrow s',t,\pi)$表示从$s$经过$t$个timesteps到$s'$的概率，用
-$$\rho^{\pi} (s'):=\int_S \sum_{t=0}^{\infty}\gamma^{t}\rho_0(s_0)p(s_0\rightarrow s', t,\pi)ds_0$$
-表示$s'$服从的概率分布，其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布。我们可以将performance objective表示成在state distribution $\rho^\pi$和policy $\pi_\theta$上的期望：
+Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}\_{\pi} \left[r_0|\pi\right]$，用$p(s\rightarrow s',t,\pi)$表示从$s$经过$t$个timesteps到$s'$的概率，用
+$$\rho^{\pi} (s'):=\int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s', t,\pi)ds_0$$
+表示$s'$服从的概率分布，其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布。我们可以将performance objective表示成在state distribution $\rho^\pi $和policy $\pi_\theta$上的期望：
 \begin{align\*}
 J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\\\
 &= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi_{\theta}}\left[r(s,a)\right]\\\\ \tag{1}
 \end{align\*}
-其中$\rho^{\pi}(s)$可以理解为$\rho^{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。
+其中$\rho^{\pi} (s)$可以理解为$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。
 这里在每一个$t$处，$s_t=s$都是有一定概率发生的，也就是$\rho_{\pi}(s)$表示的东西。
 
 ## policy gradient
@@ -87,7 +87,7 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 
 #### Average Reward(平均奖励)
 平均奖励是，策略根据每一步的长期期望奖励$\rho(\pi)$进行排名
-$$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\left[r_1+r_2+\cdots+r_n|\pi\right] = \sum_s d^{\pi}(s) \sum_a\pi(s,a)R_s^a .$$
+$$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\left[r_1+r_2+\cdots+r_n|\pi\right] = \sum_s d^{\pi} (s) \sum_a\pi(s,a)R_s^a .$$
 其中$d^{\pi} (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是我们假设的策略$\pi$下的固定分布，对于所有的策略都是独立于$s_0$的。这里，我想了一天都没有想明白，为什么？？？第一个等号，我可以理解，这里$r_n$表示的是在时间步$n$的immediate reward，所以第一个等号表示的是在策略$\pi$下$n$个时间步的imediate reward平均值的期望。
 而第二个等号中，$d{\pi}(s)$是从初始状态$s_0$经过$t$步之后所有state $s$可能取值的概率，第一个求和号对$s$求和，就相当于一个离散积分，求的是$s$的期望；然后对$a$的求和，也相当于一个离散积分，求的是关于$a$的期望，所以第二个等式后面求的其实就是$R(s,a)$的期望。
 state-action value定义为：
@@ -96,14 +96,14 @@ $$Q^{\pi} (s,a) = \sum_{t=1}^{\infty} \mathbb{E}\left[r_t - \rho(\pi)|s_0=s,a_0=
 #### Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)
 这种情况是指定一个开始状态$s_0$，然后我们只关心从这个状态得到的长期reward。
 $$\rho(\pi) = \mathbb{E}\left[\sum_{t=1}^{\infty} \gamma{t-1}|s_0,\pi\right],$$
-$$Q^{\pi}(s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} r_{t+k}|s_t=s,a_t=a,\pi\right].$$
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi}(s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
-$d^{\pi}(s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right].$
-这里的$d^{\pi}$是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。
+$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} r_{t+k}|s_t=s,a_t=a,\pi\right].$$
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。这里，我们定义$d^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
+$d^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right].$
+这里的$d^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。
 
 #### Policy Gradient Theorem
 对于任何MDP，不论是平均奖励还是指定初始状态的形式，都有：
-$$\frac{\partial J}{\partial \mathbf{\theta}} = \sum_a d^{\pi}(s)\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{2}$$
+$$\frac{\partial J}{\partial \mathbf{\theta}} = \sum_a d^{\pi} (s)\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{2}$$
 证明：
 平均奖励
 \begin{align\*}
@@ -115,10 +115,10 @@ $$\frac{\partial J}{\partial \mathbf{\theta}} = \sum_a d^{\pi}(s)\sum_a\frac{\pi
 \end{align\*}
 而由$\sum_s\pi(s,a)=1$，我们得到：
 $$\nabla v_{\pi}(s)=\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \nabla v_{\pi}(s)$$
-同时在上式两边对$d^{\pi}$进行求和，得到：
-$$\sum_sd^{\pi}(s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi}(s)\nabla v_{\pi}(s)$$
-因为$d^{\pi}$是稳定的，
-$$\sum_sd^{\pi}(s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi}(s)\nabla v_{\pi}(s)$$
+同时在上式两边对$d^{\pi} $进行求和，得到：
+$$\sum_sd^{\pi} (s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi} (s)\nabla v_{\pi}(s)$$
+因为$d^{\pi} $是稳定的，
+$$\sum_sd^{\pi} (s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi} (s)\nabla v_{\pi}(s)$$
 那么:
 \begin{align\*}
 \end{align\*}
@@ -132,39 +132,39 @@ $$\sum_sd^{\pi}(s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{
 &= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\nabla v_{\pi}(s') \right] \\\\
 &= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\right]\\\\
 &\ \ \ \ \ \ \ \ \sum_{a'}\left[\nabla\pi(a'|s')q_{\pi}(s',a') + \pi(a'|s')\sum_{s''}\gamma p(s''|s',a')\nabla v_{\pi}(s''))] \right],  展开\\\\
-&= \sum_{x\in S}\sum_{k=0}^{\infty}Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)q_{\pi}(x,a) 
+&= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)q_{\pi}(x,a) 
 \end{align\*}
 第(5)式使用了$v_{\pi}(s) = \sum_a\pi(a|s)q(s,a)$进行展开。第(6)式将梯度符号放进求和里面。第(7)步使用product rule对q(s,a)求导。第(8)步利用$q_{\pi}(s, a) =\sum_{s',r}p(s',r|s,a)(r+v_{\pi}(s')$ 对$q_{\pi}(s,a)$进行展开。第(9)步将(8)式进行分解。第(10)步对式(9)进行计算，因为$\sum_{s',r}p(s',r|s,a)r$是一个定制，求偏导之后为$0$。第(11)步对生成的$v_{\pi}(s')$重复(5)-(10)步骤，得到式子(11)。如果对式子(11)中的$v_{\pi}(s)$一直展开，就得到了式子(12)。式子(12)中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，这里我有一个问题，就是为什么，$k$可以取到$\infty$，后来想了想，因为对第(11)步进行展开以后，可能会有重复的state，重复的意思就是从状态$s$开始，可能会多次到达某一个状态$x$，$k$就能取很多次，大不了$k=\infty$的概率为$0$就是了。
 
 所以，对于$v_{\pi}(s_0)$，就有：
 \begin{align\*}
 \nabla J(\mathbf{\theta}) &= \nabla_{v_{\pi}}(s_0)\\\\
-&= \sum_{s\in S}\( \sum_{k=0}^{\infty}Pr(s_0\rightarrow s,k,\pi) \) \sum_a\nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
+&= \sum_{s\in S}\( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \) \sum_a\nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
 &=\sum_{s\in S}\eta(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
 &=\sum_{s'\in S}\eta(s')\sum_s\frac{\eta(s)}{\sum_{s'}\eta(s')}\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
 &=\sum_{s'\in S}\eta(s')\sum_s\mu(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
 &\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)q_{\pi}(s,a)
 \end{align\*}
 
-从式子(2)可以看出来，这个梯度和$\frac{\partial d^{\pi}(s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty} r_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} r_{t+k}-\rho(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。
+从式子(2)可以看出来，这个梯度和$\frac{\partial d^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty} r_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} r_{t+k}-\rho(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。
 
 ### Policy Gradient with Approximation(使用近似的策略梯度)
 如果$Q^{\pi} $也用一个学习的函数来近似，然后我们希望用近似的函数代替式子(2)中的$Q^{\pi} $，并大致给出梯度的方向。
 用$f_w:S\times A \rightarrow R$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q^{\pi} }(s_t,a_t) - f_w(s_t,a_t)\right]2 \propto \left[\hat{Q^{\pi} }(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w}$，其中$\hat{Q^{\pi} }(s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：
-$$\sum_sd^{\pi}(s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{3}$$
+$$\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{3}$$
 
 #### Policy Gradient with Approximation Theorem
 如果$f_w$满足式子(3)，并且在某种意义上与policy parameterization兼容：
 $$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\tag{4}$$
 那么有：
-$$\frac{}{} = \sum_sd^{\pi}(s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{5}$$
+$$\frac{}{} = \sum_sd^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{5}$$
 
 证明：
 将(4)代入(3)得到：
 \begin{align\*}
-&\sum_sd^{\pi}(s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w} = 0\\\\
-&\sum_sd^{\pi}(s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}= 0\\\\
-&\sum_sd^{\pi}(s)\sum_a\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}= 0 \tag{6}\\\\
+&\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w} = 0\\\\
+&\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}= 0\\\\
+&\sum_sd^{\pi} (s)\sum_a\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}= 0 \tag{6}\\\\
 \end{align\*}
 从这个式子中，我们能够从式子(6)中得到
 
@@ -194,54 +194,54 @@ spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy
 spg的基本想法就是调整policy的参数朝着$J$的梯度方向移动。
 对$J(\pi_{\theta})$对$\theta$求导，得到：
 \begin{align\*}
-\nabla_{\theta} J(\pi_{\theta})&=\int_S\rho\pi(s) \int_A\nabla_\theta\pi_\theta (a|s)Q^{\pi}(s,a) dads \\\\
-&=\mathbb{E}_{s\sim \rho\pi, a\sim \pi_\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^{\pi} (s,a)\right] \tag{2}
+\nabla_{\theta} J(\pi_{\theta})&=\int_S\rho\pi(s) \int_A\nabla_\theta\pi_\theta (a|s)Q^{\pi} (s,a) dads \\\\
+&=\mathbb{E}\_{s\sim \rho\pi, a\sim \pi_\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^{\pi} (s,a)\right] \tag{2}
 \end{align\*}
 这就是policy gradient，很简单。state distribution $\rho\pi(s)$取决于policy parameters，但是policy gradient不依赖于state distribution的gradient。
 这个理论有很重要的实用价值，因为它将performance gradient的计算变成了一个期望。然后可以通过sampling估计这个期望。这个方法中需要使用$Q\pi(s,a)$，估计$Q$不同方法就是不同的算法，最简单的使用sample return $r_t^\gamma$估计$Q^\pi(s_t,a_t)$，就是REINFORCE算法。
 
 ### stochastic actor-critic 算法
-actor-critic是一个基于policy gradient theorem的结构。actor-critic包含两个组件。一个acotr通过stochastic gradient ascent调整stochastic policy $\pi_\theta(s)$的参数$\theta$，同时使用一个action-value function $Qw(s,a)$近似$Q\pi(s,a)$, $w$是function approximation的参数。Critic一般使用policy evaluation方法进行学习，比如使用td和mc等估计action value function $Q^w(s,a)\approx Q^\pi(s,a)$。一般来说，使用$Q^w(s,a)$代替真实的$Q^\pi(s,a)$会引入bias，但是，如果function approximator是compatible，即满足以下两个条件：
-1. $Qw(s,a) = \nabla_\theta log\pi_\theta(a|s)^Tw$
-2. 参数$w$最小化mse: $\epsilon2(w)=\mathbb{E}_{s\sim \rho^\pi,a\sim \pi_\theta}\left[(Q^w(s.a)-Q^\pi(s,a))^2\right]$，这样就没有bias了，即：
-$$\nabla_\theta J(\pi_\theta)=\mathbb{E}_{s\sim \rho\pi, a\sim \pi_\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^w(s,a)\right] \tag{3}$$
+actor-critic是一个基于policy gradient theorem的结构。actor-critic包含两个组件。一个acotr通过stochastic gradient ascent调整stochastic policy $\pi_\theta(s)$的参数$\theta$，同时使用一个action-value function $Qw(s,a)$近似$Q\pi(s,a)$, $w$是function approximation的参数。Critic一般使用policy evaluation方法进行学习，比如使用td和mc等估计action value function $Q^w (s,a)\approx Q^\pi (s,a)$。一般来说，使用$Q^w (s,a)$代替真实的$Q^\pi (s,a)$会引入bias，但是，如果function approximator是compatible，即满足以下两个条件：
+1. $Qw(s,a) = \nabla_\theta log\pi_\theta(a|s)^T w$
+2. 参数$w$最小化mse: $\epsilon2(w)=\mathbb{E}\_{s\sim \rho^\pi ,a\sim \pi_\theta}\left[(Q^w (s.a)-Q^\pi (s,a))^2 \right]$，这样就没有bias了，即：
+$$\nabla_\theta J(\pi_\theta)=\mathbb{E}\_{s\sim \rho\pi, a\sim \pi_\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^w (s,a)\right] \tag{3}$$
 
-直观上来说，条件1说的是compatible function approximators是stochastic policy梯度$\nabla_\theta log\pi_\theta(a|s)$的线性features，条件2需要满足$Qw(s,a)$是$Q^\pi(s,a)$的linear regression soulution。在实际应用中，条件2会放宽，使用如TD之类policy evaluation算法更efficiently的估计value function。事实上，如果条件1和2都满足的话，整个算法等价于没有使用critic，和REINFORCE算法很像。
+直观上来说，条件1说的是compatible function approximators是stochastic policy梯度$\nabla_\theta log\pi_\theta(a|s)$的线性features，条件2需要满足$Qw(s,a)$是$Q^\pi (s,a)$的linear regression soulution。在实际应用中，条件2会放宽，使用如TD之类policy evaluation算法更efficiently的估计value function。事实上，如果条件1和2都满足的话，整个算法等价于没有使用critic，和REINFORCE算法很像。
 
 ### off-policy actor critic
 在off-policy设置中，performance objective通常改成target policy的value function在behaviour policy的state distribution上进行平均，用$\beta(a|s)$表示behaviour policy：
 \begin{align\*}
-J_\beta(\pi_\theta) &= \int_S\rho\beta(s) V^\pi(s)ds\\\\
-&=\int_S\int_A\rho\beta(s)\pi_\theta(a|s)Q^\pi(s,a)dads
+J_\beta(\pi_\theta) &= \int_S\rho\beta(s) V^\pi (s)ds\\\\
+&=\int_S\int_A\rho\beta(s)\pi_\theta(a|s)Q^\pi (s,a)dads
 \end{align\*}
 对其求导和近似，得到：
 \begin{align\*}
-\nabla_\theta J_\beta(\pi_\theta) &\approx \int_S\int_A\rho\beta(s)\nabla_\theta\pi_\theta(a|s) Q^\pi(s,a)dads\tag{4} \\\\
-&=\mathbb{E}\_{s\sim \rho\beta, a\sim \beta}\left[\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}\nabla_\theta log\pi_\theta(a|s) Q^\pi(s,a) \right]\tag{5}
+\nabla_\theta J_\beta(\pi_\theta) &\approx \int_S\int_A\rho\beta(s)\nabla_\theta\pi_\theta(a|s) Q^\pi (s,a)dads\tag{4} \\\\
+&=\mathbb{E}\_{s\sim \rho\beta, a\sim \beta}\left[\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}\nabla_\theta log\pi_\theta(a|s) Q^\pi (s,a) \right]\tag{5}
 \end{align\*}
-这个近似去掉了一项：$\nabla_\theta Q\pi(s,a)$，有人说这样子可以保留局部最小值。。Off-policy actor-critic算法使用behaviour policy $\beta$生成trajectories，critic off-policy的从那些trajectories中估计state value function $V^v(s)\approx v^\pi(s)$。actor使用sgd从这些trajectories中off policy的更新policy paramters $\theta$，同时使用TD-error估计$Q^\pi(s,a)$。actor和critic都是用importance sampling ratio $\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}$。
+这个近似去掉了一项：$\nabla_\theta Q\pi(s,a)$，有人说这样子可以保留局部最小值。。Off-policy actor-critic算法使用behaviour policy $\beta$生成trajectories，critic off-policy的从那些trajectories中估计state value function $V^v (s)\approx v^\pi (s)$。actor使用sgd从这些trajectories中off policy的更新policy paramters $\theta$，同时使用TD-error估计$Q^\pi (s,a)$。actor和critic都是用importance sampling ratio $\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}$。
 
 ### Gradients of deterministic policies
 这一节主要介绍的是deterministic policy gradient theorem。首先给出直观上的解释，然后给定formal的证明。
 
 ### action value gradients
-绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。所以，一个简单的想法是使用让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，美誉每一个访问到的state $s$，policy parameters $\theta{k+1}$的更新正比于$\nabla_\theta Q^{\mu^k}(s, \mu_\theta(s)$。如果每一个state给出一个不同的方向，如果使用state distribution $\rho^\mu(s)$求期望，最终的方向可能会被平均了：
-$$\theta{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{\mu^k}}\left[\nabla_\theta Q^{\mu^k}(s, \mu_\theta(s))\right] \tag{6}$$
+绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。所以，一个简单的想法是使用让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，美誉每一个访问到的state $s$，policy parameters $\theta{k+1}$的更新正比于$\nabla_\theta Q^{\mu^k } (s, \mu_\theta(s)$。如果每一个state给出一个不同的方向，如果使用state distribution $\rho^\mu (s)$求期望，最终的方向可能会被平均了：
+$$\theta{k+1} = \theta^k + \alpha \mathbb{E}\_{s\sim \rho^{\mu^k } }\left[\nabla_\theta Q^{\mu^k } (s, \mu_\theta(s))\right] \tag{6}$$
 通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：
-$$\theta{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{\mu^k}}\left[\nabla_\theta\mu_\theta(s)\nabla_a Q^{\mu^k}(s,a)|_{a=\mu_\theta(s0)}\right] \tag{7}$$
+$$\theta{k+1} = \theta^k + \alpha \mathbb{E}\_{s\sim \rho^{\mu^k } }\left[\nabla_\theta\mu_\theta(s)\nabla_a Q^{\mu^k } (s,a)|_{a=\mu_\theta(s0)}\right] \tag{7}$$
 按照惯例来说，$\nabla_\theta\mu_\theta(s)$是一个jacobian matrix，每一列是policy的$dth$ action对于$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。然而，如果改变了policy，访问不同的states，state distribution　$\rho\mu$也会改变。最终不考虑distribution的变化的话，这个方法是保证收敛的。但是这里给给出的证明，和sgd一样，不需要计算state distributiond的gradient。
 
 ### deterministic policy gradient theorem
-deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}n$。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[r_1^\gamma|\mu\right]$，定义概率分布维$p(s\rightarrow s', t,u)$以及state distribution $\rho^\mu(s)$和stochastic case一样。将performance objective写成expectation如下：
+deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}n$。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[r_1^\gamma |\mu\right]$，定义概率分布维$p(s\rightarrow s', t,u)$以及state distribution $\rho^\mu (s)$和stochastic case一样。将performance objective写成expectation如下：
 \begin{align\*}
 J(\mu_\theta) & = \int_S\rho\mu(s) r(s,\mu_\theta(s)) ds\\\\
-&= \mathbb{E}_{s\sim \rho\mu}\left[r(s, \mu_\theta(s))\right] \tag{8}
+&= \mathbb{E}\_{s\sim \rho\mu}\left[r(s, \mu_\theta(s))\right] \tag{8}
 \end{align\*}
 给出deterministic policy gradient theorem：
 假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q\mu(s,a)$存在，那么deterministic policy gradient存在，
 \begin{align\*}
-\nabla_\theta J(\mu_\theta) &= \int_S\rho\mu(s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu(s,a)|_{a=\mu_\theta(s)}ds\\\\
-&=\mathbb{E}_{s\sim \rho\mu}\left[\nabla_\theta\mu_\theta(s)\nabla_aQ^\mu(s,a)|_{a=\mu_\theta(s)}\right] \tag{9}
+\nabla_\theta J(\mu_\theta) &= \int_S\rho\mu(s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}ds\\\\
+&=\mathbb{E}\_{s\sim \rho\mu}\left[\nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}\right] \tag{9}
 \end{align\*}
 
 ### spg的limit
@@ -273,9 +273,9 @@ $$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla
 $$Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}$$
 （注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）
 许多rl方法使用bellman方程递归的更新Q:
-$$Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}\_{a_{t+1}\sim\pi}\left[Q^{\pi}(s_{t+1},a_{t+1})\right]\right]\tag{2}$$
+$$Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}\_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}$$
 如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：
-$$Q{\mu}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu}(s_{t+1},\mu(s_{t+1}))\right] \tag{3}$$
+$$Q{\mu}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}$$
 而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。
 在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。
 
@@ -283,10 +283,10 @@ $$Q{\mu}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{
 直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。
 DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：
 \begin{align\*}
-\nabla_{\theta{\mu}} &\approx \mathbb{E}\_{s_t\sim \rho^{\beta}}\left[\nabla_{\theta^{\mu}}Q(s,a|\theta^Q)|\_{s=s_t, a= \mu(s_t|\theta^{\mu})}\right]\\\\
-&= \mathbb{E}\_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q)}{\partial\theta^{\mu}}|\_{s=s_t, a= \mu(s_t|\theta^{\mu})}\right]\\\\
-&= \mathbb{E}\_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q)}{\partial a}|\_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu})}{\partial\theta^{\mu}}|\_{s=s_t}\right]\\\\
-&= \mathbb{E}\_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q)|\_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\\\ \tag{4}
+\nabla_{\theta{\mu}} &\approx \mathbb{E}\_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|\_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\\\
+&= \mathbb{E}\_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|\_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\\\
+&= \mathbb{E}\_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|\_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|\_{s=s_t}\right]\\\\
+&= \mathbb{E}\_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|\_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\\\ \tag{4}
 \end{align\*}
 中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。
 
@@ -300,8 +300,8 @@ $$\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}$$
 
 #### 算法
 算法1 DDPG 
-随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu})$的权重$\theta^Q$和$\theta^{\mu}$
-初始化target networks　$Q'$和$\mu'$的权重$\theta{Q'}\leftarrow \theta^Q,\theta^{\mu'} \leftarrow \theta^{\mu}$
+随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $
+初始化target networks　$Q'$和$\mu'$的权重$\theta{Q'}\leftarrow \theta^Q ,\theta^{\mu'} \leftarrow \theta^{\mu} $
 初始化replay buffer $R$
 **for** episode = 1, M **do**
 初始化一个随机process $N$用于exploration
@@ -311,10 +311,10 @@ for $t=1, T$ do
 执行action $a_t$，得到$r_t$和$s_{t+1}$
 将transition $s_t, a_t, r_t, s_{t+1}$存到$R$
 从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$
-设置target value $y_i = r_i + \gamma Q'(s_{i+1}, \mu'(s_{i+1}|\theta{\mu'})|\theta^{Q'})$
-使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2$更新critic
+设置target value $y_i = r_i + \gamma Q'(s_{i+1}, \mu'(s_{i+1}|\theta{\mu'})|\theta^{Q'} )$
+使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic
 使用sampled policy gradient 更新acotr:
-$$\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q)|\_{s=s_i, a=\mu(s_i)}\nabla\_{\theta^{\mu}}\mu(s|\theta^{\mu})|\_{s_i}$$
+$$\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|\_{s=s_i, a=\mu(s_i)}\nabla\_{\theta^{\mu} }\mu(s|\theta^{\mu} )|\_{s_i}$$
 更新target networks:
 $$\theta'\leftarrow \tau \theta + (1-\tau) \theta'$$
 end for
@@ -332,45 +332,50 @@ end for
 
 ### 目标
 每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi$和new policy $\hat{\pi}$的关系式就好啦。这里就给出这样一个关系式！恩！就是！
-$$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right] \tag{1}$$
-将new policy$\hat{\pi}$的期望回报表示为old policy $\pi$的期望回报加上另一项，只要保证这一项是非负的即可。其中$\mathbb{E}_{s_0, a_0,\cdots, \sim \hat{\pi}}\left[\cdots\right]$表示actions是从$a_t\sim\hat{\pi}(\cdot|s_t)$得到的。
+$$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right] \tag{1}$$
+将new policy$\hat{\pi}$的期望回报表示为old policy $\pi$的期望回报加上另一项，只要保证这一项是非负的即可。其中$\mathbb{E}\_{s_0, a_0,\cdots, \sim \hat{\pi}}\left[\cdots\right]$表示actions是从$a_t\sim\hat{\pi}(\cdot|s_t)$得到的。
 证明：
 \begin{align\*}
-\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t) \right] &=\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi}}\left[\sum_{t=0}^{\infty}\gamma^t (Q^{\pi}(s_t,a_t) - V^{\pi}(s_t))\right]  \\\\
-&=\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty}\gamma^t( R_{t+1} + \gamma V^{\pi}(s_{t+1}) -  V^{\pi}(s_t))\right]  \\\\
+\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi} (s_t,a_t) \right] &=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi} (s_t,a_t) - V^{\pi} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t ( R_{t+1} + \gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} + \sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} \right]+ \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
+&=\eta(\hat{\pi}) + \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[ -  V^{\pi} (s_0))\right]  \\\\
+&=\eta(\hat{\pi}) - \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[ V^{\pi} (s_0))\right]  \\\\
+&=\eta(\hat{\pi}) - \eta(\pi)\\\\
 \end{align\*}
 
 ### 用期望代替求和 
 代入$s$的概率分布$\rho_{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots, s_0\sim \rho_0$，并将期望换成求和：
 \begin{align\*}
-\eta(\hat{\pi}) &= \eta(\pi) + \mathbb{E}_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right]\\\\
-&=\eta(\pi) +\sum_{t=0}^{\infty}\sum_s P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)\gamma^t A_{\pi}(s,a)\\\\
-&=\eta(\pi) +\sum_s\sum_{t=0}^{\infty} \gamma^t P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)A_{\pi}(s,a)\\\\
+\eta(\hat{\pi}) &= \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t)\right]\\\\
+&=\eta(\pi) +\sum_{t=0}^{\infty} \sum_s P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)\gamma^t A^{\pi}(s,a)\\\\
+&=\eta(\pi) +\sum_s\sum_{t=0}^{\infty} \gamma^t P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)A^{\pi}(s,a)\\\\
 &=\eta(\pi) + \sum_s \rho_{\hat{\pi}}(s) \sum_a \hat{\pi}(a|s) A^{\pi} (s,a)\\\\
 \end{align\*}
 从上面的推导可以看出来，任何从$\pi$到$\hat{\pi}$的更新，只要保证每个state $s$处的expected advantage是非负的，即$\sum_a \hat{\pi}(a|s) A_{\pi}(s,a)\ge 0$，就能说明$\hat{\pi}$要比$\pi$好，在$s$处，新的policy $\hat{\pi}$:
-$$\hat{\pi}(s) = arg\ max_a A^{\pi}(s,a)$$
-直到所有$s$处的$A^{\pi}(s,a)$为非正停止。
+$$\hat{\pi}(s) = arg\ max_a A^{\pi} (s,a)$$
+直到所有$s$处的$A^{\pi} (s,a)$为非正停止。当然，在实际应用中，因为各种误差，可能会有一些state的expected advantage是负的。
 
 ### $\rho\_{\pi}(s)$近似$\rho\_{\hat{\pi}}(s)$
-然而在上式中，因为估计或者近似误差，会有一些state的expected advantage是负的，而且由于$\rho_{\hat{\pi}}$依赖的是$\hat{\pi}$，很难直接优化，就进行一个近似：
+上式中包含$\rho_{\hat{\pi}}$，依赖于$\hat{\pi}$，很难直接优化，作者就进行了一个近似：
 $$L_{\pi} (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$$
-在$L_{\pi}(\hat{\pi} )$中用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，忽略因为policy改变导致的state 访问频率的改变。用$\pi_{\theta}$表示参数化policy，用$\theta$表示$\pi$的参数，如果$\pi(a|s)$是可导的，那么$L_{\pi}$和$\eta$的一阶导相等，当$\hat{\pi} = \pi$时，$L_{\pi}(\hat{\pi}) = \eta(\hat{\pi})$
+$$\eta (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\hat{\pi}}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$$
+在$L_{\pi}(\hat{\pi} )$中用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，从而忽略因为policy改变导致的state访问频率的改变。用$\pi_{\theta}$表示参数化policy，用$\theta$表示$\pi$的参数，如果$\pi(a|s)$是可导的，那么$L_{\pi}(\hat{\pi})$和$\eta(\hat{\pi})$的一阶导相等；此外，当$\hat{\pi} = \pi$时，$L_{\pi}(\hat{\pi}) = \eta(\hat{\pi})$
 $$L_{\pi_{\theta_0}} (\pi_{\theta_0}) = \eta(\pi_{\theta_0})$$
-$$\nabla_{\theta} L_{\pi_{\theta_0}}(\pi_{\theta_0})|_{\theta=\theta_0} =\nabla_{\theta} \eta(\pi_{\theta_0})|_{\theta=\theta_0}$$
-也就是说从$\pi$经过小的step$\pi_{\theta_0}$到达$\hat{\pi}$会改进$L_{\pi}$，从而也会改进$\eta$，但是并没有告诉我们这个step到底有多大。
+$$\nabla_{\theta} L_{\pi_{\theta_0}}(\pi_{\theta})|\_{\theta=\theta_0} =\nabla_{\theta} \eta(\pi_{\theta})|\_{\theta=\theta_0}$$
+证明：
+第一个式子不需要证明，而第二个式子，$\pi$相当于已知量，$\hat{\pi}$是关于$\theta$的函数，$\rho_{\hat{\pi}}$是通过样本得到的，不是关于$\hat{\pi}$的函数，最后相当于只有$\hat{\pi}(a|s)$是关于$\hat{\pi}$的函数，所以左右两边就一样了。。（！！！有疑问，就是为什么？$\rho_{\hat{\pi}}$到底是怎么求的，怎么证明）
 
-### Conservative policy iteration
-Conservative policy iteration提供了$\eta$提升的一个lower bound。用$\pi_{old}$表示current policy，用$\pi' = arg\ min_{\pi'} L_{\pi_{old}}(\pi')$，新的policy $\pi_{new}$定义为：
+也就是说在$\pi$处，$L_{\pi}(\pi)$和$\eta(\pi)$是相等的，在$\pi$对应的参数$\theta$周围的无穷小范围内，可以近似认为它们依然相等。$\pi$的参数$\theta_{\pi}$进行足够小的step更新到达新的policy $\hat{\pi}$，相应参数为$\theta_{\hat{\pi}}$，在改进$L_{\pi}$同时也改进了$\eta$，但是这个足够小的step是多少是不知道的。
+
+### 通用随机策略单调增加的证明
+有人提出了Conservative policy iteration，该方法提供了$\eta$提升的一个lower bound。用$\pi_{old}$表示current policy，用$\pi' = arg\ min_{\pi'} L_{\pi_{old}}(\pi')$，新的policy $\pi_{new}$定义为：
 $$\pi_{new}(a|s) = (1-\alpha) \pi_{old}(a|s)+\alpha\pi'(a|s)$$
 有人证明了这样的更新具有以下结果：
-$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2, \epsilon = max_s \vert\mathbb{E}_{a\sim\pi'}\left[A^{\pi}(s,a)\right]\vert $$
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2 , \epsilon = max_s \vert\mathbb{E}\_{a\sim\pi'}\left[A^{\pi} (s,a)\right]\vert $$
 进行缩放：
-$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2$$
-
-
-
-
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 $$
 
 ## 参考文献
 Policy Gradient
