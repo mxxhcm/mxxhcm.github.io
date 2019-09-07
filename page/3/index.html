@@ -389,7 +389,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-06 15:55:20" itemprop="dateModified" datetime="2019-09-06T15:55:20+08:00">2019-09-06</time>
+                <time title="修改时间：2019-09-07 13:29:58" itemprop="dateModified" datetime="2019-09-07T13:29:58+08:00">2019-09-07</time>
               
             
           </span>
@@ -442,7 +442,32 @@
       
         
           
-            <h2 id="policy-gradient">policy gradient</h2>
+            <h2 id="术语定义">术语定义</h2>
+<ol>
+<li>状态集合<br>
+$\mathcal{S}是有限states set</li>
+<li>动作集合<br>
+$\mathcal{A}$是有限actions set</li>
+<li>转换概率<br>
+$P:\mathcal{S}\times \mathcal{A}\times \mathcal{S} \rightarrow \mathbb{R}$是transition probability distribution</li>
+<li>奖励函数<br>
+$r:\mathcal{S}\rightarrow \mathbb{R}$是reward function</li>
+<li>折扣因子<br>
+$\gamma \in (0, 1)$</li>
+<li>带折扣因子的MDP<br>
+定义为tuple $\left(\mathcal{S},\mathcal{A},P,r,\rho, \gamma\right)$</li>
+<li>随机策略<br>
+$\pi: \mathcal{S}\times \mathcal{A}\rightarrow \left[0,1\right]$是stochastic policy。</li>
+<li>期望折扣回报<br>
+$\eta(\pi)= \mathbb{E}_{s_0, a_0, \cdots}\left[\sum_{t=0}<sup>{\infty}\gamma</sup>t r(s_t)\right]，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$</li>
+<li>状态价值函数<br>
+$Q^{\pi} (s_t, a_t) = \mathbb{E}<em>{s</em>{t+1}, a_{t+1},\cdots}\left[\sum_{l=0}^{\infty} \gamma^l r(s_{t+l}) \right]$</li>
+<li>动作值函数<br>
+$Q^{\pi} (s_t, a_t) = \mathbb{E}<em>{a</em>{t}, s_{t+1},\cdots}\left[\sum_{l=0}^{\infty} \gamma^l r(s_{t+l}) \right]$</li>
+<li>优势函数<br>
+$A_{\pi} (s,a) = Q_{\pi}(s,a) -V_{\pi}(s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$</li>
+</ol>
+<h2 id="policy-gradient">policy gradient</h2>
 <h3 id="abstract">Abstract</h3>
 <p>强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。<br>
 本文的贡献主要有两个，第一个是给出估计的action-value function或者advantage函数，梯度可以表示成experience的估计，第二个是证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。</p>
@@ -707,10 +732,32 @@ end for</p>
 <p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>
 在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>
 作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
+<h2 id="trust-region-policy-optimization">Trust Region Policy Optimization</h2>
+<p>为了优化function approximators，需要将解强化学习问题分解为一系列优化问题。这个分解是nontrivial的，因为state distribution取决于policy。TRPO在尽可能少的改变policy的同时，尽可能的改善一个surrogate objective。TRPO通过KL散度衡量不同分布之间的差异，通过bounding policy update的大小bounding state distributions的变化，即使使用non-trivial step size也能保证policy improvement。<br>
+根据这个理论，作者进行了一系列的理论验证，提出了TRPO算法，这里介绍两个变种算法：single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。这些算法的扩展性良好，可以优化参数成千上万的nonlinear policies。</p>
+<p>一个有用的公式！恩！就是！<br>
+$$\eta(\hat{\sim}) = \eta(\pi) + \mathbb{E}<em>{s_0, a_0, \cdots \sim \hat{\pi} \left[\sum</em>{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right] \tag{}$$<br>
+将策略$\hat{\pi}$的期望回报表示为另一个策略$\pi$的期望回报和$\hat{\pi}$相对于$\pi$的优势在时间上的累积和。其中$\mathbb{E}<em>{s_0, a_0,\cdots, \sim \hat{\pi}}\left[\cdots\right]$表示actions是从$a_t\sim\hat{\pi}(\cdot|s_t)$得到的，这个公式的证明在TRPO那一节进行证明。<br>
+用$\rho</em>{\pi}$表示没有归一化的访问频率：<br>
+$\rho_{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots $<br>
+其中$s_0\sim \rho_0$，actions是根据$\pi$选择的。将上面公式中的期望换成求和写成下式：<br>
+\begin{align*}<br>
+\eta(\hat{\sim}) &amp;= \eta(\pi) + \mathbb{E}<em>{s_0, a_0, \cdots \sim \hat{\pi} \left[\sum</em>{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right]<br>
+&amp;=\eta{\pi} +\sum_{t=0}^{\infty}\sum_s P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)\gamma^t A_{\pi}(s,a)<br>
+&amp;=\eta{\pi} +\sum_s\sum_{t=0}^{\infty} \gamma^t P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)A_{\pi}(s,a)<br>
+&amp;=\eta{\pi} + \sum_s \rho_{\hat{\pi}}(s) \sum_a \hat{\pi}(a|s) A^{\pi} (s,a)<br>
+\end{align*}<br>
+这里在每一个$t$处，$s_t=s$都是有概率的，也就是$\rho_{\pi}(s)$表示的东西。从上面的推导我们可以看出来，任何从$\pi$到$\hat{\pi}$的更新，只要在每个state $s$处的expected advantage是非负的，也就是说$\sum_a \hat{\pi}(a|s) A_{\pi}(s,a)\ge -$，就能保证performance $\eta$的提高或者不变。然而在上式中，因为估计或者近似误差，会有一些state的expected advantage是负的，而且由于$\rho_{\hat{\pi}}$依赖的是$\hat{\pi}$，很难直接优化，就进行一个近似：<br>
+$L_{\pi} (\hat{\pi}) = eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$<br>
+就是用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，忽略因为policy改变导致的state 访问频率的改变。</p>
 <h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a><br>
+<p>Policy Gradient<br>
+1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a><br>
 2.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146</a><br>
-3.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b</a></p>
+3.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b</a><br>
+Trust Region Policy Optimization<br>
+4.<a href="https://zhuanlan.zhihu.com/p/26308073" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/26308073</a><br>
+5.<a href="http://joschu.net/docs/thesis.pdf" target="_blank" rel="noopener">http://joschu.net/docs/thesis.pdf</a></p>
 
           
         
