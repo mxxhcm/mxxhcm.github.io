@@ -14,30 +14,49 @@ mathjax: true
 ---
 
 ## 术语定义
+更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
 1. 状态集合
-$\mathcal{S}$是有限states set
+$\mathcal{S}$是有限states set，包含所有state的可能取值
 2. 动作集合
-$\mathcal{A}$是有限actions set
-3. 转换概率
-$P:\mathcal{S}\times \mathcal{A}\times \mathcal{S} \rightarrow \mathbb{R}$是transition probability distribution
+$\mathcal{A}$是有限actions set，包含所有action的可能取值
+3. 转换概率矩阵或者状态转换函数
+$P:\mathcal{S}\times \mathcal{A}\times \mathcal{S} \rightarrow \mathbb{R}$是transition probability distribution，或者写成$p(s_{t+1}|s_t,a_t)$
 4. 奖励函数
-$r:\mathcal{S}\rightarrow \mathbb{R}$是reward function
+$R:\mathcal{S}\times \mathcal{A}\rightarrow \mathbb{R}$是reward function
 5. 折扣因子
 $\gamma \in (0, 1)$
 6. 初始状态分布
-$\rho_0$是初始状态$s_0$服从的distribution
+$\rho_0$是初始状态$s_0$服从的distribution，$s_0\sim \rho_0$
 7. 带折扣因子的MDP
-定义为tuple $\left(\mathcal{S},\mathcal{A},P,r,\rho_0, \gamma\right)$
+定义为tuple $\left(\mathcal{S},\mathcal{A},P,R,\rho_0, \gamma\right)$
 8. 随机策略
-$\pi: \mathcal{S}\times \mathcal{A}\rightarrow \left[0,1\right]$是stochastic policy。
+选择action，stochastic policy表示为：$\pi_\theta: \mathcal{S}\rightarrow P(\mathcal{A})$，其中$P(\mathcal{A})$是选择$\mathcal{A}$中每个action的概率，$\theta$表示policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取action $a_t$的概率
 9. 期望折扣回报
-$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots}\left[\sum_{t=0}^{\infty}\gamma^t r(s_t)\right]$，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$
-10. 状态价值函数
-$Q^{\pi} (s_t, a_t) = \mathbb{E}_{s_{t+1}, a_{t+1},\cdots}\left[\sum_{l=0}^{\infty} \gamma^l r(s_{t+l}) \right]$
+定义$r_t = \sum_{k=t}^{\infty}\gamma^{k-t}R_{k+1}$为expected discounted returns，表示从$t$时刻开始的expected discounted return，
+用$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty}\gamma^t R_{t+1}\right]$表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$
+10. 状态值函数
+state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：
+$$V^{\pi} (s_t) = \mathbb{E}_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
+或者有时候也定义成从$t=0$开始的expected return：
+$$V^{\pi}(s) = \mathbb{E}_{\pi}\left[r_0|S_0=s;\pi\right]=\mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s;\pi \right]$$
 11. 动作值函数
-$Q^{\pi} (s_t, a_t) = \mathbb{E}_{a_{t}, s_{t+1},\cdots}\left[\sum_{l=0}^{\infty} \gamma^l r(s_{t+l}) \right]$
+action value function定义为从$t$时刻的$s_t, a_t$开始的累计期望折扣奖励：
+$$Q^{\pi} (s_t, a_t) = \mathbb{E}_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
+或者有时候也定义为从$t=0$开始的return的期望：
+$$Q^{\pi} (s_0, a_0) = \mathbb{E}_{\pi}\left[r_0|S_0=s,A_0=a;\pi\right]=\mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s,A_0=a;\pi \right]$$
 12. 优势函数
-$A_{\pi} (s,a) = Q_{\pi}(s,a) -V_{\pi}(s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
+$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi}(s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
+$V^{\pi}(s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi}(s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
+13. 目标函数
+Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}_{\pi} \left[r_0|\pi\right]$，用$p(s\rightarrow s',t,\pi)$表示从$s$经过$t$个timesteps到$s'$的概率，用
+$$\rho^{\pi} (s'):=\int_S \sum_{t=0}^{\infty}\gamma^{t}\rho_0(s_0)p(s_0\rightarrow s', t,\pi)ds_0$$
+表示$s'$服从的概率分布，其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布。我们可以将performance objective表示成在state distribution $\rho^\pi$和policy $\pi_\theta$上的期望：
+\begin{align\*}
+J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\\\
+&= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi_{\theta}}\left[r(s,a)\right]\\\\ \tag{1}
+\end{align\*}
+其中$\rho^{\pi}(s)$可以理解为$\rho^{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。
+这里在每一个$t$处，$s_t=s$都是有一定概率发生的，也就是$\rho_{\pi}(s)$表示的东西。
 
 ## policy gradient
 ### Abstract
@@ -74,7 +93,7 @@ $$\rho(\pi) = lim_{n\rightarrow \infty}\frac{1}{n}\mathbb{E}\left[r_1+r_2+\cdots
 state-action value定义为：
 $$Q^{\pi} (s,a) = \sum_{t=1}^{\infty} \mathbb{E}\left[r_t - \rho(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A.$$
 
-#### Long-tern Accumated Reward from Designated State(从指定状态开始的累计奖励)
+#### Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)
 这种情况是指定一个开始状态$s_0$，然后我们只关心从这个状态得到的长期reward。
 $$\rho(\pi) = \mathbb{E}\left[\sum_{t=1}^{\infty} \gamma{t-1}|s_0,\pi\right],$$
 $$Q^{\pi}(s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} r_{t+k}|s_t=s,a_t=a,\pi\right].$$
@@ -170,35 +189,6 @@ Policy gradient的basic idea是用参数化的policy distribution $\pi_\theta(a|
 #### spg vs dpg
 spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy gradient是在action和state spaces上进行积分的，而dpg的policy gradient仅仅在state space上进行积分。因此，计算spg需要更多samples，尤其是action spaces维度很高的情况下。
 使用stochastic polic目的y是充分的explore整个state和action space。而在使用deterministic policy时，为了确保能够持续的进行explore，就需要使用off-policy的算法了，behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用deterministic policy gradient推导出了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后利用这个function的梯度更新policy的参数，同时为了确保policy gradient没有bias，使用而来compatible function。
-
-### 一些terms，return,vuale function和performance objective
-更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
-- state space 
-所有state的可能取值，$S$
-- action space 
-所有action的可能取值，$A$
-- initial state distribution
-初始state服从的分布，$p_1(s_1)$
-- stationary transition dynamic distribution
-稳定的状态转换函数，$p(s_{t+1}|s_t,a_t)$
-- reward function
-$S\times A\rightarrow \mathbb{R}$，
-- policy
-用来选择action，stochastic policy表示为：$\pi_\theta: S\rightarrow P(A)$，其中$P(A)$是选择$A$中每个action的概率，$\theta$是policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取所有可能的action $a_t$的概率。
-- return
-return的定义是$r_t{\gamma} = \sum_{i=t}^{\infty}\gamma^{i-t}r(s_i, a_i)$，表示从$t$时刻开始的累积折扣奖励。
-- value function
-value function的定义是所有的累积折扣奖励，即从$t=1$一直到最后的折扣奖励。
-state value function的定义是state $S_1=s,s\sim p_1$处return的期望：$V{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s;\pi\right]$，
-action value function的定义是在state $S_1=s,s\sim p_1$采取某个action后return的期望：$V{\pi}(s) = \mathbb{E}\left[r_1^{\gamma}|S_1=s,A_1=a;\pi\right]$，
-- performance objective
-agents的目标就是找到一个最大化初始状态return的policy：$J(\pi)=\mathbb{E}\left[r_1{\gamma}|\pi\right]$
-用$p(s\rightarrow s',t,\pi)$表示从$s$经过$t$个timesteps到$s'$的概率密度。用$\rho{\pi}(s'):=\int_S \sum_{t=1}^{\infty}\gamma^{t-1}p_1(s)p(s\rightarrow s', t,\pi)ds$表示$s'$服从的概率分布，通过对所有经过$t$个timesteps能够到达$s'$的state $s$积分得到。我们可以将performance objective表示成在$\rho^\pi$和$\pi_\theta$上的期望：
-\begin{align\*}
-J(\pi_{\theta}) &= \int_S \rho{\pi}(s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\\\
-&= \mathbb{E}\_{s\sim \rho{\pi}, a\sim \pi_{\theta}}\left[r(s,a)\right]\\\\ \tag{1}
-\end{align\*}
-其中$p_1(s)$是初始状态$s$服从的概率分布，$\mathbb{E}_{s\sim \rho\pi}\left[\cdot\right]$表示在状态分布$\rho(s)$上的期望。注意，这里和reinforcement learing an introduction第13章中有一些不同。这里是对所有的state的return，而introdution中求得是初始状态的value期望。
 
 ### stochastic policy gradient theorem
 spg的基本想法就是调整policy的参数朝着$J$的梯度方向移动。
@@ -340,21 +330,47 @@ end for
 为了优化function approximators，需要将解强化学习问题分解为一系列优化问题。这个分解是nontrivial的，因为state distribution取决于policy。TRPO在尽可能少的改变policy的同时，尽可能的改善一个surrogate objective。TRPO通过KL散度衡量不同分布之间的差异，通过bounding policy update的大小bounding state distributions的变化，即使使用non-trivial step size也能保证policy improvement。
 根据这个理论，作者进行了一系列的理论验证，提出了TRPO算法，这里介绍两个变种算法：single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。这些算法的扩展性良好，可以优化参数成千上万的nonlinear policies。
 
-一个有用的公式！恩！就是！
-$$\eta(\hat{\sim}) = \eta(\pi) + \mathbb{E}_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right] \tag{1}$$
-将策略$\hat{\pi}$的期望回报表示为另一个策略$\pi$的期望回报和$\hat{\pi}$相对于$\pi$的优势在时间上的累积和。其中$\mathbb{E}_{s_0, a_0,\cdots, \sim \hat{\pi}}\left[\cdots\right]$表示actions是从$a_t\sim\hat{\pi}(\cdot|s_t)$得到的，这个公式的证明在TRPO那一节进行证明。
-用$\rho_{\pi}$表示没有归一化的访问频率：
-$$\rho_{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots $$
-其中$s_0\sim \rho_0$，actions是根据$\pi$选择的。将上面公式中的期望换成求和写成下式：
+### 目标
+每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi$和new policy $\hat{\pi}$的关系式就好啦。这里就给出这样一个关系式！恩！就是！
+$$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right] \tag{1}$$
+将new policy$\hat{\pi}$的期望回报表示为old policy $\pi$的期望回报加上另一项，只要保证这一项是非负的即可。其中$\mathbb{E}_{s_0, a_0,\cdots, \sim \hat{\pi}}\left[\cdots\right]$表示actions是从$a_t\sim\hat{\pi}(\cdot|s_t)$得到的。
+证明：
+\begin{align\*}
+\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t) \right] &=\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi}}\left[\sum_{t=0}^{\infty}\gamma^t (Q^{\pi}(s_t,a_t) - V^{\pi}(s_t))\right]  \\\\
+&=\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty}\gamma^t( R_{t+1} + \gamma V^{\pi}(s_{t+1}) V^{\pi}(s_t))\right]  \\\\
+\end{align\*}
+
+### 用期望代替求和 
+代入$s$的概率分布$\rho_{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots, s_0\sim \rho_0$，并将期望换成求和：
 \begin{align\*}
 \eta(\hat{\pi}) &= \eta(\pi) + \mathbb{E}_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right]\\\\
 &=\eta(\pi) +\sum_{t=0}^{\infty}\sum_s P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)\gamma^t A_{\pi}(s,a)\\\\
 &=\eta(\pi) +\sum_s\sum_{t=0}^{\infty} \gamma^t P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)A_{\pi}(s,a)\\\\
 &=\eta(\pi) + \sum_s \rho_{\hat{\pi}}(s) \sum_a \hat{\pi}(a|s) A^{\pi} (s,a)\\\\
 \end{align\*}
-这里在每一个$t$处，$s_t=s$都是有概率的，也就是$\rho_{\pi}(s)$表示的东西。从上面的推导我们可以看出来，任何从$\pi$到$\hat{\pi}$的更新，只要在每个state $s$处的expected advantage是非负的，也就是说$\sum_a \hat{\pi}(a|s) A_{\pi}(s,a)\ge -$，就能保证performance $\eta$的提高或者不变。然而在上式中，因为估计或者近似误差，会有一些state的expected advantage是负的，而且由于$\rho_{\hat{\pi}}$依赖的是$\hat{\pi}$，很难直接优化，就进行一个近似：
-$L_{\pi} (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$
-就是用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，忽略因为policy改变导致的state 访问频率的改变。
+从上面的推导可以看出来，任何从$\pi$到$\hat{\pi}$的更新，只要保证每个state $s$处的expected advantage是非负的，即$\sum_a \hat{\pi}(a|s) A_{\pi}(s,a)\ge 0$，就能说明$\hat{\pi}$要比$\pi$好，在$s$处，新的policy $\hat{\pi}$:
+$$\hat{\pi}(s) = arg\ max_a A^{\pi}(s,a)$$
+直到所有$s$处的$A^{\pi}(s,a)$为非正停止。
+
+### $\rho\_{\pi}(s)$近似$\rho\_{\hat{\pi}}(s)$
+然而在上式中，因为估计或者近似误差，会有一些state的expected advantage是负的，而且由于$\rho_{\hat{\pi}}$依赖的是$\hat{\pi}$，很难直接优化，就进行一个近似：
+$$L_{\pi} (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$$
+在$L_{\pi}(\hat{\pi} )$中用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，忽略因为policy改变导致的state 访问频率的改变。用$\pi_{\theta}$表示参数化policy，用$\theta$表示$\pi$的参数，如果$\pi(a|s)$是可导的，那么$L_{\pi}$和$\eta$的一阶导相等，当$\hat{\pi} = \pi$时，$L_{\pi}(\hat{\pi}) = \eta(\hat{\pi})$
+$$L_{\pi_{\theta_0}} (\pi_{\theta_0}) = \eta(\pi_{\theta_0})$$
+$$\nabla_{\theta} L_{\pi_{\theta_0}}(\pi_{\theta_0})|_{\theta=\theta_0} =\nabla_{\theta} \eta(\pi_{\theta_0})|_{\theta=\theta_0}$$
+也就是说从$\pi$经过小的step$\pi_{\theta_0}$到达$\hat{\pi}$会改进$L_{\pi}$，从而也会改进$\eta$，但是并没有告诉我们这个step到底有多大。
+
+### Conservative policy iteration
+Conservative policy iteration提供了$\eta$提升的一个lower bound。用$\pi_{old}$表示current policy，用$\pi' = arg\ min_{\pi'} L_{\pi_{old}}(\pi')$，新的policy $\pi_{new}$定义为：
+$$\pi_{new}(a|s) = (1-\alpha) \pi_{old}(a|s)+\alpha\pi'(a|s)$$
+有人证明了这样的更新具有以下结果：
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2, \epsilon = max_s \vert\mathbb{E}_{a\sim\pi'}\left[A^{\pi}(s,a)\right]\vert $$
+进行缩放：
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2$$
+
+
+
+
 
 ## 参考文献
 Policy Gradient

@@ -44,17 +44,17 @@ $$h[f] = E[-ln(f(x))] = - \int_X f(x)ln(f(x))dx.$$
 抛一枚硬币，已知其正反两面出现的概率是不相等的，求其正面朝上的概率，该问题可以看做一个伯努利分布问题。
 如果硬币是公平的，此时得到结果的熵是最大的。这是因为此时抛一次抛硬币的结果具有最大的不确定性。每一个抛硬币的结果会占满一整个bit位。因为
 \begin{align\*}
-H(X) &= - \sum_{i=1}^n P(x_i)log_bP(x_i)\\
-&= - \sum_{i=1}^2\frac{1}{2}log_2\frac{1}{2}\\
-&= - \sum_{i=1}^2\frac{1}{2}\cdot(-1)\\
+H(X) &= - \sum_{i=1}^n P(x_i)log_bP(x_i)\\\\
+&= - \sum_{i=1}^2\frac{1}{2}log_2\frac{1}{2}\\\\
+&= - \sum_{i=1}^2\frac{1}{2}\cdot(-1)\\\\
 &= 1
 \end{align\*}
 如果硬币是不公平的，正面向上的概率是$p$，反面向上的概率是$q$，$p \ne q$, 则结果的不确定性更小。因为每次抛硬币，出现其中一面的可能性要比另一面要大，减小的不确定性就得到了更小的熵：每一次抛硬币得到的信息都会小于$1$bit，比如，$p=0.7$时：
 \begin{align\*}
-H(X) &= -plog_2p - qlog_2q\\
-&= -0.7log_20.7 - 0.3log_20.3\\
-&= -0.7\cdot(-0.515) - 0.3\cdot(-1.737)\\
-&= 0.8816\\
+H(X) &= -plog_2p - qlog_2q\\\\
+&= -0.7log_20.7 - 0.3log_20.3\\\\
+&= -0.7\cdot(-0.515) - 0.3\cdot(-1.737)\\\\
+&= 0.8816\\\\
 &\le 1
 \end{align\*}
 上面的例子证明不确定性跟变量取值的概率有关。
@@ -77,16 +77,16 @@ $$-\sum_ip_ilog(p_i)$$
 
 ## 交叉熵(cross entropy)
 ### 介绍
-交叉熵用于衡量估计的概率分布与真实概率分布之间的差异。
-交叉熵是信息熵的推广。假设有两个分布$p$和$q$，$p$是真实分布，$q$是非真实分布。信息熵是用真实分布$p$来衡量识别一个事件所需要的编码长度的期望。而交叉熵是用非真实分布$q$来估计真实分布$p$的编码长度的期望，用$q$来编码的事件来自分布$p$，所以期望中使用的概率是$p(i)$。$H(p,q)$称为交叉熵。
+交叉熵用于衡量在给定真实分布下，用非真实分布表示真实概率分布需要付出的花费。
+交叉熵是信息熵的推广。假设有两个分布$p$和$q$，$p$是真实分布，$q$是非真实分布。信息熵是用真实分布$p$来衡量识别一个事件所需要的编码长度的期望。而交叉熵是用非真实分布$q$来估计真实分布$p$的期望编码长度，用$q$来编码的事件来自分布$p$，所以期望中使用的概率是$p(i)$，$H(p,q)$称为交叉熵。
 
 ### 定义
-分布p和q在给定集合X的交叉熵定义为：
-$$H(p,q) = E_p[-logq] = H(p) + D_{KL}(p||q)$$
+给定真实分布$q$，分布p和q在给定集合X的交叉熵定义为：
+$$H(p,q) = E_p[log\frac{1}{q}] = H(p) + D_{KL}(p||q)$$
 其中$H(p)$是$p$的信息熵，$D_{KL}(p||q)$是从$q$到$p$的$K-L$散度，或者说$p$相对于$q$的相对熵。
 
 ### 示例 
-如含有4个字母$(A,B,C,D)$的数据集中，$p=(\frac{1}{2}, \frac{1}{2}, 0, 0)$，即$A$和$B$出现的概率均为$\frac{1}{2}$，$C$和$D$出现的概率都为$0$。$H(p)$为$1$，即只需要$1$位编码即可识别$A$和$B$。如果使用分布$q=(\frac{1}{4},\frac{1}{4},\frac{1}{4},\frac{1}{4})$来编码则得到$H(p,q)=2$，即需要$2$位编码来识别$A$和$B$。
+如含有4个字母$(A,B,C,D)$的数据集中，真实$p=(\frac{1}{2}, \frac{1}{2}, 0, 0)$，即$A$和$B$出现的概率均为$\frac{1}{2}$，$C$和$D$出现的概率都为$0$。使用完美的编码方案进行编码所需要的编码长度是$H(p)$为$1$，即只需要$1$位编码即可识别$A$和$B$。如果使用非完美编码方案$q=(\frac{1}{4},\frac{1}{4},\frac{1}{4},\frac{1}{4})$编码则得到$H(p,q)=2$，即需要$2$位编码来识别$A$和$B$。
 
 ### 解释
 在机器学习中，交叉熵用于衡量估计的概率分布与真实概率分布之间的差异。
@@ -106,15 +106,15 @@ $K-L$散度也叫相对熵(relative entropy)，信息熵是用来度量信息量
 #### 离散型随机变量
 给定概率分布$P$和$Q$在相同的空间中，它们的$K-L$散度定义为：
 \begin{align\*}
-D_{KL}(P||Q) &= -\sum_iP(i)(logQ(i)) - (-\sum_iP(i)logP(i))\\ 
-D_{KL}(P||Q) &= \sum_iP(i)(logP(i) - logQ(i))\\ 
-D_{KL}(P||Q) &= -\sum_iP(i)log(\frac{Q(i)}{Q(i)})\\
+D_{KL}(P||Q) &= -\sum_iP(i)(logQ(i)) - (-\sum_iP(i)logP(i))\\\\ 
+D_{KL}(P||Q) &= \sum_iP(i)(logP(i) - logQ(i))\\\\ 
+D_{KL}(P||Q) &= -\sum_iP(i)log(\frac{Q(i)}{Q(i)})\\\\
 D_{KL}(P||Q) &= \sum_iP(i)log(\frac{P(i)}{Q(i)})
 \end{align\*}
 可以看出，$K-L$散度是概率分布$P$和$Q$对数差相对于概率分布$P$的期望。需要注意的是$D_{KL}(P||Q) \ne D_{KL}(Q||P),$因为$P$和$Q$的地位是不同的。相对熵的前半部分就是交叉熵，后半部分是相对熵。
 #### 连续型随机变量
 对于连续性随机变量的分布$P$和$Q$，$K-L$散度被定义为积分：
-$$D_{KL}(P||Q) = \int_{-\infty}^{infty}p(x)log(\frac{p(x)}{q(x)})dx,$$
+$$D_{KL}(P||Q) = \int_{-\infty}^{\infty} p(x)log(\frac{p(x)}{q(x)})dx,$$
 其中$p$和$q$代表分布$P$和分布$Q$的概率密度函数。
 更一般的，$P$和$Q$表示是同一个集合$X$的概率分布，$P$相对于$Q$是绝对连续的，从$Q$到$P$的$K-L$散度定义为：
 $$D_{KL}(P||Q) = \int_X log(\frac{dP}{dQ})dP$$
@@ -131,9 +131,9 @@ $P$是一个二项分布，$P~(2,0.4)$，$Q$是一个离散型均匀分布，$x 
 |$Q$分布|0.333|0.333|0.333|
 $K-L$散度的计算公式如下（使用自然对数）：
 \begin{align\*}
-D_{KL}(Q||P) &= \sum_iQ(i)ln(\frac{Q(i)}{P(i)})\\
-& = 0.333ln(\frac{0.333}{0.36}) + 0.333ln(\frac{0.333}{0.48}) + 0.333ln(\frac{0.333}{0.16})\\
-& = -0.02596 + (-0.12176) + 0.24408\\
+D_{KL}(Q||P) &= \sum_iQ(i)ln(\frac{Q(i)}{P(i)})\\\\
+& = 0.333ln(\frac{0.333}{0.36}) + 0.333ln(\frac{0.333}{0.48}) + 0.333ln(\frac{0.333}{0.16})\\\\
+& = -0.02596 + (-0.12176) + 0.24408\\\\
 & = 0.09637(nats)
 \end{align\*}
 上面计算出来的是从$P$到$Q$的K-L散度，或者$Q$相对于$P$的相对熵。
@@ -153,27 +153,27 @@ $$D_{KL}(P||Q) = D_{KL}(P_1||Q_1) + D_{KL}(P_2||Q_2)$$
 ### 定义
 给定$X$，$Y$的条件熵定义如下：
 给定离散变量${\displaystyle X}$和${\displaystyle Y}$,给定${\displaystyle X}$以后，${\displaystyle Y}$的条件熵定义为每一个${\displaystyle x}$使用权值${\displaystyle p(x)}$ 的加权和${\displaystyle \mathrm {H} (Y|X=x)}$。
-$$H(Y|X) &\equiv \sum_{x\in\bold{X}}p(x)H(Y|X=x)$$
+$$H(Y|X) \equiv \sum_{x\in\boldsymbol{X} } p(x) H(Y|X=x)$$
 可以证明它等价于下式：
-$$H(Y|X) = -\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)log{\frac{p(X,Y)}{p(X)}}$$
+$$H(Y|X) = -\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log{\frac{p(X,Y)}{p(X)}}$$
 
 ### 证明
 \begin{align\*}
-H(Y|X) &\equiv \sum_{x\in\bold{X}}p(x)H(Y|X=x)\\
-&=-\sum_{x\in\bold{X}}p(x)\sum_{y\in \bold{Y}}p(y|x)logp(y|x)\\
-&=-\sum_{x\in\bold{X}}\sum_{y\in \bold{Y}}p(x)p(y|x)logp(y|x)\\
-&=-\sum_{x\in\bold{X},y\in \bold{Y}}p(x,y)logp(y|x)\\
-&=-\sum_{x\in\bold{X},y\in \bold{Y}}p(x,y)\frac{logp(x,y)}{logp(x)}\\
-&=\sum_{x\in\bold{X},y\in \bold{Y}}p(x,y)\frac{logp(x)}{logp(x,y)}\\
+H(Y|X) &\equiv \sum_{x\in\boldsymbol{X}}p(x)H(Y|X=x)\\\\
+&=-\sum_{x\in\boldsymbol{X}}p(x)\sum_{y\in \boldsymbol{Y}}p(y|x)logp(y|x)\\\\
+&=-\sum_{x\in\boldsymbol{X}}\sum_{y\in \boldsymbol{Y}}p(x)p(y|x)logp(y|x)\\\\
+&=-\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)logp(y|x)\\\\
+&=-\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)\frac{logp(x,y)}{logp(x)}\\\\
+&=\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)\frac{logp(x)}{logp(x,y)}\\\\
 \end{align\*}
 ### 属性
 - 当且仅当$Y$完全由$X$的值确定时，条件熵为$0$。
 - 当且仅当$X$和$Y$是独立随机变量的时候，$H(Y|X) = H(Y)$。
 - 链式法则。假设一个系统由随机变量$X,Y$确定，他们有联合熵$H(X,Y)$，我们需要$H(X,Y)$个比特去表述这个系统，如果我们已经知道了$X$的值，相当于我们已经有了$H(X)$位的信息。一旦$X$已知了，我们只需要$H(X,Y)-H(X)$位去描述整个系统。所以就有了链式法则：$H(Y|X) = H(X,Y) - H(X)$。
 \begin{align\*}
-H(Y|X) &= \sum_{X\in \bold{X}, Y\in \bold{Y}}p(X,Y)log{\frac{p(X)}{p(X,Y)}}\\
-&= - \sum_{X\in \bold{X}, Y\in \bold{Y}}p(X,Y)log{p(X,Y)}+\sum_{X\in \bold{X}, Y\in \bold{Y}}p(X,Y)log{p(X)}\\
-&=H(X,Y) +\sum_{X\in \bold{X}}p(X)log{p(X)}\\
+H(Y|X) &= \sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{\frac{p(X)}{p(X,Y)}}\\\\
+&= - \sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{p(X,Y)}+\sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{p(X)}\\\\
+&=H(X,Y) +\sum_{X\in \boldsymbol{X}}p(X)log{p(X)}\\\\
 &=H(X,Y) - H(X)
 \end{align\*}
 - 贝叶斯公式。$H(Y|X) = H(X|Y) - H(X) + H(Y)$。
@@ -182,10 +182,10 @@ H(Y|X) &= \sum_{X\in \bold{X}, Y\in \bold{Y}}p(X,Y)log{\frac{p(X)}{p(X,Y)}}\\
 ## 互信息
 决策树中的信息增益指的是互信息不是KL散度。
 ### 定义
-用$(X,Y)$表示空间$\bold{X}\times\bold{Y}$上的一对随机变量，他们的联合分布是$P_{(X,Y)}$，边缘分布是$P_X,P_Y)$，信息熵被定义为：
+用$(X,Y)$表示空间$\boldsymbol{X}\times\boldsymbol{Y}$上的一对随机变量，他们的联合分布是$P_{(X,Y)}$，边缘分布是$P_X,P_Y)$，信息熵被定义为：
 $I(X;Y) = D_{KL}(P_{(X,Y)}||P_XP_Y)$
 对于离散变量：
-$I(X;Y)=\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})$
+$I(X;Y)=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})$
 对于随机变量：
 $I(X;Y)=\int_X\int_Y p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})dxdy$
 
@@ -202,20 +202,20 @@ $I(X;Y)=\int_X\int_Y p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})dxdy$
 ### 互信息和条件熵，相对熵的关系
 互信息可以被等价定义为：
 \begin{align\*}
-I(X;Y)& \equiv H(X)-H(X|Y)\\
-&\equiv H(Y) - H(Y|X)\\
-&\equiv H(X)+H(Y)-H(X,Y)\\
-&\equiv H(X,Y)-H(X|Y)-H(Y|X)\\
+I(X;Y)& \equiv H(X)-H(X|Y)\\\\
+&\equiv H(Y) - H(Y|X)\\\\
+&\equiv H(X)+H(Y)-H(X,Y)\\\\
+&\equiv H(X,Y)-H(X|Y)-H(Y|X)\\\\
 \end{align\*}
 
 证明：
 \begin{align\*}
-I(X;Y)&=\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)p(Y)})\\
-&=\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)})-\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)logp(Y)\\
-&=\sum_{X\in \bold{X},Y\in \bold{Y}}p(X)P(Y|X)logp(Y|X)-\sum_{X\in \bold{X},Y\in \bold{Y}}p(X,Y)logp(Y)\\
-&=\sum_{X\in \bold{X}}p(X)(\sum_{Y\in \bold{Y}}P(Y|X)logp(Y|X))-\sum_{Y\in \bold{Y}}(\sum_{X\in \bold{X}}p(X,Y))logp(Y)\\
-&=\sum_{X\in \bold{X}}p(X)H(Y|X=x)-\sum_{Y\in \bold{Y}}p(Y)logp(Y)\\
-&=-H(Y|X)+H(Y)\\
+I(X;Y)&=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)p(Y)})\\\\
+&=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)})-\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)logp(Y)\\\\
+&=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X)P(Y|X)logp(Y|X)-\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)logp(Y)\\\\
+&=\sum_{X\in \boldsymbol{X}}p(X)(\sum_{Y\in \boldsymbol{Y}}P(Y|X)logp(Y|X))-\sum_{Y\in \boldsymbol{Y}}(\sum_{X\in \boldsymbol{X}}p(X,Y))logp(Y)\\\\
+&=\sum_{X\in \boldsymbol{X}}p(X)H(Y|X=x)-\sum_{Y\in \boldsymbol{Y}}p(Y)logp(Y)\\\\
+&=-H(Y|X)+H(Y)\\\\
 &=H(Y)-H(Y|X)
 \end{align\*}
 
