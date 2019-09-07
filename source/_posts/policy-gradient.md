@@ -337,7 +337,7 @@ $$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}_{s_0, a_0, \cdots \sim \hat{\pi}} \le
 证明：
 \begin{align\*}
 \mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t) \right] &=\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi}}\left[\sum_{t=0}^{\infty}\gamma^t (Q^{\pi}(s_t,a_t) - V^{\pi}(s_t))\right]  \\\\
-&=\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty}\gamma^t( R_{t+1} + \gamma V^{\pi}(s_{t+1}) V^{\pi}(s_t))\right]  \\\\
+&=\mathbb{E}_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty}\gamma^t( R_{t+1} + \gamma V^{\pi}(s_{t+1}) -  V^{\pi}(s_t))\right]  \\\\
 \end{align\*}
 
 ### 用期望代替求和 
