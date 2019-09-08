@@ -187,6 +187,7 @@ $$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\th
 
 ## 参考文献
 Trust Region Policy Optimization
-1.https://zhuanlan.zhihu.com/p/26308073
-2.http://joschu.net/docs/thesis.pdf
-3.https://zhuanlan.zhihu.com/p/60257706
+1.http://joschu.net/docs/thesis.pdf
+2.https://arxiv.org/pdf/1502.05477.pdf
+3.https://zhuanlan.zhihu.com/p/26308073
+4.https://zhuanlan.zhihu.com/p/60257706
