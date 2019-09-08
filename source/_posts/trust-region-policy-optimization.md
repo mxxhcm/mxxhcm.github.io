@@ -7,6 +7,7 @@ tags:
  - 强化学习
  - reinforcement learning
 categories: 强化学习
+mathjax: true
 ---
 
 ## 术语定义
