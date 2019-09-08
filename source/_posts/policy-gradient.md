@@ -198,7 +198,7 @@ spg的基本想法就是调整policy的参数朝着$J$的梯度方向移动。
 &=\mathbb{E}\_{s\sim \rho\pi, a\sim \pi_\theta}\left[\nabla_\theta log\pi_\theta(a|s)Q^{\pi} (s,a)\right] \tag{2}
 \end{align\*}
 这就是policy gradient，很简单。state distribution $\rho\pi(s)$取决于policy parameters，但是policy gradient不依赖于state distribution的gradient。
-这个理论有很重要的实用价值，因为它将performance gradient的计算变成了一个期望。然后可以通过sampling估计这个期望。这个方法中需要使用$Q\pi(s,a)$，估计$Q$不同方法就是不同的算法，最简单的使用sample return $r_t^\gamma$估计$Q^\pi(s_t,a_t)$，就是REINFORCE算法。
+这个理论有很重要的实用价值，因为它将performance gradient的计算变成了一个期望。然后可以通过sampling估计这个期望。这个方法中需要使用$Q\pi(s,a)$，估计$Q$不同方法就是不同的算法，最简单的使用sample return $r_t^{\gamma} $估计$Q^{\pi} (s_t,a_t)$，就是REINFORCE算法。
 
 ### stochastic actor-critic 算法
 actor-critic是一个基于policy gradient theorem的结构。actor-critic包含两个组件。一个acotr通过stochastic gradient ascent调整stochastic policy $\pi_\theta(s)$的参数$\theta$，同时使用一个action-value function $Qw(s,a)$近似$Q\pi(s,a)$, $w$是function approximation的参数。Critic一般使用policy evaluation方法进行学习，比如使用td和mc等估计action value function $Q^w (s,a)\approx Q^\pi (s,a)$。一般来说，使用$Q^w (s,a)$代替真实的$Q^\pi (s,a)$会引入bias，但是，如果function approximator是compatible，即满足以下两个条件：
@@ -225,7 +225,7 @@ J_\beta(\pi_\theta) &= \int_S\rho\beta(s) V^\pi (s)ds\\\\
 这一节主要介绍的是deterministic policy gradient theorem。首先给出直观上的解释，然后给定formal的证明。
 
 ### action value gradients
-绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。所以，一个简单的想法是使用让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，美誉每一个访问到的state $s$，policy parameters $\theta{k+1}$的更新正比于$\nabla_\theta Q^{\mu^k } (s, \mu_\theta(s)$。如果每一个state给出一个不同的方向，如果使用state distribution $\rho^\mu (s)$求期望，最终的方向可能会被平均了：
+绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。所以，一个简单的想法是使用让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，美誉每一个访问到的state $s$，policy parameters $\theta_{k+1}$的更新正比于$\nabla_\theta Q^{{\mu}^k } (s, \mu_\theta(s) )$。如果每一个state给出一个不同的方向，如果使用state distribution $\rho^{\mu} (s)$求期望，最终的方向可能会被平均了：
 $$\theta{k+1} = \theta^k + \alpha \mathbb{E}\_{s\sim \rho^{\mu^k } }\left[\nabla_\theta Q^{\mu^k } (s, \mu_\theta(s))\right] \tag{6}$$
 通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：
 $$\theta{k+1} = \theta^k + \alpha \mathbb{E}\_{s\sim \rho^{\mu^k } }\left[\nabla_\theta\mu_\theta(s)\nabla_a Q^{\mu^k } (s,a)|_{a=\mu_\theta(s0)}\right] \tag{7}$$
