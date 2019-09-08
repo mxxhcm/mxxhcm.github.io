@@ -74,7 +74,7 @@ $$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \l
 &=\eta(\hat{\pi}) - \eta(\pi)\\\\
 \end{align\*}
 
-## 用期望代替求和 
+## 用期望代替求和
 代入$s$的概率分布$\rho_{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots, s_0\sim \rho_0$，并将期望换成求和：
 \begin{align\*}
 \eta(\hat{\pi}) &= \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t)\right]\\\\
@@ -86,7 +86,7 @@ $$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \l
 $$\hat{\pi}(s) = arg\ max_a A^{\pi} (s,a) \tag{3}$$
 直到所有$s$处的$A^{\pi} (s,a)$为非正停止。当然，在实际应用中，因为各种误差，可能会有一些state的expected advantage是负的。
 
-## $\rho\_{\pi}(s)$近似$\rho\_{\hat{\pi}}(s)$
+## $\rho\_{\pi}(s)$近似$\rho\_{\hat{\pi}}(s)$（第一次近似）
 上式中包含$\rho_{\hat{\pi}}$，依赖于$\hat{\pi}$，很难直接优化，作者就进行了一个近似：
 $$L_{\pi} (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a) \tag{4}$$
 $$\eta (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\hat{\pi}}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$$
@@ -124,7 +124,7 @@ $$\eta(\pi_i) = M_i(\pi_i)$$
 $$\eta(\pi_{i+1}) - \eta(\pi_i)\ge M_i(\pi_{i+1})-M_i(\pi_i) \tag{13}$$
 在每一次迭代的时候，最大化$M_i$就能够保证$\eta$是非递减的。这种算法是minorizaiton maximization的一种。$M_i$是miorize $\eta$的近似目标。
 
-## 参数化策略的优化
+## 参数化策略的优化（第二次近似）
 前面几小节考虑的optimization问题和$\pi$无关，并且假设所有的states都可以被evaluated。这一节介绍如何在有限的样本下和任意的参数化策略下，从理论基础推导出一个实用的算法。
 用$\theta$表示参数化策略$\pi_{\theta}(a|s)$的参数$\theta$，将目标表示成$\theta$而不是$\pi$的函数，即用$\eta(\theta)$表示原来的$\eta(\pi_\theta)$，用$L_{\theta}(\hat{\theta})$表示$L_{\pi_{\theta}}(\pi_{\hat{\theta}})$，用$D_{KL}(\theta||\hat{\theta})$表示$D_{KL}(\pi_{\theta}||\pi_{\hat{\theta}})$。用$\theta_{old}$表示我们想要改进的policy参数。
 上一小节我们得到$\eta(\theta) \ge L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \theta)$，当$\theta = \theta_{old}$时取等。通过最大化等式右边，可以提高$\eta$的下界：
@@ -136,16 +136,43 @@ $$\bar{D}\_{KL}^{\rho}(\theta_1, \theta_2) = \mathbb{E}\_{s\sim \rho}\left[D_{KL
 将公式$15$近似成：
 $$maxmize_{\theta} L_{\theta_{old}} (\theta), \qquad s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{17}$$
 
-## 目标函数和约束的采样估计
+## 目标函数和约束的采样估计（第三次近似）
 上一节介绍的是关于policy parameter的有约束优化问题，约束条件为每一次policy更新时限制policy变化的大小，优化expected toral reward $\eta$的一个估计值。这一节使用Monte Carlo采样近似目标和约束函数。
 代入$L_{\theta_{old}}$的等式，得到：
 $$maxmize_{\theta}\sum_s \rho_{\theta_{old}}(s) \sum_a\pi_{\theta}(a|s)A_{\theta_{old}}(s,a), \qquad s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{17}$$
-首先用期望$\frac{1}{1-\gamma}\mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[\cdots\right]$代替目标函数中的$\sum_s\rho_{\theta_{old}}(s) \left[\cdots\right]$。接下来用$Q$值$Q_{\theta_{old}}$代替advantage $A_{\theta_{old}}$。最后使用importance smapling代替actions上的求和。使用$q$表示采样分布，单个的$s_n$对于loss 函数的贡献在于：
-$$\sum_a \pi_{\theta}(a|s_n) A_{\theta_{old}}(s_n,a) = \mathbb{E}\_{a\sim q}\left[\frac{\pi_{\theta} (a|s_n) }{a|s_n}A_{\theta_{old}}(s_n,a) \right]$$
+首先用期望$\frac{1}{1-\gamma}\mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[\cdots\right]$代替目标函数中的$\sum_s\rho_{\theta_{old}}(s) \left[\cdots\right]$。接下来用$Q$值$Q_{\theta_{old}}$代替advantage $A_{\theta_{old}}$，结果多了一个常数项，不影响。最后使用importance smapling代替actions上的求和。使用$q$表示采样分布，$q$分布中单个的$s_n$对于loss函数的贡献在于：
+$$\sum_a \pi_{\theta}(a|s_n) A_{\theta_{old}}(s_n,a) = \mathbb{E}\_{a\sim q}\left[\frac{\pi_{\theta} (a|s_n) }{q(a|s_n)}A_{\theta_{old}}(s_n,a) \right]$$
+上面的公式就是使用importance sampling代替求和。将$A$展开：
+\begin{align\*}
+\sum_a \pi_{\theta}(a|s) A_{\theta_{old}}(s,a) &= \sum_a \pi_{\theta}(a|s)\left( Q_{\theta_{old}}(s,a)  - V_{\theta_{old}}(s)\right)\\\\
+&= \sum_a \pi_{\theta}(a|s)Q_{\theta_{old}}(s,a)- \sum_a \pi_{\theta}(a|s)V_{\theta_{old}}(s)\\\\
+&= \sum_a \pi_{\theta}(a|s)Q_{\theta_{old}}(s,a)- V_{\theta_{old}}(s)\\\\
+\end{align\*}
 将公式$17$的优化问题转化为：
-$$maxmize_{\theta}\sum_s \rho_{\theta_{old}}(s) \sum_a\pi_{\theta}(a|s)A_{\theta_{old}}(s,a), \qquad s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{17}$$
+$$maxmize_{\theta} \mathbb{E}\_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \qquad s.t. \mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{18}$$
 接下来要做的就是用采样代替期望，用经验估计代替$Q$值。接下来会介绍两种方法进行估计。
+
 第一个叫做single path，通常用在policy gradient estimation，基于单个轨迹的采样。第二个叫做vine，构建一个rollout set，从rollout set的每一个state处执行多个actions。这种方法经常用在policy iteration方法上。
+
+### Single Path
+采样$s_0\sim \rho_0$，模拟policy $\pi_{\theta_{old}}$一些timesteps生成一个trajectory $s_0, a_0, s_1, a_1, \cdots, s_{T-1}, a_{T-1}, s_T$，因此$q(a|s) = \pi_{\theta_{old}}(a|s)$。根据trajectory对每一个state action pair $(s_t,a_t)$计算$Q_{\theta_{old}}(s,a)$。
+
+### Vine
+采样$s_0\sim \rho_0$，模拟policy $\pi_{\theta_i}$生成一系列trajectories。在这些trajectories选择一个具有$N$个states的子集，表示为$s_1, c\dots, s_N$，这个集合称为rollout set。对于rollout set中的每一个state $s_n$，根据$a_{n,k}\sim q(\cdot|s_n)$采样$K$个actions。任何$q(\cdot|s_n)$都行，在实践中，$q(\cdot|s_n) = \pi_{\theta_i}(\cdot|s_n)$适用于contionous problems，像机器人运动；而均匀分布适用于离散任务，如Atari游戏。
+对于$s_n$处的每一个action $a_{n,k}$，从$s_n$和$a_{n,k}$处进行rollout，估计$\hat{Q}_{\theta_i}(s_n, a_{n,k})$。在小的有限action spaces情况下，我们可以对从给定状态任何可能的action生成一个rollout，单个$s_n$对$L_{\theta_{old}}$的贡献如下：
+$$L_n(\theta) = \sum_{k=1}^K \pi_{\theta} (a_k|s_n) \hat{Q}(s_n, a_k)$$
+其中action space是$\mathcal{A} = \{a_1, a_2,\cdots, a_K\}$。在大的连续state space中，可以使用importance sampling构建一个新的目标近似。从$s_n$处计算的$L_{\theta_{old}}$的self-normalized 估计是：
+$$L_n(\theta) = \frac{\sum_{k=1}^K \frac{\pi_{\theta}(a_{n,k}|s_n)}{\pi_{\theta_{old}}(a_{n,k}|s_n)}\hat{Q}(s_n, a_{n,k}}{\sum_{k=1}^K \frac{\pi_{\theta}(a_{n,k}|s_n)}{\pi_{\theta_{old}}(a_{n,k}|s_n)}}$$
+假设在$s_n$处执行了$K$个actions $a_{n,1}, a_{n,2}, \cdots, a_{n,K}$。Self-normalized 估计去掉了$Q$值baseline的需要。在$s_n\sim \rho(\pi)$上做平均，可以得到$L_{\theta_{old}}$和它的gradient的估计。
+Vine比single path好的地方在于，给定相同数量的$Q$样本，目标函数的局部估计有更低的方差，也就是vine能更好的估计advantage。Vine的缺点在于，需要执行更多steps的模拟计算相应的advantage。此外，vine方法需要对rollout set 中的每一个state都生成多个trajectories，这就需要整个system可以重置到任意的一个state，而single path算法不需要，可以直接应用在真实的system中。
+
+## 实用算法
+使用上面介绍的single path或者vine进行采样，给出两个算法。重复执行以下步骤：
+1. 使用single path或者vine算法产生一系列state-action pairs，使用Monte Carlo估计相应的$Q$值；
+2. 利用样本计算公式$18$中目标函数和约束函数的估计值
+3. 求出有约束优化问题的近似解，更新policy参数$\theta$，使用共轭梯度和line search。
+
+对于$3$来说，计算KL散度的Hessian矩阵而不是协方差矩阵的梯度，生成Fisher information matrix。即使用$\frac{1}{N}\sum_{n=1}^N \frac{\partial^2}{\partial \theta_i\partial_j}D_{KL}(\pi_{\theta_{old}}(\cdot|s_n)||\pi_{\theta}(\cdot|s_n))$近似$A_ij$而不是$\frac{1}{N}\sum_{n=1}^N \frac{\partial}{\partial \theta_i}log(\pi_{\theta}(a_n|s_n))\frac{\partial}{\partial \partial_j}log(\pi_{\theta}(a_n|s_n))$。
 
 ## 参考文献
 Trust Region Policy Optimization

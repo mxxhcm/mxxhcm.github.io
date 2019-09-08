@@ -225,11 +225,11 @@ J_\beta(\pi_\theta) &= \int_S\rho\beta(s) V^\pi (s)ds\\\\
 这一节主要介绍的是deterministic policy gradient theorem。首先给出直观上的解释，然后给定formal的证明。
 
 ### action value gradients
-绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。所以，一个简单的想法是使用让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，美誉每一个访问到的state $s$，policy parameters $\theta_{k+1}$的更新正比于$\nabla_{\theta} Q^{ {\mu}^k } (s, \mu_{\theta}(s) )$。如果每一个state给出一个不同的方向，如果使用state distribution $\rho^{\mu} (s)$求期望，最终的方向可能会被平均了：
-$$\theta{k+1} = \theta^k + \alpha \mathbb{E}\_{s\sim \rho^{\mu^k } }\left[\nabla_\theta Q^{\mu^k } (s, \mu_\theta(s))\right] \tag{6}$$
+绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。所以，一个简单的想法是使用让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，美誉每一个访问到的state $s$，policy parameters $\theta^{k+1} $的更新正比于$\nabla_{\theta} Q^{ {\mu}^k } (s, \mu_{\theta}(s) )$。如果每一个state给出一个不同的方向，如果使用state distribution $\rho^{\mu} (s)$求期望，最终的方向可能会被平均了：
+$$\theta^{k+1} = \theta^k + \alpha \mathbb{E}\_{s\sim \rho^{ {\mu}^k } }\left[\nabla_\theta Q^{ {\mu}^k } (s, \mu_{\theta}(s))\right] \tag{6}$$
 通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：
-$$\theta{k+1} = \theta^k + \alpha \mathbb{E}\_{s\sim \rho^{\mu^k } }\left[\nabla_\theta\mu_\theta(s)\nabla_a Q^{\mu^k } (s,a)|_{a=\mu_\theta(s0)}\right] \tag{7}$$
-按照惯例来说，$\nabla_\theta\mu_\theta(s)$是一个jacobian matrix，每一列是policy的$dth$ action对于$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。然而，如果改变了policy，访问不同的states，state distribution　$\rho\mu$也会改变。最终不考虑distribution的变化的话，这个方法是保证收敛的。但是这里给给出的证明，和sgd一样，不需要计算state distributiond的gradient。
+$$\theta{k+1} = \theta^k + \alpha \mathbb{E}\_{s\sim \rho^{ {\mu}^k } }\left[\nabla_{\theta}\mu_{\theta}(s)\nabla_a Q^{ {\mu}^k } (s,a)|\_{a=\mu_\theta(s_0)}\right] \tag{7}$$
+按照惯例来说，$\nabla_{\theta}\mu_{\theta}(s)$是一个jacobian matrix，每一列是policy的$dth$ action对于$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。然而，如果改变了policy，访问不同的states，state distribution　$\rho\mu$也会改变。最终不考虑distribution的变化的话，这个方法是保证收敛的。但是这里给给出的证明，和sgd一样，不需要计算state distributiond的gradient。
 
 ### deterministic policy gradient theorem
 deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}n$。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[r_1^\gamma |\mu\right]$，定义概率分布维$p(s\rightarrow s', t,u)$以及state distribution $\rho^\mu (s)$和stochastic case一样。将performance objective写成expectation如下：
@@ -240,8 +240,8 @@ J(\mu_\theta) & = \int_S\rho\mu(s) r(s,\mu_\theta(s)) ds\\\\
 给出deterministic policy gradient theorem：
 假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q\mu(s,a)$存在，那么deterministic policy gradient存在，
 \begin{align\*}
-\nabla_\theta J(\mu_\theta) &= \int_S\rho\mu(s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}ds\\\\
-&=\mathbb{E}\_{s\sim \rho\mu}\left[\nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}\right] \tag{9}
+\nabla_\theta J(\mu_\theta) &= \int_S\rho\mu(s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|\_{a=\mu_\theta(s)}ds\\\\
+&=\mathbb{E}\_{s\sim \rho\mu}\left[\nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|\_{a=\mu_\theta(s)}\right] \tag{9}
 \end{align\*}
 
 ### spg的limit
