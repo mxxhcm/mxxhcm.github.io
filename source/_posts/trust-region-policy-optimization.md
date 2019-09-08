@@ -1,0 +1,153 @@
+---
+title: trust region policy optimization
+date: 2019-09-08 14:24:37
+tags:
+ - trpo
+ - trust region policy optimization
+ - 强化学习
+ - reinforcement learning
+categories: 强化学习
+---
+
+## 术语定义
+更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
+1. 状态集合
+$\mathcal{S}$是有限states set，包含所有state的可能取值
+2. 动作集合
+$\mathcal{A}$是有限actions set，包含所有action的可能取值
+3. 转换概率矩阵或者状态转换函数
+$P:\mathcal{S}\times \mathcal{A}\times \mathcal{S} \rightarrow \mathbb{R}$是transition probability distribution，或者写成$p(s_{t+1}|s_t,a_t)$
+4. 奖励函数
+$R:\mathcal{S}\times \mathcal{A}\rightarrow \mathbb{R}$是reward function
+5. 折扣因子
+$\gamma \in (0, 1)$
+6. 初始状态分布
+$\rho_0$是初始状态$s_0$服从的distribution，$s_0\sim \rho_0$
+7. 带折扣因子的MDP
+定义为tuple $\left(\mathcal{S},\mathcal{A},P,R,\rho_0, \gamma\right)$
+8. 随机策略
+选择action，stochastic policy表示为：$\pi_\theta: \mathcal{S}\rightarrow P(\mathcal{A})$，其中$P(\mathcal{A})$是选择$\mathcal{A}$中每个action的概率，$\theta$表示policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取action $a_t$的概率
+9. 期望折扣回报
+定义$r_t = \sum_{k=t}^{\infty} \gamma^{k-t} R_{k+1}$为expected discounted returns，表示从$t$时刻开始的expected discounted return，
+用$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right]$表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$
+10. 状态值函数
+state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：
+$$V^{\pi} (s_t) = \mathbb{E}\_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
+或者有时候也定义成从$t=0$开始的expected return：
+$$V^{\pi} (s) = \mathbb{E}\_{\pi}\left[r_0|S_0=s;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s;\pi \right]$$
+11. 动作值函数
+action value function定义为从$t$时刻的$s_t, a_t$开始的累计期望折扣奖励：
+$$Q^{\pi} (s_t, a_t) = \mathbb{E}\_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
+或者有时候也定义为从$t=0$开始的return的期望：
+$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[r_0|S_0=s,A_0=a;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s,A_0=a;\pi \right]$$
+12. 优势函数
+$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
+$V^{\pi} (s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi} (s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
+13. 目标函数
+Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}\_{\pi} \left[r_0|\pi\right]$，用$p(s\rightarrow s',t,\pi)$表示从$s$经过$t$个timesteps到$s'$的概率，用
+$$\rho^{\pi} (s'):=\int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s', t,\pi)ds_0$$
+表示$s'$服从的概率分布，其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布。我们可以将performance objective表示成在state distribution $\rho^\pi $和policy $\pi_\theta$上的期望：
+\begin{align\*}
+J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\\\
+&= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi_{\theta}}\left[r(s,a)\right]\\\\ \tag{1}
+\end{align\*}
+其中$\rho^{\pi} (s)$可以理解为$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。
+这里在每一个$t$处，$s_t=s$都是有一定概率发生的，也就是$\rho_{\pi}(s)$表示的东西。
+
+## Trust Region Policy Optimization
+为了优化function approximators，需要将解强化学习问题分解为一系列优化问题。这个分解是nontrivial的，因为state distribution取决于policy。TRPO在尽可能少的改变policy的同时，尽可能的改善一个surrogate objective。TRPO通过KL散度衡量不同分布之间的差异，通过bounding policy update的大小bounding state distributions的变化，即使使用non-trivial step size也能保证policy improvement。
+根据这个理论，作者进行了一系列的理论验证，提出了TRPO算法，这里介绍两个变种算法：single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。这些算法的扩展性良好，可以优化参数成千上万的nonlinear policies。
+
+## Motivation
+每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi$和new policy $\hat{\pi}$的关系式就好啦。这里就给出这样一个关系式！恩！就是！
+$$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right] \tag{1}$$
+将new policy$\hat{\pi}$的期望回报表示为old policy $\pi$的期望回报加上另一项，只要保证这一项是非负的即可。其中$\mathbb{E}\_{s_0, a_0,\cdots, \sim \hat{\pi}}\left[\cdots\right]$表示actions是从$a_t\sim\hat{\pi}(\cdot|s_t)$得到的。
+证明：
+\begin{align\*}
+\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi} (s_t,a_t) \right] &=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi} (s_t,a_t) - V^{\pi} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t ( R_{t+1} + \gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} + \sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} \right]+ \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
+&=\eta(\hat{\pi}) + \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[ -  V^{\pi} (s_0))\right]  \\\\
+&=\eta(\hat{\pi}) - \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[ V^{\pi} (s_0))\right]  \\\\
+&=\eta(\hat{\pi}) - \eta(\pi)\\\\
+\end{align\*}
+
+## 用期望代替求和 
+代入$s$的概率分布$\rho_{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots, s_0\sim \rho_0$，并将期望换成求和：
+\begin{align\*}
+\eta(\hat{\pi}) &= \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t)\right]\\\\
+&=\eta(\pi) +\sum_{t=0}^{\infty} \sum_s P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)\gamma^t A^{\pi}(s,a)\\\\
+&=\eta(\pi) +\sum_s\sum_{t=0}^{\infty} \gamma^t P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)A^{\pi}(s,a)\\\\
+&=\eta(\pi) + \sum_s \rho_{\hat{\pi}}(s) \sum_a \hat{\pi}(a|s) A^{\pi} (s,a) \tag{2}\\\\
+\end{align\*}
+从上面的推导可以看出来，任何从$\pi$到$\hat{\pi}$的更新，只要保证每个state $s$处的expected advantage是非负的，即$\sum_a \hat{\pi}(a|s) A_{\pi}(s,a)\ge 0$，就能说明$\hat{\pi}$要比$\pi$好，在$s$处，新的policy $\hat{\pi}$:
+$$\hat{\pi}(s) = arg\ max_a A^{\pi} (s,a) \tag{3}$$
+直到所有$s$处的$A^{\pi} (s,a)$为非正停止。当然，在实际应用中，因为各种误差，可能会有一些state的expected advantage是负的。
+
+## $\rho\_{\pi}(s)$近似$\rho\_{\hat{\pi}}(s)$
+上式中包含$\rho_{\hat{\pi}}$，依赖于$\hat{\pi}$，很难直接优化，作者就进行了一个近似：
+$$L_{\pi} (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a) \tag{4}$$
+$$\eta (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\hat{\pi}}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$$
+在$L_{\pi}(\hat{\pi} )$中用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，从而忽略因为policy改变导致的state访问频率的改变。用$\pi_{\theta}$表示参数化policy，用$\theta$表示$\pi$的参数，如果$\pi(a|s)$是可导的，那么$L_{\pi}(\hat{\pi})$和$\eta(\hat{\pi})$的一阶导相等；此外，当$\hat{\pi} = \pi$时，$L_{\pi}(\hat{\pi}) = \eta(\hat{\pi})$
+$$L_{\pi_{\theta_0}} (\pi_{\theta_0}) = \eta(\pi_{\theta_0}) \tag{5}$$
+$$\nabla_{\theta} L_{\pi_{\theta_0}}(\pi_{\theta})|\_{\theta=\theta_0} =\nabla_{\theta} \eta(\pi_{\theta})|\_{\theta=\theta_0}\tag{6}$$
+证明：
+第一个式子不需要证明，而第二个式子，$\pi$相当于已知量，$\hat{\pi}$是关于$\theta$的函数，$\rho_{\hat{\pi}}$是通过样本得到的，不是关于$\hat{\pi}$的函数，最后相当于只有$\hat{\pi}(a|s)$是关于$\hat{\pi}$的函数，所以左右两边就一样了。。（！！！有疑问，就是为什么？$\rho_{\hat{\pi}}$到底是怎么求的，怎么证明）
+
+也就是说在$\pi$处，$L_{\pi}(\pi)$和$\eta(\pi)$是相等的，在$\pi$对应的参数$\theta$周围的无穷小范围内，可以近似认为它们依然相等。$\pi$的参数$\theta_{\pi}$进行足够小的step更新到达新的policy $\hat{\pi}$，相应参数为$\theta_{\hat{\pi}}$，在改进$L_{\pi}$同时也改进了$\eta$，但是这个足够小的step是多少是不知道的。
+
+## 通用随机策略单调增加的证明
+有人提出了Conservative policy iteration，该方法提供了$\eta$提升的一个lower bound。用$\pi_{old}$表示current policy，用$\pi' = arg\ min_{\pi'} L_{\pi_{old}}(\pi')$，新的policy $\pi_{new}$定义为：
+$$\pi_{new}(a|s) = (1-\alpha) \pi_{old}(a|s)+\alpha\pi'(a|s) \tag{7}$$
+有人证明了这样的更新具有以下结果：
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2 , \epsilon = max_s \vert\mathbb{E}\_{a\sim\pi'}\left[A^{\pi} (s,a)\right]\vert \tag{8}$$
+进行缩放：
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \tag{9}$$
+在实际应用中，很少使用混合策略，这里使用了一个新的distance measure，叫做total variation divergence，对于离散的概率分布$p,q$来说，定义为：
+$$D_{TV}(p||q) = \frac{1}{2} \sum_i \vert p_i -q_i \vert \tag{10}$$
+定义$D_{TV}^{max}(\pi, \hat{\pi})$为：
+$$D_{TV}^{max} (\pi, \hat{\pi}) = max_s D_{TV}(\pi(\cdot|s) || \hat{\pi}(\cdot|s))\tag{11}$$
+让$\alpha = D_{TV}^{max}(\pi_{old}, \pi_{new})$，式子$9$成立。
+total variation divergence和KL散度之间的关系：$D_{TV}(p||q)^2 \le D_{KL}(p||q)$，让$D_{KL}^{max}(\pi, \hat{\pi}) = max_s D_{KL}(\pi(\cdot|s)||\hat{\pi}(\cdot|s))$。从公式$9$中可以直接得到：
+\begin{align\*}
+\eta(\hat{\pi}) &\ge L_{\pi}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \\\\
+&\ge L_{\pi}(\hat{\pi}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }D_{KL}^{max}(\pi, \hat{\pi}) \\\\
+& \ge L_{\pi}(\hat{\pi}) - CD_{KL}^{max}(\pi, \hat{\pi}), C=\frac{2\epsilon \gamma}{(1-\gamma)^2} \tag{12}
+\end{align\*}
+根据公式$12$，我们能生成一个单调非递减的sequence：$\eta(\pi_0)\le \eta(\pi_1) \le \eta(\pi_2) \le \cdots$，记$M_i(\pi) = L_{\pi_i}(\pi) - CD_{KL}^{max}(\pi_i, \pi)$，有：
+因为：
+$$\eta(\pi_{i+1}) \ge M_i(\pi_{i+1})$$
+$$\eta(\pi_i) = M_i(\pi_i)$$
+上面的第一个式子减去第二个式子得到：
+$$\eta(\pi_{i+1}) - \eta(\pi_i)\ge M_i(\pi_{i+1})-M_i(\pi_i) \tag{13}$$
+在每一次迭代的时候，最大化$M_i$就能够保证$\eta$是非递减的。这种算法是minorizaiton maximization的一种。$M_i$是miorize $\eta$的近似目标。
+
+## 参数化策略的优化
+前面几小节考虑的optimization问题和$\pi$无关，并且假设所有的states都可以被evaluated。这一节介绍如何在有限的样本下和任意的参数化策略下，从理论基础推导出一个实用的算法。
+用$\theta$表示参数化策略$\pi_{\theta}(a|s)$的参数$\theta$，将目标表示成$\theta$而不是$\pi$的函数，即用$\eta(\theta)$表示原来的$\eta(\pi_\theta)$，用$L_{\theta}(\hat{\theta})$表示$L_{\pi_{\theta}}(\pi_{\hat{\theta}})$，用$D_{KL}(\theta||\hat{\theta})$表示$D_{KL}(\pi_{\theta}||\pi_{\hat{\theta}})$。用$\theta_{old}$表示我们想要改进的policy参数。
+上一小节我们得到$\eta(\theta) \ge L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \theta)$，当$\theta = \theta_{old}$时取等。通过最大化等式右边，可以提高$\eta$的下界：
+$$maximize_{\theta}\left[L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \theta)\right]\tag{14}$$
+在实践中，如果使用penalty coefficient $C$，steps size很小，可以使用new policy 和old policy之间的KL散度约束采取更大的steps，这个约束叫做trust region constraint:
+$$maxmize_{\theta} L_{\theta_{old}} (\theta),\qquad s.t. D_{KL}^{max}(\theta_{old},\theta) \le \delta \tag{15}$$
+在state space的每一个state都添加一个KL散度进行约束。由于约束太多，这个问题还是不能解，这里使用average KL divergence:
+$$\bar{D}\_{KL}^{\rho}(\theta_1, \theta_2) = \mathbb{E}\_{s\sim \rho}\left[D_{KL}(\pi_{\theta_1}(\cdot|s) || \pi_{\theta_2}(\cdot|s))\right] \tag{16}$$
+将公式$15$近似成：
+$$maxmize_{\theta} L_{\theta_{old}} (\theta), \qquad s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{17}$$
+
+## 目标函数和约束的采样估计
+上一节介绍的是关于policy parameter的有约束优化问题，约束条件为每一次policy更新时限制policy变化的大小，优化expected toral reward $\eta$的一个估计值。这一节使用Monte Carlo采样近似目标和约束函数。
+代入$L_{\theta_{old}}$的等式，得到：
+$$maxmize_{\theta}\sum_s \rho_{\theta_{old}}(s) \sum_a\pi_{\theta}(a|s)A_{\theta_{old}}(s,a), \qquad s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{17}$$
+首先用期望$\frac{1}{1-\gamma}\mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[\cdots\right]$代替目标函数中的$\sum_s\rho_{\theta_{old}}(s) \left[\cdots\right]$。接下来用$Q$值$Q_{\theta_{old}}$代替advantage $A_{\theta_{old}}$。最后使用importance smapling代替actions上的求和。使用$q$表示采样分布，单个的$s_n$对于loss 函数的贡献在于：
+$$\sum_a \pi_{\theta}(a|s_n) A_{\theta_{old}}(s_n,a) = \mathbb{E}\_{a\sim q}\left[\frac{\pi_{\theta} (a|s_n) }{a|s_n}A_{\theta_{old}}(s_n,a) \right]$$
+将公式$17$的优化问题转化为：
+$$maxmize_{\theta}\sum_s \rho_{\theta_{old}}(s) \sum_a\pi_{\theta}(a|s)A_{\theta_{old}}(s,a), \qquad s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{17}$$
+接下来要做的就是用采样代替期望，用经验估计代替$Q$值。接下来会介绍两种方法进行估计。
+第一个叫做single path，通常用在policy gradient estimation，基于单个轨迹的采样。第二个叫做vine，构建一个rollout set，从rollout set的每一个state处执行多个actions。这种方法经常用在policy iteration方法上。
+
+## 参考文献
+Trust Region Policy Optimization
+1.https://zhuanlan.zhihu.com/p/26308073
+2.http://joschu.net/docs/thesis.pdf
+3.https://zhuanlan.zhihu.com/p/60257706
