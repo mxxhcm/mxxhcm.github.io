@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="Trust Region Policy Optimization 作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-09T06:13:55.315Z">
+<meta property="og:updated_time" content="2019-09-09T07:37:15.039Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="trust region policy optimization">
 <meta name="twitter:description" content="Trust Region Policy Optimization 作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-09 14:13:55" itemprop="dateModified" datetime="2019-09-09T14:13:55+08:00">2019-09-09</time>
+                <time title="修改时间：2019-09-09 15:37:15" itemprop="dateModified" datetime="2019-09-09T15:37:15+08:00">2019-09-09</time>
               
             
           </span>
@@ -571,20 +571,20 @@ $$\eta(\pi_{i+1}) \ge M_i(\pi_{i+1})$$<br>
 $$\eta(\pi_i) = M_i(\pi_i)$$<br>
 上面的第一个式子减去第二个式子得到：<br>
 $$\eta(\pi_{i+1}) - \eta(\pi_i)\ge M_i(\pi_{i+1})-M_i(\pi_i) \tag{16}$$<br>
-在每一次迭代的时候，最大化$M_i$也就是$M_i(\pi_{i+1}) - M_i(\pi_i)\ge 0$就能够保证$\eta$是非递减的。这种算法是minorizaiton maximization的一种。$M_i$是miorize $\eta$的近似目标。</p>
+在每一次迭代的时候，确保$M_i(\pi_{i+1}) - M_i(\pi_i)\ge 0$就能够保证$\eta$是非递减的，最大化$M_i$就能实现这个目标，$M_i$是miorize $\eta$的近似目标。这种算法是minorizaiton maximization的一种。</p>
 <h2 id="参数化策略的优化-第二次近似">参数化策略的优化（第二次近似）</h2>
-<p>前面几小节考虑的optimization问题和$\pi$无关，并且假设所有的states都可以被evaluated。这一节介绍如何在有限的样本下和任意的参数化策略下，从理论基础推导出一个实用的算法。<br>
+<p>前面几小节考虑的optimization问题时没有考虑$\pi$的参数化，并且假设所有的states都可以被evaluated。这一节介绍如何在有限的样本下和任意的参数化策略下，从理论基础推导出一个实用的算法。<br>
 用$\theta$表示参数化策略$\pi_{\theta}(a|s)$的参数$\theta$，将目标表示成$\theta$而不是$\pi$的函数，即用$\eta(\theta)$表示原来的$\eta(\pi_\theta)$，用$L_{\theta}(\hat{\theta})$表示$L_{\pi_{\theta}}(\pi_{\hat{\theta}})$，用$D_{KL}(\theta||\hat{\theta})$表示$D_{KL}(\pi_{\theta}||\pi_{\hat{\theta}})$。用$\theta_{old}$表示我们想要改进的policy参数。<br>
 上一小节我们得到$\eta(\theta) \ge L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \theta)$，当$\theta = \theta_{old}$时取等。通过最大化等式右边，可以提高$\eta$的下界：<br>
 $$maximize_{\theta}\left[L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \theta)\right]\tag{17}$$<br>
-在实践中，如果使用penalty coefficient $C$，steps size很小，可以使用new policy 和old policy之间的KL散度约束采取更大的steps，这个约束叫做trust region constraint:<br>
+在实践中，如果使用上述理论中的penalty coefficient $C$，会导致steps size很小。一种方法是使用new policy 和old policy之间的KL散度进行约束，可以采取更大的steps，这个约束叫做trust region constraint:<br>
 $$maxmize_{\theta} L_{\theta_{old}} (\theta),\qquad s.t. D_{KL}^{max}(\theta_{old},\theta) \le \delta \tag{18}$$<br>
-在state space的每一个state都添加一个KL散度进行约束。由于约束太多，这个问题还是不能解，这里使用average KL divergence:<br>
+这样会在state space的每一个state都有一个KL散度约束。由于约束太多，这个问题还是不能解。这里使用average KL divergence进行近似:<br>
 $$\bar{D}_{KL}^{\rho}(\theta_1, \theta_2) = \mathbb{E}_{s\sim \rho}\left[D_{KL}(\pi_{\theta_1}(\cdot|s) || \pi_{\theta_2}(\cdot|s))\right] \tag{19}$$<br>
-将公式$15$近似成：<br>
+公式$15$变成：<br>
 $$maxmize_{\theta} L_{\theta_{old}} (\theta), \qquad s.t. \bar{D}_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{20}$$</p>
 <h2 id="目标函数和约束的采样估计-第三次近似">目标函数和约束的采样估计（第三次近似）</h2>
-<p>上一节介绍的是关于policy parameter的有约束优化问题，约束条件为每一次policy更新时限制policy变化的大小，优化expected toral reward $\eta$的一个估计值。这一节使用Monte Carlo采样近似目标和约束函数。<br>
+<p>上一节介绍的是关于policy parameter的有约束优化问题，约束条件为每一次policy更新时限制policy变化的大小，优化expected toral reward $\eta$的一个估计值。这一节使用Monte Carlo仿真近似目标和约束函数。<br>
 代入$L_{\theta_{old}}$的等式，得到：<br>
 $$maxmize_{\theta}\sum_s \rho_{\theta_{old}}(s) \sum_a\pi_{\theta}(a|s)A_{\theta_{old}}(s,a), \qquad s.t. \bar{D}_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{21}$$<br>
 首先用期望$\frac{1}{1-\gamma}\mathbb{E}_{s\sim \rho_{\theta_{old}}}\left[\cdots\right]$代替目标函数中的$\sum_s\rho_{\theta_{old}}(s) \left[\cdots\right]$。接下来用$Q$值$Q_{\theta_{old}}$代替advantage $A_{\theta_{old}}$，结果多了一个常数项，不影响。最后使用importance smapling代替actions上的求和。使用$q$表示采样分布，$q$分布中单个的$s_n$对于loss函数的贡献在于：<br>
@@ -619,15 +619,15 @@ Vine比single path好的地方在于，给定相同数量的$Q$样本，目标�
 <p>对于$3$来说，计算KL散度的Hessian矩阵而不是协方差矩阵的梯度，生成Fisher information matrix。即使用$\frac{1}{N}\sum_{n=1}^N \frac{\partial^2}{\partial \theta_j}D_{KL}(\pi_{\theta_{old}}(\cdot|s_n)||\pi_{\theta}(\cdot|s_n))$近似$A_{ij}$而不是$\frac{1}{N}\sum_{n=1}^N \frac{\partial}{\partial \theta_i}log(\pi_{\theta}(a_n|s_n))\frac{\partial}{\partial \partial_j}log(\pi_{\theta}(a_n|s_n))$。<br>
 在前面介绍的理论和本节介绍的算法之间有以下关联：</p>
 <ol>
-<li>理论上优化带有KL散度penalty的目标函数。如果这个penalty系数$\frac{2\epsilon \gamma}{(2-\gamma)^2}$产生很小的step，所以我们想要降低系数。经验上来讲，很难选择一个鲁邦的penalty系数，所以我们使用一个hard constraint而不是一个penalty。</li>
-<li>$D_{KL}^{max}(\theta_{old}, \theta)$是很难计算和估计的，所以我们对$\bar{D}_{KL}(\theta_{old}, \theta)$进行约束</li>
+<li>理论上验证了优化带有KL散度penalty的目标函数可以保证policy improvement是单调递增的。这个很大的penalty系数$C$会产生很小的step，所以我们想要减小这个系数。经验上来讲，很难选择一个鲁邦的penalty系数，所以我们使用一个KL散度上的一个hard constraint而不是一个penalty。</li>
+<li>$D_{KL}^{max}(\theta_{old}, \theta)$是很难计算和估计的，所以将约束条件改成对期望$\bar{D}_{KL}(\theta_{old}, \theta)$进行约束。</li>
 <li>本文的理论忽略了advantage function的近似误差。</li>
 </ol>
 <h2 id="和前面工作的联系">和前面工作的联系</h2>
-<p>本问中提出的目标函数和一些之前的方法有联系，可以在一个统一的policy update框架下。The natural policy gradient可以看成公式$16$的一个特例：使用$L$的一个linear approximation，和$\bar{D}_{KL}$的一个二次估计，就有了下面的问题：<br>
+<p>本问的推导结果和一些之前的方法有联系，他们可以统一在policy update框架下。The natural policy gradient可以看成公式$16$的一个特例：使用$L$的一个linear approximation，和$\bar{D}_{KL}$的一个二次估计，就变成了下面的优化问题：<br>
 $$maximize_{\theta} \left[\nabla_{\theta}L_{\theta_{old}}(\theta)|_{\theta=\theta_{old}}\cdot (\theta-\theta_{old}) \right] \qquad s.t. \frac{1}{2}(\theta_{old}-\theta)^A(\theta_{old})(\theta_{old} - \theta)\le\delta$$<br>
 其中$A(\theta_{old})_{ij} = \frac{\partial}{\partial\theta_i}\frac{\partial}{\partial \theta_j}\mathbb{E}_{s\sim \rho_{\pi}}\left[D_{KL}(\pi(\cdot|s, \theta_{old})||\pi(\cdot|s, \theta))\right]_{\theta=\theta_{old}}$，更新公式是$\theta_{new} = \theta_{old}+\frac{1}{\lambda}A(\theta_{old})^{-1} \nabla_{\theta}L(\theta)|_{\theta=\theta_{old}}$，其中步长$\frac{1}{\lambda}$可以看成算法参数。这和trpo不同，在每一次更新都有constraint。尽管这个差别很小，实验表明它能改善在更大规模问题上算法的性能。<br>
-使用$l2$约束的标准policy gradient如下：<br>
+同样，也可以使用$l2$约束，推导出标准的policy gradient如下：<br>
 $$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|_{\theta=\theta_{old}}\cdot (\theta- \theta_{old}) \qquad s.t. \frac{1}{2}\vert \theta-\theta_{old}\vert^2 \le \delta\right]$$</p>
 <h2 id="参考文献">参考文献</h2>
 <p>Trust Region Policy Optimization<br>
@@ -1217,7 +1217,13 @@ $$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|_{\theta=\the
                     
                       
                     
-                    <span class="site-state-item-count">197</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">199</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
