@@ -38,25 +38,24 @@ $\rho_0$是初始状态$s_0$服从的distribution，$s_0\sim \rho_0$
 state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：
 $$V^{\pi} (s_t) = \mathbb{E}\_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
 或者有时候也定义成从$t=0$开始的expected return：
-$$V^{\pi} (s) = \mathbb{E}\_{\pi}\left[r_0|S_0=s;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s;\pi \right]$$
+$$V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_0|S_0=s;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s;\pi \right]$$
 11. 动作值函数
 action value function定义为从$t$时刻的$s_t, a_t$开始的累计期望折扣奖励：
 $$Q^{\pi} (s_t, a_t) = \mathbb{E}\_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
 或者有时候也定义为从$t=0$开始的return的期望：
-$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[r_0|S_0=s,A_0=a;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s,A_0=a;\pi \right]$$
+$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s,A_0=a;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s,A_0=a;\pi \right]$$
 12. 优势函数
 $A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
 $V^{\pi} (s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi} (s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
 13. 目标函数
-Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}\_{\pi} \left[r_0|\pi\right]$，用$p(s\rightarrow s',t,\pi)$表示从$s$经过$t$个timesteps到$s'$的概率，用
+Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}\_{\pi} \left[G_0|\pi\right]$，用$p(s\rightarrow s',t,\pi)$表示从$s$经过$t$个timesteps到$s'$的概率，用
 $$\rho^{\pi} (s'):=\int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s', t,\pi)ds_0$$
 表示$s'$服从的概率分布，其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布。我们可以将performance objective表示成在state distribution $\rho^\pi $和policy $\pi_\theta$上的期望：
 \begin{align\*}
-J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\\\
-&= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi_{\theta}}\left[r(s,a)\right]\\\\ \tag{1}
+J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) R(s,a)dads\\\\
+&= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi_{\theta}}\left[R(s,a)\right] \tag{1}\\\\ 
 \end{align\*}
-其中$\rho^{\pi} (s)$可以理解为$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。
-这里在每一个$t$处，$s_t=s$都是有一定概率发生的，也就是$\rho_{\pi}(s)$表示的东西。
+其中$\rho^{\pi} (s)$可以理解为$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。这里在每一个$t$处，$s_t=s$都是有一定概率发生的，也就是$\rho_{\pi}(s)$表示的东西。
 
 ## Motivation
 每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi$和new policy $\hat{\pi}$的关系式就好啦。这里就给出这样一个关系式！恩！就是！
