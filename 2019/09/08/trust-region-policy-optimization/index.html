@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="Trust Region Policy Optimization 作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-09T02:37:36.124Z">
+<meta property="og:updated_time" content="2019-09-09T03:16:23.170Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="trust region policy optimization">
 <meta name="twitter:description" content="Trust Region Policy Optimization 作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-09 10:37:36" itemprop="dateModified" datetime="2019-09-09T10:37:36+08:00">2019-09-09</time>
+                <time title="修改时间：2019-09-09 11:16:23" itemprop="dateModified" datetime="2019-09-09T11:16:23+08:00">2019-09-09</time>
               
             
           </span>
@@ -529,29 +529,40 @@ $$\hat{\pi}(s) = arg\ max_a A^{\pi} (s,a) \tag{3}$$<br>
 <p>上式中包含$\rho_{\hat{\pi}}$，依赖于$\hat{\pi}$，很难直接优化，作者就进行了一个近似：<br>
 $$L_{\pi} (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a) \tag{4}$$<br>
 $$\eta (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\hat{\pi}}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$$<br>
-在$L_{\pi}(\hat{\pi} )$中用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，从而忽略因为policy改变导致的state访问频率的改变。用$\pi_{\theta}$表示参数化policy，用$\theta$表示$\pi$的参数，如果$\pi(a|s)$是可导的，那么$L_{\pi}(\hat{\pi})$和$\eta(\hat{\pi})$的一阶导相等；此外，当$\hat{\pi} = \pi$时，$L_{\pi}(\hat{\pi}) = \eta(\hat{\pi})$<br>
+在$L_{\pi}(\hat{\pi} )$中用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，从而忽略因为policy改变导致的state访问频率的改变。当$\pi(a|s)$可导时，用$\pi_{\theta}$表示policy，用$\theta$表示$\pi$的参数，则$L_{\pi}(\hat{\pi})$和$\eta(\hat{\pi})$的一阶导相等；当$\hat{\pi} = \pi$时，$L_{\pi}(\hat{\pi}) = \eta(\hat{\pi})$<br>
 $$L_{\pi_{\theta_0}} (\pi_{\theta_0}) = \eta(\pi_{\theta_0}) \tag{5}$$<br>
 $$\nabla_{\theta} L_{\pi_{\theta_0}}(\pi_{\theta})|_{\theta=\theta_0} =\nabla_{\theta} \eta(\pi_{\theta})|_{\theta=\theta_0}\tag{6}$$<br>
 证明：<br>
-第一个式子不需要证明，而第二个式子，$\pi$相当于已知量，$\hat{\pi}$是关于$\theta$的函数，$\rho_{\hat{\pi}}$是通过样本得到的，不是关于$\hat{\pi}$的函数，最后相当于只有$\hat{\pi}(a|s)$是关于$\hat{\pi}$的函数，所以左右两边就一样了。。（！！！有疑问，就是为什么？$\rho_{\hat{\pi}}$到底是怎么求的，怎么证明）</p>
-<p>也就是说在$\pi$处，$L_{\pi}(\pi)$和$\eta(\pi)$是相等的，在$\pi$对应的参数$\theta$周围的无穷小范围内，可以近似认为它们依然相等。$\pi$的参数$\theta_{\pi}$进行足够小的step更新到达新的policy $\hat{\pi}$，相应参数为$\theta_{\hat{\pi}}$，在改进$L_{\pi}$同时也改进了$\eta$，但是这个足够小的step是多少是不知道的。</p>
-<h2 id="通用随机策略单调增加的证明">通用随机策略单调增加的证明</h2>
-<p>有人提出了Conservative policy iteration，该方法提供了$\eta$提升的一个lower bound。用$\pi_{old}$表示current policy，用$\pi’ = arg\ min_{\pi’} L_{\pi_{old}}(\pi’)$，新的policy $\pi_{new}$定义为：<br>
+第一个式子不需要证明，而第二个式子，左边为$\eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$，右边为$\eta(\pi) + \sum_s\rho_{\hat{\pi}}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$，分别求它们关于$\theta$的导数。$\pi$是已知量，$\hat{\pi}$是关于$\theta$的函数，$\rho_{\hat{\pi}}$是通过样本得到的，不是关于$\hat{\pi}$的函数，最后相当于只有$\hat{\pi}(a|s)$是关于$\hat{\pi}$的函数，所以左右两边就一样了。。（！！！有疑问，就是为什么？$\rho_{\hat{\pi}}$到底是怎么求的，怎么证明）<br>
+也就是说当$\hat{\pi} = \pi$时，$L_{\pi}(\pi)$和$\eta(\pi)$是相等的，在$\pi$对应的参数$\theta$周围的无穷小范围内，可以近似认为它们依然相等。$\pi$的参数$\theta_{\pi}$进行足够小的step更新到达新的policy $\hat{\pi}$，相应参数为$\theta_{\hat{\pi}}$，在改进$L_{\pi}$同时也改进了$\eta$，但是这个足够小的step是多少是不知道的。</p>
+<h2 id="conservative-policy-iteration">conservative policy iteration</h2>
+<p>为了求出这个step到底是多少，有人提出了conservative policy iteration算法，该算法提供了$\eta$提高的一个lower bound。用$\pi_{old}$表示current policy，用$\pi’$表示使得$L_{\pi_{old}}$取得最大值的policy，$\pi’ = arg\ min_{\pi’} L_{\pi_{old}}(\pi’)$，新的policy $\pi_{new}$定义为：<br>
 $$\pi_{new}(a|s) = (1-\alpha) \pi_{old}(a|s)+\alpha\pi’(a|s) \tag{7}$$<br>
 有人证明了这样的更新具有以下结果：<br>
 $$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2 , \epsilon = max_s \vert\mathbb{E}_{a\sim\pi’}\left[A^{\pi} (s,a)\right]\vert \tag{8}$$<br>
 进行缩放：<br>
 $$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \tag{9}$$<br>
-在实际应用中，很少使用混合策略，这里使用了一个新的distance measure，叫做total variation divergence，对于离散的概率分布$p,q$来说，定义为：<br>
+然而，这个bound只适用于公式$7生成的混合policy，在实践中，这类policy很少用到，而且限制条件很多。我们想要的是一个适用于通用stochastic policy的lower bound，通过提升这个bound，进而提升$\eta$。</p>
+<h2 id="通用随机策略单调增加的证明">通用随机策略单调增加的证明</h2>
+<p>公式$8$中体现出来的是改进右边就一定能改进真实的performance $\eta$。作者通过使用$\pi$和$\hat{\pi}$之间的一个距离代替$\alpha$，将公式$8$扩展到了通用的stochastic policy，而不仅仅是混合policy。这里使用的distance measure，叫做total variation divergence，对于离散的概率分布$p,q$来说，定义为：<br>
 $$D_{TV}(p||q) = \frac{1}{2} \sum_i \vert p_i -q_i \vert \tag{10}$$<br>
 定义$D_{TV}^{max}(\pi, \hat{\pi})$为：<br>
 $$D_{TV}^{max} (\pi, \hat{\pi}) = max_s D_{TV}(\pi(\cdot|s) || \hat{\pi}(\cdot|s))\tag{11}$$<br>
-让$\alpha = D_{TV}^{max}(\pi_{old}, \pi_{new})$，式子$9$成立。<br>
-total variation divergence和KL散度之间的关系：$D_{TV}(p||q)^2 \le D_{KL}(p||q)$，让$D_{KL}^{max}(\pi, \hat{\pi}) = max_s D_{KL}(\pi(\cdot|s)||\hat{\pi}(\cdot|s))$。从公式$9$中可以直接得到：<br>
+让$\alpha = D_{TV}^{max}(\pi_{old}, \pi_{new})$，新的bound如下：<br>
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 , \qquad\epsilon = max_{s,a} \vert A^{\pi}(s,a)\vert \tag{12}$$<br>
+证明：<br>
+…</p>
+<p>Total variation divergence和KL散度之间有这样一个关系：<br>
+$$D_{TV}(p||q)^2 \le D_{KL}(p||q) \tag{13}$$<br>
+证明：<br>
+…<br>
+让<br>
+$$D_{KL}^{max}(\pi, \hat{\pi}) = max_s D_{KL}(\pi(\cdot|s)||\hat{\pi}(\cdot|s)) \tag{14}$$<br>
+从公式$12$中可以直接得到：<br>
 \begin{align*}<br>
-\eta(\hat{\pi}) &amp;\ge L_{\pi}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \\<br>
-&amp;\ge L_{\pi}(\hat{\pi}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }D_{KL}^{max}(\pi, \hat{\pi}) \\<br>
-&amp; \ge L_{\pi}(\hat{\pi}) - CD_{KL}^{max}(\pi, \hat{\pi}), C=\frac{2\epsilon \gamma}{(1-\gamma)^2} \tag{12}<br>
+\eta(\hat{\pi}) &amp;\ge L_{\pi}(\hat{\pi}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \\<br>
+&amp;\ge L_{\pi}(\hat{\pi}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }D_{KL}^{max}(\pi, \hat{\pi}) \\<br>
+&amp; \ge L_{\pi}(\hat{\pi}) - CD_{KL}^{max}(\pi, \hat{\pi}), C=\frac{4\epsilon \gamma}{(1-\gamma)^2} \tag{12}<br>
 \end{align*}<br>
 根据公式$12$，我们能生成一个单调非递减的sequence：$\eta(\pi_0)\le \eta(\pi_1) \le \eta(\pi_2) \le \cdots$，记$M_i(\pi) = L_{\pi_i}(\pi) - CD_{KL}^{max}(\pi_i, \pi)$，有：<br>
 因为：<br>
@@ -1273,7 +1284,7 @@ $$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|_{\theta=\the
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#trust-region-policy-optimization"><span class="nav-number">1.</span> <span class="nav-text">Trust Region Policy Optimization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#术语定义"><span class="nav-number">2.</span> <span class="nav-text">术语定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#motivation"><span class="nav-number">3.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用求和代替期望"><span class="nav-number">4.</span> <span class="nav-text">用求和代替期望</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rho-pi-s-近似-rho-hat-pi-s-第一次近似"><span class="nav-number">5.</span> <span class="nav-text">$\rho_{\pi}(s)$近似$\rho_{\hat{\pi}}(s)$（第一次近似）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通用随机策略单调增加的证明"><span class="nav-number">6.</span> <span class="nav-text">通用随机策略单调增加的证明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参数化策略的优化-第二次近似"><span class="nav-number">7.</span> <span class="nav-text">参数化策略的优化（第二次近似）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#目标函数和约束的采样估计-第三次近似"><span class="nav-number">8.</span> <span class="nav-text">目标函数和约束的采样估计（第三次近似）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#single-path"><span class="nav-number">8.1.</span> <span class="nav-text">Single Path</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vine"><span class="nav-number">8.2.</span> <span class="nav-text">Vine</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实用算法"><span class="nav-number">9.</span> <span class="nav-text">实用算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#和前面工作的联系"><span class="nav-number">10.</span> <span class="nav-text">和前面工作的联系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">11.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#trust-region-policy-optimization"><span class="nav-number">1.</span> <span class="nav-text">Trust Region Policy Optimization</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#术语定义"><span class="nav-number">2.</span> <span class="nav-text">术语定义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#motivation"><span class="nav-number">3.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用求和代替期望"><span class="nav-number">4.</span> <span class="nav-text">用求和代替期望</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#rho-pi-s-近似-rho-hat-pi-s-第一次近似"><span class="nav-number">5.</span> <span class="nav-text">$\rho_{\pi}(s)$近似$\rho_{\hat{\pi}}(s)$（第一次近似）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#conservative-policy-iteration"><span class="nav-number">6.</span> <span class="nav-text">conservative policy iteration</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#通用随机策略单调增加的证明"><span class="nav-number">7.</span> <span class="nav-text">通用随机策略单调增加的证明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参数化策略的优化-第二次近似"><span class="nav-number">8.</span> <span class="nav-text">参数化策略的优化（第二次近似）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#目标函数和约束的采样估计-第三次近似"><span class="nav-number">9.</span> <span class="nav-text">目标函数和约束的采样估计（第三次近似）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#single-path"><span class="nav-number">9.1.</span> <span class="nav-text">Single Path</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vine"><span class="nav-number">9.2.</span> <span class="nav-text">Vine</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实用算法"><span class="nav-number">10.</span> <span class="nav-text">实用算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#和前面工作的联系"><span class="nav-number">11.</span> <span class="nav-text">和前面工作的联系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">12.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
