@@ -418,11 +418,22 @@ $$X=\begin{bmatrix}x&y\\\\y&z\end{bmatrix}\in S\_{+}^2 \Leftrightarrow x\ge 0,z\
 ### 仿射函数(affine functions)
 ### 线性分式(linear-fractional)和视角函数(perspective functions)
 #### 线性分式(linear-fractional)
-#### 
+#### 视角函数(perspective functions)
 
-## 
-## 
-## 
+## 广义不等式（Generalized inequalities)
+### 真锥(Proper cones)和广义不等式（Generalized inequalities)
+### 最小(Minimum)和最小元素(minimal elemetns)
+
+## Separating和supporting hyperplanes
+### Separating hyperplane theorem
+### Supporting Hyperplanes
+
+## 对偶锥(dual cones)和广义不等式(generalized inequalities)
+### 
+
+## 符号定义
+$\preceq$表示$\mathbb{R}^m $空间中的向量不等式(vector ineuqalitied)或者element-wise的不等式，$u\preceq v$代表着$u_i\le v_i, i=1,\cdots,m$。
+
 ## 参考文献
 1.stephen boyd. Convex optimization
 2.https://en.wikipedia.org/wiki/Topology
