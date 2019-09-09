@@ -63,7 +63,7 @@ J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) R(s,a)dads\\\\
 
 ## Motivation
 每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi$和new policy $\hat{\pi}$的关系式就好啦。这里就给出这样一个关系式！恩！就是！
-$$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A_{\pi}(s_t,a_t)\right] \tag{1}$$
+$$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t)\right] \tag{1}$$
 证明：
 \begin{align\*}
 \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi} (s_t,a_t) \right] &=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi} (s_t,a_t) - V^{\pi} (s_t))\right]  \\\\
