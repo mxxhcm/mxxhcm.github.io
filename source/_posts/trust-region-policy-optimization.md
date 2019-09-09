@@ -42,12 +42,12 @@ $$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \ga
 state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：
 $$V^{\pi} (s_t) = \mathbb{E}\_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
 或者有时候也定义成从$t=0$开始的expected return：
-$$V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_0|S_0=s;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s;\pi \right]$$
+$$V^{\pi} (s_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0;\pi \right]$$
 11. 动作值函数
 action value function定义为从$t$时刻的$s_t, a_t$开始的累计期望折扣奖励：
 $$Q^{\pi} (s_t, a_t) = \mathbb{E}\_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
 或者有时候也定义为从$t=0$开始的return的期望：
-$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s,A_0=a;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s,A_0=a;\pi \right]$$
+$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0,A_0=a_0;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0,A_0=a_0;\pi \right]$$
 12. 优势函数
 $A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s)$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
 $V^{\pi} (s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi} (s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
