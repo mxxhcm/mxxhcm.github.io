@@ -10,6 +10,9 @@ categories: 强化学习
 mathjax: true
 ---
 
+## Trust Region Policy Optimization
+作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在大的非线性网络优化问题上有很高的效率。TRPO有两个变种，single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。
+
 ## 术语定义
 更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
 1. 状态集合
@@ -54,10 +57,6 @@ J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) r(s,a)dads\\\\
 \end{align\*}
 其中$\rho^{\pi} (s)$可以理解为$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。
 这里在每一个$t$处，$s_t=s$都是有一定概率发生的，也就是$\rho_{\pi}(s)$表示的东西。
-
-## Trust Region Policy Optimization
-为了优化function approximators，需要将解强化学习问题分解为一系列优化问题。这个分解是nontrivial的，因为state distribution取决于policy。TRPO在尽可能少的改变policy的同时，尽可能的改善一个surrogate objective。TRPO通过KL散度衡量不同分布之间的差异，通过bounding policy update的大小bounding state distributions的变化，即使使用non-trivial step size也能保证policy improvement。
-根据这个理论，作者进行了一系列的理论验证，提出了TRPO算法，这里介绍两个变种算法：single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。这些算法的扩展性良好，可以优化参数成千上万的nonlinear policies。
 
 ## Motivation
 每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi$和new policy $\hat{\pi}$的关系式就好啦。这里就给出这样一个关系式！恩！就是！
@@ -189,5 +188,8 @@ $$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\th
 Trust Region Policy Optimization
 1.http://joschu.net/docs/thesis.pdf
 2.https://arxiv.org/pdf/1502.05477.pdf
-3.https://zhuanlan.zhihu.com/p/26308073
-4.https://zhuanlan.zhihu.com/p/60257706
+3.https://medium.com/@jonathan_hui/rl-trust-region-policy-optimization-trpo-explained-a6ee04eeeee9
+4.https://medium.com/@jonathan_hui/rl-trust-region-policy-optimization-trpo-part-2-f51e3b2e373a
+5.https://people.eecs.berkeley.edu/~pabbeel/cs287-fa09/readings/KakadeLangford-icml2002.pdf
+6.https://zhuanlan.zhihu.com/p/26308073
+7.https://zhuanlan.zhihu.com/p/60257706
