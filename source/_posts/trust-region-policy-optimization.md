@@ -102,14 +102,15 @@ $$\nabla_{\theta} L_{\pi_{\theta_0}}(\pi_{\theta})|\_{\theta=\theta_0} =\nabla_{
 ## conservative policy iteration
 为了求出这个step到底是多少，有人提出了conservative policy iteration算法，该算法提供了$\eta$提高的一个lower bound。用$\pi_{old}$表示current policy，用$\pi'$表示使得$L_{\pi_{old}}$取得最大值的policy，$\pi' = arg\ min_{\pi'} L_{\pi_{old}}(\pi')$，新的policy $\pi_{new}$定义为：
 $$\pi_{new}(a|s) = (1-\alpha) \pi_{old}(a|s)+\alpha\pi'(a|s) \tag{7}$$
-有人证明了这样的更新具有以下结果：
+可以证明，新的policy $\pi_{new}$和老的policy $\pi_{old}$之间存在以下关系：
 $$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2 , \epsilon = max_s \vert\mathbb{E}\_{a\sim\pi'}\left[A^{\pi} (s,a)\right]\vert \tag{8}$$
-进行缩放：
+证明：
+进行缩放得到：
 $$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \tag{9}$$
-然而，这个bound只适用于公式$7生成的混合policy，在实践中，这类policy很少用到，而且限制条件很多。我们想要的是一个适用于通用stochastic policy的lower bound，通过提升这个bound，进而提升$\eta$。
 
 ## 通用随机策略单调增加的证明
-公式$8$中体现出来的是改进右边就一定能改进真实的performance $\eta$。作者通过使用$\pi$和$\hat{\pi}$之间的一个距离代替$\alpha$，将公式$8$扩展到了通用的stochastic policy，而不仅仅是混合policy。这里使用的distance measure，叫做total variation divergence，对于离散的概率分布$p,q$来说，定义为：
+从公式$9$我们可以看出来，改进右边就一定能改进真实的performance $\eta$。然而，这个bound只适用于通过公式$7$生成的混合policy，在实践中，这类policy很少用到，而且限制条件很多。所以我们想要的是一个适用于任何stochastic policy的lower bound，通过提升这个bound提升$\eta$。
+作者使用$\pi$和$\hat{\pi}$之间的一个距离代替$\alpha$，将公式$8$扩展到了任意stochastic policy，而不仅仅是混合policy。这里使用的distance measure，叫做total variation divergence，对于离散的概率分布$p,q$来说，定义为：
 $$D_{TV}(p||q) = \frac{1}{2} \sum_i \vert p_i -q_i \vert \tag{10}$$
 定义$D_{TV}^{max}(\pi, \hat{\pi})$为：
 $$D_{TV}^{max} (\pi, \hat{\pi}) = max_s D_{TV}(\pi(\cdot|s) || \hat{\pi}(\cdot|s))\tag{11}$$
