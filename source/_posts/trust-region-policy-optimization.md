@@ -32,8 +32,12 @@ $\rho_0$是初始状态$s_0$服从的distribution，$s_0\sim \rho_0$
 8. 随机策略
 选择action，stochastic policy表示为：$\pi_\theta: \mathcal{S}\rightarrow P(\mathcal{A})$，其中$P(\mathcal{A})$是选择$\mathcal{A}$中每个action的概率，$\theta$表示policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取action $a_t$的概率
 9. 期望折扣回报
-定义$G_t = \sum_{k=t}^{\infty} \gamma^{k-t} R_{k+1}$为expected discounted returns，表示从$t$时刻开始的expected discounted return，
-用$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right]$表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$
+定义
+$$G_t = \sum_{k=t}^{\infty} \gamma^{k-t} R_{k+1}$$
+为expected discounted returns，表示从$t$时刻开始的expected discounted return；
+用
+$$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right]$$
+表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$
 10. 状态值函数
 state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：
 $$V^{\pi} (s_t) = \mathbb{E}\_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right]$$
