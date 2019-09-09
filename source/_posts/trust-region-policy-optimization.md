@@ -136,7 +136,7 @@ $$\eta(\pi_{i+1}) \ge M_i(\pi_{i+1})$$
 $$\eta(\pi_i) = M_i(\pi_i)$$
 上面的第一个式子减去第二个式子得到：
 $$\eta(\pi_{i+1}) - \eta(\pi_i)\ge M_i(\pi_{i+1})-M_i(\pi_i) \tag{16}$$
-在每一次迭代的时候，最大化$M_i$就能够保证$\eta$是非递减的。这种算法是minorizaiton maximization的一种。$M_i$是miorize $\eta$的近似目标。
+在每一次迭代的时候，最大化$M_i$也就是$M_i(\pi_{i+1}) - M_i(\pi_i)\ge 0$就能够保证$\eta$是非递减的。这种算法是minorizaiton maximization的一种。$M_i$是miorize $\eta$的近似目标。
 
 ## 参数化策略的优化（第二次近似）
 前面几小节考虑的optimization问题和$\pi$无关，并且假设所有的states都可以被evaluated。这一节介绍如何在有限的样本下和任意的参数化策略下，从理论基础推导出一个实用的算法。
