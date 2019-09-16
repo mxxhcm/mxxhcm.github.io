@@ -12,7 +12,7 @@ categories: 高等数学
 
 ## 导数
 导数表示函数在该点的变化率。
-$$f'(x) = lim_{\delta x\rightarrow 0}\frac{\delta y}{\delta x} = lim_{\delta x\rightarrow 0} \frac{f(x+\delta x) - f(x)}{ \delta x}$$
+$$f'(x) = lim_{\Delta x\rightarrow 0}\frac{\Delta y}{\Delta x} = lim_{\Delta x\rightarrow 0} \frac{f(x+\Delta x) - f(x)}{ \Delta x}$$
 更直接的来说，导数表示自变量无穷小时，函数值的变化与自变量变化的比值，几何意义是该点的切线。物理意义表示该时刻的瞬时变化率。
 
 ## 偏导数

@@ -17,6 +17,23 @@ using std::endl;
 #include < vector>
 ```
 
+## 获得数组长度
+``` c++
+int a[] = {1, 2, 3, 4};
+l = sizeof(a)/sizeof(int);
+```
+## printf输出格式
+%d  有符号十进制整数(int)
+%ld, %Ld    长整形数据(long)
+%i  有符号十进制数，和%d一样
+%u  无符号十进制整数(unsigned int)  
+%lu, %Lu    无符号十进制长整形数据(unsigned long)
+%f  单精度浮点数(float)
+%c  单字符(char)
+%o  无符号八进制整数
+%x(%X) 十六进制无符号整数
+
+
 ## 字符串
 ### string
 1. 导包
@@ -131,5 +148,5 @@ for(int i = 0; i < len; i++)
 ```
 
 
-
 ## 参考文献
+1.https://blog.csdn.net/xiexievv/article/details/6831194
