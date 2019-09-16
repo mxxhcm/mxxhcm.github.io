@@ -6,6 +6,7 @@ tags:
  - 点估计
  - 最大似然估计
  - 概率论
+ - 机器学习
 categories: 概率论
 mathjax: true
 ---
@@ -41,7 +42,7 @@ $$\frac{\partial ln\ L(\mu; X)}{\partial \mu} = \sum_{i=1}^N \frac{\partial ln\ 
 令其等于$0$，即
 $$\sum_{i=1}^N(x_i-\mu) = 0$$
 解得$$ \mu = \frac{\sum_{i=1}^N x_i }{N}$$
-### 求解$\simga^2 $
+### 求解$\sigma^2 $
 对$ \sigma^2 $求偏导，令$t=\sigma^2 $，则$ln\ p(x;\sigma^2 ) = ln\ p(x;t) = -ln\ \sqrt{2\pi} - ln\ \sqrt{t} - \frac{(x_i-\mu)^2 }{2t}$，有：
 $$ \frac{\partial ln\ L(t; X)}{\partial t} = \sum_{i=1}^N \frac{\partial ln\ p(x_i;t)}{\partial t} = \sum_{i=1}^N\left( -\frac{1}{2t} + \frac{(x-\mu)^2 }{2t^2 }\right) $$
 令其等于$0$，即
