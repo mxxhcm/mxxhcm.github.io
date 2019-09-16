@@ -1,6 +1,6 @@
 ---
 title: maximum likelyhood estimation
-date: 2019-09-16 10:26:30
+date: 2019-01-20 15:22:45
 tags:
  - 参数估计
  - 点估计
