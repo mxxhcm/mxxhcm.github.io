@@ -23,7 +23,7 @@ mathjax: true
 如上图所示，通过迭代的最大化下界函数局部地逼近expected reward。更详细的来说，随机的初始化$\theta$，在当前$\theta$下，找到下界$M$最接近expected reward $\eta$的点，然后将$M$的最优点作为下一次的$\theta$。不断的迭代，直到收敛到optimal policy。这样做有一个条件，就是$M$要比$\eta$容易优化。比如$M$是二次函数：
 $$ax^2 + bx+c$$
 用向量形式表示是：
-$$g\codt(\theta- \theta_{old}) - \frac{\beta}{2} (\theta- \theta_{old})^T F(\theta - \theta_{old})$$
+$$g\cdot(\theta- \theta_{old}) - \frac{\beta}{2} (\theta- \theta_{old})^T F(\theta - \theta_{old})$$
 是一个convex function。
 为什么MM算法会收敛到optimal policy，如果$M$是下界的话，它不会跨过红线$\eta$。假设新的$\eta$中的new policy更低，那么blue线一定会越过$\eta$，和$M$是下界冲突。
 

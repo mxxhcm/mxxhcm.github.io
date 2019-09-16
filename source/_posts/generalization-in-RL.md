@@ -141,7 +141,7 @@ CoinRun和Sonic很像，但是更简单，更容易泛化。每一个level都是
 这一节中，所有的agents都是在$500$个levels的CoinRun环境中进行的。我们可以看到有过拟合发生，所以就希望这个setting能够evaluating出不同正则化技术的效果。所有接下来实验的均值和方差都是runs$3$次得到的。使用的是有$3$个残差块的IMPALA-CNN。
 
 #### Dropout和L2正则化
-作者分别试了dropout为$p\in {0, 0.05, 0.10, 0.15, 0.20, 0.25}$，以及L2正则化权重$w\in {0, 0.5, 1.0, 1.5, 2.0, 2.5}\times 10^{-1}$，一次只试了一个。最终找到了$p=0.1$以及$w=10^{-4}$。使用$L2$正则化训练了$256M$ timesteps，使用dropout训练了$512M$ timesteps，dropout更难收敛，而且效果没有$L2$正则化好用。
+作者分别试了dropout为$p\in [0, 0.05, 0.10, 0.15, 0.20, 0.25]$，以及L2正则化权重$w\in [0, 0.5, 1.0, 1.5, 2.0, 2.5]\times 10^{-1} $，一次只试了一个。最终找到了$p=0.1$以及$w=10^{-4} $。使用$L2$正则化训练了$256M$ timesteps，使用dropout训练了$512M$ timesteps，dropout更难收敛，而且效果没有$L2$正则化好用。
 
 #### Data Augmentation
 监督学习中，数据增强的手段主要用于图像，包括变换，旋转，亮度调整，锐化等等。不同的数据集可能需要使用不同的augmentations。这里作用使用的是Cutout的一个变形。对于每一个observation，可变大小的矩阵区别被masked掉，这些masked的区域给一个随机的颜色，这个和domain randomization非常相似，用于机器人从仿真到真实世界的transfer。
