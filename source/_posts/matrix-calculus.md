@@ -69,14 +69,16 @@ $p\times q$矩阵$\mathbf{Y}$ denominator layout|$\frac{\partial{y}}{\partial{\m
 $\frac{\partial y}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y}{\partial x_1} & \cdots &\frac{\partial y}{\partial x_n}\end{bmatrix}$
 $\frac{\partial \mathbf{y}}{\partial x} = \begin{bmatrix}\frac{\partial y_1}{\partial x} \\\\ \vdots \\\\ \frac{\partial y_m}{\partial x}\end{bmatrix}$
 $\frac{\partial \mathbf{y}}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y_1}{\partial x_1}&\cdots \frac{\partial y_1}{\partial x_n}  \\\\ \vdots \\\\ \frac{\partial y_m}{\partial x_1} & \cdots & \frac{\partial y_m}{\partial x_n}\end{bmatrix}$
-$\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\partial x_{11}}&\cdots \frac{\partial y}{\partial x_{1q}}  \\\\ \vdots \\\\ \frac{\partial y}{\partial x_{p1}} & \cdots &\frac{\partial y}{\partial x_{pq}}\end{bmatrix}$
+$\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\partial x_{11}}&\cdots \frac{\partial y}{\partial x_{p1}}  \\\\ \vdots \\\\ \frac{\partial y}{\partial x_{1q}} & \cdots &\frac{\partial y}{\partial x_{pq}}\end{bmatrix}$
 下列公式只有numerator layout，没有denominator-layout：
 $\frac{\partial \mathbf{Y}}{\partial x} = \begin{bmatrix}\frac{\partial y_{11}}{\partial x}&\cdots \frac{\partial y_{1n}}{\partial x}  \\\\ \vdots \\\\ \frac{\partial y_{m1}}{\partial x} & \cdots & \frac{\partial y_{mn}}{\partial x}\end{bmatrix}$
 $dx = \begin{bmatrix}dx_{11}}&\cdots d{1n}}\\\\ \vdots \\\\ dx_{m1} & \cdots & dx_{mn}\end{bmatrix}$
 
-
-
 ### denominator layout
+$\frac{\partial y}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y}{\partial x_1} \\\\ \cdots \\\\ \frac{\partial y}{\partial x_n}\end{bmatrix}$
+$\frac{\partial \mathbf{y}}{\partial x} = \begin{bmatrix}\frac{\partial y_1}{\partial x} & \vdots & \frac{\partial y_m}{\partial x}\end{bmatrix}$
+$\frac{\partial \mathbf{y}}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y_1}{\partial x_1}&\cdots \frac{\partial y_m}{\partial x_1}  \\\\ \vdots \\\\ \frac{\partial y_1}{\partial x_n} & \cdots & \frac{\partial y_m}{\partial x_n}\end{bmatrix}$
+$\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\partial x_{11}}&\cdots \frac{\partial y}{\partial x_{1q}}  \\\\ \vdots \\\\ \frac{\partial y}{\partial x_{p1}} & \cdots &\frac{\partial y}{\partial x_{pq}}\end{bmatrix}$
 
 ## 公式
 
