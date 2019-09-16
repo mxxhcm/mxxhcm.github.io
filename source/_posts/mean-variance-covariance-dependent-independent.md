@@ -117,9 +117,11 @@ Var(\bar{X}) &= Var(\frac{\sum_{i=1}^n X_i}{n})\\\\
 一阶原点矩为期望，任意随机变量的一阶中心距为$0$，二阶中心矩为方差。三阶中心矩表示偏度，任何对称分布的偏度为$0$，分布尾部在左侧比较长具有负偏度，分布尾部在右侧较长具有正偏度。四阶中心距表示峰度，俗称方差的方差。
 
 ## 协方差
+方差和标准差通常是用来描述一维随机变量的特性。那么对于多维随机变量来说，怎么衡量它们之间的关系呢？这就引入了协方差，用来衡量两维随机变量之间的关系。
 
 ### 定义
 $\mathbb{E}\left[(X-\mathbb{E}(X))(Y-\mathbb{E}(Y)\right]$称为$X,Y$的协方差，记为$Cov(X,Y)$。
+当$X=Y$时，其实就是方差的定义。
 
 ### 属性
 1. \begin{align\*}
@@ -133,6 +135,9 @@ Cov(X,Y) &= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])(Y-\mathbb{E}\left[Y\rig
 &= \mathbb{E}\left[XY - \mathbb{E}\left[Y\right]X - \mathbb{E}\left[X\right]Y + \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\right]\\\\
 &= \mathbb{E}\left[XY\right] - \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\\\\
 \end{align\*}
+
+### 协方差矩阵
+用一个矩阵表示多维随机变量之间的关系，比如三个维度的随机变量。可以两两求出它们之间的协方差，因为协方差是对称的，所以这个矩阵是对称矩阵，对角线元素是方差。
 
 ### 独立与协方差之间的关系
 若$X,Y$独立，则$Cov(X,Y) = 0$，因为独立变量有$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，所以：
@@ -157,3 +162,4 @@ $X,Y$独立能够推出他们不相关，因为$Corr(X,Y) = 0$，满足不相关
 3.https://www.zhihu.com/question/22983179/answer/404391738
 4.https://www.matongxue.com/madocs/607.html
 5.https://math.stackexchange.com/a/2113753/629287
+6.https://blog.csdn.net/yangdashi888/article/details/52397990

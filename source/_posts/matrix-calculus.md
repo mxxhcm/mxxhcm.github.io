@@ -11,7 +11,7 @@ categories: 线性代数
 矩阵微积分值得是使用矩阵或者向量表示因变量中每一个元素相对于自变量中每一个元素的导数。一般来说，自变量和因变量都可以是标量，向量和矩阵。
 
 ### 符号声明
-小写字母$x,y$是标量，小写加粗字母$\mathbf{x},\mathbf{y}$是向量，大写加粗$\mathbf{X},\mathbf{Y}$是矩阵。标量和向量都可以看成是矩阵，将vector看成$1\times n$或者$m\times 1$的矩阵，将scalar看成$1\times 1$的矩阵。$\mathbf{X}^T $表示矩阵$\mathbf{X}$的转置，$tr(\mathbf{X})$表示迹，即对角线元素之和。$det(\mathbf{X}$或者$\vert \mathbf{X}\vert$表示行列式。
+小写字母$x,y$是标量，小写加粗字母$\mathbf{x},\mathbf{y}$是向量，大写加粗$\mathbf{X},\mathbf{Y}$是矩阵。标量和向量都可以看成是矩阵，将vector看成$1\times n$或者$m\times 1$的矩阵，将scalar看成$1\times 1$的矩阵。$\mathbf{X}^T $表示矩阵$\mathbf{X}$的转置，$tr(\mathbf{X})$表示迹，即对角线元素之和。$det(\mathbf{X})$或者$\vert \mathbf{X}\vert$表示行列式。
 
 ### 示例
 考虑向量梯度，给定三个自变量，一个因变量的函数：$f(x_1, x_2, x_3)$，向量的梯度是：
