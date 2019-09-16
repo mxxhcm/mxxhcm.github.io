@@ -15,4 +15,4 @@ categories: 概率论
 ## 参考文献
 1.https://math.stackexchange.com/a/265933
 2.https://www.zhihu.com/question/26561604/answer/33275982
-
+3.https://wiseodd.github.io/techblog/2018/03/11/fisher-information/

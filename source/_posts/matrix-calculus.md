@@ -81,6 +81,17 @@ $\frac{\partial \mathbf{y}}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial
 $\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\partial x_{11}}&\cdots \frac{\partial y}{\partial x_{1q}}  \\\\ \vdots \\\\ \frac{\partial y}{\partial x_{p1}} & \cdots &\frac{\partial y}{\partial x_{pq}}\end{bmatrix}$
 
 ## 公式
+### 向量对向量求导公式
+### 标量对向量求导公式
+### 向量对标量求导公式
+### 标量对矩阵求导公式
+### 矩阵对标量求导公式
+### 标量对标量求导公式
+
+### 微分形式的公式
+### 微分和导数的转换
+
+
 
 ## 参考文献
 1.https://en.wikipedia.org/wiki/Matrix_calculus
