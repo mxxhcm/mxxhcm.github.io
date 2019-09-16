@@ -19,7 +19,7 @@ $$\nabla f=\frac{\partial f^T }{\partial \mathbf{x}} = \left[\frac{\partial f}{\
 更复杂的情况是标量$f$对矩阵$\mathbf{X}$求导，叫做矩阵梯度(gradient matrix)。标量，向量，矩阵的组合总共有$9$中情况，其中六种情况可以用以下方式表示出来：
 种类| 标量|向量|矩阵
 :--:|:--:|:--:|:--:
-标量| $\frac{\partial{y}}{\partial{x}}|$\frac{\partial{\mathbf{y}}}{\partial{x}}$|$\frac{\partial{\mathbf{Y}}}{\partial{x}}$
+标量| $\frac{\partial{y}}{\partial{x}}$|$\frac{\partial{\mathbf{y}}}{\partial{x}}$|$\frac{\partial{\mathbf{Y}}}{\partial{x}}$
 向量|$\frac{\partial{y}}{\partial{x}}$|$\frac{\partial{\mathbf{y}}}{\partial{x}}$|
 矩阵|$\frac{\partial{y}}{\partial{\mathbf{X}}}$| |
 
