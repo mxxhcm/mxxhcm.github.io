@@ -38,14 +38,12 @@ $$s(\theta) = \nabla_{\theta} log\ p(x|\theta) $$
 根据协方差矩阵的定义：
 $$\Sigma = \mathbb{E}\left[(X-\mathbb{E}(X))(X-\mathbb{E}(X))^T \right]$$
 所以$s(\theta)$的协方差矩阵为：
-$$\Sigma = \mathbb{E}_{p(x|\theta)} \left[(s(\theta)-0)(s(\theta) - 0)^T \right] = \mathbb{E}_{p(x|\theta)} \left[(s(\theta)s(\theta)^T \right] $$
+$$\Sigma = \mathbb{E}\_{p(x|\theta)} \left[(s(\theta)-0)(s(\theta) - 0)^T \right] = \mathbb{E}\_{p(x|\theta)} \left[(s(\theta)s(\theta)^T \right] $$
 
 ## 第一种意义：score函数的方差
 ## Fisher information
 用$I(\theta)$表示fisher information，它的定义就是score function的方差（协方差）：
 $$I(\theta) = \mathbb{E}\left[s(\theta) s(\theta)^T\right]$$
-
-
 
 ## 第二种意义：对数似然二阶导数的期望的相反数
 似然对数的海塞矩阵（二阶导数）期望的负数等于fish information matrix $F$。

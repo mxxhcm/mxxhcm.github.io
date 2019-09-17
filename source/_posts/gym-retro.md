@@ -49,9 +49,18 @@ Airstriker-Genesis的ROM是默认包含在gym-retro之中的，其他的一些RO
 
 ### 所有的games
 ``` python
+import retro
+retro.data.list_games()
 ```
+上述代码会列出所有的游戏，包含那些默认没有集成的ROMS中的。
 
+### 手动添加ROMs
+``` shell
+python3 -m retor.import /path/to/your/ROMs/directory
+```
+上述代码将存放在某个路径下的ROMs拷贝到Gym Retro的集成目录中去。
 
 ## 参考文献
 1.https://retro.readthedocs.io/en/latest/
-2.
+2.https://arxiv.org/pdf/1804.03720.pdf
+

@@ -10,28 +10,6 @@ categories: 强化学习
 mathjax: true
 ---
 
-## Trust Region Policy Optimization
-作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在大的非线性网络优化问题上有很高的效率。TRPO有两个变种，single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。
-为什么要有TRPO？
-1. policy gradient计算的是expected rewards梯度的最大方向，然后朝着这个方向更新policy的参数。因为梯度使用的是一阶导数，梯度太大时容易fail，梯度太小的话更新太慢。
-2. 学习率很难选择，学习率固定，梯度大容易失败，梯度小更新太慢。
-3. 如何限制policy，防止它进行太大的move。然后如何将policy的改变转换到model parameter的改变上。
-4. 采样效率很低。对整个trajectory进行采样，但是仅仅用于一次policy update。在一个trajectory中的states是很像的，尤其是用pixels表示时。如果在每一个timestep都改进policy的话，会一直在某一个局部进行更新，训练会变得很不稳定。
-
-## Minorize-Maximization MM算法
-![mm](mm.jpeg)
-如上图所示，通过迭代的最大化下界函数局部地逼近expected reward。更详细的来说，随机的初始化$\theta$，在当前$\theta$下，找到下界$M$最接近expected reward $\eta$的点，然后将$M$的最优点作为下一次的$\theta$。不断的迭代，直到收敛到optimal policy。这样做有一个条件，就是$M$要比$\eta$容易优化。比如$M$是二次函数：
-$$ax^2 + bx+c$$
-用向量形式表示是：
-$$g\cdot(\theta- \theta_{old}) - \frac{\beta}{2} (\theta- \theta_{old})^T F(\theta - \theta_{old})$$
-是一个convex function。
-为什么MM算法会收敛到optimal policy，如果$M$是下界的话，它不会跨过红线$\eta$。假设新的$\eta$中的new policy更低，那么blue线一定会越过$\eta$，和$M$是下界冲突。
-
-## Trust region
-有两种优化方法：line search和trust region。Gradient descent是line search方法。首先确定下降的方向，然后超这个方向移动一步。而trust region中，首先确定我们想要探索的step size，然后直到在trust region中的optimal point。用$\delta$表示初始的maximum step size，作为trust region的半径：
-$$max_{s\in \mathbb{R}^n} m_k(s), \qquad s.t. \vert s\vert \le \delta$$
-$m$是原始目标函数$f$的近似，我们的目标是找到半径$\delta$范围$m$的最优点，迭代下去直到最高点。在运行时可以根据表面的曲率延伸或者压缩$\delta$控制学习的速度。如果在optimal point，$m$是$f$的一个poor approximator，收缩trust region。如果approximatation很好，就expand trust region。如果policy改变太多的话，可以收缩trust region。
-
 ## 术语定义
 更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
 1. 状态集合
@@ -79,6 +57,46 @@ J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) R(s,a)dads\\\\
 &= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi_{\theta}}\left[R(s,a)\right] \tag{1}\\\\ 
 \end{align\*}
 其中$\rho^{\pi} (s)$可以理解为$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。这里在每一个$t$处，$s_t=s$都是有一定概率发生的，也就是$\rho_{\pi}(s)$表示的东西。
+
+## A natural policy gradient
+论文名称：A Natural Policy Gradient 
+论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
+
+### 摘要
+作者基于参数空间的底层结构提出了natural gradient方法表征最陡的下降方向。尽管基于gradient的方法不能过大的改变参数，它还是能够朝着选择greedy optimal action而不是更好的action移动。Greedy optimal action在使用兼容值函数的policy iteration的每一个improvement step中被选择。
+
+### 引言
+直接的policy gradient在解决大规模的MDPs时很有用。基于future reward的梯度在有约束条件的一类polices中找一个policy $\pi$，但是这种方法是non covariant的，简单来说，就是左右两边的维度不一致。
+这篇文章基于policy的底层结构定义了一个metric，提出了一个covariant gradient方法，通过将它和policy iteration联系起来，可以证明natural gradient朝着选择greedy optimal action的方向移动。通过在简单和复杂的MDP中进行测试，结果表明这种方法中没有出现严重的plateau phenomenon。
+
+### A Natural Gradient
+定义average reward $\eta(\pi)$为：
+$$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a)$$
+这篇文章中定义了新的state action value和value function：
+$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[\right]
+
+
+## Trust Region Policy Optimization
+作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在大的非线性网络优化问题上有很高的效率。TRPO有两个变种，single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。
+为什么要有TRPO？
+1. policy gradient计算的是expected rewards梯度的最大方向，然后朝着这个方向更新policy的参数。因为梯度使用的是一阶导数，梯度太大时容易fail，梯度太小的话更新太慢。
+2. 学习率很难选择，学习率固定，梯度大容易失败，梯度小更新太慢。
+3. 如何限制policy，防止它进行太大的move。然后如何将policy的改变转换到model parameter的改变上。
+4. 采样效率很低。对整个trajectory进行采样，但是仅仅用于一次policy update。在一个trajectory中的states是很像的，尤其是用pixels表示时。如果在每一个timestep都改进policy的话，会一直在某一个局部进行更新，训练会变得很不稳定。
+
+## Minorize-Maximization MM算法
+![mm](mm.jpeg)
+如上图所示，通过迭代的最大化下界函数局部地逼近expected reward。更详细的来说，随机的初始化$\theta$，在当前$\theta$下，找到下界$M$最接近expected reward $\eta$的点，然后将$M$的最优点作为下一次的$\theta$。不断的迭代，直到收敛到optimal policy。这样做有一个条件，就是$M$要比$\eta$容易优化。比如$M$是二次函数：
+$$ax^2 + bx+c$$
+用向量形式表示是：
+$$g\cdot(\theta- \theta_{old}) - \frac{\beta}{2} (\theta- \theta_{old})^T F(\theta - \theta_{old})$$
+是一个convex function。
+为什么MM算法会收敛到optimal policy，如果$M$是下界的话，它不会跨过红线$\eta$。假设新的$\eta$中的new policy更低，那么blue线一定会越过$\eta$，和$M$是下界冲突。
+
+## Trust region
+有两种优化方法：line search和trust region。Gradient descent是line search方法。首先确定下降的方向，然后超这个方向移动一步。而trust region中，首先确定我们想要探索的step size，然后直到在trust region中的optimal point。用$\delta$表示初始的maximum step size，作为trust region的半径：
+$$max_{s\in \mathbb{R}^n} m_k(s), \qquad s.t. \vert s\vert \le \delta$$
+$m$是原始目标函数$f$的近似，我们的目标是找到半径$\delta$范围$m$的最优点，迭代下去直到最高点。在运行时可以根据表面的曲率延伸或者压缩$\delta$控制学习的速度。如果在optimal point，$m$是$f$的一个poor approximator，收缩trust region。如果approximatation很好，就expand trust region。如果policy改变太多的话，可以收缩trust region。
 
 ## Motivation
 每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi$和new policy $\hat{\pi}$的关系式就好啦。这里就给出这样一个关系式！恩！就是！
