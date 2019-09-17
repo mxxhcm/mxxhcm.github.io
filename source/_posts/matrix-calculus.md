@@ -89,6 +89,17 @@ $\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\part
 ### 标量对标量求导公式
 
 ### 微分形式的公式
+通常来说使用微分形式然后转换成导数更简单。但是只有在使用numerator layout才起作用。
+条件|表达式|结果(numerator layout)
+:-:|:-:|:-:
+$\mathbf{A}$不是$\mathbf{X}$的函数|$d(\mathbf{A}) = $ | $0$
+$a$不是$\mathbf{X}$的函数|$d(a\mathbf{X})$ | $ad\mathbf{A}$
+|$d(\mathbf{X}+\mathbf{Y})$| $d\mathbf{X}+d\mathbf{Y}$
+|$d(\mathbf{X}\mathbf{Y})$| $(d\mathbf{X})\mathbf{Y}+\mathbf{X}(d\mathbf{Y})$
+|$d(\mathbf{X}^T) $| $(d\mathbf{X})^T $
+|$d(\mathbf{X}^{-1} ) $| $- \mathbf{X}^{-1} (d\mathbf{X}) \mathbf{X}^{-1} $
+|$d(\mathbf{X}^H ) $| $(d\mathbf{X})^T $
+
 ### 微分和导数的转换
 标准微分公式|等价的导数形式
 :-:|:-:
@@ -98,8 +109,6 @@ $dy = tr(\mathbf{A}d\mathbf{A})$ | $\frac{dy}{d \mathbf{X}} = \mathbf{A}$
 $d\mathbf{y} = \mathbf{a}dx$ | $\frac{d\mathbf{y}}{d x} = \mathbf{a}$
 $d\mathbf{y} = \mathbf{A}d\mathbf{x}$ | $\frac{d\mathbf{y}}{d \mathbf{x}} = \mathbf{A}$
 $d\mathbf{Y} = \mathbf{A}dx$ | $\frac{d\mathbf{Y}}{dx} = \mathbf{A}$
-
-
 
 ## 参考文献
 1.https://en.wikipedia.org/wiki/Matrix_calculus
