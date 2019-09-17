@@ -13,7 +13,7 @@ mathjax: true
 ## 先验知识
 ### 最大似然估计
 根据最大似然估计，有似然对数：
-$$l = log p(x|\theta)$$
+$$l = log\ p(x|\theta)$$
 
 ## score function
 根据似然对数，定义一个score function：
@@ -24,20 +24,22 @@ $$s(\theta) = \nabla_{\theta} log\ p(x|\theta) $$
 **定理** score function的期望是$0$
 证明：
 \begin{align\*}
-\mathbb{E}\_{p(x|\theta)}\left[s(\theta)\right] & = \mathbb{E}\_{p(x|\theta)}\left[\nabla logp(x|\theta)\right]\\\\
-&=\int \nabla log p(x|\theta) p(x|\theta) dx\\\\
+\mathbb{E}\_{p(x|\theta)}\left[s(\theta)\right] & = \mathbb{E}\_{p(x|\theta)}\left[\nabla log\ p(x|\theta)\right]\\\\
+&=\int \nabla log\ p(x|\theta) p(x|\theta) dx\\\\
 &=\int \frac{\nabla p(x|\theta)}{p(x|\theta)} p(x|\theta) dx\\\\
 &=\int \nabla p(x|\theta) dx\\\\
 &=\nabla \int p(x|\theta) dx\\\\
-&=\nabla 1\\\\
-&= 0
+&=\nabla \mathbf{1}\\\\
+&= \mathbf{0}
 \end{align\*}
+即似然对数梯度向量的期望为$\mathbf{0}$向量。
 
 ### score function的协方差矩阵
-根据方差的定义：
-$$Var(X) = \mathbb{E}\left[(X-\mathbb{E}(X))^2\right]$$
-所以：
-$$Var(s(\theta)) = \mathbb{E}_{p(x|\theta)} \left[(s(\theta)-0)(s(\theta) - 0)^T \right] = \mathbb{E}_{p(x|\theta)} \left[(s(\theta)s(\theta)^T \right]$ = $
+根据协方差矩阵的定义：
+$$\Sigma = \mathbb{E}\left[(X-\mathbb{E}(X))(X-\mathbb{E}(X))^T \right]$$
+所以$s(\theta)$的协方差矩阵为：
+$$\Sigma = \mathbb{E}_{p(x|\theta)} \left[(s(\theta)-0)(s(\theta) - 0)^T \right] = \mathbb{E}_{p(x|\theta)} \left[(s(\theta)s(\theta)^T \right] $$
+
 ## 第一种意义：score函数的方差
 ## Fisher information
 用$I(\theta)$表示fisher information，它的定义就是score function的方差（协方差）：
