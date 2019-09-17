@@ -90,6 +90,14 @@ $\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\part
 
 ### 微分形式的公式
 ### 微分和导数的转换
+标准微分公式|等价的导数形式
+:-:|:-:
+$dy = a\ dx$ | $\frac{dy}{dx} = a$
+$dy = \mathbf{a}dx$ | $\frac{dy}{d \mathbf{x}} = \mathbf{a}$
+$dy = tr(\mathbf{A}d\mathbf{A})$ | $\frac{dy}{d \mathbf{X}} = \mathbf{A}$
+$d\mathbf{y} = \mathbf{a}dx$ | $\frac{d\mathbf{y}}{d x} = \mathbf{a}$
+$d\mathbf{y} = \mathbf{A}d\mathbf{x}$ | $\frac{d\mathbf{y}}{d \mathbf{x}} = \mathbf{A}$
+$d\mathbf{Y} = \mathbf{A}dx$ | $\frac{d\mathbf{Y}}{dx} = \mathbf{A}$
 
 
 
