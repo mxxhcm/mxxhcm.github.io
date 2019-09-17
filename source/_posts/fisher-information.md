@@ -17,14 +17,14 @@ $$l = log p(x|\theta)$$
 
 ## score function
 根据似然对数，定义一个score function：
-$$s(\theta) = \nabla_{\thtea} logp(x|\theta) $$
-即score是似然对数的一阶导，或者是梯度。
+$$s(\theta) = \nabla_{\theta} log\ p(x|\theta) $$
+即score是似然对数的一阶导（梯度），似然对数是标量，score function是似然对数对$\theta$的梯度向量。
 
 ## score function的期望
 **定理** score function的期望是$0$
 证明：
 \begin{align\*}
-\mathbb{E}_{p(x|\theta)}\left[s(\theta)\right] & = \mathbb{E}_{p(x|\theta)}\left[\nabla logp(x|\theta)\right]\\\\
+\mathbb{E}\_{p(x|\theta)}\left[s(\theta)\right] & = \mathbb{E}\_{p(x|\theta)}\left[\nabla logp(x|\theta)\right]\\\\
 &=\int \nabla log p(x|\theta) p(x|\theta) dx\\\\
 &=\int \frac{\nabla p(x|\theta)}{p(x|\theta)} p(x|\theta) dx\\\\
 &=\int \nabla p(x|\theta) dx\\\\
