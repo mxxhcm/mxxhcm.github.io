@@ -2,37 +2,49 @@
 title: c++常用函数
 date: 2019-08-31 11:31:32
 tags:
-categories:
+ - C++
+categories: C/C++ 
+mathjax: true
 ---
+
+## STL
+### 顺序容器
+#### vector
+- 内部数据结构为数组，可以自动增长
+- 在后端插入和删除，push_back()和pop_back()，时间复杂度为$O(1)$
+- 在中间和前段插入和删除，insert()和erase()，时间和空间复杂度是$O(n)$
+- 分配连续内存，
+- 支持随机数组存取，查找的时间复杂度$O(1)$
+- 支持[]访问
+- 头文件vector
+
+#### list
+- 内部数据结构为双向环状链表
+- 任意位置插入和删除的时间复杂度是$O(1)$
+- 链式存储，非连续内存
+- 不支持随机存取，查找的时间复杂度是$O(n)$
+- 不支持[]访问
+- 头文件list
+
+#### deque
+- vector和deque的结合，使用若干个内存片段进行链接。兼有vector和list的好处。
+- 内部数据结构为数组
+- 头文件deque
+
+### 关联容器
+#### map, multimap
+封装了二叉树
+#### set, multiset
+封装了二叉树
 
 ## 命令空间
 ``` c++
 using std::cin;
 using std::cout;
 using std::endl;
+using std;:vector;
+using std::string;
 ```
-
-## 常用库函数
-``` c++
-#include < vector>
-```
-
-## 获得数组长度
-``` c++
-int a[] = {1, 2, 3, 4};
-l = sizeof(a)/sizeof(int);
-```
-## printf输出格式
-%d  有符号十进制整数(int)
-%ld, %Ld    长整形数据(long)
-%i  有符号十进制数，和%d一样
-%u  无符号十进制整数(unsigned int)  
-%lu, %Lu    无符号十进制长整形数据(unsigned long)
-%f  单精度浮点数(float)
-%c  单字符(char)
-%o  无符号八进制整数
-%x(%X) 十六进制无符号整数
-
 
 ## 字符串
 ### string
@@ -45,35 +57,6 @@ l = sizeof(a)/sizeof(int);
 string.c_str()
 ```
 
-### c类型字符串
-1. 导包
-``` c++
-#include <cstring>
-```
-
-2. 完整字符串复制
-``` c++
-strcpy(des, src);
-```
-
-3. 部分字符串复制
-``` c++
-strncpy(des, src+n, len);
-```
-
-4. 结束符
-``` c++
-sub[len] = '\0';
-```
-5. new字符串数组
-``` c++
-char *str = new char[100];
-```
-
-6. delete字符串数组
-``` c++
-delete []str;
-```
 
 ## vector
 1. 初始化
@@ -146,7 +129,6 @@ for(int i = 0; i < len; i++)
     temp.clear();
 }
 ```
-
 
 ## 参考文献
 1.https://blog.csdn.net/xiexievv/article/details/6831194
