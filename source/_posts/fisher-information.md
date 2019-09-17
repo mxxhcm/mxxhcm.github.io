@@ -33,7 +33,7 @@ $$s(\theta) = \nabla_{\thtea} logp(x|\theta) $$
 &= 0
 \end{align\*}
 
-### score function的方差
+### score function的协方差
 根据方差的定义：
 $$Var(X) = \mathbb{E}\left[(X-\mathbb{E}(X))^2\right]$$
 所以：

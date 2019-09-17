@@ -18,6 +18,7 @@ $$ tr(\mathbf{A}\mathbf{B}) = tr(\mathbf{B}\mathbf{A})$$
 $$ tr(\mathbf{A}+\mathbf{B}) = tr(\mathbf{B})+tr(\mathbf{A})$$
 
 ### 行列式
+...
 
 ## 简介
 矩阵微积分值得是使用矩阵或者向量表示因变量中每一个元素相对于自变量中每一个元素的导数。一般来说，自变量和因变量都可以是标量，向量和矩阵。
