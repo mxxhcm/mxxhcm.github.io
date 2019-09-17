@@ -327,6 +327,213 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-distributions/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/08/pytorch-distributions/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/9/index.html">pytorch distributions</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-08 21:53:46" itemprop="dateCreated datePublished" datetime="2019-05-08T21:53:46+08:00">2019-05-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-17 16:15:22" itemprop="dateModified" datetime="2019-05-17T16:15:22+08:00">2019-05-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="torch-distributions">torch.distributions</h2>
+<p>这个库和gym.space库很相似，都是提供一些分布，然后从中采样。<br>
+常见的有ExponentialFamily,Bernoulli,Binomial,Categorical,Exponential,Gamma,Independent,Laplace,Multinomial,MultivariateNormal。这里不做过程陈述，可以看<a href="http://localhost:4000/2019/04/12/gym%E4%BB%8B%E7%BB%8D/" target="_blank" rel="noopener">gym</a>中。</p>
+<h3 id="categorical">Categorical</h3>
+<p>对应tensorflow中的<a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py" target="_blank" rel="noopener">tf.multinomial</a>。<br>
+类原型：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLASS torch.distributions.categorical.Categorical(probs=<span class="literal">None</span>, logits=<span class="literal">None</span>, validate_args=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
+<p>参数probs只能是$1$维或者$2$维，而且必须是非负，有限非零和的，然后将其归一化到和为$1$。<br>
+这个类和torch.multinormal是一样的，从${0,\cdots, K-1}$中按照probs的概率进行采样，$K$是probs.size(-1)，即是size()矩阵的最后一列，$2$维时把第$1$维当成了batch。</p>
+<p>举一个简单的例子，<a href="https://github.com/mxxhcm/code/blob/master/pytorch/pytorch_test/torch_distribution.py" target="_blank" rel="noopener">代码</a>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.distributions <span class="keyword">as</span> diss</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line">torch.manual_seed(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">m = diss.Categorical(torch.tensor([<span class="number">0.25</span>, <span class="number">0.25</span>, <span class="number">0.25</span>, <span class="number">0.25</span> ]))</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    print(m.sample())</span><br><span class="line"></span><br><span class="line">m = diss.Categorical(torch.tensor([[<span class="number">0.5</span>, <span class="number">0.25</span>, <span class="number">0.25</span>], [<span class="number">0.25</span>, <span class="number">0.25</span>, <span class="number">0.5</span>]]))</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    print(m.sample())</span><br></pre></td></tr></table></figure>
+<p>输出结果如下：</p>
+<blockquote>
+<p>tensor(2)<br>
+tensor(1)<br>
+tensor(1)<br>
+tensor(1)<br>
+tensor(1)<br>
+tensor([2, 2])<br>
+tensor([1, 2])<br>
+tensor([0, 1])<br>
+tensor([0, 2])<br>
+tensor([0, 0])</p>
+</blockquote>
+<p>作为对比，gym.spaces.Discrete示例如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> gym <span class="keyword">import</span> spaces</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.Discrete</span></span><br><span class="line"><span class="comment"># 取值是&#123;0, 1, ..., n - 1&#125;</span></span><br><span class="line">dis = spaces.Discrete(<span class="number">5</span>)</span><br><span class="line">dis.seed(<span class="number">5</span>)</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    print(dis.sample())</span><br></pre></td></tr></table></figure>
+<p>输出结果是：</p>
+<blockquote>
+<p>3<br>
+0<br>
+1<br>
+0<br>
+4</p>
+</blockquote>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://pytorch.org/docs/stable/distributions.html" target="_blank" rel="noopener">https://pytorch.org/docs/stable/distributions.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-multiprocessing/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2202,214 +2409,6 @@ offset中横轴是bin的取值，纵轴是时间步，所有的直方图按照�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/tensorflow-math/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/08/tensorflow-math/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/9/index.html">tensorflow math</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-08 17:38:46" itemprop="dateCreated datePublished" datetime="2019-05-08T17:38:46+08:00">2019-05-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-10 19:37:24" itemprop="dateModified" datetime="2019-05-10T19:37:24+08:00">2019-05-10</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="tf-math">tf.math</h2>
-<ul>
-<li>tf.add(x, y, name=None) # 求和</li>
-<li>tf.sub(x, y, name=None) # 减法</li>
-<li>tf.mul(x, y, name=None) # 乘法</li>
-<li>tf.div(x, y, name=None) # 除法</li>
-<li>tf.mod(x, y, name=None) # 取模</li>
-<li>tf.maximumd(x, y, name=None) # x &gt; y?x:y</li>
-<li>tf.minimum(x, y, name=None) # x &lt; y?x:y</li>
-<li>tf.abs(x, name=None) # 求绝对值</li>
-<li>tf.neg(x, name=None) # 取负</li>
-<li>tf.sign(x, name=None) # 返回符号</li>
-<li>tf.inv(x, name=None) # 取反</li>
-<li>tf.square(x, name=None) # 平方</li>
-<li>tf.round(x, name=None) # 四舍五入</li>
-<li>tf.sqrt(x, name=None) # 开根号</li>
-<li>tf.pow(x, name=None) #</li>
-<li>tf.exp(x, name=None) #</li>
-<li>tf.log(x, name=None) #</li>
-<li>tf.sin(x, name=None) #</li>
-<li>tf.cos(x, name=None) #</li>
-<li>tf.tan(x, name=None) #</li>
-<li>tf.atan(x, name=None) #</li>
-</ul>
-<h2 id="代码示例">代码示例</h2>
-<h3 id="tf-maximum">tf.maximum</h3>
-<p>比较两个tensor，返回element-wise两个tensor的最大值。<br>
-<a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py" target="_blank" rel="noopener">代码地址示例</a>：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">a = tf.Variable([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line">b = tf.Variable([<span class="number">2</span>, <span class="number">1</span>, <span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">print(<span class="string">"a: "</span>, sess.run(a))</span><br><span class="line">print(<span class="string">"b: "</span>, sess.run(b))</span><br><span class="line">c = tf.maximum(a, b)</span><br><span class="line"></span><br><span class="line">print(<span class="string">"tf.maximum(a, b):\n  "</span>, sess.run(c))</span><br></pre></td></tr></table></figure>
-<p>输出如下：</p>
-<blockquote>
-<p>a:  [1 2 3]<br>
-b:  [2 1 4]<br>
-tf.maximum(a, b):<br>
-[2 2 4]</p>
-</blockquote>
-<h2 id="参考文献">参考文献</h2>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2459,7 +2458,7 @@ tf.maximum(a, b):<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">179</span>
+                    <span class="site-state-item-count">180</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2506,7 +2505,9 @@ tf.maximum(a, b):<br>
                     
                       
                     
-                    <span class="site-state-item-count">17</span>
+                      
+                    
+                    <span class="site-state-item-count">18</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -2959,7 +2960,11 @@ tf.maximum(a, b):<br>
                     
                       
                     
-                    <span class="site-state-item-count">220</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">222</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
