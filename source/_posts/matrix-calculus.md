@@ -159,7 +159,13 @@ $$d tr(\mathbf{A}\mathbf{X}\mathbf{B}) = tr(d(\mathbf{A}\mathbf{X}\mathbf{B})) =
 ##### 二次型
 计算二次型$\mathbf{x}^T \mathbf{A}\mathbf{x}$的导数，因为$\mathbf{x}^T \mathbf{A}\mathbf{x}$是一个标量，所以可以套上一个$tr$操作：
 $$\frac{d(\mathbf{x}^T \mathbf{A}\mathbf{x})}{d\mathbf{x}}= \mathbf{x}^T (\mathbf{A}^T + \mathbf{A})$$
-推导：$$d(\mathbf{x}^T \mathbf{A}\mathbf{x}) = tr(d(\mathbf{x}^T \mathbf{A}\mathbf{x})) = tr(d(\mathbf{x}^T) \mathbf{A}\mathbf{x} + \mathbf{x}^T d(\mathbf{A}) \mathbf{x} + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) =  tr(\mathbf{x}^T \mathbf{A}^T  d(\mathbf{x}) + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) = tr(\mathbf{x}^T (\mathbf{A}^T + \mathbf{A})d(\mathbf{x}))$$
+推导：
+\begin{align\*}
+d(\mathbf{x}^T \mathbf{A}\mathbf{x}) &= tr(d(\mathbf{x}^T \mathbf{A}\mathbf{x})) \\\\
+&= tr(d(\mathbf{x}^T) \mathbf{A}\mathbf{x} + \mathbf{x}^T d(\mathbf{A}) \mathbf{x} + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) \\\\
+&=  tr(\mathbf{x}^T \mathbf{A}^T  d(\mathbf{x}) + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) \\\\
+&= tr(\mathbf{x}^T (\mathbf{A}^T + \mathbf{A})d(\mathbf{x}))\\\\
+\end{align\*}
 满足$dy = \mathbf{a}d\mathbf{x}$。所以$\mathbf{x}^T \mathbf{A}\mathbf{x}$的导数是$\mathbf{x}^T (\mathbf{A}^T +\mathbf{A})$。
 
 
