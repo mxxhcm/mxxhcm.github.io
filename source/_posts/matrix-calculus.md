@@ -5,6 +5,7 @@ tags:
  - 矩阵求导
  - 矩阵微积分
 categories: 线性代数
+mathjax: true
 ---
 
 ## 简介
@@ -90,6 +91,15 @@ $\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\part
 
 ### 微分形式的公式
 通常来说使用微分形式然后转换成导数更简单。但是只有在使用numerator layout才起作用。
+
+#### 标量相对于矩阵的微分公式
+条件|表达式|结果(numerator layout)
+:-:|:-:|:-:
+|$d(tr(\mathbf{X}))$ | $tr(d\mathbf{X})$
+|$d(\vert\mathbf{X} \vert)$ | $\vert\mathbf{X}\vert tr(\mathbf{X}^{-1} d\mathbf{X}) = tr(adj(\mathbf{X})d\mathbf{X})$
+|$d(ln \vert\mathbf{X} \vert)$ | $tr(\mathbf{X}^{-1} d\mathbf{X})$
+
+#### 矩阵微分公式
 条件|表达式|结果(numerator layout)
 :-:|:-:|:-:
 $\mathbf{A}$不是$\mathbf{X}$的函数|$d(\mathbf{A}) = $ | $0$
@@ -100,7 +110,7 @@ $a$不是$\mathbf{X}$的函数|$d(a\mathbf{X})$ | $ad\mathbf{A}$
 |$d(\mathbf{X}^{-1} ) $| $- \mathbf{X}^{-1} (d\mathbf{X}) \mathbf{X}^{-1} $
 |$d(\mathbf{X}^H ) $| $(d\mathbf{X})^T $
 
-### 微分和导数的转换
+#### 微分和导数的转换
 标准微分公式|等价的导数形式
 :-:|:-:
 $dy = a\ dx$ | $\frac{dy}{dx} = a$
@@ -114,4 +124,5 @@ $d\mathbf{Y} = \mathbf{A}dx$ | $\frac{d\mathbf{Y}}{dx} = \mathbf{A}$
 1.https://en.wikipedia.org/wiki/Matrix_calculus
 2.https://zhuanlan.zhihu.com/p/24709748
 3.https://zhuanlan.zhihu.com/p/24863977
-
+4.math.uwaterloo.ca/~hwolkowi/matrixcookbook.pdf
+5.http://www.iro.umontreal.ca/~pift6266/A06/refs/minka-matrix.pdf
