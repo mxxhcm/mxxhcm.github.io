@@ -8,17 +8,26 @@ categories: 线性代数
 mathjax: true
 ---
 
+## 符号声明
+小写字母$x,y$是标量，小写加粗字母$\mathbf{x},\mathbf{y}$是向量，大写加粗$\mathbf{X},\mathbf{Y}$是矩阵。标量和向量都可以看成是矩阵，将vector看成$1\times n$或者$m\times 1$的矩阵，将scalar看成$1\times 1$的矩阵。$\mathbf{X}^T $表示矩阵$\mathbf{X}$的转置，$tr(\mathbf{X})$表示迹，即对角线元素之和。$det(\mathbf{X})$或者$\vert \mathbf{X}\vert$表示行列式。
+
+## 基础
+### 迹
+$$ tr(\mathbf{A}) = tr(\mathbf{A}^T )$
+$$ tr(\mathbf{A}\mathbf{B}) = tr(\mathbf{B}\mathbf{A})$
+$$ tr(\mathbf{A}+\mathbf{B}) = tr(\mathbf{B})+tr(\mathbf{A})$
+### 行列式
+
+
 ## 简介
 矩阵微积分值得是使用矩阵或者向量表示因变量中每一个元素相对于自变量中每一个元素的导数。一般来说，自变量和因变量都可以是标量，向量和矩阵。
 
-### 符号声明
-小写字母$x,y$是标量，小写加粗字母$\mathbf{x},\mathbf{y}$是向量，大写加粗$\mathbf{X},\mathbf{Y}$是矩阵。标量和向量都可以看成是矩阵，将vector看成$1\times n$或者$m\times 1$的矩阵，将scalar看成$1\times 1$的矩阵。$\mathbf{X}^T $表示矩阵$\mathbf{X}$的转置，$tr(\mathbf{X})$表示迹，即对角线元素之和。$det(\mathbf{X})$或者$\vert \mathbf{X}\vert$表示行列式。
 
 ### 示例
 考虑向量梯度，给定三个自变量，一个因变量的函数：$f(x_1, x_2, x_3)$，向量的梯度是：
 $$\nabla f= \frac{\partial f}{\partial x_1}\mathbf{i} + \frac{\partial f}{\partial x_2}\mathbf{j} + \frac{\partial f}{\partial x_3}\mathbf{k}$$
 其中$\mathbf{i,j,k}$表示坐标轴正方向上的单位向量。这类问题可以看成标量$f$对向量$x$求导数，结果依然是一个向量（梯度）：
-$$\nabla f=\frac{\partial f^T }{\partial \mathbf{x}} = \left[\frac{\partial f}{\partial x_1} + \frac{\partial f}{\partial x_2} + \frac{\partial f}{\partial x_3}\right]^T $$
+$$\nabla f=(\frac{\partial f }{\partial \mathbf{x}})^T = \left[\frac{\partial f}{\partial x_1} + \frac{\partial f}{\partial x_2} + \frac{\partial f}{\partial x_3}\right]^T $$
 
 更复杂的情况是标量$f$对矩阵$\mathbf{X}$求导，叫做矩阵梯度(gradient matrix)。标量，向量，矩阵的组合总共有$9$中情况，其中六种情况可以用以下方式表示出来：
 种类| 标量|向量|矩阵
@@ -92,33 +101,56 @@ $\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\part
 ### 微分形式的公式
 通常来说使用微分形式然后转换成导数更简单。但是只有在使用numerator layout才起作用。
 
-#### 标量相对于矩阵的微分公式
-条件|表达式|结果(numerator layout)
-:-:|:-:|:-:
-|$d(tr(\mathbf{X}))$ | $tr(d\mathbf{X})$
-|$d(\vert\mathbf{X} \vert)$ | $\vert\mathbf{X}\vert tr(\mathbf{X}^{-1} d\mathbf{X}) = tr(adj(\mathbf{X})d\mathbf{X})$
-|$d(ln \vert\mathbf{X} \vert)$ | $tr(\mathbf{X}^{-1} d\mathbf{X})$
+表达式|结果(numerator layout)
+:-:|:-:
+$d(\mathbf{A})  $ | $0$
+$d(a\mathbf{X})$ | $ad\mathbf{A}$
+$d(\mathbf{X}+\mathbf{Y})$| $d\mathbf{X}+d\mathbf{Y}$
+$d(tr(\mathbf{X}))$ | $tr(d\mathbf{X})$
+$d(\mathbf{X}\mathbf{Y})$| $(d\mathbf{X})\mathbf{Y}+\mathbf{X}(d\mathbf{Y})$
+$d(\mathbf{X}^{-1} ) $| $- \mathbf{X}^{-1} (d\mathbf{X}) \mathbf{X}^{-1} $
+$d(\vert\mathbf{X} \vert)$ | $\vert\mathbf{X}\vert tr(\mathbf{X}^{-1} d\mathbf{X}) = tr(adj(\mathbf{X})d\mathbf{X})$
+$d(ln \vert\mathbf{X} \vert)$ | $tr(\mathbf{X}^{-1} d\mathbf{X})$
+$d(\mathbf{X}^T) $| $(d\mathbf{X})^T $
+$d(\mathbf{X}^H ) $| $(d\mathbf{X})^T $
 
-#### 矩阵微分公式
-条件|表达式|结果(numerator layout)
-:-:|:-:|:-:
-$\mathbf{A}$不是$\mathbf{X}$的函数|$d(\mathbf{A}) = $ | $0$
-$a$不是$\mathbf{X}$的函数|$d(a\mathbf{X})$ | $ad\mathbf{A}$
-|$d(\mathbf{X}+\mathbf{Y})$| $d\mathbf{X}+d\mathbf{Y}$
-|$d(\mathbf{X}\mathbf{Y})$| $(d\mathbf{X})\mathbf{Y}+\mathbf{X}(d\mathbf{Y})$
-|$d(\mathbf{X}^T) $| $(d\mathbf{X})^T $
-|$d(\mathbf{X}^{-1} ) $| $- \mathbf{X}^{-1} (d\mathbf{X}) \mathbf{X}^{-1} $
-|$d(\mathbf{X}^H ) $| $(d\mathbf{X})^T $
+其中$\mathbf{A}$不是$\mathbf{X}$的函数，$a$不是$\mathbf{X}$的函数，上面的公式可以根据链式法则迭代使用。
+上面的绝大部分公式可以使用$\mathbf{F}(\mathbf{X} + d\mathbf{X}) - \mathbf{F}(\mathbf{X})$计算，取线性部分可以得到，例如：
+$$(\mathbf{X} + d\mathbf{X}) (\mathbf{Y} + d\mathbf{Y}) = \mathbf{X}\mathbf{Y} + (d\mathbf{X})\mathbf{Y} + \mathbf{X}d\mathbf{Y} + (d\mathbf{X})(d\mathbf{Y})$$
+然后得到$d(\mathbf{X}\mathbf{Y})= (d\mathbf{X})\mathbf{Y}+\mathbf{X}(d\mathbf{Y})$。
+计算$d\mathbf{X}^{-1} $，有
+$$0 = d\mathbf{I} = d(\mathbf{X}^{-1} \mathbf{X}) = (d(\mathbf{X}^{-1}) \mathbf{X} + \mathbf{X}^{-1} d(\mathbf{X})$$
+移项得$d(\mathbf{X}^{-1} ) = - \mathbf{X}^{-1} (d\mathbf{X}) \mathbf{X}^{-1} $
+关于迹的公式，有：
+$$tr(\mathbf{X} + d\mathbf{X}) - tr(\mathbf{X}) = tr(d\mathbf{X})$$
 
+下面给出导数和微分之间转换的标准公式，我们的目标就是使用上面的公式将一些复杂的公式转换成下面的标准公式。
 #### 微分和导数的转换
 标准微分公式|等价的导数形式
 :-:|:-:
 $dy = a\ dx$ | $\frac{dy}{dx} = a$
-$dy = \mathbf{a}dx$ | $\frac{dy}{d \mathbf{x}} = \mathbf{a}$
+$dy = \mathbf{a}d\mathbf{x}$ | $\frac{dy}{d \mathbf{x}} = \mathbf{a}$
 $dy = tr(\mathbf{A}d\mathbf{A})$ | $\frac{dy}{d \mathbf{X}} = \mathbf{A}$
 $d\mathbf{y} = \mathbf{a}dx$ | $\frac{d\mathbf{y}}{d x} = \mathbf{a}$
 $d\mathbf{y} = \mathbf{A}d\mathbf{x}$ | $\frac{d\mathbf{y}}{d \mathbf{x}} = \mathbf{A}$
 $d\mathbf{Y} = \mathbf{A}dx$ | $\frac{d\mathbf{Y}}{dx} = \mathbf{A}$
+
+有一个很重要的公式是：
+$$tr(\mathbf{A}\mathbf{B}) = tr(\mathbf{B}\mathbf{A})$$
+
+#### 示例
+$$\frac{d}{d\mathbf{X}} tr(\mathbf{A}\mathbf{X}\mathbf{B}) = tr(\mathbf{A}\mathbf{B})$$
+因为：
+$$d tr(\mathbf{A}\mathbf{X}\mathbf{B}) = tr(d(\mathbf{A}\mathbf{X}\mathbf{B})) = tr(\mathbf{A}d(\mathbf{X})\mathbf{B}) =  tr(\mathbf{B}\mathbf{A}d(\mathbf{X})) $$
+对应$\frac{d\mathbf{Y}}{dx} = \mathbf{A}$。
+
+##### 二次型
+计算二次型$\mathbf{x}^T \mathbf{A}\mathbf{x}$的导数，因为$\mathbf{x}^T \mathbf{A}\mathbf{x}$是一个标量，所以可以套上一个$tr$操作：
+$$\frac{d(\mathbf{x}^T \mathbf{A}\mathbf{x})}{d\mathbf{x}}= \mathbf{x}^T (\mathbf{A}^T + \mathbf{A})$$
+推导：$d(\mathbf{x}^T \mathbf{A}\mathbf{x}) = tr(d(\mathbf{x}^T \mathbf{A}\mathbf{x})) = tr(d(\mathbf{x}^T) \mathbf{A}\mathbf{x} + \mathbf{x}^T d(\mathbf{A}) \mathbf{x} + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) =  tr(\mathbf{x}^T \mathbf{A}^T  d(\mathbf{x}) + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) = tr(\mathbf{x}^T (\mathbf{A}^T + \mathbf{A})d(\mathbf{x}))$$
+满足$dy = \mathbf{a}d\mathbf{x}$。所以$\mathbf{x}^T \mathbf{A}\mathbf{x}$的导数是$\mathbf{x}^T (\mathbf{A}^T +\mathbf{A})$。
+
+
 
 ## 参考文献
 1.https://en.wikipedia.org/wiki/Matrix_calculus
