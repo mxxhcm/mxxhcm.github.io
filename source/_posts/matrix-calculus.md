@@ -13,11 +13,11 @@ mathjax: true
 
 ## 基础
 ### 迹
-$$ tr(\mathbf{A}) = tr(\mathbf{A}^T )$
-$$ tr(\mathbf{A}\mathbf{B}) = tr(\mathbf{B}\mathbf{A})$
-$$ tr(\mathbf{A}+\mathbf{B}) = tr(\mathbf{B})+tr(\mathbf{A})$
-### 行列式
+$$ tr(\mathbf{A}) = tr(\mathbf{A}^T )$$
+$$ tr(\mathbf{A}\mathbf{B}) = tr(\mathbf{B}\mathbf{A})$$
+$$ tr(\mathbf{A}+\mathbf{B}) = tr(\mathbf{B})+tr(\mathbf{A})$$
 
+### 行列式
 
 ## 简介
 矩阵微积分值得是使用矩阵或者向量表示因变量中每一个元素相对于自变量中每一个元素的导数。一般来说，自变量和因变量都可以是标量，向量和矩阵。
@@ -30,11 +30,11 @@ $$\nabla f= \frac{\partial f}{\partial x_1}\mathbf{i} + \frac{\partial f}{\parti
 $$\nabla f=(\frac{\partial f }{\partial \mathbf{x}})^T = \left[\frac{\partial f}{\partial x_1} + \frac{\partial f}{\partial x_2} + \frac{\partial f}{\partial x_3}\right]^T $$
 
 更复杂的情况是标量$f$对矩阵$\mathbf{X}$求导，叫做矩阵梯度(gradient matrix)。标量，向量，矩阵的组合总共有$9$中情况，其中六种情况可以用以下方式表示出来：
-种类| 标量|向量|矩阵
+种类|标量|向量|矩阵
 :--:|:--:|:--:|:--:
-标量| $\frac{\partial{y}}{\partial{x}}$|$\frac{\partial{\mathbf{y}}}{\partial{x}}$|$\frac{\partial{\mathbf{Y}}}{\partial{x}}$
-向量|$\frac{\partial{y}}{\partial{x}}$|$\frac{\partial{\mathbf{y}}}{\partial{x}}$|
-矩阵|$\frac{\partial{y}}{\partial{\mathbf{X}}}$| |
+标量 | $\frac{\partial{y}}{\partial{x}}$ | $\frac{\partial{\mathbf{y}}}{\partial{x}}$ | $\frac{\partial{\mathbf{Y}}}{\partial{x}}$
+向量 | $\frac{\partial{y}}{\partial{x}}$ | $\frac{\partial{\mathbf{y}}}{\partial{x}}$ | 
+矩阵 | $\frac{\partial{y}}{\partial{\mathbf{X}}}$ | | 
 
 ### 用途
 Matrix calculus通常用于优化，常常用在拉格朗日乘子法中。包括Kalman滤波，高斯混合分布的EM算法，梯度下降法的的导数。
@@ -76,19 +76,31 @@ $p\times q$矩阵$\mathbf{Y}$ denominator layout|$\frac{\partial{y}}{\partial{\m
 
 
 ### numerator layout
+标量对向量求导：
 $\frac{\partial y}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y}{\partial x_1} & \cdots &\frac{\partial y}{\partial x_n}\end{bmatrix}$
+向量对标量求导：
 $\frac{\partial \mathbf{y}}{\partial x} = \begin{bmatrix}\frac{\partial y_1}{\partial x} \\\\ \vdots \\\\ \frac{\partial y_m}{\partial x}\end{bmatrix}$
-$\frac{\partial \mathbf{y}}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y_1}{\partial x_1}&\cdots \frac{\partial y_1}{\partial x_n}  \\\\ \vdots \\\\ \frac{\partial y_m}{\partial x_1} & \cdots & \frac{\partial y_m}{\partial x_n}\end{bmatrix}$
-$\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\partial x_{11}}&\cdots \frac{\partial y}{\partial x_{p1}}  \\\\ \vdots \\\\ \frac{\partial y}{\partial x_{1q}} & \cdots &\frac{\partial y}{\partial x_{pq}}\end{bmatrix}$
+向量对向量求导：
+$\frac{\partial \mathbf{y}}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y_1}{\partial x_1} & \cdots & \frac{\partial y_1}{\partial x_n}  \\\\ \vdots \\\\ \frac{\partial y_m}{\partial x_1} & \cdots & \frac{\partial y_m}{\partial x_n}\end{bmatrix}$
+标量对矩阵求导：
+$\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\partial x_{11}} & \cdots & \frac{\partial y}{\partial x_{p1}}  \\\\ \vdots \\\\ \frac{\partial y}{\partial x_{1q}} & \cdots &\frac{\partial y}{\partial x_{pq}}\end{bmatrix}$
+
 下列公式只有numerator layout，没有denominator-layout：
+矩阵对标量求导：
 $\frac{\partial \mathbf{Y}}{\partial x} = \begin{bmatrix}\frac{\partial y_{11}}{\partial x}&\cdots \frac{\partial y_{1n}}{\partial x}  \\\\ \vdots \\\\ \frac{\partial y_{m1}}{\partial x} & \cdots & \frac{\partial y_{mn}}{\partial x}\end{bmatrix}$
-$dx = \begin{bmatrix}dx_{11}}&\cdots d{1n}}\\\\ \vdots \\\\ dx_{m1} & \cdots & dx_{mn}\end{bmatrix}$
+矩阵微分：
+$dx = \begin{bmatrix}dx_{11} & \cdots & dx_{1n} \\\\ \vdots \\\\ dx_{m1} & \cdots & dx_{mn}\end{bmatrix}$
 
 ### denominator layout
+标量对向量求导：
+$\frac{\partial y}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y}{\partial x_1} & \cdots &\frac{\partial y}{\partial x_n}\end{bmatrix}$
 $\frac{\partial y}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y}{\partial x_1} \\\\ \cdots \\\\ \frac{\partial y}{\partial x_n}\end{bmatrix}$
+向量对标量求导：
 $\frac{\partial \mathbf{y}}{\partial x} = \begin{bmatrix}\frac{\partial y_1}{\partial x} & \vdots & \frac{\partial y_m}{\partial x}\end{bmatrix}$
-$\frac{\partial \mathbf{y}}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y_1}{\partial x_1}&\cdots \frac{\partial y_m}{\partial x_1}  \\\\ \vdots \\\\ \frac{\partial y_1}{\partial x_n} & \cdots & \frac{\partial y_m}{\partial x_n}\end{bmatrix}$
-$\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\partial x_{11}}&\cdots \frac{\partial y}{\partial x_{1q}}  \\\\ \vdots \\\\ \frac{\partial y}{\partial x_{p1}} & \cdots &\frac{\partial y}{\partial x_{pq}}\end{bmatrix}$
+向量对向量求导：
+$\frac{\partial \mathbf{y}}{\partial \mathbf{x}} = \begin{bmatrix}\frac{\partial y_1}{\partial x_1} & \cdots & \frac{\partial y_m}{\partial x_1}  \\\\ \vdots \\\\ \frac{\partial y_1}{\partial x_n} & \cdots & \frac{\partial y_m}{\partial x_n}\end{bmatrix}$
+标量对矩阵求导：
+$\frac{\partial y}{\partial \mathbf{X}} = \begin{bmatrix}\frac{\partial y}{\partial x_{11}} &\cdots & \frac{\partial y}{\partial x_{1q}}  \\\\ \vdots \\\\ \frac{\partial y}{\partial x_{p1}} & \cdots & \frac{\partial y}{\partial x_{pq}}\end{bmatrix}$
 
 ## 公式
 ### 向量对向量求导公式
@@ -147,7 +159,7 @@ $$d tr(\mathbf{A}\mathbf{X}\mathbf{B}) = tr(d(\mathbf{A}\mathbf{X}\mathbf{B})) =
 ##### 二次型
 计算二次型$\mathbf{x}^T \mathbf{A}\mathbf{x}$的导数，因为$\mathbf{x}^T \mathbf{A}\mathbf{x}$是一个标量，所以可以套上一个$tr$操作：
 $$\frac{d(\mathbf{x}^T \mathbf{A}\mathbf{x})}{d\mathbf{x}}= \mathbf{x}^T (\mathbf{A}^T + \mathbf{A})$$
-推导：$d(\mathbf{x}^T \mathbf{A}\mathbf{x}) = tr(d(\mathbf{x}^T \mathbf{A}\mathbf{x})) = tr(d(\mathbf{x}^T) \mathbf{A}\mathbf{x} + \mathbf{x}^T d(\mathbf{A}) \mathbf{x} + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) =  tr(\mathbf{x}^T \mathbf{A}^T  d(\mathbf{x}) + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) = tr(\mathbf{x}^T (\mathbf{A}^T + \mathbf{A})d(\mathbf{x}))$$
+推导：$$d(\mathbf{x}^T \mathbf{A}\mathbf{x}) = tr(d(\mathbf{x}^T \mathbf{A}\mathbf{x})) = tr(d(\mathbf{x}^T) \mathbf{A}\mathbf{x} + \mathbf{x}^T d(\mathbf{A}) \mathbf{x} + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) =  tr(\mathbf{x}^T \mathbf{A}^T  d(\mathbf{x}) + \mathbf{x}^T \mathbf{A}d(\mathbf{x})) = tr(\mathbf{x}^T (\mathbf{A}^T + \mathbf{A})d(\mathbf{x}))$$
 满足$dy = \mathbf{a}d\mathbf{x}$。所以$\mathbf{x}^T \mathbf{A}\mathbf{x}$的导数是$\mathbf{x}^T (\mathbf{A}^T +\mathbf{A})$。
 
 
