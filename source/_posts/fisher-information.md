@@ -64,12 +64,13 @@ $$I(\theta) =  - \mathbb{E}\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(
 
 证明：
 \begin{align\*}
-    \text{H}\_{\log p(x \vert \theta)} &= \text{J} \left( \nabla \log p(x \vert \theta) \right) \tag{\log p的二阶导等于\nabla \log p的雅克比矩阵}\\\\
+    \text{H}\_{\log p(x \vert \theta)} &= \text{J} \left( \nabla \log p(x \vert \theta) \right) \\\\
     &= \text{J} \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \tag{log-derivative-trick}\\\\
     &= \frac{ \text{H}\_{p(x \vert \theta)} \, p(x \vert \theta) - \nabla p(x \vert \theta) \, \nabla p(x \vert \theta)^{\text{T}}}{p(x \vert \theta) \, p(x \vert \theta)} \tag{分数求导}\\\\
     &= \frac{\text{H}\_{p(x \vert \theta)} \, p(x \vert \theta)}{p(x \vert \theta) \, p(x \vert \theta)} - \frac{\nabla p(x \vert \theta) \, \nabla p(x \vert \theta)^{\text{T}}}{p(x \vert \theta) \, p(x \vert \theta)} \\\\
     &= \frac{\text{H}\_{p(x \vert \theta)}}{p(x \vert \theta)} - \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)}\right)^{\text{T}} \\\\
 \end{align\*}
+第一个等号是$\log p$的海塞矩阵（二阶导）等于$\nabla \log p$（一阶导）的雅克比矩阵。
 对上式取期望，得到：
 \begin{align\*}
     \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \text{H}\_{\log p(x \vert \theta)} \right] &= \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \frac{\text{H}\_{p(x \vert \theta)}}{p(x \vert \theta)} - \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right)^{\text{T}} \right] \\\\
