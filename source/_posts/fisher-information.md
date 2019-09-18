@@ -43,7 +43,7 @@ $$I(\theta) = \mathbb{E} \left[ \left(\frac{\partial}{\partial \theta} \log f(\m
 随机变量的Fisher information总是大于等于$0$的，Fisher information不是某一个observation的函数。
 
 ### 第二种意义：
-$$I(\theta) =  - \mathbb\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$
+$$I(\theta) =  - \mathbb{E}\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$
 Fisher informaction可以看成似然对数的曲率，在最大似然的估计值附近，fisher信息大代表着图像陡而尖，fisher信息小代表着图像宽而平。
 
 ### 第三种意义：Cramer-Rao bound的不正式推导
@@ -60,26 +60,26 @@ $$\Sigma = \mathbb{E}\_{p(x|\theta)} \left[(s(\theta)-0)(s(\theta) - 0)^T \right
 
 ### 第二种意义：Fisher information matrix和Hessian matrix
 Fisher information matrix $F$等于似然对数的二阶导数（海塞矩阵），也是score function的一阶导，期望的负数。
-$$I(\theta) =  - \mathbb\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$
+$$I(\theta) =  - \mathbb{E}\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$
 
 证明：
 \begin{align\*}
-    \text{H}_{\log p(x \vert \theta)} &= \text{J} \left( \nabla \log p(x \vert \theta) \right) \tag{\log p的二阶导等于\nabla \log p的雅克比矩阵}\\\\
+    \text{H}\_{\log p(x \vert \theta)} &= \text{J} \left( \nabla \log p(x \vert \theta) \right) \tag{\log p的二阶导等于\nabla \log p的雅克比矩阵}\\\\
     &= \text{J} \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \tag{log-derivative-trick}\\\\
-    &= \frac{ \text{H}_{p(x \vert \theta)} \, p(x \vert \theta) - \nabla p(x \vert \theta) \, \nabla p(x \vert \theta)^{\text{T}}}{p(x \vert \theta) \, p(x \vert \theta)} \tag{分数求导}\\\\
-    &= \frac{\text{H}_{p(x \vert \theta)} \, p(x \vert \theta)}{p(x \vert \theta) \, p(x \vert \theta)} - \frac{\nabla p(x \vert \theta) \, \nabla p(x \vert \theta)^{\text{T}}}{p(x \vert \theta) \, p(x \vert \theta)} \\\\
-    &= \frac{\text{H}_{p(x \vert \theta)}}{p(x \vert \theta)} - \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)}\right)^{\text{T}} \\\\
+    &= \frac{ \text{H}\_{p(x \vert \theta)} \, p(x \vert \theta) - \nabla p(x \vert \theta) \, \nabla p(x \vert \theta)^{\text{T}}}{p(x \vert \theta) \, p(x \vert \theta)} \tag{分数求导}\\\\
+    &= \frac{\text{H}\_{p(x \vert \theta)} \, p(x \vert \theta)}{p(x \vert \theta) \, p(x \vert \theta)} - \frac{\nabla p(x \vert \theta) \, \nabla p(x \vert \theta)^{\text{T}}}{p(x \vert \theta) \, p(x \vert \theta)} \\\\
+    &= \frac{\text{H}\_{p(x \vert \theta)}}{p(x \vert \theta)} - \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)}\right)^{\text{T}} \\\\
 \end{align\*}
 对上式取期望，得到：
 \begin{align\*}
-    \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \text{H}_{\log p(x \vert \theta)} \right] &= \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \frac{\text{H}_{p(x \vert \theta)}}{p(x \vert \theta)} - \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right)^{\text{T}} \right] \\\\
-    &= \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \frac{\text{H}_{p(x \vert \theta)}}{p(x \vert \theta)} \right] - \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)}\right)^{\text{T}} \right] \\\\
-    &= \int \frac{\text{H}_{p(x \vert \theta)}}{p(x \vert \theta)} p(x \vert \theta) \, \text{d}x \, - \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \nabla \log p(x \vert \theta) \, \nabla \log p(x \vert \theta)^{\text{T}} \right] \\\\
-    &= \text{H}_{\int p(x \vert \theta) \, \text{d}x} \, - \text{F} \\\\
-    &= \text{H}_{1} - \text{F} \\\\
+    \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \text{H}\_{\log p(x \vert \theta)} \right] &= \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \frac{\text{H}\_{p(x \vert \theta)}}{p(x \vert \theta)} - \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right)^{\text{T}} \right] \\\\
+    &= \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \frac{\text{H}\_{p(x \vert \theta)}}{p(x \vert \theta)} \right] - \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)}\right)^{\text{T}} \right] \\\\
+    &= \int \frac{\text{H}\_{p(x \vert \theta)}}{p(x \vert \theta)} p(x \vert \theta) \, \text{d}x \, - \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \nabla \log p(x \vert \theta) \, \nabla \log p(x \vert \theta)^{\text{T}} \right] \\\\
+    &= \text{H}\_{\int p(x \vert \theta) \, \text{d}x} \, - \text{F} \\\\
+    &= \text{H}\_{1} - \text{F} \\\\
     &= -\text{F} \\\\
 \end{align\*}
-最后得到：$\mathbf{F} = - \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \mathbf{H}_{\log p(x|\theta)}\right] $
+最后得到：$\mathbf{F} = - \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \mathbf{H}\_{\log p(x|\theta)}\right] $
 
 
 ## 参考文献
