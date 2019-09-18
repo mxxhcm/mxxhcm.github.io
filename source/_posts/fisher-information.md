@@ -38,22 +38,27 @@ $$s(\theta) = \nabla_{\theta} \log p(x|\theta) $$
 
 ### 第一种意义：score function的方差
 用$I(\theta)$表示fisher information，它的定义就是score function（似然对数的一阶导）的方差：
-$$I(\theta) = \mathbb\left[ \left(\frac{\partial}{\partial \theta} \log f(\mathbf{X}; \theta) \right)^2 |\theta\right] = \int\left( \frac{\partial}{\partial \theta} \log f(\mathbf{X}; \theta) \right)^2 f(x;\theta)dx$$
+$$I(\theta) = \mathbb{E} \left[ \left(\frac{\partial}{\partial \theta} \log f(\mathbf{X}; \theta) \right)^2 |\theta \right] = \int \left( \frac{\partial}{\partial \theta} \log f(\mathbf{X}; \theta) \right)^2 f(x;\theta)dx$$
 
-Fisher information不是某一个observation的函数，随机变量$\mathbf{X}$已经被平均掉了。
+随机变量的Fisher information总是大于等于$0$的，Fisher information不是某一个observation的函数。
 
 ### 第二种意义：
+$$I(\theta) =  - \mathbb\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$
+Fisher informaction可以看成似然对数的曲率，在最大似然的估计值附近，fisher信息大代表着图像陡而尖，fisher信息小代表着图像宽而平。
+
+### 第三种意义：Cramer-Rao bound的不正式推导
+Fisher informaction的导数是$\theta$无偏估计值方差的下界。换句话说，$\theta$的精确度被似然对数的fisher information限制了。
 
 ## Fisher information Matirx
-### 协方差矩阵
 当$\theta$是多维变量的时候。
+### 第一种意义：协方差矩阵
 $$I(\theta) = \mathbb{E}\left[s(\theta) s(\theta)^T\right]$$
 根据协方差矩阵的定义：
 $$\Sigma = \mathbb{E}\left[(X-\mathbb{E}(X))(X-\mathbb{E}(X))^T \right]$$
 所以$s(\theta)$的协方差矩阵为：
 $$\Sigma = \mathbb{E}\_{p(x|\theta)} \left[(s(\theta)-0)(s(\theta) - 0)^T \right] = \mathbb{E}\_{p(x|\theta)} \left[(s(\theta)s(\theta)^T \right] $$
 
-### Fisher和Hessian矩阵关系
+### 第二种意义：Fisher information matrix和Hessian matrix
 Fisher information matrix $F$等于似然对数的二阶导数（海塞矩阵），也是score function的一阶导，期望的负数。
 $$I(\theta) =  - \mathbb\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$
 
