@@ -63,11 +63,11 @@ J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) R(s,a)dads\\\\
 论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
 
 ### 摘要
-作者基于参数空间的底层结构提出了natural gradient方法表征最陡的下降方向。尽管基于gradient的方法不能过大的改变参数，它还是能够朝着选择greedy optimal action而不是更好的action移动。Greedy optimal action在使用兼容值函数的policy iteration的每一个improvement step中被选择。
+作者基于参数空间的底层结构提出了natural gradient方法，找出下降最快方向。尽管gradient方法不能过大的改变参数，它还是能够朝着选择greedy optimal action而不是更好的action方向移动。基于兼容值函数的policy iteration，在每一个improvement step选择greedy optimal action。
 
 ### 引言
-直接的policy gradient在解决大规模的MDPs时很有用。基于future reward的梯度在有约束条件的一类polices中找一个policy $\pi$，但是这种方法是non covariant的，简单来说，就是左右两边的维度不一致。
-这篇文章基于policy的底层结构定义了一个metric，提出了一个covariant gradient方法，通过将它和policy iteration联系起来，可以证明natural gradient朝着选择greedy optimal action的方向移动。通过在简单和复杂的MDP中进行测试，结果表明这种方法中没有出现严重的plateau phenomenon。
+直接的policy gradient在解决大规模的MDPs时很有用，这种方法基于future reward的梯度在满足约束条件的一类polices中找一个$\pi$，但是这种方法是non covariant的，简单来说，就是左右两边的维度不一致。
+这篇文章基于policy的底层参数结构定义了一个metric，提出了一个covariant gradient方法，通过将它和policy iteration联系起来，可以证明natural gradient朝着选择greedy optimal action的方向移动。通过在简单和复杂的MDP中进行测试，结果表明这种方法中没有出现严重的plateau phenomenon。
 
 ### A Natural Gradient
 定义average reward $\eta(\pi)$为：
@@ -76,9 +76,22 @@ $$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a)$$
 $$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[\right]$$
 Average reward的精确梯度是：
 $$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} (s,a)$$
-在这使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。$\eta(\theta)$下降最快的方向定义为在$d\theta$的平方长度$\vert d\theta\vert^2 $ 小于一个常数时，使得$\eta(\theta+d\theta)$最小的$d\theta$的方向。平方长度的定义和一个正定矩阵$G(\theta)$有关，即：
+在这使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。$\eta(\theta)$下降最快的方向定义为在$d\theta$的平方长度$\vert d\theta\vert^2 $ 等于一个常数时，使得$\eta(\theta+d\theta)$最小的$d\theta$的方向。平方长度的定义和一个正定矩阵$G(\theta)$有关，即：
 $$\vert\theta\vert^2 = \sum_{ij} G_{ij} (\theta)d\theta_i d\theta_j = d\theta^T G(\theta) d\theta $$
-最块的梯度下降方向是$G^{-1} \nabla \eta(\theta)$
+可以证明，最块的梯度下降方向是$G^{-1} \nabla \eta(\theta)$。标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。
+分布$\pi(a;s,\theta)$的fisher information是：
+$$\mathbf{F}_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta) \left[\frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i}\frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right]$$
+显然$\mathbf{F}_s$是正定矩阵，可以证明，FIM是概率分布参数空间上的一个invariant metric。不论两个点的坐标怎么选择，它都能计算处相同的distance，所以说它是invariant。
+当然，$\mathbf{F}_s$只用了单个的$s$，而在计算average reward时，使用的是一个分布，定义metric为：
+$$\mathbf{F}(\theta) = \mathbbf{E}\_{\rho^{pi} (s)} \left[\mathbb{F}_s (\theta)\right]$$
+每一个$s$对应的单个$\mathbf{F}_s$都和MDP的transition model没有关系，期望操作引入了每一个transition model的参数。直观上来说，$\mathbf{F}_s$测量的是在$s$上的probability manifold的距离，$\mathbf{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：
+$$\hat{\nabla}\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) $$
+
+### The Natural Gradient 和 Policy Iteration
+使用$\omega$参数化的兼容性值函数$f^{\pi} (s,a;\omega)$近似$Q^{\pi} (s,a)$。
+#### 兼容性值函数
+定义：
+$$\(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)\qquad f^{\pi} (s,a;\omega) = \omega^T \^{\pi} (s,a)$$
 
 
 ## Trust Region Policy Optimization

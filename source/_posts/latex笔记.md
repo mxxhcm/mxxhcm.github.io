@@ -80,12 +80,12 @@ $$\begin{Vmatrix}1&2\\\\3&4\end{Vmatrix}$$
 ### 希腊字母
 $\alpha$ \alpha
 $\Alpha$ \Alpha
-$beta$ \beta
-$Beta$ \Beta
+$\beta$ \beta
+$\Beta$ \Beta
 $\Delta$ \Delta
 $\delta$ \delta
-$\thtea$ \theta
-$\Thtea$ \Theta
+$\theta$ \theta
+$\Theta$ \Theta
 $\gamma$ \gamma
 $\Gamma$ \Gamma
 $\eta$ \eta
@@ -101,13 +101,11 @@ $\Mu$ \Mu
 $\psi$ \psi
 $\Psi$ \Psi
 $\epsilon$ \epsilon
-$\Epsilon$ \Epsilon
 $\varepsilon$ \varepsilon
 $\phi$ \phi
 $\varphi$ \varphi
 $\Phi$ \Phi
 $\nabla$ \nabla
-$\Nabla$ \Nabla
 $\zeta$ \zeta
 $\xi$ \xi
 
@@ -247,3 +245,4 @@ v &= (1 - \gamma P)\^{-1} R
 3.https://blog.csdn.net/hunauchenym/article/details/7330828
 4.http://geowu.blogspot.com/2012/10/latex_25.html
 5.https://math.stackexchange.com/questions/20412/element-wise-or-pointwise-operations-notation
+6.https://xilazimu.net/
