@@ -389,7 +389,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-19 10:23:08" itemprop="dateModified" datetime="2019-09-19T10:23:08+08:00">2019-09-19</time>
+                <time title="修改时间：2019-09-19 14:50:47" itemprop="dateModified" datetime="2019-09-19T14:50:47+08:00">2019-09-19</time>
               
             
           </span>
@@ -470,7 +470,10 @@
 <script type="math/tex; mode=display">\mathbf{F}(\theta) = \mathbbf{E}\_{\rho^{pi} (s)} \left[\mathbb{F}_s (\theta)\right]</script><p>每一个$s$对应的单个$\mathbf{F}_s$都和MDP的transition model没有关系，期望操作引入了每一个transition model的参数。直观上来说，$\mathbf{F}_s$测量的是在$s$上的probability manifold的距离，$\mathbf{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：</p>
 <script type="math/tex; mode=display">\hat{\nabla}\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta)</script><h3 id="The-Natural-Gradient-和-Policy-Iteration"><a href="#The-Natural-Gradient-和-Policy-Iteration" class="headerlink" title="The Natural Gradient 和 Policy Iteration"></a>The Natural Gradient 和 Policy Iteration</h3><p>使用$\omega$参数化的兼容性值函数$f^{\pi} (s,a;\omega)$近似$Q^{\pi} (s,a)$。</p>
 <h4 id="兼容性值函数"><a href="#兼容性值函数" class="headerlink" title="兼容性值函数"></a>兼容性值函数</h4><p>定义：</p>
-<script type="math/tex; mode=display">\(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)\qquad f^{\pi} (s,a;\omega) = \omega^T \^{\pi} (s,a)</script><h2 id="Trust-Region-Policy-Optimization"><a href="#Trust-Region-Policy-Optimization" class="headerlink" title="Trust Region Policy Optimization"></a>Trust Region Policy Optimization</h2><p>作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在大的非线性网络优化问题上有很高的效率。TRPO有两个变种，single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。<br>为什么要有TRPO？</p>
+<script type="math/tex; mode=display">\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)\qquad f^{\pi} (s,a;\omega) = \omega^T \psi^{\pi} (s,a)</script><p>其中$\left[\nabla \log \pi(a;s, \theta) = \frac{}{}\right]_i = \frac{\partial \log \pi(a;s, \theta)}{\partial \theta_i}$。找到最小化均方根误差函数的$\omega$，记为$\hat{\omage}$：</p>
+<script type="math/tex; mode=display">\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\omega) - Q^{\pi}(s,a))^2</script><p>如果使用$f^{\pi} $代替$Q$计算出来的grdient还是exact的，就称$f$是兼容的。</p>
+<h5 id="定理1"><a href="#定理1" class="headerlink" title="定理1"></a>定理1</h5><p>如果$\hat{\omega}$最小化了均方根误差$\epsilon(w,\pi_\theta)$，可以证明：</p>
+<script type="math/tex; mode=display">\hat{\omega} = \hat{\nabla} \eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) $$=\mathbf{F}(\theta)^{-1} \nabla\eta(\theta)</script><h2 id="Trust-Region-Policy-Optimization"><a href="#Trust-Region-Policy-Optimization" class="headerlink" title="Trust Region Policy Optimization"></a>Trust Region Policy Optimization</h2><p>作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在大的非线性网络优化问题上有很高的效率。TRPO有两个变种，single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。<br>为什么要有TRPO？</p>
 <ol>
 <li>policy gradient计算的是expected rewards梯度的最大方向，然后朝着这个方向更新policy的参数。因为梯度使用的是一阶导数，梯度太大时容易fail，梯度太小的话更新太慢。</li>
 <li>学习率很难选择，学习率固定，梯度大容易失败，梯度小更新太慢。</li>
