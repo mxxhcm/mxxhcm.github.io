@@ -42,9 +42,9 @@ $$I(\theta) = \mathbb{E} \left[ \left(\frac{\partial}{\partial \theta} \log f(\m
 
 随机变量的Fisher information总是大于等于$0$的，Fisher information不是某一个observation的函数。
 
-### 第二种意义：
+### 第二种意义：参数真实值处二阶导数期望的相反数
 $$I(\theta) =  - \mathbb{E}\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$
-Fisher informaction可以看成似然对数的曲率，在最大似然的估计值附近，fisher信息大代表着图像陡而尖，fisher信息小代表着图像宽而平。
+Fisher informaction可以看成似然对数对参数估计的能力，在最大似然的估计值附近，fisher信息大代表着图像陡而尖，参数估计能力好；fisher信息小代表着图像宽而平，参数估计能力差。
 
 ### 第三种意义：Cramer-Rao bound的不正式推导
 Fisher informaction的导数是$\theta$无偏估计值方差的下界。换句话说，$\theta$的精确度被似然对数的fisher information限制了。

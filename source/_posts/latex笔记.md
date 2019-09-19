@@ -78,21 +78,36 @@ $$\begin{vmatrix}1&2\\\\3&4\end{vmatrix}$$
 $$\begin{Vmatrix}1&2\\\\3&4\end{Vmatrix}$$
 
 ### 希腊字母
-$\eta$ \eta
+$\alpha$ \alpha
+$\Alpha$ \Alpha
+$beta$ \beta
+$Beta$ \Beta
+$\Delta$ \Delta
+$\delta$ \delta
+$\thtea$ \theta
+$\Thtea$ \Theta
 $\gamma$ \gamma
 $\Gamma$ \Gamma
-$\epsilon$ \epsilon
-$\varepsilon$ \varepsilon
+$\eta$ \eta
+$\Eta$ \Eta
 $\lambda$ \lambda
 $\Lambda$ \Lambda
 $\sigma$ \sigma
 $\Sigma$ \Sigma
+$\pi$ \pi
+$\Pi$ \Pi
+$\mu$ \mu
+$\Mu$ \Mu
+$\psi$ \psi
+$\Psi$ \Psi
+$\epsilon$ \epsilon
+$\Epsilon$ \Epsilon
+$\varepsilon$ \varepsilon
 $\phi$ \phi
 $\varphi$ \varphi
 $\Phi$ \Phi
-$\Delta$ \Delta
-$\delta$ \delta
 $\nabla$ \nabla
+$\Nabla$ \Nabla
 $\zeta$ \zeta
 $\xi$ \xi
 

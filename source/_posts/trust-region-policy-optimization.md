@@ -73,7 +73,12 @@ J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) R(s,a)dads\\\\
 定义average reward $\eta(\pi)$为：
 $$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a)$$
 这篇文章中定义了新的state action value和value function：
-$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[\right]
+$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[\right]$$
+Average reward的精确梯度是：
+$$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} (s,a)$$
+在这使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。$\eta(\theta)$下降最快的方向定义为在$d\theta$的平方长度$\vert d\theta\vert^2 $ 小于一个常数时，使得$\eta(\theta+d\theta)$最小的$d\theta$的方向。平方长度的定义和一个正定矩阵$G(\theta)$有关，即：
+$$\vert\theta\vert^2 = \sum_{ij} G_{ij} (\theta)d\theta_i d\theta_j = d\theta^T G(\theta) d\theta $$
+最块的梯度下降方向是$G^{-1} \nabla \eta(\theta)$
 
 
 ## Trust Region Policy Optimization
