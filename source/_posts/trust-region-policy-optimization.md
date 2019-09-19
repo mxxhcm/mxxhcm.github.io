@@ -100,6 +100,31 @@ $$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\
 如果$\hat{\omega}$是最小化均方根误差$\epsilon(w,\pi_\theta)$，可以证明：
 $$\hat{\omega} = \hat{\nabla} \eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) $$
 
+#### Greedy Policy Improvement
+在greedy policy improvement的每一步，在$s$处，选择$a\in argmax_{a'} f^{\pi}(s, a';\hat{omega})$。这一节介绍natural gradient能够找到best action，而不仅仅是一个good action。
+首先考虑指数函数：$\pi(s;a,\theta) \propto e^{\mathbf{\theta}^T \Phi_{sa}}$，其中$\Phi_{sa} \in \mathbb{R}^m $是特征向量。为什么使用指数函数，因为它是affine geometry。简单来说，就是$\pi(a;s,\theta)$的probability manifold可以被弯曲。接下来证明policy在natrual gradient方向上改进的一大步等价于进行一步greedy policy improvement的policy。
+
+##### 定理2
+对于$\pi(s;a,\theta) \propto e^{\mathbf{\theta}^T \Phi_{sa}}$，假设$\hat{\nabla}\eta(\theta)$是非零的，并且$\hat{\omega}$最小化均方根误差。让
+$$\pi_{\infty}(a;s) = lim_{\alpha\rightarow \infty}\pi(a;s,\theta + \alpha\hat{\nabla}\eta(\theta))$$
+当且仅当$a\in argmax_{a'} f^{\pi} (s,a';\hat{\omega})$时，有$\pi_{\infty}(a;s)\neq 0$。
+证明：
+...
+
+可以看出来natural gradient趋向于选择最好的action，而普通的gradient方法只能选出来一个更好的action。
+使用指数函数的目的只是为了展示在极端情况下－－有无限大的learning rate情况下的结果，接下来是普通的参数化策略，natural gradient可以根据$Q^{\pi} (s,a)$的局部近似估计$f^{\pi}(s,a;\hat{\omega})$，近似找到局部best action。
+
+##### 定理3
+加入$\hat{\omega}$最小化估计误差，使用$\theta' = \theta + \alpha \hat{\nabla}\eta(\theta)$更新参数，可以得到：
+$$\pi(a;s,\thtea') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)$$
+证明：
+...
+
+这个相当于是根据$f^{\pi}(s,a) $选择每个state的action。当然，并不是选择greedy action就一定会改善policy，还有许多例外。
+
+### Metrics和Curvatures
+在不同的参数空间中，[fisher information](https://mxxhcm.github.io/2019/09/16/fisher-information/)都可以收敛到[海塞矩阵](https://mxxhcm.github.io/2019/09/10/Jacobian-matrix-and-Hessian-matrix/)，因此，它是[aymptotically efficient](https://mxxhcm.github.io/2019/09/18/asymptotically-efficient-%E6%B8%90%E8%BF%9B%E6%9C%89%E6%95%88%E6%80%A7/)
+
 
 ## Trust Region Policy Optimization
 作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在大的非线性网络优化问题上有很高的效率。TRPO有两个变种，single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。
