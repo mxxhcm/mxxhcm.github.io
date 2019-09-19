@@ -80,7 +80,7 @@ $$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} 
 $$\vert\theta\vert^2 = \sum_{ij} G_{ij} (\theta)d\theta_i d\theta_j = d\theta^T G(\theta) d\theta $$
 可以证明，最块的梯度下降方向是$G^{-1} \nabla \eta(\theta)$。标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。
 分布$\pi(a;s,\theta)$的fisher information是：
-$$\mathbf{F}_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta) \left[ \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right]$$
+$$\mathbf{F}_s(\theta) = \mathbb{E}_{\pi(a;s,\theta) \left[ \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right]$$
 显然$\mathbf{F}_s$是正定矩阵，可以证明，FIM是概率分布参数空间上的一个invariant metric。不论两个点的坐标怎么选择，它都能计算处相同的distance，所以说它是invariant。
 当然，$\mathbf{F}_s$只用了单个的$s$，而在计算average reward时，使用的是一个分布，定义metric为：
 $$\mathbf{F}(\theta) = \mathbb{E}\_{\rho^{pi} (s)} \left[\mathbb{F}_s (\theta)\right]$$
@@ -95,7 +95,6 @@ $$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)\qquad f^{\pi} (s,a;\omega) = \o
 其中$\left[\nabla \log \pi(a;s, \theta)\right]_i = \frac{\partial \log \pi(a;s, \theta)}{\partial \theta_i}$。找到最小化均方根误差函数的$\omega$，记为$\hat{\omega}$：
 $$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\omega) - Q^{\pi}(s,a))^2 $$
 如果使用$f^{\pi} $代替$Q$计算出来的grdient还是exact的，就称$f$是兼容的。
-
 
 ##### 定理1
 如果$\hat{\omega}$最小化了均方根误差$\epsilon(w,\pi_\theta)$，可以证明：
