@@ -91,7 +91,15 @@ $$\hat{\nabla}\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) $$
 使用$\omega$参数化的兼容性值函数$f^{\pi} (s,a;\omega)$近似$Q^{\pi} (s,a)$。
 #### 兼容性值函数
 定义：
-$$\(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)\qquad f^{\pi} (s,a;\omega) = \omega^T \^{\pi} (s,a)$$
+$$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)\qquad f^{\pi} (s,a;\omega) = \omega^T \psi^{\pi} (s,a)$$
+其中$\left[\nabla \log \pi(a;s, \theta) = \frac{}{}\right]_i = \frac{\partial \log \pi(a;s, \theta)}{\partial \theta_i}$。找到最小化均方根误差函数的$\omega$，记为$\hat{\omage}$：
+$$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\omega) - Q^{\pi}(s,a))^2 $$
+如果使用$f^{\pi} $代替$Q$计算出来的grdient还是exact的，就称$f$是兼容的。
+
+
+##### 定理1
+如果$\hat{\omega}$最小化了均方根误差$\epsilon(w,\pi_\theta)$，可以证明：
+$$\hat{\omega} = \hat{\nabla} \eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) $$=\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) $$
 
 
 ## Trust Region Policy Optimization
