@@ -2,8 +2,11 @@
 title: trust region policy optimization
 date: 2019-09-08 14:24:37
 tags:
- - trpo
+ - policy gradient
+ - natural policy gradient
  - trust region policy optimization
+ - trpo
+ - ppo
  - 强化学习
  - reinforcement learning
 categories: 强化学习
@@ -12,53 +15,184 @@ mathjax: true
 
 ## 术语定义
 更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
-1. 状态集合
+### 状态集合
 $\mathcal{S}$是有限states set，包含所有state的可能取值
-2. 动作集合
+### 动作集合
 $\mathcal{A}$是有限actions set，包含所有action的可能取值
-3. 转换概率矩阵或者状态转换函数
+### 转换概率矩阵或者状态转换函数
 $P:\mathcal{S}\times \mathcal{A}\times \mathcal{S} \rightarrow \mathbb{R}$是transition probability distribution，或者写成$p(s_{t+1}|s_t,a_t)$
-4. 奖励函数
+### 奖励函数
 $R:\mathcal{S}\times \mathcal{A}\rightarrow \mathbb{R}$是reward function
-5. 折扣因子
+### 折扣因子
 $\gamma \in (0, 1)$
-6. 初始状态分布
+### 初始状态分布
 $\rho_0$是初始状态$s_0$服从的distribution，$s_0\sim \rho_0$
-7. 带折扣因子的MDP
+### 带折扣因子的MDP
 定义为tuple $\left(\mathcal{S},\mathcal{A},P,R,\rho_0, \gamma\right)$
-8. 随机策略
+### 随机策略
 选择action，stochastic policy表示为：$\pi_\theta: \mathcal{S}\rightarrow P(\mathcal{A})$，其中$P(\mathcal{A})$是选择$\mathcal{A}$中每个action的概率，$\theta$表示policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取action $a_t$的概率
-9. 期望折扣回报
+### Accumulated Reward
+#### 期望折扣回报
 定义
-$$G_t = \sum_{k=t}^{\infty} \gamma^{k-t} R_{k+1} \tag{1}$$
+$$G_t =\mathbb{E} \left[\sum_{k=t}^{\infty} \gamma^{k-t} R_{k+1}\right] \tag{1}$$
 为expected discounted returns，表示从$t$时刻开始的expected discounted return；
-用
-$$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right] \tag{2}$$
-表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0), a_t\sim\pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t,a_t)$。
-10. 状态值函数
+#### 状态值函数
 state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：
-$$V^{\pi} (s_t) = \mathbb{E}\_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{3}$$
+$$V^{\pi} (s_t) = \mathbb{E}\_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{2}$$
 或者有时候也定义成从$t=0$开始的expected return：
-$$V^{\pi} (s_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0;\pi \right] \tag{4}$$
-11. 动作值函数
+$$V^{\pi} (s_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0;\pi \right] \tag{3}$$
+#### 动作值函数
 action value function定义为从$t$时刻的$s_t, a_t$开始的累计期望折扣奖励：
-$$Q^{\pi} (s_t, a_t) = \mathbb{E}\_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{5}$$
+$$Q^{\pi} (s_t, a_t) = \mathbb{E}\_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{4}$$
 或者有时候也定义为从$t=0$开始的return的期望：
-$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0,A_0=a_0;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0,A_0=a_0;\pi \right] \tag{6}$$
-12. 优势函数
-$$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s) \tag{7}$$，其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$
-$V^{\pi} (s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi} (s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
-13. 目标函数
-Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}\_{\pi} \left[G_0|\pi\right]$，用$p(s_0\rightarrow s,t,\pi)$表示从$s_0$经过$t$个timesteps到$s$的概率，用
-$$\rho^{\pi} (s):=\int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{8}$$
-表示$s'$服从的概率分布，其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布。我们可以将performance objective表示成在state distribution $\rho^\pi $和policy $\pi_\theta$上的期望：
+$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0,A_0=a_0;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0,A_0=a_0;\pi \right] \tag{5}$$
+#### 优势函数
+$$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s) \tag{6}$$
+其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$。$V^{\pi} (s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi} (s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
+#### 目标函数
+Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}\_{\pi} \left[G_0|\pi\right]$，或者写成：
+$$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right] \tag{7}$$
+表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0)$, $a_t\sim\pi(a_t|s_t)$, $s_{t+1}\sim P(s_{t+1}|s_t,a_t)$。
+### Average Reward
+#### 目标函数
+用$p(s_0\rightarrow s,t,\pi)$表示从$s_0$经过$t$个timesteps到$s$的概率，则policy $\pi$下$s$服从的概率分布为：
+$$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{8}$$
+其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布。$\rho^{\pi} (s)$可以理解为：
+$$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots \tag{9}$$
+表示policy $\pi$下state $s$出现的概率。在每一个timestep $t$处，$s_t=s$都有一定概率发生的，也就是式子$9$。定义average reward $\eta$为在state distribution $\rho^\pi $和policy $\pi_\theta$上的期望：
 \begin{align\*}
-J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) R(s,a)dads\\\\
-&= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi_{\theta}}\left[R(s,a)\right] \tag{9}\\\\ 
+\eta(\pi) &= \int_S \rho^{\pi} (s) \int_A \pi(s,a) R^{\pi}(s,a)dads\\\\
+&= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi}\left[R^{\pi}(s,a)\right] \tag{10}\\\\ 
 \end{align\*}
-其中$\rho^{\pi} (s)$可以理解为$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots$，就是policy $\pi$下state $s$出现的概率。这里在每一个$t$处，$s_t=s$都是有一定概率发生的，也就是$\rho_{\pi}(s)$表示的东西。
+其中$R^(s,a)$就是accumulated reward中的动作值函数，为了和average reward中的动作值函数进行区分，就用了$R$表示。
 
-## A natural policy gradient
+#### 动作值函数
+根据average reward，给出一种新的state-action value的定义方式：
+$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{13}$$
+
+#### 状态值函数
+Value function定义还和原来一样，形式没有变，但是因为$Q$计算方法变了，所以$V$的值也变了：
+$$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right]$$
+
+## Policy Gradient
+### Abstract
+强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。
+本文的贡献主要有两个，第一个是给出估计的action-value function或者advantage函数，梯度可以表示成experience的估计，第二个是证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。
+
+### Introduction
+#### 值函数方法的缺点
+基于值函数的方法，在估计出值函数之后，每次通过greedy算法选择action。这种方法有两个缺点。
+- 基于值函数的方法会找到一个deterministic的策略，但是很多时候optimal policy可能是stochastic的。
+- 某个action的估计值函数稍微改变一点就可能导致这个动作被选中或者不被选中，这种不连续是保证值函数收敛的一大障碍。
+
+#### 本文的工作
+##### 用函数表示stochastic policy
+本文提出的policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：
+$$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{11}$$
+其中$\alpha$是正定的step size，按照式子$11$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法不同，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。
+
+##### 使用值函数辅助学习policy
+本文证明了通过使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到$11$的一个无偏估计。REINFORCE方法也找到了$11$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。
+
+##### 证明policy iteration收敛性
+本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。
+
+### Policy Gradient Therorem
+智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。有两种方式定义智能体的objective，一种是average reward，一种是从指定状态开始的长期奖励。
+
+#### Average Reward(平均奖励)
+平均奖励是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：
+$$\eta(\pi) = lim_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R_1+R_2+\cdots+R_t|\pi\right] = \int_S \rho^{\pi} (s) \int_A \pi(s,a) R(s,a)dads \tag{12}$$
+其中$\rho^{\pi} (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是策略$\pi$下的station distribution。第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。
+第二个等号，$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率。第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是$s$处各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。其实，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。
+给出一种新的state-action value的定义方式：
+$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{13}$$
+value function定义还和原来一样，但是因为$Q$计算方法变了，所以$V$也跟着变了：
+$$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right]$$
+
+#### Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)
+第二种情况是指定初始状态$s_0$，我们计算从这个状态开始得到的累积reward：
+$$\rho(\pi) = \mathbb{E}\left[\sum_{t=1}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{14}$$
+相应的state-action如下：
+$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} r_{t+k}|s_t=s,a_t=a,\pi\right] \tag{15}$$
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。我们定义$d^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
+$d^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right] \tag{16}$
+$\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。
+
+#### Policy Gradient Theorem
+对于任何MDP，不论是平均奖励还是指定初始状态的形式，都有：
+$$\frac{\partial J}{\partial \mathbf{\theta}} = \sum_a d^{\pi} (s)\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{17}$$
+证明：
+平均奖励
+\begin{align\*}
+\nabla v_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a)\right], \\\\
+&= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \left[r-\rho(\pi)+\sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right]\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \rho(\pi)+\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right]\right], \nabla r = 0\\\\
+\end{align\*}
+而由$\sum_s\pi(s,a)=1$，我们得到：
+$$\nabla v_{\pi}(s)=\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \nabla v_{\pi}(s) \tag{18}$$
+同时在上式两边对$d^{\pi} $进行求和，得到：
+$$\sum_sd^{\pi} (s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi} (s)\nabla v_{\pi}(s) \tag{19}$$
+因为$d^{\pi} $是稳定的，
+$$\sum_sd^{\pi} (s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi} (s)\nabla v_{\pi}(s) \tag{20}$$
+那么:
+\begin{align\*}
+\end{align\*}
+指定初始状态$s_0$:
+\begin{align\*}
+\nabla v_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \sum_{s',r}p(s',r|s,a)(r+\gamma v_{\pi}(s'))\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s) \nabla \sum_{s',r}p(s',r|s,a)r + \pi(a|s)\nabla \sum_{s',r}p(s',r|s,a)\gamma v_{\pi}(s'))\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\nabla v_{\pi}(s') \right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\right]\\\\
+&\ \ \ \ \ \ \ \ \sum_{a'}\left[\nabla\pi(a'|s')q_{\pi}(s',a') + \pi(a'|s')\sum_{s''}\gamma p(s''|s',a')\nabla v_{\pi}(s''))] \right],  展开\\\\
+&= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)q_{\pi}(x,a) 
+\end{align\*}
+第(5)式使用了$v_{\pi}(s) = \sum_a\pi(a|s)q(s,a)$进行展开。第(6)式将梯度符号放进求和里面。第(7)步使用product rule对q(s,a)求导。第(8)步利用$q_{\pi}(s, a) =\sum_{s',r}p(s',r|s,a)(r+v_{\pi}(s')$ 对$q_{\pi}(s,a)$进行展开。第(9)步将(8)式进行分解。第(10)步对式(9)进行计算，因为$\sum_{s',r}p(s',r|s,a)r$是一个定制，求偏导之后为$0$。第(11)步对生成的$v_{\pi}(s')$重复(5)-(10)步骤，得到式子(11)。如果对式子(11)中的$v_{\pi}(s)$一直展开，就得到了式子(12)。式子(12)中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，这里我有一个问题，就是为什么，$k$可以取到$\infty$，后来想了想，因为对第(11)步进行展开以后，可能会有重复的state，重复的意思就是从状态$s$开始，可能会多次到达某一个状态$x$，$k$就能取很多次，大不了$k=\infty$的概率为$0$就是了。
+
+所以，对于$v_{\pi}(s_0)$，就有：
+\begin{align\*}
+\nabla J(\mathbf{\theta}) &= \nabla_{v_{\pi}}(s_0)\\\\
+&= \sum_{s\in S}\( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \) \sum_a\nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
+&=\sum_{s\in S}\eta(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
+&=\sum_{s'\in S}\eta(s')\sum_s\frac{\eta(s)}{\sum_{s'}\eta(s')}\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
+&=\sum_{s'\in S}\eta(s')\sum_s\mu(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
+&\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)q_{\pi}(s,a)
+\end{align\*}
+
+从式子(2)可以看出来，这个梯度和$\frac{\partial d^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty} r_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} r_{t+k}-\rho(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。
+
+### Policy Gradient with Approximation(使用近似的策略梯度)
+如果$Q^{\pi} $也用一个学习的函数来近似，然后我们希望用近似的函数代替式子(2)中的$Q^{\pi} $，并大致给出梯度的方向。
+用$f_w:S\times A \rightarrow R$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q^{\pi} }(s_t,a_t) - f_w(s_t,a_t)\right]2 \propto \left[\hat{Q^{\pi} }(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w}$，其中$\hat{Q^{\pi} }(s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：
+$$\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{20}$$
+
+#### Policy Gradient with Approximation Theorem
+如果$f_w$满足式子(3)，并且在某种意义上与policy parameterization兼容：
+$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\tag{21}$$
+那么有：
+$$\frac{}{} = \sum_sd^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{22}$$
+
+证明：
+将(4)代入(3)得到：
+\begin{align\*}
+&\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w} = 0\\\\
+&\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}= 0\\\\
+&\sum_sd^{\pi} (s)\sum_a\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}= 0 \tag{6}\\\\
+\end{align\*}
+从这个式子中，我们能够从式子(6)中得到
+
+### Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)
+### Policy Iteration with Function Apprpximation Theorem
+用$\pi$和$f_w$表示策略和值函数的任意可导函数，并且满足式子(4)中的条件，Z
+
+
+
+## A Natural Policy Gradient
 论文名称：A Natural Policy Gradient 
 论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
 
@@ -73,17 +207,17 @@ J(\pi_{\theta}) &= \int_S \rho^{\pi} (s) \int_A \pi_{\theta}(s,a) R(s,a)dads\\\\
 定义average reward $\eta(\pi)$为：
 $$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a)$$
 这篇文章中定义了新的state action value和value function：
-$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[\right] \tag{10}$$
+$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[\right] \tag{23}$$
 Average reward的精确梯度是：
-$$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} (s,a) \tag{11}$$
+$$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} (s,a) \tag{24}$$
 在这使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。$\eta(\theta)$下降最快的方向定义为在$d\theta$的平方长度$\vert d\theta\vert^2 $ 等于一个常数时，使得$\eta(\theta+d\theta)$最小的$d\theta$的方向。平方长度的定义和一个正定矩阵$G(\theta)$有关，即：
 $$\vert\theta\vert^2 = \sum_{ij} G_{ij} (\theta)d\theta_i d\theta_j = d\theta^T G(\theta) d\theta  \tag{12}$$
 可以证明，最块的梯度下降方向是$G^{-1} \nabla \eta(\theta)$。标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。
 分布$\pi(a;s,\theta)$的fisher information是：
 $$\mathbf{F}_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[ \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right] \tag{13}$$
 显然$\mathbf{F}_s$是正定矩阵，可以证明，FIM是概率分布参数空间上的一个invariant metric。不论两个点的坐标怎么选择，它都能计算处相同的distance，所以说它是invariant。
-当然，$\mathbf{F}_s$只用了单个的$s$，而在计算average reward时，使用的是一个分布，定义metric为：
-$$\mathbf{F}(\theta) = \mathbb{E}_{\rho^{\pi} (s)} \left[\mathbb{F}_s (\theta)\right] \tag{4}$$
+当然，$\mathbf{F}\_s$只用了单个的$s$，而在计算average reward时，使用的是一个分布，定义metric为：
+$$\mathbf{F}(\theta) = \mathbb{E}\_{\rho^{\pi} (s)} \left[\mathbb{F}_s (\theta)\right] \tag{14}$$
 每一个$s$对应的单个$\mathbf{F}_s$都和MDP的transition model没有关系，期望操作引入了每一个transition model的参数。直观上来说，$\mathbf{F}_s$测量的是在$s$上的probability manifold的距离，$\mathbf{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：
 $$\hat{\nabla}\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{15}$$
 
@@ -92,8 +226,8 @@ $$\hat{\nabla}\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{15}
 #### 兼容性值函数
 定义：
 $$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)\qquad f^{\pi} (s,a;\omega) = \omega^T \psi^{\pi} (s,a) \tag{16}$$
-其中$\left[\nabla \log \pi(a;s, \theta)\right]_i = \frac{\partial \log \pi(a;s, \theta)}{\partial \theta_i}$。找到最小化均方根误差函数的$\omega$，记为$\hat{\omega}$：
-$$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\omega) - Q^{\pi}(s,a))^2 \tag{17}$$
+其中$\left[\nabla \log \pi(a;s, \theta)\right]\_i = \frac{\partial \log \pi(a;s, \theta)}{\partial \theta_i}$。找到最小化均方根误差函数的$\omega$，记为$\hat{\omega}$：
+$$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\omega) - Q^{\pi} (s,a))^2 \tag{17}$$
 如果使用$f^{\pi} $代替$Q$计算出来的grdient还是exact的，就称$f$是兼容的。
 
 ##### 定理1
@@ -101,12 +235,12 @@ $$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\
 $$\hat{\omega} = \hat{\nabla} \eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) \tag{18}$$
 
 #### Greedy Policy Improvement
-在greedy policy improvement的每一步，在$s$处，选择$a\in argmax_{a'} f^{\pi}(s, a';\hat{omega})$。这一节介绍natural gradient能够找到best action，而不仅仅是一个good action。
-首先考虑指数函数：$\pi(s;a,\theta) \propto e^{\mathbf{\theta}^T \Phi_{sa}}$，其中$\Phi_{sa} \in \mathbb{R}^m $是特征向量。为什么使用指数函数，因为它是affine geometry。简单来说，就是$\pi(a;s,\theta)$的probability manifold可以被弯曲。接下来证明policy在natrual gradient方向上改进的一大步等价于进行一步greedy policy improvement的policy。
+在greedy policy improvement的每一步，在$s$处，选择$a\in argmax_{a'} f^{\pi}(s, a';\hat{\omega})$。这一节介绍natural gradient能够找到best action，而不仅仅是一个good action。
+首先考虑指数函数：$\pi(s;a,\theta) \propto e^{\mathbf{\theta}\^T \Phi_{sa}}$，其中$\Phi_{sa} \in \mathbb{R}^m $是特征向量。为什么使用指数函数，因为它是affine geometry。简单来说，就是$\pi(a;s,\theta)$的probability manifold可以被弯曲。接下来证明policy在natrual gradient方向上改进的一大步等价于进行一步greedy policy improvement的policy。
 
 ##### 定理2
-对于$\pi(s;a,\theta) \propto e^{\mathbf{\theta}^T \Phi_{sa}}$，假设$\hat{\nabla}\eta(\theta)$是非零的，并且$\hat{\omega}$最小化均方根误差。让
-$$\pi_{\infty}(a;s) = lim_{\alpha\rightarow \infty}\pi(a;s,\theta + \alpha\hat{\nabla}\eta(\theta)) \tag{19}$$
+对于$\pi(s;a,\theta) \propto e^{\mathbf{\theta}\^T \Phi_{sa}} $，假设$\hat{\nabla}\eta(\theta)$是非零的，并且$\hat{\omega}$最小化均方根误差。让
+$$\pi_{\infty}(a;s) = lim_{\alpha\rightarrow \infty}\pi(a;s,\theta + \alpha\hat{\nabla}\eta(\theta)) \tag{19}$$
 当且仅当$a\in argmax_{a'} f^{\pi} (s,a';\hat{\omega})$时，有$\pi_{\infty}(a;s)\neq 0$。
 证明：
 ...
@@ -116,7 +250,7 @@ $$\pi_{\infty}(a;s) = lim_{\alpha\rightarow \infty}\pi(a;s,\theta + \alpha\hat{\
 
 ##### 定理3
 加入$\hat{\omega}$最小化估计误差，使用$\theta' = \theta + \alpha \hat{\nabla}\eta(\theta)$更新参数，可以得到：
-$$\pi(a;s,\thtea') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)\tag{20}$$
+$$\pi(a;s,\theta') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)\tag{20}$$
 证明：
 ...
 
@@ -125,7 +259,7 @@ $$\pi(a;s,\thtea') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)\
 ### Metrics和Curvatures
 在不同的参数空间中，[fisher information](https://mxxhcm.github.io/2019/09/16/fisher-information/)都可以收敛到[海塞矩阵](https://mxxhcm.github.io/2019/09/10/Jacobian-matrix-and-Hessian-matrix/)，因此，它是[aymptotically efficient](https://mxxhcm.github.io/2019/09/18/asymptotically-efficient-%E6%B8%90%E8%BF%9B%E6%9C%89%E6%95%88%E6%80%A7/)，即到达了cramer-rao bound。
 $\mathbf{F}$是$\log \pi$对应的fisher information。Fisher information 和海塞矩阵有关系，但是都需要和$\pi$联系起来。是这里考虑$\eta(\theta)$的海塞矩阵，它和$\mathbf{F}$两个之间有一定联系，但是不一样。
-事实上，这里定义的新的$\mathbf{F}$并不会收敛到海塞矩阵。但是因为海塞矩阵一般不是正定的，所以在非局部最小处附近，它提供的curvature信息用处不大。在局部最小处使用conjugate methods会更好。
+事实上，定义的新的$\mathbf{F}$并不会收敛到海塞矩阵。但是因为海塞矩阵一般不是正定的，所以在非局部最小处附近，它提供的curvature信息用处不大。在局部最小处使用conjugate methods会更好。
 
 ## Trust Region Policy Optimization
 作者提出了optimizing policies的一个迭代算法，理论上保证可以以non-trivial steps单调改善plicy。对经过理论验证的算法做一些近似，产生一个实用算法，叫做Trust Region Policy Optimization(TRPO)。这个算法和natural policy gradient很像，并且在大的非线性网络优化问题上有很高的效率。TRPO有两个变种，single-path方法应用在model-free环境中，vine方法，需要整个system能够能够从特定的states重启，通常在仿真环境中可用。
@@ -144,7 +278,7 @@ $$g\cdot(\theta- \theta_{old}) - \frac{\beta}{2} (\theta- \theta_{old})^T F(\the
 是一个convex function。
 为什么MM算法会收敛到optimal policy，如果$M$是下界的话，它不会跨过红线$\eta$。假设新的$\eta$中的new policy更低，那么blue线一定会越过$\eta$，和$M$是下界冲突。
 
-## Trust region
+## Trust Region
 有两种优化方法：line search和trust region。Gradient descent是line search方法。首先确定下降的方向，然后超这个方向移动一步。而trust region中，首先确定我们想要探索的step size，然后直到在trust region中的optimal point。用$\delta$表示初始的maximum step size，作为trust region的半径：
 $$max_{s\in \mathbb{R}^n} m_k(s), \qquad s.t. \vert s\vert \le \delta\tag{23}$$
 $m$是原始目标函数$f$的近似，我们的目标是找到半径$\delta$范围$m$的最优点，迭代下去直到最高点。在运行时可以根据表面的曲率延伸或者压缩$\delta$控制学习的速度。如果在optimal point，$m$是$f$的一个poor approximator，收缩trust region。如果approximatation很好，就expand trust region。如果policy改变太多的话，可以收缩trust region。
@@ -286,7 +420,7 @@ Vine比single path好的地方在于，给定相同数量的$Q$样本，目标�
 $$maximize_{\theta} \left[\nabla_{\theta}L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta-\theta_{old}) \right] \qquad s.t. \frac{1}{2}(\theta_{old}-\theta)^A(\theta_{old})(\theta_{old} - \theta)\le\delta\tag{51}$$
 其中$A(\theta_{old})\_{ij} = \frac{\partial}{\partial\theta_i}\frac{\partial}{\partial \theta_j}\mathbb{E}\_{s\sim \rho_{\pi}}\left[D_{KL}(\pi(\cdot|s, \theta_{old})||\pi(\cdot|s, \theta))\right]\_{\theta=\theta_{old}}$，更新公式是$\theta_{new} = \theta_{old}+\frac{1}{\lambda}A(\theta_{old})^{-1} \nabla_{\theta}L(\theta)|\_{\theta=\theta_{old}}$，其中步长$\frac{1}{\lambda}$可以看成算法参数。这和trpo不同，在每一次更新都有constraint。尽管这个差别很小，实验表明它能改善在更大规模问题上算法的性能。
 同样，也可以使用$l2$约束，推导出标准的policy gradient如下：
-$$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta- \theta_{old}) \qquad s.t. \frac{1}{2}\vert \theta-\theta_{old}\vert^2 \le \delta\right]$\tag{52}$
+$$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta- \theta_{old}) \qquad s.t. \frac{1}{2}\vert \theta-\theta_{old}\vert^2 \le \delta\right]$\tag{52}$$
 
 ## 参考文献
 Trust Region Policy Optimization
