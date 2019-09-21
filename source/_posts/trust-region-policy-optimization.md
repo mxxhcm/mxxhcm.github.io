@@ -64,20 +64,24 @@ $$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots \tag
 \eta(\pi) &= \int_S \rho^{\pi} (s) \int_A \pi(s,a) R^{\pi}(s,a)dads\\\\
 &= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi}\left[R^{\pi}(s,a)\right] \tag{10}\\\\ 
 \end{align\*}
-其中$R^(s,a)$就是accumulated reward中的动作值函数，为了和average reward中的动作值函数进行区分，就用了$R$表示。
+其中$R(s,a) = \mathbb{E}\left[ r_{t+1}|s_t=s, a_t=a\right]$，是state action pair $(s,a)$的immediate reward的期望值。
 
 #### 动作值函数
 根据average reward，给出一种新的state-action value的定义方式：
-$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{13}$$
+$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{11}$$
 
 #### 状态值函数
 Value function定义还和原来一样，形式没有变，但是因为$Q$计算方法变了，所以$V$的值也变了：
-$$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right]$$
+$$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{12}$$
+
+### Accumulated Reward和Average Reward
+这两种方式，accumulated reward需要加上折扣银子，而average reward不需要。我们常见的都是accumulated reward这种方式的动作值函数以及状态值函数。
 
 ## Policy Gradient
 ### Abstract
 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。
 本文的贡献主要有两个，第一个是给出估计的action-value function或者advantage函数，梯度可以表示成experience的估计，第二个是证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。
+
 
 ### Introduction
 #### 值函数方法的缺点
@@ -88,11 +92,11 @@ $$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right]$$
 #### 本文的工作
 ##### 用函数表示stochastic policy
 本文提出的policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：
-$$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{11}$$
-其中$\alpha$是正定的step size，按照式子$11$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法不同，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。
+$$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{13}$$
+其中$\alpha$是正定的step size，按照式子$13$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法不同，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。
 
 ##### 使用值函数辅助学习policy
-本文证明了通过使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到$11$的一个无偏估计。REINFORCE方法也找到了$11$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。
+本文证明了通过使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到$13$的一个无偏估计。REINFORCE方法也找到了$13$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。
 
 ##### 证明policy iteration收敛性
 本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。
@@ -102,87 +106,96 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 
 #### Average Reward(平均奖励)
 平均奖励是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：
-$$\eta(\pi) = lim_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R_1+R_2+\cdots+R_t|\pi\right] = \int_S \rho^{\pi} (s) \int_A \pi(s,a) R(s,a)dads \tag{12}$$
+$$\eta(\pi) = lim_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R_1+R_2+\cdots+R_t|\pi\right] = \int_S \rho^{\pi} (s) \int_A \pi(s,a) R(s,a)dads \tag{14}$$
 其中$\rho^{\pi} (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是策略$\pi$下的station distribution。第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。
-第二个等号，$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率。第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是$s$处各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。其实，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。
+第二个等号，$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率。第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是$s$处各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。其实，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。
 给出一种新的state-action value的定义方式：
-$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{13}$$
+$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{15}$$
 value function定义还和原来一样，但是因为$Q$计算方法变了，所以$V$也跟着变了：
-$$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right]$$
+$$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{16}$$
 
 #### Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)
-第二种情况是指定初始状态$s_0$，我们计算从这个状态开始得到的累积reward：
-$$\rho(\pi) = \mathbb{E}\left[\sum_{t=1}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{14}$$
+第二种情况是指定初始状态$s_0$，我们计算从这个状态开始得到的accumulated reward：
+$$\rho(\pi) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{17}$$
 相应的state-action如下：
-$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} r_{t+k}|s_t=s,a_t=a,\pi\right] \tag{15}$$
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。我们定义$d^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
-$d^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right] \tag{16}$
+$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} R_{t+k}|s_t=s,a_t=a,\pi\right] \tag{18}$$
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。我们定义$\rho^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
+$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right] = \rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{19}$$
 $\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。
 
 #### Policy Gradient Theorem
-对于任何MDP，不论是平均奖励还是指定初始状态的形式，都有：
-$$\frac{\partial J}{\partial \mathbf{\theta}} = \sum_a d^{\pi} (s)\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{17}$$
+对于任何MDP，不论是average reward还是accumulated reward的形式，都有：
+$$\frac{\partial \eta}{\partial \mathbf{\theta}} = \sum_a \rho^{\pi} (s)\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{20}$$
 证明：
-平均奖励
+Average Reward:
 \begin{align\*}
-\nabla v_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\\\
-&= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a)\right], \\\\
-&= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \left[r-\rho(\pi)+\sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right]\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \rho(\pi)+\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right]\right], \nabla r = 0\\\\
+\nabla V_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \\\\
+&= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[R(s,a)-\eta(\pi)+\sum_{s',r}p(s',r|s,a)V_{\pi}(s')\right]\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \eta(\pi)+ \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s')\right]\right], \nabla R(s,a) = 0\\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) - \pi(a|s)\nabla \eta(\pi)+ \pi(a|s) \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s')\right]\\\\
+&= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) - \sum_a \pi(a|s)\nabla \eta(\pi) + \sum_a \pi(a|s) \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s') \\\\
+&= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) -\nabla \eta(\pi)+ \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a)\nabla V_{\pi}(s'), \sum_s\pi(s,a)=1\\\\
 \end{align\*}
-而由$\sum_s\pi(s,a)=1$，我们得到：
-$$\nabla v_{\pi}(s)=\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \nabla v_{\pi}(s) \tag{18}$$
-同时在上式两边对$d^{\pi} $进行求和，得到：
-$$\sum_sd^{\pi} (s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi} (s)\nabla v_{\pi}(s) \tag{19}$$
-因为$d^{\pi} $是稳定的，
-$$\sum_sd^{\pi} (s)\nabla v_{\pi}(s)=\sum_sd{\pi}(s)\sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \sum_sd{\pi}(s)\nabla \sum_{s',r}p(s',r|s,a)v_{\pi}(s')\right] - \sum_sd^{\pi} (s)\nabla v_{\pi}(s) \tag{20}$$
+移项合并同类项得：
+$$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s') - \nabla V_{\pi}(s) \tag{21}$$
+同时在上式两边对$\rho^{\pi} $进行求和，得到：
+\begin{align\*}
+\sum_s \rho^{\pi} (s)\nabla \eta(\pi) &= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \\\\
+&\qquad\qquad\qquad + \sum_s \rho^{\pi}(s) \sum_a\pi(a|s) \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s')\\\\
+&\qquad\qquad\qquad - \sum_s \rho^{\pi} (s)\nabla V_{\pi}(s) \tag{22}\\\\
+&= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) + \sum_s \rho^{\pi}(s') \nabla V_{\pi}(s') - \sum_s \rho^{\pi} (s)\nabla V_{\pi}(s) \tag{23}\\\\
+&= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \tag{24}\\\\
+&= \nabla \eta(\pi) \tag{25}\\\\
+\end{align\*}
+式子$22$到式子$23$其实就是$\sum_s \rho^{\pi}(s) \sum_a\pi(a|s) \sum_{s',r}p(s',r|s,a) = \sum_{s'}\rho^{\pi} (s')$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。
 那么:
 \begin{align\*}
 \end{align\*}
 指定初始状态$s_0$:
 \begin{align\*}
-\nabla v_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\\\
-&= \sum_a \left[\nabla\pi(a|s)q_{\pi}(s,a)\right], \forall s\in S \\\\
-&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla q_{\pi}(s,a)\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s)\nabla \sum_{s',r}p(s',r|s,a)(r+\gamma v_{\pi}(s'))\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + \pi(a|s) \nabla \sum_{s',r}p(s',r|s,a)r + \pi(a|s)\nabla \sum_{s',r}p(s',r|s,a)\gamma v_{\pi}(s'))\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\nabla v_{\pi}(s') \right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)q_{\pi}(s,a) + 0 + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\right]\\\\
-&\ \ \ \ \ \ \ \ \sum_{a'}\left[\nabla\pi(a'|s')q_{\pi}(s',a') + \pi(a'|s')\sum_{s''}\gamma p(s''|s',a')\nabla v_{\pi}(s''))] \right],  展开\\\\
-&= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)q_{\pi}(x,a) 
+\nabla V_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s',r}p(s',r|s,a)(R+\gamma V_{\pi}(s'))\right]\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s',r}p(s',r|s,a)R +\sum_{s',r}p(s',r|s,a)\gamma V_{\pi}(s')\right]\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[0 +\sum_{s',r}p(s',r|s,a)\gamma\nabla V_{\pi}(s')\right]\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s',r}p(s',r|s,a)\gamma \nabla V_{\pi}(s'))\right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\nabla V_{\pi}(s') \right] \\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\left( \sum_{a'} \nabla\pi(a'|s')Q_{\pi}(s',a') + \pi(a'|s')\sum_{s''}\gamma p(s''|s',a')\nabla V_{\pi}(s''))\right) \right]\\\\
+&= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) 
 \end{align\*}
-第(5)式使用了$v_{\pi}(s) = \sum_a\pi(a|s)q(s,a)$进行展开。第(6)式将梯度符号放进求和里面。第(7)步使用product rule对q(s,a)求导。第(8)步利用$q_{\pi}(s, a) =\sum_{s',r}p(s',r|s,a)(r+v_{\pi}(s')$ 对$q_{\pi}(s,a)$进行展开。第(9)步将(8)式进行分解。第(10)步对式(9)进行计算，因为$\sum_{s',r}p(s',r|s,a)r$是一个定制，求偏导之后为$0$。第(11)步对生成的$v_{\pi}(s')$重复(5)-(10)步骤，得到式子(11)。如果对式子(11)中的$v_{\pi}(s)$一直展开，就得到了式子(12)。式子(12)中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，这里我有一个问题，就是为什么，$k$可以取到$\infty$，后来想了想，因为对第(11)步进行展开以后，可能会有重复的state，重复的意思就是从状态$s$开始，可能会多次到达某一个状态$x$，$k$就能取很多次，大不了$k=\infty$的概率为$0$就是了。
-
-所以，对于$v_{\pi}(s_0)$，就有：
+第(5)式使用了$V_{\pi}(s) = \sum_a\pi(a|s)Q(s,a)$进行展开。第(6)式将梯度符号放进求和里面。第(7)步使用product rule对q(s,a)求导。第(8)步利用$Q_{\pi}(s, a) =\sum_{s',r}p(s',r|s,a)(r+V_{\pi}(s')$ 对$Q_{\pi}(s,a)$进行展开。第(9)步将(8)式进行分解。第(10)步对式(9)进行计算，因为$\sum_{s',r}p(s',r|s,a)R$是一个常数，求偏导之后为$0$。第(11)步对生成的$V_{\pi}(s')$重复(5)-(10)步骤，得到式子(11)。如果对式子(11)中的$V_{\pi}(s)$一直展开，就得到了式子(12)。式子(12)中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，这里我有一个问题，就是为什么，$k$可以取到$\infty$，后来想了想，因为对第(11)步进行展开以后，可能会有重复的state，重复的意思就是从状态$s$开始，可能会多次到达某一个状态$x$，$k$就能取很多次，大不了$k=\infty$的概率为$0$就是了。
+所以，对于$V_{\pi}(s_0)$，就有：
 \begin{align\*}
-\nabla J(\mathbf{\theta}) &= \nabla_{v_{\pi}}(s_0)\\\\
-&= \sum_{s\in S}\( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \) \sum_a\nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
-&=\sum_{s\in S}\eta(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
-&=\sum_{s'\in S}\eta(s')\sum_s\frac{\eta(s)}{\sum_{s'}\eta(s')}\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
-&=\sum_{s'\in S}\eta(s')\sum_s\mu(s)\sum_a \nabla_{\pi}(a|s)q_{\pi}(s,a)\\\\
-&\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)q_{\pi}(s,a)
+\nabla J(\mathbf{\theta}) &= \nabla_{\theta}V_{\pi}(s_0)\\\\
+&= \sum_{s\in S}\( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \) \sum_a\nabla_{\pi}(a|s)Q_{\pi}(s,a)\\\\
+&=\sum_{s\in S}\eta(s)\sum_a \nabla_{\pi}(a|s)Q_{\pi}(s,a)\\\\
+&=\sum_{s'\in S}\eta(s')\sum_s\frac{\eta(s)}{\sum_{s'}\eta(s')}\sum_a \nabla_{\pi}(a|s)Q_{\pi}(s,a)\\\\
+&=\sum_{s'\in S}\eta(s')\sum_s\mu(s)\sum_a \nabla_{\pi}(a|s)Q_{\pi}(s,a)\\\\
+&\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)Q_{\pi}(s,a)
 \end{align\*}
 
-从式子(2)可以看出来，这个梯度和$\frac{\partial d^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q{\pi}(s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty} r_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} r_{t+k}-\rho(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。
+从式子(2)可以看出来，这个梯度和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即策略改变对于状态分布没有影响，这对于使用采样来估计梯度是很方便的。这里有点不明白，举个例子来说，如果$s$是从服从$\pi$的分布中采样的，那么$\sum_a\frac{\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\eta}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q^{\pi}(s,a)$也是不知道的，需要去估计。一种方法是使用真实的returns，即$R_t = \sum_{k=1}^{\infty} r_{t+k}-\eta(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} r_{t+k}-\eta(\pi)$（在指定初始状态条件下）。这就是REINFROCE方法，$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了被$\pi$偏爱的action的oversampling）。
 
 ### Policy Gradient with Approximation(使用近似的策略梯度)
 如果$Q^{\pi} $也用一个学习的函数来近似，然后我们希望用近似的函数代替式子(2)中的$Q^{\pi} $，并大致给出梯度的方向。
 用$f_w:S\times A \rightarrow R$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:$\nabla w_t\propto \frac{\partial}{\partial w}\left[\hat{Q^{\pi} }(s_t,a_t) - f_w(s_t,a_t)\right]2 \propto \left[\hat{Q^{\pi} }(s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w}$，其中$\hat{Q^{\pi} }(s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，可能是$R_t$，当这样一个过程收敛到local optimum，那么：
-$$\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{20}$$
+$$\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{24}$$
 
 #### Policy Gradient with Approximation Theorem
 如果$f_w$满足式子(3)，并且在某种意义上与policy parameterization兼容：
-$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\tag{21}$$
+$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\tag{25}$$
 那么有：
-$$\frac{}{} = \sum_sd^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{22}$$
+$$\frac{}{} = \sum_sd^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{26}$$
 
 证明：
 将(4)代入(3)得到：
 \begin{align\*}
 &\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w} = 0\\\\
 &\sum_sd^{\pi} (s)\sum_a\pi(s,a)\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}= 0\\\\
-&\sum_sd^{\pi} (s)\sum_a\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}= 0 \tag{6}\\\\
+&\sum_sd^{\pi} (s)\sum_a\left[Q{\pi}(s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}= 0 \tag{27}\\\\
 \end{align\*}
 从这个式子中，我们能够从式子(6)中得到
 
@@ -207,11 +220,11 @@ $$\frac{}{} = \sum_sd^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\
 定义average reward $\eta(\pi)$为：
 $$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a)$$
 这篇文章中定义了新的state action value和value function：
-$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[\right] \tag{23}$$
+$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[\right] \tag{28}$$
 Average reward的精确梯度是：
-$$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} (s,a) \tag{24}$$
+$$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} (s,a) \tag{29}$$
 在这使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。$\eta(\theta)$下降最快的方向定义为在$d\theta$的平方长度$\vert d\theta\vert^2 $ 等于一个常数时，使得$\eta(\theta+d\theta)$最小的$d\theta$的方向。平方长度的定义和一个正定矩阵$G(\theta)$有关，即：
-$$\vert\theta\vert^2 = \sum_{ij} G_{ij} (\theta)d\theta_i d\theta_j = d\theta^T G(\theta) d\theta  \tag{12}$$
+$$\vert\theta\vert^2 = \sum_{ij} G_{ij} (\theta)d\theta_i d\theta_j = d\theta^T G(\theta) d\theta  \tag{30}$$
 可以证明，最块的梯度下降方向是$G^{-1} \nabla \eta(\theta)$。标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。
 分布$\pi(a;s,\theta)$的fisher information是：
 $$\mathbf{F}_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[ \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right] \tag{13}$$
