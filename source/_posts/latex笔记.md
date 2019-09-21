@@ -29,7 +29,7 @@ $\simeq$    \simeq
 $\approx$   \approx
 $\cong$ \cong
 $\equiv$    \equiv
-$\propto$ \propto
+正比于 $\propto$ \propto
 ### 各种乘法
 $\times$ \times
 $\*$ *

@@ -42,7 +42,7 @@ $$I(\theta) = \mathbb{E} \left[ \left(\frac{\partial}{\partial \theta} \log f(\m
 
 随机变量的Fisher information总是大于等于$0$的，Fisher information不是某一个observation的函数。
 
-### 第二种意义：参数真实值处二阶导数期望的相反数
+### 第二种意义：参数真实值处似然对数二阶导期望的相反数
 $$I(\theta) =  - \mathbb{E}\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$
 Fisher informaction可以看成似然对数对参数估计的能力，在最大似然的估计值附近，fisher信息大代表着图像陡而尖，参数估计能力好；fisher信息小代表着图像宽而平，参数估计能力差。
 
