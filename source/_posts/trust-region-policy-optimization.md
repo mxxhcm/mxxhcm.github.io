@@ -191,16 +191,16 @@ $$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',
 从这两种情况的证明可以看出来，和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即策略改变对于states distributions没有影响，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns，即$G_t = \sum_{k=1}^{\infty} R_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} R_{t+k}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。
 
 ### Policy Gradient with Approximation(使用近似的策略梯度)
-因为$Q^{\pi} $是不知道的，我们希望用近似的函数代替式子(20)中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:
+因为$Q^{\pi} $是不知道的，我们希望用函数近似式子(20)中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:
 $$\Delta w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]^2 \propto \left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w} \tag{30}$$
 $\hat{Q}^{\pi} (s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，当这样一个过程收敛到local optimum，$Q^{\pi} (s,a)$和$f_w(s,a)$的均方误差最小时：
 $$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a|s;\theta)(Q^{\pi} (s,a))^2 - f^{\pi} (s,a;\omega) \tag{31}$$
 即导数等于$0$:
-$$\sum_s \rho^{\pi} (s)\sum_a\pi(a|s;\theta)\left[Q^{\pi} (s,a) -f_w(s,a;w)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{32}$$
+$$\sum_s \rho^{\pi} (s)\sum_a\pi(a|s;\theta)\left[Q^{\pi} (s,a) -f_w (s,a;w)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{32}$$
 
 #### 定理2：Policy Gradient with Approximation Theorem
 如果$f_w$满足式子$32$，并且：
-$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\tag{33}$$
+$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)} = \frac{\partial \log \pi(s,a)}{\partial \mathbf{\theta}}\tag{33}$$
 那么有：
 $$\frac{\partial \rho}{\partial \theta} = \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{34}$$
 
@@ -227,7 +227,7 @@ $$\pi(a|s) = \frac{e\^{\theta^T \phi_{sa} } }{\sum_b e\^{\theta^T \phi_{sb} }} ,
 $$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(a|s)}{\partial \theta}\frac{1}{\pi(a|s)} = \phi_{sa} - \sum_b\pi(b|s)\phi_{sb}\tag{38}$$
 所以：
 $$f_w(s,a) = w^T \left[\phi_{sa} - \sum_b\pi(b|s)\phi_{sb} \right]\tag{39}$$
-也就是说，$f_w$和policy是相同feature的线性组合，只不过每一个state的$f_w$的均值为$0$，$\sum_a\pi(a|s)f_w(s,a) = 0,\forall s\in S$。所以，我们可以认为$f_w$是advantage function $A^{\pi} (s,a) = Q^{\pi} (s,a)- V^{\pi} (s)$而不是$Q^{\pi} $的一个近似。式子$(28)$中$f_w$其实是一个相对值而不是一个绝对值。事实上，他们都可以推广变成一个function加上一个value function。比如式子$(29)$可以变成$\frac{\partial\eta}{\partial \theta} = \sum_s\rho^{\pi}(s) \sum_a \frac{\partial \pi(a|s)}{\partial \theta}\left[f_w(s,a) + v(s)\right]$，其中$v$是一个function，$v$的选择不影响理论结果，但是会影响近似梯度的方差。
+也就是说，$f_w$和policy $\pi$都是feature的线性组合，只不过每一个state处$f_w$的均值都为$0$，$\sum_a\pi(a|s)f_w(s,a) = 0,\forall s\in S$。所以，其实我们可以认为$f_w$是对advantage function $A^{\pi} (s,a) = Q^{\pi} (s,a)- V^{\pi} (s)$而不是$Q^{\pi} $的一个近似。式子$(28)$中$f_w$其实是一个相对值而不是一个绝对值。事实上，他们都可对以推广变成一个function加上一个value function。比如式子$(29)$可以变成$\frac{\partial\eta}{\partial \theta} = \sum_s\rho^{\pi}(s) \sum_a \frac{\partial \pi(a|s)}{\partial \theta}\left[f_w(s,a) + v(s)\right]$，其中$v$是一个function，$v$的选择不影响理论结果，但是会影响近似梯度的方差。
 
 ### Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)
 
@@ -280,7 +280,7 @@ $$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\
 $$\hat{\omega} = \hat{\nabla} \eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) \tag{52}$$
 证明：
 因为$\hat{\omega}$使得$\epsilon$最小，所以当$\omega = \hat{\omega}$时，$\frac{\partial \epsilon}{\partial \omega} = 0$，有：
-$$\sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) (\psi^{\pi} (s,a)^T \hat{\omega} - Q^{\pi} (s,a)) = 0 \tag{53}$$
+$$\frac{\partial \epsilon}{\partial \omega} = \sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) (\psi^{\pi} (s,a)^T \hat{\omega} - Q^{\pi} (s,a)) = 0 \tag{53}$$
 移项合并同类项得：
 $$\sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) \psi^{\pi} (s,a)^T \hat{\omega} = \sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a)  Q^{\pi} (s,a) \tag{54}$$
 根据定义$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)$，而根据log-derativate trick：$\pi(a|s) \nabla \log \pi(a|s;\theta) = \nabla \pi(a|s;\theta)$，所以式子$(54)$右面就是$\nabla \eta$，而式子左面$\sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) \psi^{\pi} (s,a)^T = \mathbf{F}(\theta)$。最后得到：
@@ -294,17 +294,15 @@ $$ \mathbf{F}(\theta)\hat{\omega} = \nabla\eta(\theta)$$
 ##### 定理2
 假设$\pi(s;a,\theta) \propto e^{\mathbf{\theta}\^T \phi_{sa}} $，$\hat{\nabla}\eta(\theta)$是非零的，并且$\hat{\omega}$是最小化均方误差的$\omega$。令
 $$\pi_{\infty}(a;s) = lim_{\alpha\rightarrow \infty}\pi(a;s,\theta + \alpha\hat{\nabla}\eta(\theta)) \tag{53}$$
-当且仅当$a\in argmax_{a'} f^{\pi} (s,a';\hat{\omega})$时，有$\pi_{\infty}(a;s)\neq 0$。
+当且仅当$a\in \arg\max_{a'} f^{\pi} (s,a';\hat{\omega})$时，有$\pi_{\infty}(a;s)\neq 0$。
 证明：
-根据定义：$f^{\pi} (s,a,\omega) = \omega^T \psi^{\pi} (s,a)$，由定理$2$可知：$\hat{\omega} = \mathbf{F}^{-1} \nabla \eta(\theta) = \hat{\nabla} \eta(\tehta)$，所以$f^{\pi}(s,a,\hat{\omega}) = \hat{\nabla}\eta(\theta)^T \psi^{\pi} (s,a)$。
-而根据定义$\psi^(s,a) = \nabla \log \pi(a|s;\theta) = \phi_{sa} - \mathbb{E}\_{\pi(a'|s;\theta)(\phi_{sa'})$。因为$\mathbb{E}\_{\pi(a'|s;\theta)(\phi_{sa'})$不是$a$的函数，所以就有：
+根据定义：$f^{\pi} (s,a,\omega) = \omega^T \psi^{\pi} (s,a)$，由定理$1$可知：$\hat{\omega} = \mathbf{F}^{-1} \nabla \eta(\theta) = \hat{\nabla} \eta(\theta)$，所以$f^{\pi}(s,a,\hat{\omega}) = \hat{\nabla}\eta(\theta)^T \psi^{\pi} (s,a)$。而根据定义$\psi^{\pi} (s,a) = \nabla \log \pi(a|s;\theta) = \phi_{sa} - \mathbb{E}\_{\pi(a'|s;\theta)}(\phi_{sa'})$，$\mathbb{E}\_{\pi(a'|s;\theta)}(\phi_{sa'})$不是$a$的函数，所以就有：
 $$\arg\max_{a'}f^{\pi} (s,a';\hat{\omega}) = \arg\max_{a'} \hat{\nabla}\eta(\theta)^T \phi_{sa}\tag{54}$$
-和$\mathbb{E}\_{\pi(a'|s;\theta)(\phi_{sa'})$无关。。
-经过一个gradient step，
+和$\mathbb{E}\_{\pi(a'|s;\theta)}(\phi_{sa'})$无关。。经过一个gradient step：
 $$\pi(a|s;\theta+\alpha \hat{\nabla}\eta(\theta)) \propto e^{(\theta+\alpha \hat{\nabla}\eta(\theta))^T \phi_{sa}} \tag{55}$$
-因为$\hat{\nabla}\eta(\theta) \neq = 0$，很明显，当$\alpha\rightarrow \infty$时，$\hat{\nabla}\eta(\theta)^T\phi_{sa}$会dominate，所以只有当且仅当$a\in argmax_{a'} f^{\pi} (s,a';\hat{\omega})$时，有$\pi_{\infty}(a;s)\neq 0$。
+因为$\hat{\nabla}\eta(\theta) \neq 0$，很明显，当$\alpha\rightarrow \infty$时，$\hat{\nabla}\eta(\theta)^T\phi_{sa}$会dominate，所以只有当且仅当$a\in \arg\max_{a'} f^{\pi} (s,a';\hat{\omega})$时，有$\pi_{\infty}(a;s)\neq 0$。
 可以看出来natural gradient趋向于选择最好的action，而普通的gradient方法只能选出来一个更好的action。
-使用指数函数的目的只是为了展示在极端情况下－－有无限大的learning rate情况下的结果，接下来是普通的参数化策略，natural gradient可以根据$Q^{\pi} (s,a)$的局部近似估计$f^{\pi}(s,a;\hat{\omega})$，近似找到局部best action。
+使用指数函数的目的只是为了展示在极端情况下－－有无限大的learning rate情况下的结果，接下来给出的是普通的参数化策略的结果，natural gradient可以根据$Q^{\pi} (s,a)$的局部近似估计$f^{\pi}(s,a;\hat{\omega})$，近似找到局部best action。
 
 ##### 定理3
 加入$\hat{\omega}$最小化估计误差，使用$\theta' = \theta + \alpha \hat{\nabla}\eta(\theta)$更新参数，可以得到：
@@ -319,7 +317,7 @@ $$\pi(a;s,\theta') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)\
 &= \pi(a|s;\theta)(1 +  \psi(s, a)^T \alpha\hat{\omega}) + O(\alpha^2 ) \\\\
 &= \pi(a|s;\theta)(1 +  \alpha f^{\pi} (s, a, \hat{\omega})) + O(\alpha^2 ) \\\\
 \end{align\*}
-这个相当于是根据$f^{\pi}(s,a) $选择每个state的action。当然，并不是选择greedy action就一定会改善policy，还有许多例外。
+这个相当于是根据$f^{\pi}(s,a) $选择每个state的action。当然，并不是选择greedy action就一定会改善policy，还有许多例外，这里就不细说了。
 
 ### Metrics和Curvatures
 在不同的参数空间中，[fisher information](https://mxxhcm.github.io/2019/09/16/fisher-information/)都可以收敛到[海塞矩阵](https://mxxhcm.github.io/2019/09/10/Jacobian-matrix-and-Hessian-matrix/)，因此，它是[aymptotically efficient](https://mxxhcm.github.io/2019/09/18/asymptotically-efficient-%E6%B8%90%E8%BF%9B%E6%9C%89%E6%95%88%E6%80%A7/)，即到达了cramer-rao bound。
