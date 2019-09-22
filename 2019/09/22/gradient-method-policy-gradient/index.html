@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Policy Gradient Abstract 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和ac">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gradient method policy gradient">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/09/22/gradient-method-policy-gradient/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="Policy Gradient Abstract 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和ac">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-09-22T11:39:35.696Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="gradient method policy gradient">
+<meta name="twitter:description" content="Policy Gradient Abstract 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和ac">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/09/22/gradient-method-policy-gradient/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>gradient method policy gradient | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/22/gradient-method-policy-gradient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">gradient method policy gradient
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-22 19:37:52 / 修改时间：19:39:35" itemprop="dateCreated datePublished" datetime="2019-09-22T19:37:52+08:00">2019-09-22</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/09/22/gradient-method-policy-gradient/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/09/22/gradient-method-policy-gradient/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="policy-gradient">Policy Gradient</h2>
+<h3 id="abstract">Abstract</h3>
+<p>强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。<br>
+本文的贡献主要有两个，第一个是给出估计的action-value function或者advantage函数，梯度可以表示成experience的估计，第二个是证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。</p>
+<h3 id="introduction">Introduction</h3>
+<h4 id="值函数方法的缺点">值函数方法的缺点</h4>
+<p>基于值函数的方法，在估计出值函数之后，每次通过greedy算法选择action。这种方法有两个缺点。</p>
+<ul>
+<li>基于值函数的方法会找到一个deterministic的策略，但是很多时候optimal policy可能是stochastic的。</li>
+<li>某个action的估计值函数稍微改变一点就可能导致这个动作被选中或者不被选中，这种不连续是保证值函数收敛的一大障碍。</li>
+</ul>
+<h4 id="本文的工作">本文的工作</h4>
+<h5 id="用函数表示stochastic-policy">用函数表示stochastic policy</h5>
+<p>本文提出的policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：<br>
+$$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{14}$$<br>
+其中$\alpha$是正定的step size，按照式子$13$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法不同，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。</p>
+<h5 id="使用值函数辅助学习policy">使用值函数辅助学习policy</h5>
+<p>本文证明了通过使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到$13$的一个无偏估计。REINFORCE方法也找到了$13$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。</p>
+<h5 id="证明policy-iteration收敛性">证明policy iteration收敛性</h5>
+<p>本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。</p>
+<h3 id="policy-gradient-therorem">Policy Gradient Therorem</h3>
+<p>智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。有两种方式定义智能体的objective，一种是average reward，一种是从指定状态开始的长期奖励。</p>
+<h4 id="average-reward-平均奖励">Average Reward(平均奖励)</h4>
+<p>平均奖励是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：<br>
+$$\eta(\pi) = lim_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R_1+R_2+\cdots+R_t|\pi\right] = \int_S \rho^{\pi} (s) \int_A \pi(s,a) R(s,a)dads \tag{15}$$<br>
+其中$\rho^{\pi} (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是策略$\pi$下的station distribution。第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。<br>
+第二个等号，$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率。第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是$s$处各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。其实，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。<br>
+给出一种新的state-action value的定义方式：<br>
+$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{16}$$<br>
+value function定义还和原来一样，但是因为$Q$计算方法变了，所以$V$也跟着变了：<br>
+$$V^{\pi} (s) = \mathbb{E}_{\pi(a’;s)}\left[Q^{\pi}(s,a’)\right] \tag{17}$$</p>
+<h4 id="long-term-accumated-reward-from-designated-state-从指定状态开始的累计奖励">Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)</h4>
+<p>第二种情况是指定初始状态$s_0$，我们计算从这个状态开始得到的accumulated reward：<br>
+$$\rho(\pi) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{18}$$<br>
+相应的state-action如下：<br>
+$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} R_{t+k}|s_t=s,a_t=a,\pi\right] \tag{19}$$<br>
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。我们定义$\rho^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：<br>
+$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right] = \rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{20}$$<br>
+$\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。</p>
+<h4 id="policy-gradient-theorem">Policy Gradient Theorem</h4>
+<p>对于任何MDP，不论是average reward还是accumulated reward的形式，都有：<br>
+$$\frac{\partial \eta}{\partial \mathbf{\theta}} = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{21}$$<br>
+证明：<br>
+Average Reward:<br>
+\begin{align*}<br>
+\nabla V_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\<br>
+&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \\<br>
+&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[R(s,a)-\eta(\pi)+\sum_{s’,r}p(s’,r|s,a)V_{\pi}(s’)\right]\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \eta(\pi)+ \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\right]\right], \nabla R(s,a) = 0\\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) - \pi(a|s)\nabla \eta(\pi)+ \pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\right]\\<br>
+&amp;= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) - \sum_a \pi(a|s)\nabla \eta(\pi) + \sum_a \pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’) \\<br>
+&amp;= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) -\nabla \eta(\pi)+ \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a)\nabla V_{\pi}(s’), \sum_s\pi(s,a)=1\\<br>
+\end{align*}<br>
+移项合并同类项得：<br>
+$$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’) - \nabla V_{\pi}(s) \tag{22}$$<br>
+同时在上式两边对$\rho^{\pi} $进行求和，得到：<br>
+\begin{align*}<br>
+\sum_s \rho^{\pi} (s)\nabla \eta(\pi) &amp;= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \\<br>
+&amp;\qquad\qquad\qquad + \sum_s \rho^{\pi}(s) \sum_a\pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\\<br>
+&amp;\qquad\qquad\qquad - \sum_s \rho^{\pi} (s)\nabla V_{\pi}(s) \tag{23}\\<br>
+&amp;= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) + \sum_s \rho^{\pi}(s’) \nabla V_{\pi}(s’) - \sum_s \rho^{\pi} (s)\nabla V_{\pi}(s) \tag{24}\\<br>
+&amp;= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \tag{25}\\<br>
+&amp;= \nabla \eta(\pi) \tag{26}\\<br>
+\end{align*}<br>
+式子$22$到式子$23$其实就是$\sum_s \rho^{\pi}(s) \sum_a\pi(a|s) \sum_{s’,r}p(s’,r|s,a) = \sum_{s’}\rho^{\pi} (s’)$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。<br>
+\begin{align*}<br>
+\end{align*}</p>
+<p>指定初始状态$s_0$:<br>
+\begin{align*}<br>
+\nabla V_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\<br>
+&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)(R+\gamma V_{\pi}(s’))\right]\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)R +\sum_{s’,r}p(s’,r|s,a)\gamma V_{\pi}(s’)\right]\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[0 +\sum_{s’,r}p(s’,r|s,a)\gamma\nabla V_{\pi}(s’)\right]\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’,r}p(s’,r|s,a)\gamma \nabla V_{\pi}(s’))\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\nabla V_{\pi}(s’) \right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\left( \sum_{a’} \nabla\pi(a’|s’)Q_{\pi}(s’,a’) + \pi(a’|s’)\sum_{s’’}\gamma p(s’’|s’,a’)\nabla V_{\pi}(s’’))\right) \right] \tag{27}\\<br>
+&amp;= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) \tag{28}\\<br>
+&amp;= \sum_{x\in S}\rho^{\pi} (x)\sum_a\nabla \pi(a|x) Q_{\pi}(x,a) \tag{29}\\<br>
+\end{align*}<br>
+式子$(28)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(27)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到，概率为$0$就是了。对于$V_{\pi}(s_0)$，有：<br>
+\begin{align*}<br>
+\nabla J(\mathbf{\theta}) &amp;= \nabla_{\theta}V_{\pi}(s_0)\\<br>
+&amp;= \sum_{s\in S}( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) ) \sum_a\nabla{\pi}(a|s)Q_{\pi}(s,a)\\<br>
+&amp;=\sum_{s\in S}\rho(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\\<br>
+&amp;=\sum_{s’\in S}\rho(s’)\sum_s\frac{\eta(s)}{\sum_{s’}\eta(s’)}\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\\<br>
+&amp;=\sum_{s’\in S}\rho(s’)\sum_s\mu(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\\<br>
+&amp;\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)Q_{\pi}(s,a) \tag{30}\\<br>
+\end{align*}</p>
+<p>从这两种情况的证明可以看出来，和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即策略改变对于states distributions没有影响，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns，即$G_t = \sum_{k=1}^{\infty} R_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} R_{t+k}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。</p>
+<h3 id="policy-gradient-with-approximation-使用近似的策略梯度">Policy Gradient with Approximation(使用近似的策略梯度)</h3>
+<p>因为$Q^{\pi} $是不知道的，我们希望用函数近似式子(20)中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:<br>
+$$\Delta w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]^2 \propto \left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w} \tag{31}$$<br>
+$\hat{Q}^{\pi} (s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，当这样一个过程收敛到local optimum，$Q^{\pi} (s,a)$和$f_w(s,a)$的均方误差最小时：<br>
+$$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a|s;\theta)(Q^{\pi} (s,a))^2 - f^{\pi} (s,a;\omega) \tag{32}$$<br>
+即导数等于$0$:<br>
+$$\sum_s \rho^{\pi} (s)\sum_a\pi(a|s;\theta)\left[Q^{\pi} (s,a) -f_w (s,a;w)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{33}$$</p>
+<h4 id="定理2：policy-gradient-with-approximation-theorem">定理2：Policy Gradient with Approximation Theorem</h4>
+<p>如果$f_w$的参数$w$满足式子$32$，并且：<br>
+$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)} = \frac{\partial \log \pi(s,a)}{\partial \mathbf{\theta}}\tag{34}$$<br>
+那么使用$f_w(s,a)$计算的gradient和$Q^{\pi} (s,a)$计算的gradient是一样的：<br>
+$$\frac{\partial \rho}{\partial \theta} = \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{35}$$</p>
+<p>证明：<br>
+将式子$33$代入$32$得到：<br>
+\begin{align*}<br>
+&amp;\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}\\<br>
+= &amp;\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\\<br>
+= &amp;\sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right] \tag{36}\\<br>
+= &amp; 0 \\<br>
+\end{align*}<br>
+将式子$35$带入式子$21$：<br>
+\begin{align*}<br>
+\frac{\partial \eta}{\partial \mathbf{\theta}} &amp; = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)\\<br>
+&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) - \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right]\\<br>
+&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} \left[Q^{\pi} (s,a) - Q^{\pi} (s,a) +f_w(s,a)\right]\\<br>
+&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) \tag{37}\\<br>
+\end{align*}<br>
+得证$\sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) $。</p>
+<h3 id="application-to-deriving-algorithms-and-advantages">Application to Deriving Algorithms and Advantages</h3>
+<p>给定一个参数化的policy，可以利用定理2推导出参数化value function的形式。比如，考虑在features上进行线性组合的Gibbs分布构成的policy：<br>
+$$\pi(a|s) = \frac{e^{\theta^T \phi_{sa} } }{\sum_b e^{\theta^T \phi_{sb} }} , \forall s \in S, \forall a \in A \tag{38}$$<br>
+其中$\phi_{s,a}$是state-action pair $s,a$的特征向量。满足式子$(28)$的公式如下：<br>
+$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(a|s)}{\partial \theta}\frac{1}{\pi(a|s)} = \phi_{sa} - \sum_b\pi(b|s)\phi_{sb}\tag{39}$$<br>
+所以：<br>
+$$f_w(s,a) = w^T \left[\phi_{sa} - \sum_b\pi(b|s)\phi_{sb} \right]\tag{40}$$<br>
+也就是说，$f_w$和policy $\pi$都是feature的线性组合，只不过每一个state处$f_w$的均值都为$0$，$\sum_a\pi(a|s)f_w(s,a) = 0,\forall s\in S$。所以，其实我们可以认为$f_w$是对advantage function $A^{\pi} (s,a) = Q^{\pi} (s,a)- V^{\pi} (s)$而不是$Q^{\pi} (s,a)$的一个近似。式子$(28)$中$f_w$其实是一个相对值而不是一个绝对值。事实上，他们都可对以推广变成一个function加上一个value function。比如式子$(29)$可以变成$\frac{\partial\eta}{\partial \theta} = \sum_s\rho^{\pi}(s) \sum_a \frac{\partial \pi(a|s)}{\partial \theta}\left[f_w(s,a) + v(s)\right]$，其中$v$是一个function，$v$的选择不影响理论结果，但是会影响近似梯度的方差。</p>
+<h3 id="convergence-of-policy-iteration-with-function-approximation-使用函数近似的策略迭代的收敛性">Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</h3>
+<h4 id="定理3：policy-iteration-with-function-approximation">定理3：Policy Iteration with Function Approximation</h4>
+<p>用$\pi$和$f_w$表示policy和value function的可导函数，并且满足式子$(28)$。$\max_{\theta,s,a,i,j} \vert\frac{\partial^2 \pi(a|s)}{\partial\theta_i \partial\theta_j} \vert\lt B\lt \infty$，假设$\left[\alpha_k\right]_{k=0}^{\infty}$是步长sequence，$\lim_{k\rightarrow \infty}\alpha_k = 0$，$\sum_k \alpha_k = \infty$。对于任何有界rewards的MDP来说，任意$\theta_0$，$\pi_k=\pi(\cdot, \theta_k)$定义的$\left[\eta(\pi_k)\right]_{k=0}^{\infty}$，并且$w_k = w$满足：<br>
+$$\sum_s\rho^{\pi_k} (s) \sum_a\pi_k(a|s)\left[Q^{\pi_k} (s,a)-f_w(s,a) \right]\frac{\partial f_w(s,a)}{\partial w}=0 \tag{41}$$<br>
+$$\theta_{k+1} = \theta_k + \alpha_k \sum_s\rho^{\pi_k}(s) \sum_a\frac{\partial\pi_k(s,a)}{\partial \theta}f_{w_k}(s,a) \tag{42}$$<br>
+一定收敛：$\lim_{k\rightarrow \infty}\frac{\partial \rho(\pi_k)}{\partial \theta} = 0$。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/18/asymptotically-efficient-渐进有效性/" rel="next" title="Asymptotically Efficient 渐进有效性">
+                <i class="fa fa-chevron-left"></i> Asymptotically Efficient 渐进有效性
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/22/gradient-method-natrual-policy-gradient/" rel="prev" title="gradient method natrual policy gradient">
+                gradient method natrual policy gradient <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">183</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">227</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#policy-gradient"><span class="nav-number">1.</span> <span class="nav-text">Policy Gradient</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#abstract"><span class="nav-number">1.1.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#introduction"><span class="nav-number">1.2.</span> <span class="nav-text">Introduction</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#值函数方法的缺点"><span class="nav-number">1.2.1.</span> <span class="nav-text">值函数方法的缺点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#本文的工作"><span class="nav-number">1.2.2.</span> <span class="nav-text">本文的工作</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#用函数表示stochastic-policy"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">用函数表示stochastic policy</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#使用值函数辅助学习policy"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">使用值函数辅助学习policy</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#证明policy-iteration收敛性"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">证明policy iteration收敛性</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#policy-gradient-therorem"><span class="nav-number">1.3.</span> <span class="nav-text">Policy Gradient Therorem</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#average-reward-平均奖励"><span class="nav-number">1.3.1.</span> <span class="nav-text">Average Reward(平均奖励)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#long-term-accumated-reward-from-designated-state-从指定状态开始的累计奖励"><span class="nav-number">1.3.2.</span> <span class="nav-text">Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#policy-gradient-theorem"><span class="nav-number">1.3.3.</span> <span class="nav-text">Policy Gradient Theorem</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#policy-gradient-with-approximation-使用近似的策略梯度"><span class="nav-number">1.4.</span> <span class="nav-text">Policy Gradient with Approximation(使用近似的策略梯度)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定理2：policy-gradient-with-approximation-theorem"><span class="nav-number">1.4.1.</span> <span class="nav-text">定理2：Policy Gradient with Approximation Theorem</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#application-to-deriving-algorithms-and-advantages"><span class="nav-number">1.5.</span> <span class="nav-text">Application to Deriving Algorithms and Advantages</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#convergence-of-policy-iteration-with-function-approximation-使用函数近似的策略迭代的收敛性"><span class="nav-number">1.6.</span> <span class="nav-text">Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定理3：policy-iteration-with-function-approximation"><span class="nav-number">1.6.1.</span> <span class="nav-text">定理3：Policy Iteration with Function Approximation</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
