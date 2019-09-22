@@ -5,7 +5,7 @@ tags:
  - Deep Learning
  - 深度学习
  - 线性代数
-categories: 深度学习
+categories: 机器学习
 ---
 
 ## 线性代数
