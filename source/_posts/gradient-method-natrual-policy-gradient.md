@@ -52,13 +52,13 @@ $$\text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{16}$$
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：
 
 begin{\align\*}
-L_{\theta'}(\theta)& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots \\\\
-& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T d + \cdots  \tag{17}
+L_{\theta'}(\theta)& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots \\\\
+& = L\_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \cdots  \tag{17}
 \end{align\*}
 使用拉格朗日乘子法将约束条件带入：
 \begin{align\*}
 d^{\*} & = {\arg \min}\_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)\\\\
-& = {\arg \min}\_d L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{18}\\\\
+& = {\arg \min}\_d L\_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{18}\\\\
 \end{align\*}
 对$d$求导，令其等于$0$，得：
 \begin{align\*}
