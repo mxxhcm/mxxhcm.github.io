@@ -50,15 +50,26 @@ $$d^{*} = \arg \min L(\theta +d) \tag{15}$$
 约束条件
 $$\text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{16}$$
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：
-$$L_{\theta'}(\theta) = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots  \tag{17}$$
+
+begin{\align\*}
+L_{\theta'}(\theta) = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots 
+= L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T d + \cdots  \tag{17}
+\end{align\*}
 使用拉格朗日乘子法将约束条件带入：
 \begin{align\*}
-d^{\*} & = {\arg \min}\_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)\tag{18}\\\\
-& = {\arg \min}\_d L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\text{KL}\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{19}\\\\
+d^{\*} & = {\arg \min}\_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)
+& = {\arg \min}\_d L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{19}\\\\
 \end{align\*}
 对$d$求导，令其等于$0$，得：
-$$0 + \tag{20}$$
-
+\begin{align\*}
+&0 + \nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d + 0\\\\
+=& \nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d \tag{}\\\\
+=& 0\\\\
+\end{align\*}
+求解得到：
+$$d= - \frac{1}{\lambda}\text{F}^{-1} \nabla_{\theta'} L(\theta') \tag{}$$
+所以natural gradient定义为：
+$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}L(\theta)$$
 
 标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。策略$\pi(a;s,\theta)$的fisher information是：
 $$\mathbf{F}_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[ \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right] \tag{48}$$
