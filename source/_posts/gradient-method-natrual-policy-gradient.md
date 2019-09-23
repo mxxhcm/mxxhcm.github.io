@@ -37,6 +37,10 @@ $$\text{KL}\left[p(x|\theta)||p(x|\theta+d) \approx \frac{1}{2}d^T\text{F}d$$
 \begin{align\*}
 \text{KL}\left[p\_{\theta}||p\_{\theta+d}\right] &\approx \text{KL}\left[p\_{\theta}||p\_{\theta}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T (\theta+d -\theta) + \frac{1}{2} (\theta +d -\theta)^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})(\theta+d-\theta)\\\\
 & = \text{KL}\left[p\_{\theta}||p\_{\theta}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
+& = \text{KL}\left[p\_{\theta}||p\_{\theta}\right] + (\int_x p(x|\theta')\nabla \log (p|\theta)|\_{\theta=\theta'} dx)^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
+& = \text{KL}\left[p\_{\theta}||p\_{\theta}\right] + (\mathbb{E}\_{p(x|\theta')} \nabla\log p(x|\theta) dx|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
+& = 0 + 0 + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
+& = \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
 \end{align\*}
 
 标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。策略$\pi(a;s,\theta)$的fisher information是：
