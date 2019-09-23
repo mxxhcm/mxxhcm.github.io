@@ -35,7 +35,7 @@ $$\text{F}\_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[\frac{\partial \log 
 显然$\text{F}\_s$是正定矩阵，可以证明，FIM是概率分布参数空间上的一个invariant metric。不论两个点的坐标怎么选择，它都能计算处相同的distance，所以说它是invariant。
 当然，$\text{F}\_s$只用了单个的$s$，而在计算average reward时，使用的是一个分布，定义metric为：
 $$\text{F}(\theta) = \mathbb{E}\_{\rho^{\pi} (s)} \left[\mathbb{F}\_s (\theta)\right] \tag{49}$$
-每一个$s$对应的单个$\text{F}\_s$都和MDP的transition model没有关系，期望操作引入了每一个transition model的参数。直观上来说，$\text{F}_s$测量的是在$s$上的probability manifold的距离，$\text{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：
+每一个$s$对应的单个$\text{F}\_s$都和MDP的transition model没有关系，期望操作引入了每一个transition model的参数。直观上来说，$\text{F}\_s$测量的是在$s$上的probability manifold的距离，$\text{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：
 $$\hat{\nabla}\eta(\theta) =\text{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{50}$$
 为什么natural gradient下降最快是这个方向，接下来我们进行证明。$\text{KL}$散度在$\theta=\theta'$附近$\theta' +d, d\rightarrow 0$处的二阶泰勒展开是：
 $$\text{KL}\left[p(x|\theta')||p(x|\theta'+d)\right] \approx \frac{1}{2}d^T \text{F}d \tag{6}$$
