@@ -26,9 +26,9 @@ $$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a) \tag{1}$$
 其中$R(s,a) = \mathbb{E}\left[R_{t+1}\right|s_t=s, a_t = a]$，state action value和value function定义如下：
 $$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{2}$$
 $$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{3}$$
-计算average reward的精确梯度是（可以看第二节policy gradient的推导）：
+计算average reward的精确梯度是（可以看[policy gradient]()的推导）：
 $$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} (s,a) \tag{4}$$
-在这使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。$\eta(\theta)$下降最快的方向定义为在$d\theta$的平方长度$\vert d\theta\vert^2 $ 等于一个常数时，使得$\eta(\theta+d\theta)$最小的$d\theta$的方向。平方长度的定义和一个正定矩阵$G(\theta)$有关，即：
+使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。$\eta(\theta)$下降最快的方向定义为在$d\theta$的平方长度$\vert d\theta\vert^2 $ 等于一个常数时，使得$\eta(\theta+d\theta)$最小的$d\theta$的方向。平方长度的定义和一个正定矩阵$G(\theta)$有关，即：
 $$\vert\theta\vert^2 = \sum_{ij} G_{ij} (\theta)d\theta_i d\theta_j = d\theta^T G(\theta) d\theta  \tag{5}$$
 可以证明，最块的梯度下降方向是$G^{-1} \nabla \eta(\theta)$。
 $\text{KL}$散度在$\theta=\theta'$附近$\theta' +d, d\rightarrow 0$处的二阶泰勒展开是：
@@ -52,7 +52,7 @@ $$\text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{16}$$
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：
 
 begin{\align\*}
-L_{\theta'}(\theta)& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots \\\\
+L_{\theta'}(\theta)& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots \\
 & = L\_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \cdots  \tag{17}
 \end{align\*}
 使用拉格朗日乘子法将约束条件带入：
