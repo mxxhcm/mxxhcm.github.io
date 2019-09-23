@@ -2,11 +2,9 @@
 title: trust region policy optimization
 date: 2019-09-08 14:24:37
 tags:
- - policy gradient
- - natural policy gradient
+ - gradient method
  - trust region policy optimization
  - trpo
- - ppo
  - 强化学习
  - reinforcement learning
 categories: 强化学习

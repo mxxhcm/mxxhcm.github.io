@@ -2,7 +2,11 @@
 title: gradient method natrual policy gradient
 date: 2019-09-22 19:38:03
 tags:
-categories:
+ - gradient method
+ - natural policy gradient
+ - 强化学习
+categories: 强化学习
+mathjax: true
 ---
 
 ## A Natural Policy Gradient

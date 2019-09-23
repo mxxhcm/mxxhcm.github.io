@@ -83,8 +83,34 @@ $$I(\theta) =  - \mathbb{E}\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(
 最后得到：$\mathbf{F} = - \mathop{\mathbb{E}}\_{p(x \vert \theta)} \left[ \mathbf{H}\_{\log p(x|\theta)}\right] $
 
 
+## Fisher information matrix和KL散度
+两个分布$p(x|\theta)$和$p(x|\theta')$在$\theta'=\theta$处，KL散度的海塞矩阵等于fisher information matrix。
+证明：
+$$\text{KL}\left[p(x|\theta)||p(x|\theta')\right] = \int_x p(x|\theta)\log p(x|\theta)dx - \int_x p(x|\theta)\log p(x|\theta')dx$$
+关于$\theta'$的一阶导为：
+\begin{align\*}
+\nabla_{\theta'} \text{KL}\left[p(x|\theta)||p(x|\theta')\right] & = \nabla_{\theta'}\int_x p(x|\theta)\log p(x|\theta)dx - \nabla_{\theta'}\int_x p(x|\theta)\log p(x|\theta')dx\\\\
+& = - \int_x p(x|\theta) \nabla_{\theta'} \log p(x|\theta')dx\\\\
+\end{align\*}
+关于$\theta'$的二阶导为：
+\begin{align\*}
+\nabla_{\theta'}^2 \text{KL}\left[p(x|\theta)||p(x|\theta')\right] &=- \int_x p(x|\theta) \nabla_{\theta'} \log p(x|\theta')dx \\\\
+&= - \int \nabla_{\theta'} p(x|\theta)\nabla_{\theta'} \log p(x|\theta') - \int p(x|\theta)\nabla_{\theta'}^2 \log p(x|\theta')  dx\\\\
+&= - \int p(x|\theta)\nabla_{\theta'}^2 \log p(x|\theta') dx\\\\
+\end{align\*}
+当$\theta' = \theta$时：
+\begin{align\*}
+\text{H}\_{KL\left[ p(x|\theta)||p(x|\theta')\right]} & = - \int p(x|\theta)\nabla_{\theta'}^2 \log p(x|\theta')|\_{\theta'=\theta} dx\\\\
+& = - \int p(x|\theta) H_{\log p(x|\theta)} dx\\\\
+& = - \mathbb{E}\_{p(x|\theta)}\left[H_{\log p(x|\theta)} \right]\\\\
+& = \text{F}\\\\
+\end{align\*}
+
+
 ## 参考文献
 1.https://en.wikipedia.org/wiki/Fisher_information
 2.https://math.stackexchange.com/a/265933
 3.https://www.zhihu.com/question/26561604/answer/33275982
 4.https://wiseodd.github.io/techblog/2018/03/11/fisher-information/
+5.https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/
+6.https://math.stackexchange.com/questions/2239040/show-that-fisher-information-matrix-is-the-second-order-gradient-of-kl-divergenc

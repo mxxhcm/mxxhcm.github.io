@@ -2,7 +2,12 @@
 title: gradient method policy gradient
 date: 2019-09-22 19:37:52
 tags:
-categories:
+ - gradient method
+ - policy gradient
+ - 强化学习
+categories: 强化学习
+mathjax: true
+
 ---
 
 ## Policy Gradient
