@@ -35,7 +35,8 @@ $\text{KL}$散度在$\theta=\theta'$附近$\theta' +d, d\rightarrow 0$处的二�
 $$\text{KL}\left[p(x|\theta')||p(x|\theta'+d)\right] \approx \frac{1}{2}d^T \text{F}d \tag{6}$$
 证明：
 \begin{align\*}
-\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] &\approx \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T (\theta'+d -\theta') + \frac{1}{2} (\theta' +d -\theta')^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})(\theta'+d-\theta')\tag{7}\\\\
+\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] &\approx \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T (\theta'+d -\theta') 
+&\qquad\qquad\qquad+ \frac{1}{2} (\theta' +d -\theta')^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})(\theta'+d-\theta')\tag{7}\\\\
 & = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\tag{8}\\\\
 & = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\int_x p(x|\theta')\nabla \log (p|\theta)|\_{\theta=\theta'} dx)^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\tag{9}\\\\
 & = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\mathbb{E}\_{p(x|\theta')} \nabla\log p(x|\theta) dx|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\tag{10}\\\\
@@ -45,11 +46,11 @@ $$\text{KL}\left[p(x|\theta')||p(x|\theta'+d)\right] \approx \frac{1}{2}d^T \tex
 & = \frac{1}{2} d^T \text{F} d\tag{14}\\\\
 \end{align\*}
 我们想要找到使得loss函数$L(\theta)$最小的$d$，我们想要直知道哪个方向的$\text{KL}$散度下降的最快，就是使用$\text{KL}$散度当做一个metric，而不是使用欧几里得metric。目标函数是：
-$$d^{\*} = \arg \min L(\theta +d) \tag{15}$$
+$$d^{*} = \arg \min L(\theta +d) \tag{15}$$
 约束条件
-$$\text{KL}\left[p\_{\theta}||p\_{\theta'}\right] = c \tag{16}$$
+$$\text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{16}$$
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：
-$$L_{\theta'}(\theta) = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right[^T (\theta'+d-\theta') + \cdots  \tag{17}$$
+$$L_{\theta'}(\theta) = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots  \tag{17}$$
 使用拉格朗日乘子法将约束条件带入：
 \begin{align\*}
 d^{\*} & = {\arg \min}\_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)\tag{18}\\\\
