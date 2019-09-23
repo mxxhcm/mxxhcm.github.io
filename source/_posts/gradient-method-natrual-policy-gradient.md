@@ -13,14 +13,14 @@ mathjax: true
 论文名称：A Natural Policy Gradient 
 论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
 
-### 摘要
+## 摘要
 作者基于参数空间的底层结构提出了natural gradient方法，找出下降最快方向。尽管gradient方法不能过大的改变参数，它还是能够朝着选择greedy optimal action而不是更好的action方向移动。基于兼容值函数的policy iteration，在每一个improvement step选择greedy optimal action。
 
-### 引言
+## 引言
 直接的policy gradient在解决大规模的MDPs时很有用，这种方法基于future reward的梯度在满足约束条件的一类polices中找一个$\pi$，但是这种方法是non covariant的，简单来说，就是左右两边的维度不一致。
 这篇文章基于policy的底层参数结构定义了一个metric，提出了一个covariant gradient方法，通过将它和policy iteration联系起来，可以证明natural gradient朝着选择greedy optimal action的方向移动。通过在简单和复杂的MDP中进行测试，结果表明这种方法中没有出现严重的plateau phenomenon。
 
-### A Natural Gradient
+## A Natural Gradient
 定义average reward $\eta(\pi)$为：
 $$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a) \tag{43}$$
 其中$R(s,a) = \mathbb{E}\left[R_{t+1}\right|s_t=s, a_t = a]$，state action value和value function定义如下：
@@ -38,16 +38,16 @@ $$\mathbf{F}(\theta) = \mathbb{E}\_{\rho^{\pi} (s)} \left[\mathbb{F}_s (\theta)\
 每一个$s$对应的单个$\mathbf{F}_s$都和MDP的transition model没有关系，期望操作引入了每一个transition model的参数。直观上来说，$\mathbf{F}_s$测量的是在$s$上的probability manifold的距离，$\mathbf{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：
 $$\hat{\nabla}\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{50}$$
 
-### The Natural Gradient 和 Policy Iteration
+## The Natural Gradient 和 Policy Iteration
 使用$\omega$参数化的值函数$f^{\pi} (s,a;\omega)$近似$Q^{\pi} (s,a)$。
-#### Natural Gradient with Approximation（使用近似的自然梯度）
+### Natural Gradient with Approximation（使用近似的自然梯度）
 定义：
 $$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta), \qquad f^{\pi} (s,a;\omega) = \omega^T \psi^{\pi} (s,a) \tag{51}$$
 其中$\left[\nabla \log \pi(a;s, \theta)\right]\_i = \frac{\partial \log \pi(a;s, \theta)}{\partial \theta_i}$。找到最小化均方根误差函数的$\omega$，记为$\hat{\omega}$：
 $$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\omega) - Q^{\pi} (s,a))^2 \tag{52}$$
 如果使用$f^{\pi} $代替$Q$计算出来的grdient还是exact的，就称$f$是兼容的。
 
-##### 定理1
+#### 定理1
 如果$\hat{\omega}$是使得均方误差$\epsilon(\omega,\pi_\theta)$最小的$\omega$，可以证明：
 $$\hat{\omega} = \hat{\nabla} \eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) =\mathbf{F}(\theta)^{-1} \nabla\eta(\theta) \tag{53}$$
 证明：
@@ -58,11 +58,11 @@ $$\sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) \psi^{\pi} (s,a)^T \
 根据定义$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)$，而根据log-derativate trick：$\pi(a|s) \nabla \log \pi(a|s;\theta) = \nabla \pi(a|s;\theta)$，所以式子$(54)$右面就是$\nabla \eta$，而式子左面$\sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) \psi^{\pi} (s,a)^T = \mathbf{F}(\theta)$。最后得到：
 $$ \mathbf{F}(\theta)\hat{\omega} = \nabla\eta(\theta)$$
 
-#### Greedy Policy Improvement
+### Greedy Policy Improvement
 在greedy policy improvement的每一步，在$s$处，选择$a\in \arg \max_{a'} f^{\pi}(s, a';\hat{\omega})$。这一节介绍natural gradient能够找到best action，而不仅仅是一个good action。
 首先考虑指数函数：$\pi(s;a,\theta) \propto e^{\mathbf{\theta}\^T \phi_{sa}}$，其中$\phi_{sa} \in \mathbb{R}^m $是特征向量。为什么使用指数函数，因为它是affine geometry。简单来说，就是$\pi(a;s,\theta)$的probability manifold可以被弯曲。接下来证明policy在natrual gradient方向上改进的一大步等价于进行一步greedy policy improvement的policy。
 
-##### 定理2
+#### 定理2
 假设$\pi(s;a,\theta) \propto e^{\mathbf{\theta}\^T \phi_{sa}} $，$\hat{\nabla}\eta(\theta)$是非零的，并且$\hat{\omega}$是最小化均方误差的$\omega$。令
 $$\pi_{\infty}(a;s) = lim_{\alpha\rightarrow \infty}\pi(a;s,\theta + \alpha\hat{\nabla}\eta(\theta)) \tag{56}$$
 当且仅当$a\in \arg\max_{a'} f^{\pi} (s,a';\hat{\omega})$时，有$\pi_{\infty}(a;s)\neq 0$。
@@ -75,7 +75,7 @@ $$\pi(a|s;\theta+\alpha \hat{\nabla}\eta(\theta)) \propto e^{(\theta+\alpha \hat
 可以看出来natural gradient趋向于选择最好的action，而普通的gradient方法只能选出来一个更好的action。
 使用指数函数的目的只是为了展示在极端情况下－－有无限大的learning rate情况下的结果，接下来给出的是普通的参数化策略的结果，natural gradient可以根据$Q^{\pi} (s,a)$的局部近似估计$f^{\pi}(s,a;\hat{\omega})$，近似找到局部best action。
 
-##### 定理3
+#### 定理3
 加入$\hat{\omega}$最小化估计误差，使用$\theta' = \theta + \alpha \hat{\nabla}\eta(\theta)$更新参数，可以得到：
 $$\pi(a;s,\theta') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)\tag{59}$$
 证明：
@@ -90,9 +90,13 @@ $$\pi(a;s,\theta') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)\
 \end{align\*}
 这个相当于是根据$f^{\pi}(s,a) $选择每个state的action。当然，并不是选择greedy action就一定会改善policy，还有许多例外，这里就不细说了。
 
-### Metrics和Curvatures
+## Metrics和Curvatures
 在不同的参数空间中，[fisher information](https://mxxhcm.github.io/2019/09/16/fisher-information/)都可以收敛到[海塞矩阵](https://mxxhcm.github.io/2019/09/10/Jacobian-matrix-and-Hessian-matrix/)，因此，它是[aymptotically efficient](https://mxxhcm.github.io/2019/09/18/asymptotically-efficient-%E6%B8%90%E8%BF%9B%E6%9C%89%E6%95%88%E6%80%A7/)，即到达了cramer-rao bound。
 $\mathbf{F}$是$\log \pi$对应的fisher information。Fisher information 和海塞矩阵有关系，但是都需要和$\pi$联系起来。是这里考虑$\eta(\theta)$的海塞矩阵，它和$\mathbf{F}$两个之间有一定联系，但是不一样。
 事实上，定义的新的$\mathbf{F}$并不会收敛到海塞矩阵。但是因为海塞矩阵一般不是正定的，所以在非局部最小处附近，它提供的curvature信息用处不大。在局部最小处使用conjugate methods会更好。
 
+## 参考文献
+1.
+2.https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/
+3.https://medium.com/@jonathan_hui/rl-trust-region-policy-optimization-trpo-part-2-f51e3b2e373a
 
