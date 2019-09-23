@@ -51,8 +51,8 @@ $$d^{*} = \arg \min L(\theta +d) \tag{15}$$
 $$\text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{16}$$
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：
 
-begin{\align\*}
-L_{\theta'}(\theta)& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots \\\\
+begin{align\*}
+L_{\theta'}(\theta)& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T (\theta' + d - \theta') + \cdots \\\\
 & = L\_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \cdots  \tag{17}
 \end{align\*}
 使用拉格朗日乘子法将约束条件带入：
