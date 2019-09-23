@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="A Natural Policy Gradient 论文名称：A Natural Policy Gradient 论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf 摘要 作者基于参数空间的底层结构提出了natural gradient方法，找出下降最快方向。尽管gradient方法不能过大的改变参数，它还是能够">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-23T03:08:36.627Z">
+<meta property="og:updated_time" content="2019-09-23T03:15:48.465Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="gradient method natrual policy gradient">
 <meta name="twitter:description" content="A Natural Policy Gradient 论文名称：A Natural Policy Gradient 论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf 摘要 作者基于参数空间的底层结构提出了natural gradient方法，找出下降最快方向。尽管gradient方法不能过大的改变参数，它还是能够">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-23 11:08:36" itemprop="dateModified" datetime="2019-09-23T11:08:36+08:00">2019-09-23</time>
+                <time title="修改时间：2019-09-23 11:15:48" itemprop="dateModified" datetime="2019-09-23T11:15:48+08:00">2019-09-23</time>
               
             
           </span>
@@ -486,15 +486,26 @@ $$\text{KL}\left[p(x|\theta’)||p(x|\theta’+d)\right] \approx \frac{1}{2}d^T 
 $$d^{*} = \arg \min L(\theta +d) \tag{15}$$<br>
 约束条件<br>
 $$\text{KL}\left[p_{\theta}||p_{\theta’}\right] = c \tag{16}$$<br>
-其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：<br>
-$$L_{\theta’}(\theta) = L_{\theta’}(\theta’) + \left[\nabla_{\theta}L_{\theta’}(\theta)|<em>{\theta=\theta’}\right]^T (\theta’+d-\theta’) + \cdots  \tag{17}$$<br>
+其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：</p>
+<p>begin{\align*}<br>
+L_{\theta’}(\theta) = L_{\theta’}(\theta’) + \left[\nabla_{\theta}L_{\theta’}(\theta)|<em>{\theta=\theta’}\right]^T (\theta’+d-\theta’) + \cdots<br>
+= L</em>{\theta’}(\theta’) + \left[\nabla_{\theta}L_{\theta’}(\theta)|<em>{\theta=\theta’}\right]^T d + \cdots  \tag{17}<br>
+\end{align*}<br>
 使用拉格朗日乘子法将约束条件带入：<br>
 \begin{align*}<br>
-d^{*} &amp; = {\arg \min}_d L(\theta’+d) + \lambda(\text{KL}\left[p_{\theta’}||p_{\theta’+d}\right] -c)\tag{18}\\<br>
-&amp; = {\arg \min}_d L</em>{\theta’}(\theta’) + \left[\nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’}\right]^T d + \lambda(\text{KL}\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{19}\\<br>
+d^{*} &amp; = {\arg \min}_d L(\theta’+d) + \lambda(\text{KL}\left[p_{\theta’}||p_{\theta’+d}\right] -c)<br>
+&amp; = {\arg \min}_d L</em>{\theta’}(\theta’) + \left[\nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’}\right]^T d + \lambda(\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{19}\\<br>
 \end{align*}<br>
 对$d$求导，令其等于$0$，得：<br>
-$$0 + \tag{20}$$</p>
+\begin{align*}<br>
+&amp;0 + \nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’} + \text{F}d + 0\\<br>
+=&amp; \nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’} + \text{F}d \tag{}\\<br>
+=&amp; 0\\<br>
+\end{align*}<br>
+求解得到：<br>
+$$d= - \frac{1}{\lambda}\text{F}^{-1} \nabla_{\theta’} L(\theta’) \tag{}$$<br>
+所以natural gradient定义为：<br>
+$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}L(\theta)$$</p>
 <p>标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。策略$\pi(a;s,\theta)$的fisher information是：<br>
 $$\mathbf{F}_s(\theta) = \mathbb{E}_{\pi(a;s,\theta)} \left[ \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right] \tag{48}$$<br>
 显然$\mathbf{F}_s$是正定矩阵，可以证明，FIM是概率分布参数空间上的一个invariant metric。不论两个点的坐标怎么选择，它都能计算处相同的distance，所以说它是invariant。<br>
