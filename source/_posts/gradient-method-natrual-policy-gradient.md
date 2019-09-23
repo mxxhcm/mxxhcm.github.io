@@ -31,14 +31,14 @@ $$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} 
 在这使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。$\eta(\theta)$下降最快的方向定义为在$d\theta$的平方长度$\vert d\theta\vert^2 $ 等于一个常数时，使得$\eta(\theta+d\theta)$最小的$d\theta$的方向。平方长度的定义和一个正定矩阵$G(\theta)$有关，即：
 $$\vert\theta\vert^2 = \sum_{ij} G_{ij} (\theta)d\theta_i d\theta_j = d\theta^T G(\theta) d\theta  \tag{47}$$
 可以证明，最块的梯度下降方向是$G^{-1} \nabla \eta(\theta)$。
-让$d\rightarrow 0$，$\text{KL}$散度的二阶泰勒展开是：
-$$\text{KL}\left[p(x|\theta)||p(x|\theta+d) \approx \frac{1}{2}d^T\text{F}d$$
+$\text{KL}$散度在$\theta=\theta'$附近$\theta' +d, d\rightarrow 0$处的二阶泰勒展开是：
+$$\text{KL}\left[p(x|\theta')||p(x|\theta'+d)\right] \approx \frac{1}{2}d^T \text{F}d$$
 证明：
 \begin{align\*}
-\text{KL}\left[p\_{\theta}||p\_{\theta+d}\right] &\approx \text{KL}\left[p\_{\theta}||p\_{\theta}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T (\theta+d -\theta) + \frac{1}{2} (\theta +d -\theta)^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})(\theta+d-\theta)\\\\
-& = \text{KL}\left[p\_{\theta}||p\_{\theta}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
-& = \text{KL}\left[p\_{\theta}||p\_{\theta}\right] + (\int_x p(x|\theta')\nabla \log (p|\theta)|\_{\theta=\theta'} dx)^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
-& = \text{KL}\left[p\_{\theta}||p\_{\theta}\right] + (\mathbb{E}\_{p(x|\theta')} \nabla\log p(x|\theta) dx|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
+\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] &\approx \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T (\theta'+d -\theta') + \frac{1}{2} (\theta' +d -\theta')^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})(\theta'+d-\theta')\\\\
+& = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
+& = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\int_x p(x|\theta')\nabla \log (p|\theta)|\_{\theta=\theta'} dx)^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
+& = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\mathbb{E}\_{p(x|\theta')} \nabla\log p(x|\theta) dx|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
 & = 0 + 0 + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
 & = \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
 \end{align\*}
