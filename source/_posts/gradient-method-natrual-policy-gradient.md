@@ -137,7 +137,7 @@ $\mathbf{F}$是$\log \pi$对应的fisher information。Fisher information 和海
 事实上，定义的新的$\mathbf{F}$并不会收敛到海塞矩阵。但是因为海塞矩阵一般不是正定的，所以在非局部最小处附近，它提供的curvature信息用处不大。在局部最小处使用conjugate methods会更好。
 
 ## 参考文献
-1.
+1.https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
 2.https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/
 3.https://medium.com/@jonathan_hui/rl-trust-region-policy-optimization-trpo-part-2-f51e3b2e373a
 
