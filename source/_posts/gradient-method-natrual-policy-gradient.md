@@ -52,8 +52,8 @@ $$\text{KL}\left[p\_{\theta}||p\_{\theta'}\right] = c \tag{16}$$
 $$L_{\theta'}(\theta) = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right[^T (\theta'+d-\theta') + \cdots  \tag{17}$$
 使用拉格朗日乘子法将约束条件带入：
 \begin{align\*}
-d^{\*} & = {\arg \min}_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)\tag{18}\\\\
-& = {\arg \min}_d L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\text{kl}\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{19}\\\\
+d^{\*} & = {\arg \min}\_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)\tag{18}\\\\
+& = {\arg \min}\_d L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\text{KL}\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{19}\\\\
 \end{align\*}
 对$d$求导，令其等于$0$，得：
 $$0 + \tag{20}$$
