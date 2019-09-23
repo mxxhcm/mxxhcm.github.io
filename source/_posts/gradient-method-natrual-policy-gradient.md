@@ -41,7 +41,23 @@ $$\text{KL}\left[p(x|\theta')||p(x|\theta'+d)\right] \approx \frac{1}{2}d^T \tex
 & = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\mathbb{E}\_{p(x|\theta')} \nabla\log p(x|\theta) dx|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
 & = 0 + 0 + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
 & = \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\\\\
+& = \frac{1}{2} d^T \text{H} d\\\\
+& = \frac{1}{2} d^T \text{F} d\\\\
 \end{align\*}
+我们想要找到使得loss函数$L(\theta)$最小的$d$，我们想要直知道哪个方向的$\text{KL}$散度下降的最快，就是使用$\text{KL}$散度当做一个metric，而不是使用欧几里得metric。目标函数是：
+$$d^{\*} = \arg \min L(\theta +d) \tag{}$$
+约束条件
+$$\text{KL}\left[p\_{\theta}||p\_{\theta'}\right] = c \tag{}$$
+其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：
+$$L_{\theta'}(\theta) = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right[^T (\theta'+d-\theta') + \cdots  \tag{}$$
+使用拉格朗日乘子法将约束条件带入：
+\begin{align\*}
+d^{\*} & = {\arg \min}_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)\\\\
+& = {\arg \min}_d L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\text{kl}\left[\frac{1}{2} d^T \text{F} d\right] -c)\\\\
+\end{align\*}
+对$d$求导，令其等于$0$，得：
+$$0 + 
+
 
 标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。策略$\pi(a;s,\theta)$的fisher information是：
 $$\mathbf{F}_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[ \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right] \tag{48}$$
