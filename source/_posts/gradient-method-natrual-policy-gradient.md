@@ -35,7 +35,7 @@ $\text{KL}$散度在$\theta=\theta'$附近$\theta' +d, d\rightarrow 0$处的二�
 $$\text{KL}\left[p(x|\theta')||p(x|\theta'+d)\right] \approx \frac{1}{2}d^T \text{F}d \tag{6}$$
 证明：
 \begin{align\*}
-\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] &\approx \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T (\theta'+d -\theta') 
+\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] &\approx \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T (\theta'+d -\theta') \\\\
 &\qquad\qquad\qquad+ \frac{1}{2} (\theta' +d -\theta')^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})(\theta'+d-\theta')\tag{7}\\\\
 & = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\nabla\_{\theta}\text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'})^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\tag{8}\\\\
 & = \text{KL}\left[p\_{\theta'}||p\_{\theta'}\right] + (\int_x p(x|\theta')\nabla \log (p|\theta)|\_{\theta=\theta'} dx)^T d + \frac{1}{2} d^T (\nabla\_{\theta}^2 \text{KL}\left[p\_{\theta}||p\_{\theta'}\right]|\_{\theta=\theta'}) d\tag{9}\\\\
@@ -52,24 +52,24 @@ $$\text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{16}$$
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一节泰勒展开公式如下：
 
 begin{\align\*}
-L_{\theta'}(\theta) = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots 
-= L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T d + \cdots  \tag{17}
+L_{\theta'}(\theta)& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T (\theta'+d-\theta') + \cdots \\\\
+& = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|_{\theta=\theta'}\right]^T d + \cdots  \tag{17}
 \end{align\*}
 使用拉格朗日乘子法将约束条件带入：
 \begin{align\*}
-d^{\*} & = {\arg \min}\_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)
-& = {\arg \min}\_d L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{19}\\\\
+d^{\*} & = {\arg \min}\_d L(\theta'+d) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d}\right] -c)\\\\
+& = {\arg \min}\_d L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d + \lambda(\left[\frac{1}{2} d^T \text{F} d\right] -c)\tag{18}\\\\
 \end{align\*}
 对$d$求导，令其等于$0$，得：
 \begin{align\*}
 &0 + \nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d + 0\\\\
-=& \nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d \tag{}\\\\
+=& \nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d \tag{19}\\\\
 =& 0\\\\
 \end{align\*}
 求解得到：
-$$d= - \frac{1}{\lambda}\text{F}^{-1} \nabla_{\theta'} L(\theta') \tag{}$$
+$$d= - \frac{1}{\lambda}\text{F}^{-1} \nabla_{\theta'} L(\theta') \tag{20}$$
 所以natural gradient定义为：
-$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}L(\theta)$$
+$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}L(\theta) \tag{21}$$
 
 标准的policy gradient假设$\mathbf{G}=\mathbf{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。作者的想法是选择一个其他的$\mathbf{G}$，新的metric不根据坐标轴的选择而变化，而是跟着坐标参数化的mainfold变化。根据新的metric定义natural gradient。策略$\pi(a;s,\theta)$的fisher information是：
 $$\mathbf{F}_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[ \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right] \tag{48}$$
