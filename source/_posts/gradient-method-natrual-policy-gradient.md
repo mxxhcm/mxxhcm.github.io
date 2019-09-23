@@ -36,7 +36,7 @@ $$\text{F}\_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[\frac{\partial \log 
 显然$\text{F}\_s$是正定矩阵，可以证明，FIM是概率分布参数空间上的一个invariant metric。不论两个点的坐标怎么选择，它都能计算处相同的distance，所以说它是invariant。当然，$\text{F}\_s$使用了单个的$s$，而在计算average reward时，使用的是一个分布，定义$\text{F}$：
 $$\text{F}(\theta) = \mathbb{E}\_{\rho^{\pi} (s)} \left[\mathbb{F}\_s (\theta)\right] \tag{7}$$
 每一个$s$对应的单个$\text{F}\_s$都和MDP的transition model没有关系，期望操作引入了对transition model参数的依赖。直观上来说，$\text{F}\_s$测量的是在$s$上的probability manifold的距离，$\text{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：
-$$\hat{\nabla}\eta(\theta) =\text{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{80}$$
+$$\hat{\nabla}\eta(\theta) =\text{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{8}$$
 为什么natural gradient下降最快的方向是这个方向，接下来我们进行证明。其实上面就是说的这些就是使用$\text{KL}$散度当做metric，而不是使用欧几里得metric。然后对$\text{KL}$散度进行约束，要找到使得loss函数$L(\theta)$最小的$d\theta$，我们想要知道哪个方向的$\text{KL}$散度下降的最快，目标函数：
 $$d\theta^{*} = \arg \min L(\theta +d\theta) \tag{9}$$
 约束条件
@@ -64,7 +64,7 @@ $$\text{KL}\left[p(x|\theta')||p(x|\theta'+d\theta)\right] \approx \frac{1}{2}d\
 & = \frac{1}{2} d\theta^T \text{H} d\theta\tag{19}\\\\
 & = \frac{1}{2} d\theta^T \text{F} d\theta\tag{20}\\\\
 \end{align\*}
-这也是为什么$\vert d\theta\vert^2$定义为$d\theta^T\text{G}\theta$的原因。使用拉格朗日乘子法将$\text{KL}$散度约束条件带入目标函数$L$：
+这也是为什么$\vert d\theta\vert^2 $定义为$d\theta^T\text{G}\theta$的原因。使用拉格朗日乘子法将$\text{KL}$散度约束条件带入目标函数$L$：
 \begin{align\*}
 d\theta^{\*} & = {\arg \min}\_{d\theta} L(\theta'+d\theta) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d\theta}\right] -c)\\\\
 & = {\arg \min}\_{d\theta} L\_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d\theta + \lambda(\left[\frac{1}{2} d\theta^T \text{F} d\theta\right] -c)\tag{21}\\\\
@@ -103,10 +103,10 @@ $$ \text{F}(\theta)\hat{\omega} = \nabla\eta(\theta)$$
 
 ### Greedy Policy Improvement
 在greedy policy improvement的每一步，在$s$处，选择$a\in \arg \max_{a'} f^{\pi}(s, a';\hat{\omega})$。这一节介绍natural gradient能够找到best action，而不仅仅是一个good action。
-首先考虑指数函数：$\pi(s;a,\theta) \propto e^{\text{\theta}\^T \phi_{sa}}$，其中$\phi_{sa} \in \mathbb{R}^m $是特征向量。为什么使用指数函数，因为它是affine geometry。简单来说，就是$\pi(a;s,\theta)$的probability manifold可以被弯曲。接下来证明policy在natrual gradient方向上改进的一大步等价于进行一步greedy policy improvement的policy。
+首先考虑指数函数：$\pi(s;a,\theta) \propto e^{\theta\^T \phi_{sa}}$，其中$\phi_{sa} \in \mathbb{R}^m $是特征向量。为什么使用指数函数，因为它是affine geometry。简单来说，就是$\pi(a;s,\theta)$的probability manifold可以被弯曲。接下来证明policy在natrual gradient方向上改进的一大步等价于进行一步greedy policy improvement的policy。
 
 #### 定理2
-假设$\pi(s;a,\theta) \propto e^{\text{\theta}\^T \phi_{sa}} $，$\hat{\nabla}\eta(\theta)$是非零的，并且$\hat{\omega}$是最小化均方误差的$\omega$。令
+假设$\pi(s;a,\theta) \propto e\^{\theta\^T \phi_{sa}} $，$\hat{\nabla}\eta(\theta)$是非零的，并且$\hat{\omega}$是最小化均方误差的$\omega$。令
 $$\pi_{\infty}(a;s) = lim_{\alpha\rightarrow \infty}\pi(a;s,\theta + \alpha\hat{\nabla}\eta(\theta)) \tag{30}$$
 当且仅当$a\in \arg\max_{a'} f^{\pi} (s,a';\hat{\omega})$时，有$\pi_{\infty}(a;s)\neq 0$。
 证明：
