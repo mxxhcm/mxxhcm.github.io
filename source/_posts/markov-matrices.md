@@ -53,7 +53,7 @@ $$sQ = s \tag{5}$$
 ## 马尔科夫矩阵的幂
 $u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到
 $$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots \tag{1}$$
-如果只有一个特征值为$1$，对于所有其他特征值$\lambda_k \neq 1$，幂运算之后$\lambda^k \rightarrow 0, k\rightarrow \infty$，即能到达一个稳态。
+如果只有一个特征值为$1$，对于所有其他特征值$\lambda \neq 1$，当$k\rightarrow \infty$时，幂运算$\lambda^k \rightarrow 0$，能到达一个稳态。
 
 
 ## 参考文献
