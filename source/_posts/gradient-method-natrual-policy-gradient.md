@@ -1,6 +1,6 @@
 ---
 title: gradient method natrual policy gradient
-date: 2019-09-22 19:38:03
+date: 2019-09-07 19:38:03
 tags:
  - gradient method
  - natural policy gradient

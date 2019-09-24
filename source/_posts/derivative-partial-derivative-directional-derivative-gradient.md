@@ -27,7 +27,7 @@ $$f'(x) = lim_{\Delta x\rightarrow 0}\frac{\Delta y}{\Delta x} = lim_{\Delta x\r
 对于三元函数，计算公式：
 $$\nabla f  = \frac{\partial f}{\partial x}i+\frac{\partial f}{\partial y}j + \frac{\partial f}{\partial z}j$$
 梯度到底是行向量还是列向量？取决于使用什么layout。
-梯度的公式是$\frac{\partial{y}{\partial\mathbf{x}}$，
+梯度的公式是$\frac{\partial{y}}{\partial\mathbf{x}}$，
 如果使用numerator layout，梯度是行向量；
 如果使用denominator layout，梯度是列向量。
 

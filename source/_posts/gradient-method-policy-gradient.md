@@ -1,6 +1,6 @@
 ---
 title: gradient method policy gradient
-date: 2019-09-22 19:37:52
+date: 2019-09-07 19:37:52
 tags:
  - gradient method
  - policy gradient

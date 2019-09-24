@@ -15,13 +15,11 @@ categories: 线性代数
 4. 海塞矩阵可以看成梯度的雅克比矩阵。
 
 ## 雅克比矩阵
-定义：$f:\mathbb{R}^n \rightarrow \mathbf{R}^m $，即一个函数的输入和输出都是向量，计算输出向量对于输入向量的偏导数（详情可见[矩阵求导](https://mxxhcm.github.io/2019/09/12/matrix-calculus/))，得到一个$m\times n$的矩阵（numerator layout），这就是雅克比矩阵。
-$$J = \begin{bmatrix}\frac{\partial \mathbf{y}}{\partial x_1} & \cdots & \frac{\partial \mathbf{y}}{\partial x_n}\end{bmatrix} = \begin{bmatrix} \frac{\partial \mathbf{y_1}}{\partial x_1} & \cdots & \frac{\partial \mathbf{y_1}}{\partial x_n}\\\\ \cdots \\\\ \frac{\partial \mathbf{y_m}}{\partial x_1}\cdots & \cdots & \frac{\partial \mathbf{y_m}}{\partial x_n}\end{bmatirx}$$
-
-
+定义：$f:\mathbb{R}^n \rightarrow \mathbb{R}^m $，即一个函数的输入和输出都是向量，计算输出向量对于输入向量的偏导数（详情可见[矩阵求导](https://mxxhcm.github.io/2019/09/12/matrix-calculus/))，得到一个$m\times n$的矩阵（numerator layout），这就是雅克比矩阵。
+$$J = \begin{bmatrix}\frac{\partial \mathbf{y}}{\partial x_1} & \cdots & \frac{\partial \mathbf{y}}{\partial x_n}\end{bmatrix} = \begin{bmatrix} \frac{\partial \mathbf{y_1}}{\partial x_1} & \cdots & \frac{\partial \mathbf{y_1}}{\partial x_n}\\\\ & \cdots & \\\\ \frac{\partial \mathbf{y_m}}{\partial x_1} & \cdots & \frac{\partial \mathbf{y_m}}{\partial x_n}\end{bmatrix}$$
 
 ## 海塞矩阵
-定义：$f:\mathbb{R}^n \rightarrow \mathbf{R} $，即一个函数的输入是向量，输出是标量时，计算输出对于输入向量的二阶导数（详情可见[矩阵求导](https://mxxhcm.github.io/2019/09/12/matrix-calculus/))，得到一个$n\times n$的矩阵（numerator layout），这就是雅克比矩阵。
+定义：$f:\mathbb{R}^n \rightarrow \mathbb{R} $，即一个函数的输入是向量，输出是标量时，计算输出对于输入向量的二阶导数（详情可见[矩阵求导](https://mxxhcm.github.io/2019/09/12/matrix-calculus/))，得到一个$n\times n$的矩阵（numerator layout），这就是雅克比矩阵。
 $$ H = \begin{bmatrix} \frac{\partial^2 \mathbf{y}}{\partial x_1^2 }\cdots & \cdots & \frac{\partial^2 \mathbf{y}}{\partial x_1 x_n}\\\\ \cdots \\\\ \frac{\partial^2 \mathbf{y}}{\partial x_nx_1}\cdots & \cdots & \frac{\partial^2 \mathbf{y}}{\partial x_nx_n}\end{bmatrix}$$
 
 

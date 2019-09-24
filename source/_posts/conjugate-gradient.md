@@ -16,7 +16,7 @@ categories: 凸优化
 解线性对称正定方程组（$A$是对称正定矩阵）：
 $$Ax=b$$
 可以转化为
-$$\minimize_x f(x) = \frac{1}{2} x^T Ax - b^T x$$
+$$\min_x f(x) = \frac{1}{2} x^T Ax - b^T x$$
 因为：
 $$f'(x) = Ax-b$$
 
