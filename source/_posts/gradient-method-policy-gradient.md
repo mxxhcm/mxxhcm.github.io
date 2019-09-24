@@ -33,7 +33,7 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 #### 证明policy iteration收敛性
 本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。
 
-## Policy Gradient Therorem
+## Objective Function
 智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。有两种方式定义智能体的objective，一种是average reward，一种是从指定状态开始的长期奖励。
 
 ### Average Reward(平均奖励)
@@ -55,7 +55,8 @@ $$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} R_{t+k}|s_t=s,a_t=a,\pi\ri
 $$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right] = \rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{7}$$
 $\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。
 
-### Policy Gradient Theorem
+
+## Policy Gradient Theorem
 对于任何MDP，不论是average reward还是accumulated reward的形式，都有：
 $$\frac{\partial \eta}{\partial \mathbf{\theta}} = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{8}$$
 证明：

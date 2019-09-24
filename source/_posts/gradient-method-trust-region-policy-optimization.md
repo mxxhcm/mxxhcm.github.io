@@ -1,5 +1,5 @@
 ---
-title: trust region policy optimization
+title: gradient method trust region policy optimization
 date: 2019-09-08 14:24:37
 tags:
  - gradient method
