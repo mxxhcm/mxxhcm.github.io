@@ -3,7 +3,7 @@ title: Markov Matrices
 date: 2019-07-31 20:18:10
 tags:
  - 马尔科夫矩阵
- - 马尔科夫熟属性
+ - 马尔科夫属性
  - Markov matrices
  - Markov
 categories: 强化学习
