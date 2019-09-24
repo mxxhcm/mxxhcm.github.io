@@ -22,7 +22,7 @@ mathjax: true
 
 ## Markov Property
 简单的来说，就是下一时刻的状态只取决于当前状态，跟之前所有时刻的状态无关，即：
-$$P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t) \tag{2}$$
+$$P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t) \tag{1}$$
 
 ## Markov Chain(Process)
 如果一个Chain(process)是Markov的，就叫它Markov Chain(Process)。
@@ -38,12 +38,12 @@ $$P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t) \tag{2}$$
 |波动|0.25|0.25|0.5|
 
 假如从熊市开始，初始state是熊市，用数值表示就是$(0, 1, 0)\^T$。根据当前时刻计算下一时刻的公式为：
-$$s_{t+1} = s_t Q \tag{3}$$
+$$s_{t+1} = s_t Q \tag{2}$$
 相应结果为$s_{t+1} = (0.15, 0.8, 0.05)\^T$
 $t+2$时刻的计算公式为：
-$$s_{t+2} = s_t Q\^2 \tag{4}$$
+$$s_{t+2} = s_t Q\^2 \tag{3}$$
 这样一直计算下去，可以到达一个稳定state $s$满足:
-$$sQ = s \tag{5}$$
+$$sQ = s \tag{4}$$
 对于这个例子来说，不管从什么初始状态开始，最后都会到达稳定状态$s = (0.625, 0.3125, 0.0625)\^T$。
 那么这个stationary distribution有什么用呢？它能够给出一个process稳定以后在任意时刻某个state出现的概率，比如牛市出现的概率是$62.5\\% $，熊市出现的概率是$31.25\\%$。
 
@@ -52,7 +52,7 @@ $$sQ = s \tag{5}$$
 
 ## 马尔科夫矩阵的幂
 $u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到
-$$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots \tag{1}$$
+$$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots \tag{5}$$
 如果只有一个特征值为$1$，对于所有其他特征值$\lambda \neq 1$，当$k\rightarrow \infty$时，幂运算$\lambda^k \rightarrow 0$，能到达一个稳态。
 
 
