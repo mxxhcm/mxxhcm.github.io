@@ -14,55 +14,8 @@ mathjax: true
 Monte Carlo方法在很多地方都出现过，但是它具体到底是干什么的，之前从来没有仔细了解过，这次正好趁着这个机会好好学习一下。
 统计模拟中有一个重要的问题就是给定一个概率分布$p(x)$，生成它的样本。对于一些简单的分布，可以使用均匀分布产生的样本进行样本。但是对于一些复杂的样本，单单使用均匀分布就不行了，需要使用更加复杂的随机模拟方法。Markov Chain Monte Carlo就是一种随机模拟方法(simple simulation)，我们常见的gibbs sampling也是。通过多次模拟，产生多组实验数据，进行积分啊什么的。
 
-## Markov Matrices
-### 定义
-马尔科夫矩阵满足两个条件
-1. 所有元素大于$0$
-2. 行向量之和为$1$
-
-### 属性
-1. $\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&b\\\\c&d\\\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&b\\\\c&d - 1\\\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。
-2. 所有其他的特征值小于$1$。
-
-### 马尔科夫矩阵的幂
-$u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到
-$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$
-如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightarrow \infty, \lambda_k \neq 1$。即能得到一个稳态。
-
-
-## Markov Property
-简单的来说，就是下一时刻的状态只取决于当前状态，跟之前所有时刻的状态无关，即：
-$$P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t)$$
-
-## Markov Chain(Process)
-如果一个Chain(process)是Markov的，就叫它Markov Chain(Process)。
-
-## Stationary Distribution
-为什么要用Markov Chain呢？因为它有一个很好的性质，叫做stationary distribution。简单的来说，就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。举个例子，股票有牛市和熊市，还有波动状态，它们的转换关系如下所示：
-![markov_transition](markov_transition.png)
-状态转义矩阵矩阵如下表所示：
-||牛市|熊市|波动|
-|:-:|:-:|:-:|:-:|
-|牛市|0.9|0.075|0.025|
-|熊市|0.15|0.8|0.05|
-|波动|0.25|0.25|0.5|
-
-假如从熊市开始，初始state是[牛市，熊市，波动]，用数值表示就是$(0, 1, 0)\^T$。根据当前时刻计算下一时刻的公式为：
-$$s_{t+1} = s_t Q$$
-相应结果为$s_{t+1} = (0.15, 0.8, 0.05)\^T$
-$t+2$时刻的计算公式为：
-$$s_{t+2} = s_t Q\^2$$
-这样一直计算下去，可以到达一个state:
-$$sQ = s$$
-对于这个例子来说，就是$s = (0.625, 0.3125, 0.0625)\^T$，不管从什么初始状态开始，最后都会到达这个$s$状态。
-那么这个stationary distribution有什么用呢？它能够给出一个process在任意时刻某个state出现的概率，比如牛市出现的概率是$62.5\%$，熊市出现的概率是$31.25\%$。
-
-### 马尔科夫链的稳定性
-如果一个非周期性马尔科夫连有转移矩阵$P$，并且它的任意两个状态都是连通的，那么$lim_{n\rightarrow \infty} P_{ij}\^m$存在，且与$i$无关，记为$lim_{n\rightarrow \infty }P_{ij}^n = \pi(j)$，即矩阵$P\^n$的所有第$j$列都是$\pi(j)$，与$P$的初始值无关。那么有：
-
-
 ## Monte Carlov Markov Chain
-首先考虑，给定一个beta分布，如何进行采样？MCMC提供了从任意概率分布中采样的方法，尤其是当我们计算后验概率时极为有用。在贝叶斯公式中，如下图所示，我们需要从后验分布中进行采样，但是后验分布并不是那么好计算的，因为牵扯到$p(D)$的计算，根据全概率公式，需要进行积分，而beta分布的积分并不好解。
+考虑以下，给定一个beta分布，如何进行采样？MCMC提供了从任意概率分布中采样的方法，尤其是当我们计算后验概率时极为有用。在贝叶斯公式中，如下图所示，我们需要从后验分布中进行采样，但是后验分布并不是那么好计算的，因为牵扯到$p(D)$的计算，根据全概率公式，需要进行积分，而beta分布的积分并不好解。
 ![bayesian](bayesian.png)
 
 Wikipedia上MCMC的定义：MCMC是一类方法的统称，MCMC方法构建一个Markov chain，这个Markov chain的stationary distribution是我们的目标distribution，然后进行采样。经过很多步之后的一个state可以看成是我们目标distribution的一个样本。简单解释以下就是，给定一个概率分布$p(x)$，我们想要生成这个概率分布的一些样本。因为马尔科夫链能够收敛到stationary distribution，我们的想法就是构造一个转移矩阵为$P$的马尔科夫连，使得该马尔科夫的stationry distribution是$p(x)$，那么不管我们从任何初始状态$x_0$出发，得到一个马尔科夫链$x_0,x_1,\cdots, x_t,x_{t+1}, \cdots$，如果马尔科夫链在第$n$步已经到了stationary distribution，那么$t+1$后的states都可以看成$p(x)$的样本。

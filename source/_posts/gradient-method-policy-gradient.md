@@ -34,27 +34,25 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。
 
 ## Objective Function
-智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。有两种方式定义智能体的objective，一种是average reward，一种是从指定状态开始的长期奖励。
+智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。有两种方式定义智能体的objective，一种是average reward，一种是从指定状态开始的accumulated reward。
 
 ### Average Reward(平均奖励)
-平均奖励是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：
+Average reward是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：
 $$\eta(\pi) = lim_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R_1+R_2+\cdots+R_t|\pi\right] = \int_S \rho^{\pi} (s) \int_A \pi(s,a) R(s,a)dads \tag{2}$$
-其中$\rho^{\pi} (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是策略$\pi$下的station distribution。第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。
-第二个等号，$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率。第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是$s$处各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。其实，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。
-给出一种新的state-action value的定义方式：
+其中$\rho^{\pi} (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是策略$\pi$下的stationary distribution。[Stationary distribution](http://mxxhcm.github.io/2019/07/31/markov-matrices/)的意思是就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。第二个等号后，第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是每一个$s$处对应各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。
+给出相应的state-action value的定义方式：
 $$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{3}$$
 value function定义还和原来一样，但是因为$Q$计算方法变了，所以$V$也跟着变了：
 $$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{4}$$
 
 ### Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)
-第二种情况是指定初始状态$s_0$，我们计算从这个状态开始得到的accumulated reward：
-$$\rho(\pi) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{5}$$
+第二种情况是指定初始状态$s_0$，计算从这个状态开始得到的accumulated reward：
+$$\eta(\pi) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{5}$$
 相应的state-action如下：
 $$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} R_{t+k}|s_t=s,a_t=a,\pi\right] \tag{6}$$
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。我们定义$\rho^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
-$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right] = \rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{7}$$
-$\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。
-
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。定义$\rho^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
+$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right]  = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{7}$$
+$\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。
 
 ## Policy Gradient Theorem
 对于任何MDP，不论是average reward还是accumulated reward的形式，都有：
