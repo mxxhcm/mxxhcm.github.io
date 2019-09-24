@@ -80,7 +80,7 @@ $$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',
 &= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \tag{12}\\\\
 &= \nabla \eta(\pi) \tag{13}\\\\
 \end{align\*}
-式子$22$到式子$23$其实就是$\sum_s \rho^{\pi}(s) \sum_a\pi(a|s) \sum_{s',r}p(s',r|s,a) = \sum_{s'}\rho^{\pi} (s')$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。
+式子$10$到式子$11$其实就是$\sum_s \rho^{\pi}(s) \sum_a\pi(a|s) \sum_{s',r}p(s',r|s,a) = \sum_{s'}\rho^{\pi} (s')$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。
 \begin{align\*}
 \end{align\*}
 
@@ -98,7 +98,7 @@ $$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',
 &= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) \tag{15}\\\\
 &= \sum_{x\in S}\rho^{\pi} (x)\sum_a\nabla \pi(a|x) Q_{\pi}(x,a) \tag{16}\\\\
 \end{align\*}
-式子$(28)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(27)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到，概率为$0$就是了。对于$V_{\pi}(s_0)$，有：
+式子$(15)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(14)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到，概率为$0$就是了。对于$V_{\pi}(s_0)$，有：
 \begin{align\*}
 \nabla J(\mathbf{\theta}) &= \nabla_{\theta}V_{\pi}(s_0)\\\\
 &= \sum_{s\in S}\( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \) \sum_a\nabla{\pi}(a|s)Q_{\pi}(s,a)\\\\

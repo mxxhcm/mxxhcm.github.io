@@ -1,5 +1,5 @@
 ---
-title: gradient method natrual policy gradient
+title: gradient method natural policy gradient
 date: 2019-09-07 19:38:03
 tags:
  - gradient method
@@ -13,10 +13,10 @@ mathjax: true
 论文名称：A Natural Policy Gradient 
 论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
 
-## 摘要
+## Abstract
 作者基于参数空间的底层结构提出了natural gradient方法，找出下降最快方向。尽管gradient方法不能过大的改变参数，它还是能够朝着选择greedy optimal action而不是更好的action方向移动。基于兼容值函数的policy iteration，在每一个improvement step选择greedy optimal action。
 
-## 引言
+## Introduction
 直接的policy gradient在解决大规模的MDPs时很有用，这种方法基于future reward的梯度在满足约束条件的一类polices中找一个$\pi$，但是这种方法是non covariant的，简单来说，就是左右两边的维度不一致。
 这篇文章基于policy的底层参数结构定义了一个metric，提出了一个covariant gradient方法，通过将它和policy iteration联系起来，可以证明natural gradient朝着选择greedy optimal action的方向移动。通过在简单和复杂的MDP中进行测试，结果表明这种方法中没有出现严重的plateau phenomenon。
 
