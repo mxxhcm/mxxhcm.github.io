@@ -327,6 +327,876 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-Coordinator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/13/tensorflow-Coordinator/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">tensosrflow Coordinator</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-13 20:17:13 / 修改时间：20:29:31" itemprop="dateCreated datePublished" datetime="2019-07-13T20:17:13+08:00">2019-07-13</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="coordinator">Coordinator</h2>
+<h3 id="简介">简介</h3>
+<p>这个类用来协调多个thread同时工作，同时停止。常用的方法有：</p>
+<ul>
+<li>should_stop()：如果满足thread停止条件的话，返回True</li>
+<li>request_stop()：请求thread停止，调用该方法后，should_stop()返回True</li>
+<li>join(<list of threads>)：等待所有的threads停止。</list></li>
+</ul>
+<h3 id="理解">理解</h3>
+<p>其实我觉得这个类的作用好像没有那么大，或者我没有用到这种场景。反正就是满足thread的终止条件时，调用request_stop()函数，让should_stop()返回True。</p>
+<h2 id="代码示例">代码示例</h2>
+<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_train_Coordinator.py" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line">n = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(index)</span>:</span></span><br><span class="line">    <span class="keyword">global</span> n</span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">not</span> coord.should_stop():</span><br><span class="line">    <span class="comment">#while True:</span></span><br><span class="line">        <span class="keyword">if</span> n &gt; <span class="number">10</span>:</span><br><span class="line">            print(index, <span class="string">" done"</span>)</span><br><span class="line">            coord.request_stop()</span><br><span class="line">            <span class="comment">#break</span></span><br><span class="line">        print(<span class="string">"before A, thread "</span>, index, n)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        print(<span class="string">"after A, thread "</span>, index, n)</span><br><span class="line">        time.sleep(random.random())</span><br><span class="line">        print(<span class="string">"before B, thread "</span>, index, n)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        print(<span class="string">"after B, thread "</span>, index, n)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">        coord = tf.train.Coordinator()</span><br><span class="line"></span><br><span class="line">        jobs = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>):</span><br><span class="line">            jobs.append(threading.Thread(target=add, args=(i,)))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> jobs:</span><br><span class="line">            j.start()</span><br><span class="line"></span><br><span class="line">        coord.join(jobs)</span><br><span class="line">        print(<span class="string">"Hello World!"</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://wiki.jikexueyuan.com/project/tensorflow-zh/how_tos/threading_and_queues.html" target="_blank" rel="noopener">https://wiki.jikexueyuan.com/project/tensorflow-zh/how_tos/threading_and_queues.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-one-hot/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/13/tensorflow-one-hot/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">tensorflow one_hot</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-13 12:08:55 / 修改时间：12:16:19" itemprop="dateCreated datePublished" datetime="2019-07-13T12:08:55+08:00">2019-07-13</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="tf-one-hot">tf.one_hot</h2>
+<h3 id="一句话介绍">一句话介绍</h3>
+<p>返回一个one-hot tensor</p>
+<h3 id="api">API</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tf.one_hot(</span><br><span class="line">    indices,    <span class="comment"># 每一个one-hot向量不为0的维度</span></span><br><span class="line">    depth,  <span class="comment"># 指定每一个one-hot向量的维度</span></span><br><span class="line">    on_value=<span class="literal">None</span>,  <span class="comment"># indices上取该值</span></span><br><span class="line">    off_value=<span class="literal">None</span>,     <span class="comment">#其他地方取该值</span></span><br><span class="line">    axis=<span class="literal">None</span>,</span><br><span class="line">    dtype=<span class="literal">None</span>,</span><br><span class="line">    name=<span class="literal">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="代码示例">代码示例</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">indices = [<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>]</span><br><span class="line">depth = <span class="number">5</span></span><br><span class="line"></span><br><span class="line">result = tf.one_hot(indices, depth)</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">print(sess.run(result))</span><br><span class="line"><span class="comment"># [[0. 1. 0. 0. 0.]</span></span><br><span class="line"><span class="comment">#  [0. 1. 0. 0. 0.]</span></span><br><span class="line"><span class="comment">#  [0. 1. 0. 0. 0.]]</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.tensorflow.org/api_docs/python/tf/one_hot" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/one_hot</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/python-slice/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/13/python-slice/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">python slice</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-13 10:30:16 / 修改时间：10:43:00" itemprop="dateCreated datePublished" datetime="2019-07-13T10:30:16+08:00">2019-07-13</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="python-slice-index">python slice index</h2>
+<p>±–±--±–±--±–±--+<br>
+| P | y | t | h | o | n |<br>
+±–±--±–±--±–±--+<br>
+0   1   2   3   4   5   6<br>
+-6  -5  -4  -3  -2  -1</p>
+<h2 id="start和stop">start和stop</h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a[start:stop]   # 从start到stop-1的所有items</span><br><span class="line">a[start:]   # 从start到array结尾的所有items</span><br><span class="line">a[:stop]   # 从开始到stop-1的所有items</span><br><span class="line">a[:]   # 整个array的copy</span><br></pre></td></tr></table></figure>
+<h2 id="step">step</h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a[start:stop:step]   # 从start，每次加上step，不超过stop，step默认为1</span><br></pre></td></tr></table></figure>
+<h2 id="负的start和stop">负的start和stop</h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a[-1]   # array的最后一个item</span><br><span class="line">a[-2:]   # array的最后两个items</span><br><span class="line">a[:-2]   # 从开始到倒数第三个的所有items</span><br></pre></td></tr></table></figure>
+<h2 id="负的step">负的step</h2>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a[::-1]   # 所有元素，逆序</span><br><span class="line">a[1::-1]    # 前两个元素，逆序</span><br><span class="line">a[:-3:-1]   # 后两个元素，逆序</span><br><span class="line">a[-3::-1]   # 除了最后两个元素，逆序</span><br></pre></td></tr></table></figure>
+<p>这里加一些自己的理解，其实就是倒着数而已，包含第一个:前面的，不包含两个:之间的。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://stackoverflow.com/a/509297/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/509297/8939281</a><br>
+2.<a href="https://stackoverflow.com/a/509295/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/509295/8939281</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/12/numpy-expand-dims-and-newaxis/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/12/numpy-expand-dims-and-newaxis/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">numpy expand_dims and newaxis</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-12 20:08:59 / 修改时间：20:37:12" itemprop="dateCreated datePublished" datetime="2019-07-12T20:08:59+08:00">2019-07-12</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="expand-dims">expand_dims</h2>
+<p>在数组的某个维度增加一个为1的维度。</p>
+<h3 id="代码示例">代码示例</h3>
+<p><a href>代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a = np.ones([<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>])</span><br><span class="line">print(a.shape)</span><br><span class="line"></span><br><span class="line">a1 = np.expand_dims(a, <span class="number">0</span>)</span><br><span class="line">print(a1.shape)</span><br><span class="line"></span><br><span class="line">a2 = np.expand_dims(a, <span class="number">1</span>)</span><br><span class="line">print(a2.shape)</span><br><span class="line"></span><br><span class="line">a3 = np.expand_dims(a, <span class="number">2</span>)</span><br><span class="line">print(a3.shape)</span><br><span class="line"></span><br><span class="line">a4 = np.expand_dims(a, <span class="number">3</span>)</span><br><span class="line">print(a4.shape)</span><br></pre></td></tr></table></figure>
+<h2 id="newaxis">newaxis</h2>
+<h3 id="简介">简介</h3>
+<p>newaxis就是None的一个alias</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>np.newaxis <span class="keyword">is</span> <span class="literal">None</span></span><br><span class="line"><span class="literal">True</span></span><br></pre></td></tr></table></figure>
+<h3 id="用途">用途</h3>
+<p>常用于slicing。用于给数组增加一个维度。</p>
+<h3 id="代码示例-v2">代码示例</h3>
+<p><a href>代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">a = np.ones((<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>))</span><br><span class="line">print(a.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a1 = a[np.newaxis]</span><br><span class="line">print(a1.shape)</span><br><span class="line">(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a2 = a[:, np.newaxis]</span><br><span class="line">print(a2.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a3 = a[:, :, np.newaxis]</span><br><span class="line">print(a3.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a4 = a[:, :, :, np.newaxis]</span><br><span class="line">print(a4.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">a5 = a[:, :, np.newaxis, np.newaxis, :]</span><br><span class="line">print(a5.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://stackoverflow.com/questions/29241056/how-does-numpy-newaxis-work-and-when-to-use-it" target="_blank" rel="noopener">https://stackoverflow.com/questions/29241056/how-does-numpy-newaxis-work-and-when-to-use-it</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/05/windows-文件和文件夹操作命令/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/05/windows-文件和文件夹操作命令/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">windows 文件和文件夹操作命令</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-05 11:14:17 / 修改时间：11:18:48" itemprop="dateCreated datePublished" datetime="2019-07-05T11:14:17+08:00">2019-07-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/windows/" itemprop="url" rel="index"><span itemprop="name">windows</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="文件和文件夹查看">文件和文件夹查看</h2>
+<ol>
+<li>查看文件和文件夹<br>
+dir</li>
+<li>只查看文件夹<br>
+dir /ad<br>
+dir /a:d</li>
+<li>只查看文件</li>
+</ol>
+<h2 id="文件和文件夹删除">文件和文件夹删除</h2>
+<ol>
+<li>删除文件<br>
+del file_name</li>
+<li>删除目录<br>
+rd dir_name</li>
+</ol>
+<h2 id="参考文献">参考文献</h2>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/29/常见单词解释/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1631,959 +2501,6 @@ cat /etc/passwd | awk ‘BEGIN {FS=&quot;:&quot;} $3 &lt; 10 {print $1 “\t” 
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/16/linux-cp-scp-vs-rsync/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/16/linux-cp-scp-vs-rsync/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">linux cp, scp vs rsync</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-16 16:29:17" itemprop="dateCreated datePublished" datetime="2019-06-16T16:29:17+08:00">2019-06-16</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-24 19:26:25" itemprop="dateModified" datetime="2019-08-24T19:26:25+08:00">2019-08-24</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="cp">cp</h2>
-<h3 id="参数介绍">参数介绍</h3>
-<h3 id="示例">示例</h3>
-<h2 id="scp">scp</h2>
-<h3 id="参数介绍-v2">参数介绍</h3>
-<h3 id="示例-v2">示例</h3>
-<h2 id="rsync">rsync</h2>
-<p>rsync相对于scp有以下优点：<br>
-1.支持断点续传<br>
-2.支持ssh<br>
-3.可分块传输<br>
-~$:rsync options source destination</p>
-<h3 id="参数介绍-v3">参数介绍</h3>
-<p>rsync [-zvra] source destination<br>
--z  传输前进行压缩<br>
--v  显示详细信息<br>
--r  递归拷贝<br>
--a  保留时间戳，owner,group<br>
--e ssh  使用ssh<br>
-–partial    单个文件的断点续传<br>
-–progress  显示同步进度<br>
--P等于–paritial和–progress一同使用<br>
-–include   只同步某些目录<br>
-–exclude   不同步某些目录</p>
-<h3 id="示例-v3">示例</h3>
-<p>~$:rsync -avc --exclude=**<strong>pycache</strong>  --exclude=**data --exclude=**tmp --exclude=**result_pictures experimental/ ~/<br>
-~$:rsync -rP source_dir target_dir</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/4585929/how-to-use-cp-command-to-exclude-a-specific-directory" target="_blank" rel="noopener">https://stackoverflow.com/questions/4585929/how-to-use-cp-command-to-exclude-a-specific-directory</a><br>
-2.<a href="https://www.cnblogs.com/bangerlee/archive/2013/04/07/3003243.html" target="_blank" rel="noopener">https://www.cnblogs.com/bangerlee/archive/2013/04/07/3003243.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/10/linux-ssh-tunnel内网穿透/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/10/linux-ssh-tunnel内网穿透/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">linux ssh tunnel内网穿透</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-10 21:33:16" itemprop="dateCreated datePublished" datetime="2019-06-10T21:33:16+08:00">2019-06-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-30 21:12:34" itemprop="dateModified" datetime="2019-06-30T21:12:34+08:00">2019-06-30</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="ssh-命令介绍">ssh 命令介绍</h2>
-<p>ssh是一种安全传输协议，此外还有tunnel转发功能，可以用来内网渗透。</p>
-<h3 id="参数介绍">参数介绍</h3>
-<p>-L port:host:hostport，访问本机的port端口就相当于访问host的hostport端口。<br>
-将本机的某个端口转发到远端指定机器的指定端口。本机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发出去。<br>
--R port:host:hostport，将远程主机的某个端口转发到指定的本地机器的指定端口。远程主机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发到指定的本地机器的指定端口。<br>
--N 不指定脚本或者命令<br>
--f 后台认证，需要和-N连用</p>
-<p>-L和-R的区别，-L是ssh隧道，-R是ssh反向隧道。</p>
-<h2 id="示例">示例</h2>
-<h3 id="翻墙ssh-l">翻墙ssh -L</h3>
-<p>执行以下命令的本机(localhost)通过中间服务器(45.32.22.289)访问被屏蔽的网站(google)。<br>
-~$:ssh -L 1234:google_ip:80 root@45.32.22.289<br>
-拿这个举个例子，可能不是很恰当，但是有助于理解。我自己的机器(A)是不能访问google©的，但是我有一台vps(B)，地址为45.32.22.289是可以访问google的，可以通过ssh隧道将A的端口(1234)通过B映射到C的端口(80)。</p>
-<h3 id="本机访问局域网的tensorboard-server">本机访问局域网的tensorboard server</h3>
-<h4 id="本机设置">本机设置</h4>
-<p>~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:mxxmhh@127.0.0.1" target="_blank" rel="noopener">mxxmhh@127.0.0.1</a><br>
-将本机的12345端口映射到10.1.114.50的6006端口，中间服务器使用的是本机。<br>
-或者可以使用10.1.114.50作为中间服务器。<br>
-~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
-或者可以使用如下方法：<br>
-~$:ssh -L 12345:127.0.0.1:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
-从这个方法中，可以看出127.0.0.1这个ip是中间服务器可以访问的ip。<br>
-以上三种方法中，-L后的端口号12345可以随意设置，只要不冲突即可。</p>
-<h4 id="服务端设置">服务端设置</h4>
-<p>然后在服务端运行以下命令：<br>
-~$:tensorboard --logdir logdir -port 6006<br>
-这个端口号也是可以任意设置的，不冲突即可。</p>
-<h4 id="运行">运行</h4>
-<p>然后在本机访问<br>
-<a href="https://127.0.0.1:12345" target="_blank" rel="noopener">https://127.0.0.1:12345</a>即可。</p>
-<h3 id="内网穿透ssh-r">内网穿透ssh -R</h3>
-<p>外网A(123.123.123.123)访问处于内网B的(127.0.0.1)的机器。<br>
-~$:ssh -N -f -R 2222:127.0.0.1:22 <a href="mailto:root@123.123.123.123" target="_blank" rel="noopener">root@123.123.123.123</a></p>
-<p>可以在外网机器A(123.123.123.123)上通过如下命令访问(-R)指定的内网机器B：<br>
-~$:ssh -p 2222 userB@localhost</p>
-<h3 id="报错">报错</h3>
-<p>Host key verification failed<br>
-直接把/home/username/.ssh/known_hosts中相应的给删了。</p>
-<h3 id="内网访问内网-挖洞">内网访问内网（挖洞）</h3>
-<p>A是家里的内网（无公网IP）上机器(196.)，B是VPS（有公网IP）(45.32.)，C是公司内网（无公网IP）机器(10.)。<br>
-要在家里的内网访问公司的内网，即A访问C。在C上建立ssh反向隧道：<br>
-~$:ssh -N -f -R 2222:127.0.0.1:22 userB@B.ip<br>
-在A上访问：<br>
-~$:ssh -p  2222 userC@B.ip</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html" target="_blank" rel="noopener">https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html</a><br>
-2.<a href="https://blog.creke.net/722.html" target="_blank" rel="noopener">https://blog.creke.net/722.html</a><br>
-3.<a href="http://arondight.me/2016/02/17/%E4%BD%BF%E7%94%A8SSH%E5%8F%8D%E5%90%91%E9%9A%A7%E9%81%93%E8%BF%9B%E8%A1%8C%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" target="_blank" rel="noopener">http://arondight.me/2016/02/17/使用SSH反向隧道进行内网穿透/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/09/windows-IIS-ftp服务器/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/09/windows-IIS-ftp服务器/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">windows IIS ftp服务器</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-09 10:45:35" itemprop="dateCreated datePublished" datetime="2019-06-09T10:45:35+08:00">2019-06-09</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-29 12:03:27" itemprop="dateModified" datetime="2019-08-29T12:03:27+08:00">2019-08-29</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/windows/" itemprop="url" rel="index"><span itemprop="name">windows</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="在服务端搭建ftp服务器">在服务端搭建ftp服务器</h2>
-<h3 id="创建ftp目录">创建ftp目录</h3>
-<p>这里我选择在D盘，创建目录D://Ftp作为我的ftp文件存放目录</p>
-<h2 id="添加ftp用户-可选">添加ftp用户（可选）</h2>
-<p>其实这里的ftp用户就是windows 操作系统的用户，为了安全起见，我们不选我们工作时登录的用户，选择重新创建一个新的用户。这里添加了新用户ftpuser作为ftp登录用户。</p>
-<h3 id="开启iis服务">开启IIS服务</h3>
-<p>打开控制面板下的程序，选择启用或关闭Windows功能，选中Internet Information Services中的FTP服务器和Web管理工具（如下图）。等待其加载完所有组件</p>
-<h3 id="设置ftp站点">设置ftp站点</h3>
-<p>执行完第3步以后，打开计算机管理，在服务和应用程序下我们就可以看到Internet Infromation Service，点击它，右击网站选择新建一个ftp站点，配置见下图，完成以后启动该ftp。</p>
-<h2 id="防火墙允许通过">防火墙允许通过</h2>
-<p>打开 控制面板&gt;系统和安全&gt;Windows防火墙&gt;允许的应用<br>
-点击允许其他应用，这时添加windows服务主进程的路径&quot;C:\Windows\System32\svchost.exe&quot;，这时候防火墙就允许ftp访问通过了。</p>
-<h2 id="在客户机登录ftp服务器">在客户机登录ftp服务器</h2>
-<p>在资源管理器中输入ftp://ip地址，输入账号密码后即可成功访问ftp服务器。</p>
-<h2 id="参考文献">参考文献</h2>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/08/numpy-backpropagation/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/08/numpy-backpropagation/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">numpy backpropagation</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-08 23:10:17" itemprop="dateCreated datePublished" datetime="2019-06-08T23:10:17+08:00">2019-06-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-09 11:11:15" itemprop="dateModified" datetime="2019-06-09T11:11:15+08:00">2019-06-09</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="numpy-代码示例">numpy 代码示例</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># N is batch size; D_in is input dimension;</span></span><br><span class="line"><span class="comment"># H is hidden dimension; D_out is output dimension.</span></span><br><span class="line">N, D_in, H, D_out = <span class="number">64</span>, <span class="number">1000</span>, <span class="number">100</span>, <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Create random input and output data</span></span><br><span class="line">x = np.random.randn(N, D_in)</span><br><span class="line">y = np.random.randn(N, D_out)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Randomly initialize weights</span></span><br><span class="line">w1 = np.random.randn(D_in, H)</span><br><span class="line">w2 = np.random.randn(H, D_out)</span><br><span class="line"></span><br><span class="line">learning_rate = <span class="number">1e-6</span></span><br><span class="line"><span class="keyword">for</span> t <span class="keyword">in</span> range(<span class="number">500</span>):</span><br><span class="line">    <span class="comment"># Forward pass: compute predicted y</span></span><br><span class="line">    h = x.dot(w1)</span><br><span class="line">    h_relu = np.maximum(h, <span class="number">0</span>)</span><br><span class="line">    y_pred = h_relu.dot(w2)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Compute and print loss</span></span><br><span class="line">    loss = np.square(y_pred - y).sum()</span><br><span class="line">    print(t, loss)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Backprop to compute gradients of w1 and w2 with respect to loss</span></span><br><span class="line">    grad_y_pred = <span class="number">2.0</span> * (y_pred - y)</span><br><span class="line">    grad_w2 = h_relu.T.dot(grad_y_pred)</span><br><span class="line">    grad_h_relu = grad_y_pred.dot(w2.T)</span><br><span class="line">    grad_h = grad_h_relu.copy()</span><br><span class="line">    grad_h[h &lt; <span class="number">0</span>] = <span class="number">0</span></span><br><span class="line">    grad_w1 = x.T.dot(grad_h)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Update weights</span></span><br><span class="line">    w1 -= learning_rate * grad_w1</span><br><span class="line">    w2 -= learning_rate * grad_w2</span><br></pre></td></tr></table></figure>
-<h2 id="推理">推理</h2>
-<p><img src="/2019/06/08/numpy-backpropagation/bp.jpg" alt="bp1"><br>
-<img src="/2019/06/08/numpy-backpropagation/bp2.jpg" alt="bp2"></p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="http://pytorch.org/tutorials/beginner/pytorch_with_examples.html" target="_blank" rel="noopener">http://pytorch.org/tutorials/beginner/pytorch_with_examples.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/07/pytorch-nn-Conv2d-vs-nn-functional-conv2d/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/07/pytorch-nn-Conv2d-vs-nn-functional-conv2d/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">pytorch nn.Conv2d vs nn.functional.conv2d</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-07 12:45:21 / 修改时间：13:09:47" itemprop="dateCreated datePublished" datetime="2019-06-07T12:45:21+08:00">2019-06-07</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="nn-conv2d-vs-nn-functional-conv2d">nn.Conv2d vs nn.functional.conv2d</h2>
-<ul>
-<li>nn.functional包中是函数接口，是从输入到输出的一个变换，内部没有Variable，不能够构成一个layer；nn包中是nn.functional函数对应的类封装，nn中的类可能有Variable（如Conv2d)，也可能没有（如Dropout，Maxpooling）</li>
-<li>nn中的类一般是nn.Module的子类，继承了nn.Module的方法和属性。</li>
-<li>nn中的类需要传入参数实例化，然后用函数调用的方法调用实例化对象传入数据。而nn.functional是函数，不需要实例化可以直接调用，需要同时传入filters的weights和biases。</li>
-</ul>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/66782101/answer/579393790" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/579393790</a><br>
-2.<a href="https://www.zhihu.com/question/66782101/answer/246460048" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/246460048</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2633,7 +2550,7 @@ cat /etc/passwd | awk ‘BEGIN {FS=&quot;:&quot;} $3 &lt; 10 {print $1 “\t” 
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">183</span>
+                    <span class="site-state-item-count">188</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3161,7 +3078,31 @@ cat /etc/passwd | awk ‘BEGIN {FS=&quot;:&quot;} $3 &lt; 10 {print $1 “\t” 
                     
                       
                     
-                    <span class="site-state-item-count">234</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">246</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
