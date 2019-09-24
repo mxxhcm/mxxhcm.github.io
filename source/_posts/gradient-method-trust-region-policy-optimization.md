@@ -172,6 +172,9 @@ $$maximize_{\theta} \left[\nabla_{\theta}L_{\theta_{old}}(\theta)|\_{\theta=\the
 同样，也可以使用$l2$约束，推导出标准的policy gradient如下：
 $$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta- \theta_{old}) \qquad s.t. \frac{1}{2}\vert \theta-\theta_{old}\vert^2 \le \delta\right]$\tag{52}$$
 
+## TRPO的缺点
+TRPO通过最小化二次泛函近似$\text{F}$的逆，很大程度减少了计算量。但是每一次更新参数还需要计算$\text{F}$。TRPO和其他policy gradient方法相比，采样效率很低，并且扩展性不好，对于很深的网络不适用，这就有了后来的PPO和ACKTR。
+
 ## 参考文献
 Trust Region Policy Optimization
 1.http://joschu.net/docs/thesis.pdf
