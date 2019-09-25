@@ -23,7 +23,7 @@ $$g(\theta_m|\theta_m) = f(\theta_m) \tag{2}$$
 ![mm](mm.jpg)
 接下来，通过最大化$g(\theta|\theta_m)$就可以最大化$f(\theta)$：
 $$\theta_{m+1} = \arg \max_{\theta} g(\theta|\theta_m) \tag{3}$$
-当$m\righarrow \infty$时，$f(\theta_m)$就会收敛到极小值点或者鞍点。我们能够得到以下的几个关系式：
+当$m\rightarrow \infty$时，$f(\theta_m)$就会收敛到极小值点或者鞍点。我们能够得到以下的几个关系式：
 $$f(\theta_{m+1}) \ge g(\theta_{m+1}|\theta_m) \ge g(\theta_m|\theta_m)=f(\theta_m) $$
 
 
