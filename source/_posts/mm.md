@@ -5,7 +5,9 @@ tags:
  - MM
  - Majorize-Minimization
  - Minorize-Maximization
-categories: 凸优化
+categories: 
+ - 凸优化
+ - 机器学习
 mathjax: true
 ---
 
