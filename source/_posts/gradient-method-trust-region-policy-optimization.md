@@ -163,7 +163,7 @@ $$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\th
 ## TRPO的缺点
 TRPO通过最小化二次泛函近似$\text{F}$的逆，很大程度减少了计算量。但是每一次更新参数还需要计算$\text{F}$。TRPO和其他policy gradient方法相比，采样效率很低，并且扩展性不好，对于很深的网络不适用，这就有了后来的PPO和ACKTR。
 
-## Minorize-Maximization MM算法
+## [Minorize-Maximization MM算法](https://mxxhcm.github.io/2019/09/25/mm/)
 ![mm](mm.jpeg)
 如上图所示，通过迭代的最大化下界函数局部地逼近expected reward。更详细的来说，随机的初始化$\theta$，在当前$\theta$下，找到下界$M$最接近expected reward $\eta$的点，然后将$M$的最优点作为下一次的$\theta$。不断的迭代，直到收敛到optimal policy。这样做有一个条件，就是$M$要比$\eta$容易优化。比如$M$是二次函数：
 $$ax^2 + bx+c\tag{32}$$
