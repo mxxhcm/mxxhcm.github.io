@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="A Natural Policy Gradient 论文名称：A Natural Policy Gradient 论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf Abstract 作者基于参数空间的底层结构提出了natural gradient方法，找出下降最快方向。尽管gradient方法不能过大的改变参数">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-24T14:09:29.484Z">
+<meta property="og:updated_time" content="2019-09-26T02:19:05.501Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="gradient method natural policy gradient">
 <meta name="twitter:description" content="A Natural Policy Gradient 论文名称：A Natural Policy Gradient 论文地址：https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf Abstract 作者基于参数空间的底层结构提出了natural gradient方法，找出下降最快方向。尽管gradient方法不能过大的改变参数">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-24 22:09:29" itemprop="dateModified" datetime="2019-09-24T22:09:29+08:00">2019-09-24</time>
+                <time title="修改时间：2019-09-26 10:19:05" itemprop="dateModified" datetime="2019-09-26T10:19:05+08:00">2019-09-26</time>
               
             
           </span>
@@ -474,14 +474,13 @@ $$\text{F}_s(\theta) = \mathbb{E}_{\pi(a;s,\theta)} \left[\frac{\partial \log \p
 $$\text{F}(\theta) = \mathbb{E}_{\rho^{\pi} (s)} \left[\mathbb{F}_s (\theta)\right] \tag{7}$$<br>
 每一个$s$对应的单个$\text{F}_s$都和MDP的transition model没有关系，期望操作引入了对transition model参数的依赖。直观上来说，$\text{F}_s$测量的是在$s$上的probability manifold的距离，$\text{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：<br>
 $$\hat{\nabla}\eta(\theta) =\text{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{8}$$<br>
-为什么natural gradient下降最快的方向是这个方向，接下来我们进行证明。其实上面就是说的这些就是使用$\text{KL}$散度当做metric，而不是使用欧几里得metric。然后对$\text{KL}$散度进行约束，要找到使得loss函数$L(\theta)$最小的$d\theta$，我们想要知道哪个方向的$\text{KL}$散度下降的最快，目标函数：<br>
-$$d\theta^{*} = \arg \min L(\theta +d\theta) \tag{9}$$<br>
-约束条件<br>
-$$\text{KL}\left[p_{\theta}||p_{\theta’}\right] = c \tag{10}$$<br>
+为什么natural gradient下降最快的方向是这个方向，接下来我们进行证明。其实上面就是说的这些就是使用$\text{KL}$散度当做metric，而不是使用欧几里得metric。然后对$\text{KL}$散度进行约束，要找到使得目标函数$\eta(\theta)$最大的$d\theta$，需要知道哪个方向的$\text{KL}$散度下降的最快，目标函数：<br>
+$$d\theta^{*} = \arg \min \eta(\theta +d\theta) \tag{9}$$<br>
+$$s.t. \text{KL}\left[p_{\theta}||p_{\theta’}\right] = c \tag{10}$$<br>
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一阶泰勒展开公式如下：<br>
 \begin{align*}<br>
-L_{\theta’}(\theta) &amp; = L_{\theta’}(\theta’) + \left[\nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’}\right]^T (\theta’ + d\theta - \theta’) + \cdots \\<br>
-&amp; = L_{\theta’}(\theta’) + \left[\nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’}\right]^T d\theta + \cdots  \tag{11}\\<br>
+\eta_{\theta’}(\theta) &amp; = \eta_{\theta’}(\theta’) + \left[\nabla_{\theta}\eta_{\theta’}(\theta)|_{\theta=\theta’}\right]^T (\theta’ + d\theta - \theta’) + \cdots \\<br>
+&amp; = \eta_{\theta’}(\theta’) + \left[\nabla_{\theta}\eta_{\theta’}(\theta)|_{\theta=\theta’}\right]^T d\theta + \cdots  \tag{11}\\<br>
 \end{align*}</p>
 <p>引理$1$：$\text{KL}$散度在$\theta=\theta’$附近$\theta’ +d\theta, d\theta\rightarrow 0$处的二阶泰勒展开是：<br>
 $$\text{KL}\left[p(x|\theta’)||p(x|\theta’+d\theta)\right] \approx \frac{1}{2}d\theta^T \text{F}d\theta \tag{12}$$<br>
@@ -500,21 +499,21 @@ $$\text{KL}\left[p(x|\theta’)||p(x|\theta’+d\theta)\right] \approx \frac{1}{
 &amp; = \frac{1}{2} d\theta^T \text{H} d\theta\tag{19}\\<br>
 &amp; = \frac{1}{2} d\theta^T \text{F} d\theta\tag{20}\\<br>
 \end{align*}<br>
-这也是为什么$\vert d\theta\vert^2 $定义为$d\theta^T\text{G}\theta$的原因。使用拉格朗日乘子法将$\text{KL}$散度约束条件带入目标函数$L$：<br>
+这也是为什么$\vert d\theta\vert^2 $定义为$d\theta^T\text{G}\theta$的原因。使用拉格朗日乘子法将$\text{KL}$散度约束条件带入目标函数$\eta$：<br>
 \begin{align*}<br>
-d\theta^{*} &amp; = {\arg \min}_{d\theta} L(\theta’+d\theta) + \lambda(\text{KL}\left[p_{\theta’}||p_{\theta’+d\theta}\right] -c)\\<br>
+d\theta^{*} &amp; = {\arg \min}_{d\theta} \eta(\theta’+d\theta) + \lambda(\text{KL}\left[p_{\theta’}||p_{\theta’+d\theta}\right] -c)\\<br>
 &amp; = {\arg \min}_{d\theta} L_{\theta’}(\theta’) + \left[\nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’}\right]^T d\theta + \lambda(\left[\frac{1}{2} d\theta^T \text{F} d\theta\right] -c)\tag{21}\\<br>
 \end{align*}<br>
 对$d\theta$求导，令其等于$0$，得：<br>
 \begin{align*}<br>
-&amp;0 + \nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’} + \text{F}d\theta + 0\\<br>
-=&amp; \nabla_{\theta}L_{\theta’}(\theta)|_{\theta=\theta’} + \text{F}d\theta \tag{22}\\<br>
+&amp;0 + \nabla_{\theta}\eta_{\theta’}(\theta)|_{\theta=\theta’} + \text{F}d\theta + 0\\<br>
+=&amp; \nabla_{\theta}\eta_{\theta’}(\theta)|_{\theta=\theta’} + \text{F}d\theta \tag{22}\\<br>
 =&amp; 0\\<br>
 \end{align*}<br>
 求解得到：<br>
-$$d\theta= - \frac{1}{\lambda}\text{F}^{-1} \nabla_{\theta’} L(\theta’) \tag{23}$$<br>
+$$d\theta= - \frac{1}{\lambda}\text{F}^{-1} \nabla_{\theta} \eta_{\theta’}(\theta) \tag{23}$$<br>
 所以natural gradient定义为：<br>
-$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}L(\theta) \tag{24}$$</p>
+$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}\eta(\theta) \tag{24}$$</p>
 <h2 id="the-natural-gradient-和-policy-iteration">The Natural Gradient 和 Policy Iteration</h2>
 <p>使用$\omega$参数化的值函数$f^{\pi} (s,a;\omega)$近似$Q^{\pi} (s,a)$。</p>
 <h3 id="natural-gradient-with-approximation-使用近似的自然梯度">Natural Gradient with Approximation（使用近似的自然梯度）</h3>
@@ -566,6 +565,8 @@ $$\pi(a;s,\theta’) = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2
 <p>在不同的参数空间中，<a href="https://mxxhcm.github.io/2019/09/16/fisher-information/">fisher information</a>都可以收敛到<a href="https://mxxhcm.github.io/2019/09/10/Jacobian-matrix-and-Hessian-matrix/">海塞矩阵</a>，因此，它是<a href="https://mxxhcm.github.io/2019/09/18/asymptotically-efficient-%E6%B8%90%E8%BF%9B%E6%9C%89%E6%95%88%E6%80%A7/">aymptotically efficient</a>，即到达了cramer-rao bound。<br>
 $\text{F}$是$\log \pi$对应的fisher information。Fisher information 和海塞矩阵有关系，但是都需要和$\pi$联系起来。是这里考虑$\eta(\theta)$的海塞矩阵，它和$\text{F}$两个之间有一定联系，但是不一样。<br>
 事实上，定义的新的$\text{F}$并不会收敛到海塞矩阵。但是因为海塞矩阵一般不是正定的，所以在非局部最小处附近，它提供的curvature信息用处不大。在局部最小处使用conjugate methods会更好。</p>
+<h2 id="truncated-natural-policy-gradient">Truncated Natural Policy Gradient</h2>
+<p>Natural policy gradient需要计算$\delta \theta =</p>
 <h2 id="参考文献">参考文献</h2>
 <p>1.<a href="https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf</a><br>
 2.<a href="https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/" target="_blank" rel="noopener">https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/</a><br>
@@ -1339,7 +1340,7 @@ $\text{F}$是$\log \pi$对应的fisher information。Fisher information 和海�
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#a-natural-policy-gradient"><span class="nav-number">1.</span> <span class="nav-text">A Natural Policy Gradient</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#abstract"><span class="nav-number">2.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#introduction"><span class="nav-number">3.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#a-natural-gradient"><span class="nav-number">4.</span> <span class="nav-text">A Natural Gradient</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#the-natural-gradient-和-policy-iteration"><span class="nav-number">5.</span> <span class="nav-text">The Natural Gradient 和 Policy Iteration</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#natural-gradient-with-approximation-使用近似的自然梯度"><span class="nav-number">5.1.</span> <span class="nav-text">Natural Gradient with Approximation（使用近似的自然梯度）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定理1"><span class="nav-number">5.1.1.</span> <span class="nav-text">定理1</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#greedy-policy-improvement"><span class="nav-number">5.2.</span> <span class="nav-text">Greedy Policy Improvement</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定理2"><span class="nav-number">5.2.1.</span> <span class="nav-text">定理2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#定理3"><span class="nav-number">5.2.2.</span> <span class="nav-text">定理3</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#metrics和curvatures"><span class="nav-number">6.</span> <span class="nav-text">Metrics和Curvatures</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#a-natural-policy-gradient"><span class="nav-number">1.</span> <span class="nav-text">A Natural Policy Gradient</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#abstract"><span class="nav-number">2.</span> <span class="nav-text">Abstract</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#introduction"><span class="nav-number">3.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#a-natural-gradient"><span class="nav-number">4.</span> <span class="nav-text">A Natural Gradient</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#the-natural-gradient-和-policy-iteration"><span class="nav-number">5.</span> <span class="nav-text">The Natural Gradient 和 Policy Iteration</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#natural-gradient-with-approximation-使用近似的自然梯度"><span class="nav-number">5.1.</span> <span class="nav-text">Natural Gradient with Approximation（使用近似的自然梯度）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定理1"><span class="nav-number">5.1.1.</span> <span class="nav-text">定理1</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#greedy-policy-improvement"><span class="nav-number">5.2.</span> <span class="nav-text">Greedy Policy Improvement</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定理2"><span class="nav-number">5.2.1.</span> <span class="nav-text">定理2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#定理3"><span class="nav-number">5.2.2.</span> <span class="nav-text">定理3</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#metrics和curvatures"><span class="nav-number">6.</span> <span class="nav-text">Metrics和Curvatures</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#truncated-natural-policy-gradient"><span class="nav-number">7.</span> <span class="nav-text">Truncated Natural Policy Gradient</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
