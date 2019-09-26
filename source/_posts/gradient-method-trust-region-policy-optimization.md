@@ -179,6 +179,30 @@ $$s.t. \frac{1}{2}(\theta_{old}-\theta)^T A(\theta_{old})(\theta_{old} - \theta)
 $$\max_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta - \theta_{old})\right] $$ 
 $$s.t. \frac{1}{2}\vert \theta-\theta_{old}\vert^2 \le \delta\tag{31}$$
 
+## TRPO算法
+TRPO应用了conjugate gradient方法到natural policy gradient，此外，natural policy gradient的trusted region很小，作者将它换成了一个更大的可以调节的值。二次近似可能会降低accuracy，这些可能会对policy的更新引入其他问题，造成performance的degrade。一种可能的解决办法是在进行更新之前先进行验证：
+- 新的policy和老的policy之间的的$\text{KL}$散度是不是小于$\delta$
+- $L(\theta) \ge 0$
+
+如果验证失败了，使用衰减因子$0\lt \alpha \lt 1$，减小natural policy gradient直到满足要求即可。下面的算法介绍了这种思想的line search solution：
+算法 Line Search for TRPO
+计算$\Delta_k = \alpha \hat{\text{F}}_k^{-1} \delta\eta$
+for $j=0,1,2,\cdots, t$ do
+$\qquad$计算$\theta = \theta_k + \alpha^j \Delta_k$
+IF $L_(\theta_k)(\theta) \gt 0$或者$\bar{D}_{KL}(\theta||\theta_k) \le \delta$ then
+接受这个更新， $\theta_{k+1} = \theta_k + \alpha^j \Delta_k$
+break
+end if
+end for
+
+TRPO将truncated natural policiy gradient(使用conjugate gradient)$和line search结合起来：
+算法 Trust Region Policy Optimization
+输入：初始的policy参数$\theta_0$
+for $k=0,1,2,\cdots$ do
+使用policy $\pi_k = \pi(\theta_k)$收集trajectories到集合$\mathbb{D}_k$
+估计$\hat{A}_t^{\pi_k}$
+
+
 ## TRPO的缺点
 TRPO通过最小化二次泛函近似$\text{F}$的逆，很大程度减少了计算量。但是每一次更新参数还需要计算$\text{F}$。TRPO和其他policy gradient方法相比，采样效率很低，并且扩展性不好，对于很深的网络不适用，这就有了后来的PPO和ACKTR。
 
