@@ -23,7 +23,7 @@ mathjax: true
 
 ## Motivation
 我们想要每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi_{old}$和new policy $\pi_{new}$的关系式就好啦。给出这样一个关系式：
-$$\eta(\pi_{new}) = \eta(\pi_{old}) + \mathbb{E}_{s_0, a_0, \cdots \sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}}(s_t,a_t)\right] \tag{1}$$
+$$\eta(\pi_{new}) = \eta(\pi_{old}) + \mathbb{E}\_{s_0, a_0, \cdots \sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}}(s_t,a_t)\right] \tag{1}$$
 证明：
 \begin{align\*}
 \mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right] &=\mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi_{old}} (s_t,a_t) - V^{\pi_{old}} (s_t))\right]  \\\\
@@ -52,20 +52,20 @@ $$\pi_{new}(s) = arg\ max_a A^{\pi_{old}} (s,a) \tag{3}$$
 式子$(2)$中包含的$\rho_{\pi_{new}}$依赖于未知的$\pi_{new}$，而我们已知的是$\pi_{old}$，忽略因为policy改变导致的state访问频率的改变，在$L_{\pi_{old}}(\pi_{new} )$中用$\rho_{\pi_{old}}(s)$近似$\rho_{\pi_{new}}(s)$。
 \begin{align\*}
 \eta(\pi_{new}) &= \eta(\pi_{old}) + \sum_s\rho_{\pi_{new}}(s)\sum_a\pi_{new}(a|s)A^{\pi_{old}} (s,a)\\\\
-& = \eta(\pi_{old}) + \mathbb{E}_{s\sim \pi_{new}, a\sim \pi_{new}}A^{\pi_{old}}(s,a)\\\\
-& = \eta(\pi_{old}) + \mathbb{E}_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\frac{\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]\tag{4}\\\\
+& = \eta(\pi_{old}) + \mathbb{E}\_{s\sim \pi_{new}, a\sim \pi_{new}}A^{\pi_{old}}(s,a)\\\\
+& = \eta(\pi_{old}) + \mathbb{E}\_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\frac{\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]\tag{4}\\\\
 \end{align\*}
 
 \begin{align\*}
 L_{\pi_{old}}(\pi_{new}) & = \eta(\pi_{old}) + \sum_s\rho_{\pi_{old}}(s)\sum_a\pi_{new}(a|s)A^{\pi_{old}} (s,a)\\\\
-& = \eta(\pi_{old}) +\mathbb{E}_{s\sim \pi_{old}, a\sim \pi_{new}}A^{\pi_{old}}(s,a)\\\\
-& = \eta(\pi_{old}) +\mathbb{E}_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]\tag{5}\\\\ 
+& = \eta(\pi_{old}) +\mathbb{E}\_{s\sim \pi_{old}, a\sim \pi_{new}}A^{\pi_{old}}(s,a)\\\\
+& = \eta(\pi_{old}) +\mathbb{E}\_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]\tag{5}\\\\ 
 \end{align\*}
 
 用$\pi_{\theta}(a|s)$表示可导policy，用$\theta_{old}$表示$\pi_{old}$的参数。当$\pi_{new} = \pi_{old}$时，即$\theta=\theta_{old}$时，$L_{\pi_{old}}(\pi_{new})$和$\eta(\pi_{new})$的一阶导相等：
 $$L_{\pi_{old}}(\pi_{new}) = \eta(\pi_{old}) + \sum_s\rho_{\pi_{old}}(s)\sum_a\pi_{old}(a|s)A^\pi_{old}(s,a) = \eta(\pi_{new})\tag{6}$$
-$$\nabla_{\theta} L_{\pi_{old}}(\pi_{new})|_{\theta=\theta_{old}} = \mathbb{E}_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\nabla_{\theta}\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]|_{\theta_{old}}\tag{7} $$
-$$\nabla_{\theta} \eta(\pi_{new})|_{\theta=\theta_{old}} =\mathbb{E}_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\nabla_{\theta}\log\pi_{new}(a|s)A^{\pi_{old}}(s,a)\right]|_{\theta_{old}} \tag{8}$$
+$$\nabla_{\theta} L_{\pi_{old}}(\pi_{new})|_{\theta=\theta_{old}} = \mathbb{E}\_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\nabla_{\theta}\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]|_{\theta_{old}}\tag{7} $$
+$$\nabla_{\theta} \eta(\pi_{new})|_{\theta=\theta_{old}} =\mathbb{E}\_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\nabla_{\theta}\log\pi_{new}(a|s)A^{\pi_{old}}(s,a)\right]|_{\theta_{old}} \tag{8}$$
 证明：
 式子$(6)$将$\pi_{new}=\pi_{old}$代入即可。我对于式子$7$和$8$相等有疑问，为什么？
 也就是说当$\pi_{new} = \pi_{old}$时，$L_{\pi_{old}}(\pi_{new})$和$\eta(\pi_{new})$是相等的，在$\pi_{old}$对应的参数$\theta$周围的无穷小范围内，可以近似认为它们依然相等，$\theta$进行足够小的step更新到达新的policy $\pi_{new}$，相应参数为$\theta_{\pi_{new}}$，在改进$L_{\pi_{old}}$同时也改进了$\eta$，但是这个足够小的step是多少是不知道的。
@@ -75,7 +75,7 @@ $$\nabla_{\theta} \eta(\pi_{new})|_{\theta=\theta_{old}} =\mathbb{E}_{s\sim \pi_
 $$\pi_{new}(a|s) = (1-\alpha) \pi_{old}(a|s)+\alpha\pi'(a|s) \tag{9}$$
 可以证明，新的policy $\pi_{new}$和老的policy $\pi_{old}$之间存在以下关系：
 $$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2 $$ 
-$$\epsilon = max_s \vert\mathbb{E}_{a\sim\pi'}\left[A^{\pi} (s,a)\right]\vert \tag{10}, \alpha,\gamma\in [0,1]$$
+$$\epsilon = max_s \vert\mathbb{E}\_{a\sim\pi'}\left[A^{\pi} (s,a)\right]\vert \tag{10}, \alpha,\gamma\in [0,1]$$
 证明：
 进行缩放得到：
 $$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \tag{11}$$
@@ -121,16 +121,16 @@ $$\max_{\theta}\left[L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \the
 $$\max_{\theta} L_{\theta_{old}} (\theta)$$
 $$ s.t. D_{KL}^{max}(\theta_{old},\theta) \le \delta \tag{22}$$
 这样会在state space的每一个state都有一个KL散度约束。由于约束太多，这个问题还是不能解。这里使用average KL divergence进行近似:
-$$\bar{D}_{KL}^{\rho}(\theta_1, \theta_2) = \mathbb{E}_{s\sim \rho}\left[D_{KL}(\pi_{\theta_1}(\cdot|s) || \pi_{\theta_2}(\cdot|s))\right] \tag{23}$$
+$$\bar{D}\_{KL}^{\rho}(\theta_1, \theta_2) = \mathbb{E}\_{s\sim \rho}\left[D_{KL}(\pi_{\theta_1}(\cdot|s) || \pi_{\theta_2}(\cdot|s))\right] \tag{23}$$
 公式$22$变成：
 $$\max_{\theta} L_{\theta_{old}} (\theta)$$ 
-$$s.t. \bar{D}_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{24}$$
+$$s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{24}$$
 
 ## 目标函数和约束的采样估计（第三次近似）
 上一节介绍的是关于policy parameter的有约束优化问题，约束条件为每一次policy更新时限制policy变化的大小，优化expected toral reward $\eta$的一个估计值。这一节使用Monte Carlo仿真近似目标和约束函数。
 代入$L_{\theta_{old}}$的等式，得到：
 $$\max_{\theta}\sum_s \rho_{\theta_{old}}(s) \sum_a\pi_{\theta}(a|s)A_{\theta_{old}}(s,a)$$
-$$s.t. \bar{D}_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{25}$$
+$$s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{25}$$
 首先用期望$\frac{1}{1-\gamma}\mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[\cdots\right]$代替目标函数中的$\sum_s\rho_{\theta_{old}}(s) \left[\cdots\right]$。接下来用$Q$值$Q_{\theta_{old}}$代替advantage $A_{\theta_{old}}$，结果多了一个常数项，不影响。最后使用importance smapling代替actions上的求和。使用$q$表示采样分布，$q$分布中单个的$s_n$对于loss函数的贡献在于：
 $$\sum_a \pi_{\theta}(a|s_n) A_{\theta_{old}}(s_n,a) = \mathbb{E}\_{a\sim q}\left[\frac{\pi_{\theta} (a|s_n) }{q(a|s_n)}A_{\theta_{old}}(s_n,a) \right]\tag{26}$$
 上面的公式就是使用importance sampling代替求和。将$A$展开：
@@ -140,8 +140,8 @@ $$\sum_a \pi_{\theta}(a|s_n) A_{\theta_{old}}(s_n,a) = \mathbb{E}\_{a\sim q}\lef
 &= \sum_a \pi_{\theta}(a|s)Q_{\theta_{old}}(s,a)- V_{\theta_{old}}(s)\\\\
 \end{align\*}
 将公式$25$的优化问题转化为：
-$$\max_{\theta} \mathbb{E}_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right]$$
-$$s.t. \mathbb{E}_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{27}$$
+$$\max_{\theta} \mathbb{E}\_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right]$$
+$$s.t. \mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{27}$$
 接下来要做的就是用采样代替期望，用经验估计代替$Q$值。接下来会介绍两种方法进行估计。
 
 第一个叫做single path，通常用在policy gradient estimation，基于单个轨迹的采样。第二个叫做vine，构建一个rollout set，从rollout set的每一个state处执行多个actions。这种方法经常用在policy iteration方法上。
