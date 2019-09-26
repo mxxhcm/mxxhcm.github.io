@@ -142,9 +142,8 @@ $$\sum_a \pi_{\theta}(a|s_n) A_{\theta_{old}}(s_n,a) = \mathbb{E}\_{a\sim q}\lef
 将公式$25$的优化问题转化为：
 $$\max_{\theta} \mathbb{E}\_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right]$$
 $$s.t. \mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{27}$$
-接下来要做的就是用采样代替期望，用经验估计代替$Q$值。接下来会介绍两种方法进行估计。
-
-第一个叫做single path，通常用在policy gradient estimation，基于单个轨迹的采样。第二个叫做vine，构建一个rollout set，从rollout set的每一个state处执行多个actions。这种方法经常用在policy iteration方法上。
+好了，前面给出各种证明和近似，终于给出了我们要解决的问题的数学公式，这部分是为了帮助我们理解。我们实际需要的是解这个有约束的优化问题，这也是代码中要实现的部分，具体怎么做，一句话，采样然后估计。用采样代替期望，用经验估计代替$Q$值。
+介绍两种方法进行估计。第一个叫做single path，通常用在policy gradient estimation，基于单个轨迹的采样。第二个叫做vine，构建一个rollout set，从rollout set的每一个state处执行多个actions。这种方法经常用在policy iteration方法上。
 
 ### Single Path
 采样$s_0\sim \rho_0$，模拟policy $\pi_{\theta_{old}}$一些timesteps生成一个trajectory $s_0, a_0, s_1, a_1, \cdots, s_{T-1}, a_{T-1}, s_T$，因此$q(a|s) = \pi_{\theta_{old}}(a|s)$。根据trajectory对每一个state action pair $(s_t,a_t)$计算$Q_{\theta_{old}}(s,a)$。
@@ -162,11 +161,11 @@ Vine比single path好的地方在于，给定相同数量的$Q$样本，目标�
 使用上面介绍的single path或者vine进行采样，给出两个算法。重复执行以下步骤：
 1. 使用single path或者vine算法产生一系列state-action pairs，使用Monte Carlo估计相应的$Q$值；
 2. 利用样本计算公式$(27)$中目标函数和约束函数的估计值
-3. 求出有约束优化问题的近似解，更新policy参数$\theta$，使用共轭梯度和line search。
+3. 使用共轭梯度和line search求出有约束优化问题的近似解，更新policy参数$\theta$，。
 
-对于$3$来说，计算KL散度的Hessian矩阵而不是协方差矩阵的梯度，生成Fisher information matrix。即使用$\frac{1}{N}\sum_{n=1}^N \frac{\partial^2}{\partial \theta_j}D_{KL}(\pi_{\theta_{old}}(\cdot|s_n)||\pi_{\theta}(\cdot|s_n))$近似$A_{ij}$而不是$\frac{1}{N}\sum_{n=1}^N \frac{\partial}{\partial \theta_i}log(\pi_{\theta}(a_n|s_n))\frac{\partial}{\partial \partial_j}log(\pi_{\theta}(a_n|s_n))$。
-在前面介绍的理论和本节介绍的算法之间有以下关联：
-1. 理论上验证了优化带有KL散度penalty的目标函数可以保证policy improvement是单调递增的。这个很大的penalty系数$C$会产生很小的step，所以我们想要减小这个系数。经验上来讲，很难选择一个鲁邦的penalty系数，所以我们使用一个KL散度上的一个hard constraint而不是一个penalty。
+在第$3$步中，使用KL散度的Hessian矩阵而不是协方差矩阵的梯度计算Fisher information matrix。即使用$\frac{1}{N}\sum_{n=1}^N \frac{\partial^2}{\partial \theta_j}D_{KL}(\pi_{\theta_{old}}(\cdot|s_n)||\pi_{\theta}(\cdot|s_n))$近似$A_{ij}$而不是$\frac{1}{N}\sum_{n=1}^N \frac{\partial}{\partial \theta_i}log(\pi_{\theta}(a_n|s_n))\frac{\partial}{\partial \partial_j}log(\pi_{\theta}(a_n|s_n))$。
+这个实用算法和前面的理论关联如下：
+1. 验证了优化使用KL散度进行约束的目标函数可以保证policy improvement是单调递增的。如果penalty系数$C$很大step会很小，我们想要减小这个系数。经验上来讲，很难选择一个鲁邦的penalty系数，所以我们使用一个KL散度上的一个hard constraint而不是一个penalty。
 2. $D_{KL}^{max}(\theta_{old}, \theta)$是很难计算和估计的，所以将约束条件改成对期望$\bar{D}\_{KL}(\theta_{old}, \theta)$进行约束。
 3. 本文的理论忽略了advantage function的近似误差。
 
@@ -186,10 +185,10 @@ TRPO应用了conjugate gradient方法到natural policy gradient，此外，natur
 
 如果验证失败了，使用衰减因子$0\lt \alpha \lt 1$，减小natural policy gradient直到满足要求即可。下面的算法介绍了这种思想的line search solution：
 算法 Line Search for TRPO
-计算$\Delta_k = \alpha \hat{\text{F}}\_k^{-1} \delta\eta$
+计算$\Delta_k = \alpha \hat{\text{F}}\_k^{-1} \nabla\eta$
 for $j=0,1,2,\cdots, t$ do
 $\qquad$计算$\theta = \theta_k + \alpha^j \Delta_k$
-$\qquad$If $L_{\theta_k}(\theta) \gt 0$或者$\bar{D}\_{KL}(\theta||\theta_k) \le \delta$ then
+$\qquad$If $L_{\theta_k}(\theta) \ge 0$或者$\bar{D}\_{KL}(\theta||\theta_k) \le \delta$ then
 $\qquad\qquad$接受这个更新， $\theta\_{k+1} = \theta_k + \alpha^j \Delta_k$
 $\qquad\qquad$break
 $\qquad$end if
@@ -198,8 +197,14 @@ TRPO将truncated natural policiy gradient(使用conjugate gradient)和line searc
 算法 Trust Region Policy Optimization
 输入：初始的policy参数$\theta_0$
 for $k=0,1,2,\cdots$ do
-使用policy $\pi_k = \pi(\theta_k)$收集trajectories到集合$\mathbb{D}_k$
-估计$\hat{A}_t^{\pi_k}$
+$\qquad$使用policy $\pi_k = \pi(\theta_k)$收集trajectories到集合$\mathbb{D}_k$
+$\qquad$估计优势函数$\hat{A}_t^{\pi_k}$
+$\qquad$计算样本估计：
+$\qquad\qquad$使用优势函数估计policy gradient $\nabla \eta(\theta)$
+$\qquad\qquad$计算$\text{KL}$散度的海塞矩阵（fisher informaction matrix）$\text{H}$
+$\qquad$使用共轭梯度算法计算$\hat{\nabla}\eta(\theta) \approx \text{H}^{-1} \nabla\eta(\theta)$
+$\qquad$更新$\theta_{k+1} = \theta_k + \alpha \hat{\nabla}\eta(\theta)$
+end for
 
 
 ## TRPO的缺点
