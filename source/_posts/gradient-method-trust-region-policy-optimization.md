@@ -172,11 +172,11 @@ Vine比single path好的地方在于，给定相同数量的$Q$样本，目标�
 
 ## 和policy gradient以及natural policy gradient的对比
 Policy gradient和natural policy gradient可以看成特殊的trpo，它们可以统一在policy update框架下。[The natural policy gradient](http://mxxhcm.github.io/2019/09/07/gradient-method-natural-policy-gradient/)可以看成公式$(24)$的一个特例：使用$L$的一个linear approximation，和$\bar{D}\_{KL}$的一个二次估计，就变成了下面的优化问题：
-$$\max_{\theta} \left[\nabla_{\theta}L_{\theta_{old}}(\theta)|_{\theta=\theta_{old}}\cdot (\theta-\theta_{old}) \right]$$
+$$\max_{\theta} \left[\nabla_{\theta}L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta-\theta_{old}) \right]$$
 $$s.t. \frac{1}{2}(\theta_{old}-\theta)^T A(\theta_{old})(\theta_{old} - \theta)\le\delta\tag{30}$$
 其中$A(\theta_{old})\_{ij} = \frac{\partial}{\partial\theta_i}\frac{\partial}{\partial \theta_j}\mathbb{E}\_{s\sim \rho_{\pi}}\left[D_{KL}(\pi(\cdot|s, \theta_{old})||\pi(\cdot|s, \theta))\right]\_{\theta=\theta_{old}}$，更新公式是$\theta_{new} = \theta_{old}+\frac{1}{\lambda}A(\theta_{old})^{-1} \nabla_{\theta}L(\theta)|\_{\theta=\theta_{old}}$，其中步长$\frac{1}{\lambda}$可以看成算法参数。这和trpo不同，在每一次更新都有constraint。尽管这个差别很小，实验表明它能改善在更大规模问题上算法的性能。
 同样，也可以使用$l2$约束，推导出标准的[policy gradient](http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/)如下：
-$$\max_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|_{\theta=\theta_{old}}\cdot (\theta - \theta_{old})\right] $$ 
+$$\max_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta - \theta_{old})\right] $$ 
 $$s.t. \frac{1}{2}\vert \theta-\theta_{old}\vert^2 \le \delta\tag{31}$$
 
 ## TRPO的缺点
