@@ -6,10 +6,11 @@ tags:
  - conjugate gradient
  - 二次优化
 categories: 凸优化
+mathjax: true
 ---
 
 ## 简介
-共轭梯度(conjugate method)方法是一种[迭代法]()。
+共轭梯度(conjugate method)方法是一种[迭代法](https://mxxhcm.github.io/2019/09/23/%E8%BF%AD%E4%BB%A3%E6%B3%95/)。
 共轭梯度收敛的快慢取决于系数矩阵谱分解的情况。特征集集中，系数矩阵的条件数很小，收敛的就快。
 
 ## 核心

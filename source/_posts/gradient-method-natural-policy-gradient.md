@@ -37,8 +37,8 @@ $$\text{F}\_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[\frac{\partial \log 
 $$\text{F}(\theta) = \mathbb{E}\_{\rho^{\pi} (s)} \left[\mathbb{F}\_s (\theta)\right] \tag{7}$$
 每一个$s$对应的单个$\text{F}\_s$都和MDP的transition model没有关系，期望操作引入了对transition model参数的依赖。直观上来说，$\text{F}\_s$测量的是在$s$上的probability manifold的距离，$\text{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：
 $$\hat{\nabla}\eta(\theta) =\text{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{8}$$
-为什么natural gradient下降最快的方向是这个方向，接下来我们进行证明。其实上面就是说的这些就是使用$\text{KL}$散度当做metric，而不是使用欧几里得metric。然后对$\text{KL}$散度进行约束，要找到使得目标函数$\eta(\theta)$最大的$d\theta$，需要知道哪个方向的$\text{KL}$散度下降的最快，目标函数：
-$$d\theta^{*} = \arg \min \eta(\theta +d\theta) \tag{9}$$
+为什么natural gradient下降最快的方向是这个方向，接下来我们进行证明。其实上面就是说的这些就是使用$\text{KL}$散度当做metric，而不是使用欧几里得metric。然后对$\text{KL}$散度进行约束，要找到使得目标函数$\eta(\theta)$最大的$d\theta$，需要知道哪个方向的$\text{KL}$散度上升的最快，目标函数：
+$$d\theta^{*} = \arg \max \eta(\theta +d\theta) \tag{9}$$
 $$s.t. \text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{10}$$
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一阶泰勒展开公式如下：
 \begin{align\*}
@@ -84,7 +84,8 @@ $$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}\eta(\theta) \tag{24}$
 使用$\omega$参数化的值函数$f^{\pi} (s,a;\omega)$近似$Q^{\pi} (s,a)$。
 ### Natural Gradient with Approximation（使用近似的自然梯度）
 定义：
-$$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta), \qquad f^{\pi} (s,a;\omega) = \omega^T \psi^{\pi} (s,a) \tag{25}$$
+$$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)$$
+$$f^{\pi} (s,a;\omega) = \omega^T \psi^{\pi} (s,a) \tag{25}$$
 其中$\left[\nabla \log \pi(a;s, \theta)\right]\_i = \frac{\partial \log \pi(a;s, \theta)}{\partial \theta_i}$。找到最小化均方根误差函数的$\omega$，记为$\hat{\omega}$：
 $$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a;s,\theta)(f^{\pi} (s,a;\omega) - Q^{\pi} (s,a))^2 \tag{26}$$
 如果使用$f^{\pi} $代替$Q$计算出来的grdient还是exact的，就称$f$是兼容的。
@@ -97,7 +98,7 @@ $$\hat{\omega} = \hat{\nabla} \eta(\theta) =\text{F}(\theta)^{-1} \nabla\eta(\th
 $$\frac{\partial \epsilon}{\partial \omega} = \sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) (\psi^{\pi} (s,a)^T \hat{\omega} - Q^{\pi} (s,a)) = 0 \tag{28}$$
 移项合并同类项得：
 $$\sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) \psi^{\pi} (s,a)^T \hat{\omega} = \sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a)  Q^{\pi} (s,a) \tag{29}$$
-根据定义$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)$，而根据log-derativate trick：$\pi(a|s) \nabla \log \pi(a|s;\theta) = \nabla \pi(a|s;\theta)$，所以式子$(54)$右面就是$\nabla \eta$，而式子左面$\sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) \psi^{\pi} (s,a)^T = \text{F}(\theta)$。最后得到：
+根据定义$\psi(s,a)^{\pi} = \nabla \log \pi(a;s, \theta)$，而根据log-derativate trick：$\pi(a|s) \nabla \log \pi(a|s;\theta) = \nabla \pi(a|s;\theta)$，所以式子$(29)$右面就是$\nabla \eta$，而式子左面$\sum_{s,a}\rho^{\pi} (s) \pi(a|s;\theta) \psi^{\pi} (s,a) \psi^{\pi} (s,a)^T = \text{F}(\theta)$。最后得到：
 $$ \text{F}(\theta)\hat{\omega} = \nabla\eta(\theta)$$
 
 ### Greedy Policy Improvement
@@ -118,7 +119,7 @@ $$\pi(a|s;\theta+\alpha \hat{\nabla}\eta(\theta)) \propto e^{(\theta+\alpha \hat
 使用指数函数的目的只是为了展示在极端情况下－－有无限大的learning rate情况下的结果，接下来给出的是普通的参数化策略的结果，natural gradient可以根据$Q^{\pi} (s,a)$的局部近似估计$f^{\pi}(s,a;\hat{\omega})$，近似找到局部best action。
 
 #### 定理3
-加入$\hat{\omega}$最小化估计误差，使用$\theta' = \theta + \alpha \hat{\nabla}\eta(\theta)$更新参数，可以得到：
+假如$\hat{\omega}$最小化估计误差，使用$\theta' = \theta + \alpha \hat{\nabla}\eta(\theta)$更新参数，可以得到：
 $$\pi(a;s,\theta') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)\tag{33}$$
 证明：
 根据定理$1$，得到$\Delta \theta = \alpha\hat{\nabla}\eta(\theta) = \alpha\hat{\omega}$，然后利用一阶泰勒展开：
@@ -138,7 +139,14 @@ $\text{F}$是$\log \pi$对应的fisher information。Fisher information 和海�
 事实上，定义的新的$\text{F}$并不会收敛到海塞矩阵。但是因为海塞矩阵一般不是正定的，所以在非局部最小处附近，它提供的curvature信息用处不大。在局部最小处使用conjugate methods会更好。
 
 ## Truncated Natural Policy Gradient
-Natural policy gradient需要计算$\delta \theta = 
+Natural policy gradient需要计算$\delta \theta = \alpha \hat{\nabla}\eta(\theta) = \alpha\text{F}^{-1}\nabla(\eta)$。
+需要计算费舍尔信息矩阵（$\text{KL}$散度的海塞矩阵）$\text{F}$以及逆矩阵$\text{F}^{-1} $。寻找deep networks逆的代价很大，而且通常是数值不稳定的，我们想要不计算FIM的逆，而直接计算：
+$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla\eta(\theta)$$
+进而转化成求解：
+$$\text{F}^{-1} \hat{\nabla}\eta(\theta) = \nabla\eta(\theta)$$
+因为$\text{F}$是一个对称矩阵，将原问题转化为：
+$$\min_{\hat{\nabla}\eta(\theta)\in \mathbb{R}^n } \frac{1}{2}x^T \text{H}x - g^T x$$
+这个问题可以使用[conjugate method](https://mxxhcm.github.io/2019/09/23/conjugate-gradient/)求解。
 
 ## 参考文献
 1.https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
