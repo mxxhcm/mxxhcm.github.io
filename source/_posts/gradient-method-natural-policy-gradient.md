@@ -145,8 +145,9 @@ $$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla\eta(\theta)$$
 进而转化成求解：
 $$\text{F}^{-1} \hat{\nabla}\eta(\theta) = \nabla\eta(\theta)$$
 因为$\text{F}$是一个对称矩阵，将原问题转化为：
-$$\min_{\hat{\nabla}\eta(\theta)\in \mathbb{R}^n } \frac{1}{2}x^T \text{H}x - g^T x$$
+$$\min_{x\in \mathbb{R}^n } \frac{1}{2}x^T \text{H}x - g^T x$$
 这个问题可以使用[conjugate method](https://mxxhcm.github.io/2019/09/23/conjugate-gradient/)求解。
+即用求解出来的$x$近似$\hat{\nabla}\eta(\theta) = \text{F}^{-1}\nabla(\eta)$，大大减少了计算量。
 
 ## 参考文献
 1.https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
