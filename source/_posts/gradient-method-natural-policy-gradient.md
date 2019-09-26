@@ -37,14 +37,13 @@ $$\text{F}\_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[\frac{\partial \log 
 $$\text{F}(\theta) = \mathbb{E}\_{\rho^{\pi} (s)} \left[\mathbb{F}\_s (\theta)\right] \tag{7}$$
 每一个$s$对应的单个$\text{F}\_s$都和MDP的transition model没有关系，期望操作引入了对transition model参数的依赖。直观上来说，$\text{F}\_s$测量的是在$s$上的probability manifold的距离，$\text{F}(\theta)$对它们进行了平均。对应的下降最快的方向是：
 $$\hat{\nabla}\eta(\theta) =\text{F}(\theta)^{-1} \nabla\eta(\theta)  \tag{8}$$
-为什么natural gradient下降最快的方向是这个方向，接下来我们进行证明。其实上面就是说的这些就是使用$\text{KL}$散度当做metric，而不是使用欧几里得metric。然后对$\text{KL}$散度进行约束，要找到使得loss函数$L(\theta)$最小的$d\theta$，我们想要知道哪个方向的$\text{KL}$散度下降的最快，目标函数：
-$$d\theta^{*} = \arg \min L(\theta +d\theta) \tag{9}$$
-约束条件
-$$\text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{10}$$
+为什么natural gradient下降最快的方向是这个方向，接下来我们进行证明。其实上面就是说的这些就是使用$\text{KL}$散度当做metric，而不是使用欧几里得metric。然后对$\text{KL}$散度进行约束，要找到使得目标函数$\eta(\theta)$最大的$d\theta$，需要知道哪个方向的$\text{KL}$散度下降的最快，目标函数：
+$$d\theta^{*} = \arg \min \eta(\theta +d\theta) \tag{9}$$
+$$s.t. \text{KL}\left[p_{\theta}||p_{\theta'}\right] = c \tag{10}$$
 其中$c$是常数，确保更新在一定范围内，不受curvature的影响。目标函数的一阶泰勒展开公式如下：
 \begin{align\*}
-L_{\theta'}(\theta) & = L_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T (\theta' + d\theta - \theta') + \cdots \\\\
-& = L\_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d\theta + \cdots  \tag{11}\\\\
+\eta_{\theta'}(\theta) & = \eta_{\theta'}(\theta') + \left[\nabla_{\theta}\eta_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T (\theta' + d\theta - \theta') + \cdots \\\\
+& = \eta\_{\theta'}(\theta') + \left[\nabla_{\theta}\eta_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d\theta + \cdots  \tag{11}\\\\
 \end{align\*}
 
 引理$1$：$\text{KL}$散度在$\theta=\theta'$附近$\theta' +d\theta, d\theta\rightarrow 0$处的二阶泰勒展开是：
@@ -64,21 +63,21 @@ $$\text{KL}\left[p(x|\theta')||p(x|\theta'+d\theta)\right] \approx \frac{1}{2}d\
 & = \frac{1}{2} d\theta^T \text{H} d\theta\tag{19}\\\\
 & = \frac{1}{2} d\theta^T \text{F} d\theta\tag{20}\\\\
 \end{align\*}
-这也是为什么$\vert d\theta\vert^2 $定义为$d\theta^T\text{G}\theta$的原因。使用拉格朗日乘子法将$\text{KL}$散度约束条件带入目标函数$L$：
+这也是为什么$\vert d\theta\vert^2 $定义为$d\theta^T\text{G}\theta$的原因。使用拉格朗日乘子法将$\text{KL}$散度约束条件带入目标函数$\eta$：
 \begin{align\*}
-d\theta^{\*} & = {\arg \min}\_{d\theta} L(\theta'+d\theta) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d\theta}\right] -c)\\\\
+d\theta^{\*} & = {\arg \min}\_{d\theta} \eta(\theta'+d\theta) + \lambda(\text{KL}\left[p\_{\theta'}||p\_{\theta'+d\theta}\right] -c)\\\\
 & = {\arg \min}\_{d\theta} L\_{\theta'}(\theta') + \left[\nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'}\right]^T d\theta + \lambda(\left[\frac{1}{2} d\theta^T \text{F} d\theta\right] -c)\tag{21}\\\\
 \end{align\*}
 对$d\theta$求导，令其等于$0$，得：
 \begin{align\*}
-&0 + \nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d\theta + 0\\\\
-=& \nabla_{\theta}L_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d\theta \tag{22}\\\\
+&0 + \nabla_{\theta}\eta_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d\theta + 0\\\\
+=& \nabla_{\theta}\eta_{\theta'}(\theta)|\_{\theta=\theta'} + \text{F}d\theta \tag{22}\\\\
 =& 0\\\\
 \end{align\*}
 求解得到：
-$$d\theta= - \frac{1}{\lambda}\text{F}^{-1} \nabla_{\theta'} L(\theta') \tag{23}$$
+$$d\theta= - \frac{1}{\lambda}\text{F}^{-1} \nabla_{\theta} \eta_{\theta'}(\theta) \tag{23}$$
 所以natural gradient定义为：
-$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}L(\theta) \tag{24}$$
+$$\hat{\nabla}\eta(\theta) = \text{F}^{-1} \nabla_{\theta}\eta(\theta) \tag{24}$$
 
 
 ## The Natural Gradient 和 Policy Iteration
@@ -137,6 +136,9 @@ $$\pi(a;s,\theta') = \pi(a;s,\theta)(1+f^{\pi}(a,s,\hat{\omega})) + O(\alpha^2)\
 在不同的参数空间中，[fisher information](https://mxxhcm.github.io/2019/09/16/fisher-information/)都可以收敛到[海塞矩阵](https://mxxhcm.github.io/2019/09/10/Jacobian-matrix-and-Hessian-matrix/)，因此，它是[aymptotically efficient](https://mxxhcm.github.io/2019/09/18/asymptotically-efficient-%E6%B8%90%E8%BF%9B%E6%9C%89%E6%95%88%E6%80%A7/)，即到达了cramer-rao bound。
 $\text{F}$是$\log \pi$对应的fisher information。Fisher information 和海塞矩阵有关系，但是都需要和$\pi$联系起来。是这里考虑$\eta(\theta)$的海塞矩阵，它和$\text{F}$两个之间有一定联系，但是不一样。
 事实上，定义的新的$\text{F}$并不会收敛到海塞矩阵。但是因为海塞矩阵一般不是正定的，所以在非局部最小处附近，它提供的curvature信息用处不大。在局部最小处使用conjugate methods会更好。
+
+## Truncated Natural Policy Gradient
+Natural policy gradient需要计算$\delta \theta = 
 
 ## 参考文献
 1.https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
