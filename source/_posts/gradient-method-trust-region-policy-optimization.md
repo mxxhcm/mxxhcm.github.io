@@ -64,7 +64,7 @@ L_{\pi_{old}}(\pi_{new}) & = \eta(\pi_{old}) + \sum_s\rho_{\pi_{old}}(s)\sum_a\p
 
 用$\pi_{\theta}(a|s)$表示可导policy，用$\theta_{old}$表示$\pi_{old}$的参数。当$\pi_{new} = \pi_{old}$时，即$\theta=\theta_{old}$时，$L_{\pi_{old}}(\pi_{new})$和$\eta(\pi_{new})$的一阶导相等：
 $$L_{\pi_{old}}(\pi_{new}) = \eta(\pi_{old}) + \sum_s\rho_{\pi_{old}}(s)\sum_a\pi_{old}(a|s)A^\pi_{old}(s,a) = \eta(\pi_{new})\tag{6}$$
-$$\nabla_{\theta} L_{\pi_{old}}(\pi_{new})|\_{\theta=\theta\_{old}} = \mathbb{E}\_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\nabla_{\theta}\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]|\_{\theta_{old}}\tag{7} $$
+$$\nabla_{\theta} L_{\pi_{old}}(\pi_{new})|\_{\theta=\theta_{old}} = \mathbb{E}\_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\nabla_{\theta}\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]|\_{\theta_{old}}\tag{7} $$
 $$\nabla_{\theta} \eta(\pi_{new})|\_{\theta=\theta_{old}} =\mathbb{E}\_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\nabla_{\theta}\log\pi_{new}(a|s)A^{\pi_{old}}(s,a)\right]|\_{\theta_{old}} \tag{8}$$
 证明：
 式子$(6)$将$\pi_{new}=\pi_{old}$代入即可。我对于式子$7$和$8$相等有疑问，为什么？
