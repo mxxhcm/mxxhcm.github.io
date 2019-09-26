@@ -189,13 +189,12 @@ TRPO应用了conjugate gradient方法到natural policy gradient，此外，natur
 计算$\Delta_k = \alpha \hat{\text{F}}_k^{-1} \delta\eta$
 for $j=0,1,2,\cdots, t$ do
 $\qquad$计算$\theta = \theta_k + \alpha^j \Delta_k$
-IF $L_(\theta_k)(\theta) \gt 0$或者$\bar{D}_{KL}(\theta||\theta_k) \le \delta$ then
-接受这个更新， $\theta_{k+1} = \theta_k + \alpha^j \Delta_k$
-break
-end if
+$\qquad$IF $L_(\theta_k)(\theta) \gt 0$或者$\bar{D}_{KL}(\theta||\theta_k) \le \delta$ then
+$\qquad\qquad$接受这个更新， $\theta_{k+1} = \theta_k + \alpha^j \Delta_k$
+$\qquad\qquad$break
+$\qquad$end if
 end for
-
-TRPO将truncated natural policiy gradient(使用conjugate gradient)$和line search结合起来：
+TRPO将truncated natural policiy gradient(使用conjugate gradient)和line search结合起来：
 算法 Trust Region Policy Optimization
 输入：初始的policy参数$\theta_0$
 for $k=0,1,2,\cdots$ do
