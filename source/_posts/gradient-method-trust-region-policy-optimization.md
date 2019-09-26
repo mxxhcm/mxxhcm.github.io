@@ -22,60 +22,72 @@ mathjax: true
 4. 采样效率很低。对整个trajectory进行采样，但是仅仅用于一次policy update。在一个trajectory中的states是很像的，尤其是用pixels表示时。如果在每一个timestep都改进policy的话，会一直在某一个局部进行更新，训练会变得很不稳定。
 
 ## Motivation
-每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi$和new policy $\hat{\pi}$的关系式就好啦。这里就给出这样一个关系式！恩！就是！
-$$\eta(\hat{\pi}) = \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t)\right] \tag{1}$$
+我们想要每一次策略$\pi$的更新，都能使得$\eta(\pi)$单调递增。要是能将它写成old poliy $\pi_{old}$和new policy $\pi_{new}$的关系式就好啦。给出这样一个关系式：
+$$\eta(\pi_{new}) = \eta(\pi_{old}) + \mathbb{E}_{s_0, a_0, \cdots \sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}}(s_t,a_t)\right] \tag{1}$$
 证明：
 \begin{align\*}
-\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi} (s_t,a_t) \right] &=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi} (s_t,a_t) - V^{\pi} (s_t))\right]  \\\\
-&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t ( R_{t+1} + \gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
-&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} + \sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
-&=\mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} \right]+ \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi} (s_{t+1}) -  V^{\pi} (s_t))\right]  \\\\
-&=\eta(\hat{\pi}) + \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[ -  V^{\pi} (s_0))\right]  \\\\
-&=\eta(\hat{\pi}) - \mathbb{E}\_{s_0, a_0,\cdots\sim \hat{\pi}} \left[ V^{\pi} (s_0))\right]  \\\\
-&=\eta(\hat{\pi}) - \eta(\pi)\\\\
+\mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right] &=\mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi_{old}} (s_t,a_t) - V^{\pi_{old}} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t ( R_{t+1} + \gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} + \sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\\\
+&=\mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} \right]+ \mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\\\
+&=\eta(\pi_{new}) + \mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new}} \left[ -  V^{\pi_{old}} (s_0))\right]  \\\\
+&=\eta(\pi_{new}) - \mathbb{E}\_{s_0, a_0,\cdots\sim \pi_{new}} \left[ V^{\pi_{old}} (s_0))\right]  \\\\
+&=\eta(\pi_{new}) - \eta(\pi_{old})\\\\
 \end{align\*}
-将new policy $\hat{\pi}$的期望回报表示为old policy $\pi$的期望回报加上另一项，只要保证这一项是非负的即可。其中$\mathbb{E}\_{s_0, a_0,\cdots, \sim \hat{\pi}}\left[\cdots\right]$表示actions是从$a_t\sim\hat{\pi}(\cdot|s_t)$得到的。
+将new policy $\pi_{new}$的期望回报表示为old policy $\pi_{old}$的期望回报加上另一项，只要保证这一项是非负的即可。其中$\mathbb{E}\_{s_0, a_0,\cdots, \sim \pi_{new}}\left[\cdots\right]$表示actions是从$a_t\sim\pi_{new}(\cdot|s_t)$得到的。
 
 ## 用求和代替期望
 代入$s$的概率分布$\rho_{\pi}(s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots, s_0\sim \rho_0$，并将期望换成求和：
 \begin{align\*}
-\eta(\hat{\pi}) &= \eta(\pi) + \mathbb{E}\_{s_0, a_0, \cdots \sim \hat{\pi}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi}(s_t,a_t)\right]\\\\
-&=\eta(\pi) +\sum_{t=0}^{\infty} \sum_s P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)\gamma^t A^{\pi}(s,a)\\\\
-&=\eta(\pi) +\sum_s\sum_{t=0}^{\infty} \gamma^t P(s_t=s|\hat{\pi}) \sum_a \hat{\pi}(a|s)A^{\pi}(s,a)\\\\
-&=\eta(\pi) + \sum_s \rho_{\hat{\pi}}(s) \sum_a \hat{\pi}(a|s) A^{\pi} (s,a) \tag{2}\\\\
+\eta(\pi_{new}) &= \eta(\pi_{old}) + \mathbb{E}\_{s_0, a_0, \cdots \sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}}(s_t,a_t)\right]\\\\
+&=\eta(\pi_{old}) +\sum_{t=0}^{\infty} \sum_s P(s_t=s|\pi_{new}) \sum_a \pi_{new}(a|s)\gamma^t A^{\pi_{old}}(s,a)\\\\
+&=\eta(\pi_{old}) +\sum_s\sum_{t=0}^{\infty} \gamma^t P(s_t=s|\pi_{new}) \sum_a \pi_{new}(a|s)A^{\pi_{old}}(s,a)\\\\
+&=\eta(\pi_{old}) + \sum_s \rho_{\pi_{new}}(s) \sum_a \pi_{new}(a|s) A^{\pi_{old}} (s,a) \tag{2}\\\\
 \end{align\*}
-从上面的推导可以看出来，任何从$\pi$到$\hat{\pi}$的更新，只要保证每个state $s$处的expected advantage是非负的，即$\sum_a \hat{\pi}(a|s) A_{\pi}(s,a)\ge 0$，就能说明$\hat{\pi}$要比$\pi$好，在$s$处，新的policy $\hat{\pi}$:
-$$\hat{\pi}(s) = arg\ max_a A^{\pi} (s,a) \tag{3}$$
-直到所有$s$处的$A^{\pi} (s,a)$为非正停止。当然，在实际应用中，因为各种误差，可能会有一些state的expected advantage是负的。
+从上面的推导可以看出来，任何从$\pi_{old}$到$\pi_{new}$的更新，只要保证每个state $s$处的expected advantage是非负的，即$\sum_a \pi_{new}(a|s) A_{\pi_{old}}(s,a)\ge 0$，就能说明$\pi_{new}$要比$\pi_{old}$好，在$s$处，新的policy $\pi_{new}$:
+$$\pi_{new}(s) = arg\ max_a A^{\pi_{old}} (s,a) \tag{3}$$
+直到所有$s$处的$A^{\pi_{old}} (s,a)$为非正停止。当然，在实际应用中，因为各种误差，可能会有一些state的expected advantage是负的。
 
-## $\rho\_{\pi}(s)$近似$\rho\_{\hat{\pi}}(s)$（第一次近似）
-上式中包含的$\rho_{\hat{\pi}}$依赖于$\hat{\pi}$，而我们要求的就是$\hat{\pi}$，是未知的，这时候进行第一个近似：
-$$L_{\pi} (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a) \tag{4}$$
-$$\eta (\hat{\pi}) = \eta(\pi) + \sum_s\rho_{\hat{\pi}}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)\tag{5}$$
-在$L_{\pi}(\hat{\pi} )$中用$\rho_{\pi}(s)$代替$\rho_{\hat{\pi}}(s)$，从而忽略因为policy改变导致的state访问频率的改变。当$\pi(a|s)$可导时，用$\pi_{\theta}$表示policy，用$\theta$表示$\pi$的参数，则$L_{\pi}(\hat{\pi})$和$\eta(\hat{\pi})$的一阶导相等；当$\hat{\pi} = \pi$时，$L_{\pi}(\hat{\pi}) = \eta(\hat{\pi})\tag{6}$
-$$L_{\pi_{\theta_0}} (\pi_{\theta_0}) = \eta(\pi_{\theta_0}) \tag{7}$$
-$$\nabla_{\theta} L_{\pi_{\theta_0}}(\pi_{\theta})|\_{\theta=\theta_0} =\nabla_{\theta} \eta(\pi_{\theta})|\_{\theta=\theta_0}\tag{8}$$
+## $\rho\_{\pi_{old}}(s)$近似$\rho\_{\pi_{new}}(s)$（第一次近似）
+式子$(2)$中包含的$\rho_{\pi_{new}}$依赖于未知的$\pi_{new}$，而我们已知的是$\pi_{old}$，忽略因为policy改变导致的state访问频率的改变，在$L_{\pi_{old}}(\pi_{new} )$中用$\rho_{\pi_{old}}(s)$近似$\rho_{\pi_{new}}(s)$。
+\begin{align\*}
+\eta(\pi_{new}) &= \eta(\pi_{old}) + \sum_s\rho_{\pi_{new}}(s)\sum_a\pi_{new}(a|s)A^{\pi_{old}} (s,a)\\\\
+& = \eta(\pi_{old}) + \mathbb{E}_{s\sim \pi_{new}, a\sim \pi_{new}}A^{\pi_{old}}(s,a)\\\\
+& = \eta(\pi_{old}) + \mathbb{E}_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\frac{\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]\tag{4}\\\\
+\end{align\*}
+
+\begin{align\*}
+L_{\pi_{old}}(\pi_{new}) & = \eta(\pi_{old}) + \sum_s\rho_{\pi_{old}}(s)\sum_a\pi_{new}(a|s)A^{\pi_{old}} (s,a)\\\\
+& = \eta(\pi_{old}) +\mathbb{E}_{s\sim \pi_{old}, a\sim \pi_{new}}A^{\pi_{old}}(s,a)\\\\
+& = \eta(\pi_{old}) +\mathbb{E}_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]\tag{5}\\\\ 
+\end{align\*}
+
+用$\pi_{\theta}(a|s)$表示可导policy，用$\theta_{old}$表示$\pi_{old}$的参数。当$\pi_{new} = \pi_{old}$时，即$\theta=\theta_{old}$时，$L_{\pi_{old}}(\pi_{new})$和$\eta(\pi_{new})$的一阶导相等：
+$$L_{\pi_{old}}(\pi_{new}) = \eta(\pi_{old}) + \sum_s\rho_{\pi_{old}}(s)\sum_a\pi_{old}(a|s)A^\pi_{old}(s,a) = \eta(\pi_{new})\tag{6}$$
+$$\nabla_{\theta} L_{\pi_{old}}(\pi_{new})|_{\theta=\theta_{old}} = \mathbb{E}_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\nabla_{\theta}\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]|_{\theta_{old}}\tag{7} $$
+$$\nabla_{\theta} \eta(\pi_{new})|_{\theta=\theta_{old}} =\mathbb{E}_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\nabla_{\theta}\log\pi_{new}(a|s)A^{\pi_{old}}(s,a)\right]|_{\theta_{old}} \tag{8}$$
 证明：
-第一个式子不需要证明，而第二个式子，左边为$\eta(\pi) + \sum_s\rho_{\pi}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$，右边为$\eta(\pi) + \sum_s\rho_{\hat{\pi}}(s)\sum_a\hat{\pi}(a|s)A^{\pi} (s,a)$，分别求它们关于$\theta$的导数。$\pi$是已知量，$\hat{\pi}$是关于$\theta$的函数，$\rho_{\hat{\pi}}$是通过样本得到的，不是关于$\hat{\pi}$的函数，最后相当于只有$\hat{\pi}(a|s)$是关于$\hat{\pi}$的函数，所以左右两边就一样了。。（！！！有疑问，就是为什么？$\rho_{\hat{\pi}}$到底是怎么求的，怎么证明）
-也就是说当$\hat{\pi} = \pi$时，$L_{\pi}(\pi)$和$\eta(\pi)$是相等的，在$\pi$对应的参数$\theta$周围的无穷小范围内，可以近似认为它们依然相等。$\pi$的参数$\theta_{\pi}$进行足够小的step更新到达新的policy $\hat{\pi}$，相应参数为$\theta_{\hat{\pi}}$，在改进$L_{\pi}$同时也改进了$\eta$，但是这个足够小的step是多少是不知道的。
+式子$(6)$将$\pi_{new}=\pi_{old}$代入即可。我对于式子$7$和$8$相等有疑问，为什么？
+也就是说当$\pi_{new} = \pi_{old}$时，$L_{\pi_{old}}(\pi_{new})$和$\eta(\pi_{new})$是相等的，在$\pi_{old}$对应的参数$\theta$周围的无穷小范围内，可以近似认为它们依然相等，$\theta$进行足够小的step更新到达新的policy $\pi_{new}$，相应参数为$\theta_{\pi_{new}}$，在改进$L_{\pi_{old}}$同时也改进了$\eta$，但是这个足够小的step是多少是不知道的。
 
 ## conservative policy iteration
 为了求出这个step到底是多少，有人提出了conservative policy iteration算法，该算法提供了$\eta$提高的一个lower bound。用$\pi_{old}$表示current policy，用$\pi'$表示使得$L_{\pi_{old}}$取得最大值的policy，$\pi' = arg\ min_{\pi'} L_{\pi_{old}}(\pi')$，新的policy $\pi_{new}$定义为：
 $$\pi_{new}(a|s) = (1-\alpha) \pi_{old}(a|s)+\alpha\pi'(a|s) \tag{9}$$
 可以证明，新的policy $\pi_{new}$和老的policy $\pi_{old}$之间存在以下关系：
-$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2 , \epsilon = max_s \vert\mathbb{E}\_{a\sim\pi'}\left[A^{\pi} (s,a)\right]\vert \tag{10}$$
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma(1-\alpha))(1-\gamma)}\alpha^2 $$ 
+$$\epsilon = max_s \vert\mathbb{E}_{a\sim\pi'}\left[A^{\pi} (s,a)\right]\vert \tag{10}, \alpha,\gamma\in [0,1]$$
 证明：
 进行缩放得到：
 $$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{2\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \tag{11}$$
 
 ## 通用随机策略单调增加的证明
 从公式$9$我们可以看出来，改进右边就一定能改进真实的performance $\eta$。然而，这个bound只适用于通过公式$7$生成的混合policy，在实践中，这类policy很少用到，而且限制条件很多。所以我们想要的是一个适用于任何stochastic policy的lower bound，通过提升这个bound提升$\eta$。
-作者使用$\pi$和$\hat{\pi}$之间的一个距离代替$\alpha$，将公式$8$扩展到了任意stochastic policy，而不仅仅是混合policy。这里使用的distance measure，叫做total variation divergence，对于离散的概率分布$p,q$来说，定义为：
+作者使用$\pi_{old}$和$\pi_{new}$之间的一个距离代替$\alpha$，将公式$8$扩展到了任意stochastic policy，而不仅仅是混合policy。这里使用的distance measure，叫做total variation divergence，对于离散的概率分布$p,q$来说，定义为：
 $$D_{TV}(p||q) = \frac{1}{2} \sum_i \vert p_i -q_i \vert \tag{12}$$
-定义$D_{TV}^{max}(\pi, \hat{\pi})$为：
-$$D_{TV}^{max} (\pi, \hat{\pi}) = max_s D_{TV}(\pi(\cdot|s) || \hat{\pi}(\cdot|s))\tag{13}$$
+定义$D_{TV}^{max}(\pi_{old}, \pi_{new})$为：
+$$D_{TV}^{max} (\pi_{old}, \pi_{new}) = max_s D_{TV}(\pi_{old}(\cdot|s) || \pi_{new}(\cdot|s))\tag{13}$$
 让$\alpha = D_{TV}^{max}(\pi_{old}, \pi_{new})$，新的bound如下：
-$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 , \qquad\epsilon = max_{s,a} \vert A^{\pi}(s,a)\vert \tag{14}$$
+$$\eta(\pi_{new})\ge L_{\pi_{old}}(\pi_{new}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 , \qquad\epsilon = max_{s,a} \vert A^{\pi_{old}}(s,a)\vert \tag{14}$$
 证明：
 ...
 
@@ -84,12 +96,13 @@ $$D_{TV}(p||q)^2 \le D_{KL}(p||q) \tag{15}$$
 证明：
 ...
 让
-$$D_{KL}^{max}(\pi, \hat{\pi}) = max_s D_{KL}(\pi(\cdot|s)||\hat{\pi}(\cdot|s)) \tag{16}$$
+$$D_{KL}^{max}(\pi_{old}, \pi_{new}) = max_s D_{KL}(\pi_{old}(\cdot|s)||\pi_{new}(\cdot|s)) \tag{16}$$
 从公式$12$中可以直接得到：
 \begin{align\*}
-\eta(\hat{\pi}) &\ge L_{\pi}(\hat{\pi}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \\\\
-&\ge L_{\pi}(\hat{\pi}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }D_{KL}^{max}(\pi, \hat{\pi}) \\\\
-& \ge L_{\pi}(\hat{\pi}) - CD_{KL}^{max}(\pi, \hat{\pi}), C=\frac{4\epsilon \gamma}{(1-\gamma)^2} \tag{17}
+\eta(\pi_{new}) &\ge L_{\pi_{old}}(\pi_{new}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }\alpha^2 \\\\
+&\ge L_{\pi_{old}}(\pi_{new}) - \frac{4\epsilon \gamma}{(1-\gamma)^2 }D_{KL}^{max}(\pi_{old}, \pi_{new}) \\\\
+& \ge L_{\pi_{old}}(\pi_{new}) - CD_{KL}^{max}(\pi_{old}, \pi_{new})\\\\
+C & =\frac{4\epsilon \gamma}{(1-\gamma)^2} \tag{17}
 \end{align\*}
 根据公式$12$，我们能生成一个单调非递减的sequence：$\eta(\pi_0)\le \eta(\pi_1) \le \eta(\pi_2) \le \cdots$，记$M_i(\pi) = L_{\pi_i}(\pi) - CD_{KL}^{max}(\pi_i, \pi)$，有：
 因为：
@@ -103,18 +116,21 @@ $$\eta(\pi_{i+1}) - \eta(\pi_i)\ge M_i(\pi_{i+1})-M_i(\pi_i) \tag{20}$$
 前面几小节考虑的optimization问题时没有考虑$\pi$的参数化，并且假设所有的states都可以被evaluated。这一节介绍如何在有限的样本下和任意的参数化策略下，从理论基础推导出一个实用的算法。
 用$\theta$表示参数化策略$\pi_{\theta}(a|s)$的参数$\theta$，将目标表示成$\theta$而不是$\pi$的函数，即用$\eta(\theta)$表示原来的$\eta(\pi_\theta)$，用$L_{\theta}(\hat{\theta})$表示$L_{\pi_{\theta}}(\pi_{\hat{\theta}})$，用$D_{KL}(\theta||\hat{\theta})$表示$D_{KL}(\pi_{\theta}||\pi_{\hat{\theta}})$。用$\theta_{old}$表示我们想要改进的policy参数。
 上一小节我们得到$\eta(\theta) \ge L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \theta)$，当$\theta = \theta_{old}$时取等。通过最大化等式右边，可以提高$\eta$的下界：
-$$maximize_{\theta}\left[L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \theta)\right]\tag{21}$$
+$$\max_{\theta}\left[L_{\theta_{old}}(\theta) - CD_{KL}^{max}(\theta_{old}, \theta)\right]\tag{21}$$
 在实践中，如果使用上述理论中的penalty coefficient $C$，会导致steps size很小。一种方法是使用new policy 和old policy之间的KL散度进行约束，可以采取更大的steps，这个约束叫做trust region constraint:
-$$maxmize_{\theta} L_{\theta_{old}} (\theta),\qquad s.t. D_{KL}^{max}(\theta_{old},\theta) \le \delta \tag{22}$$
+$$\max_{\theta} L_{\theta_{old}} (\theta)$$
+$$ s.t. D_{KL}^{max}(\theta_{old},\theta) \le \delta \tag{22}$$
 这样会在state space的每一个state都有一个KL散度约束。由于约束太多，这个问题还是不能解。这里使用average KL divergence进行近似:
-$$\bar{D}\_{KL}^{\rho}(\theta_1, \theta_2) = \mathbb{E}\_{s\sim \rho}\left[D_{KL}(\pi_{\theta_1}(\cdot|s) || \pi_{\theta_2}(\cdot|s))\right] \tag{23}$$
-公式$15$变成：
-$$maxmize_{\theta} L_{\theta_{old}} (\theta), \qquad s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{24}$$
+$$\bar{D}_{KL}^{\rho}(\theta_1, \theta_2) = \mathbb{E}_{s\sim \rho}\left[D_{KL}(\pi_{\theta_1}(\cdot|s) || \pi_{\theta_2}(\cdot|s))\right] \tag{23}$$
+公式$22$变成：
+$$\max_{\theta} L_{\theta_{old}} (\theta)$$ 
+$$s.t. \bar{D}_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{24}$$
 
 ## 目标函数和约束的采样估计（第三次近似）
 上一节介绍的是关于policy parameter的有约束优化问题，约束条件为每一次policy更新时限制policy变化的大小，优化expected toral reward $\eta$的一个估计值。这一节使用Monte Carlo仿真近似目标和约束函数。
 代入$L_{\theta_{old}}$的等式，得到：
-$$maxmize_{\theta}\sum_s \rho_{\theta_{old}}(s) \sum_a\pi_{\theta}(a|s)A_{\theta_{old}}(s,a), \qquad s.t. \bar{D}\_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{25}$$
+$$\max_{\theta}\sum_s \rho_{\theta_{old}}(s) \sum_a\pi_{\theta}(a|s)A_{\theta_{old}}(s,a)$$
+$$s.t. \bar{D}_{KL}^{\rho_{\theta_{old}}}(\theta_{old},\theta) \le \delta \tag{25}$$
 首先用期望$\frac{1}{1-\gamma}\mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[\cdots\right]$代替目标函数中的$\sum_s\rho_{\theta_{old}}(s) \left[\cdots\right]$。接下来用$Q$值$Q_{\theta_{old}}$代替advantage $A_{\theta_{old}}$，结果多了一个常数项，不影响。最后使用importance smapling代替actions上的求和。使用$q$表示采样分布，$q$分布中单个的$s_n$对于loss函数的贡献在于：
 $$\sum_a \pi_{\theta}(a|s_n) A_{\theta_{old}}(s_n,a) = \mathbb{E}\_{a\sim q}\left[\frac{\pi_{\theta} (a|s_n) }{q(a|s_n)}A_{\theta_{old}}(s_n,a) \right]\tag{26}$$
 上面的公式就是使用importance sampling代替求和。将$A$展开：
@@ -123,8 +139,9 @@ $$\sum_a \pi_{\theta}(a|s_n) A_{\theta_{old}}(s_n,a) = \mathbb{E}\_{a\sim q}\lef
 &= \sum_a \pi_{\theta}(a|s)Q_{\theta_{old}}(s,a)- \sum_a \pi_{\theta}(a|s)V_{\theta_{old}}(s)\\\\
 &= \sum_a \pi_{\theta}(a|s)Q_{\theta_{old}}(s,a)- V_{\theta_{old}}(s)\\\\
 \end{align\*}
-将公式$17$的优化问题转化为：
-$$maxmize_{\theta} \mathbb{E}\_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \qquad s.t. \mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{27}$$
+将公式$25$的优化问题转化为：
+$$\max_{\theta} \mathbb{E}_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right]$$
+$$s.t. \mathbb{E}_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{27}$$
 接下来要做的就是用采样代替期望，用经验估计代替$Q$值。接下来会介绍两种方法进行估计。
 
 第一个叫做single path，通常用在policy gradient estimation，基于单个轨迹的采样。第二个叫做vine，构建一个rollout set，从rollout set的每一个state处执行多个actions。这种方法经常用在policy iteration方法上。
@@ -154,11 +171,13 @@ Vine比single path好的地方在于，给定相同数量的$Q$样本，目标�
 3. 本文的理论忽略了advantage function的近似误差。
 
 ## 和policy gradient以及natural policy gradient的对比
-Policy gradient和natural policy gradient可以看成特殊的trpo，它们可以统一在policy update框架下。[The natural policy gradient](http://mxxhcm.github.io/2019/09/07/gradient-method-natrual-policy-gradient/)可以看成公式$16$的一个特例：使用$L$的一个linear approximation，和$\bar{D}\_{KL}$的一个二次估计，就变成了下面的优化问题：
-$$maximize_{\theta} \left[\nabla_{\theta}L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta-\theta_{old}) \right] \qquad s.t. \frac{1}{2}(\theta_{old}-\theta)^A(\theta_{old})(\theta_{old} - \theta)\le\delta\tag{30}$$
+Policy gradient和natural policy gradient可以看成特殊的trpo，它们可以统一在policy update框架下。[The natural policy gradient](http://mxxhcm.github.io/2019/09/07/gradient-method-natural-policy-gradient/)可以看成公式$(24)$的一个特例：使用$L$的一个linear approximation，和$\bar{D}\_{KL}$的一个二次估计，就变成了下面的优化问题：
+$$\max_{\theta} \left[\nabla_{\theta}L_{\theta_{old}}(\theta)|_{\theta=\theta_{old}}\cdot (\theta-\theta_{old}) \right]$$
+$$s.t. \frac{1}{2}(\theta_{old}-\theta)^T A(\theta_{old})(\theta_{old} - \theta)\le\delta\tag{30}$$
 其中$A(\theta_{old})\_{ij} = \frac{\partial}{\partial\theta_i}\frac{\partial}{\partial \theta_j}\mathbb{E}\_{s\sim \rho_{\pi}}\left[D_{KL}(\pi(\cdot|s, \theta_{old})||\pi(\cdot|s, \theta))\right]\_{\theta=\theta_{old}}$，更新公式是$\theta_{new} = \theta_{old}+\frac{1}{\lambda}A(\theta_{old})^{-1} \nabla_{\theta}L(\theta)|\_{\theta=\theta_{old}}$，其中步长$\frac{1}{\lambda}$可以看成算法参数。这和trpo不同，在每一次更新都有constraint。尽管这个差别很小，实验表明它能改善在更大规模问题上算法的性能。
 同样，也可以使用$l2$约束，推导出标准的[policy gradient](http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/)如下：
-$$maximize_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|\_{\theta=\theta_{old}}\cdot (\theta- \theta_{old}) \qquad s.t. \frac{1}{2}\vert \theta-\theta_{old}\vert^2 \le \delta\right] \tag{31}$$
+$$\max_{\theta} \left[\nabla_{\theta} L_{\theta_{old}}(\theta)|_{\theta=\theta_{old}}\cdot (\theta - \theta_{old})\right] $$ 
+$$s.t. \frac{1}{2}\vert \theta-\theta_{old}\vert^2 \le \delta\tag{31}$$
 
 ## TRPO的缺点
 TRPO通过最小化二次泛函近似$\text{F}$的逆，很大程度减少了计算量。但是每一次更新参数还需要计算$\text{F}$。TRPO和其他policy gradient方法相比，采样效率很低，并且扩展性不好，对于很深的网络不适用，这就有了后来的PPO和ACKTR。
@@ -187,3 +206,4 @@ Trust Region Policy Optimization
 6.https://drive.google.com/file/d/0BxXI_RttTZAhMVhsNk5VSXU0U3c/view
 7.https://zhuanlan.zhihu.com/p/26308073
 8.https://zhuanlan.zhihu.com/p/60257706
+9.http://rll.berkeley.edu/deeprlcourse/docs/lec5.pdf
