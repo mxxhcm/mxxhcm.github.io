@@ -23,15 +23,19 @@ $$\vert d\theta\vert^2 \le \delta \tag{2}$$
 目标函数：
 $$ L^{NPG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t  \right]\tag{3}$$
 约束条件：
-$$\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{4}$$
+$$\hat{\mathbb{E}}_t\left[\text{KL}\left[\\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}$$
+等价于
+$$\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{5}$$
 
 ### Trust Region Policy Optimization
 目标函数：
-$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{old}(a_t|s_t)}\hat{A}_t \right]\tag{5}$$
+$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{old}(a_t|s_t)}\hat{A}_t \right]\tag{6}$$
 约束条件：
-$$\frac{1}{2}\vert d\theta \text{H} \vert^2 \le \delta \tag{6}$$
+$$\hat{\mathbb{E}}_t\left[\text{KL}\left[\\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{7}$$
 
 ### Proximal Policy Optimization
+目标函数：
+$$L^{PPO}(\theta) =\hat{\mathbb{E}}_t \left[L_t^{CLIP+VF+S}(\theta) - \beta\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t) \right] \right]$$
 
 
 ## 参考文献
