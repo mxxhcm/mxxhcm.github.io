@@ -23,7 +23,7 @@ $$\vert d\theta\vert^2 \le \delta \tag{2}$$
 目标函数：
 $$ L^{NPG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t  \right]\tag{3}$$
 约束条件：
-$$\frac{1}{2}\vert d\theta \text{H} \vert^2 \le \delta \tag{4}$$
+$$\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{4}$$
 
 ### Trust Region Policy Optimization
 目标函数：
