@@ -36,6 +36,7 @@ $$\hat{\mathbb{E}}_t\left[\text{KL}\left[\\pi_{old}(\cdot|s_t), \pi_{\theta}(\cd
 ### Proximal Policy Optimization
 目标函数：
 $$L^{PPO}(\theta) =\hat{\mathbb{E}}\_t \left[L_t^{CLIP+VF+S}(\theta) - \beta\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t) \right] \right]$$
+其中$L_t^{CLIP}(\theta) = \hat{\mathbb{E}}\_t \left[\min(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)},\ clip(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)}, 1-\epsilon, 1+\epsilon) \hat{A}_t  ) \right]$
 
 
 ## 参考文献
