@@ -23,7 +23,7 @@ $$\vert d\theta\vert^2 \le \delta \tag{2}$$
 目标函数：
 $$ L^{NPG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}\_t  \right]\tag{3}$$
 约束条件：
-$$\hat{\mathbb{E}}\_t\left[\text{KL}\left[\\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}$$
+$$\hat{\mathbb{E}}\_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}$$
 等价于
 $$\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{5}$$
 
