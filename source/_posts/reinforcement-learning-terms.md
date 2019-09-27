@@ -48,15 +48,15 @@ $$G_t =\mathbb{E} \left[\sum_{k=t}^{\infty} \gamma^{k-t} R_{k+1}\right] \tag{1}$
 为expected discounted returns，表示从$t$时刻开始的expected discounted return；
 #### 状态值函数
 state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：
-$$V^{\pi} (s_t) = \mathbb{E}\_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{2}$$
+$$V^{\pi} (s_t) = \mathbb{E}_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{2}$$
 或者有时候也定义成从$t=0$开始的expected return：
-$$V^{\pi} (s_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0;\pi \right] \tag{3}$$
+$$V^{\pi} (s_0) = \mathbb{E}_{\pi}\left[G_0|S_0=s_0;\pi\right]=\mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0;\pi \right] \tag{3}$$
 
 #### 动作值函数
 action value function定义为从$t$时刻的$s_t, a_t$开始的累计期望折扣奖励：
-$$Q^{\pi} (s_t, a_t) = \mathbb{E}\_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{4}$$
+$$Q^{\pi} (s_t, a_t) = \mathbb{E}_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{4}$$
 或者有时候也定义为从$t=0$开始的return的期望：
-$$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0,A_0=a_0;\pi\right]=\mathbb{E}\_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0,A_0=a_0;\pi \right] \tag{5}$$
+$$Q^{\pi} (s_0, a_0) = \mathbb{E}_{\pi}\left[G_0|S_0=s_0,A_0=a_0;\pi\right]=\mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0,A_0=a_0;\pi \right] \tag{5}$$
 
 #### 优势函数
 $$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s) \tag{6}$$
@@ -65,8 +65,8 @@ $$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s) \tag{6}$$
 $$\mathbb{E}_{\pi}\left[A^{\pi}(s,a)\right] = \mathbb{E}_{\pi}\left[Q^{\pi}(s,a) - V^{\pi}(s)\right] = \mathbb{E}_{\pi}\left[Q^{\pi}(s,a)\right] -  \mathbb{E}_{\pi}\left[V^{\pi}(s)\right] = V^{\pi}(s) - V^{\pi}(s) = 0$$
 
 #### 目标函数
-Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}\_{\pi} \left[G_0|\pi\right]$，或者写成：
-$$\eta(\pi)= \mathbb{E}\_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right] \tag{7}$$
+Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}_{\pi} \left[G_0|\pi\right]$，或者写成：
+$$\eta(\pi)= \mathbb{E}_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right] \tag{7}$$
 表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0)$, $a_t\sim\pi(a_t|s_t)$, $s_{t+1}\sim P(s_{t+1}|s_t,a_t)$。
 
 #### station distribution
@@ -77,30 +77,29 @@ $$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots \tag
 表示policy $\pi$下state $s$出现的概率。在每一个timestep $t$处，$s_t=s$都有一定概率发生的，也就是式子$9$。
 
 ### Average Reward
-#### station distribution
-对于average reward来说，它的station distribution和accumulated reward有一些不同，用$p(s_0\rightarrow s,t,\pi)$表示从$s_0$经过$t$个timesteps到$s$的概率，则policy $\pi$下$s$服从的概率分布为：
-$$\rho^{\pi} (s) = \int_S \lim_{t\rightarrow\infty}\rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{10}$$
-其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布。
 #### 目标函数
 定义average reward $\eta$为在state distribution $\rho^\pi $和policy $\pi_\theta$上的期望：
 \begin{align\*}
 \eta(\pi) &= \int_S \rho^{\pi} (s) \int_A \pi(s,a) R^{\pi}(s,a)dads\\\\
-&= \mathbb{E}\_{s\sim \rho^{\pi} , a\sim \pi}\left[R^{\pi}(s,a)\right] \tag{11}\\\\ 
+&= \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi}\left[R^{\pi}(s,a)\right] \tag{10}\\\\ 
 \end{align\*}
 其中$R(s,a) = \mathbb{E}\left[ r_{t+1}|s_t=s, a_t=a\right]$，是state action pair $(s,a)$的immediate reward的期望值。
 
 #### 动作值函数
 根据average reward，给出一种新的state-action value的定义方式：
-$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{12}$$
+$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{11}$$
 
 #### 状态值函数
 Value function定义还和原来一样，形式没有变，但是因为$Q$计算方法变了，所以$V$的值也变了：
-$$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{13}$$
+$$V^{\pi} (s) = \mathbb{E}_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{12}$$
+
+#### stationary distribution
+对于average reward来说，它的stationary distribution和accumulated reward有一些不同：
+$$\rho^{\pi}(s) = \lim_{t\rightarrow \infty}Pr\left{s_t=s|s_0, \pi\right} \tag{13}$$
+表示的是当MDP稳定之后，state $s$出现的概率。
 
 ### Accumulated Reward和Average Reward
-这两种方式，accumulated reward需要加上折扣银子，而average reward不需要。我们常见的都是accumulated reward这种方式的动作值函数以及状态值函数。
-
-
+这两种方式，accumulated reward需要加上折扣因子，而average reward不需要。我们常见的都是accumulated reward这种方式的动作值函数以及状态值函数。
 
 ## 分类方式
 ### online vs offline

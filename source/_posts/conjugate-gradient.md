@@ -30,3 +30,4 @@ $$f'(x) = Ax-b$$
 3.https://www.zhihu.com/question/27157047/answer/121950241
 4.https://www.zhihu.com/question/27157047/answer/171336970
 5.https://blog.csdn.net/lusongno1/article/details/78550803
+6.https://medium.com/@jonathan_hui/rl-conjugate-gradient-5a644459137a

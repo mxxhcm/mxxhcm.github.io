@@ -162,3 +162,5 @@ $$\theta_{k+1} = \theta_k + \alpha_k \sum_s\rho^{\pi_k}(s) \sum_a\frac{\partial\
 ## 参考文献
 1.https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf
 2.https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
+3.https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146
+4.https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b

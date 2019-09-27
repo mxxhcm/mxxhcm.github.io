@@ -153,4 +153,4 @@ $$\min_{x\in \mathbb{R}^n } \frac{1}{2}x^T \text{F}x - g^T x$$
 1.https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf
 2.https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/
 3.https://medium.com/@jonathan_hui/rl-trust-region-policy-optimization-trpo-part-2-f51e3b2e373a
-
+4.https://medium.com/@jonathan_hui/rl-natural-policy-gradient-actor-critic-using-kronecker-factored-trust-region-acktr-58f3798a4a93
