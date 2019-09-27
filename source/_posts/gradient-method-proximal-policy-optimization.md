@@ -15,13 +15,13 @@ mathjax: ture
 ## Introduction
 ### Policy Gradient
 目标函数：
-$$ L^{PG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t \right] \tag{1}$$
+$$ L^{PG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}\_t \right] \tag{1}$$
 约束条件：
 $$\vert d\theta\vert^2 \le \delta \tag{2}$$
 
 ### Natural Policy Gradient
 目标函数：
-$$ L^{NPG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t  \right]\tag{3}$$
+$$ L^{NPG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}\_t  \right]\tag{3}$$
 约束条件：
 $$\hat{\mathbb{E}}_t\left[\text{KL}\left[\\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}$$
 等价于
