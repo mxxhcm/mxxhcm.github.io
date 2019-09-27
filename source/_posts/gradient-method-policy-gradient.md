@@ -100,7 +100,7 @@ $$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',
 &= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) \tag{15}\\\\
 &= \sum_{x\in S}\rho^{\pi} (x)\sum_a\nabla \pi(a|x) Q_{\pi}(x,a) \tag{16}\\\\
 \end{align\*}
-式子$(15)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(14)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到，概率为$0$就是了。对于$V_{\pi}(s_0)$，有：
+式子$(15)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(14)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到$x$，概率为$0$就是了。取$J(\mathbf{\theta}) = V_{\pi}(s_0)$，有：
 \begin{align\*}
 \nabla J(\mathbf{\theta}) &= \nabla_{\theta}V_{\pi}(s_0)\\\\
 &= \sum_{s\in S}\( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \) \sum_a\nabla{\pi}(a|s)Q_{\pi}(s,a)\\\\
@@ -110,7 +110,46 @@ $$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',
 &\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)Q_{\pi}(s,a) \tag{17}\\\\
 \end{align\*}
 
-从这两种情况的证明可以看出来，和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即策略改变对于states distributions没有影响，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无边估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns，即$G_t = \sum_{k=1}^{\infty} R_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} R_{t+k}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。
+### 结论
+从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G_t = \sum_{k=1}^{\infty} R_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} R_{t+k}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。
+
+
+## 另一种policy gradient的方法
+目标函数$J$如下：
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[R(\tau)\right] = \int \pi_{\theta}(\tau) r(\tau) d\tau$$
+其中$\tau = s_0, a_0, s_1, a_1,\cdots \sim \pi_{\theta}$表示一个episode的trajectory，$R(\tau)$表示这个trajectory的returns(G_0)。Policy gradient变成：
+\begin{align\*}
+\nabla_{\theta}J(\theta) & = \int \nabla_{\theta} \pi_{\theta}(\tau) R(\tau)d\tau\\\\
+& = \int \pi_{\theta}(\tau) \nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau)d\tau\\\\
+& = \mathbf{E}_{\tau\sim \pi_{\theta}(\tau)} \left[\nabla_{\theta} \log\pi_{\theta}(\tau) R(\tau) d\tau\right]
+\end{align\*}
+可以将policy gradient表示成期望的形式，然后就可以采样进行估计。对$R(\tau)$进行采样，但是不进行求导。Returns不直接受$\pi_{\theta}$的影响，$\tau$受$\pi_{\theta}$的影响，下面是$\log\pi(\tau)$的偏导数计算。
+$\pi(\tau)$定义为：
+$$\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = p(s_0) \prod_{t=0}^T \pi_{\theta}(a_t|s_t)p(s_{t+1}|s_t,a_t)$$
+取$\log$：
+$$\log\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = \log p(s_0) + \sum_{t=0}^T\log \pi_{\theta}(a_t|s_t) + \log p(s_{t+1}|s_t,a_t)$$
+对$\theta$求偏导，得到：
+$$\nabla_{\theta}\left[\sum_{t=0}^T \log\pi_{\theta}(a_t|s_t)$$
+所以，policy gradient：
+$$\nabla_{\theta} = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)}\left[\nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau) \right]$$
+变成了：
+$$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^TR(s_{i,t}, a_{i,t}\right)$$
+$$ \theta \leftarrow + \alpha \nabla_{\theta} J(\theta)$$
+即用多个trajectories近似计算policy gradietn，更新$\theta$。
+
+### Intution
+$\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}$是最大对数似然，表示的是对应的trajectory在当前的policy下发生的可能性。将它和returns相乘，如果产生high positive reward，增加policy的可能性，如果是high negetive reward，减少policy的可能性。
+在一个trajectory中的states具有很强的相关性，这个trajectory发生的概率定义为：
+$$\pi(\tau) = p(s_0) \prod_{t=0}^T \pi_{\theta}(a_t|s_t)p(s_{t+1}|s_t,a_t)$$
+但是连续的乘法可能会产生梯度消失或者梯度爆炸问题。policy gradient将连乘变成了连加。
+### Policy Gradient with Monte Carlo rollouts
+REINFROCE使员工的是Monte Carlo计算returns，完整的算法如下：
+REINFORCE 算法
+Loop 
+$\qquad 1.$使用policy $\pi_{\theta}(a_t|s_t)$生成一个trajectory $\left{\tau^i \right}$
+$\qquad$估计$\nabla_{\theta}J(\theta) \approx \sum_i (\sum_t \nabla_{\theta} \log\pi_{\theta}(a_t^i|s_t^i)) (\sum_t R(s_t^i, a_t^i))$
+$\qquad \theta\leftarrow \theta+\alpha\nabla_{\theta}J(\theta)$
+Until 收敛
 
 ## Policy Gradient with Approximation(使用近似的策略梯度)
 因为$Q^{\pi} $是不知道的，我们希望用函数近似式子(8)中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:
