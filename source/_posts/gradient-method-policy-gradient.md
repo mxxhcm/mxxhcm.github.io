@@ -151,6 +151,16 @@ $\qquad$估计$\nabla_{\theta}J(\theta) \approx \sum_i (\sum_t \nabla_{\theta} \
 $\qquad \theta\leftarrow \theta+\alpha\nabla_{\theta}J(\theta)$
 Until 收敛
 
+### Policy Gradients Improvements
+Policy gradient的方差很大，而且很难收敛。
+MC方法根据整个trajectory计算exact rewards，但是stochastic policy可能会在不同的episode采取不同的actions，一个小的改变可能会完全改变结果，MC方法没有bias但是有很大的方差。方差会影响深度学习的优化，一个采样的reward可能想要增加似然，另一个样本rewards可能想要减少似然，给出了冲突的梯度方向，影响收敛性。为了减少选择action造成的方差，我们需要减少样本rewards的方差：
+$$\left( \sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)$$
+增大PG中的batch size会减少方差。
+但是增大batch size会降低sample efficiency。所以batch size不能增加太多，我们需要想其他的方法减少方差：
+#### Baseline
+$$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^TR(s_{i,t}, a_{i,t}\right)$$
+
+
 ## Policy Gradient with Approximation(使用近似的策略梯度)
 因为$Q^{\pi} $是不知道的，我们希望用函数近似式子(8)中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:
 $$\Delta w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]^2 \propto \left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w} \tag{18}$$
