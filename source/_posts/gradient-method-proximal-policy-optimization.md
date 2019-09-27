@@ -38,7 +38,7 @@ $$\hat{\mathbb{E}}\_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cd
 $$L^{PPO}(\theta) =\hat{\mathbb{E}}\_t \left[L_t^{CLIP+VF+S}(\theta) - \beta\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t) \right] \right] \tag{8}$$
 其中$S$表示entropy bonus。
 $$L_t^{CLIP}(\theta) = \hat{\mathbb{E}}\_t \left[\min(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)},\ clip(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)}, 1-\epsilon, 1+\epsilon) \hat{A}\_t) \right]\tag{9}$$
-$$L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ})^2 \tag{10}$$
+$$L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ} )^2 \tag{10}$$
 
 
 ## 参考文献
