@@ -61,6 +61,8 @@ $$Q^{\pi} (s_0, a_0) = \mathbb{E}\_{\pi}\left[G_0|S_0=s_0,A_0=a_0;\pi\right]=\ma
 #### 优势函数
 $$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s) \tag{6}$$
 其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$。$V^{\pi} (s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi} (s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。
+优势函数的期望是$0$：
+$$\mathbb{E}_{\pi}\left[A^{\pi}(s,a)\right] = \mathbb{E}_{\pi}\left[Q^{\pi}(s,a) - V^{\pi}(s)\right] = \mathbb{E}_{\pi}\left[Q^{\pi}(s,a)\right] -  \mathbb{E}_{\pi}\left[V^{\pi}(s)\right] = V^{\pi}(s) - V^{\pi}(s) = 0$$
 
 #### 目标函数
 Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}\_{\pi} \left[G_0|\pi\right]$，或者写成：
