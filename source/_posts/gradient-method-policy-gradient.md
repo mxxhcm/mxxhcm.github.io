@@ -58,7 +58,7 @@ $\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到�
 对于任何MDP，不论是average reward还是accumulated reward的形式，都有：
 $$\frac{\partial \eta}{\partial \mathbf{\theta}} = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{8}$$
 证明：
-Average Reward:
+### Average Reward:
 \begin{align\*}
 \nabla V_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
 &= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \\\\
@@ -84,7 +84,7 @@ $$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',
 \begin{align\*}
 \end{align\*}
 
-指定初始状态$s_0$:
+### 指定初始状态$s_0$的accumulated reward
 \begin{align\*}
 \nabla V_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
 &= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
