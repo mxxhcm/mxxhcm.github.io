@@ -15,7 +15,7 @@ mathjax: ture
 ## Introduction
 ### Policy Gradient
 目标函数：
-$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t \right] \tag{1}$$
+$$ L^{PG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t \right] \tag{1}$$
 约束条件：
 $$\vert d\theta\vert^2 \le \delta \tag{2}$$
 

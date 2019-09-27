@@ -208,7 +208,7 @@ end for
 
 
 ## TRPO的缺点
-TRPO通过最小化二次泛函近似$\text{F}$的逆，很大程度减少了计算量。但是每一次更新参数还需要计算$\text{F}$。TRPO和其他policy gradient方法相比，采样效率很低，并且扩展性不好，对于很深的网络不适用，这就有了后来的PPO和ACKTR。
+TRPO通过最小化二次泛函近似$\text{F}$的逆，很大程度减少了计算量。但是每一次更新参数还需要计算$\text{F}$。TRPO和其他policy gradient方法相比，采样效率很低，并且扩展性不好，对于很深的网络不适用，这就有了后来的[PPO](https://mxxhcm.github.io/2019/09/23/gradient-method-proximal-policy-optimization/)和ACKTR。
 
 ## [Minorize-Maximization MM算法](https://mxxhcm.github.io/2019/09/25/mm/)
 ![mm](mm.jpeg)
