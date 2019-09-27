@@ -24,7 +24,7 @@ categories: 强化学习
 mathjax: true
 ---
 ## 术语定义
-更多介绍可以点击查看[reinforcement learning an introduction 第三章]()
+更多介绍可以点击查看[reinforcement learning an introduction 第三章](https://mxxhcm.github.io/2018/12/21/reinforcement-learning-an-introduction-%E7%AC%AC3%E7%AB%A0%E7%AC%94%E8%AE%B0/)
 ### 状态集合
 $\mathcal{S}$是有限states set，包含所有state的可能取值
 ### 动作集合

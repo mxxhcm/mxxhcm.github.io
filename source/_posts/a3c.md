@@ -166,3 +166,5 @@ mp.set_start_method("forkserver")
 ```
 可能是因为Unix系统默认的多进程方式是fork，这里只要不设置为fork,设置为其他两种方式spawn, forkserver都行。
 
+### 参考文献
+1.https://arxiv.org/pdf/1602.01783.pdf
