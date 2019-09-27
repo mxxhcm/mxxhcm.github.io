@@ -21,20 +21,28 @@ mathjax: true
 - 基于值函数的方法会找到一个deterministic的策略，但是很多时候optimal policy可能是stochastic的。
 - 某个action的估计值函数稍微改变一点就可能导致这个动作被选中或者不被选中，这种不连续是保证值函数收敛的一大障碍。
 
-### 本文的工作
-#### 用函数表示stochastic policy
+### 用函数表示stochastic policy
 本文提出的policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：
 $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{1}$$
-其中$\alpha$是正定的step size，按照式子$13$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法不同，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。
+其中$\alpha$是正定的step size，按照式子$(1)$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法相比，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。
 
-#### 使用值函数辅助学习policy
-本文证明了通过使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到$13$的一个无偏估计。REINFORCE方法也找到了$13$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。
+### 使用值函数辅助学习policy
+本文证明了通过使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到式子$(1)$的一个无偏估计。REINFORCE方法也找到了式子$(1)$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。
 
-#### 证明policy iteration收敛性
+### 证明policy iteration收敛性
 本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。
 
 ## Objective Function
 智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。有两种方式定义智能体的objective，一种是average reward，一种是从指定状态开始的accumulated reward。
+
+### Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)
+我们可以指定一个初始状态$s_0$，计算从这个初始状态开始得到的accumulated reward：
+$$\eta(\pi) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{5}$$
+相应的state-action如下：
+$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} R_{t+k}|s_t=s,a_t=a,\pi\right] \tag{6}$$
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。定义$\rho^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
+$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right]  = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{7}$$
+$\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。
 
 ### Average Reward(平均奖励)
 Average reward是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：
@@ -45,14 +53,7 @@ $$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=
 value function定义还和原来一样，但是因为$Q$计算方法变了，所以$V$也跟着变了：
 $$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{4}$$
 
-### Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)
-第二种情况是指定初始状态$s_0$，计算从这个状态开始得到的accumulated reward：
-$$\eta(\pi) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{5}$$
-相应的state-action如下：
-$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} R_{t+k}|s_t=s,a_t=a,\pi\right] \tag{6}$$
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。定义$\rho^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
-$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right]  = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{7}$$
-$\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。
+
 
 ## Policy Gradient Theorem
 对于任何MDP，不论是average reward还是accumulated reward的形式，都有：
@@ -94,7 +95,8 @@ $$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',
 &= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[0 +\sum_{s',r}p(s',r|s,a)\gamma\nabla V_{\pi}(s')\right]\right] \\\\
 &= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s',r}p(s',r|s,a)\gamma \nabla V_{\pi}(s'))\right] \\\\
 &= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\nabla V_{\pi}(s') \right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\left( \sum_{a'} \nabla\pi(a'|s')Q_{\pi}(s',a') + \pi(a'|s')\sum_{s''}\gamma p(s''|s',a')\nabla V_{\pi}(s''))\right) \right] \tag{14}\\\\
+&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\\\\
+&\qquad\qquad\qquad\left( \sum_{a'} \nabla\pi(a'|s')Q_{\pi}(s',a') + \pi(a'|s')\sum_{s''}\gamma p(s''|s',a')\nabla V_{\pi}(s''))\right) \right] \tag{14}\\\\
 &= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) \tag{15}\\\\
 &= \sum_{x\in S}\rho^{\pi} (x)\sum_a\nabla \pi(a|x) Q_{\pi}(x,a) \tag{16}\\\\
 \end{align\*}
