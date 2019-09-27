@@ -158,8 +158,40 @@ $$\left( \sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)$$
 增大PG中的batch size会减少方差。
 但是增大batch size会降低sample efficiency。所以batch size不能增加太多，我们需要想其他的方法减少方差：
 #### Baseline
-$$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^TR(s_{i,t}, a_{i,t}\right)$$
+$$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)$$
+中$\sum_{t=1}^T R(s_{i,t}, a_{i,t})$其实就是$Q(s,a)$，我们可以在上面减去一项，只要这一项和$\theta$无关就好，所以我们可以减去$V(s)$：
+\begin{align\*}
+\nabla_{\theta} J(\theta) & \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(Q(s_{i,t}, a_{i,t}) - V(s_{i,t})\right)\\\\
+& = \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(A(s_{i,t}, a_{i,t})\right)\\\\
+\end{align\*}
+直观上来首，RL感兴趣的是那些比平均值好的action。如果returns都是正的$(R(\tau)\ge 0)$，PG总是会提高这个trajectory发生的概率，即使它比其他的trajectory要低。考虑以下两个例子：
+- Trajectory $A$的return是$10$，trajectory $B$的reward是$-10$
+- Trajectory $A$的return是$10$，trajectory $B$的reward是$1$
 
+在第一个例子中，PG会提高$A$发生的概率，降低$B$发生的概率。在第二个例子中，PG会提高$A$和$B$的概率。然而，对于我们来说，在两个例子中，我们都想要降低$B$发生的概率，提高$A$发生的概率。通过引入一个baseline，比如$V$，我们就可以实现这样的目的。
+#### Vanilla Policy Gradient
+给出一个使用baseline $b$的通用算法：
+$$ \nabla\approx \hat{g} = \frac{1}{m} \sum_{i=1}^m \nabla_{\theta}\log P(\tau^{(i)};\theta)(R(\tau^{(i)})-b)$$
+Vanilla policy gradient算法
+初始化policy 参数$\theta$，baselien $b$
+for $i = 1, 2, \cdots$ do
+$\qquad$使用当前policy $\pi_{\theta}$收集trajectories
+$\qquad$在每个trajectory的每一个timestep，计算
+$\qquad\qquad$return $G_t = \sum_{t'=t} ^{T-1}\gamma^{t'-t} R_{t'}$$
+$\qquad\qquad$advantage的估计值$\hat{A}_t = R_t - b(s_t)$
+$\qquad$重新拟合baseline，最小化$\vert b(s_t) - G_t\vert^2$
+$\qquad$在所有trajectories和timesteps上求和估计$\hat{g}$
+$\qquad$使用policy gradient estimate $\hat{g}$的估计$\hat{g}$更新policy 参数
+end for
+
+#### Causality
+未来的action不应该改变过去的decisions：
+$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) \right) \left(\sum_{t'=t}^T R(s_{i,t'};a_{i,t'})\right)$$
+#### Reward discount
+加上折扣因子：
+$$Q^{\pi,\gamma}(s, a) \leftarrow r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots|s_0 = s, a_0 = a$$
+得到：
+$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) \right) \left(\sum_{t'=t}^T\gamma^{t'-t} R(s_{i,t'};a_{i,t'})\right)$$
 
 ## Policy Gradient with Approximation(使用近似的策略梯度)
 因为$Q^{\pi} $是不知道的，我们希望用函数近似式子(8)中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:
