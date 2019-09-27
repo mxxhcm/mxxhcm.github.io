@@ -1549,7 +1549,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-26 12:42:41" itemprop="dateModified" datetime="2019-09-26T12:42:41+08:00">2019-09-26</time>
+                <time title="修改时间：2019-09-27 09:42:12" itemprop="dateModified" datetime="2019-09-27T09:42:12+08:00">2019-09-27</time>
               
             
           </span>
@@ -1662,7 +1662,7 @@
 <li>$L(\theta) \ge 0$</li>
 </ul>
 <p>如果验证失败了，使用衰减因子$0\lt \alpha \lt 1$，减小natural policy gradient直到满足要求即可。下面的算法介绍了这种思想的line search solution：<br>算法 Line Search for TRPO<br>计算$\Delta_k = \alpha \hat{\text{F}}_k^{-1} \nabla\eta$<br>for $j=0,1,2,\cdots, t$ do<br>$\qquad$计算$\theta = \theta_k + \alpha^j \Delta_k$<br>$\qquad$If $L_{\theta_k}(\theta) \ge 0$或者$\bar{D}_{KL}(\theta||\theta_k) \le \delta$ then<br>$\qquad\qquad$接受这个更新， $\theta_{k+1} = \theta_k + \alpha^j \Delta_k$<br>$\qquad\qquad$break<br>$\qquad$end if<br>end for<br>TRPO将truncated natural policiy gradient(使用conjugate gradient)和line search结合起来：<br>算法 Trust Region Policy Optimization<br>输入：初始的policy参数$\theta_0$<br>for $k=0,1,2,\cdots$ do<br>$\qquad$使用policy $\pi_k = \pi(\theta_k)$收集trajectories到集合$\mathbb{D}_k$<br>$\qquad$估计优势函数$\hat{A}_t^{\pi_k}$<br>$\qquad$计算样本估计：<br>$\qquad\qquad$使用优势函数估计policy gradient $\nabla \eta(\theta)$<br>$\qquad\qquad$计算$\text{KL}$散度的海塞矩阵（fisher informaction matrix）$\text{H}$<br>$\qquad$使用共轭梯度算法计算$\hat{\nabla}\eta(\theta) \approx \text{H}^{-1} \nabla\eta(\theta)$<br>$\qquad$更新$\theta_{k+1} = \theta_k + \alpha \hat{\nabla}\eta(\theta)$<br>end for</p>
-<h2 id="TRPO的缺点"><a href="#TRPO的缺点" class="headerlink" title="TRPO的缺点"></a>TRPO的缺点</h2><p>TRPO通过最小化二次泛函近似$\text{F}$的逆，很大程度减少了计算量。但是每一次更新参数还需要计算$\text{F}$。TRPO和其他policy gradient方法相比，采样效率很低，并且扩展性不好，对于很深的网络不适用，这就有了后来的PPO和ACKTR。</p>
+<h2 id="TRPO的缺点"><a href="#TRPO的缺点" class="headerlink" title="TRPO的缺点"></a>TRPO的缺点</h2><p>TRPO通过最小化二次泛函近似$\text{F}$的逆，很大程度减少了计算量。但是每一次更新参数还需要计算$\text{F}$。TRPO和其他policy gradient方法相比，采样效率很低，并且扩展性不好，对于很深的网络不适用，这就有了后来的<a href="https://mxxhcm.github.io/2019/09/23/gradient-method-proximal-policy-optimization/">PPO</a>和ACKTR。</p>
 <h2 id="Minorize-Maximization-MM算法"><a href="#Minorize-Maximization-MM算法" class="headerlink" title="Minorize-Maximization MM算法"></a><a href="https://mxxhcm.github.io/2019/09/25/mm/">Minorize-Maximization MM算法</a></h2><p><img src="/2019/09/08/gradient-method-trust-region-policy-optimization/mm.jpeg" alt="mm"><br>如上图所示，通过迭代的最大化下界函数局部地逼近expected reward。更详细的来说，随机的初始化$\theta$，在当前$\theta$下，找到下界$M$最接近expected reward $\eta$的点，然后将$M$的最优点作为下一次的$\theta$。不断的迭代，直到收敛到optimal policy。这样做有一个条件，就是$M$要比$\eta$容易优化。比如$M$是二次函数：</p>
 <script type="math/tex; mode=display">ax^2 + bx+c\tag{32}</script><p>用向量形式表示是：</p>
 <script type="math/tex; mode=display">g\cdot(\theta- \theta_{old}) - \frac{\beta}{2} (\theta- \theta_{old})^T F(\theta - \theta_{old})\tag{33}</script><p>是一个convex function。<br>为什么MM算法会收敛到optimal policy，如果$M$是下界的话，它不会跨过红线$\eta$。假设新的$\eta$中的new policy更低，那么blue线一定会越过$\eta$，和$M$是下界冲突。</p>
