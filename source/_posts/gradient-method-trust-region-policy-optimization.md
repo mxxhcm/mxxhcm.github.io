@@ -64,8 +64,8 @@ L_{\pi_{old}}(\pi_{new}) & = \eta(\pi_{old}) + \sum_s\rho_{\pi_{old}}(s)\sum_a\p
 
 用$\pi_{\theta}(a|s)$表示可导policy，用$\theta_{old}$表示$\pi_{old}$的参数。当$\pi_{new} = \pi_{old}$时，即$\theta=\theta_{old}$时，$L_{\pi_{old}}(\pi_{new})$和$\eta(\pi_{new})$的一阶导相等：
 $$L_{\pi_{old}}(\pi_{new}) = \eta(\pi_{old}) + \sum_s\rho_{\pi_{old}}(s)\sum_a\pi_{old}(a|s)A^\pi_{old}(s,a) = \eta(\pi_{new})\tag{6}$$
-$$\nabla_{\theta} L_{\pi_{old}}(\pi_{new})|\_{\theta=\theta_{old}} = \mathbb{E}\_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\nabla_{\theta}\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]|\_{\theta_{old}}\tag{7} $$
-$$\nabla_{\theta} \eta(\pi_{new})|\_{\theta=\theta_{old}} =\mathbb{E}\_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\nabla_{\theta}\log\pi_{new}(a|s)A^{\pi_{old}}(s,a)\right]|\_{\theta_{old}} \tag{8}$$
+$$\nabla_{\theta} L\_{\pi_{old}}(\pi_{new})|\_{\theta=\theta\_{old}} = \mathbb{E}\_{s\sim \pi_{old}, a\sim \pi_{old}}\left[\frac{\nabla_{\theta}\pi_{new}(a|s)}{\pi_{old}(a|s)}A^{\pi_{old}}(s,a)\right]|\_{\theta_{old}}\tag{7} $$
+$$\nabla\_{\theta} \eta(\pi\_{new})|\_{\theta=\theta\_{old}} =\mathbb{E}\_{s\sim \pi_{new}, a\sim \pi_{old}}\left[\nabla_{\theta}\log\pi_{new}(a|s)A^{\pi_{old}}(s,a)\right]|\_{\theta_{old}} \tag{8}$$
 证明：
 式子$(6)$将$\pi_{new}=\pi_{old}$代入即可。我对于式子$7$和$8$相等有疑问，为什么？
 也就是说当$\pi_{new} = \pi_{old}$时，$L_{\pi_{old}}(\pi_{new})$和$\eta(\pi_{new})$是相等的，在$\pi_{old}$对应的参数$\theta$周围的无穷小范围内，可以近似认为它们依然相等，$\theta$进行足够小的step更新到达新的policy $\pi_{new}$，相应参数为$\theta_{\pi_{new}}$，在改进$L_{\pi_{old}}$同时也改进了$\eta$，但是这个足够小的step是多少是不知道的。
@@ -235,3 +235,4 @@ Trust Region Policy Optimization
 7.https://zhuanlan.zhihu.com/p/26308073
 8.https://zhuanlan.zhihu.com/p/60257706
 9.http://rll.berkeley.edu/deeprlcourse/docs/lec5.pdf
+10.https://www.zhihu.com/question/316004388
