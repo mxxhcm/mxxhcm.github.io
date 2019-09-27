@@ -131,8 +131,8 @@ v_{\pi} &= (I-\gamma P^{\pi} )^{-1} R^{\pi}
 
 ## 最优策程的求解(how to find optimal policy)
 ### 最优价值函数(optimal value function)
-$v_{\*} = max_{\pi}v_{\pi}(s)$,从所有策略产生的state value function中，选取使得state s的价值最大的函数
-$q_{\*}(s,a) = max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value function中，选取使$\lt s,a\gt$价值最大的函数  
+$v_{\*} = \max_{\pi}v_{\pi}(s)$,从所有策略产生的state value function中，选取使得state s的价值最大的函数
+$q_{\*}(s,a) = \max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value function中，选取使$\lt s,a\gt$价值最大的函数  
 当我们得到了optimal value function，也就知道了每个state的最优价值，便认为这个MDP被解决了
 
 ### 最优策略(optimal policy)
@@ -145,23 +145,23 @@ $q_{\*}(s,a) = max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value func
 ### 寻找最优策略
 寻找optimal policy可以通过寻找optimal action value function来实现： 
 $${\pi}\_{\*}(a|s) = 
-\begin{cases}1, &if\quad a = argmax\ q\_{\*}(s,a)\\\\0, &otherwise\end{cases}$$
+\begin{cases}1, &if\quad a = \arg\max\ q\_{\*}(s,a)\\\\0, &otherwise\end{cases}$$
 
 ### 贝尔曼最优方程(bellman optimal equation)
 \*号表示最优的策略。
 #### 最优状态值函数(state value function)
 \begin{align\*}
-v_{\*}(s) &= max_a q_{\*}(s,a)\\\\
-&= max_a\mathbb{E}\_{\pi\_{\*}}\left[G_t|S_t=s,A_t=a\right]\\\\
-&= max_a\mathbb{E}\_{\pi\_{\*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\\\
-&= max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\\\
-&= max_a \left[\sum_{s',r} p(s',r|s,a)(r+\gamma v_{\*}(s') )\right] \tag{15}\\\\
+v_{\*}(s) &= \max_a q_{\*}(s,a)\\\\
+&= \max_a\mathbb{E}\_{\pi\_{\*}}\left[G_t|S_t=s,A_t=a\right]\\\\
+&= \max_a\mathbb{E}\_{\pi\_{\*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\\\
+&= \max_a\mathbb{E}\left[R_{t+1} +\gamma v_{\*}(S_{t+1})|S_t=s,A_t=a\right]\\\\
+&= \max_a \left[\sum_{s',r} p(s',r|s,a)(r+\gamma v_{\*}(s') )\right] \tag{15}\\\\
 \end{align\*}
 #### 最优动作值函数(action value function)
 \begin{align\*}
 q_{\*}(s,a) &= \sum_{s',r} p(s',r|s,a) (r + \gamma v_{\*}(s'))\\\\
-&= \sum_{s',r} p(s',r|s,a) (r + \gamma max_{a'} q_{\*}(s',a'))\\\\
-&=\mathbb{E}\left[R_{t+1}+\gamma max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\tag{16}\\\\
+&= \sum_{s',r} p(s',r|s,a) (r + \gamma \max_{a'} q_{\*}(s',a'))\\\\
+&=\mathbb{E}\left[R_{t+1}+\gamma \max_{a'}q_{\*}(S_{t+1},a')|S_t=s,A_t=a \right]\tag{16}\\\\
 \end{align\*}
 
 ### 贝尔曼最优方程的求解(solution to Bellman optimal equation)
