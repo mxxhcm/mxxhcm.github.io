@@ -95,7 +95,7 @@ $$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{12}$$
 
 #### stationary distribution
 对于average reward来说，它的stationary distribution和accumulated reward有一些不同：
-$$\rho^{\pi}(s) = lim\_{t\rightarrow \infty}Pr\left{s\_t=s|s\_0, \pi\right} \tag{13}$$
+$$\rho^{\pi}(s) = \lim\_{t\rightarrow \infty}Pr\left[s\_t=s|s\_0, \pi\right] \tag{13}$$
 表示的是当MDP稳定之后，state $s$出现的概率。
 
 ### Accumulated Reward和Average Reward

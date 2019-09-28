@@ -19,6 +19,10 @@ $\mmm{x}$
 $\bf{x}$
 
 ## 常用Latex符号
+$\arg$ \arg
+$\max$ \max
+$\lim$ \lim
+
 ### 上标
 $\bar{x}$ \bar{x}
 $\hat{x}$ \hat{x}
