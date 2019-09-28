@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-09-27T15:09:49.011Z">
+<meta property="og:updated_time" content="2019-09-28T03:49:39.369Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="gradient method policy gradient">
 <meta name="twitter:description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-27 23:09:49" itemprop="dateModified" datetime="2019-09-27T23:09:49+08:00">2019-09-27</time>
+                <time title="修改时间：2019-09-28 11:49:39" itemprop="dateModified" datetime="2019-09-28T11:49:39+08:00">2019-09-28</time>
               
             
           </span>
@@ -543,12 +543,12 @@ $$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s�
 <p>从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G_t = \sum_{k=1}^{\infty} R_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} R_{t+k}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。</p>
 <h2 id="另一种policy-gradient的方法">另一种policy gradient的方法</h2>
 <p>目标函数$J$如下：<br>
-$$J(\theta) = \mathbb{E}<em>{\tau \sim \pi</em>{\theta}(\tau)} \left[R(\tau)\right] = \int \pi_{\theta}(\tau) r(\tau) d\tau$$<br>
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[R(\tau)\right] = \int \pi_{\theta}(\tau) r(\tau) d\tau$$<br>
 其中$\tau = s_0, a_0, s_1, a_1,\cdots \sim \pi_{\theta}$表示一个episode的trajectory，$R(\tau)$表示这个trajectory的returns(G_0)。Policy gradient变成：<br>
 \begin{align*}<br>
 \nabla_{\theta}J(\theta) &amp; = \int \nabla_{\theta} \pi_{\theta}(\tau) R(\tau)d\tau\\<br>
 &amp; = \int \pi_{\theta}(\tau) \nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau)d\tau\\<br>
-&amp; = \mathbf{E}<em>{\tau\sim \pi</em>{\theta}(\tau)} \left[\nabla_{\theta} \log\pi_{\theta}(\tau) R(\tau) d\tau\right]<br>
+&amp; = \mathbf{E}_{\tau\sim \pi_{\theta}(\tau)} \left[\nabla_{\theta} \log\pi_{\theta}(\tau) R(\tau) d\tau\right]<br>
 \end{align*}<br>
 可以将policy gradient表示成期望的形式，然后就可以采样进行估计。对$R(\tau)$进行采样，但是不进行求导。Returns不直接受$\pi_{\theta}$的影响，$\tau$受$\pi_{\theta}$的影响，下面是$\log\pi(\tau)$的偏导数计算。<br>
 $\pi(\tau)$定义为：<br>
@@ -558,7 +558,7 @@ $$\log\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = \log p(s_0) + \sum_{t=0}^T\log \pi
 对$\theta$求偏导，得到：<br>
 $$\nabla_{\theta}\left[\sum_{t=0}^T \log\pi_{\theta}(a_t|s_t)$$<br>
 所以，policy gradient：<br>
-$$\nabla_{\theta} = \mathbb{E}<em>{\tau \sim \pi</em>{\theta}(\tau)}\left[\nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau) \right]$$<br>
+$$\nabla_{\theta} = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)}\left[\nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau) \right]$$<br>
 变成了：<br>
 $$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^TR(s_{i,t}, a_{i,t}\right)$$<br>
 $$ \theta \leftarrow + \alpha \nabla_{\theta} J(\theta)$$<br>
