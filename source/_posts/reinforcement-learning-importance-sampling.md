@@ -55,9 +55,10 @@ $$p(x) = \frac{\hat{p}(x)}{Z}$$
 
 ## Importance sampling in RL
 我们可以使用importance sampling方法从old policy $\pi'$采样估计new policy $\pi$的值函数。计算一个action的returns的代价很高，但是如果新的action和老的action很接近，importance sampling可以帮助我们利用old calculation计算新的returns。举个例子，在MC方法中，无论何时更新$\theta$，都需要根据新的trajectories计算returns。
+$$\nabla_{\theta}J(\theta) = \frac{1}{N}\sum_{i=1}^T\left(\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_{i,t}|s_{i,t})\right)\left(\prod_{t=1}^T R(s_{i,t},a_{i,t})\right)\right]$$
 一个trajectory可以有几百个steps，单个的更新是非常低效的。有了importance sampling之后，我们可以基于old samples计算新的return。然而，如果两个policy差的太远，accuracy会降低。因此周期性的同步policy是非常必要的。
 使用importance sampling，重写policy gradient的等式：
-$$$$
+$$\nabla_{\theta}J(\theta) = \mathbb{E}_{\tau\sim\bar{\pi}(\tau)}\left[\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_t|s_t)\left(\prod_{t'1=}^T\frac{\pi_{\theta}(a_{t'}|s_{t'}}{\hat{\pi}_{\theta}(a_{t'}|s_{t'}}\right)\left(\prod_{t'=t}^T R(s_{t'},a_{t'})\right)\right]$$
 为了约束policy的变化，可以加入trust region约束条件，在这个region内，我们认为使用importance sampling得到的结果是可信的：
 $$\max_{\theta} \hat{\mathbb{E}}_t\left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t}\hat{A}_t\right]$$
 $$s.t. \hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{\theta_{old}}(\cdot|s_t),\pi_{\theta}(\cdot|s_t)\right]\right]$$
