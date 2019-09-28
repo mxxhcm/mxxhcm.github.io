@@ -39,13 +39,14 @@ $$p(x) = \frac{\hat{p}(x)}{Z}$$
 \mathbb{E}\_p\left[f(x)\right] & = \int f(x) p(x) dx\\\\
 & = \int f(x) \frac{\hat{p}(x)}{Z} \frac{q(x)}{q(x)} dx\\\\
 & = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}dx}{Z}\\\\
-& = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x) dx}\\\\
-& = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
+& = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x) dx}\\\\
+& = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
+& = \frac{\int f(x) q(x)\frac{\hat{p}(x)}{q(x)} dx}{\int q(x)\frac{\hat{p}(x)}{q(x)} dx}\\\\
+& = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\\\
 \end{align\*}
 接下来用采样样本的求和近似积分求期望：
 \begin{align\*}
-\mathbb{E}\_p\left[f(x)\right] & = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
-& = \frac{\int f(x) \hat{p}(x) r(x)q(x)}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\\\
+\mathbb{E}\_p\left[f(x)\right] & = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\\\
 & \approx \frac{\sum\_i f(x^i) r^i }{\sum r^i}\qquad\qquad 其中 r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\\\
 & = \sum\_i f(x^i) r^i  \frac{r^i}{\sum\_i r^i}\\\\
 \end{align\*}

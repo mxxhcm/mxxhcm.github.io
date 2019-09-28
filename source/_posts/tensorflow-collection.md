@@ -9,7 +9,7 @@ mathjax: true
 ---
 
 ## tf.collection
-Tensorflow用graph collection来管理不同类型的对象。tf.GraphKeys中定义了默认的collection，tf通过调用各种各样的collection操作graph中的变量。比如tf.Optimizer只优化tf.GraphKeys.TRAINABLE_VARIABLES collection中的变量。常见的collection如下：
+Tensorflow用graph collection来管理不同类型的对象。tf.GraphKeys中定义了默认的collection，tf通过调用各种各样的collection操作graph中的变量。比如tf.Optimizer只优化tf.GraphKeys.TRAINABLE_VARIABLES collection中的变量。常见的collection如下，它们其实都是字符串：
 - GLOBAL_VARIABLES: 所有的Variable对象在创建的时候自动加入该colllection，且在分布式环境中共享（model variables是它的子集）。一般来说，TRAINABLE_VARIABLES包含在MODEL_VARIABLES中，MODEL_VARIABLES包含在GLOBAL_VARIABLES中。也就是说TRAINABLE_VARIABLES$\le$MODEL_VARIABLES$\le$GLOBAL_VARIABLES。一般tf.train.Saver()对应的是GLOBAL_VARIABLES的变量。
 - LOCAL_VARIABLES: 它是GLOBAL_VARIABLES不同的是在本机器上的Variable子集。使用tf.contrib.framework.local_variable将变量添加到这个collection.
 - MODEL_VARIABLES: 模型变量，在构建模型中，所有用于前向传播的Variable都将添加到这里。使用 tf.contrib.framework.model_variable向这个collection添加变量。
