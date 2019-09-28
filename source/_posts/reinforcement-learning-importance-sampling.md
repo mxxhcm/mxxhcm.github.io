@@ -28,7 +28,7 @@ $$f(1) = 2, f(2) = 3, f(3) = 4, otherwise 0$$
 
 ## Optimal Importance Sampling
 Importance sampling使用$\mathbb{E}\_p\left[f(x)\right]\approx \frac{1}{N}\sum\_i \frac{p(x\_i)}{q(x\_i)}f(x\_i)$近似计算$\mathbb{E}\_p\left[f(x)\right]$。即使用采样近似估计，随着样本数量$N$的增加，期望值越准确。那么该如何减少方差呢，样本分布$q$应该满足：
-$$q(x) \propto p(x)\vertf(x)\vert $$
+$$q(x) \propto p(x)\vert f(x)\vert $$
 直观上来说，这意味着为了减少方差，，我们需要采样return更大的点。
 
 ## Normalized importanct sampling
@@ -45,7 +45,7 @@ $$p(x) = \frac{\hat{p}(x)}{Z}$$
 接下来用采样样本的求和近似积分求期望：
 \begin{align\*}
 \mathbb{E}\_p\left[f(x)\right] & = \int f(x) \frac{\hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
-& = \int f(x) \frac{r(x)}{q(x)}}{\int r(x)q(x) dx}, r(x) = \frac{\hat{p}(x)}{q(x)}\\\\
+& = \int f(x) \frac{r(x)}{q(x)}{\int r(x)q(x) dx}, r(x) = \frac{\hat{p}(x)}{q(x)}\\\\
 & \approx \frac{\sum\_i f(x^i) r^i }{\sum r^i}, r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\\\
 & = \sum\_i f(x^i) r^i } \frac{r^i}{\sum\_i r^i}\\\\
 \end{align\*}
