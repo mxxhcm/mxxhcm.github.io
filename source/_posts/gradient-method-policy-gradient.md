@@ -33,23 +33,23 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 本文还提出了一种方法证明基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。
 
 ## Objective Function
-智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。有两种方式定义智能体的objective，一种是average reward，一种是从指定状态开始的accumulated reward。
+智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a\_t=a|s\_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。有两种方式定义智能体的objective，一种是average reward，一种是从指定状态开始的accumulated reward。
 
 ### Long-term Accumated Reward from Designated State(从指定状态开始的累计奖励)
-我们可以指定一个初始状态$s_0$，计算从这个初始状态开始得到的accumulated reward：
-$$\eta(\pi) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0,\pi\right]\tag{5}$$
+我们可以指定一个初始状态$s\_0$，计算从这个初始状态开始得到的accumulated reward：
+$$\eta(\pi) = \mathbb{E}\left[\sum\_{t=0}^{\infty} \gamma^{t-1} R\_t|s\_0,\pi\right]\tag{5}$$
 相应的state-action如下：
-$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum_{k=1}^{\infty} R_{t+k}|s_t=s,a_t=a,\pi\right] \tag{6}$$
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。定义$\rho^{\pi} (s)$是从开始状态$s_0$执行策略$\pi$遇到的状态的折扣权重之和：
-$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right]  = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{7}$$
-$\rho^{\pi} $是从$s_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。$\rho^{\pi}(s)$是从初始状态$s_0$经过$t$步之后state $s$出现的概率，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0$。
+$$Q^{\pi} (s,a) = \mathbb{E}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s,a\_t=a,\pi\right] \tag{6}$$
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。定义$\rho^{\pi} (s)$是从开始状态$s\_0$执行策略$\pi$遇到的状态的折扣权重之和：
+$$\rho^{\pi} (s) = \sum\_{t=1}^{\infty} \gamma^t Pr\left[s\_t = s|s\_0,\pi\right]  = \int\_S \sum\_{t=0}^{\infty} \gamma^{t} \rho\_0(s\_0)p(s\_0\rightarrow s, t,\pi)ds\_0 \tag{7}$$
+$\rho^{\pi} $是从$s\_0$开始，到$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和。$\rho^{\pi}(s)$是从初始状态$s\_0$经过$t$步之后state $s$出现的概率，把$\rho$换一种写法就容易理解了：$\rho^{\pi} (s) = \int\_S \sum\_{t=0}^{\infty} \rho\_0(s\_0)p(s\_0\rightarrow s, t,\pi)ds\_0$。
 
 ### Average Reward(平均奖励)
 Average reward是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：
-$$\eta(\pi) = lim_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R_1+R_2+\cdots+R_t|\pi\right] = \int_S \rho^{\pi} (s) \int_A \pi(s,a) R(s,a)dads \tag{2}$$
-其中$\rho^{\pi} (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是策略$\pi$下的stationary distribution。[Stationary distribution](http://mxxhcm.github.io/2019/07/31/markov-matrices/)的意思是就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。第二个等号后，第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是每一个$s$处对应各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。
+$$\eta(\pi) = lim\_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R\_1+R\_2+\cdots+R\_t|\pi\right] = \int\_S \rho^{\pi} (s) \int\_A \pi(s,a) R(s,a)dads \tag{2}$$
+其中$\rho^{\pi} (s) = lim\_{t\rightarrow \infty} Pr\left[s\_t=s|s\_0,\pi\right]$是策略$\pi$下的stationary distribution。[Stationary distribution](http://mxxhcm.github.io/2019/07/31/markov-matrices/)的意思是就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。第一个等号中，$R\_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。第二个等号后，第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是每一个$s$处对应各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。
 给出相应的state-action value的定义方式：
-$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{3}$$
+$$Q^{\pi} (s,a) = \sum\_{t=0}^{\infty} \mathbb{E}\left[R\_t - \eta(\pi)|s\_0=s,a\_0=a,\pi\right], \forall s\in S, a\in A \tag{3}$$
 value function定义还和原来一样，但是因为$Q$计算方法变了，所以$V$也跟着变了：
 $$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{4}$$
 
@@ -57,112 +57,112 @@ $$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{4}$$
 
 ## Policy Gradient Theorem
 对于任何MDP，不论是average reward还是accumulated reward的形式，都有：
-$$\frac{\partial \eta}{\partial \mathbf{\theta}} = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{8}$$
+$$\frac{\partial \eta}{\partial \mathbf{\theta}} = \sum\_a \rho^{\pi} (s)\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a), \tag{8}$$
 证明：
 ### Average Reward:
 \begin{align\*}
-\nabla V_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
-&= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \\\\
-&= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[R(s,a)-\eta(\pi)+\sum_{s',r}p(s',r|s,a)V_{\pi}(s')\right]\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \eta(\pi)+ \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s')\right]\right], \nabla R(s,a) = 0\\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) - \pi(a|s)\nabla \eta(\pi)+ \pi(a|s) \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s')\right]\\\\
-&= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) - \sum_a \pi(a|s)\nabla \eta(\pi) + \sum_a \pi(a|s) \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s') \\\\
-&= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) -\nabla \eta(\pi)+ \sum_a \pi(a|s)\sum_{s',r}p(s',r|s,a)\nabla V_{\pi}(s'), \sum_s\pi(s,a)=1\\\\
+\nabla V\_{\pi}(s) &= \nabla \left[ \sum\_a \pi(a|s)Q\_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum\_a \left[\nabla\pi(a|s)Q\_{\pi}(s,a)\right], \\\\
+&= \sum\_a \left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\nabla Q\_{\pi}(s,a)\right] \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\nabla \left[R(s,a)-\eta(\pi)+\sum\_{s',r}p(s',r|s,a)V\_{\pi}(s')\right]\right] \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\left[-\nabla \eta(\pi)+ \sum\_{s',r}p(s',r|s,a) \nabla V\_{\pi}(s')\right]\right], \nabla R(s,a) = 0\\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) - \pi(a|s)\nabla \eta(\pi)+ \pi(a|s) \sum\_{s',r}p(s',r|s,a) \nabla V\_{\pi}(s')\right]\\\\
+&= \sum\_a\nabla\pi(a|s)Q\_{\pi}(s,a) - \sum\_a \pi(a|s)\nabla \eta(\pi) + \sum\_a \pi(a|s) \sum\_{s',r}p(s',r|s,a) \nabla V\_{\pi}(s') \\\\
+&= \sum\_a\nabla\pi(a|s)Q\_{\pi}(s,a) -\nabla \eta(\pi)+ \sum\_a \pi(a|s)\sum\_{s',r}p(s',r|s,a)\nabla V\_{\pi}(s'), \sum\_s\pi(s,a)=1\\\\
 \end{align\*}
 移项合并同类项得：
-$$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s') - \nabla V_{\pi}(s) \tag{9}$$
+$$\nabla \eta(\pi) = \sum\_a\nabla\pi(a|s)Q\_{\pi}(s,a) + \sum\_a\pi(s,a) \sum\_{s',r}p(s',r|s,a) \nabla V\_{\pi}(s') - \nabla V\_{\pi}(s) \tag{9}$$
 同时在上式两边对$\rho^{\pi} $进行求和，得到：
 \begin{align\*}
-\sum_s \rho^{\pi} (s)\nabla \eta(\pi) &= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \\\\
-&\qquad\qquad\qquad + \sum_s \rho^{\pi}(s) \sum_a\pi(a|s) \sum_{s',r}p(s',r|s,a) \nabla V_{\pi}(s')\\\\
-&\qquad\qquad\qquad - \sum_s \rho^{\pi} (s)\nabla V_{\pi}(s) \tag{10}\\\\
-&= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) + \sum_s \rho^{\pi}(s') \nabla V_{\pi}(s') - \sum_s \rho^{\pi} (s)\nabla V_{\pi}(s) \tag{11}\\\\
-&= \sum_s \rho^{\pi} (s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \tag{12}\\\\
+\sum\_s \rho^{\pi} (s)\nabla \eta(\pi) &= \sum\_s \rho^{\pi} (s)\sum\_a \nabla\pi(a|s)Q\_{\pi}(s,a) \\\\
+&\qquad\qquad\qquad + \sum\_s \rho^{\pi}(s) \sum\_a\pi(a|s) \sum\_{s',r}p(s',r|s,a) \nabla V\_{\pi}(s')\\\\
+&\qquad\qquad\qquad - \sum\_s \rho^{\pi} (s)\nabla V\_{\pi}(s) \tag{10}\\\\
+&= \sum\_s \rho^{\pi} (s)\sum\_a \nabla\pi(a|s)Q\_{\pi}(s,a) + \sum\_s \rho^{\pi}(s') \nabla V\_{\pi}(s') - \sum\_s \rho^{\pi} (s)\nabla V\_{\pi}(s) \tag{11}\\\\
+&= \sum\_s \rho^{\pi} (s)\sum\_a \nabla\pi(a|s)Q\_{\pi}(s,a) \tag{12}\\\\
 &= \nabla \eta(\pi) \tag{13}\\\\
 \end{align\*}
-式子$10$到式子$11$其实就是$\sum_s \rho^{\pi}(s) \sum_a\pi(a|s) \sum_{s',r}p(s',r|s,a) = \sum_{s'}\rho^{\pi} (s')$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。
+式子$10$到式子$11$其实就是$\sum\_s \rho^{\pi}(s) \sum\_a\pi(a|s) \sum\_{s',r}p(s',r|s,a) = \sum\_{s'}\rho^{\pi} (s')$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。
 \begin{align\*}
 \end{align\*}
 
-### 指定初始状态$s_0$的accumulated reward
+### 指定初始状态$s\_0$的accumulated reward
 \begin{align\*}
-\nabla V_{\pi}(s) &= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
-&= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s',r}p(s',r|s,a)(R+\gamma V_{\pi}(s'))\right]\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s',r}p(s',r|s,a)R +\sum_{s',r}p(s',r|s,a)\gamma V_{\pi}(s')\right]\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[0 +\sum_{s',r}p(s',r|s,a)\gamma\nabla V_{\pi}(s')\right]\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s',r}p(s',r|s,a)\gamma \nabla V_{\pi}(s'))\right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\nabla V_{\pi}(s') \right] \\\\
-&= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s'}\gamma p(s'|s,a)\\\\
-&\qquad\qquad\qquad\left( \sum_{a'} \nabla\pi(a'|s')Q_{\pi}(s',a') + \pi(a'|s')\sum_{s''}\gamma p(s''|s',a')\nabla V_{\pi}(s''))\right) \right] \tag{14}\\\\
-&= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) \tag{15}\\\\
-&= \sum_{x\in S}\rho^{\pi} (x)\sum_a\nabla \pi(a|x) Q_{\pi}(x,a) \tag{16}\\\\
+\nabla V\_{\pi}(s) &= \nabla \left[ \sum\_a \pi(a|s)Q\_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum\_a \left[\nabla\pi(a|s)Q\_{\pi}(s,a)\right], \forall s\in S \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\nabla Q\_{\pi}(s,a)\right] \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum\_{s',r}p(s',r|s,a)(R+\gamma V\_{\pi}(s'))\right]\right] \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum\_{s',r}p(s',r|s,a)R +\sum\_{s',r}p(s',r|s,a)\gamma V\_{\pi}(s')\right]\right] \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\left[0 +\sum\_{s',r}p(s',r|s,a)\gamma\nabla V\_{\pi}(s')\right]\right] \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\sum\_{s',r}p(s',r|s,a)\gamma \nabla V\_{\pi}(s'))\right] \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\sum\_{s'}\gamma p(s'|s,a)\nabla V\_{\pi}(s') \right] \\\\
+&= \sum\_a\left[\nabla\pi(a|s)Q\_{\pi}(s,a) + \pi(a|s)\sum\_{s'}\gamma p(s'|s,a)\\\\
+&\qquad\qquad\qquad\left( \sum\_{a'} \nabla\pi(a'|s')Q\_{\pi}(s',a') + \pi(a'|s')\sum\_{s''}\gamma p(s''|s',a')\nabla V\_{\pi}(s''))\right) \right] \tag{14}\\\\
+&= \sum\_{x\in S}\sum\_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum\_a\nabla\pi(a|x)Q\_{\pi}(x,a) \tag{15}\\\\
+&= \sum\_{x\in S}\rho^{\pi} (x)\sum\_a\nabla \pi(a|x) Q\_{\pi}(x,a) \tag{16}\\\\
 \end{align\*}
-式子$(15)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(14)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到$x$，概率为$0$就是了。取$J(\mathbf{\theta}) = V_{\pi}(s_0)$，有：
+式子$(15)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(14)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到$x$，概率为$0$就是了。取$J(\mathbf{\theta}) = V\_{\pi}(s\_0)$，有：
 \begin{align\*}
-\nabla J(\mathbf{\theta}) &= \nabla_{\theta}V_{\pi}(s_0)\\\\
-&= \sum_{s\in S}\( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \) \sum_a\nabla{\pi}(a|s)Q_{\pi}(s,a)\\\\
-&=\sum_{s\in S}\rho(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\\\\
-&=\sum_{s'\in S}\rho(s')\sum_s\frac{\eta(s)}{\sum_{s'}\eta(s')}\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\\\\
-&=\sum_{s'\in S}\rho(s')\sum_s\mu(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\\\\
-&\propto \sum_{s\in S}\mu(s)\sum_a\nabla\pi(a|s)Q_{\pi}(s,a) \tag{17}\\\\
+\nabla J(\mathbf{\theta}) &= \nabla\_{\theta}V\_{\pi}(s\_0)\\\\
+&= \sum\_{s\in S}\( \sum\_{k=0}^{\infty} Pr(s\_0\rightarrow s,k,\pi) \) \sum\_a\nabla{\pi}(a|s)Q\_{\pi}(s,a)\\\\
+&=\sum\_{s\in S}\rho(s)\sum\_a \nabla{\pi}(a|s)Q\_{\pi}(s,a)\\\\
+&=\sum\_{s'\in S}\rho(s')\sum\_s\frac{\eta(s)}{\sum\_{s'}\eta(s')}\sum\_a \nabla{\pi}(a|s)Q\_{\pi}(s,a)\\\\
+&=\sum\_{s'\in S}\rho(s')\sum\_s\mu(s)\sum\_a \nabla{\pi}(a|s)Q\_{\pi}(s,a)\\\\
+&\propto \sum\_{s\in S}\mu(s)\sum\_a\nabla\pi(a|s)Q\_{\pi}(s,a) \tag{17}\\\\
 \end{align\*}
 
 ### 结论
-从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G_t = \sum_{k=1}^{\infty} R_{t+k}-\rho(\pi)$或者$R_t = \sum_{k=1}^{\infty} \gamma^{k-1} R_{t+k}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。
+从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G\_t = \sum\_{k=1}^{\infty} R\_{t+k}-\rho(\pi)$或者$R\_t = \sum\_{k=1}^{\infty} \gamma^{k-1} R\_{t+k}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s\_t,a\_t)}{\partial\mathbf{\theta}}R\_t\frac{1}{\pi(s\_t,a\_t)}$,$\frac{1}{\pi(s\_t,a\_t)}$纠正了$\pi$的oversampling）。
 
 
 ## 另一种policy gradient的方法
 目标函数$J$如下：
-$$J(\theta) = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[R(\tau)\right] = \int \pi_{\theta}(\tau) r(\tau) d\tau$$
-其中$\tau = s_0, a_0, s_1, a_1,\cdots \sim \pi_{\theta}$表示一个episode的trajectory，$R(\tau)$表示这个trajectory的returns(G_0)。Policy gradient变成：
+$$J(\theta) = \mathbb{E}\_{\tau \sim \pi\_{\theta}(\tau)} \left[R(\tau)\right] = \int \pi\_{\theta}(\tau) r(\tau) d\tau$$
+其中$\tau = s\_0, a\_0, s\_1, a\_1,\cdots \sim \pi\_{\theta}$表示一个episode的trajectory，$R(\tau)$表示这个trajectory的returns(G\_0)。Policy gradient变成：
 \begin{align\*}
-\nabla_{\theta}J(\theta) & = \int \nabla_{\theta} \pi_{\theta}(\tau) R(\tau)d\tau\\\\
-& = \int \pi_{\theta}(\tau) \nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau)d\tau\\\\
-& = \mathbf{E}_{\tau\sim \pi_{\theta}(\tau)} \left[\nabla_{\theta} \log\pi_{\theta}(\tau) R(\tau) d\tau\right]
+\nabla\_{\theta}J(\theta) & = \int \nabla\_{\theta} \pi\_{\theta}(\tau) R(\tau)d\tau\\\\
+& = \int \pi\_{\theta}(\tau) \nabla\_{\theta}\log\pi\_{\theta}(\tau) R(\tau)d\tau\\\\
+& = \mathbf{E}\_{\tau\sim \pi\_{\theta}(\tau)} \left[\nabla\_{\theta} \log\pi\_{\theta}(\tau) R(\tau) d\tau\right]
 \end{align\*}
-可以将policy gradient表示成期望的形式，然后就可以采样进行估计。对$R(\tau)$进行采样，但是不进行求导。Returns不直接受$\pi_{\theta}$的影响，$\tau$受$\pi_{\theta}$的影响，下面是$\log\pi(\tau)$的偏导数计算。
+可以将policy gradient表示成期望的形式，然后就可以采样进行估计。对$R(\tau)$进行采样，但是不进行求导。Returns不直接受$\pi\_{\theta}$的影响，$\tau$受$\pi\_{\theta}$的影响，下面是$\log\pi(\tau)$的偏导数计算。
 $\pi(\tau)$定义为：
-$$\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = p(s_0) \prod_{t=0}^T \pi_{\theta}(a_t|s_t)p(s_{t+1}|s_t,a_t)$$
+$$\pi\_{\theta}(s\_0,a\_0,\cdots, s\_T,a\_T) = p(s\_0) \prod\_{t=0}^T \pi\_{\theta}(a\_t|s\_t)p(s\_{t+1}|s\_t,a\_t)$$
 取$\log$：
-$$\log\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = \log p(s_0) + \sum_{t=0}^T\log \pi_{\theta}(a_t|s_t) + \log p(s_{t+1}|s_t,a_t)$$
+$$\log\pi\_{\theta}(s\_0,a\_0,\cdots, s\_T,a\_T) = \log p(s\_0) + \sum\_{t=0}^T\log \pi\_{\theta}(a\_t|s\_t) + \log p(s\_{t+1}|s\_t,a\_t)$$
 对$\theta$求偏导，得到：
-$$\nabla_{\theta}\left[\sum_{t=0}^T \log\pi_{\theta}(a_t|s_t)$$
+$$\nabla\_{\theta}\left[\sum\_{t=0}^T \log\pi\_{\theta}(a\_t|s\_t)$$
 所以，policy gradient：
-$$\nabla_{\theta} = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)}\left[\nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau) \right]$$
+$$\nabla\_{\theta} = \mathbb{E}\_{\tau \sim \pi\_{\theta}(\tau)}\left[\nabla\_{\theta}\log\pi\_{\theta}(\tau) R(\tau) \right]$$
 变成了：
-$$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^TR(s_{i,t}, a_{i,t}\right)$$
-$$ \theta \leftarrow + \alpha \nabla_{\theta} J(\theta)$$
+$$\nabla\_{\theta}J(\theta) \approx \frac{1}{N}\sum\_{i=1}^N \left(\sum\_{t=1}^T\nabla\_{\theta} \log\pi\_{\theta}(a\_{i,t}|s\_{i,t}\right) \left(\sum\_{t=1}^TR(s\_{i,t}, a\_{i,t}\right)$$
+$$ \theta \leftarrow + \alpha \nabla\_{\theta} J(\theta)$$
 即用多个trajectories近似计算policy gradietn，更新$\theta$。
 
 ### Intution
-$\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}$是最大对数似然，表示的是对应的trajectory在当前的policy下发生的可能性。将它和returns相乘，如果产生high positive reward，增加policy的可能性，如果是high negetive reward，减少policy的可能性。
+$\nabla\_{\theta} \log\pi\_{\theta}(a\_{i,t}|s\_{i,t}$是最大对数似然，表示的是对应的trajectory在当前的policy下发生的可能性。将它和returns相乘，如果产生high positive reward，增加policy的可能性，如果是high negetive reward，减少policy的可能性。
 在一个trajectory中的states具有很强的相关性，这个trajectory发生的概率定义为：
-$$\pi(\tau) = p(s_0) \prod_{t=0}^T \pi_{\theta}(a_t|s_t)p(s_{t+1}|s_t,a_t)$$
+$$\pi(\tau) = p(s\_0) \prod\_{t=0}^T \pi\_{\theta}(a\_t|s\_t)p(s\_{t+1}|s\_t,a\_t)$$
 但是连续的乘法可能会产生梯度消失或者梯度爆炸问题。policy gradient将连乘变成了连加。
 ### Policy Gradient with Monte Carlo rollouts
 REINFROCE使员工的是Monte Carlo计算returns，完整的算法如下：
 REINFORCE 算法
 Loop 
-$\qquad 1.$使用policy $\pi_{\theta}(a_t|s_t)$生成一个trajectory $\left{\tau^i \right}$
-$\qquad$估计$\nabla_{\theta}J(\theta) \approx \sum_i (\sum_t \nabla_{\theta} \log\pi_{\theta}(a_t^i|s_t^i)) (\sum_t R(s_t^i, a_t^i))$
-$\qquad \theta\leftarrow \theta+\alpha\nabla_{\theta}J(\theta)$
+$\qquad 1.$使用policy $\pi\_{\theta}(a\_t|s\_t)$生成一个trajectory $\left{\tau^i \right}$
+$\qquad$估计$\nabla\_{\theta}J(\theta) \approx \sum\_i (\sum\_t \nabla\_{\theta} \log\pi\_{\theta}(a\_t^i|s\_t^i)) (\sum\_t R(s\_t^i, a\_t^i))$
+$\qquad \theta\leftarrow \theta+\alpha\nabla\_{\theta}J(\theta)$
 Until 收敛
 
 ### Policy Gradients Improvements
 Policy gradient的方差很大，而且很难收敛。
 MC方法根据整个trajectory计算exact rewards，但是stochastic policy可能会在不同的episode采取不同的actions，一个小的改变可能会完全改变结果，MC方法没有bias但是有很大的方差。方差会影响深度学习的优化，一个采样的reward可能想要增加似然，另一个样本rewards可能想要减少似然，给出了冲突的梯度方向，影响收敛性。为了减少选择action造成的方差，我们需要减少样本rewards的方差：
-$$\left( \sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)$$
+$$\left( \sum\_{t=1}^T R(s\_{i,t}, a\_{i,t})\right)$$
 增大PG中的batch size会减少方差。
 但是增大batch size会降低sample efficiency。所以batch size不能增加太多，我们需要想其他的方法减少方差：
 #### Baseline
-$$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)$$
-中$\sum_{t=1}^T R(s_{i,t}, a_{i,t})$其实就是$Q(s,a)$，我们可以在上面减去一项，只要这一项和$\theta$无关就好，所以我们可以减去$V(s)$：
+$$\nabla\_{\theta}J(\theta) \approx \frac{1}{N}\sum\_{i=1}^N \left(\sum\_{t=1}^T\nabla\_{\theta} \log\pi\_{\theta}(a\_{i,t}|s\_{i,t}\right) \left(\sum\_{t=1}^T R(s\_{i,t}, a\_{i,t})\right)$$
+中$\sum\_{t=1}^T R(s\_{i,t}, a\_{i,t})$其实就是$Q(s,a)$，我们可以在上面减去一项，只要这一项和$\theta$无关就好，所以我们可以减去$V(s)$：
 \begin{align\*}
-\nabla_{\theta} J(\theta) & \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(Q(s_{i,t}, a_{i,t}) - V(s_{i,t})\right)\\\\
-& = \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(A(s_{i,t}, a_{i,t})\right)\\\\
+\nabla\_{\theta} J(\theta) & \approx \frac{1}{N} \sum\_{i=1}^N \sum\_{t=1}^T \nabla\_{\theta}\log\pi\_{\theta}(a\_{i,t}|s\_{i,t})\left(Q(s\_{i,t}, a\_{i,t}) - V(s\_{i,t})\right)\\\\
+& = \frac{1}{N} \sum\_{i=1}^N \sum\_{t=1}^T \nabla\_{\theta}\log\pi\_{\theta}(a\_{i,t}|s\_{i,t})\left(A(s\_{i,t}, a\_{i,t})\right)\\\\
 \end{align\*}
 直观上来首，RL感兴趣的是那些比平均值好的action。如果returns都是正的$(R(\tau)\ge 0)$，PG总是会提高这个trajectory发生的概率，即使它比其他的trajectory要低。考虑以下两个例子：
 - Trajectory $A$的return是$10$，trajectory $B$的reward是$-10$
@@ -171,75 +171,75 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\na
 在第一个例子中，PG会提高$A$发生的概率，降低$B$发生的概率。在第二个例子中，PG会提高$A$和$B$的概率。然而，对于我们来说，在两个例子中，我们都想要降低$B$发生的概率，提高$A$发生的概率。通过引入一个baseline，比如$V$，我们就可以实现这样的目的。
 #### Vanilla Policy Gradient
 给出一个使用baseline $b$的通用算法：
-$$ \nabla\approx \hat{g} = \frac{1}{m} \sum_{i=1}^m \nabla_{\theta}\log P(\tau^{(i)};\theta)(R(\tau^{(i)})-b)$$
+$$ \nabla\approx \hat{g} = \frac{1}{m} \sum\_{i=1}^m \nabla\_{\theta}\log P(\tau^{(i)};\theta)(R(\tau^{(i)})-b)$$
 Vanilla policy gradient算法
 初始化policy 参数$\theta$，baselien $b$
 for $i = 1, 2, \cdots$ do
-$\qquad$使用当前policy $\pi_{\theta}$收集trajectories
+$\qquad$使用当前policy $\pi\_{\theta}$收集trajectories
 $\qquad$在每个trajectory的每一个timestep，计算
-$\qquad\qquad$return $G_t = \sum_{t'=t} ^{T-1}\gamma^{t'-t} R_{t'}$$
-$\qquad\qquad$advantage的估计值$\hat{A}_t = R_t - b(s_t)$
-$\qquad$重新拟合baseline，最小化$\vert b(s_t) - G_t\vert^2$
+$\qquad\qquad$return $G\_t = \sum\_{t'=t} ^{T-1}\gamma^{t'-t} R\_{t'}$$
+$\qquad\qquad$advantage的估计值$\hat{A}\_t = R\_t - b(s\_t)$
+$\qquad$重新拟合baseline，最小化$\vert b(s\_t) - G\_t\vert^2$
 $\qquad$在所有trajectories和timesteps上求和估计$\hat{g}$
 $\qquad$使用policy gradient estimate $\hat{g}$的估计$\hat{g}$更新policy 参数
 end for
 
 #### Causality
 未来的action不应该改变过去的decisions：
-$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) \right) \left(\sum_{t'=t}^T R(s_{i,t'};a_{i,t'})\right)$$
+$$\nabla\_{\theta}J(\theta) \approx \frac{1}{N} \sum\_{i=1}^N \left(\sum\_{t=1}^T \nabla\_{\theta}\log\pi\_{\theta}(a\_{i,t}|s\_{i,t}) \right) \left(\sum\_{t'=t}^T R(s\_{i,t'};a\_{i,t'})\right)$$
 #### Reward discount
 加上折扣因子：
-$$Q^{\pi,\gamma}(s, a) \leftarrow r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots|s_0 = s, a_0 = a$$
+$$Q^{\pi,\gamma}(s, a) \leftarrow r\_0 + \gamma r\_1 + \gamma^2 r\_2 + \cdots|s\_0 = s, a\_0 = a$$
 得到：
-$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) \right) \left(\sum_{t'=t}^T\gamma^{t'-t} R(s_{i,t'};a_{i,t'})\right)$$
+$$\nabla\_{\theta}J(\theta) \approx \frac{1}{N} \sum\_{i=1}^N \left(\sum\_{t=1}^T \nabla\_{\theta}\log\pi\_{\theta}(a\_{i,t}|s\_{i,t}) \right) \left(\sum\_{t'=t}^T\gamma^{t'-t} R(s\_{i,t'};a\_{i,t'})\right)$$
 
 ## Policy Gradient with Approximation(使用近似的策略梯度)
-因为$Q^{\pi} $是不知道的，我们希望用函数近似式子(8)中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:
-$$\Delta w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]^2 \propto \left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w} \tag{18}$$
-$\hat{Q}^{\pi} (s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，当这样一个过程收敛到local optimum，$Q^{\pi} (s,a)$和$f_w(s,a)$的均方误差最小时：
-$$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a|s;\theta)(Q^{\pi} (s,a))^2 - f^{\pi} (s,a;\omega) \tag{19}$$
+因为$Q^{\pi} $是不知道的，我们希望用函数近似式子(8)中的$Q^{\pi} $，大致求出梯度的方向。用$f\_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:
+$$\Delta w\_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi} (s\_t,a\_t) - f\_w(s\_t,a\_t)\right]^2 \propto \left[\hat{Q}^{\pi} (s\_t,a\_t) - f\_w(s\_t,a\_t)\right]\frac{\partial f\_w(s\_t,a\_t)}{\partial w} \tag{18}$$
+$\hat{Q}^{\pi} (s\_t,a\_t)$是$Q^{\pi} (s\_t,a\_t)$的一个无偏估计，当这样一个过程收敛到local optimum，$Q^{\pi} (s,a)$和$f\_w(s,a)$的均方误差最小时：
+$$\epsilon(\omega, \pi) = \sum\_{s,a}\rho^{\pi} (s)\pi(a|s;\theta)(Q^{\pi} (s,a))^2 - f^{\pi} (s,a;\omega) \tag{19}$$
 即导数等于$0$:
-$$\sum_s \rho^{\pi} (s)\sum_a\pi(a|s;\theta)\left[Q^{\pi} (s,a) -f_w (s,a;w)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{20}$$
+$$\sum\_s \rho^{\pi} (s)\sum\_a\pi(a|s;\theta)\left[Q^{\pi} (s,a) -f\_w (s,a;w)\right]\frac{\partial f\_w(s,a)}{\partial w}  = 0\tag{20}$$
 
 ### 定理2：Policy Gradient with Approximation Theorem
-如果$f_w$的参数$w$满足式子$20$，并且：
-$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)} = \frac{\partial \log \pi(s,a)}{\partial \mathbf{\theta}}\tag{21}$$
-那么使用$f_w(s,a)$计算的gradient和$Q^{\pi} (s,a)$计算的gradient是一样的：
-$$\frac{\partial \rho}{\partial \theta} = \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{22}$$
+如果$f\_w$的参数$w$满足式子$20$，并且：
+$$\frac{\partial f\_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)} = \frac{\partial \log \pi(s,a)}{\partial \mathbf{\theta}}\tag{21}$$
+那么使用$f\_w(s,a)$计算的gradient和$Q^{\pi} (s,a)$计算的gradient是一样的：
+$$\frac{\partial \rho}{\partial \theta} = \sum\_s\rho^{\pi} (s)\sum\_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f\_w(s,a)\tag{22}$$
 
 证明：
 将式子$21$代入$20$得到：
 \begin{align\*}
-&\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}\\\\
-= &\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\\\\
-= &\sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right] \tag{23}\\\\
+&\sum\_s\rho^{\pi} (s)\sum\_a\pi(s,a)\left[Q^{\pi} (s,a) -f\_w(s,a)\right]\frac{\partial f\_w(s,a)}{\partial w}\\\\
+= &\sum\_s\rho^{\pi} (s)\sum\_a\pi(s,a)\left[Q^{\pi} (s,a) -f\_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\\\\
+= &\sum\_s\rho^{\pi} (s)\sum\_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f\_w(s,a)\right] \tag{23}\\\\
 = & 0 \\\\
 \end{align\*}
 将式子$23$带入式子$8$：
 \begin{align\*}
-\frac{\partial \eta}{\partial \mathbf{\theta}} & = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)\\\\
-&= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) - \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right]\\\\
-&= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} \left[Q^{\pi} (s,a) - Q^{\pi} (s,a) +f_w(s,a)\right]\\\\
-&= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) \tag{24}\\\\
+\frac{\partial \eta}{\partial \mathbf{\theta}} & = \sum\_a \rho^{\pi} (s)\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)\\\\
+&= \sum\_a \rho^{\pi} (s)\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) - \sum\_s\rho^{\pi} (s)\sum\_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f\_w(s,a)\right]\\\\
+&= \sum\_a \rho^{\pi} (s)\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} \left[Q^{\pi} (s,a) - Q^{\pi} (s,a) +f\_w(s,a)\right]\\\\
+&= \sum\_a \rho^{\pi} (s)\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f\_w(s,a) \tag{24}\\\\
 \end{align\*}
-得证$\sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) $。
+得证$\sum\_a \rho^{\pi} (s)\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) = \sum\_a \rho^{\pi} (s)\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f\_w(s,a) $。
 
 ## Application to Deriving Algorithms and Advantages
 给定一个参数化的policy，可以利用定理2推导出参数化value function的形式。比如，考虑在features上进行线性组合的Gibbs分布构成的policy：
-$$\pi(a|s) = \frac{e\^{\theta^T \phi_{sa} } }{\sum_b e\^{\theta^T \phi_{sb} }} , \forall s \in S, \forall a \in A \tag{25}$$
-其中$\phi_{s,a}$是state-action pair $s,a$的特征向量。满足式子$(21)$的公式如下：
-$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(a|s)}{\partial \theta}\frac{1}{\pi(a|s)} = \phi_{sa} - \sum_b\pi(b|s)\phi_{sb}\tag{26}$$
+$$\pi(a|s) = \frac{e\^{\theta^T \phi\_{sa} } }{\sum\_b e\^{\theta^T \phi\_{sb} }} , \forall s \in S, \forall a \in A \tag{25}$$
+其中$\phi\_{s,a}$是state-action pair $s,a$的特征向量。满足式子$(21)$的公式如下：
+$$\frac{\partial f\_w(s,a)}{\partial w} = \frac{\partial \pi(a|s)}{\partial \theta}\frac{1}{\pi(a|s)} = \phi\_{sa} - \sum\_b\pi(b|s)\phi\_{sb}\tag{26}$$
 所以：
-$$f_w(s,a) = w^T \left[\phi_{sa} - \sum_b\pi(b|s)\phi_{sb} \right]\tag{27}$$
-也就是说，$f_w$和policy $\pi$都是feature的线性组合，只不过每一个state处$f_w$的均值都为$0$，$\sum_a\pi(a|s)f_w(s,a) = 0,\forall s\in S$。所以，其实我们可以认为$f_w$是对advantage function $A^{\pi} (s,a) = Q^{\pi} (s,a)- V^{\pi} (s)$而不是$Q^{\pi} (s,a)$的一个近似。式子$(21)$中$f_w$其实是一个相对值而不是一个绝对值。事实上，他们都可对以推广变成一个function加上一个value function。比如式子$(22)$可以变成$\frac{\partial\eta}{\partial \theta} = \sum_s\rho^{\pi}(s) \sum_a \frac{\partial \pi(a|s)}{\partial \theta}\left[f_w(s,a) + v(s)\right]$，其中$v$是一个function，$v$的选择不影响理论结果，但是会影响近似梯度的方差。
+$$f\_w(s,a) = w^T \left[\phi\_{sa} - \sum\_b\pi(b|s)\phi\_{sb} \right]\tag{27}$$
+也就是说，$f\_w$和policy $\pi$都是feature的线性组合，只不过每一个state处$f\_w$的均值都为$0$，$\sum\_a\pi(a|s)f\_w(s,a) = 0,\forall s\in S$。所以，其实我们可以认为$f\_w$是对advantage function $A^{\pi} (s,a) = Q^{\pi} (s,a)- V^{\pi} (s)$而不是$Q^{\pi} (s,a)$的一个近似。式子$(21)$中$f\_w$其实是一个相对值而不是一个绝对值。事实上，他们都可对以推广变成一个function加上一个value function。比如式子$(22)$可以变成$\frac{\partial\eta}{\partial \theta} = \sum\_s\rho^{\pi}(s) \sum\_a \frac{\partial \pi(a|s)}{\partial \theta}\left[f\_w(s,a) + v(s)\right]$，其中$v$是一个function，$v$的选择不影响理论结果，但是会影响近似梯度的方差。
 
 ## Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)
 
 ### 定理3：Policy Iteration with Function Approximation
-用$\pi$和$f_w$表示policy和value function的可导函数，并且满足式子$(21)$。$\max_{\theta,s,a,i,j} \vert\frac{\partial^2 \pi(a|s)}{\partial\theta_i \partial\theta_j} \vert\lt B\lt \infty$，假设$\left[\alpha_k\right]\_{k=0}^{\infty}$是步长sequence，$\lim\_{k\rightarrow \infty}\alpha_k = 0$，$\sum_k \alpha_k = \infty$。对于任何有界rewards的MDP来说，任意$\theta_0$，$\pi_k=\pi(\cdot, \theta_k)$定义的$\left[\eta(\pi_k)\right]\_{k=0}^{\infty}$，并且$w_k = w$满足：
-$$\sum_s\rho^{\pi_k} (s) \sum_a\pi_k(a|s)\left[Q^{\pi_k} (s,a)-f_w(s,a) \right]\frac{\partial f_w(s,a)}{\partial w}=0 \tag{28}$$
-$$\theta_{k+1} = \theta_k + \alpha_k \sum_s\rho^{\pi_k}(s) \sum_a\frac{\partial\pi_k(s,a)}{\partial \theta}f_{w_k}(s,a) \tag{29}$$
-一定收敛：$\lim_{k\rightarrow \infty}\frac{\partial \rho(\pi_k)}{\partial \theta} = 0$。
+用$\pi$和$f\_w$表示policy和value function的可导函数，并且满足式子$(21)$。$\max\_{\theta,s,a,i,j} \vert\frac{\partial^2 \pi(a|s)}{\partial\theta\_i \partial\theta\_j} \vert\lt B\lt \infty$，假设$\left[\alpha\_k\right]\_{k=0}^{\infty}$是步长sequence，$\lim\_{k\rightarrow \infty}\alpha\_k = 0$，$\sum\_k \alpha\_k = \infty$。对于任何有界rewards的MDP来说，任意$\theta\_0$，$\pi\_k=\pi(\cdot, \theta\_k)$定义的$\left[\eta(\pi\_k)\right]\_{k=0}^{\infty}$，并且$w\_k = w$满足：
+$$\sum\_s\rho^{\pi\_k} (s) \sum\_a\pi\_k(a|s)\left[Q^{\pi\_k} (s,a)-f\_w(s,a) \right]\frac{\partial f\_w(s,a)}{\partial w}=0 \tag{28}$$
+$$\theta\_{k+1} = \theta\_k + \alpha\_k \sum\_s\rho^{\pi\_k}(s) \sum\_a\frac{\partial\pi\_k(s,a)}{\partial \theta}f\_{w\_k}(s,a) \tag{29}$$
+一定收敛：$\lim\_{k\rightarrow \infty}\frac{\partial \rho(\pi\_k)}{\partial \theta} = 0$。
 
 
 ## 参考文献
