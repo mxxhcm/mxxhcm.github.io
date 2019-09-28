@@ -45,7 +45,6 @@ $$p(x) = \frac{\hat{p}(x)}{Z}$$
 接下来用采样样本的求和近似积分求期望：
 \begin{align\*}
 \mathbb{E}\_p\left[f(x)\right] & = \int f(x) \frac{\hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
-& = \int f(x) \frac{r(x)}{q(x)}{\int r(x)q(x) dx}, r(x) = \frac{\hat{p}(x)}{q(x)}\\\\
 & \approx \frac{\sum\_i f(x^i) r^i }{\sum r^i}, r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\\\
 & = \sum\_i f(x^i) r^i } \frac{r^i}{\sum\_i r^i}\\\\
 \end{align\*}
