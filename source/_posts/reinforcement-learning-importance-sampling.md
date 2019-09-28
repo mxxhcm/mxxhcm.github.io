@@ -37,16 +37,17 @@ $$p(x) = \frac{\hat{p}(x)}{Z}$$
 许多ML方法属于贝叶斯网络或者马尔科夫随机场，对于贝叶斯网络中，$p$很容易计算。但是当$p$是马尔科夫随机场时，$\sum\hat{p}(x)$是很难计算的。
 \begin{align\*}
 \mathbb{E}\_p\left[f(x)\right] & = \int f(x) p(x) dx\\\\
-& = \int f(x) \frac{\hat{p}(x)}{Z} \frac{q(x)}{q(x)}\\\\
-& = \int f(x) \frac{\hat{p}(x) \frac{q(x)}{q(x)}}{Z}\\\\
-& = \int f(x) \frac{\hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x) dx}\\\\
-& = \int f(x) \frac{\hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
+& = \int f(x) \frac{\hat{p}(x)}{Z} \frac{q(x)}{q(x)} dx\\\\
+& = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}dx}{Z}\\\\
+& = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x) dx}\\\\
+& = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
 \end{align\*}
 接下来用采样样本的求和近似积分求期望：
 \begin{align\*}
-\mathbb{E}\_p\left[f(x)\right] & = \int f(x) \frac{\hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
-& \approx \frac{\sum\_i f(x^i) r^i }{\sum r^i}, r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\\\
-& = \sum\_i f(x^i) r^i } \frac{r^i}{\sum\_i r^i}\\\\
+\mathbb{E}\_p\left[f(x)\right] & = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\
+& = \frac{\int f(x) \hat{p}(x) r(x)q(x)}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\\\
+& \approx \frac{\sum\_i f(x^i) r^i }{\sum r^i}\qquad\qquad 其中 r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\\\
+& = \sum\_i f(x^i) r^i  \frac{r^i}{\sum\_i r^i}\\\\
 \end{align\*}
 通过计算
 这就避免了计算$Z$，这种方法叫做normalized importance sampling。但是需要付出一定代价，unnormalized importance sampling是无偏的，而normalized importance是有偏的但是方差更小。
