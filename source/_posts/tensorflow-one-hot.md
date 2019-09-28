@@ -42,6 +42,5 @@ print(sess.run(result))
 
 ```
 
-
 ## 参考文献
 1.https://www.tensorflow.org/api_docs/python/tf/one_hot
