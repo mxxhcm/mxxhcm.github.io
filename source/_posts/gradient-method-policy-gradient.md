@@ -46,26 +46,32 @@ $$J(\theta) = \sum_s d(s) V^{\pi} (s) = \sum_s d(s) \sum_a\pi(s, a) Q^{\pi} (s, 
 我们可以指定一个初始状态$s\_0$，计算从这个初始状态开始得到的accumulated reward：
 $$\eta(\pi) = V^{\pi} (s_0) = \mathbb{E}\_{\pi}\left[\sum\_{t=0}^{\infty} \gamma^{t-1} R\_t|s\_0\right] = \mathbb{E}\_{\pi}\left[G_0 \right]\tag{5}$$
 定义return $G_t$如下：
-$$ G_t = \sum\_{k=0}^{\infty} R\_{t+k+1} \tag{8}$$
+$$ G_t = \sum\_{k=0}^{\infty} R\_{t+k+1} \tag{6}$$
 定义state-action value function和state value function如下：
-$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s,a\_t=a\right] \tag{6}$$
-$$V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s\right] \tag{7}$$
+\begin{align\*}
+Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s,a\_t=a\right] \\\\
+V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s\right]\\\\ 
+\tag{7}
+\end{align\*}
 其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。它们之间的关系如下：
-$$ V^{\pi} (s) = \mathbb{E}\_{\pi}\left[Q(s,a)\right] = \sum_a \pi(a|s) Q^{\pi} (s,a) \tag{9}$$
+$$ V^{\pi} (s) = \mathbb{E}\_{\pi}\left[Q(s,a)\right] = \sum_a \pi(a|s) Q^{\pi} (s,a) \tag{8}$$
 定义$\rho^{\pi} (s)$是从指定的初始状态$s\_0$开始，执行策略$\pi$在$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和：
-$$\rho^{\pi} (s) = \sum\_{t=1}^{\infty} \gamma^t Pr\left[s\_t = s|s\_0,\pi\right]  =  \sum\_{t=0}^{\infty} \gamma^{t} p(s\_0\rightarrow s, t,\pi) \tag{10}$$
+$$\rho^{\pi} (s) = \sum\_{t=1}^{\infty} \gamma^t Pr\left[s\_t = s|s\_0,\pi\right]  =  \sum\_{t=0}^{\infty} \gamma^{t} p(s\_0\rightarrow s, t,\pi) \tag{9}$$
 把$\rho^{\pi} (s) $换一种写法就容易理解了：
-$$\rho^{\pi} (s) = P(s\_0 = s) +\gamma P(s\_1=s) + \gamma^2 P(s\_2 = s)+\cdots \tag{11}$$
+$$\rho^{\pi} (s) = P(s\_0 = s) +\gamma P(s\_1=s) + \gamma^2 P(s\_2 = s)+\cdots \tag{10}$$
 
 ### Average Reward(平均奖励)
 Average reward是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：
-$$\eta(\pi) = lim\_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R\_1+R\_2+\cdots+R\_t|\pi\right] = \int\_S d(s) \int\_A \pi(s,a) R(s,a)dads \tag{12}$$
+$$\eta(\pi) = lim\_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R\_1+R\_2+\cdots+R\_t|\pi\right] = \int\_S d(s) \int\_A \pi(s,a) R(s,a)dads \tag{11}$$
 第一个等号中，$R\_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。第二个等号后，第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是每一个$s$处对应各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。
 Return的定义和accumulated reward不同：
-$$G_t = \sum\_{t=0}^{\infty} \left[R_{t+1} - \eta(\pi)\right] \tag{13}$$
+$$G_t = \sum\_{t=0}^{\infty} \left[R_{t+1} - \eta(\pi)\right] \tag{12}$$
 因为$G_t$不同，State-action value $Q^{\pi} (s,a)$以及state value $V^{\pi} (s)$的定义和accumulated reward也就不同了：
-$$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s,a\_t=a\right] $$
-$$V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s\right] $$
+\begin{align\*}
+Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s,a\_t=a\right]\\\\
+V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s\right] \\\\
+\tag{13}
+\end{align\*}
 
 ### State value的均值
 这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s)$的期望（均值）：
@@ -178,7 +184,7 @@ J(\theta) & = \mathbb{E}\_{\tau \sim \pi\_{\theta}(\tau)} \left[R(\tau)\right] \
 \begin{align\*}
 \nabla\_{\theta}J(\theta) & = \int \nabla\_{\theta} \pi\_{\theta}(\tau) R(\tau)d\tau\\\\
 & = \int \pi\_{\theta}(\tau) \nabla\_{\theta}\log\pi\_{\theta}(\tau) R(\tau)d\tau\\\\
-& = \mathbf{E}\_{\tau\sim \pi\_{\theta}(\tau)} \left[\nabla\_{\theta} \log\pi\_{\theta}(\tau) R(\tau) d\tau\right] \tag{51}
+& = \mathbb{E}\_{\tau\sim \pi\_{\theta}(\tau)} \left[\nabla\_{\theta} \log\pi\_{\theta}(\tau) R(\tau) d\tau\right] \tag{51}
 \end{align\*}
 可以将policy gradient表示成期望的形式，然后就可以采样进行估计。对$R(\tau)$进行采样，但是不进行求导。Returns不直接受$\pi\_{\theta}$的影响，$\tau$受$\pi\_{\theta}$的影响，下面是$\log\pi(\tau)$的偏导数计算。
 $\pi(\tau)$定义为：
