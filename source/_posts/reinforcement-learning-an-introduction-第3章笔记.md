@@ -120,7 +120,7 @@ q_{\pi}(s,a) &= \sum_{s'}\sum_r p(s',r|s,a)(r + \gamma  \sum_{a'}\pi(a'|s')q(s',
 \begin{align\*}
 v_{\pi}(s) &= \mathbb{E}\_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s] \tag{11}\\\\
 v_{\pi}(s) &= \mathbb{E}\_{\pi}\left[q_{\pi}(S_t,A_t)|S_t=s,A_t=a\right]\tag{12}\\\\
-q_{\pi}(s,a)&= \mathbb{E}\_{\pi}\left[R+\gamma v_{\pi}(S_{t+1}) |S_t=s,A_t=a\right]\tag{13}\\\\
+q_{\pi}(s,a)&= \mathbb{E}\_{\pi}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1}) |S_t=s,A_t=a\right]\tag{13}\\\\
 q_{\pi}(s,a) &= \mathbb{E}\_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{14}
 \end{align\*}
 #### 矩阵形式
