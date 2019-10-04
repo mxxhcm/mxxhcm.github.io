@@ -45,10 +45,11 @@ $$J(\theta) = \sum_s d(s) V^{\pi} (s) = \sum_s d(s) \sum_a\pi(s, a) Q^{\pi} (s, 
 ### Accumated Reward from Designated State(从指定状态开始的累计奖励)
 我们可以指定一个初始状态$s\_0$，计算从这个初始状态开始得到的accumulated reward：
 $$\eta(\pi) = V^{\pi} (s_0) = \mathbb{E}\_{\pi}\left[\sum\_{t=0}^{\infty} \gamma^{t-1} R\_t|s\_0\right] = \mathbb{E}\_{\pi}\left[G_0 \right]\tag{5}$$
-定义state-action value function和state value function以及return如下：
+定义return $G_t$如下：
+$$ G_t = \sum\_{k=0}^{\infty} R\_{t+k+1} \tag{8}$$
+定义state-action value function和state value function如下：
 $$Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s,a\_t=a\right] \tag{6}$$
 $$V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s\right] \tag{7}$$
-$$ G_t = \sum\_{k=0}^{\infty} R\_{t+k+1} \tag{8}$$
 其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。它们之间的关系如下：
 $$ V^{\pi} (s) = \mathbb{E}\_{\pi}\left[Q(s,a)\right] = \sum_a \pi(a|s) Q^{\pi} (s,a) \tag{9}$$
 定义$\rho^{\pi} (s)$是从指定的初始状态$s\_0$开始，执行策略$\pi$在$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和：
