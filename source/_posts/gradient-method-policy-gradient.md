@@ -49,12 +49,16 @@ $$\eta(\pi) = V^{\pi} (s_0) = \mathbb{E}\_{\pi}\left[\sum\_{t=0}^{\infty} \gamma
 $$ G_t = \sum\_{k=0}^{\infty} R\_{t+k+1} \tag{6}$$
 定义state-action value function和state value function如下：
 \begin{align\*}
-Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s,a\_t=a\right] \\\\
-V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s\right]\\\\ 
+Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=0}^{\infty} R\_{t+k+1}|s\_t=s,a\_t=a\right] \\\\
+V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=0}^{\infty} R\_{t+k+1}|s\_t=s\right]\\\\ 
 \tag{7}
 \end{align\*}
 其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。它们之间的关系如下：
-$$ V^{\pi} (s) = \mathbb{E}\_{\pi}\left[Q(s,a)\right] = \sum_a \pi(a|s) Q^{\pi} (s,a) \tag{8}$$
+\begin{align\*}
+V^{\pi} (s) = \mathbb{E}\_{\pi}\left[Q^{\pi} (s,a)|S_t=s\right] & = \sum_a \pi(a|s) Q^{\pi} (s,a) \\\\
+Q^{\pi} (s, a) = \mathbb{E}\_{\pi}\left[R\_{t+1} + \gamma V^{\pi}(s)|S_t=s, A_t=a\right] & = \sum\_{s',r}p(s',r|s,a) (r+\gamma V^{\pi} (s'))\\\\
+\tag{8}
+\end{align\*}
 定义$\rho^{\pi} (s)$是从指定的初始状态$s\_0$开始，执行策略$\pi$在$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和：
 $$\rho^{\pi} (s) = \sum\_{t=1}^{\infty} \gamma^t Pr\left[s\_t = s|s\_0,\pi\right]  =  \sum\_{t=0}^{\infty} \gamma^{t} p(s\_0\rightarrow s, t,\pi) \tag{9}$$
 把$\rho^{\pi} (s) $换一种写法就容易理解了：
@@ -65,42 +69,45 @@ Average reward是根据每一个step的的expected reward $\eta(\pi)$对不同�
 $$\eta(\pi) = lim\_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R\_1+R\_2+\cdots+R\_t|\pi\right] = \int\_S d(s) \int\_A \pi(s,a) R(s,a)dads \tag{11}$$
 第一个等号中，$R\_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。第二个等号后，第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是每一个$s$处对应各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。
 Return的定义和accumulated reward不同：
-$$G_t = \sum\_{t=0}^{\infty} \left[R_{t+1} - \eta(\pi)\right] \tag{12}$$
+$$G_t = \sum\_{k=0}^{\infty} \left[R_{t+k+1} - \eta(\pi)\right] \tag{12}$$
 因为$G_t$不同，State-action value $Q^{\pi} (s,a)$以及state value $V^{\pi} (s)$的定义和accumulated reward也就不同了：
 \begin{align\*}
-Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s,a\_t=a\right]\\\\
-V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=1}^{\infty} R\_{t+k}|s\_t=s\right] \\\\
+Q^{\pi} (s,a) = \mathbb{E}\_{\pi}\left[G_t|s_t=s, a_t=a\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=0}^{\infty}\left( R\_{t+k+1} - \eta(\pi)\right)|s\_t=s,a\_t=a\right]\\\\
+V^{\pi} (s) = \mathbb{E}\_{\pi}\left[G_t|s_t=s\right] & = \mathbb{E}\_{\pi}\left[\sum\_{k=0}^{\infty} \left(R\_{t+k+1} - \eta(\pi) \right)|s\_t=s\right] \\\\
 \tag{13}
+\end{align\*}
+$Q^{\pi} (s,a)$和$V^{\pi} (s,a)$之间的关系满足：
+\begin{align\*}
+Q^{\pi} (s,a) = \sum_{s', r}p(s',r|s,a)(r - \eta(\pi) + V(s')) \tag{14}
 \end{align\*}
 
 ### State value的均值
 这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s)$的期望（均值）：
-$$ \eta(\pi) = \sum_s d(s) V^{\pi} (s) \tag{14}$$
+$$ \eta(\pi) = \sum_s d(s) V^{\pi} (s) \tag{15}$$
 State action value function和state value function的定义和accumulated reward一样。
 定义$\rho^{\pi} $为从任意初始状态$s\_0$经过$t$步之后state $s$出现的概率：
-$$\rho^{\pi} (s) =\int_S \sum\_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s\_t = s|s\_0,\pi\right] ds_0  = \int\_S \sum\_{t=0}^{\infty} \gamma^{t} \rho\_0^{\pi} (s\_0)p(s\_0\rightarrow s, t,\pi)ds\_0 \tag{15}$$
-
+$$\rho^{\pi} (s) =\int_S \sum\_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s\_t = s|s\_0,\pi\right] ds_0  = \int\_S \sum\_{t=0}^{\infty} \gamma^{t} \rho\_0^{\pi} (s\_0)p(s\_0\rightarrow s, t,\pi)ds\_0 \tag{16}$$
 
 ### Policy Gradient
 对于单步的MDP，从分布$\rho^{\pi} (s)$中采样得到$s$，采取action $a$，得到immediate reward $R=R(s,a)$，结束。上面三种目标函数是一样的：
 \begin{align\*}
 J(\theta) & = \mathbb{E}\_{\pi}\left[R\right]\\\\
-& = \sum_s d(s) \sum_a \pi(s,a) R(s,a) \tag{16}\\\\
+& = \sum_s d(s) \sum_a \pi(s,a) R(s,a) \tag{17}\\\\
 \end{align\*}
 求导有问题！！！！怎么求导得到的。。。
 \begin{align\*}
 \nabla_{\theta} J(\theta) & = \sum_s d(s) \sum_a \nabla_{\theta}\pi(s,a) R(s,a)\\\\
 & = \sum_s d(s) \sum_a\pi(s,a) \nabla_{\theta}\log \pi(s,a) R(s,a)\\\\
-& = \mathbb{E}\_{\pi}\left[\nabla_{\theta}\log \pi(s,a) R(s,a)\right] \tag{17}\\\\
+& = \mathbb{E}\_{\pi}\left[\nabla_{\theta}\log \pi(s,a) R(s,a)\right] \tag{18}\\\\
 \end{align\*}
 对于多步的MDP，只需要将$R$换成$Q^{\pi} (s, a)$就行了，上面三种目标函数最后都能够得到：
-$$\nabla\_{\theta} J(\theta) = \sum_s d(s) \sum_a\pi(a|s) \nabla\_{\theta} \log\pi(s,a) Q^{\pi} (s,a) = \mathbb{E}\_{\pi} \left[\nabla\_{\theta} \log\pi(s,a) Q^{\pi} (s,a)\right] \tag{18}$$
+$$\nabla\_{\theta} J(\theta) = \sum_s d(s) \sum_a\pi(a|s) \nabla\_{\theta} \log\pi(s,a) Q^{\pi} (s,a) = \mathbb{E}\_{\pi} \left[\nabla\_{\theta} \log\pi(s,a) Q^{\pi} (s,a)\right] \tag{19}$$
 其中$Q$是根据不同的目标函数定义的state-action value function，目标函数不同，$Q$定义也不同。在其他论文中，$\nabla_{\theta} \log\pi_{\theta}(s,a)$不变，可以把$Q$换成其他目标函数，GAE这篇论文对不同的目标函数进行了总结。
 
 ## Policy Gradient Theorem
 对于任何MDP，不论是average reward还是accumulated reward的形式，都有：
 \begin{align\*}
-\nabla_{\theta} \eta & = \sum\_s \rho^{\pi} (s)\sum\_a{\nabla_{\theta}\pi(s,a)}Q^{\pi} (s,a), \tag{19}\\\\
+\nabla_{\theta} \eta & = \sum\_s \rho^{\pi} (s)\sum\_a{\nabla_{\theta}\pi(s,a)}Q^{\pi} (s,a) \\\\
 & = \sum\_s \rho^{\pi} (s)\sum\_a{\pi(s,a)\nabla_{\theta}\log\pi(s,a)}Q^{\pi} (s,a), \tag{20}\\\\
 & = \mathbb{E}\_{\pi}\left[\nabla_{\theta}\log\pi(s,a)Q^{\pi} (s,a)\right], \tag{21}\\\\
 \end{align\*}
@@ -168,7 +175,7 @@ $$\nabla \eta(\pi) = \sum\_a\nabla\pi(a|s)Q\_{\pi}(s,a) + \sum\_a\pi(s,a) \sum\_
 还不会证明。
 
 ### 结论
-从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G\_t = \sum\_{k=1}^{\infty} R\_{t+k}-\rho(\pi)$或者$R\_t = \sum\_{k=1}^{\infty} \gamma^{k-1} R\_{t+k}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s\_t,a\_t)}{\partial\mathbf{\theta}}R\_t\frac{1}{\pi(s\_t,a\_t)}$,$\frac{1}{\pi(s\_t,a\_t)}$纠正了$\pi$的oversampling）。
+从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum\_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G\_t = \sum\_{k=0}^{\infty} R\_{t+k+1}-\rho(\pi)$或者$R\_t = \sum\_{k=0}^{\infty} \gamma^{t} R\_{t+k+1}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s\_t,a\_t)}{\partial\mathbf{\theta}}R\_t\frac{1}{\pi(s\_t,a\_t)}$,$\frac{1}{\pi(s\_t,a\_t)}$纠正了$\pi$的oversampling）。
 
 
 ## 另一种policy gradient的方法
