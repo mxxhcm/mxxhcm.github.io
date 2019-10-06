@@ -82,8 +82,8 @@ Q^{\pi} (s,a) = \sum_{s', r}p(s',r|s,a)(r - \eta(\pi) + V(s')) \tag{14}
 \end{align\*}
 
 ### State value的均值
-这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s)$的期望（均值）：
-$$ \eta(\pi) = \sum_s d(s) V^{\pi} (s) \tag{15}$$
+这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s_0)$的期望（均值）：
+$$ \eta(\pi) = \sum_s rho_0(s_0) V^{\pi} (s) \tag{15}$$
 State action value function和state value function的定义和accumulated reward一样。
 定义$\rho^{\pi} $为从任意初始状态$s\_0$经过$t$步之后state $s$出现的概率：
 $$\rho^{\pi} (s) =\int_S \sum\_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s\_t = s|s\_0,\pi\right] ds_0  = \int\_S \sum\_{t=0}^{\infty} \gamma^{t} \rho\_0^{\pi} (s\_0)p(s\_0\rightarrow s, t,\pi)ds\_0 \tag{16}$$
@@ -233,7 +233,7 @@ REINFORCE使用Monte Carlo方法近似return $G_t$，因为$Q^{\pi} (s,a) = \mat
 & = \mathbb{E}\_{\pi} \left[G_t\nabla\_{\theta}\log\pi\_{\theta}(a|s)\right]\\\\
 \end{align\*}
 接下来进行sampling，使用Monte Carlo方法计算$G_t$即可。完整算法如下：
-REINFORCE 算法
+**REINFORCE 算法**
 输入：policy $\pi$的初始化参数$\theta$，step-size $\alpha$
 Loop
 $\qquad$使用$\pi\_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$
@@ -251,9 +251,8 @@ $$\sum_a \nabla\_{\theta}\pi(a|s) b(s) = b(s)  \nabla\_{\theta}\sum_a\pi(a|s) = 
 - Trajectory $A$的return是$10$，trajectory $B$的reward是$1$
 
 在第一个例子中，PG会提高$A$发生的概率，降低$B$发生的概率。在第二个例子中，PG会提高$A$和$B$的概率。然而，对于我们来说，在两个例子中，我们都想要降低$B$发生的概率，提高$A$发生的概率。通过引入一个baseline，比如$V$，我们就可以实现这样的目的。
-
 完整算法如下：
-REINFORCE with Baseline 算法
+**REINFORCE with Baseline 算法**
 输入：可导的policy $\pi$的初始化参数$\theta$，可导的state value function $\hat{v}(s, \mathbf{w})$，step-size $\alpha^{\theta} \gt 0, \alpha^{w} \gt 0 $
 Loop
 $\qquad$使用$\pi\_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$
@@ -271,7 +270,7 @@ Policy gradient中两个常用的components是policy和value function，在学�
 - Actor根据critic给出的更新方向更新policy $\pi\_{\theta}(a|s)$的参数$\theta$。
 
 One-step actor-critic方法使用one-step return代替了full return。完整的算法按如下：
-One-step actor critic 算法
+**One-step actor critic 算法**
 输入：policy $\pi$的参数$\theta$，初始化state $s_0$
 采样$a\sim \pi(a|s)$
 Loop 
@@ -307,13 +306,12 @@ $$J(\theta) = \sum_s d^{\beta} (s) \sum_a Q^{\pi} (s,a) \pi(a|s) = \mathbb{E}\_{
 其中$\frac{ \pi(a|s)}{\beta(a|s)}$称作importance sampling ratio。式子$(55)$到式子$(44)$忽略了第二项，有人狰狞了即使忽略了这一项，最终结果还会收敛到局部最优。
 即通过importance sampling可以将过去policy的experience用于新policy的训练。
 
-
 ### A3C
-详细的解释可以见[A3C]()。
+详细的解释可以见[A3C](http://mxxhcm.github.io/2019/04/19/a3c/)。
 A3C是Asynchronous advantage actor-critic，是并行的policy gardient，就是为并行训练设计的。在A3C中，多个actors并行采样进行训练，一个critic学习value function。
 A3C算法的实质就是使用多个线程同步训练。分为主网络和线程中的网络，主网络不需要训练，主要用来存储和传递参数，每个线程中的网络用来训练参数。总的来说，多个线程同时训练提高了效率，另一方面，减小了数据之间的相关性，比如，线程$1$和$2$中都用主网络复制来的参数计算梯度，但是同一时刻只能有一个线程更新主网络的参数，比如线程$1$更新主网络的参数，那么线程$2$利用原来主网络参数计算的梯度会更新在线程$1$更新完之后的主网络参数上。
 
-A3C算法－－每个actor-learn线程的伪代码
+**A3C算法－－每个actor-learn线程的伪代码**
 用$\theta, w$表示全局共享参数，用$T=0$表示全局共享计数器，
 用$\theta',w'$表示每个线程中的参数
 初始化线程步计数器$t\leftarrow 1$，
@@ -341,6 +339,8 @@ A2C是A3C的同步版本。在A3C中每一个agent独立的和global parameters�
 A2C就是为了解决这个问题的，A2C使用一个调度器，等待所有的actors完成相应的工作，然后更新global的参数，保证在下一次更新的时候每一个actor使用的都是相同的policy。
 
 ### DPG
+完整解释见[deterministic policy gardient](http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/)
+
 
 ### DDPG
 
