@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-05T15:12:58.542Z">
+<meta property="og:updated_time" content="2019-10-06T12:17:04.731Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="gradient method policy gradient">
 <meta name="twitter:description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-05 23:12:58" itemprop="dateModified" datetime="2019-10-05T23:12:58+08:00">2019-10-05</time>
+                <time title="修改时间：2019-10-06 20:17:04" itemprop="dateModified" datetime="2019-10-06T20:17:04+08:00">2019-10-06</time>
               
             
           </span>
@@ -517,8 +517,8 @@ $Q^{\pi} (s,a)$和$V^{\pi} (s,a)$之间的关系满足：<br>
 Q^{\pi} (s,a) = \sum_{s’, r}p(s’,r|s,a)(r - \eta(\pi) + V(s’)) \tag{14}<br>
 \end{align*}</p>
 <h3 id="state-value的均值">State value的均值</h3>
-<p>这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s)$的期望（均值）：<br>
-$$ \eta(\pi) = \sum_s d(s) V^{\pi} (s) \tag{15}$$<br>
+<p>这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s_0)$的期望（均值）：<br>
+$$ \eta(\pi) = \sum_s rho_0(s_0) V^{\pi} (s) \tag{15}$$<br>
 State action value function和state value function的定义和accumulated reward一样。<br>
 定义$\rho^{\pi} $为从任意初始状态$s_0$经过$t$步之后state $s$出现的概率：<br>
 $$\rho^{\pi} (s) =\int_S \sum_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s_t = s|s_0,\pi\right] ds_0  = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0^{\pi} (s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{16}$$</p>
@@ -654,7 +654,7 @@ $$\theta_{k+1} = \theta_k + \alpha_k \sum_s\rho^{\pi_k}(s) \sum_a\frac{\partial\
 &amp; = \mathbb{E}_{\pi} \left[G_t\nabla_{\theta}\log\pi_{\theta}(a|s)\right]\\<br>
 \end{align*}<br>
 接下来进行sampling，使用Monte Carlo方法计算$G_t$即可。完整算法如下：<br>
-REINFORCE 算法<br>
+<strong>REINFORCE 算法</strong><br>
 输入：policy $\pi$的初始化参数$\theta$，step-size $\alpha$<br>
 Loop<br>
 $\qquad$使用$\pi_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$<br>
@@ -671,9 +671,9 @@ $$\sum_a \nabla_{\theta}\pi(a|s) b(s) = b(s)  \nabla_{\theta}\sum_a\pi(a|s) = b(
 <li>Trajectory $A$的return是$10$，trajectory $B$的reward是$-10$</li>
 <li>Trajectory $A$的return是$10$，trajectory $B$的reward是$1$</li>
 </ul>
-<p>在第一个例子中，PG会提高$A$发生的概率，降低$B$发生的概率。在第二个例子中，PG会提高$A$和$B$的概率。然而，对于我们来说，在两个例子中，我们都想要降低$B$发生的概率，提高$A$发生的概率。通过引入一个baseline，比如$V$，我们就可以实现这样的目的。</p>
-<p>完整算法如下：<br>
-REINFORCE with Baseline 算法<br>
+<p>在第一个例子中，PG会提高$A$发生的概率，降低$B$发生的概率。在第二个例子中，PG会提高$A$和$B$的概率。然而，对于我们来说，在两个例子中，我们都想要降低$B$发生的概率，提高$A$发生的概率。通过引入一个baseline，比如$V$，我们就可以实现这样的目的。<br>
+完整算法如下：<br>
+<strong>REINFORCE with Baseline 算法</strong><br>
 输入：可导的policy $\pi$的初始化参数$\theta$，可导的state value function $\hat{v}(s, \mathbf{w})$，step-size $\alpha^{\theta} \gt 0, \alpha^{w} \gt 0 $<br>
 Loop<br>
 $\qquad$使用$\pi_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$<br>
@@ -691,7 +691,7 @@ $\qquad$end for<br>
 <li>Actor根据critic给出的更新方向更新policy $\pi_{\theta}(a|s)$的参数$\theta$。</li>
 </ul>
 <p>One-step actor-critic方法使用one-step return代替了full return。完整的算法按如下：<br>
-One-step actor critic 算法<br>
+<strong>One-step actor critic 算法</strong><br>
 输入：policy $\pi$的参数$\theta$，初始化state $s_0$<br>
 采样$a\sim \pi(a|s)$<br>
 Loop<br>
@@ -726,10 +726,10 @@ $$J(\theta) = \sum_s d^{\beta} (s) \sum_a Q^{\pi} (s,a) \pi(a|s) = \mathbb{E}_{s
 其中$\frac{ \pi(a|s)}{\beta(a|s)}$称作importance sampling ratio。式子$(55)$到式子$(44)$忽略了第二项，有人狰狞了即使忽略了这一项，最终结果还会收敛到局部最优。<br>
 即通过importance sampling可以将过去policy的experience用于新policy的训练。</p>
 <h3 id="a3c">A3C</h3>
-<p>详细的解释可以见<a href>A3C</a>。<br>
+<p>详细的解释可以见<a href="http://mxxhcm.github.io/2019/04/19/a3c/">A3C</a>。<br>
 A3C是Asynchronous advantage actor-critic，是并行的policy gardient，就是为并行训练设计的。在A3C中，多个actors并行采样进行训练，一个critic学习value function。<br>
 A3C算法的实质就是使用多个线程同步训练。分为主网络和线程中的网络，主网络不需要训练，主要用来存储和传递参数，每个线程中的网络用来训练参数。总的来说，多个线程同时训练提高了效率，另一方面，减小了数据之间的相关性，比如，线程$1$和$2$中都用主网络复制来的参数计算梯度，但是同一时刻只能有一个线程更新主网络的参数，比如线程$1$更新主网络的参数，那么线程$2$利用原来主网络参数计算的梯度会更新在线程$1$更新完之后的主网络参数上。</p>
-<p>A3C算法－－每个actor-learn线程的伪代码<br>
+<p><strong>A3C算法－－每个actor-learn线程的伪代码</strong><br>
 用$\theta, w$表示全局共享参数，用$T=0$表示全局共享计数器，<br>
 用$\theta’,w’$表示每个线程中的参数<br>
 初始化线程步计数器$t\leftarrow 1$，<br>
@@ -754,6 +754,7 @@ $\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\the
 <p>A2C是A3C的同步版本。在A3C中每一个agent独立的和global parameters进行沟通，所以可能在某些时候，不同的thread使用的policy可能都会不同，thread1从global拿了参数，计算梯度，thread2从global拿了参数，计算梯度，thread1更新了global，而这个时候thread2还在计算梯度，thread1就拿到了新的global参数，计算梯度，更新。这时候thread2还没计算完，就产生了不一致。<br>
 A2C就是为了解决这个问题的，A2C使用一个调度器，等待所有的actors完成相应的工作，然后更新global的参数，保证在下一次更新的时候每一个actor使用的都是相同的policy。</p>
 <h3 id="dpg">DPG</h3>
+<p>完整解释见<a href="http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/" target="_blank" rel="noopener">deterministic policy gardient</a></p>
 <h3 id="ddpg">DDPG</h3>
 <h3 id="d4pg">D4PG</h3>
 <h3 id="maddpg">MADDPG</h3>
@@ -990,7 +991,7 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">192</span>
+                    <span class="site-state-item-count">193</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1568,9 +1569,7 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">260</span>
+                    <span class="site-state-item-count">259</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
