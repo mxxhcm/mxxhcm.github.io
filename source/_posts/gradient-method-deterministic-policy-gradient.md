@@ -77,7 +77,7 @@ $$\rho^{\mu} (s') = \int_S \sum\_{k=0}^{\infty} \gamma^{k} \rho_0(s) \rho^{\mu} 
 deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}^n $。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[G_0|\mu\right]$，将performance objective写成expectation如下：
 \begin{align\*}
 J(\mu_\theta) & = \int_S\rho^\mu (s) G_0 ds\tag{11}\\\\
-&= \mathbb{E}\_{s\sim \rho^\mu }\left[r(s, \mu_\theta(s))\right] \tag{12}
+&= \mathbb{E}\_{s\sim \rho^\mu }\left[G_0\right] \tag{12}
 \end{align\*}
 给出deterministic policy gradient theorem：
 假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q^\mu (s,a)$存在，那么deterministic policy gradient存在，
@@ -109,27 +109,41 @@ J(\mu_\theta) & = \int_S\rho^\mu (s) G_0 ds\tag{11}\\\\
 & = \int_S \rho_0(s) \nabla\_{\theta} V^{\mu} (s) ds \tag{26}\\\\
 & = \int_S\int_S \sum\_{t=0}^{\infty} \gamma^t\rho_0(s) p(s\rightarrow s', t, \mu)\nabla\_{\theta} \mu(s')\nabla\_{a} Q^{\mu} (s', a)|\_{a=\mu(s')} ds' ds\tag{27}\\\\
 & = \int_S\rho^{\mu} (s) \nabla\_{\theta} \mu(s)\nabla\_{a} Q^{\mu} (s, a)|\_{a=\mu(s)} ds\tag{28}\\\\
-& = \int_S\rho^{\mu} (s) \mu(s)\nabla\_{\theta}\log \mu(s)\nabla\_{a} Q^{\mu} (s, a)|\_{a=\mu(s)} ds\tag{29}\\\\
-& = \mathbb{E}\_{s\sim \rho^\mu, a\sim \mu(s)}\left[ \nabla\_{\theta}\log \mu(s)\nabla\_{a} Q^{\mu} (s, a) \right]\tag{30}\\\\
+& = \mathbb{E}\_{s\sim \rho^\mu}\left[ \nabla\_{\theta}\mu(s)\nabla\_{a} Q^{\mu} (s, a)|\_{a=\mu(s)} \right]\tag{30}\\\\
 \end{align\*}
 公式$(25)$到公式$(26)$是因为$\rho_0(s_0)$和$\mu$无关。。
 
-
-
-
 ## spg的limit
-dpg theorem看起来和spg theorem很不像，事实上，对于一大类stochastic polices来说，dpg事实上是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。
+dpg实际上可以看成是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。
 考虑一个stochastic policy $\pi_{\mu_{\theta,\sigma}}$让$\pi_{\mu_{\theta,\sigma}}(s,a)=v_\sigma(\mu_\theta(s),a)$，其中$\sigma$是控制方差的参数，并且$v_\sigma$满足条件B.1，以及MDP满足条件A.1和A.2，那么
 $$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla_\theta J(\mu_\theta) \tag{31} $$
 其中左边的gradient是标准spg的gradient，右边是dpg的gradient。
 这就说明spg的很多方法同样也是适用于dpg的。
 
-### deterministic actor-critic 
-接下来使用dpg theorem推到on-policy和off-policy的actor-critic算法。从最简单的on-policy更新，使用Sarsa critic开始，然后考虑off-policy算法，使用Q-learning critic描述核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入的biases问题，以及off-policy引入的不稳定。然后介绍使用compatiable function approximation的方法以及gradient td learning。
+## deterministic actor-critic 
+接下来使用dpg theorem推导on-policy和off-policy的actor-critic算法。从最简单的on-policy update开始，使用Sarsa critic，然后介绍off-policy算法，使用Q-learning critic介绍核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入了biases，off-policy引入了不稳定性，可以使用compatiable function approximation的方法以及gradient td learning解决这些问题。
 
 ### on-policy deterministic actor-critic
+使用deterministic behaviour policy不能确保足够的exploration，会产生suboptimal solutions。但是我们还是要首先介绍on-policy actor-critic算法，它对于我们理解算法背后的核心思路很有用。尤其是在环境有噪音，即使使用deterministic behaviour policy也能够保证充足的exploration时。
+和stochastic actor-critic一样。deterministic actor-critic也由actor和critic两部分组成，actor使用梯度下降调整$\mu(s)$的参数$\theta$，critic使用policy evaluation方法估计$Q^w (s,a) \approx Q^{\mu} (s, a)$指导actor的更新。比如critic使用Sarsa估计action value：
+\begin{align\*}
+\delta_t & = R_t + \gamma Q^w (s\_{t+1}, a\_{t+1}) - Q^w(s_t, a_t) \tag{32}\\\\
+w\_{t+1} & = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{33}\\\\
+\theta\_{t+1} & = \theta_t + \alpha\_{\theta} \nabla\_{\theta} \mu\_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|\_{a=\mu(s)} \tag{34}\\\\
+\end{align\*}
 
 ### off-policy deterministic actor-critic
+考虑off-policy actor-critic方法。目标函数是使用behaviour policy对target policy的value function求期望：
+\begin{align\*}
+J\_{\beta}(\mu) & = \int_S \rho^{\beta}(s) V^{\mu} (s) ds\\\\
+& = \int_S \rho^{\beta} (s) Q^{\mu} (s, \mu(s,a) ) ds \tag{35}\\\\
+\end{align\*}
+求梯度是：
+\begin{align\*}
+\nabla\_{\theta}J\_{\beta}(\theta) & \approx \int_S\rho^\beta (s) \nabla\_{\theta}\mu(s)\nabla\_{a} Q^{\mu} (s, a) ds \\\\
+& = \mathbb{E}\_{s\sim \rho^\beta }\left[ \nabla\_{\theta}\mu(s)\nabla\_{a} Q^{\mu} (s, a)|\_{a=\mu(s)} \right]\tag{30}\\\\
+\end{align\*}
+
 
 ### compatible function approximation
 

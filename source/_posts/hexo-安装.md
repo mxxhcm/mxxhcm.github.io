@@ -47,4 +47,7 @@ ERROR Try running: 'npm install hexo --save'
 解决问题
 参见[参考文献](https://mxxhcm.github.io/2019/04/26/hexo-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/)
 
+## 参考文献
+1.https://www.cnblogs.com/SHOR/p/9581661.html
+如果换了主题，需要在主题的_config.yml文件修改。
 
