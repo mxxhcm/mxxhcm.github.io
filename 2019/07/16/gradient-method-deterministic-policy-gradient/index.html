@@ -101,14 +101,14 @@
 
 
   <meta name="description" content="Deterministic policy gradient比stochastic policy gradient要好，尤其是high dimensional tasks上。此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noise，这种情况下dpg更合适。 简介 本文主要介绍了deterministic policy gradient算法。它属于po">
-<meta name="keywords" content="强化学习,深度学习,policy gradient,pg,dpg">
+<meta name="keywords" content="强化学习,深度学习,pg,dpg,policy gradient">
 <meta property="og:type" content="article">
 <meta property="og:title" content="deterministic policy gradient">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/07/16/gradient-method-deterministic-policy-gradient/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="Deterministic policy gradient比stochastic policy gradient要好，尤其是high dimensional tasks上。此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noise，这种情况下dpg更合适。 简介 本文主要介绍了deterministic policy gradient算法。它属于po">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-06T12:15:12.023Z">
+<meta property="og:updated_time" content="2019-10-06T14:32:01.609Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="deterministic policy gradient">
 <meta name="twitter:description" content="Deterministic policy gradient比stochastic policy gradient要好，尤其是high dimensional tasks上。此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noise，这种情况下dpg更合适。 简介 本文主要介绍了deterministic policy gradient算法。它属于po">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-06 20:15:12" itemprop="dateModified" datetime="2019-10-06T20:15:12+08:00">2019-10-06</time>
+                <time title="修改时间：2019-10-06 22:32:01" itemprop="dateModified" datetime="2019-10-06T22:32:01+08:00">2019-10-06</time>
               
             
           </span>
@@ -509,7 +509,7 @@ $$\rho^{\mu} (s’) = \int_S \sum_{k=0}^{\infty} \gamma^{k} \rho_0(s) \rho^{\mu}
 <p>deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}^n $。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[G_0|\mu\right]$，将performance objective写成expectation如下：<br>
 \begin{align*}<br>
 J(\mu_\theta) &amp; = \int_S\rho^\mu (s) G_0 ds\tag{11}\\<br>
-&amp;= \mathbb{E}_{s\sim \rho^\mu }\left[r(s, \mu_\theta(s))\right] \tag{12}<br>
+&amp;= \mathbb{E}_{s\sim \rho^\mu }\left[G_0\right] \tag{12}<br>
 \end{align*}<br>
 给出deterministic policy gradient theorem：<br>
 假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q^\mu (s,a)$存在，那么deterministic policy gradient存在，<br>
@@ -541,20 +541,36 @@ J(\mu_\theta) &amp; = \int_S\rho^\mu (s) G_0 ds\tag{11}\\<br>
 &amp; = \int_S \rho_0(s) \nabla_{\theta} V^{\mu} (s) ds \tag{26}\\<br>
 &amp; = \int_S\int_S \sum_{t=0}^{\infty} \gamma^t\rho_0(s) p(s\rightarrow s’, t, \mu)\nabla_{\theta} \mu(s’)\nabla_{a} Q^{\mu} (s’, a)|_{a=\mu(s’)} ds’ ds\tag{27}\\<br>
 &amp; = \int_S\rho^{\mu} (s) \nabla_{\theta} \mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} ds\tag{28}\\<br>
-&amp; = \int_S\rho^{\mu} (s) \mu(s)\nabla_{\theta}\log \mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} ds\tag{29}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^\mu, a\sim \mu(s)}\left[ \nabla_{\theta}\log \mu(s)\nabla_{a} Q^{\mu} (s, a) \right]\tag{30}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^\mu}\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{30}\\<br>
 \end{align*}<br>
 公式$(25)$到公式$(26)$是因为$\rho_0(s_0)$和$\mu$无关。。</p>
 <h2 id="spg的limit">spg的limit</h2>
-<p>dpg theorem看起来和spg theorem很不像，事实上，对于一大类stochastic polices来说，dpg事实上是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。<br>
+<p>dpg实际上可以看成是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。<br>
 考虑一个stochastic policy $\pi_{\mu_{\theta,\sigma}}$让$\pi_{\mu_{\theta,\sigma}}(s,a)=v_\sigma(\mu_\theta(s),a)$，其中$\sigma$是控制方差的参数，并且$v_\sigma$满足条件B.1，以及MDP满足条件A.1和A.2，那么<br>
 $$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla_\theta J(\mu_\theta) \tag{31} $$<br>
 其中左边的gradient是标准spg的gradient，右边是dpg的gradient。<br>
 这就说明spg的很多方法同样也是适用于dpg的。</p>
-<h3 id="deterministic-actor-critic">deterministic actor-critic</h3>
-<p>接下来使用dpg theorem推到on-policy和off-policy的actor-critic算法。从最简单的on-policy更新，使用Sarsa critic开始，然后考虑off-policy算法，使用Q-learning critic描述核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入的biases问题，以及off-policy引入的不稳定。然后介绍使用compatiable function approximation的方法以及gradient td learning。</p>
+<h2 id="deterministic-actor-critic">deterministic actor-critic</h2>
+<p>接下来使用dpg theorem推导on-policy和off-policy的actor-critic算法。从最简单的on-policy update开始，使用Sarsa critic，然后介绍off-policy算法，使用Q-learning critic介绍核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入了biases，off-policy引入了不稳定性，可以使用compatiable function approximation的方法以及gradient td learning解决这些问题。</p>
 <h3 id="on-policy-deterministic-actor-critic">on-policy deterministic actor-critic</h3>
+<p>使用deterministic behaviour policy不能确保足够的exploration，会产生suboptimal solutions。但是我们还是要首先介绍on-policy actor-critic算法，它对于我们理解算法背后的核心思路很有用。尤其是在环境有噪音，即使使用deterministic behaviour policy也能够保证充足的exploration时。<br>
+和stochastic actor-critic一样。deterministic actor-critic也由actor和critic两部分组成，actor使用梯度下降调整$\mu(s)$的参数$\theta$，critic使用policy evaluation方法估计$Q^w (s,a) \approx Q^{\mu} (s, a)$指导actor的更新。比如critic使用Sarsa估计action value：<br>
+\begin{align*}<br>
+\delta_t &amp; = R_t + \gamma Q^w (s_{t+1}, a_{t+1}) - Q^w(s_t, a_t) \tag{32}\\<br>
+w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{33}\\<br>
+\theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{34}\\<br>
+\end{align*}</p>
 <h3 id="off-policy-deterministic-actor-critic">off-policy deterministic actor-critic</h3>
+<p>考虑off-policy actor-critic方法。目标函数是使用behaviour policy对target policy的value function求期望：<br>
+\begin{align*}<br>
+J_{\beta}(\mu) &amp; = \int_S \rho^{\beta}(s) V^{\mu} (s) ds\\<br>
+&amp; = \int_S \rho^{\beta} (s) Q^{\mu} (s, \mu(s,a) ) ds \tag{35}\\<br>
+\end{align*}<br>
+求梯度是：<br>
+\begin{align*}<br>
+\nabla_{\theta}J_{\beta}(\theta) &amp; \approx \int_S\rho^\beta (s) \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a) ds \\<br>
+&amp; = \mathbb{E}_{s\sim \rho^\beta }\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{30}\\<br>
+\end{align*}</p>
 <h3 id="compatible-function-approximation">compatible function approximation</h3>
 <h2 id="参考文献">参考文献</h2>
 <p>Policy Gradient<br>
@@ -587,11 +603,11 @@ $$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla
           
             <a href="/tags/深度学习/" rel="tag"># 深度学习</a>
           
-            <a href="/tags/policy-gradient/" rel="tag"># policy gradient</a>
-          
             <a href="/tags/pg/" rel="tag"># pg</a>
           
             <a href="/tags/dpg/" rel="tag"># dpg</a>
+          
+            <a href="/tags/policy-gradient/" rel="tag"># policy gradient</a>
           
         </div>
       
@@ -1341,7 +1357,7 @@ $$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stochastic-policy-gradient-vs-deterministic-policy-gradiet"><span class="nav-number">2.</span> <span class="nav-text">stochastic policy gradient vs deterministic policy gradiet</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#sotchastic-policy-gradient"><span class="nav-number">2.1.</span> <span class="nav-text">sotchastic policy gradient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#deterministic-policy-gradient"><span class="nav-number">2.2.</span> <span class="nav-text">deterministic policy gradient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#spg-vs-dpg"><span class="nav-number">2.3.</span> <span class="nav-text">spg vs dpg</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stochastic-policy-gradient-theorem"><span class="nav-number">3.</span> <span class="nav-text">stochastic policy gradient theorem</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stochastic-actor-critic-算法"><span class="nav-number">4.</span> <span class="nav-text">stochastic actor-critic 算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off-policy-actor-critic"><span class="nav-number">5.</span> <span class="nav-text">off-policy actor critic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#action-value-gradients"><span class="nav-number">6.</span> <span class="nav-text">action value gradients</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deterministic-policy-gradient-theorem"><span class="nav-number">7.</span> <span class="nav-text">deterministic policy gradient theorem</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#新的术语定义"><span class="nav-number">7.1.</span> <span class="nav-text">新的术语定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#证明"><span class="nav-number">7.2.</span> <span class="nav-text">证明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spg的limit"><span class="nav-number">8.</span> <span class="nav-text">spg的limit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#deterministic-actor-critic"><span class="nav-number">8.1.</span> <span class="nav-text">deterministic actor-critic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#on-policy-deterministic-actor-critic"><span class="nav-number">8.2.</span> <span class="nav-text">on-policy deterministic actor-critic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#off-policy-deterministic-actor-critic"><span class="nav-number">8.3.</span> <span class="nav-text">off-policy deterministic actor-critic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#compatible-function-approximation"><span class="nav-number">8.4.</span> <span class="nav-text">compatible function approximation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stochastic-policy-gradient-vs-deterministic-policy-gradiet"><span class="nav-number">2.</span> <span class="nav-text">stochastic policy gradient vs deterministic policy gradiet</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#sotchastic-policy-gradient"><span class="nav-number">2.1.</span> <span class="nav-text">sotchastic policy gradient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#deterministic-policy-gradient"><span class="nav-number">2.2.</span> <span class="nav-text">deterministic policy gradient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#spg-vs-dpg"><span class="nav-number">2.3.</span> <span class="nav-text">spg vs dpg</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stochastic-policy-gradient-theorem"><span class="nav-number">3.</span> <span class="nav-text">stochastic policy gradient theorem</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stochastic-actor-critic-算法"><span class="nav-number">4.</span> <span class="nav-text">stochastic actor-critic 算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off-policy-actor-critic"><span class="nav-number">5.</span> <span class="nav-text">off-policy actor critic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#action-value-gradients"><span class="nav-number">6.</span> <span class="nav-text">action value gradients</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deterministic-policy-gradient-theorem"><span class="nav-number">7.</span> <span class="nav-text">deterministic policy gradient theorem</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#新的术语定义"><span class="nav-number">7.1.</span> <span class="nav-text">新的术语定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#证明"><span class="nav-number">7.2.</span> <span class="nav-text">证明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#spg的limit"><span class="nav-number">8.</span> <span class="nav-text">spg的limit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#deterministic-actor-critic"><span class="nav-number">9.</span> <span class="nav-text">deterministic actor-critic</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#on-policy-deterministic-actor-critic"><span class="nav-number">9.1.</span> <span class="nav-text">on-policy deterministic actor-critic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#off-policy-deterministic-actor-critic"><span class="nav-number">9.2.</span> <span class="nav-text">off-policy deterministic actor-critic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#compatible-function-approximation"><span class="nav-number">9.3.</span> <span class="nav-text">compatible function approximation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">10.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
