@@ -1000,7 +1000,7 @@ $\qquad$ Until $\tau =T-1$</p>
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/07/16/gradient-method-deterministic-policy-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">deterministic policy gradient</a>
+                <a href="/2019/07/16/gradient-method-deterministic-policy-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">policy gradient</a>
               
             
           </h1>
@@ -1042,7 +1042,7 @@ $\qquad$ Until $\tau =T-1$</p>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-07 10:54:35" itemprop="dateModified" datetime="2019-10-07T10:54:35+08:00">2019-10-07</time>
+                <time title="修改时间：2019-10-07 15:58:09" itemprop="dateModified" datetime="2019-10-07T15:58:09+08:00">2019-10-07</time>
               
             
           </span>
@@ -1095,8 +1095,7 @@ $\qquad$ Until $\tau =T-1$</p>
       
         
           
-            <p>Deterministic policy gradient比stochastic policy gradient要好，尤其是high dimensional tasks上。此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noise，这种情况下dpg更合适。</p>
-<h2 id="简介">简介</h2>
+            <h2 id="简介">简介</h2>
 <p>本文主要介绍了deterministic policy gradient算法。它属于policy gradient的一种，只不过是将stochastic policy改成了deterministic policy，和stochastic policy一样，deterministic policy也有相应的deterministic policy gradient theorem。<br>
 实际上deterministic policy gradient是action value function的gradient的期望，这让deterministic policy gradient比stochastic policy gradient要更efficiently。还介绍了保证足够的exploration的off-policy actor-critic算法学习determinitic target policy。</p>
 <h2 id="stochastic-policy-gradient-vs-deterministic-policy-gradiet">stochastic policy gradient vs deterministic policy gradiet</h2>
@@ -1141,13 +1140,13 @@ J_\beta(\pi_\theta) &amp;= \int_S\rho^\beta (s) V^\pi (s)ds\tag{4}\\<br>
 <p>绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。一个替代的方法是让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，对每一个访问到的state $s$，policy parameters $\theta^{k+1} $的更新正比于$\nabla_{\theta} Q^{ {\mu}^k } (s, \mu_{\theta}(s) )$。每一个state给出一个不同的方向，可以使用state distribution $\rho^{\mu} (s)$求期望，对最终的方向进行平均：<br>
 $$\theta^{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_\theta Q^{ {\mu}^k } (s, \mu_{\theta}(s))\right] \tag{8}$$<br>
 通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：<br>
-$$\theta{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_{\theta}\mu_{\theta}(s)\nabla_a Q^{ {\mu}^k } (s,a)|_{a=\mu_\theta(s_0)}\right] \tag{9}$$<br>
+$$\theta_{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_{\theta}\mu_{\theta}(s)\nabla_a Q^{ {\mu}^k } (s,a)|_{a=\mu_\theta(s_0)}\right] \tag{9}$$<br>
 按照惯例来说，$\nabla_{\theta}\mu_{\theta}(s)$是一个jacobian matrix，每一列是policy的$dth$ action对$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。如果改变了policy，state distribution　$\rho^{\mu} $也会改变。如果不考虑distribution的变化的话，这个方法是保证收敛的。不过幸运的是，已经有人证明了和sgd一样，有deterministic policy gradient theorem，不需要计算state distributiond的gradient即可更新参数。</p>
 <h2 id="deterministic-policy-gradient-theorem">deterministic policy gradient theorem</h2>
 <h3 id="新的术语定义">新的术语定义</h3>
 <ul>
 <li>$\rho_0(s)$：初始状态分布</li>
-<li>$\rho^{\mu} (s\rightarrow s’, k)：在policy $\mu$下从state $s$出发经过$k$步到达$s’$的概率。</li>
+<li>$\rho^{\mu} (s\rightarrow s’, k)$：在policy $\mu$下从state $s$出发经过$k$步到达$s’$的概率。</li>
 <li>$\rho^{\mu} (s’)$：带有折扣因子的状态分布，定义为：<br>
 $$\rho^{\mu} (s’) = \int_S \sum_{k=0}^{\infty} \gamma^{k} \rho_0(s) \rho^{\mu} (s\rightarrow s’, k)ds\tag{10}$$</li>
 </ul>
@@ -1201,7 +1200,7 @@ $$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla
 <p>使用deterministic behaviour policy不能确保足够的exploration，会产生suboptimal solutions。但是我们还是要首先介绍on-policy actor-critic算法，它对于我们理解算法背后的核心思路很有用。尤其是在环境有噪音，即使使用deterministic behaviour policy也能够保证充足的exploration时。<br>
 和stochastic actor-critic一样。deterministic actor-critic也由actor和critic两部分组成，actor使用梯度下降调整$\mu(s)$的参数$\theta$，critic使用policy evaluation方法估计$Q^w (s,a) \approx Q^{\mu} (s, a)$指导actor的更新。比如critic使用Sarsa估计action value：<br>
 \begin{align*}<br>
-\delta_t &amp; = R_t + \gamma Q^w (s_{t+1}, a_{t+1}) - Q^w(s_t, a_t) \tag{32}\\<br>
+\delta_t &amp; = R_{t+1} + \gamma Q^w (s_{t+1}, a_{t+1}) - Q^w(s_t, a_t) \tag{32}\\<br>
 w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{33}\\<br>
 \theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{34}\\<br>
 \end{align*}</p>
@@ -1214,9 +1213,58 @@ J_{\beta}(\mu) &amp; = \int_S \rho^{\beta}(s) V^{\mu} (s) ds\\<br>
 求梯度是：<br>
 \begin{align*}<br>
 \nabla_{\theta}J_{\beta}(\theta) &amp; \approx \int_S\rho^\beta (s) \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a) ds \\<br>
-&amp; = \mathbb{E}_{s\sim \rho^\beta }\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{30}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^\beta }\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{36}\\<br>
+\end{align*}<br>
+critic使用Q-learning更新action value function：<br>
+\begin{align*}<br>
+\delta_t &amp; = R_{t+1} + \gamma Q^w (s_{t+1}, \mu_{\theta}(s_{t+1})) - Q^w(s_t, a_t) \tag{37}\\<br>
+w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{38}\\<br>
+\theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{39}\\<br>
+\end{align*}<br>
+在stochastic off-policy actor-critic中，actor和critic都使用了importance sampling，而在deterministic off policy actor-critic中，deterministic去掉了对actions的积分，所以避免了actor的importance sampling，使用one step Q-learning去掉了critic中的importance sampling。</p>
+<h2 id="总结">总结</h2>
+<p>Deterministic policy gradient比stochastic policy gradient要好，尤其是high dimensional tasks上。此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noise，这种情况下dpg更合适。<br>
+目标函数：</p>
+<h3 id="stochastic-policy-gradient-theorem-v2">stochastic policy gradient theorem:</h3>
+<p>具体证明可以见<a href="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/">policy gradient</a>。<br>
+\begin{align*}<br>
+J(\pi_\theta) &amp; = \int_S\rho^{\pi} (s)\int_A\pi(s,a) R(s,a) da ds \tag{40}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_{\theta}} \left [R(s,a) \right]\tag{41}\\<br>
 \end{align*}</p>
-<h3 id="compatible-function-approximation">compatible function approximation</h3>
+<p>\begin{align*}<br>
+\nabla_{\theta}J(\pi_\theta) &amp; = \int_S\rho^{\pi} (s)\int_A \nabla\pi(s,a) Q^{\pi} (s,a) da ds\tag{42}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_{\theta}} \left [\log \nabla_{\theta} \pi(a|s)Q^{\pi} (s,a) \right]\tag{43}\\<br>
+\end{align*}</p>
+<h3 id="stochastic-off-policy-actor-crtic">stochastic off-policy actor-crtic</h3>
+<p>具体证明可以参考<a href="https://arxiv.org/pdf/1205.4839.pdf" target="_blank" rel="noopener">Linear off-policy actor-critic</a>。<br>
+\begin{align*}<br>
+J(\pi_\theta) &amp; = \int_S\rho^{\beta}(s) V^{\pi} (s) ds\tag{44}\\<br>
+&amp; = \int_S \int_A\rho^{\beta}(s) \pi(a|s) Q^{\pi} (s, a) ds\tag{45}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta}J(\pi_\theta) &amp; \approx \int_S\int_A\rho^{\pi} (s) \nabla_{\theta} \pi_{\theta}(s,a) Q^{\pi} (s,a) da ds\tag{46}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\beta}, a\sim \beta} \left[ \frac{\pi_{\theta}(a|s) }{\beta_{\theta}(a|s) } \nabla_{\theta}\log \pi_{\theta}(s,a) Q^{\pi} (s,a) \right]\tag{47}\\<br>
+\end{align*}</p>
+<h3 id="deterministic-policy-gradient-theorem-v2">deterministic policy gradient theorem:</h3>
+<p>具体证明见本文上半部分。但是我还有一些疑问，在stochastic policy gradient theorem中，$p(s’, r|s, a)$是$a$的函数，$a = \pi(s)$，所以$p(s’,r|s, a)$不应该也是$\theta$的函数吗？<br>
+\begin{align*}<br>
+J(\mu_{\theta}) &amp; = \int_S\rho^{\mu} (s) R(s, \mu_{\theta}(s)) da ds\tag{48}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} } \left[R(s, \mu_{\theta}(s) \right]\tag{49}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta} J(\mu_\theta) &amp; = \int_S\rho^{\mu} (s)\nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} da ds\tag{50}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} (s)} \left[ \nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} \right]\tag{51}\\<br>
+\end{align*}</p>
+<h3 id="deterministic-off-policy-actor-critic">deterministic off-policy actor-critic</h3>
+<p>具体证明可以参考<a href="https://arxiv.org/pdf/1205.4839.pdf" target="_blank" rel="noopener">Linear off-policy actor-critic</a>。<br>
+\begin{align*}<br>
+J_{\beta}(\mu_\theta) &amp; = \int_S\rho^{\beta} (s) V^{\mu} (s) ds\tag{52}\\<br>
+&amp; = \int_S\rho^{\beta} (s) Q^{\mu} (s, \mu_{\theta}(s)) ds\tag{53}\\<br>
+\end{align*}<br>
+\begin{align*}<br>
+\nabla_{\theta} J_{\beta} (\mu_\theta) &amp; \approx \int_S\rho^{\beta} (s)\nabla_{\theta}\mu_{\theta}(a|s) \nabla_a Q^{\mu} (s, a) ds\tag{54}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\beta}}\left[\nabla_{\theta}\mu_{\theta}(a|s) \nabla_a Q^{\mu} (s, a) \right]\tag{55}\\<br>
+\end{align*}</p>
 <h2 id="参考文献">参考文献</h2>
 <p>Policy Gradient<br>
 1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a><br>

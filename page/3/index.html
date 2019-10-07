@@ -692,7 +692,7 @@ $$\min_{x\in \mathbb{R}^n } \frac{1}{2}x^T \text{F}x - g^T x$$<br>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-06 20:17:04" itemprop="dateModified" datetime="2019-10-06T20:17:04+08:00">2019-10-06</time>
+                <time title="修改时间：2019-10-07 19:36:45" itemprop="dateModified" datetime="2019-10-07T19:36:45+08:00">2019-10-07</time>
               
             
           </span>
@@ -763,6 +763,7 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 <h3 id="证明policy-iteration收敛性">证明policy iteration收敛性</h3>
 <p>本文还证明了基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。</p>
 <h2 id="objective-function">Objective Function</h2>
+<h3 id="三种形式">三种形式</h3>
 <p>智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。有三种方式定义智能体的objective：</p>
 <ul>
 <li>计算policy $\pi$下从初始状态$s_0$开始的accumulated reward：<br>
@@ -814,7 +815,7 @@ Q^{\pi} (s,a) = \sum_{s’, r}p(s’,r|s,a)(r - \eta(\pi) + V(s’)) \tag{14}<br
 \end{align*}</p>
 <h3 id="state-value的均值">State value的均值</h3>
 <p>这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s_0)$的期望（均值）：<br>
-$$ \eta(\pi) = \sum_s rho_0(s_0) V^{\pi} (s) \tag{15}$$<br>
+$$ \eta(\pi) = \sum_s \rho_0(s_0) V^{\pi} (s) \tag{15}$$<br>
 State action value function和state value function的定义和accumulated reward一样。<br>
 定义$\rho^{\pi} $为从任意初始状态$s_0$经过$t$步之后state $s$出现的概率：<br>
 $$\rho^{\pi} (s) =\int_S \sum_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s_t = s|s_0,\pi\right] ds_0  = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0^{\pi} (s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{16}$$</p>
@@ -1050,12 +1051,75 @@ $\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\the
 <p>A2C是A3C的同步版本。在A3C中每一个agent独立的和global parameters进行沟通，所以可能在某些时候，不同的thread使用的policy可能都会不同，thread1从global拿了参数，计算梯度，thread2从global拿了参数，计算梯度，thread1更新了global，而这个时候thread2还在计算梯度，thread1就拿到了新的global参数，计算梯度，更新。这时候thread2还没计算完，就产生了不一致。<br>
 A2C就是为了解决这个问题的，A2C使用一个调度器，等待所有的actors完成相应的工作，然后更新global的参数，保证在下一次更新的时候每一个actor使用的都是相同的policy。</p>
 <h3 id="dpg">DPG</h3>
-<p>完整解释见<a href="http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/" target="_blank" rel="noopener">deterministic policy gardient</a></p>
+<p>完整解释见<a href="http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/" target="_blank" rel="noopener">deterministic policy gardient</a>。<br>
+Deterministic policy gradient theorem：<br>
+\begin{align*}<br>
+J(\mu_{\theta}) &amp; = \int_S\rho^{\mu} (s) R(s, \mu_{\theta}(s)) da ds\tag{48}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} } \left[R(s, \mu_{\theta}(s) \right]\tag{49}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta} J(\mu_\theta) &amp; = \int_S\rho^{\mu} (s)\nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} da ds\tag{50}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} (s)} \left[ \nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} \right]\tag{51}\\<br>
+\end{align*}</p>
 <h3 id="ddpg">DDPG</h3>
-<h3 id="d4pg">D4PG</h3>
+<p>DDPG是一个model-free off-plicy actor critic方法，将DPG和DQN的思想相结合。DQN使用replay buffer和target network稳定学习过程，但是DQN只有在discrete space空间中起作用，DDPG将actor-critic框架扩展到了continous空间，学习deterministic policy。为了更好的exploration，使用$\mu$和noise $\mathbf{N}$构造exploration policy $\mu’$：<br>
+$$\mu’(s) = \mu(s) + \mathbf{N} \tag{}$$<br>
+此外，DDPG对actor和critic实行soft update，即$\theta’ \leftarrow \tau \theta+(1-\tau) \theta’$。同时使用batch normalizion对每层的输入进行处理，完整的算法如下：<br>
+<strong>DDPG算法</strong><br>
+使用$\theta^Q $和$\theta^\mu $ 随机初始化critic网络$Q(s,a|\theta^Q )$和actor网络$\mu(s|\theta^\mu )$。<br>
+使用$\theta^ Q$和$\theta^\mu $初始化target network参数$\theta^{Q’} \leftarrow \theta^Q, \theta^{\mu’} \leftarrow \theta^\mu$。<br>
+初始化replay buffer<br>
+for episode $= 1, \cdots, M$ do<br>
+$\qquad$初始化随机过程$\mathbf{N}$用于exploration<br>
+$\qquad$获得初始状态$s_0$<br>
+$\qquad$for $t=0, \cdots, T$ do<br>
+$\qquad\qquad$选择action $a_t = \mu(s_t|\theta^\mu ) + \mathbf{N}_t$<br>
+$\qquad\qquad$执行$a_t$，获得$r_{t+1}, s_{t+1}$<br>
+$\qquad\qquad$将$(s_t, a_t, r_{t+1}, s_{t+1})$存入buffer<br>
+$\qquad\qquad$从buffer中获取一个大小为$N$的batch，$(s_i, a_i, r_{i+1}，s_{i+1})$<br>
+$\qquad\qquad$使用target network计算TD target：$y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta^{\mu’} ) | \theta^{Q’} )$<br>
+$\qquad\qquad$使用TD-error loss更新critic： $L=\frac{1}{N} \sum_i (y_i - Q(s_i,a_i|\theta^Q ) )^2 $<br>
+$\qquad\qquad$使用样本计算policy gradient更新actor：<br>
+$$\nabla_{\theta^{\mu} } J \approx \frac{1}{N} \sum_i \nabla_a Q(s, a|\theta^Q ) |_{s=s_i,a=\mu(s_i)} \nabla_{\theta^{\mu} }\mu(s|\theta^{\mu} )$$<br>
+$\qquad\qquad$更新target networks:<br>
+$$\theta^{Q’} \leftarrow \tau \theta^Q + (1 - \tau) \theta^{Q’} $$<br>
+$$\theta^{\mu’} \leftarrow \tau \theta^\mu + (1 - \tau) \theta^{\mu’} $$<br>
+$\qquad$end for<br>
+end for</p>
 <h3 id="maddpg">MADDPG</h3>
+<p>MADDPG将DDPG扩展到multi agents问题上。多个只有local informaction的agents合作完成任务，从单个agent来看，环境是non-stationary，因为其他agents的polices是未知的。MADDPG就是解决这样一类问题的方法。<br>
+对于$N$个agetns的MADDPG算法，每一个agent都有一个decentralized actor和一个centralized critic。每一个decentralized actor输入为当前agent的observation，输出为它的action，每一个centralized critic输入为所有agents的observation，输出为当前agent的$Q$值，和每个智能体的reward相关。</p>
+<p>完整的算法如下：<br>
+<strong>N个agents的MADDPG算法</strong><br>
+for episode $= 1, \cdots, M$ do<br>
+$\qquad$初始化随机过程$\mathbf{N}$用来exploration<br>
+$\qquad$获得初始状态$\mathbf{s}$<br>
+$\qquad$for $t=1, \cdots , T$ do<br>
+$\qquad\qquad$for $i = 1, \cdots, N$<br>
+$\qquad\qquad\qquad a_i = \mu_{\theta_i}(o_i) +\mathbf{N}_t$<br>
+$\qquad\qquad$end for<br>
+$\qquad\qquad$执行actions $\mathbf{a} = (a_1, \cdots, a_N)$，获得$\mathbf{r}$和$\mathbf{s’}$<br>
+$\qquad\qquad$将$(\mathbf{s},\mathbf{a},\mathbf{r},\mathbf{s’})$存入buffer<br>
+$\qquad\qquad \mathbf{s}\leftarrow \mathbf{s’}$<br>
+$\qquad\qquad$for $i= 1, \cdots, N$ do<br>
+$\qquad\qquad\qquad$从buffer中采样$S$个samples $(\mathbf{s}^j ,\mathbf{a}^j ,\mathbf{r}^j ,\mathbf{s’}^j )$<br>
+$\qquad\qquad\qquad$计算TD target $\mathbf{y}^j_i = \mathbf{r}^j_i + \gamma Q^{\mu’}_i (\mathbf{x’}^j, a_1^{’},\cdots, a_N^{’} )|_{a_k^{’} = \mu_k^{’} (o_k^j ) }$<br>
+$\qquad\qquad\qquad$使用均方误差更新critic：<br>
+$$L(\theta_i) = \frac{1}{S} \sum_j \left( y^j - Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_N^j ) \right)^2 $$<br>
+$\qquad\qquad\qquad$使用样本近似计算policy gradient：<br>
+$$\nabla_{\theta_i} J\approx \frac{1}{S} \sum_j\nabla_{\theta_i}\mu_i(o_i^j ) Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_i^j, a_N^j)|_{a_i = \mu_i(o_i^j)} $$<br>
+$\qquad\qquad$end for<br>
+$\qquad\qquad$更新每个agent $i$的target network<br>
+$$\qquad\qquad \theta_i^{’} \leftarrow \tau\theta_i + (1- \tau) \theta_i^{’}$$<br>
+$\qquad$end for<br>
+end for</p>
+<h3 id="d4pg">D4PG</h3>
 <h3 id="natural-pg">Natural PG</h3>
 <h3 id="trpo">TRPO</h3>
+<p>详细介绍可以查看<a href="http://mxxhcmg.github.io/2019/09/08/gradient-method-trust-region-policy-optimization/" target="_blank" rel="noopener">trust region policy optimization</a>。<br>
+为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。TRPO将policy的更新表示为两个policy的performance的一个公式，最后得到目标函数：<br>
+$$J = \mathbb{E}_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}$$<br>
+$$s.t. \mathbb{E}_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{}$$</p>
 <h3 id="ppo">PPO</h3>
 <h3 id="acer">ACER</h3>
 <h3 id="actkr">ACTKR</h3>
