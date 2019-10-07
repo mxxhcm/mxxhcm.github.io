@@ -30,6 +30,7 @@ $$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta
 本文还证明了基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。
 
 ## Objective Function
+### 三种形式
 智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a\_t=a|s\_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。有三种方式定义智能体的objective：
 - 计算policy $\pi$下从初始状态$s_0$开始的accumulated reward：
 $$J(\theta) = V^{\pi}(s_0) = \mathbb{E}\_{\pi}\left[G_0\right] = \mathbb{E}\_{\pi} \left[\sum\_{t=0}^{\infty} \gamma^{t-1} R_t | s_0 \right] \tag{2}$$
@@ -83,7 +84,7 @@ Q^{\pi} (s,a) = \sum_{s', r}p(s',r|s,a)(r - \eta(\pi) + V(s')) \tag{14}
 
 ### State value的均值
 这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s_0)$的期望（均值）：
-$$ \eta(\pi) = \sum_s rho_0(s_0) V^{\pi} (s) \tag{15}$$
+$$ \eta(\pi) = \sum_s \rho_0(s_0) V^{\pi} (s) \tag{15}$$
 State action value function和state value function的定义和accumulated reward一样。
 定义$\rho^{\pi} $为从任意初始状态$s\_0$经过$t$步之后state $s$出现的概率：
 $$\rho^{\pi} (s) =\int_S \sum\_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s\_t = s|s\_0,\pi\right] ds_0  = \int\_S \sum\_{t=0}^{\infty} \gamma^{t} \rho\_0^{\pi} (s\_0)p(s\_0\rightarrow s, t,\pi)ds\_0 \tag{16}$$
@@ -339,18 +340,84 @@ A2C是A3C的同步版本。在A3C中每一个agent独立的和global parameters�
 A2C就是为了解决这个问题的，A2C使用一个调度器，等待所有的actors完成相应的工作，然后更新global的参数，保证在下一次更新的时候每一个actor使用的都是相同的policy。
 
 ### DPG
-完整解释见[deterministic policy gardient](http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/)
+完整解释见[deterministic policy gardient](http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/)。
+Deterministic policy gradient theorem：
+\begin{align\*}
+J(\mu\_{\theta}) & = \int_S\rho^{\mu} (s) R(s, \mu\_{\theta}(s)) da ds\tag{48}\\\\
+& = \mathbb{E}\_{s\sim \rho^{\mu} } \left[R(s, \mu\_{\theta}(s) \right]\tag{49}\\\\
+\end{align\*}
 
+\begin{align\*}
+\nabla\_{\theta} J(\mu\_\theta) & = \int_S\rho^{\mu} (s)\nabla\_{\theta}\mu\_{\theta}(s) \nabla_a Q^{\mu} (s, a)|\_{\mu\_{\theta}(s)} da ds\tag{50}\\\\
+& = \mathbb{E}\_{s\sim \rho^{\mu} (s)} \left[ \nabla\_{\theta}\mu\_{\theta}(s) \nabla_a Q^{\mu} (s, a)|\_{\mu\_{\theta}(s)} \right]\tag{51}\\\\
+\end{align\*}
 
 ### DDPG
-
-### D4PG
+DDPG是一个model-free off-plicy actor critic方法，将DPG和DQN的思想相结合。DQN使用replay buffer和target network稳定学习过程，但是DQN只有在discrete space空间中起作用，DDPG将actor-critic框架扩展到了continous空间，学习deterministic policy。为了更好的exploration，使用$\mu$和noise $\mathbf{N}$构造exploration policy $\mu'$：
+$$\mu'(s) = \mu(s) + \mathbf{N} \tag{}$$
+此外，DDPG对actor和critic实行soft update，即$\theta' \leftarrow \tau \theta+(1-\tau) \theta'$。同时使用batch normalizion对每层的输入进行处理，完整的算法如下：
+**DDPG算法**
+使用$\theta^Q $和$\theta^\mu $ 随机初始化critic网络$Q(s,a|\theta^Q )$和actor网络$\mu(s|\theta^\mu )$。
+使用$\theta^ Q$和$\theta^\mu $初始化target network参数$\theta^{Q'} \leftarrow \theta^Q, \theta^{\mu'} \leftarrow \theta^\mu$。
+初始化replay buffer
+for episode $= 1, \cdots, M$ do
+$\qquad$初始化随机过程$\mathbf{N}$用于exploration
+$\qquad$获得初始状态$s_0$
+$\qquad$for $t=0, \cdots, T$ do
+$\qquad\qquad$选择action $a_t = \mu(s_t|\theta^\mu ) + \mathbf{N}\_t$
+$\qquad\qquad$执行$a_t$，获得$r\_{t+1}, s\_{t+1}$
+$\qquad\qquad$将$(s_t, a_t, r\_{t+1}, s\_{t+1})$存入buffer
+$\qquad\qquad$从buffer中获取一个大小为$N$的batch，$(s_i, a_i, r\_{i+1}，s\_{i+1})$
+$\qquad\qquad$使用target network计算TD target：$y_i = r_i + \gamma Q'(s\_{i+1}, \mu'(s\_{i+1}|\theta^{\mu'} ) | \theta^{Q'} )$
+$\qquad\qquad$使用TD-error loss更新critic： $L=\frac{1}{N} \sum_i (y_i - Q(s_i,a_i|\theta^Q ) )^2 $
+$\qquad\qquad$使用样本计算policy gradient更新actor：
+$$\nabla\_{\theta^{\mu} } J \approx \frac{1}{N} \sum_i \nabla_a Q(s, a|\theta^Q ) |\_{s=s_i,a=\mu(s_i)} \nabla\_{\theta^{\mu} }\mu(s|\theta^{\mu} )$$
+$\qquad\qquad$更新target networks:
+$$\theta^{Q'} \leftarrow \tau \theta^Q + (1 - \tau) \theta^{Q'} $$
+$$\theta^{\mu'} \leftarrow \tau \theta^\mu + (1 - \tau) \theta^{\mu'} $$
+$\qquad$end for
+end for
 
 ### MADDPG
+MADDPG将DDPG扩展到multi agents问题上。多个只有local informaction的agents合作完成任务，从单个agent来看，环境是non-stationary，因为其他agents的polices是未知的。MADDPG就是解决这样一类问题的方法。
+对于$N$个agetns的MADDPG算法，每一个agent都有一个decentralized actor和一个centralized critic。每一个decentralized actor输入为当前agent的observation，输出为它的action，每一个centralized critic输入为所有agents的observation，输出为当前agent的$Q$值，和每个智能体的reward相关。
+
+完整的算法如下：
+**N个agents的MADDPG算法**
+for episode $= 1, \cdots, M$ do
+$\qquad$初始化随机过程$\mathbf{N}$用来exploration
+$\qquad$获得初始状态$\mathbf{s}$
+$\qquad$for $t=1, \cdots , T$ do 
+$\qquad\qquad$for $i = 1, \cdots, N$
+$\qquad\qquad\qquad a_i = \mu\_{\theta_i}(o_i) +\mathbf{N}\_t$
+$\qquad\qquad$end for
+$\qquad\qquad$执行actions $\mathbf{a} = (a_1, \cdots, a_N)$，获得$\mathbf{r}$和$\mathbf{s'}$
+$\qquad\qquad$将$(\mathbf{s},\mathbf{a},\mathbf{r},\mathbf{s'})$存入buffer
+$\qquad\qquad \mathbf{s}\leftarrow \mathbf{s'}$
+$\qquad\qquad$for $i= 1, \cdots, N$ do
+$\qquad\qquad\qquad$从buffer中采样$S$个samples $(\mathbf{s}^j ,\mathbf{a}^j ,\mathbf{r}^j ,\mathbf{s'}^j )$
+$\qquad\qquad\qquad$计算TD target $\mathbf{y}^j_i = \mathbf{r}^j_i + \gamma Q^{\mu'}\_i (\mathbf{x'}^j, a_1^{'},\cdots, a_N^{'} )|\_{a_k^{'} = \mu_k^{'} (o_k^j ) }$
+$\qquad\qquad\qquad$使用均方误差更新critic：
+$$L(\theta_i) = \frac{1}{S} \sum_j \left( y^j - Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_N^j ) \right)^2 $$
+$\qquad\qquad\qquad$使用样本近似计算policy gradient：
+$$\nabla\_{\theta_i} J\approx \frac{1}{S} \sum_j\nabla\_{\theta_i}\mu_i(o_i^j ) Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_i^j, a_N^j)|\_{a_i = \mu_i(o_i^j)} \$$
+$\qquad\qquad$end for
+$\qquad\qquad$更新每个agent $i$的target network
+$$\qquad\qquad \theta_i^{'} \leftarrow \tau\theta_i + (1- \tau) \theta_i^{'}$$
+$\qquad$end for
+end for
+
+
+### D4PG
 
 ### Natural PG
 
 ### TRPO
+详细介绍可以查看[trust region policy optimization](http://mxxhcmg.github.io/2019/09/08/gradient-method-trust-region-policy-optimization/)。
+为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。TRPO将policy的更新表示为两个policy的performance的一个公式，最后得到目标函数：
+$$J = \mathbb{E}\_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}$$
+$$s.t. \mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{}$$
+
 
 ### PPO
 
