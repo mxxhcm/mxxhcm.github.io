@@ -117,8 +117,7 @@ J(\mu_\theta) & = \int_S\rho^\mu (s) G_0 ds\tag{11}\\\\
 dpg实际上可以看成是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。
 考虑一个stochastic policy $\pi_{\mu_{\theta,\sigma}}$让$\pi_{\mu_{\theta,\sigma}}(s,a)=v_\sigma(\mu_\theta(s),a)$，其中$\sigma$是控制方差的参数，并且$v_\sigma$满足条件B.1，以及MDP满足条件A.1和A.2，那么
 $$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla_\theta J(\mu_\theta) \tag{31} $$
-其中左边的gradient是标准spg的gradient，右边是dpg的gradient。
-这就说明spg的很多方法同样也是适用于dpg的。
+其中左边的gradient是标准spg的gradient，右边是dpg的gradient。这就说明spg的很多方法同样也是适用于dpg的。
 
 ## deterministic actor-critic 
 接下来使用dpg theorem推导on-policy和off-policy的actor-critic算法。从最简单的on-policy update开始，使用Sarsa critic，然后介绍off-policy算法，使用Q-learning critic介绍核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入了biases，off-policy引入了不稳定性，可以使用compatiable function approximation的方法以及gradient td learning解决这些问题。
