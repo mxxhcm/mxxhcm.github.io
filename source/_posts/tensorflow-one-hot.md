@@ -5,7 +5,7 @@ tags:
  - tensorflow 
  - python
  - one-hot
-categories: python
+categories: tensorflow
 ---
 
 ## tf.one_hot

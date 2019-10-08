@@ -34,10 +34,10 @@ PyEval_InitThreads(void)
 }
 ```
 解释器中执行python的C代码必须持有这个lock。GIL的作用就是让你的程序足够简单：一个thread执行python代码，其他N个thread sleep或者等待I/O。或者可以等待threading.Lock或者其他同步操作。
-那么什么时候threads进程切换呢？当一个thread sleep或者等待I/O的时候，其他thread请求GIL，执行相应的代码。这种任务叫做cooperative multitasking。还有一种是preemptive multitasking：在python2中一个thread不间断的执行1000个bytecode，或者python3中不间断的执行15 ms，然后放弃GIL让另一个thread运行。接下来举两个例子。
+那么什么时候threads进程切换呢？当一个thread 准备sleep或者进入等待I/O的时候，它释放GIL，其他thread请求GIL，执行相应的代码。这种任务叫做cooperative multitasking。还有一种是preemptive multitasking：在python2中一个thread不间断的执行1000个bytecode，或者python3中不间断的执行15 ms，然后放弃GIL让另一个thread运行。接下来举两个例子。
 
 ## cooperative multithread
-在网络I/O中，具有很强的不确定性，当一个thread请求网络I/O时，它释放GIL，这样子其他thread可以获得GIL继续执行，等到I/O完成时，该thread请求GIL继续执行。
+在网络I/O中，具有很强的不确定性，当一个拥有GIL的thread请求网络I/O时，它释放GIL，这样子其他thread可以获得GIL继续执行，等到I/O完成时，该thread请求GIL继续执行。
 ``` python
 def do_connect():
     s = socket.socket()
@@ -47,7 +47,7 @@ for i in range(2):
     t = threading.Thread(target=do_connect)
     t.start()
 ```
-在上面的例子中，同一时刻只能有一个thread执行python代码，但是一旦thread开始connect，它就drop GIL，另一个thread可以执行。但是所有的threads都可以drop GIL，也就是多个thread可以一起并行的等待sockets连接。
+在上面的例子中，同一时刻只能有一个拥有GIL的thread执行python代码，但是一旦拥有GIL的thread开始connect，它就drop GIL，另一个thread可以申请GIL。但是所有的threads都可以drop GIL，也就是多个thread可以一起并行的等待sockets连接。
 具体python在connect socket的时候是怎么drop GIL的，我们可以看一下socketmodule的c代码：
 ``` c
 /* s.connect((host, port)) method */
@@ -146,11 +146,25 @@ threading是python多线程的一个package。
 
 ### threading.Thread
 
-
 #### 代码示例
 [代码地址](thread_Thread.py)
 ``` python
+import threading
+import socket
+import os
 
+def do_connect(website):
+    s = socket.socket()
+    info = s.connect((website, 80))  # drop the GIL
+    print(type(info))
+    print(info)
+    print(os.getpid())
+
+websites = ['python.org', 'baidu.com']
+
+for i in range(len(websites)):
+    t = threading.Thread(target=do_connect, args=(websites[i],))
+    t.start()
 ```
 
 ### threading.Lock
@@ -198,10 +212,10 @@ print("Done")
 ### 概述
 方法| 并行|是否直接阻塞|目标函数|函数返回值|适用场景
 --|--|--|--|--
-mp.Pool.apply|否|是|只能有一个函数|函数返回值|
-mp.Pool.apply_async|是|否，调用join()进行阻塞|可以相同可以不同|返回AysncResult对象|
-mp.Pool.map|是|是|目标函数相同，参数不同|所有processes完成后直接返回有序结果|
-mp.Pool.map_async|是|否，调用join()阻塞|不知道。。|返回AysncResult对象|
+mp.Pool.apply|否|是|只能有一个函数|函数返回值
+mp.Pool.apply_async|是|否，调用join()进行阻塞|可以相同可以不同|返回AysncResult对象
+mp.Pool.map|是|是|目标函数相同，参数不同|所有processes完成后直接返回有序结果
+mp.Pool.map_async|是|否，调用join()阻塞|不知道。。|返回AysncResult对象
 mp.Process|是|否|可以相同可以不同|无直接返回值|适用于线程数量比较小
 
 mp.Pool适用于线程数量远大于cpu数量，mp.Process适用于线程数量小于或者等于cpu数量的场景。

@@ -33,6 +33,7 @@ os.path.join("dir_name","file_name")    # 拼接两个路径
 
 os.getcwd()    #获得当前路径
 os.chdir(pathname)    #改变当前路径
+os.path.expanduser(pathname)    #如果pathname中包含"~"，将其替换成/homre/user/
 
 
 ### 创建和删除 
@@ -85,5 +86,7 @@ shutil.copy2(src,dst)  #和先后调用shutil.copy()和shutil.copystat()函数�
 shutil.copytree(src,dst,symlinks=False,ignore=None)  #递归的将str目录结构复制到dst，dst位置必须不存在，目录的权限和时间用copystat来复制，文件的赋值用copy2()来复制
 shutil.rmtree(path[,ignore_errors[,onerror]])   #删除一个完整的目录，无论目录是否为空
 
+## 参考文献
+1.https://www.zhihu.com/question/48161511/answer/445852429
 
 
