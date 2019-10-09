@@ -5,7 +5,7 @@ tags:
  - gym-retro
  - 强化学习
  - gym
-categories: 强化学习
+categories: gym
 ---
 
 ## Gym Retro
