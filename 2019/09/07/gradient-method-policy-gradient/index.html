@@ -101,14 +101,14 @@
 
 
   <meta name="description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
-<meta name="keywords" content="强化学习,gradient method,policy gradient">
+<meta name="keywords" content="强化学习,policy gradient,gradient method">
 <meta property="og:type" content="article">
 <meta property="og:title" content="gradient method policy gradient">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-10-07T11:36:45.824Z">
+<meta property="og:updated_time" content="2019-10-07T14:19:39.778Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="gradient method policy gradient">
 <meta name="twitter:description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-07 19:36:45" itemprop="dateModified" datetime="2019-10-07T19:36:45+08:00">2019-10-07</time>
+                <time title="修改时间：2019-10-07 22:19:39" itemprop="dateModified" datetime="2019-10-07T22:19:39+08:00">2019-10-07</time>
               
             
           </span>
@@ -821,8 +821,23 @@ end for</p>
 <h3 id="natural-pg">Natural PG</h3>
 <h3 id="trpo">TRPO</h3>
 <p>详细介绍可以查看<a href="http://mxxhcmg.github.io/2019/09/08/gradient-method-trust-region-policy-optimization/" target="_blank" rel="noopener">trust region policy optimization</a>。<br>
-为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。TRPO将policy的更新表示为两个policy的performance的一个公式，最后得到目标函数：<br>
-$$J = \mathbb{E}_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}$$<br>
+TRPO将policy的更新表示为两个policy的performance的一个公式：<br>
+\begin{align*}<br>
+\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right] &amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi_{old}} (s_t,a_t) - V^{\pi_{old}} (s_t))\right]  \\<br>
+&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t ( R_{t+1} + \gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
+&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} + \sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
+&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} \right]+ \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
+&amp;=\eta(\pi_{new}) + \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[ -  V^{\pi_{old}} (s_0))\right]  \\<br>
+&amp;=\eta(\pi_{new}) - \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[ V^{\pi_{old}} (s_0))\right]  \\<br>
+&amp;=\eta(\pi_{new}) - \eta(\pi_{old})\\<br>
+\end{align*}<br>
+我们的目标就是想要最大化<br>
+$$\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right]$$<br>
+用$\rho_{\pi_{old}}(s)$近似$\rho_{\pi_{new}}(s)$得到<br>
+$$\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right]$$</p>
+<p>最后得到目标函数：<br>
+$$J = \mathbb{E}_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}$$</p>
+<p>为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。<br>
 $$s.t. \mathbb{E}_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{}$$</p>
 <h3 id="ppo">PPO</h3>
 <h3 id="acer">ACER</h3>
@@ -949,9 +964,9 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
           
             <a href="/tags/强化学习/" rel="tag"># 强化学习</a>
           
-            <a href="/tags/gradient-method/" rel="tag"># gradient method</a>
-          
             <a href="/tags/policy-gradient/" rel="tag"># policy gradient</a>
+          
+            <a href="/tags/gradient-method/" rel="tag"># gradient method</a>
           
         </div>
       
@@ -1055,7 +1070,7 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">193</span>
+                    <span class="site-state-item-count">195</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1102,7 +1117,9 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
                     
                       
                     
-                    <span class="site-state-item-count">17</span>
+                      
+                    
+                    <span class="site-state-item-count">18</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -1633,7 +1650,13 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
                     
                       
                     
-                    <span class="site-state-item-count">259</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">262</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>

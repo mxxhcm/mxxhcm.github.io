@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="multiprocessing vs multithread 多个threads可以在一个process中。同一个process中的所有threads共享相同的memory。而不同的processes有不同的memory areas，每一个都有自己的variables，进程之间为了通信，需要使用其他的channels，比如files, pipes和sockets等。thread比process更容">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-25T06:31:58.572Z">
+<meta property="og:updated_time" content="2019-10-11T05:30:51.354Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="python multiprocessing">
 <meta name="twitter:description" content="multiprocessing vs multithread 多个threads可以在一个process中。同一个process中的所有threads共享相同的memory。而不同的processes有不同的memory areas，每一个都有自己的variables，进程之间为了通信，需要使用其他的channels，比如files, pipes和sockets等。thread比process更容">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-07-25 14:31:58" itemprop="dateModified" datetime="2019-07-25T14:31:58+08:00">2019-07-25</time>
+                <time title="修改时间：2019-10-11 13:30:51" itemprop="dateModified" datetime="2019-10-11T13:30:51+08:00">2019-10-11</time>
               
             
           </span>
@@ -461,11 +461,11 @@
 <p>在Unix类系统中，PyThread_type_lock是标准的C lock mutex_t的别名。它的初始化方式如下：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span></span><br><span class="line">PyEval_InitThreads(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">    interpreter_lock = PyThread_allocate_lock();</span><br><span class="line">    PyThread_acquire_lock(interpreter_lock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>解释器中执行python的C代码必须持有这个lock。GIL的作用就是让你的程序足够简单：一个thread执行python代码，其他N个thread sleep或者等待I/O。或者可以等待threading.Lock或者其他同步操作。<br>
-那么什么时候threads进程切换呢？当一个thread sleep或者等待I/O的时候，其他thread请求GIL，执行相应的代码。这种任务叫做cooperative multitasking。还有一种是preemptive multitasking：在python2中一个thread不间断的执行1000个bytecode，或者python3中不间断的执行15 ms，然后放弃GIL让另一个thread运行。接下来举两个例子。</p>
+那么什么时候threads进程切换呢？当一个thread 准备sleep或者进入等待I/O的时候，它释放GIL，其他thread请求GIL，执行相应的代码。这种任务叫做cooperative multitasking。还有一种是preemptive multitasking：在python2中一个thread不间断的执行1000个bytecode，或者python3中不间断的执行15 ms，然后放弃GIL让另一个thread运行。接下来举两个例子。</p>
 <h2 id="cooperative-multithread">cooperative multithread</h2>
-<p>在网络I/O中，具有很强的不确定性，当一个thread请求网络I/O时，它释放GIL，这样子其他thread可以获得GIL继续执行，等到I/O完成时，该thread请求GIL继续执行。</p>
+<p>在网络I/O中，具有很强的不确定性，当一个拥有GIL的thread请求网络I/O时，它释放GIL，这样子其他thread可以获得GIL继续执行，等到I/O完成时，该thread请求GIL继续执行。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_connect</span><span class="params">()</span>:</span></span><br><span class="line">    s = socket.socket()</span><br><span class="line">    s.connect((<span class="string">'python.org'</span>, <span class="number">80</span>))  <span class="comment"># drop the GIL</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>):</span><br><span class="line">    t = threading.Thread(target=do_connect)</span><br><span class="line">    t.start()</span><br></pre></td></tr></table></figure>
-<p>在上面的例子中，同一时刻只能有一个thread执行python代码，但是一旦thread开始connect，它就drop GIL，另一个thread可以执行。但是所有的threads都可以drop GIL，也就是多个thread可以一起并行的等待sockets连接。<br>
+<p>在上面的例子中，同一时刻只能有一个拥有GIL的thread执行python代码，但是一旦拥有GIL的thread开始connect，它就drop GIL，另一个thread可以申请GIL。但是所有的threads都可以drop GIL，也就是多个thread可以一起并行的等待sockets连接。<br>
 具体python在connect socket的时候是怎么drop GIL的，我们可以看一下socketmodule的c代码：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* s.connect((host, port)) method */</span></span><br><span class="line"><span class="keyword">static</span> PyObject *</span><br><span class="line">sock_connect(PySocketSockObject *s, PyObject *addro)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">sock_addr_t</span> addrbuf;</span><br><span class="line">    <span class="keyword">int</span> addrlen;</span><br><span class="line">    <span class="keyword">int</span> res;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* convert (host, port) tuple to C address */</span></span><br><span class="line">    getsockaddrarg(s, addro, SAS2SA(&amp;addrbuf), &amp;addrlen);</span><br><span class="line"></span><br><span class="line">    Py_BEGIN_ALLOW_THREADS</span><br><span class="line">    res = connect(s-&gt;sock_fd, addr, addrlen);</span><br><span class="line">    Py_END_ALLOW_THREADS</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* error handling and so on .... */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>其中Py_BEGIN_ALLOW_THREADS宏就是drop GIL，它的定义如下：</p>
@@ -490,7 +490,7 @@
 <h3 id="threading-thread">threading.Thread</h3>
 <h4 id="代码示例">代码示例</h4>
 <p><a href="thread_Thread.py">代码地址</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> socket</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">do_connect</span><span class="params">(website)</span>:</span></span><br><span class="line">    s = socket.socket()</span><br><span class="line">    info = s.connect((website, <span class="number">80</span>))  <span class="comment"># drop the GIL</span></span><br><span class="line">    print(type(info))</span><br><span class="line">    print(info)</span><br><span class="line">    print(os.getpid())</span><br><span class="line"></span><br><span class="line">websites = [<span class="string">'python.org'</span>, <span class="string">'baidu.com'</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(len(websites)):</span><br><span class="line">    t = threading.Thread(target=do_connect, args=(websites[i],))</span><br><span class="line">    t.start()</span><br></pre></td></tr></table></figure>
 <h3 id="threading-lock">threading.Lock</h3>
 <h4 id="代码示例-v2">代码示例</h4>
 <p><a href="threading_Lock.py">代码地址</a></p>
@@ -499,10 +499,10 @@
 <h3 id="概述">概述</h3>
 <p>方法| 并行|是否直接阻塞|目标函数|函数返回值|适用场景<br>
 –|--|–|--|–<br>
-mp.Pool.apply|否|是|只能有一个函数|函数返回值|<br>
-mp.Pool.apply_async|是|否，调用join()进行阻塞|可以相同可以不同|返回AysncResult对象|<br>
-mp.Pool.map|是|是|目标函数相同，参数不同|所有processes完成后直接返回有序结果|<br>
-mp.Pool.map_async|是|否，调用join()阻塞|不知道。。|返回AysncResult对象|<br>
+mp.Pool.apply|否|是|只能有一个函数|函数返回值<br>
+mp.Pool.apply_async|是|否，调用join()进行阻塞|可以相同可以不同|返回AysncResult对象<br>
+mp.Pool.map|是|是|目标函数相同，参数不同|所有processes完成后直接返回有序结果<br>
+mp.Pool.map_async|是|否，调用join()阻塞|不知道。。|返回AysncResult对象<br>
 mp.Process|是|否|可以相同可以不同|无直接返回值|适用于线程数量比较小</p>
 <p>mp.Pool适用于线程数量远大于cpu数量，mp.Process适用于线程数量小于或者等于cpu数量的场景。<br>
 mp.Pool.apply   适用于非并行，调用apply()直接阻塞，process执行结束后直接返回结果。<br>
@@ -741,7 +741,7 @@ print(res.get())</li>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">193</span>
+                    <span class="site-state-item-count">195</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -788,7 +788,9 @@ print(res.get())</li>
                     
                       
                     
-                    <span class="site-state-item-count">17</span>
+                      
+                    
+                    <span class="site-state-item-count">18</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -1319,7 +1321,13 @@ print(res.get())</li>
                     
                       
                     
-                    <span class="site-state-item-count">259</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">262</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
