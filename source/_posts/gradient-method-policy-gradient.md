@@ -414,10 +414,27 @@ end for
 
 ### TRPO
 详细介绍可以查看[trust region policy optimization](http://mxxhcmg.github.io/2019/09/08/gradient-method-trust-region-policy-optimization/)。
-为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。TRPO将policy的更新表示为两个policy的performance的一个公式，最后得到目标函数：
-$$J = \mathbb{E}\_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}$$
-$$s.t. \mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{}$$
+TRPO将policy的更新表示为两个policy的performance的一个公式：
+\begin{align\*}
+\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new} }\left[\sum\_{t=0}^{\infty} \gamma^t A^{\pi\_{old}} (s\_t,a\_t) \right] &=\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new}}\left[\sum\_{t=0}^{\infty} \gamma^t (Q^{\pi\_{old}} (s\_t,a\_t) - V^{\pi\_{old}} (s\_t))\right]  \\\\
+&=\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new}} \left[\sum\_{t=0}^{\infty} \gamma^t ( R\_{t+1} + \gamma V^{\pi\_{old}} (s\_{t+1}) -  V^{\pi\_{old}} (s\_t))\right]  \\\\
+&=\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new}} \left[\sum\_{t=0}^{\infty} \gamma^t R\_{t+1} + \sum\_{t=0}^{\infty} \gamma^t (\gamma V^{\pi\_{old}} (s\_{t+1}) -  V^{\pi\_{old}} (s\_t))\right]  \\\\
+&=\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new}} \left[\sum\_{t=0}^{\infty} \gamma^t R\_{t+1} \right]+ \mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new}} \left[\sum\_{t=0}^{\infty} \gamma^t (\gamma V^{\pi\_{old}} (s\_{t+1}) -  V^{\pi\_{old}} (s\_t))\right]  \\\\
+&=\eta(\pi\_{new}) + \mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new}} \left[ -  V^{\pi\_{old}} (s\_0))\right]  \\\\
+&=\eta(\pi\_{new}) - \mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new}} \left[ V^{\pi\_{old}} (s\_0))\right]  \\\\
+&=\eta(\pi\_{new}) - \eta(\pi\_{old})\\\\
+\end{align\*}
+我们的目标就是想要最大化
+$$\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new} }\left[\sum\_{t=0}^{\infty} \gamma^t A^{\pi\_{old}} (s\_t,a\_t) \right]$$
+用$\rho\_{\pi\_{old}}(s)$近似$\rho\_{\pi\_{new}}(s)$得到
+$$\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new} }\left[\sum\_{t=0}^{\infty} \gamma^t A^{\pi\_{old}} (s\_t,a\_t) \right]$$
 
+
+最后得到目标函数：
+$$J = \mathbb{E}\_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}$$
+
+为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。
+$$s.t. \mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{}$$
 
 ### PPO
 
