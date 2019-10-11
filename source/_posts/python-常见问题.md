@@ -141,6 +141,26 @@ ModuleNotFoundError: No module named 'conda'
 我的是在/home/username/.config/pip/pip.conf
 
 
+## 问题6-ImportError: /lib/x86_64-linux-gnu/libc.so.6: version GLIBC_2.28 not found
+
+### 问题描述
+安装roboschool之后，出现ImportError。报错如下
+``` txt
+ImportError: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /usr/local/lib/python3.6/dist-packages/roboschool/.libs/libQt5Core.so.5)
+```
+
+### 解决方案
+在roboschool上找到一个issue，说从1.0.49版本退回到1.0.48即可。我退回之后，又出现以下错误：
+``` txt
+ImportError: libpcre16.so.3: cannot open shared object file: No such file or directory
+```
+安装相应的库即可。完整的命令如下
+``` shell
+~$:pip install roboschool==1.0.48
+~$:sudo apt install libpcre3-dev
+```
+
+
 ## 参考文献
 1.https://www.cnblogs.com/timxgb/p/8905290.html
 2.https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects
