@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://mxxhcm.github.io/"/>
-  <updated>2019-10-11T05:45:39.267Z</updated>
+  <updated>2019-10-12T10:19:42.861Z</updated>
   <id>http://mxxhcm.github.io/</id>
   
   <author>
@@ -15,6 +15,39 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>python iteration-iterable and iterator</title>
+    <link href="http://mxxhcm.github.io/2019/10/12/python-iterator-iter/"/>
+    <id>http://mxxhcm.github.io/2019/10/12/python-iterator-iter/</id>
+    <published>2019-10-12T07:51:26.000Z</published>
+    <updated>2019-10-12T10:19:42.861Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="iteration">Iteration</h2><p>Iteration并不是一个具体的东西，它是一个抽象的名词，指的是一个接一个的取某个对象的每一个项。包含隐式的，显式的loop，即while，do, for等，这叫iteration。</p><h2 id="iterable和iterator">Iterable和iterator</h2><p>而在python中，有iterator和iterable。<br>一个iterable object是实现了__iter__方法的object或者定义了__getitem__方法。一个iteratable object是一个可以得到iterator的object，但是它自己并不一定是iterator object。<br>而iterator是一个实现了__next__和__iter__方法的object。<br><strong>iterable object不一定是iterator，iterator一定是iterable object。</strong><br><strong>可以使用for循环的都是ieterable object，比如str，list，但是它们不是itertor，可以使用iter()方法得到iterator</strong><br><strong>可以next()的都是iterator</strong></p><h2 id="iter和-iter">iter和__iter__</h2><p>所有实现了__iter__方法的object，都是iterable object，可以通过iter()方法产生iterator object。<br>具体示例</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">from collections import Iterator</span><br><span class="line">from collections import Iterable</span><br><span class="line"></span><br><span class="line">class Fibs:</span><br><span class="line">    def __init__(self, a, b):</span><br><span class="line">        self.a = a</span><br><span class="line">        self.b = b</span><br><span class="line"></span><br><span class="line">    def __iter__(self):</span><br><span class="line">        a = self.a</span><br><span class="line">        b = self.b</span><br><span class="line">        while True:</span><br><span class="line">            yield a</span><br><span class="line">            a, b = b, a + b</span><br><span class="line"></span><br><span class="line">real_fibs = Fibs(0,1)</span><br><span class="line"></span><br><span class="line">print(&quot;real_fibs is iterator? &quot;, isinstance(real_fibs, Iterator))</span><br><span class="line">print(&quot;real_fibs is iterable? &quot;, isinstance(real_fibs, Iterable))</span><br><span class="line">print(&quot;iter(real_fibs) is iterator? &quot;, isinstance(iter(real_fibs), Iterator))</span><br><span class="line">print(&quot;iter(real_fibs) is iterable? &quot;, isinstance(iter(real_fibs), Iterable))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">for idx, i in enumerate(real_fibs):</span><br><span class="line">    print(i)</span><br><span class="line">    if idx &gt; 10:</span><br><span class="line">        break</span><br></pre></td></tr></table></figure><p>其中出现了yield关键字。yield关键字的作用是每次迭代执行到该行代码时，就返回一个值，并且记住相应的位置，在下次迭代时继续从该行位置开始执行。</p><h2 id="next和-next">next和__next__</h2><p>代码示例</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Iterator</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, max_v=<span class="number">5</span>)</span>:</span></span><br><span class="line">        self.max_v = max_v</span><br><span class="line">        self.v = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__next__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># if self.v &lt;= self.nax_v</span></span><br><span class="line">        self.v += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> self.v</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    a = A()</span><br><span class="line">    <span class="keyword">for</span> idx, v <span class="keyword">in</span> enumerate(a):</span><br><span class="line">        print(idx, v)</span><br><span class="line">        <span class="keyword">if</span> (idx &gt;= <span class="number">10</span>):</span><br><span class="line">            <span class="keyword">break</span></span><br></pre></td></tr></table></figure><h2 id="参考文献">参考文献</h2><p>1.<a href="https://stackoverflow.com/questions/9884132/what-exactly-are-iterator-iterable-and-iteration" target="_blank" rel="noopener">https://stackoverflow.com/questions/9884132/what-exactly-are-iterator-iterable-and-iteration</a><br>2.<a href="https://stackoverflow.com/a/46411740/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/46411740/8939281</a><br>3.<a href="https://www.jianshu.com/p/f9b547874a14" target="_blank" rel="noopener">https://www.jianshu.com/p/f9b547874a14</a><br>4.<a href="https://www.jianshu.com/p/1b0686bc166d" target="_blank" rel="noopener">https://www.jianshu.com/p/1b0686bc166d</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;iteration&quot;&gt;Iteration&lt;/h2&gt;
+&lt;p&gt;Iteration并不是一个具体的东西，它是一个抽象的名词，指的是一个接一个的取某个对象的每一个项。包含隐式的，显式的loop，即while，do, for等，这叫iteration。&lt;/p&gt;
+&lt;h2 id
+      
+    
+    </summary>
+    
+      <category term="python" scheme="http://mxxhcm.github.io/categories/python/"/>
+    
+    
+      <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
+    
+      <category term="iteration" scheme="http://mxxhcm.github.io/tags/iteration/"/>
+    
+      <category term="iterable" scheme="http://mxxhcm.github.io/tags/iterable/"/>
+    
+      <category term="iterator" scheme="http://mxxhcm.github.io/tags/iterator/"/>
+    
+  </entry>
   
   <entry>
     <title>gym wrappers and monitors</title>
@@ -700,9 +733,9 @@ $$f’(x) = lim_{\Delta x\rightarrow 0}\frac{\Delta y}{\Delta x} = lim_{\Delta x
     
       <category term="强化学习" scheme="http://mxxhcm.github.io/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/"/>
     
-      <category term="reinforcement learning" scheme="http://mxxhcm.github.io/tags/reinforcement-learning/"/>
-    
       <category term="gradient method" scheme="http://mxxhcm.github.io/tags/gradient-method/"/>
+    
+      <category term="reinforcement learning" scheme="http://mxxhcm.github.io/tags/reinforcement-learning/"/>
     
       <category term="trust region policy optimization" scheme="http://mxxhcm.github.io/tags/trust-region-policy-optimization/"/>
     
@@ -4832,13 +4865,13 @@ In-place的方法是高斯赛德尔方法。就是用来解方程组的
       <category term="强化学习" scheme="http://mxxhcm.github.io/categories/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/"/>
     
     
-      <category term="机器学习" scheme="http://mxxhcm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
-    
       <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
     
       <category term="tensorflow" scheme="http://mxxhcm.github.io/tags/tensorflow/"/>
     
       <category term="DQN" scheme="http://mxxhcm.github.io/tags/DQN/"/>
+    
+      <category term="机器学习" scheme="http://mxxhcm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
       <category term="强化学习" scheme="http://mxxhcm.github.io/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/"/>
     
@@ -4867,13 +4900,13 @@ In-place的方法是高斯赛德尔方法。就是用来解方程组的
       <category term="强化学习" scheme="http://mxxhcm.github.io/categories/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/"/>
     
     
-      <category term="机器学习" scheme="http://mxxhcm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
-    
       <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
     
       <category term="tensorflow" scheme="http://mxxhcm.github.io/tags/tensorflow/"/>
     
       <category term="DQN" scheme="http://mxxhcm.github.io/tags/DQN/"/>
+    
+      <category term="机器学习" scheme="http://mxxhcm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
       <category term="强化学习" scheme="http://mxxhcm.github.io/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/"/>
     
@@ -5312,11 +5345,11 @@ $$f^{’}(x_0) = {\lim_{\Delta x \to 0}
       <category term="tensorflow" scheme="http://mxxhcm.github.io/categories/tensorflow/"/>
     
     
-      <category term="机器学习" scheme="http://mxxhcm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
-    
       <category term="python" scheme="http://mxxhcm.github.io/tags/python/"/>
     
       <category term="tensorflow" scheme="http://mxxhcm.github.io/tags/tensorflow/"/>
+    
+      <category term="机器学习" scheme="http://mxxhcm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
       <category term="深度学习" scheme="http://mxxhcm.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/"/>
     
@@ -5607,13 +5640,13 @@ $$f^{’}(x_0) = {\lim_{\Delta x \to 0}
     
       <category term="机器学习" scheme="http://mxxhcm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
-      <category term="监督学习" scheme="http://mxxhcm.github.io/tags/%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0/"/>
-    
       <category term="人工智能" scheme="http://mxxhcm.github.io/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/"/>
     
       <category term="概率图模型" scheme="http://mxxhcm.github.io/tags/%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B/"/>
     
       <category term="贝叶斯网络" scheme="http://mxxhcm.github.io/tags/%E8%B4%9D%E5%8F%B6%E6%96%AF%E7%BD%91%E7%BB%9C/"/>
+    
+      <category term="监督学习" scheme="http://mxxhcm.github.io/tags/%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0/"/>
     
       <category term="模式识别" scheme="http://mxxhcm.github.io/tags/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/"/>
     
