@@ -24,13 +24,13 @@ Breakout(Env)
 - overwrite reset(self)
 
 Wrapper(Env)
-- \_\_init\_\_(self, env): self.env = env # instance of Breakout
-- overwrite step(self, action): self.env.step(action) #实际上调用的是传入参数env的step函数
-- overwrite reset(self) #实际上调用的是传入参数env的reset函数
+- \_\_init\_\_(self, env): self.env = env # instance of gym environment
+- overwrite step(self, action): self.env.step(action) # 调用的是传入参数env的step函数
+- overwrite reset(self) # 调用的是传入参数env的reset函数
 
 ActionWrapper(Wrapper)
-- overwrite step(self, action): self.env.step(action) #调用的是self.env的step函数
-- overwrite reset(self) #实际上调用的是Breakout的step函数
+- overwrite step(self, action): self.env.step(action) # 调用的是self.env的step函数
+- overwrite reset(self) # 调用的是self.env的step函数
 - abstract action(self, action)
 - abstract reverse_action(self, action)
 
