@@ -24,7 +24,7 @@ Breakout(Env)
 -overwrite reset(self)
 
 Wrapper(Env)
--__init__(self, env): self.env = env # instance of Breakout
+-\_\_init\_\_(self, env): self.env = env # instance of Breakout
 -overwrite step(self, action): self.env.step(action) #实际上调用的是Breakout的step函数
 -overwrite reset(self)
 
