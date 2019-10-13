@@ -16,26 +16,26 @@ Wrapper继承自Env class，构造函数只接收一个参数，要被"wrapped"�
 ![gym_wrapper](gym_wrapper.png)
 Env是一个abstract class，具体的environments如Breakout继承了Env class，实现了step()，reset()等abstract function。Wrapper继承了env class，对step(), reset()等方法进行了重载。ActionWrapper对Wrapper进行了重载，对step和reset进行了重载。
 Env 
--abstract step(self, action)
--abstract reset(self)
+- abstract step(self, action)
+- abstract reset(self)
 
 Breakout(Env)
--overwrite step(self, action)
--overwrite reset(self)
+- overwrite step(self, action)
+- overwrite reset(self)
 
 Wrapper(Env)
--\_\_init\_\_(self, env): self.env = env # instance of Breakout
--overwrite step(self, action): self.env.step(action) #实际上调用的是Breakout的step函数
--overwrite reset(self)
+- \_\_init\_\_(self, env): self.env = env # instance of Breakout
+- overwrite step(self, action): self.env.step(action) #实际上调用的是传入参数env的step函数
+- overwrite reset(self) #实际上调用的是传入参数env的reset函数
 
-ActionWrapper(Env)
--overwrite step(self, action): self.env.step(action) #实际上调用的是Breakout的step函数
--overwrite step(self, action): self.env.step(self.action(action))
--overwrite reset(self)
--abstract action(self, action)
+ActionWrapper(Wrapper)
+- overwrite step(self, action): self.env.step(action) #调用的是self.env的step函数
+- overwrite reset(self) #实际上调用的是Breakout的step函数
+- abstract action(self, action)
+- abstract reverse_action(self, action)
 
 MyownActionWrapper(ActionWrapper)
--overwrite action(self, action)
+- overwrite action(self, action)
 
 ## Wrapper示例
 ``` python
