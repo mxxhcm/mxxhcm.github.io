@@ -196,8 +196,8 @@ $\qquad$**end**
 $$score\_{normalized} = \frac{score\_{agent}- score\_{random}}{score\_{human}-score\_{random}}\tag{8}$$
 分母是human和random之差，对应$100%$。
 
-## Prioritized DQN(PER)
 
+## Prioritized DQN(PER)
 ### contributions
 本文提出一种了proritizing experience的框架，在训练过程中多次使用重要的transtions replay进行更新，让训练变得的更有效率。
 使用TD-errors作为prioritization mechanism，给出了两种protitization计算方式，提出了一种stochastic prioritization以及importance sampling方法。
