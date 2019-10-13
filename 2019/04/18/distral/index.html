@@ -111,7 +111,7 @@
 <meta property="og:image" content="http://mxxhcm.github.io/2019/04/18/distral/figure1.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/04/18/distral/figure2.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/04/18/distral/table.png">
-<meta property="og:updated_time" content="2019-10-12T11:21:08.682Z">
+<meta property="og:updated_time" content="2019-10-13T09:10:21.267Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Distral Robust Multitask Reinforcement Learning">
 <meta name="twitter:description" content="这篇文章给出了多任务学习和迁移学习的一个框架。 摘要 multitask learning在不同任务之间共享网络参数，在不同的任务之间迁移可以提高效率。但是这种方法有几个缺点：  不同任务的gradient可能相互干扰，让学习变得不稳定，甚至很低效。 另一个问题是不同任务的reward scheme不同，可能会让其中的某一个reward占主导地位。  本文提出了Distral方法，并不是使用共享参">
@@ -392,7 +392,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-12 19:21:08" itemprop="dateModified" datetime="2019-10-12T19:21:08+08:00">2019-10-12</time>
+                <time title="修改时间：2019-10-13 17:10:21" itemprop="dateModified" datetime="2019-10-13T17:10:21+08:00">2019-10-13</time>
               
             
           </span>
@@ -462,7 +462,7 @@
 </ul>
 <p>本文提出了Distral方法，并不是使用共享参数，而是使用一个提炼的policy去学习不同任务的公共行为。每一个worker解决它自己的任务，但是需要加一个限制条件，每一个单独的策略需要离提炼出的共享策略足够近，而提炼的共享策略需要在所有单独策略的质心上，通过优化一个联合的目标函数，这两个过程都可以实现。</p>
 <h2 id="introduction">Introduction</h2>
-<p>由于DRL需要的训练时间和训练数据很多，现在的DRL问题逐渐向单独的智能体（同时或者连续的）解决多个相关问题移动。由于巨大的计算开销，这个方向的研究需要设计出非常鲁棒的，与具体任务无关的算法。直观上来说，因为不同的相关任务有共同的结构，所以我们觉得它们一块应该能够促进学习，然而事实上，在实践中我们并不能总是得到这个结论。所以，multitask和transfer learning可以需要解决一个问题，在多个任务上训练会对单个任务的训练产生负面影响。所以就需要使用一些方法来结局这个问题。事实上，其他任务的梯度可能会被当做做一年，干扰学习，甚至极端情况下，其中一个任务可能会主导其他的任务。<br>
+<p>由于DRL需要的训练时间和训练数据很多，现在的DRL问题逐渐向单个智能体（同时或者连续的）解决多个相关问题移动。由于巨大的计算开销，这个方向的研究需要设计出非常鲁棒的，与具体任务无关的算法。直观上来说，因为不同的相关任务有共同的结构，所以我们觉得它们一块应该能够促进学习，然而事实上，在实践中我们并不能总是得到这个结论。所以，multitask和transfer learning可以需要解决一个问题，在多个任务上训练会对单个任务的训练产生负面影响。所以就需要使用一些方法来结局这个问题。事实上，其他任务的梯度可能会被当做做一年，干扰学习，甚至极端情况下，其中一个任务可能会主导其他的任务。<br>
 在这篇论文中，作者提出了一种multitask和transfer RL算法，给出一些算法实例，它能够高效的跨任务共享behaviour structure。除了在grid world领域的一些指导性illustration(例证)，作者还在DeepMind Lab $3D$环境中详细分析了最终的算法和A3C baseline的比较。作者验证了Distral算法学习的很快，而且能够达到很好的收敛性能，而且对超参数很鲁棒，比multitask A3C baselines要稳定的多。</p>
 <h2 id="distral-distill-and-transfer-learning">Distral: Distill and Transfer Learning</h2>
 <p>作者给出了一个同时训练多个任务的框架，叫做Distral。如下图所示，作者给出了从四个任务中提取shared policy的一个例子。该方法用一个shared policy去提取task-specific的polices之间的common behaviour和representation，然后又用这个shared policy使用KL散度去正则化task-specific polices。这里使用KL散度的作用相当于shaping reward，鼓励exploration。最后，这些相关任务中的common knowledge都被提炼到shared policy中去了，然后可以迁移到其他任务中去。<br>
