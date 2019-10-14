@@ -327,6 +327,1145 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/06/AI-chapter-14-Probabilistic-reasoning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/20/index.html">AI chapter 14 Probabilistic reasoning</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-06 14:32:16" itemprop="dateCreated datePublished" datetime="2019-01-06T14:32:16+08:00">2019-01-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-30 13:42:18" itemprop="dateModified" datetime="2019-08-30T13:42:18+08:00">2019-08-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>在这里加一些自己的总结，这一章主要讲的是贝叶斯网络，首先介绍了贝叶斯网络的定义，是一个有向无环图，节点代表随机变量，边代表因果关系。这里给出了贝叶斯公式的两个意义，一个是数值意义，用贝叶斯网络表示全概率分布，另一个是拓扑意义，给定某个节点的父节点，这个节点条件独立于所有它的非后裔节点，或者给定某个节点的马尔科夫毯，这个节点条件独立于所有其他节点。接下来讲了条件独立的高效表示，噪音或模型表示离散型父节点和离散型子节点之间的关系，用参数化模型表示连续型父节点和连续型子节点之间的关系，用probit模型或者logit模型表示连续型父节点和离散型子节点之间的关系。接下来就介绍了贝叶斯精确推理计算后验分布的集中方法，一种是枚举推理，一种是消元法。因为精确推理的复杂度太高了，没有实际应用价值，所以就给出了一些估计推理的方法，直接采样，拒绝采样，以及可能性加权，还有另一类采样方法，蒙特卡洛算法，主要介绍了吉布森采样，大概就是这些。后面的两个小节没有看。</p>
+<p>第$13$章讲的是概率论的基础知识并且强调了在概率表示中独立(independence)和条件独立(conditional independence)之间的关系。本章引入了一个系统的方式–贝叶斯网络去表现独立和条件独立之间的关系。概括的来说，本章的内容可以分为以下五部分：</p>
+<ol>
+<li>首先定义了贝叶斯网络的语法(syntax)和语义(semantics)，并且展示了如何用贝叶斯网络表示不确定知识。</li>
+<li>接下来介绍了概率推理在最坏的情况下是很难计算的(computionally intratable)，但是在很多情况下可以高效的完成。</li>
+<li>介绍了一系列在精确推理(exact inference)不可行时可以采用的估计推理算法(approximate inference algorithms)。</li>
+<li>介绍了一些在概率论中可以被应用到带对象和关系的世界的方法，即与命题，表示相对的一阶模型。</li>
+<li>最后，介绍了一些其它不确定性推理的方法。</li>
+</ol>
+<h2 id="不确定域的知识表示-representing-knowledge-in-an-uncertain-domain">不确定域的知识表示(Representing knowledge in an uncertain domain)</h2>
+<p>我们可以根据联合概率分布(full joint probability distribution)算出任何想要的概率值，但是随着随机变量个数的增加，联合概率分布可能会变得特别大。此外，一个一个的指定可能世界中的概率是不可行的。</p>
+<h3 id="贝叶斯网络的定义">贝叶斯网络的定义</h3>
+<p>如果在联合概率中引入独立和条件独立，将会显著的减少定义联合概率分布所需要的概率。所以这节就介绍了贝叶斯网络来表示变量之间的依赖关系。本质上贝叶斯网络可以表示任何联合概率分布，而且在很多情况下是非常精确地表示。一个贝叶斯网络是一个有向图，图中的节点包含量化后的概率信息。具体的说明如下：</p>
+<ol>
+<li>每一个节点对应一个随机变量，这个随机变量可以是离散的也可以是连续的。</li>
+<li>有向边或者箭头连接一对节点。如果箭头是从节点$X$到节点$Y$，那么节点$X$称为节点$Y$的父节点。图中不能有环，因此贝叶斯网络是一个有向无环图(directed acyclic graph,DAG)。</li>
+<li>每一个节点$X_i$有一个条件概率分布$P(x_i|Parents(X_i))$量化(quantifiy)父节点对其影响。</li>
+</ol>
+<p>网络的拓扑，即节点和边的集合，指定了条件概率分布之间的关系。箭头的直观意义是节点$X$对节点$Y$有直接的影响，$Y$发生的原因是其父节点的影响。通常对于一个领域(domain)的专家来说，指出该域受哪些因素的直接影响要比直接给出它的概率值简单的多。一旦贝叶斯网络的拓扑结构定了，给出一个变量的父节点，我们仅仅需要给出每个节点的条件概率分布。我们能看出，拓扑和条件概率的组合能计算出所有变量的联合概率分布。</p>
+<h3 id="贝叶斯网络的示例">贝叶斯网络的示例</h3>
+<h4 id="牙疼和天气">牙疼和天气</h4>
+<p>给定一组随机变量牙疼(Toothache)，蛀牙(Cavity)，拔牙(Catch)和天气(Weather)。Weather是独立于另外三个随机变量的，此外，给定Cavity，Catch和Toothache是条件独立的，即给定Cavity，Catch和Toothache是相互不受影响的，如下图所示。正式的：给定Cavity，Toochache和Catch是条件独立的，图中Toothache和Catch之间缺失的边体现出了条件独立。直观上，网络表现出Cavity是Toothache和Catch发生的直接原因，然而在Toothache和Catch之间没有直接的因果关系。<br>
+<img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.1"></p>
+<h4 id="警报和打电话">警报和打电话</h4>
+<p>我家里有一个新安装的防盗警报(burglar alarm)，这个警报对于小偷的检测是相当可靠的，但是也会对偶然发生的微小的地震响应。我有两个邻居(Mary和John)，他们听到警报后会打电话给我。John有时会把电话铃和警报弄混了，也会打电话。Mary听音乐很大声，经常会错过警报。现在给出John或者Mary谁是否打电话，估计警报响了的概率。<br>
+<img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.2"><br>
+该例子的贝叶斯网络如上图所示。该网络体现了小偷和地震两个因素会直接影响警报响的概率，但是John和Mary会不会打电话只取决于警报有没有响。贝叶斯网络展示出了我们的假设，即John和Mary不直接观察小偷有没有来，也不直接观察小的地震是否，也不受之前是否打过电话的影响。上图中的条件概率分布以一个条件概率分布表(conditional probability table,CPT)的形式展现了出来。这个表适合离散型的随机变量，但是不适合连续性随机变量。没有父节点的节点只有一行，用来表示随机变量的可能取值的先验概率(prior probabilities)。<br>
+注意到这个网络中没有节点对应Mary听音乐很大时，也没有节点对应John把电话铃声当成了警报。事实上这些因素都被包含在和边Alarm到JohnCalls和MaryCall相关的不确定性中了，概率包含了无数种情况可能让警报失灵（停电，老鼠咬坏了，等等）或者John和Mary没有打电话的原因（吃饭去了，午睡了，休假了等等），这些不确定性都包含在了概率中了。</p>
+<h2 id="贝叶斯网络的意义-the-semantics-of-bayesian-networks">贝叶斯网络的意义(the semantics of bayesian networks)</h2>
+<p>上一节主要讲的是什么是贝叶斯网络，但是没有讲它的意义。本节主要给出两种方式可以理解贝叶斯网络的意义。第一个是一种数值化的意义，即&quot;numerical semantics&quot;，把它当成联合概率分布的一种表示形式。第二个是一种拓扑的意义，即&quot;topological semantics&quot;，将它看成条件独立的一种编码方式。事实上，这两种方式是等价的，但是第一种方式更有助于理解如何构建贝叶斯网络，第二种方式更有助于设计推理过程。</p>
+<h3 id="贝叶斯网络表示联合分布-representing-the-full-joint-distribution">贝叶斯网络表示联合分布(Representing the full joint distribution)</h3>
+<h4 id="定义">定义</h4>
+<p>一个贝叶斯网络是一个有向无环图，并且每个节点都有一个数值参数。数值方式给出这个网络的意义是，它代表了所有变量的联合概率分布。之前说过节点上的值代表的是条件概率分布$P(X_i|Parents(X_i)$，这是对的，但是当赋予整个网络意义以后，这里我们认为它们只是一些数字$\theta(X_i|Parents(X_i)$。<br>
+联合概率中的一个具体项(entry)表示的是每一个随机变量取某个值的联合概率，如$P(X_1=x_1 \wedge \cdots\wedge X_n = x_n)$，缩写为$P(x_1,\cdots,x_n)$。这个项的值可以通过以下公式进行计算：<br>
+$$P(x_1,\cdots,x_n) = \prod_{i=1}^n \theta(x_i|parents(X_i)),$$<br>
+其中$parents(X_i)$表示节点$X_i$在$x_1,\cdots,x_n$中的父节点。因此，联合概率分布中的每一项都可以用贝叶斯网络中某些条件概率的乘积表示。从定义中可以看出，很容易证明$\theta(x_i|parents(X_i))$就是条件概率$P(x_i|parents(X_i))$，因此，我们可以把上式写成：<br>
+$$P(x_1,\cdots,x_n) = \prod_{i=1}^n P(x_i|parents(X_i)),$$<br>
+换句话说：根据上上个式子定义的贝叶斯网络的意义，我们之前叫的条件概率表真的是条件概率表。（这句话。。。）</p>
+<h4 id="示例">示例</h4>
+<p>我们可以计算出警报响了，但是没有小偷或者地震发生，John和Mary都打电话了的概率。即计算联合分布$P(j,m,a,\neg b, \neg e)$（使用小写字母表示变量的值）：<br>
+\begin{align*}<br>
+P(j,m,a,\neg b, \neg e) &amp;=P(j|a)P(m|a)P(a|\neg b \wedge \neg e)P(\neg b)P(\neg e)\<br>
+&amp;=0.90\times 0.70\times 0.001 \times 0.999 \times 0.998\<br>
+&amp;=0.000628<br>
+\end{align*}</p>
+<h4 id="构建贝叶斯网络-constructing-bayesian-networks">构建贝叶斯网络(Constructing Bayesian networks)</h4>
+<p>上面给出了贝叶斯网络的一种意义，接下来给出如何根据这种意义去构建一个贝叶斯网络。确定的条件独立可以用来指导网络拓扑的构建。首先，我们把联合概率的项用乘法公式写成条件概率表示：<br>
+$$P(x_1,\cdots,x_n) = P(x_n|x_{n-1},\cdots,x_1)P(x_{n-1},\cdots,x_1)$$<br>
+接下来重复这个过程，将联合概率(conjunctive probability)分解成一个条件概率和一个更小的联合概率。最后得到下式：<br>
+\begin{align*}<br>
+P(x_1,\cdots,x_n) &amp;= P(x_n|x_{n-1},\cdots,x_1)P(x_{n-1}|,x_{n-2}\cdots,x_1)\cdots P(x_2|x_1)P(x_1)\<br>
+&amp;= \prod_{i=1}^nP(x_i|x_{i-1},\cdots,x_1)<br>
+\end{align*}<br>
+这个公式被称为链式法则，它对于任意的随机变量集都成立。对于贝叶斯网络中的每一个变量$X_i$，如果给定$Parents(X_i) \subset {X_{i-1},\cdots,X_1}$（每一个节点的序号应该和图结构的偏序结构一致），那么有：<br>
+$$P(x_1,\cdots,x_n) = \prod_{i=1}^n P(x_i|parents(X_i)),$$<br>
+将它和上式对比，得出：<br>
+$$P(X_i|X_{i-1},\cdots,X_1) = P(X_i|Parents(X_i).$$<br>
+这个公式成立的条件是给定每个节点的父节点，它条件独立于所有它的非父前置节点。这里给出一个生成贝叶斯网络的方式：</p>
+<ol>
+<li>节点：首先，确定需要对领域建模所需要的随机变量集合。对它们进行排序：${X_1,\cdots,X_n}$，任意顺序都行，但是如果随机变量的因(causes)在果(effects)之前，最终的结果会更加紧凑。</li>
+<li>边：从$i = 1$到$n$，</li>
+</ol>
+<ul>
+<li>从$X_1,\cdots,X_{i-1}$中选出$X_i$的最小父节点集合。</li>
+<li>对于每一个父节点，插入一条从父节点到$X_i$的边。</li>
+<li>写下条件概率表，$P(X_i| Parents(X_i))$。</li>
+</ul>
+<p>直观上，$X_i$的父节点应该包含$X_1,\cdots,X_{i-1}$中所有直接影响$X_i$的节点。因为每一个节点都只和它前面的节点相连，这就保证了每个网络都是无环的(acyclic)。此外，贝叶斯网络还不包含冗余的概率值，如果有冗余值，就会产生不一致：不可能生成一个违反概率论公理的贝叶斯网络。</p>
+<h4 id="紧凑性和节点顺序-compactness-and-node-ordering">紧凑性和节点顺序(Compactness and node ordering)</h4>
+<h5 id="紧凑性-compactness">紧凑性(compactness)</h5>
+<p>因为不包含冗余信息，贝叶斯网络会比联合概率分布更加紧凑，这让它能够处理拥有很多变量的任务。贝叶斯网络的紧凑性是稀疏(sparse)系统或者局部结构化(local structured)系统普遍拥有的稀疏性的一个例子。在一个局部结构化系统中，每一个子部件仅仅和有限数量的其他部件进行交互，而不用管整个系统。局部结构化的复杂度通常是线性增加的而不是指数增加的。在贝叶斯网络中，一个随机变量往往最多受$k$个其他随机变量直接影响，这里的$k$是一个常数。为了简化问题，我们假设有$n$个布尔变量，指定一个条件概率表所需要的数字最多是$2<sup>k$个，整个网络则需要$n2</sup>k$个值；作为对比，联合概率分布需要$2^n$个值。举个例子，如果我们有$n=30$个节点，每一个节点至多有五个父节点(k=5)，那么贝叶斯网络只需要$960$个值，而联合概率分布需要超过十亿个值。<br>
+但是在某些领域，可能每一个节点都会被所有其他节点直接影响，这时候网络就成了全连接的网络(fully connected)，它和联合概率分布需要同样多的信息。有时候，增加一条边，也就是一个依赖关系，可能会对结果产生影响，但是如果这个依赖很弱(tenuous)，添加这条边的花费比获得的收益还要大，那么就没有必要加这条边了。比如，警报的那个例子，如果John和Mary感受到了地震，他们认为警报是地震引起的，所以就不打电话了。是否添加Earthquake到JohnCalls和MaryCalls这两条边取决于额外的花费和得到更高的警报率之间的关系。</p>
+<h5 id="节点顺序-node-ordering">节点顺序(node ordering)</h5>
+<p>即使在一个局部结构化的领域，只有当我们选择好的节点顺序的时候，我们才能得到一个紧凑的贝叶斯网络。考虑警报的例子，我们给出下图：<br>
+<img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.3"><br>
+Figure 14.2和Figure 14.3两张图中的三个贝叶斯网络表达的都是同一个联合分布，但是Figure 14.3中的两张图没有表现出来条件独立，尤其是Figure 14.3(b)中的贝叶斯网络，它需要用和联合分布差不多相同个数的值才能表现出来。可以看出来，节点的顺序会影响紧凑性。</p>
+<h3 id="贝叶斯网络中的条件独立-conditional-independence-relations-in-bayesion-networks">贝叶斯网络中的条件独立(Conditional independence relations in Bayesion networks)</h3>
+<p>贝叶斯网络的一个数值意义(“numerical” semantics)是用来表示联合概率分布。根据这个意义，给定每个节点的父节点，使得每一个节点条件独立于它的父节点之外的节点，我们能构建一个贝叶斯网络。此外我们也可以从用图结构编码整个条件独立关系的拓扑意义出发，然后推导出贝叶斯网络的数值意义。拓扑语义说的是给定每个节点的父节点，则该节点条件独立于所有它的非后裔(non-descendants)节点。举例来说，Figure 14.2的警报例子中，给定alarm后，JohnCalls独立于Burglary,Eqrthquake和MaryCalls。如图Figuree 14.4(a)中所示。从条件独立断言(assertions)和网络参数$\theta(x_i|parents(X_i))$就是条件概率$P(x_i|parents(X_i))$的解释中，联合概率可以计算出来。在这种情况下，数值意义和拓扑语义是相同的。<br>
+另一个拓扑意义的重要属性是：给定某个节点的马尔科夫毯(Markov blanket)，即节点的父节点，子节点，子节点的父节点，这个节点条件独立于所有其他的节点。如图Figure 14.4(b)所示。</p>
+<h2 id="条件分布的高效表示-efficient-representation-of-conditional-distributions">条件分布的高效表示(Efficient representation of conditional distributions)</h2>
+<p>即使每个节点有$k$个父节点，一个节点的CPT还需要$O(2^k)$，最坏的情况下父节点和子节点是任意连接的。一般情况下，这种关系可以用符合一些标准模式(standard pattern)的规范分布(canonical distribution)表示，这样子就可以仅仅提供分布的一些参数就能生成整个CPT。<br>
+最简单的例子是确定性节点(deterministic node)。一个确定性节点的值被它的父节点的值精确确定。这个确定性关系可以是逻辑关系：父节点是加拿大，美国和墨西哥，子节点是北美洲，它们之间的关系是子节点是父节点所在的洲。这个关系也可以是数值型的，一条河的流量是流入它的流量减去流出它的流量。<br>
+不确定关系通常称为噪音逻辑关系(noisy logical relationships)。一个例子是噪音或(noisy-OR)，它是逻辑或的推广。在命题逻辑中，当且仅当感冒(Cold)，流感(Flu)或者疟疾(Malaria)是真的时候，发烧(Fever)才是真的。噪音或模型允许不确定性，即每一个父节点都有可能让子节点为真，可能父节点和子节点之间的关系被抑制了(inhibited)，可能一个人感冒了，但是没有表现出发烧。这个模型做了两个假设。第一个，它假设所有的原因都被列了出来，有时候会加一个节点(leak node)包含所有的其他原因(miscellaneous causes)。第二个，抑制每一个父节点和子节点之间的原因是独立的，比如抑制疟疾产生发烧和抑制感冒产生发烧的原因是独立的。所以，当且仅当所有的父节点都是假的时候，发烧才一定不会发生。给出以下的假设：<br>
+$q_{cold} = P(\neg fever| cold,\neg flu, \neg malaria) = 0.6$<br>
+$q_{flu} = P(\neg fever|\neg cold, flu, \neg malaria) = 0.2$<br>
+$q_{malaria} = P(\neg fever|\neg cold,\neg flu, malaria) = 0.1$<br>
+根据这些信息，以及噪音或的假设，整个CPT可以被创建。一般的规则是：<br>
+$P(x_i|parents(X_i)) = 1 - \prod_{j:X_j=ture} q_j.$<br>
+最后生成如下的表：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Cold</th>
+<th style="text-align:center">Flu</th>
+<th style="text-align:center">Malaria</th>
+<th style="text-align:center">P(Fever)</th>
+<th style="text-align:center">P($\neg$Fever)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">F</td>
+<td style="text-align:center">F</td>
+<td style="text-align:center">F</td>
+<td style="text-align:center">$0.0$</td>
+<td style="text-align:center">$1.0$</td>
+</tr>
+<tr>
+<td style="text-align:center">F</td>
+<td style="text-align:center">F</td>
+<td style="text-align:center">T</td>
+<td style="text-align:center">$0.9$</td>
+<td style="text-align:center">$0.1$</td>
+</tr>
+<tr>
+<td style="text-align:center">F</td>
+<td style="text-align:center">T</td>
+<td style="text-align:center">F</td>
+<td style="text-align:center">$0.8$</td>
+<td style="text-align:center">$0.2$</td>
+</tr>
+<tr>
+<td style="text-align:center">F</td>
+<td style="text-align:center">T</td>
+<td style="text-align:center">T</td>
+<td style="text-align:center">$0.98$</td>
+<td style="text-align:center">$0.1\times 0.2=0.02$</td>
+</tr>
+<tr>
+<td style="text-align:center">T</td>
+<td style="text-align:center">F</td>
+<td style="text-align:center">F</td>
+<td style="text-align:center">$0.4$</td>
+<td style="text-align:center">$0.6$</td>
+</tr>
+<tr>
+<td style="text-align:center">T</td>
+<td style="text-align:center">F</td>
+<td style="text-align:center">T</td>
+<td style="text-align:center">$0.94$</td>
+<td style="text-align:center">$0.6\times 0.1 = 0.06 $</td>
+</tr>
+<tr>
+<td style="text-align:center">T</td>
+<td style="text-align:center">T</td>
+<td style="text-align:center">F</td>
+<td style="text-align:center">$0.88$</td>
+<td style="text-align:center">$0.5\times 0.2 = 0.12 $</td>
+</tr>
+<tr>
+<td style="text-align:center">T</td>
+<td style="text-align:center">T</td>
+<td style="text-align:center">T</td>
+<td style="text-align:center">$0.988$</td>
+<td style="text-align:center">$0.6\times 0.2\times 0.1 = 0.012$</td>
+</tr>
+</tbody>
+</table>
+<p>对于这个表，感觉自己一直有点转不过来圈。就是有症状不一定发烧，也可能不发烧，没有症状一定不发烧。什么时候不发烧呢，只有某个症状表现出来不发烧，如果多个症状的话，直接把有症状表现但不发烧的概率相乘。<br>
+一般情况下，噪声逻辑模型中，有$k$个父节点的变量可以用$O(k)$个参数表示而不是$O(2^k)$去表示整个CPT。这让访问(assessment)和学习(learning)更容易了。</p>
+<h3 id="连续性随机变量的贝叶斯网络-bayesian-nets-with-continuous-variables">连续性随机变量的贝叶斯网络(Bayesian nets with continuous variables)</h3>
+<h4 id="常用方法">常用方法</h4>
+<p>现实中很多问题都是连续型的随机变量，它们有无数可能的取值，所以显式的指定每一个条件概率行不通。常用的总共有三种方法，第一个可能的方法是离散(discretization)连续型随机变量，将随机变量的可能取值划分成固定的区间。比如，温度可以分成，小于$0$度的，$0$度到$100$度之间的，大于$100$度的。离散有时候是可行的，但是通常会造成精度的缺失和非常大的CPT。第二个方法也是最常用的方法是通过指定标准概率密度函数的参数，比如指定高斯分布的均值和方差。第三种方法是非参数化(nonparametric)表示，用隐式的距离去定义条件分布。</p>
+<h4 id="示例-v2">示例</h4>
+<p>一个同时拥有离散型和随机性变量的网络被称为混合贝叶斯网络(hybrid Bayesian network)。为了创建这样一个网络，我们需要两种新的分布。一种是给定离散或者连续的父节点，子节点是连续型随机变量的条件概率，另一种是给定连续的父节点，子节点是离散型随机变量的条件概率。</p>
+<h5 id="连续型子节点">连续型子节点</h5>
+<p><img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.5"><br>
+考虑Figure 14.5的例子，一个顾客买了一些水果，买水果的量取决取水果的价格(Cost)，水果的价格取决于收成(Harvest)和政府是否有补助(Subsidy)。其中，Cost是连续型随机变量，他有连续的父节点Harvest和离散的父节点Subsidy，Buys是离散的，有一个连续型的父节点Cost。<br>
+对于变量Cost，我们需要指定条件概率$P(Cost|Subsidy,Harvest)$。离散的父节点通过枚举(enumeration)来表示，指定$P(Cost|subsidy,Harvest)$和$P(Cost|\neg subsidy,Harvest)$。为了表示Harvest，可以指定一个分布来表示变量Cost的值$c$取决于连续性随机变量Harvest的值$h$。换句话说，将$c$看做一个$h$的函数，然后给出这个函数的参数即可，最常用的是线性高斯分布。比如这里，我们可以用两个不同参数的高斯分布来表示有补贴和没补贴时Harvest对Cost的影响：<br>
+$$P(c|h, subsidy) = N(a_th+b_t,\sigma_t^2)© = \frac{1}{\sigma_t \sqrt{2\pi} }e^{- \frac{1}{2}(\frac{c-(a_th+b_t)}{\sigma_t})^2}$$<br>
+$$P(c|h,\neg subsidy) = N(a_fh+b_t,\sigma_f^2)© = \frac{1}{\sigma_f \sqrt{2\pi} }e^{- \frac{1}{2}(\frac{c-(a_fh+b_f)}{\sigma_f})^2}$$<br>
+所以，只需要给出$a_t,b_t,\sigma_t,a_f,b_f,\sigma_f$这几个参数就行了，Figure 14.6(a)和(b)就是一个示例图。注意到坡度(slope)是负的，因为随着供应的增加，cost在下降，当然，这个线性模型只有在harvest在很小的一个区间内才成立，而且cost有可能为负。假设有补贴和没补贴的两种可能性相等，是$0.5$，那么就有了Figure 14.6©的图$P(c|h)$。</p>
+<h5 id="连续型父节点">连续型父节点</h5>
+<p>当离散型随机变量有连续型父节点时，如Figure 14.5中的Buys节点。我们有一个合理的假设是：当cost高的时候，不买，cost底的时候，买，在中间区域买不买是一个变化很平滑的概率。我们可以把条件分布当成一个软阈值函数(soft-threshold)，一种方式是用标准正态分布的积分(intergral)。<br>
+$$\Phi(x) = \int_{-\infty}^{x} N(0,1)(x)dx$$<br>
+给定Cost买的概率可能是:<br>
+$$P(buys|Cost = c) = \Phi((-x+\nu)/ \sigma))$$<br>
+其中cost的阈值在$\nu$附近，阈值的区域和正比于$\sigma$，当价格升高的时候，买的概率会下降。这个probit distribution模型如Figure 14.7(a)所示。<br>
+另一个可选择的模型是logit distribution，使用logistic function $1/(1+e^{-x})$来生成一个软阈值：<br>
+$$P(buys|Cost = c) = \frac{1}{1+exp(-2\frac{-c+u}{\sigma})}.$$<br>
+如Figure 14.7(b)所示，这两个分布很像，但是logit有更长的尾巴。probit更符合实际情况，但是logit数学上更好算。它们都可以通过对父节点进行线性组合推广到多个连续性父节点的情况。</p>
+<h2 id="贝叶斯网络的精确推理-exact-inference-in-bayesian-networks">贝叶斯网络的精确推理(Exact inference in bayesian networks)</h2>
+<p>概率推理系统的基本任务就是给出一些观察到的事件，即给证据变量(evidence variable)赋值，然后计算一系列查询变量(query variable)的后验概率。我们用$X$表示查询变量，用$\mathbf{E}$表示证据变量$E_1,\cdots,E_m$的集合，$\mathbf{e}$是一个特定的观测事件，$\mathbf{Y}$表示既不是证据变量，也不是查询变量的变量$Y_1,\cdots,Y_l$的集合（隐变量,hidden variables)。变量的所有集合是$\mathbf{X}={X}\cup \mathbf{E}\cup \mathbf{Y}$。一个典型的查询是求后验概率$P(X|\mathbf{e})$。<br>
+在这一节中主要讨论的是计算后验概率的精确算法以及这些算法的复杂度。事实上，在一般情况下精确推理的复杂度都是很高的，为了降低复杂度，就只能进行估计推理(approximate inference)了，这个会在下一节中介绍到。</p>
+<h3 id="枚举实现精确推理-inference-by-enumeration">枚举实现精确推理(Inference by enumeration)</h3>
+<p>任何条件概率都可以用联合概率分布的项相加得到，即：<br>
+$$P(X|\mathbf{e}) = \alpha P(X,\mathbf{e}) = \alpha \sum_{\mathbf{y}}P(X,\mathbf{e},\mathbf{y})$$<br>
+贝叶斯网络给出了所有的联合概率分布，任何项$P(x,\mathbf{e},\mathbf{y})$都可以用贝叶斯网络中的条件概率的乘积表示出来。比如警报例子中的查询$P(Burglary|JohnCalls=true,MaryCalls=true)$。隐变量是Earthquake和Alarm，我们可以算出：<br>
+$$P(B|j,m) = \alpha P(B,j,m) = \alpha \sum_{e}\sum_{a}P(B,j,m,e,a).$$<br>
+贝叶斯网络已经给出了所有CPT项的表达式，比如当Burglary = true时：<br>
+$$P(b|j,m) = \alpha \sum_e\sum_aP(b,j,m,e,a) = \alpha \sum_e\sum_aP(b)P(e)P(a|b,e)P(j|a)P(m|a).$$<br>
+为了计算这个表达式，我们得计算一个四项的加法，分别是e为true和false,a为true和false对应的$P(b,j,m)$的值，每一项都是五个数的乘法。最坏的情况下，所有的变量都用到了，那么拥有$n$个布尔变量的贝叶斯网络的时间复杂度是$O(n2^n)$。我们可以做一些简化，将一些重复的计算保存下来，比如将上面的式子变成：<br>
+$$P(b|j,m) = \alpha \sum_e\sum_aP(b,j,m,e,a) = \alpha P(b) \sum_eP(e)\sum_aP(a|b,e)P(j|a)P(m|a).$$<br>
+这样子可以按照顺序进行计算，具体的计算过程如Figure 14.8所示。这种算法叫做ENUMERATION-ASK，它的空间复杂度是线性的，但是它的事件复杂度是$O(2<sup>n)$比$O(n2</sup>n)$要好，却仍然是实际上不可行的。（这里我理解的是$O(2<sup>n)$而不是$O(n2</sup>n)$的原因是，总共有$n$个布尔变量，所以总共有$2^n$个可能的取值，每次算一个，存一个，而原来的是算完之后不存。）<br>
+事实上，Figure 14.8中的计算过程还有很多重复计算，比如$P(j|a)P(m|a)$和$P(j|\neg a)P(m|\neg a)$这两项被计算了两次。我原来在想这里是不是和上面一段说的冲突了，事实上是没有的，这$2^n$个值，其中可能会有$P(b,j,m,e,a)$和$P(b,j,m,e,\neg a)$，这两个概率中都用到了$P(j|a)P(m|a)$，但是这里就会计算两次，事实上有很多值都会被重复计算很多次。下面就介绍一个避免这种运算的方法。</p>
+<h3 id="消元法-the-variable-elimination-algorithm">消元法(The variable elimination algorithm)</h3>
+<p>上面问题的解决思路就是保存已经计算过的值，实际上这是一种动态规划。还有很多其他方法可以解决这个问题，这里介绍了最简单的消元算法。消元法对表达式进行从右至左的计算，而枚举法是自底向上的。所有的中间值被报存起来，最对和每个变量有关的表达式进行求和。例如对于下列表达式：<br>
+$$P(B|j,m) = \alpha \underbrace{P(B)}<em>{f_1(B)} \sum_e\underbrace{P(e)}</em>{f_2(E)} \sum_a\underbrace{P(a|B,e)}<em>{f_3(A,B,E)} \underbrace{P(j|a)}</em>{f_4(A)} \underbrace{P(m|a)}_{f_5(A)}.$$<br>
+表达式的每一部分都是一个新的因子，每一个因子都是由它的参数变量(argument variables)决定的矩阵，参数变量指定的取值是没有固定的变量。比如因子$f_4(A)$和$f_5(A)$对应$P(j|a)$和$P(m|a)$的表达式只取决于$A$的值因为$J$和$M$在这个查询中都是固定的。它们都是两个元素的向量：<br>
+$$f_4(A) = \begin{pmatrix}P(j|a)\P(j|\neg a)\end{pmatrix} = \begin{pmatrix}0.90\0.05\end{pmatrix}$$<br>
+$$f_5(A) = \begin{pmatrix}P(m|a)\P(m|\neg a)\end{pmatrix} = \begin{pmatrix}0.70\0.01\end{pmatrix}$$<br>
+$f_3(A,B,E)$是一个$2\times 2\times 2$的矩阵。用因子表达的话，查询的表达式变成了：<br>
+$$P(B|j,m) = \alpha f_1(B)\times \sum_ef_2(E)\times \sum_af_3(A,B,E)\times f_4(A)\times f_5(A)$$<br>
+其中$\times$不是普通的矩阵乘法，而是对应元素相乘(pointwise product)。整个表达式的计算过程可以看成从右到左变量相加的过程，将现有的因子消去产生新的因子，最后只剩下一个因子的过程。具体的步骤如下：<br>
+首先先利用$f_3,f_4,f_5$把变量$A$消掉，产生一个新的$2\times 2$的只含有变量$B$和$E$的新因子$f_6(B,E)$：<br>
+\begin{align*}<br>
+f_6(B,E) &amp;= \sum_af_3(A,B,E)\times f_4(A) \times f_5(A)\<br>
+&amp;= (f_3(a,B,E)\times f_4(a) \times f_5(a)) + (f_3(\neg a,B,E)\times f_4(\neg a)\times f_5(\neg a)<br>
+\end{align*}<br>
+这样目标变成了：<br>
+$$P(B|j,m) = \alpha f_1(B)\times \sum_ef_2(E)\times \sum_af_6(B,E)$$<br>
+利用$f_2,f_6$消去$E$：<br>
+\begin{align*}<br>
+f_7(B) &amp;= \sum_ef_2(E)\times \sum_af_6(B,E)\<br>
+&amp; = f_2(e)\times f_6(B,e) + f_2(\neg e)\times f_6(B,\neg e)<br>
+\end{align*}<br>
+将表达式化成：<br>
+$$P(B|j,m) = \alpha f_1(B)\times f_7(B)$$<br>
+显然，根据这个表达式就可以计算出我们想要的结果了。上面的过程可以总结成两步，第一步是point-wise的因子乘法，第二步是利用因子的乘法进行消元。</p>
+<h4 id="因子运算-operations-on-factors">因子运算(Operations on factors)</h4>
+<p>两个因子$f_1$和$f_2$进行point-wise乘法运算产生新的因子(factor)$f$的变量是$f_1$和$f_2$变量的并，新的因子中的元素的值是$f_1$和$f_2$中对应项的积。假设两个因子有公共变量$Y_1,\cdots,Y_k$，那么就有：<br>
+$$f(X_1,\cdots,X_j,Y_1,\cdots,Y_k,Z_1,\cdots,Z_l)=f_1(X_1,\cdots,X_j,Y_1,\cdots,Y_k)f_2(Y_1,\cdots,Y_k,Z_1,\cdots,Z_l).$$<br>
+如果所有的变量都是二值化的，那么$f_1$和$f_2$各有$2<sup>{j+l}$和$2</sup>{l+k}$项，$f$有$2^{j+l+k}$项。比如，$f_1(A,B),f_2(B,C)$，那么point-wise乘法产生的$f_3(A,B,C)=f_1\times f_2$有$8$项，如Figure 14.10所示。<br>
+<img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.10"><br>
+根据图中给出的值，消去$f_3(A,B,C)$中的$A$：<br>
+\begin{align*}<br>
+f(B,C) &amp;= \sum_af_3(A,B,C)\<br>
+&amp;= f_3(a,B,C) + f_3(\neg a,B,C)\<br>
+&amp;= \begin{pmatrix} 0.06&amp;0.24\0.42&amp;0.28\end{pmatrix} + \begin{pmatrix}0.18&amp;0.72\0.06&amp;0.04\end{pmatrix}\<br>
+&amp;= \begin{pmatrix}0.24&amp;0.96\048&amp;0.32\end{pmatrix}<br>
+\end{align*}<br>
+产生新的因子用的是pointwise乘法，消元用的是累乘。给定pointwise乘法和消元函数，消元算法就变得很简单，一个消元算法如Figure 14.11所示。<br>
+<img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.11"></p>
+<h4 id="变量顺序和变量相关性-variable-ordering-and-variable-relevance">变量顺序和变量相关性(Variable ordering and variable relevance)</h4>
+<p>Figure 14.11中的算法包含一个没有给出具体实现的排序函数Order()对要消去的变量进行排序，每一种排序选择都会产生一组有效的算法，但是不同的消元顺序会产生不同的中间因子。一般情况下，消元法的时间和空间复杂度是由算法产生的最大因子决定的，这个最大因子是由消元的顺序和贝叶斯网络的结构决定的，选取最优的消元顺序是很困难的，但是有一些小的技巧：总是消去让新产生的因子最小的变量。<br>
+另一个属性是：每一个不是查询变量或者证据变量的祖先变量都和这次查询无关，在实现消元算法的时候可以把这些变量都去掉。（具体的示例可以看第十四章，在$528$页）。</p>
+<h3 id="精确推理的复杂度-the-complexity-of-exact-inference">精确推理的复杂度(The complexity of exact inference)</h3>
+<p>贝叶斯网络的精确推理跟网络的结构有很大的关系。<br>
+Figure 14.2中警报贝叶斯网络中的复杂度是线性的。该网络中任意两个节点只有一条路径，这种网络称为单连接的(singly-connected)或者多树(polytrees)，这种结构有一个很好的属性就是：多树结构中精确推理的时间，空间复杂度对于网络大小来说都是线性关系，这里网络大小指的是CPT项的个数。如果每一个节点的父节点都是一个有界的常数，那么复杂度和节点数之间也是线性关系。<br>
+对于多连接(multiply connected)的网络，如Figure 14.12(a)所示，最坏情况下，即使每一个节点的父节点个数都是有界常数，消元法的时间和空间复杂度也都是指数级别的。因为贝叶斯网络的推理也是NP难问题。<br>
+<img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.12"></p>
+<h3 id="聚类算法-clustering-algorithms">聚类算法(clustering algorithms)</h3>
+<p>用消元法来计算单个的后验概率是简单而高效的，但是如果要计算网络中所有变量的后验概率是很低效的。例如：在单连接的网络中，每一个查询都是$O(n)$，总共有$O(n)$个查询，所以总共的代价是$O(n^2)$。使用聚类算法(clustering algorithms)，代价可以降到$O(n)$，因此贝叶斯网络中的聚类算法已经被广泛商用。（这里不明白为什么？）。<br>
+聚类算法的基本思想是将网络中的一些节点连接成聚点(cluster nodes)，最后形成一个多树(polytree)结构。例如Figure 14.12(a)中的多连接网络可以转换成Figure 14.12(b)所示的多树，Sprinkler和Rain节点形成了SPrinkler+Rain聚点，这两个布尔变量被一个大节点(meganode)取代，这个大节点有四个可能的取值：$tt,tf,ft,ff$。一旦一个多树形式的网络生成了以后，就需要特殊的推理算法进行推理了，因为普通的推理算法不能处理共享变量的大节点，有了这样一个特殊的算法，后验概率的时间复杂度就是线性于聚类网络的大小。但是，NP问题并没有消失，如果消元需要指数级别的时间和空间复杂度，聚类网络中的CPT也是指数级别大小。</p>
+<h2 id="贝叶斯网络的估计推理-approximate-inference-in-bayesian-networks">贝叶斯网络的估计推理(Approximate inference in bayesian networks)</h2>
+<p>因为多连接网络中的推理是不可行的，所以用估计推理取代精确推理是很有用的。这一节会介绍随机采样算法，也叫蒙特卡洛算法(Monte Carlo)，它的精确度取决于生成的样本数量。我们的目的是采样用于计算后验概率。这里给出了两类算法，直接采样(direct sampling)和马尔科夫链采样(Markov chain sampling)。变分法(variational methods)和循环传播(loopy propagation)将会在本章的最后进行介绍。</p>
+<h3 id="直接采样-direct-sampling-methods">直接采样(Direct sampling methods)</h3>
+<p>任何采样算法都是通过一个已知的先验概率分布生成样本。比如一个公平的硬币，服从一个先验分布$P(coin) = &lt;0.5,0.5 &gt; $，从这个分布中采样就像抛硬币。<br>
+一个最简单的从贝叶斯网络中进行随机采样的方法就是：从没有证据和它相关的网络中生成事件，即按照拓扑顺序对每一个变量进行采样。如Figure 14.13所示的算法，每一个变量的采样都取决于前之前已经采样过了的父节点变量的值。按照Figure 14.13中的算法对Figure 14.12(a)中的网络进行采样，假设一个采样顺序是[Cloudy,Sprinkler,Rain,WetGrass]：</p>
+<ol>
+<li>从$P(Cloudy)=&lt;0.5,0.5&gt;$中采样，采样值是true；</li>
+<li>从$P(Sprinkler|Cloudy=true) = &lt;0.1,0.9&gt;$中采样，采样值是false；</li>
+<li>从$P(Rain|Cloudy=true)=&lt;0.8,0.2&gt;$中采样，采样值是true；</li>
+<li>从$P(WetGrass|Sprinkler=false,Rain=true)=&lt;0.9,0.1&gt;$中采样，采样值是true；</li>
+</ol>
+<p>这个例子中，PRIOR-SAMPLE算法返回事件[true,false,true,true]。可以看出来，PRIOR-SAMPLE算法根据贝叶斯网络指定的先验联合分布生成样本。假设$S_{PS}(x_1,\cdot,x_n)$是PRIOR-SAMPLE算法生成的一个样本事件，从采样过程中我们可以得出：<br>
+$$S_{PS}(x_1,\cdots,x_n) = \prod_{i=1}^nP(x_i|parents(X_i))$$<br>
+即每一步采样都只取决于父节点的值。这个式子和贝叶斯网络的联合概率分布是一样的，所以，我们可以得到：<br>
+$$S_{PS} = P(x_1,\cdots,x_n).$$<br>
+通过采样让这个联合分布的求解很简单。<br>
+<img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.13"><br>
+事实上在任何采样算法中，结果都是通过对产生的样本进行计数得到的。假设生成了$N$个样本，$N_{PS}(x_1,\cdots,x_n)$是样本集中的一个具体事件$(x_1,\cdots,x_n)$发生的次数。我们希望这个值比上样本总数取极限和采样概率$S_{PS}$是一样的，即：<br>
+$$ lim_{N\rightarrow \infty}\frac{N_{PS}(x_1,\cdots,x_n)}{N} = S_{PS}(x_1,\cdots,x_n) = P(x_1,\cdots,x_n).$$<br>
+例如之前利用PRIOR-SAMPLE算法产生的事件[true,false,true,true]，这个事件的采样概率是：<br>
+$$S_{PS}(true,false,true,true) = 0.5 \times 0.9 \times 0.8 \times 0.9 = 0.324.$$<br>
+即当$N$取极限时，我们希望有$32.4%$的样本都是这个事件。(这里为什么要用采样进行计算呢，我的想法是因为实际情况中，采样概率$S_{PS}$是很难计算的，就通过不断的采样，计算出某个样本出现的概率。)<br>
+我们用$\approx$表示估计概率(estimated probability)在样本数量$N$取极限时和真实概率一样的估计，这叫一致(consistent)估计。比如，对于任意的含有隐变量的事件(partially spefified event)，$x_1,\cdots,x_m,m\le n$，会产生一个一致估计：<br>
+$$P(x_1,\cdots,x_m)\approx N_{PS}(x_1,\cdots,x_m)/N.$$<br>
+这个事件的概率可以看成所有满足观测变量条件的样本事件（隐变量所有值都可以取）比上所有样本事件的比值。比如在Spinkler网络中，生成$1000$个样本，其中有$511$个样本的Rain=true，那么rain的估计概率就是$\hat{P}(Rain=true) = 0.511.$</p>
+<h4 id="贝叶斯网络的拒绝采样-rejection-sampling-in-bayesian-networks">贝叶斯网络的拒绝采样(Rejection sampling in Bayesian networks)</h4>
+<h5 id="算法">算法</h5>
+<p><img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.14"><br>
+拒绝采样(rejection sampling)利用容易采样的分布来生成难采样分布的样本，计算后验概率$P(X|\mathbf{e})$，算法流程如Figure 14.14所示，首先根据贝叶斯网络的先验分布生成样本，接下来拒绝(reject)那些和证据变量不匹配的结果，最后在剩下的样本中统计每个$X=x$出现的概率，估计$\hat{P}(X|\mathbf{e}).$<br>
+用$\hat{P}(X|\mathbf{e})$表示估计概率分布，利用拒绝采样算法的定义计算：<br>
+$$\hat{P}(X|\mathbf{e}) = \alpha N_{PS}(X,\mathbf{e}) = \frac{N_{PS}(X,\mathbf{e})}{N_{PS}(\mathbf{e})}.$$<br>
+而根据$P(x_1,\cdots,x_m)\approx N_{PS}(x_1,\cdots,x_m)/N$，就有：<br>
+$$\hat{P}(X|\mathbf{e}) = \alpha N_{PS}(X,\mathbf{e}) = \frac{N_{PS}(X,\mathbf{e})}{N_{PS}(\mathbf{e})} =  \frac {P(X,\mathbf{e})}{P(\mathbf{e})} = P(X|\mathbf{e}).$$<br>
+所以，拒绝采样产生了真实概率的一个一致估计(consistent estimate)，但是这个一致估计和无偏估计还不一样。</p>
+<h5 id="示例-v3">示例</h5>
+<p>举一个例子来说明，假设我们要估计概率$P(Rain|Sprinkler=true)$，生成了$100$个样本，其中$73$个是$Sprinkler=false$，$27$是$Sprinkler=true$，这$27$个中有$8$个$Rain=true$，有$19$个$Rain=false$，因此：<br>
+$$P(Rain|Sprinkler=true)\approx NORMALIZE \lt\lt 8,19&gt;&gt; = &lt;0.296,0.704&gt;.$$<br>
+正确答案是$&lt;0.3,0.7&gt;$，可以看出来，估计值和真实值差的不多。生成的样本越多，估计值就会和正确值越接近，概率的估计误差和$1/\sqrt{n}$成比例，$n$是用来估计概率的样本数量。</p>
+<h5 id="不足">不足</h5>
+<p>拒绝采样最大的问题是它拒绝了很多样本，随着证据变量的增加，和证据$\mathbf{e}$一致的样本指数速度减少，所以这个方法对于复杂的问题是不可行的。拒绝假设和现实生活中条件概率是很像的，比如估计观测到晚上天空是红的，第二天下雨的概率$P(Rain|RedSkyAtNight=ture)$，这个条件概率的估计就是根据日常生活的观察实现的。但是如果天空很少是红的，就需要很长时间才能估计它的值，这就是拒绝假设的缺点。</p>
+<h4 id="可能性加权-likelihood-weighting">可能性加权(Likelihood weighting)</h4>
+<h5 id="算法-v2">算法</h5>
+<p>可能性加权(Likelihood weighting)只产生和证据$\mathbf{e}$一致的事件，因此避免了拒绝采样的低效。它是统计学中重要性采样的一个例子，专门为贝叶斯推理设计的。<br>
+如Figure 14.15所示，加权似然固定证据变量$\mathbf{E}$的值，只对非证据变量进行采样，这就保证了每一个事件都是和证据一致的。但是，不是所有的事件权重都是一样的。给定每一个证据变量的父节点，它的可能性(likelihood)是证据变量的条件概率的乘积，每一个事件都根据证据的可能性进行加权。</p>
+<h5 id="示例-v4">示例</h5>
+<p>对于Figure 14.12(a)中的例子，计算后验概率$P(Rain|Cloudy=true,WetGrass=true)$，采样顺序是Cloudy,Sprinkler,Rain,WetGrass。过程如下，首先，权重$w$设为$1$，一个事件生成过程如下：</p>
+<ol>
+<li>Cloudy是一个证据变量，它的值是true,因此，令：<br>
+$$w\leftarrow w\times P(cloudy=true) = 0.5.$$</li>
+<li>Sprinkler是隐变量，所以从$P(Sprinkler|Cloudy=true)=&lt;0.1,0.9&gt;$中采样，假设采样结果是false；</li>
+<li>Rain是隐变量，从$P(Rain|Cloudy=true)=&lt;0.8,0.2&gt;$中采样，假设采样结果是true；</li>
+<li>WetGrass是证据变量，值是true,令：<br>
+$$w\leftarrow w\times P(WetGrass=true|Sprinkler=false,Rain=true) = 0.45.$$</li>
+</ol>
+<p>所以WEIGHTED-SAMPLE算法生成事件[true,false,true,true]，相应的权重是$0.45$。</p>
+<h5 id="原理">原理</h5>
+<p>用$S_{WS}$表示WEIGHTED-SAMPLE算法中事件的采样概率，证据变量$\mathbf{E}$的取值$\mathbf{e}$是固定的，用$\mathbf{Z}$表示非证据变量，包括隐变量$\mathbf{Y}$和查询变量$\mathbf{X}$。给定变量$\mathbf{Z}$的父节点，算法对变量$\mathbf{Z}$进行采样：<br>
+$$S_{WS}(\mathbf{z},\mathbf{e}) = \prod_{i=1}^lP(z_i|parents(Z_i)).$$<br>
+其中$Parents(Z_i)$可能同时包含证据变量和非证据变量。<br>
+和先验分布$P(\mathbf{z})$不同的是，每一个变量$Z_i$的取值会受到$Z_i$的祖先(ancestor)变量的影响。比如，对Sprinkler进行采样的时候，算法会受到它的父节点中的证据变量Cloudy=true的影响，而先验分布不会。另一方面，$S_{WS}$比后验分布$P(\mathbf{z}|\mathbf{e})$受证据的影响更小，因为对$Z_i$的采样忽略了$Z_i$的非祖先(non-ancestor)变量中的证据。比如，对Sprinkler和Rain进行采样的时候，算法忽略了子节点中的证据变量WetGrass=true，事实上这个证据已经排除了(rule out)Sprinkler=false和Rain=false的情况，但是WEIGHTED-SAMPLE还会产生很多这样的样本事件。<br>
+理想情况下，我们想要一个采样分布和真实的后验概率$P(\mathbf{z}|\mathbf{e})$相等，不幸的是不存在这样的多项式时间的算法。如果有这样的算法的话，我们可以用多项式数量的样本以任意精度逼近想要求的概率值。<br>
+可能性权重$w$弥补了实际的分布和我们想要的分布之间的差距。一个由$\mathbf{z}$和$\mathbf{e}$组成的样本$\mathbf{x}$的权重是给定了父节点的证据变量的可能性乘积：<br>
+$$w(\mathbf{z},\mathbf{e}) = \prod_{i=1}^mP(e_i|parents(E_i)).$$<br>
+将上面的两个式子乘起来，可以得到一个样本的加权概率(weighted probability)是：<br>
+$$S_{WS}(\mathbf{z},\mathbf{e})w(\mathbf{z},\mathbf{e}) = \prod_{i=1}<sup>lP(z_i|parents(Z_i))\prod_{i=1}</sup>mP(e_i|parents(E_i)) = P(\mathbf{z},\mathbf{e}).$$<br>
+可能性加权估计是一致估计。对于任意的$x$，估计的后验概率按下式计算：<br>
+\begin{align*}<br>
+\hat{P}(x|\mathbf{e}) &amp;= \alpha \sum_{\mathbf{y}} N_{WS}(x,\mathbf{y},\mathbf{e})w(x,\mathbf{y},\mathbf{e})\<br>
+&amp;\approx \alpha’\sum_{\mathbf{y}}S_{WS}(x,\mathbf{y},\mathbf{e})w(x,\mathbf{y},\mathbf{e})\<br>
+&amp;=\alpha’\sum_{\mathbf{y}}P(x,\mathbf{y},\mathbf{e})\<br>
+&amp;=\alpha’\sum_{\mathbf{y}}P(x,\mathbf{y},\mathbf{e})\<br>
+&amp;=P(x|\mathbf{e})<br>
+\end{align*}<br>
+算法中真实实现的是第一行，即统计出用WEIGHTED-SAMPLE产生的样本$(x,\mathbf{y},\mathbf{e})$数量$N_{WS}$，以及对应的权重$w(x,\mathbf{y},\mathbf{e})$，后面的都是理论推导，当$N$取极限的时候$lim_{N\rightarrow \infty}\frac{N_{WS}(x_1,\cdots,x_n)}{N} = S_{WS}(x_1,\cdots,x_n)$，后面的都是为了证明算法是一致估计。</p>
+<h5 id="不足-v2">不足</h5>
+<p>可能性加权算法使用了所有生成的样本，它比拒绝假设算法更高效。然而，随着证据变量的增加，算法性能会退化(degradation)，这是因为很多样本的权重都会很小，因此加权估计可能会受一小部分权重很大的样本的影响(dominated)。如果证据变量在非证据变量的后边，这个问题会加剧，因为它们的父节点或者祖先节点没有证据变量来指导样本的生成。这就意味着生成的样本和证据变量支撑的真实情况可能差距很大(bear little resemblance)。</p>
+<h3 id="马尔科夫链仿真推理-inference-by-markov-chain-simulation">马尔科夫链仿真推理(Inference by Markov chain simulation)</h3>
+<p><a href="https://mxxhcm.github.io/2019/08/01/Monte-Carlo-Markov-Chain/">马尔科夫链蒙特卡洛(Markov chain Monte Carlo,MCMC)</a>算法和拒绝采样以及可能性加权很不一样。那两个方法每次都从头开始生成样本，而MCMC算法在之前的样本上做一些随机的变化。可以将MCMC算法看成指定了每一个变量值的特殊当前状态(current state)，通过对当前状态(current state)做任意的改变生成下一个状态(next state)。这一节要介绍的一种MCMC算法是吉布森采样(Gibbs sampling)。</p>
+<h4 id="贝叶斯网络中的吉布森采样-gibbs-sampling-in-bayesian-networks">贝叶斯网络中的吉布森采样(Gibbs sampling in Bayesian networks)</h4>
+<h5 id="算法-v3">算法</h5>
+<p>贝叶斯网络中的吉布森采样从任意一个状态开始，其中证据变量的取值固定为观测值，通过随机选取非证据变量$X_i$的值生成下一个状态。变量$X_i$的采样取决于变量$X_i$的马尔科夫毯的当前值。算法在状态空间（所有非证据变量的全部可能取值空间）中随机采样，每次采样都保持证据变量不变，一次改变一个非证据变量的值。完整的算法如Figure 14.16所示。<br>
+<img src="/2019/01/06/AI-chapter-14-Probabilistic-reasoning/" alt="figure 14.16"></p>
+<h5 id="示例-v5">示例</h5>
+<p>Figure 14.12(a)中的查询(query)$P(Rain|Sprinkler=true, WetGrass=true)$，证据变量Spinkler和WetGrass取它们的观测值不变，非证据变量Cloudy和Rain随机初始化，假设取的是true和false。那么初始状态就是[true,true,false,true]，接下来对非证据变量进行重复的随机采样。<br>
+比如第一次对Cloudy采样（也可以对Rain采样），给定它的马尔科夫毯变量，然后从$P(Cloudy|Sprinkler=true,Rain=false)$中进行采样，假设采样结果是false，新的状态就是[false,true,false,true]。接下来随机可以对Rain采样（也可以对Cloudy采样），给定Rain的马尔科夫毯变量的取值，从$P(Rain|Cloudy=false,Sprinkler=true,WetGrass=true)$中进行采样，假设采样值是true,那么新的状态是[true,true,false,false]。接下来可以一直进行采样。。最终利用生成的样本计算出相应的概率。</p>
+<h4 id="为什么吉布森采样有用-why-gibbs-sampling-works">为什么吉布森采样有用(Why Gibbs sampling works)</h4>
+<p>接下来给出为什么吉布森采样计算后验概率是一致估计。基本的解释是直截了当的：采样过程建立了一个动态平衡，每个状态花费的时间长期来说和它的后验概率是成比例的。<br>
+具体的，不想看了。。。就随缘吧</p>
+<h2 id="关系和一阶概率模型-relational-and-first-order-probability-models">关系和一阶概率模型(Relational and first-order probability models)</h2>
+<h2 id="其他不确定性推理的方法-other-approaches-to-uncertain-reasoning">其他不确定性推理的方法(Other approaches to uncertain reasoning)</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="http://aima.cs.berkeley.edu/" target="_blank" rel="noopener">Artificial Intelligence A Modern Approach Third Edition,Stuart Russell,Peter Norvig.</a><br>
+2.<a href="https://en.wikipedia.org/wiki/Chain_rule_(probability)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Chain_rule_(probability)</a><br>
+3.<a href="https://en.wikipedia.org/wiki/Consistent_estimator" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Consistent_estimator</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/06/PRML-chapter-8-Graphical-Models/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/06/PRML-chapter-8-Graphical-Models/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/20/index.html">PRML chapter 8 Graphical Models</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-06 14:31:09" itemprop="dateCreated datePublished" datetime="2019-01-06T14:31:09+08:00">2019-01-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>$\newcommand{\mmm}{\mathbf}$<br>
+<strong>概率图模型</strong><br>
+概率论在现代模式识别中有很重要的地位。第一章中介绍了概率论可以被表示成两个简单的加法和乘法公式。事实上在这本书中讨论的所有概率推理和学习的计算（无论有多复杂）都可以看成这两个公式的重复应用。我们可以只用代数计算(algebraic manipulation)来形式化并解决复杂的概率问题。但是，使用概率分布(probability distributions)的图表示(diagrammatic representations)，即概率图模型(graphical models)会更有优势。概率图模型有以下几个有用的属性：</p>
+<ol>
+<li>概率图模型提供了一个简单的方式可视化(visualize)概率模型的结构，并且能够用来设计和产生新的模型。</li>
+<li>通过观察概率图模型，可以看到模型的一些属性，包括条件独立性(conditional independence)等等。</li>
+<li>在复杂模型上进行的需要推理和学习的复杂计算，可以被表示为图计算，底层的数据表达式隐式的被执行。</li>
+</ol>
+<p>一个图由节点(nodes)，有时也叫顶点(vertices)，连接顶点的连接(links)，也叫边(edges)。在一个概率图模型中，每一个节点代表一个随机变量，或者一组随机变量，边代表着变量之间的概率关系(probabilistic relationships)。所有随机变量的联合分布可以被分解成一系列部分随机变量的乘积。<br>
+本章从有向图(directed graphical models)中的贝叶斯网络(Beyesian networks)开始介绍，有向图中的边通过箭头表示方向。另一个主要的图模型是马尔科夫随机场(Markov random fields)，它是一个无向图模型(undirected graphical models)，没有明显的方向性。有向图用来描述随机变量之间的因果关系(causal relationships)，而无向图用来描述随机变量之间的一些软约束(soft constraints)。为了解决推理问题，将无向图和有向图转化成另一种因子图(factor graph)表示是很方便的。</p>
+<h2 id="贝叶斯网络-bayesian-networks">贝叶斯网络(Bayesian Networks)</h2>
+<p>图的一个很强大的特点就是一个具体的图可以用来解释一类概率分布。给定随机变量$a,b,c$的联合概率分布$p(a,b,c)$，通过利用乘法公式，我们可以把它写成以下形式：<br>
+$$p(a,b,c) = p(c|a,b)p(b|a)p(a).$$<br>
+这个公式对于任意的联合分布都成立，我们用节点$a,b,c$表示随机变量，按照上式的右边找出每个节点对应的条件分布，在图中添加一个有向箭头从依赖变量指向该变量。如Figure 8.1所示,$a$到$b$的边表示$a$是$b$的父节点。上式中左边是$a,b,c$是对称的，但是右边不是，事实上，在做分解的时候，一个隐式的顺序$a,b,c$已经被确定了，当然也可以选其他顺序，这样会得到一个新的分解和一个新的图。<br>
+<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.1"><br>
+如果把三个变量可以扩展到$K$个变量，则对应的联合概率为$p(x_1,\cdots,x_k)$，写成如下形式：<br>
+$$p(x_1,\cdots,x_K) = p(x_K|x_{K-1},\cdots,x_1)\cdots p(x_2|x_1)p(x_1).$$<br>
+这个式子也叫链式法则，微积分中也有链式法则，这个是概率论中的链式法则。给定$K$值，我们也能生成一个含有$K$个节点的有向图，每一个节点都对应一个条件分布，每一个节点都和比它序号小的节点全部直接相连，所以这个图也叫全连接图，因为任意两个节点都直接相连，但是只有一条有向边由小号节点指向大号节点，所以没有环。<br>
+<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.2"><br>
+目前为止，所有的操作都是在完全的联合概率分布，相应的分解以及全连接网络上进行的，它们可以应用到任何分布。但是图中也可能有缺失的边，如Figure 8.2所示，它不是一个全连接的图。我们可以直接根据这个图将联合分布表示为很多条件分布的乘积。每一个条件分布的取值只跟图中对应的父节点。比如，$x_5$只取决于$x_1$和$x_3$，$7$个变量的联合概率分布可以写成：<br>
+$$p(x_1)p(x_2)p(x_3)p(x_4|x_1,x_2,x_3)p(x_5|x_1,x_3)p(x_6|x_4)p(x_7|x_4,x_5)$$<br>
+从上面我们可以看出有向图和变量的条件概率之间的关系，图中定义的联合概率分布是图中所有节点给定其父节点的条件概率的乘积，即:<br>
+$$p(\mathbf{x}) = \prod_{k=1}^Kp(x_k|pa_k).$$<br>
+其中$pa_k$是$x_k$节点的父节点的集合，$\mathbf{x} = {x_1,\cdots,x_k}$，这个式子给出了一个有向图的联合概率具有因式分解属性。<br>
+贝叶斯网络中不能存在有向的圈，即不能存在闭路，所以这种图也叫有向无环图。另一种说法是如果图中的节点有顺序的话，不能存在大号节点到小号节点的有向边。</p>
+<h3 id="示例：多项式回归-example-polynomial-regression">示例：多项式回归(Example: Polynomial regression)</h3>
+<p><img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.3"><br>
+这里给出了一个用有向图描述概率分布的例子，贝叶斯多项式回归模型。模型中的随机变量是多项式系数向量$\mathbf{w}$以及观测值$\mathbf{t}=(t_1,\cdots,t_N)<sup>T$，此外，还有一些模型中确定的参数，它们不是随机变量，如输入数据$\mathbf{x}=(x_1,\cdots,x_N)</sup>T$，噪音方差$\sigma^2$，还有$\mathbf{w}$上高斯分布精度的超参数$\alpha$。如果只关注随机变量，联合分布可以看成先验分布$p(\mathbf{w})$和$N$个条件分布$p(t_n|\mathbf{w}),n=1,\cdots,N$的乘积：<br>
+$$p(\mathbf{t},\mathbf{w}) = p(\mathbf{w})\prod_{n=1}^Np(t_n|\mathbf{w}).$$<br>
+这个模型可以用Figure 8.3表示。<br>
+<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.4"><br>
+为了方便表示，我们把$t_1,\cdots,t_N$用一个单独的节点，外面用一个盒子包着，叫做盘子(plate)，盘子上写上$N$代表有$N$个这样的节点，得到Figure 8.4中的图。如果把模型确定的参数写出来，我们可以得到下式：<br>
+$$p(\mathbf{t},\mathbf{w}|\mathbf{x},\alpha,\sigma^2) = p(\mathbf{w}|\alpha)\prod_{n=1}<sup>Np(t_n|\mathbf{w},x_n,\sigma</sup>2).$$<br>
+<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.5"><br>
+如果在图中把模型参数和随机变量都表示出来，用空心圆圈代表随机变量，用实心圆点代表确定性参数(deterministic parameters)，用图形表示如Figure 8.5。<br>
+<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.6"><br>
+当用图模型去解决机器学习或者模型时，有时候会固定一些随机变量的值，比如在多项式拟合问题中训练集的变量${t_n}$，在图模型中，将对应节点加上阴影，表示观测变量(observed variables)。如Figure 8.6所示，变量${t_n}$是观测变量。$\mathbf{w}$没有被观测到，所以是一个隐变量(latent variable)或者是(hidden variable)。<br>
+利用观测到的${t_n}$的值，我们可以估计多项式系数$\mathbf{w}$，利用贝叶斯公式：<br>
+$$p(\mathbf{w}|\mathbf{T}) \propto p(\mathbf{w}) \prod_{n=1}^Np(t_n|\mathbf{w})$$<br>
+为了整洁(uncluttered)，模型的确定性参数被略去了。<br>
+<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.7"><br>
+一般来说，我们对于如$\mathbf{w}$之类的模型参数不感兴趣，因为我们的目标是用模型对新的输入进行预测。即在给定观测数据之后，我们给出一个新的输入$\hat{x}$，要找到对应的$\hat{t}$的概率分布，如Figure 8.7所示。给定确定性参数之后，图中所有随机变量的联合分布如下所示：<br>
+$$p(\hat{t},\mathbf{t},\mathbf{w}|\hat{x},\mathbf{x},\alpha,\sigma^2) = \left[\prod_{n=1}<sup>Np(t_n|x_n,\mathbf{w},\sigma</sup>2)\right] p(\mathbf{w}|\alpha)p(\hat{t}|\hat{x},\mathbf{w},\sigma^2).$$<br>
+刚开始有一些不理解，但是实际上就是这样一个公式$p(a,b,c) = p(a)p(b|a)p(c|a)$，把$\hat{t}$和$\mathbf{t}$当成两个变量看就行了。<br>
+利用概率论的加法公式$p(X) = \sum\limits_Yp(X,Y)$，对模型的参数$\mathbf{w}$积分就得到了$\hat{t}$的预测分布：<br>
+\begin{align*}<br>
+p(\hat{t}|\hat{x},\mathbf{x},\mathbf{t},\alpha,\sigma^2) = \int p(\hat{t},\mathbf{w}|\hat{x},\mathbf{x},\mathbf{t},\alpha,\sigma^2)d\mathbf{w}<br>
+\propto \int p(\hat{t},\mathbf{t},\mathbf{w}|\hat{x},\mathbf{x},\alpha,\sigma^2)d\mathbf{w}<br>
+\end{align*}<br>
+其中随机变量$\mathbf{t}$被隐式的赋值为数据集中的观测值，即是一个$p(t)$是一个定值。这里刚开始有些不理解,实际上是当$p(b)$为定值的时候，$p(a|b) \propto p(ab)$。</p>
+<h3 id="生成模型-generative-models">生成模型(Generative models)</h3>
+<p>这里实际上介绍的是采样方法，叫祖先采样，实际上就是直接采样，AI的第十四章有讲很多采样，可以直接看那个。<br>
+很多时候我们需要从一个给定的分布中进行采样，十一章还会更详细的讲采样，这里要介绍一种采样分布叫祖先采样(ancestral sampling)，是一种和概率图模型相关的采样方法。给定$K$个变量的联合分布$p(x_1,\cdots,x_K)$对应的有向无环图，假设所有变量的父节点的序号都比它本身小。我们的目标是从联合分布中采样$\hat{x_1},\cdots,\hat{x_k}$。<br>
+首先从最小的序号根据$p(x_1)$开始采样，采样结果称为$\hat{x_1}$，接下来按顺序对第$n$个节点按照条件分布$p(x_n|pa_n)$进行采样，每个节点的父节点都取采样值，因为每个父节点都已经采完样了，所以这里不用担心。一直到第$K$个节点采样完成，就生成了一个样本。为了对某些边缘分布进行采样，对需要的节点进行采样，忽略其他节点即可，比如为了对边缘分布$p(x_2,x_4)$进行采样，从联合分布中进行采样，保留$\hat{x_2},\hat{x_4}$的值，其他的值不用管即可。<br>
+在概率图的实际应用中，通常小节点对应的是隐变量，大节点对应的图上的最终节点代表着一些观测变量。隐变量的目的是让观测变量的复杂概率分布可以表示成多个简单的条件概率分布的乘积。<br>
+我们可以把这样的模型解释为观测变量产生的过程，比如，一个模式识别任务中，每一个观测数据对应一张图片。隐变量解释为物体的位置和方向，给定一个观测图像，我们的目标是找到物体的一个后验分布，在后验分布中对所有可能的位置和方向进行积分，如Figure 8.8所示。<br>
+图模型通过观测数据的生成过程描述了一种因果关系过程，因为这个原因，这样的模型也叫做生成式模型(generative model)。相反，Figure 8.5中的模型不是生成式模型，因为多项式回归模型中的输入变量$x$没有概率分布，所以不能用来合成数据。通过引入一个合适的先验分布$p(x)$，我们可以把它变成一个生成式模型。<br>
+事实上，概率图模型中的隐变量不是必须要有显式的物理意义，它的引入只是为了方便从简单的条件概率生成复杂的联合分布。在任何一种情况下，应用到生成式模型的祖先采样模拟了观测数据的生成过程，因此产生了和观测数据分布相同（如果模型完美的表现了现实）的美好(fantasy)数据。实际应用中国，利用生成模型产生合成的观测数据，对于理解模型表达的概率分布很有帮助。</p>
+<h3 id="离散型随机变量-discrete-variables">离散型随机变量(Discrete variables)</h3>
+<p>指数分布是很重要的一类分布，它们虽然很简单，但是可以形成更复杂的概率分布，概率图的框架对于表达这些概率分布是如何连接的很有用。<br>
+如果我们有向图中亲本和子节点对之间的关系选择为conjugate，会发现这些模型有很好的属性。这里主要探讨两种情况，父节点和子节点都是离散的以及父节点和子节点都对应高斯变量，因为这两种关系可以分层扩展(extended hierarchically)构建任何复杂的有向无环图。首先从离散变量开始：<br>
+有$K$个可能状态的单个离散变量$\mathbf{x}$的概率分布是：<br>
+$$p(\mathbf{x}|\nu) = \prod_{k=1}<sup>k\nu_k</sup>{x_k}$$<br>
+由参数$\nu = (\nu_1,\cdots,\nu_K)^T$控制，由于有约束条件$\sum_k\nu_k=1$，为了定义分布有$K-1$个$\nu_k$的值需要指定。<br>
+假设有两个离散型随机变量$\mathbf{x}<em>1,\mathbf{x}<em>2$，每个变量都有$K$个可能的取值。用$\nu</em>{kl}$表示同时观测到$x</em>{1k}=1$和$x_{2l}=1$，其中$x_{1k}$表示$\mathbf{x}<em>1$的第$k$个分量，$x</em>{2l}$类似。联合分布可以写成：<br>
+$$p(\mathbf{x}<em>1,\mathbf{x}<em>2|\nu) = \prod</em>{k=1}<sup>K\prod_{l=1}</sup>K\nu</em>{kl}^{x_{1k}x_{2l}}.$$<br>
+$\nu_{kl}$满足约束条件$\sum_k\sum_l\nu_{kl} =1$，被$K<sup>2-1$个参数控制，任意$M$个具有$K$个取值的随机变量的联合分布需要$K</sup>M-1$个参数，随着随机变量$M$个数的增加，参数的个数以指数速度增加。<br>
+使用乘法公式，联合分布$p(\mathbf{x}_1,\mathbf{x}_2)$可以分解成$p(\mathbf{x}_2|\mathbf{x}_1)p(\mathbf{x}_1)$，对应的图如Figure 8.9(a)所示，边缘分布$p(\mathbf{x}_1)$的分布需要$K-1$个参数，$p(\mathbf{x}_2|\mathbf{x}_1)$对于$K$个可能的$\mathbf{x}_1$，每个都需要$K-1$个参数。所以，和联合分布一样，总共需要的参数为$K-1+K(K-1) = K^2-1$个。<br>
+假设$\mmm{x}_1$和$\mmm{x}_2$是独立的，如Figure 8.9(b)所示，每一个变量可以用分开的多峰分布(multinomial distribution)表示，所需的参数量为$2(K-1)$个。类似的，$M$个独立变量需要$M(K-1)$个参数，和变量个数之间是线性关系。从概率图的角度来看，通过在图中去掉边减少了参数的数量，同时代价是这个图只能代表有限类别的分布。<br>
+更普通的是，如果我们有$M$个离散型随机变量$\mmm{x}_1,\cdots,\mmm{x}_M$，我们可以用一个节点代表一个随机变量，建立一个有向图表示联合概率分布。每个节点处的条件概率由一组非负参数给出，并且需要满足归一化条件。如果图是全连接的，那么这个分布需要$K^M-1$个参数，如果图中没有连接，那么联合分布可以分解成边缘分布的乘积，需要的所有参数是$M(K-1)$个。拥有中间水平连接性的图比分解成单个边缘分布的乘积能解释更多的分布同时比普遍的联合概率分布需要更少的参数。如Figure 8.10中的节点链，边缘分布$p(\mmm{x}_1)$需要$K-1$个参数，其余的$M-1$个条件分布$p(\mmm{x}<em>i|\mmm{x}</em>{i-1}),i = 2,\cdots,M$，需要$K(K-1)$个参数，总共需要的参数是$K-1+(M-1)K(K-1)$个，是$K$的二次函数(quadratic)，随着链的长度$M$增加，参数个数线性增加。<br>
+另一个减少模型中独立参数个数的方法是共享参数。例如，Figure 8.10中的链，我们可以用共享的$K(K-1)$个参数去控制条件概率$p(\mmm{x}<em>i|\mmm{x</em>{i-1}),i=2,\cdots,M$，用$K-1$个变量去控制$\mmm{x}_1$的概率分布，总共需要$K^2-1$个参数需要被指定去定义联合概率分布。<br>
+通过引入每个参数对应的Dirichlet先验，我们可以把一个随机变量图转换成贝叶斯模型。从概率图的角度来看，每一个节点需要一个额外的父节点代表和这个离散节点相关的Dirichlet分布，如Figure 8.11所示。将控制条件分布$p(\mmm{x}<em>i|\mmm{x}</em>{i-1}),i=2,\cdots,M$的参数共享，得到如Figure 8.12所示的图。<br>
+另一种控制模型中离散变量参数指数速度增加的方法是用参数模型而不是条件概率表来表示条件分布。如Figure 8.13中，所有的节点都是一个二值变量，用参数$\nu_i$表示每一个父节点$\mmm{x}<em>i$取值为$1$的概率$p(x_i=1)$，总共有$M$个父节点，所以总共需要$2<sup>M$个参数表示条件概率$p(y|x_1,\cdots,x_M)$的$2</sup>M$可能取值，如$p(y=1)$。所以指定这个条件分布所需要的参数随着$M$指数级增长。我们可以通过使用logistic sigmoid函数作用于父节点的线性组合上，得到一个更简洁的条件概率分布：<br>
+$$p(y=1|x_1,\cdots,x_M) = \sigma\left(w_0+\sum</em>{i=1}<sup>Mw_ix_i\right)=\sigma(\mmm{w}</sup>T\mmm{x})$$<br>
+其中$\sigma(a) = \frac{1}{1+exp(-a)}$是logistic sigmoid，$\mmm{x}=(x_0,x_1,\cdots,x_M)<sup>T$是由$M$个父节点状态和一个$x_0=1$构成的$M+1$维向量，$\mmm{w}=(w_0,w_1,\cdots,w_M)</sup>T$是$M+1$维参数项。与一般情况相比，这是一个更加严格的条件概率分布形式，但是它的参数个数随着$M$的增加线性增加。在这种情况下，类似于选择多元高斯分布的协方差矩阵的限制形式（如对角矩阵等）。</p>
+<h3 id="线性高斯模型-linear-gaussian-models">线性高斯模型(Linear-Gaussian models)</h3>
+<h2 id="条件独立性-conditional-independence">条件独立性(Conditional Independence)</h2>
+<h2 id="马尔科夫随机场-markov-random-fields">马尔科夫随机场(Markov Random Fields)</h2>
+<h2 id="概率图模型中的推理-inference-in-graphical-models">概率图模型中的推理(Inference in Graphical Models)</h2>
+<h2 id="参考文献-references">参考文献(references)</h2>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/05/ESL-chapter-1-Introduction/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/05/ESL-chapter-1-Introduction/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/20/index.html">ESL chapter 1 Introduction</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-05 09:46:39" itemprop="dateCreated datePublished" datetime="2019-01-05T09:46:39+08:00">2019-01-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="引言">引言</h2>
+<p>这本书主要介绍的是统计学习。一些典型的学习问题如下：</p>
+<ul>
+<li>基于一个心脏病患者的饮食，临床检测等等，去预测一个这个因为心脏病住院的人会不会第二次患心脏病。</li>
+<li>基于一个公司的运行状况或一些经济数据，去预测未来六个月股票的价格。</li>
+<li>从一个手写字母图像中识别出来其中的字母。</li>
+<li>从一个糖尿病(diabetic)患者血液的红外吸收频谱去预测他的血糖(glucose)含量。</li>
+<li>基于人口统计(demographic)和临床检测，分析前列腺癌的致病因素。</li>
+</ul>
+<p>在一个典型的学习场景下，我们通常有一些定量的结果(outcome measurement)，如上面例子中的股票价格或者分类问题中问题的类别，我们希望基于一系列的特征进行预测。<br>
+接下来给了几个真实的学习问题的示例。下面就简要介绍一下这几个例子。</p>
+<h3 id="邮件分类">邮件分类</h3>
+<p>给定一封邮件，邮件分类的目标就是根据邮件的特征去判断这封邮件是正常邮件还是垃圾邮件。这是监督学习中的二分类问题，因为该问题有ouputs，且只有两个类别。</p>
+<h3 id="前列腺癌-prostate-cancer">前列腺癌(prostate cancer)</h3>
+<p>该问题的目标是给定一系列临床检测，如记录癌症量(log cancer volume)，去预测前列腺特异性抗原(prstate specific antigen)的数量。该问题是监督学习中的回归问题，因为结果(outcome measurement)是定量的(quatitative)。</p>
+<h3 id="手写数字识别">手写数字识别</h3>
+<p>给定一个手写数字的图片，该问题的目标是识别出图片中的数字。</p>
+<h3 id="dna-expression-microarrays">DNA Expression Microarrays</h3>
+<p>这个问题是通过基因数组去学习基因和不同基因样本之间的关系，一些典型的问题是：</p>
+<ol>
+<li>哪些样本之间是相似的？在不同的基因之间都相似。</li>
+<li>哪些基因是相似的？在不同的样本之间都相似。</li>
+<li>一些特定的基因对于特定的癌症患者表达是达不是很明显？</li>
+</ol>
+<p>这个问题可以看成回归问题，或者更有可能是无监督问题。</p>
+<h2 id="本书结构">本书结构</h2>
+<p>第一章就是本章。第二章讲监督学习的介绍。第三章和第四章介绍线性回归和分类。第五章介绍仿样(splines)，小波(wavelets)，正则化(regularization)和惩罚(penalization)。第六章介绍核方法(kernel methods)和局部回归(local regression)。第七章将模型估计和选择(model assessment and selection)，涉及到偏置(bias)和方差(variance)，过拟合(overfitting)以及交叉验证(cross-validation)等等。第八章讲模型推理。第十章讲boosting。<br>
+第九到十三章讲监督学习的一系列结构化方法。十四章介绍非监督学习。十五和十六章分别介绍随机森林(random forests)和集成学习(ensemble learning)。第十七章介绍无向图(undirected graphical models)。第十八章介绍高维问题。<br>
+第一到四章是基础最好按顺序阅读，第七章也是。其他的可以不按顺序。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/05/ESL-chapter-2-Overview-of-supervides-learning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/05/ESL-chapter-2-Overview-of-supervides-learning/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/20/index.html">ESL chapter 2 Overview of supervised learning</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-05 09:30:55" itemprop="dateCreated datePublished" datetime="2019-01-05T09:30:55+08:00">2019-01-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="引言">引言</h2>
+<p>在机器学习领域，监督学习(supervised learning)的每一个样本都由输入(inputs)和输出(outputs)组成。监督学习的目标就是根据inputs的值去预测outpus的值。<br>
+在统计学(statistical)中，inputs通常被称为预测器？？(predictors)，或者叫自变量(independent variables)。<br>
+在模式识别(pattern recognition)领域，inputs通常称为特征(features)，或者叫因变量(dependent variables)</p>
+<h2 id="变量类型和一些术语-terminology">变量类型和一些术语(terminology)</h2>
+<p>不同的问题中，输出也不一样。血糖预测问题中，输出是一个定量的(quantitative)测量。手写数字识别问题中，输出是十个不同的类，是定性的(qualitative)，定性的输出也通常被称为类别(catrgorical)，这里的类别是无序的。通常，预测定量的输出被称为回归问题(regression)，预测定性的输出被称为分类问题。这两个问题很相像，多可以看成函数拟合。第三种输出是有序类别，像小，中，大，没有合适的度量表示，因为中和小之间的差别和中和大之间的差别是不同的。<br>
+定性分析在代码实现中进行二值化数值表示。即如果只有两类的话，用一个二进制位$0$或者$1$表示，或者$1$和$-1$。当超过两类的时候，通常用虚拟变量(dummy variables)来表示，一个$K$级变量是一个长度为$K$的二进制位，每一个时刻只有一位被置一。<br>
+一些常用的表示，$X$表示inputs，$Y$表示定量outputs，$G$表示定性outputs。大写字母表示通用的表示，观测值用小写字母表示，inputs $X$的第$i$个观测值用$x_i$表示，其中$x_i$是一个标量或者向量。矩阵用粗体的大写字母表示，如具有$N$个$p$维向量$x_i, j= 1,\cdots,N$的$N\times p$矩阵$\mathbf{X}$。所有的向量都用的是列向量表示，$\mathbf{A}$的第$i$行是$x_i^T$，第$i$列的转置。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/03/linear-algebra-singular-value-decomposition/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2444,1040 +3583,11 @@ The least-squares和linear programming problem都是convex optimization problem�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/22/latex笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/22/latex笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/20/index.html">latex笔记</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-22 10:08:26" itemprop="dateCreated datePublished" datetime="2018-12-22T10:08:26+08:00">2018-12-22</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-09-28 11:56:35" itemprop="dateModified" datetime="2019-09-28T11:56:35+08:00">2019-09-28</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/工具/" itemprop="url" rel="index"><span itemprop="name">工具</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="命令重命名">命令重命名</h2>
-<p>在写博客时也能用</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">\newcommand&#123;\mmm&#125;&#123;\mathbf&#125;</span><br><span class="line">\mmm&#123;x&#125;</span><br><span class="line">\bf&#123;x&#125;</span><br></pre></td></tr></table></figure>
-<p>$\newcommand{\mmm}{\mathbf}$<br>
-$\mmm{x}$<br>
-$\bf{x}$</p>
-<h2 id="常用latex符号">常用Latex符号</h2>
-<p>$\arg$ \arg<br>
-$\max$ \max<br>
-$\lim$ \lim</p>
-<h3 id="上标">上标</h3>
-<p>$\bar{x}$ \bar{x}<br>
-$\hat{x}$ \hat{x}</p>
-<h3 id="等号">等号</h3>
-<p>$\sim$  \sim<br>
-$\simeq$    \simeq<br>
-$\approx$   \approx<br>
-$\cong$ \cong<br>
-$\equiv$    \equiv<br>
-正比于 $\propto$ \propto</p>
-<h3 id="各种乘法">各种乘法</h3>
-<p>$\times$ \times<br>
-$*$ *<br>
-$\cdot$ \cdot<br>
-$\bullet$ \bullet<br>
-$\otimes$ \otimes<br>
-$\circ$ \circ<br>
-$\odot$ \odot</p>
-<h3 id="上下花括号">上下花括号</h3>
-<p>$\overbrace{x+y}^{1+2}=\underbrace{z}_3$ \overbrace{x+y}^{1+2}=\underbrace{z}_3</p>
-<h3 id="括号">括号</h3>
-<p>\left(\frac{1}{2}\right)    $\left(\frac{1}{2} \right)$<br>
-\left[\frac{1}{2} \right]    $\left[\frac{1}{2} \right]$<br>
-\left\{\frac{1}{2} \right\}    $\left\{\frac{1}{2} \right\}$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;cases&#125;x=1\\\\y=x\end&#123;cases&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{cases}x=1\\y=x\end{cases}$$</p>
-<h3 id="矩阵">矩阵</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;matrix&#125;1&amp;2\\\\3&amp;4\end&#123;matrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{matrix}1&amp;2\\3&amp;4\end{matrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;pmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;pmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;bmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;bmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{bmatrix}1&amp;2\\3&amp;4\end{bmatrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Bmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;Bmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{Bmatrix}1&amp;2\\3&amp;4\end{Bmatrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;vmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;vmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{vmatrix}1&amp;2\\3&amp;4\end{vmatrix}$$</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Vmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;Vmatrix&#125;</span><br></pre></td></tr></table></figure>
-<p>$$\begin{Vmatrix}1&amp;2\\3&amp;4\end{Vmatrix}$$</p>
-<h3 id="希腊字母">希腊字母</h3>
-<p>$\alpha$ \alpha<br>
-$\Alpha$ \Alpha<br>
-$\beta$ \beta<br>
-$\Beta$ \Beta<br>
-$\Delta$ \Delta<br>
-$\delta$ \delta<br>
-$\theta$ \theta<br>
-$\Theta$ \Theta<br>
-$\gamma$ \gamma<br>
-$\Gamma$ \Gamma<br>
-$\eta$ \eta<br>
-$\Eta$ \Eta<br>
-$\lambda$ \lambda<br>
-$\Lambda$ \Lambda<br>
-$\sigma$ \sigma<br>
-$\Sigma$ \Sigma<br>
-$\pi$ \pi<br>
-$\Pi$ \Pi<br>
-$\mu$ \mu<br>
-$\Mu$ \Mu<br>
-$\psi$ \psi<br>
-$\Psi$ \Psi<br>
-$\epsilon$ \epsilon<br>
-$\varepsilon$ \varepsilon<br>
-$\phi$ \phi<br>
-$\varphi$ \varphi<br>
-$\Phi$ \Phi<br>
-$\nabla$ \nabla<br>
-$\zeta$ \zeta<br>
-$\xi$ \xi</p>
-<h3 id="字体">字体</h3>
-<p>粗体<br>
-$\mathbf{A}$ \mathbf{A}<br>
-$\boldsymbol{A}$ \boldsymbol{A}<br>
-$\mathit{A}$ \mathit{A}<br>
-$\mathrm{A}$ \mathrm{A}<br>
-花体<br>
-$\mathcal{A}$ \mathcal{A}<br>
-$\mathcal{S}$ \mathcal{S}</p>
-<h3 id="数学运算">数学运算</h3>
-<p>求积$\prod$ \prod<br>
-求和$\sum$ \sum<br>
-积分$\int$ \int<br>
-根号$\sqrt{x}$ \sqrt{x}<br>
-根号$\sqrt[4]{y}$ \sqrt[4]{y}<br>
-分数$(\frac{1}{2})$ (\frac{1}{2})<br>
-分数$\left(\frac{1}{2}\right)$ \left(\frac{1}{2}\right)<br>
-无穷$\infty$ \infty<br>
-期望$\mathbb{E}$ \mathbb{E}<br>
-范数$\Vert$ \Vert<br>
-$\mathbb{\pi}$ \mathbb{\pi} # 可以看出来，没有起作用，因为mathbb没有只支持大写字母。<br>
-$\pm$ \pm<br>
-$\mp$ \mp</p>
-<h3 id="集合">集合</h3>
-<p>真含于$\subset$ \subset<br>
-含于$\subsetneqq$ \subsetneqq<br>
-真包含$\supset$ \supset<br>
-包含$\supsetneqq$ \supsetneqq<br>
-交$\cap$ \cap<br>
-并$\cup$ \cup<br>
-属于$\in$ \in<br>
-$\succ$ \succ<br>
-$\succeq$ \succeq<br>
-$\prec$ \prec<br>
-$\preceq$ \preceq<br>
-空集$\emptyset$ \emptyset</p>
-<h3 id="谓词逻辑">谓词逻辑</h3>
-<p>否定$\neg$ \neg<br>
-任意$\forall$ \forall<br>
-存在$\exists$ \exists<br>
-合取$\wedge$ \wedge<br>
-析取$\vee$ \vee</p>
-<h3 id="空格">空格</h3>
-<p>$a\qquad b$ a\qquad b<br>
-$a\quad b$ a\quad b<br>
-$a\ b$ a\ b<br>
-$a;b$ a;b<br>
-$a,b$ a,b<br>
-$ab$ ab<br>
-$a!b$ a!b</p>
-<h3 id="其他">其他</h3>
-<p>长竖线$\big|$ \big|<br>
-长竖线$\Big|$ \Big|<br>
-长竖线$\bigg|$ \bigg|<br>
-长竖线$\Bigg|$ \Bigg|<br>
-双箭头$\Leftrightarrow$ \Leftrightarrow<br>
-左箭头$\leftarrow$ \leftarrow<br>
-右箭头$\rightarrow$ \rightarrow<br>
-上划线$\overline{A}$ \overline{A}<br>
-下划线$\underline{A}$ \underline{A}<br>
-$\backslash$ \backslash<br>
-$\sim$ \sim</p>
-<h2 id="列表">列表</h2>
-<h3 id="有序列表">有序列表</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;enumerate&#125;</span><br><span class="line"> \item First.</span><br><span class="line"> \item Second.</span><br><span class="line"> \item Third.</span><br><span class="line">\end&#123;enumerate&#125;</span><br></pre></td></tr></table></figure>
-<p>效果如下：</p>
-<ol>
-<li>First.</li>
-<li>Second.</li>
-<li>Third.</li>
-</ol>
-<h3 id="无序列表">无序列表</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;itemize&#125;</span><br><span class="line"> \item &#123;First.&#125;</span><br><span class="line"> \item &#123;Second.&#125;</span><br><span class="line"> \item &#123;Third.&#125;</span><br><span class="line">\end&#123;itemize&#125;</span><br></pre></td></tr></table></figure>
-<p>效果如下：</p>
-<ul>
-<li>First.</li>
-<li>Second.</li>
-<li>Third.</li>
-</ul>
-<h2 id="跨多行公式对齐">跨多行公式对齐</h2>
-<p><strong>注意：不要忘了每行后面的两个\</strong></p>
-<h3 id="示例1">示例1</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">f(x) &amp;= (3 + 4)\^2 + 4\\</span><br><span class="line">&amp;= 7\^2 + 4\\</span><br><span class="line">&amp;= 49 + 4\\</span><br><span class="line">&amp;= 53</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure>
-<p>效果如下：<br>
-\begin{align*}<br>
-f(x) &amp;= (3 + 4)^2 + 4\\<br>
-&amp;= 7^2 + 4\\<br>
-&amp;= 49 + 4\\<br>
-&amp;= 53<br>
-\end{align*}</p>
-<h3 id="示例2">示例2</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">v &amp;= R + \gamma Pv\\</span><br><span class="line">(1-\gamma P) &amp;= R\\</span><br><span class="line">v &amp;= (1 - \gamma P)\^&#123;-1&#125; R</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure>
-<p>\begin{align*}<br>
-v &amp;= R + \gamma Pv\\<br>
-(1-\gamma P) &amp;= R\\<br>
-v &amp;= (1 - \gamma P)^{-1} R<br>
-\end{align*}</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="http://blog.huangyuanlove.com/2018/02/27/LaTeX%E7%AC%94%E8%AE%B0-%E5%85%AD/" target="_blank" rel="noopener">http://blog.huangyuanlove.com/2018/02/27/LaTeX笔记-六/</a><br>
-2.<a href="https://blog.csdn.net/xxzhangx/article/details/52778539" target="_blank" rel="noopener">https://blog.csdn.net/xxzhangx/article/details/52778539</a><br>
-3.<a href="https://blog.csdn.net/hunauchenym/article/details/7330828" target="_blank" rel="noopener">https://blog.csdn.net/hunauchenym/article/details/7330828</a><br>
-4.<a href="http://geowu.blogspot.com/2012/10/latex_25.html" target="_blank" rel="noopener">http://geowu.blogspot.com/2012/10/latex_25.html</a><br>
-5.<a href="https://math.stackexchange.com/questions/20412/element-wise-or-pointwise-operations-notation" target="_blank" rel="noopener">https://math.stackexchange.com/questions/20412/element-wise-or-pointwise-operations-notation</a><br>
-6.<a href="https://xilazimu.net/" target="_blank" rel="noopener">https://xilazimu.net/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/21/reinforcement-learning-an-introduction-第3章笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/21/reinforcement-learning-an-introduction-第3章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/20/index.html">reinforcement learning an introduction 第3章笔记</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-21 15:13:38" itemprop="dateCreated datePublished" datetime="2018-12-21T15:13:38+08:00">2018-12-21</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-04 12:03:17" itemprop="dateModified" datetime="2019-10-04T12:03:17+08:00">2019-10-04</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="马尔科夫过程-markov-process-马尔科夫链-markov-chain">马尔科夫过程(markov process)、马尔科夫链(markov chain)</h2>
-<p>马尔科夫过程或者马尔科夫链(markov chain)是一个tuple $\lt S,P\gt$,其中S是一个有限(或者无限)的状态集合,P是状态转移矩阵(transition probability matrix)或马尔科夫矩阵(markov matrix),$P_{ss’}= P[S_{t+1} = s’|S_t = s]$.</p>
-<h2 id="马尔科夫奖励过程-markov-reward-process">马尔科夫奖励过程(markov reward process)</h2>
-<p>马尔科夫奖励过程是一个tuple $\lt S,P,R,\gamma\gt$,和马尔科夫过程相比，它多了一个奖励R，R和某个具体的状态相关，MRP中的reward只和state有关,和action无关。<br>
-S是一个(有限)状态的集合。<br>
-P是一个状态转移概率矩阵。<br>
-R是一个奖励函数$R = \mathbb{E}[R_{t+1}|S_t = s]$, <strong>这里为什么是t+1时刻的reward?这仅仅是一个约定，为了描述RL问题中涉及到的observation，action，reward比较方便。这里可以理解为离开这个状态才能获得奖励而不是进入这个状态即获得奖励。如果改成$R_t$也是可以的，这时可以理解为进入这个状态获得的奖励。</strong><br>
-$\gamma$称为折扣因子(discount factor), $\gamma \epsilon [0,1]$.<strong>为什么引入$\gamma$，David Silver的公开课中提到了四个原因:(1)数学上便于计算回报(return)；(2)避免陷入无限循环；(3)长远利益具有一定的不确定性；(4)符合人类对眼前利益的追求。</strong></p>
-<h3 id="奖励-reward">奖励(reward)</h3>
-<p>每个状态s在一个时刻t立即可得到一个reward,reward的值需要由环境给出,这个值可正可负。目前的强化学习算法中reward都是人为设置的。</p>
-<h3 id="回报-return">回报(return)</h3>
-<p>回报是累积的未来的reward,其计算公式如下:<br>
-$$G_t = R_{t+1} + R_{t+2} + … = \sum_{k=0}^{\infty} {\gamma^k R_{t+k+1}} \tag{1}$$<br>
-它是一个马尔科夫链上从t时刻开始往后所有奖励的有衰减(带折扣因子)的总和。</p>
-<h3 id="值函数-value-function">值函数(value function)</h3>
-<p>值函数是回报(return)的期望(expected return), 一个MRP过程中某一状态的value function为从该状态开始的markov charin return的期望，即$v(s) = \mathbb{E}[G_t|S_t=s]$.<br>
-MRP的value function和MDP的value function是不同的, MRP的value function是对于state而言的，而MDP的value function是针对tuple $\lt$state, action$\gt$的。<br>
-这里为什么要取期望,因为policy是stotastic的情况时，在每个state时，采取每个action都是可能的，都有一定的概率，next state也是不确定的了，所以value funciton是一个随机变量，因此就引入期望来刻画随机变量的性质。<br>
-为什么在当前state就知道下一时刻的state了?对于有界的RL问题来说，return是在一个回合结束时候计算的；对于无界的RL问题来说，由于有衰减系数，只要reward有界，return就可以计算出来。</p>
-<h3 id="马尔科夫奖励过程的贝尔曼方程-bellman-equation-for-mrp">马尔科夫奖励过程的贝尔曼方程(bellman equation for MRP)</h3>
-<p>\begin{align*}<br>
-v(s) &amp;= \mathbb{E}[G_t|S_t = s]\\<br>
-&amp;= \mathbb{E}[R_{t+1} + \gamma R_{t+2} + … | S_t = s]\\<br>
-&amp;= \mathbb{E}[R_{t+1} + \gamma (R_{t+2} + \gamma R_{t+3} + …|S_t = s]\\<br>
-&amp;= \mathbb{E}[R_{t+1} + \gamma G_{t+1} |S_t = s]\\<br>
-&amp;= \mathbb{E}[R_{t+1} + \gamma v(S_{t+1})|S_t = s]\\<br>
-v(s) &amp;= \mathbb{E}[R_{t+1} + \gamma v(S_{t+1})|S_t = s]<br>
-\end{align*}<br>
-v(s)由两部分组成，一部分是immediate reward的期望(expectation)，$\mathbb{E}[R_{t+1}]$, 只与当前时刻state有关；另一部分是下一时刻state的value function的expectation。如果用s’表示s状态下一时刻的state，那么bellman equation可以写成：<br>
-$$v(s) = R_s + \gamma \sum_{s’ \epsilon S} P_{ss’}v(s’)$$<br>
-我们最终的目的是通过迭代使得t轮迭代时的v(s)和第t+1轮迭代时的v(s)相等。将其写成矩阵形式为：<br>
-$$v_t = R + \gamma P v_{t+1}$$<br>
-$$(v_1,v_2,…,v_n)^T = (R_1,R_2,…,R_n)^T + \gamma \begin{bmatrix}P_{11}&amp;P_{12}&amp;…&amp;P_{1n}\\P_{21}&amp;P_{22}&amp;…&amp;P_{2n}\\&amp;&amp;…&amp;\\P_{n1}&amp;P_{n2}&amp;…&amp;P_{nn}\end{bmatrix} (v_1,v_2,…,v_n)^T $$<br>
-MRP的Bellman方程组是线性的，可以直接求解:<br>
-\begin{align*}<br>
-v &amp;= R + \gamma Pv\\<br>
-(1-\gamma P) &amp;= R\\<br>
-v &amp;= (1 - \gamma P)^{-1} R<br>
-\end{align*}<br>
-可以直接解方程，但是复杂度为$O(n^3)$，对于大的MRP方程组不适用，可以通过迭代法求解，常用的迭代法有动态规划,蒙特卡洛算法和时序差分算法等求解(动态规划是迭代法吗？）</p>
-<h2 id="马尔科夫决策过程-markov-decision-process">马尔科夫决策过程(markov decision process)</h2>
-<p>马尔科夫决策过程，比markov reward process多了一个A,它也是一个tuple $\lt S,A,P,R,\gamma\gt$, 在MRP中奖励R仅仅和状态S相关，在MDP中奖励R和概率P对应的是某个状态S和某个动作A的组合。<br>
-\begin{align*}<br>
-P_{ss’}^a &amp;= P[S_{t+1} = s’ | S_t = s, A_t = a]\\<br>
-R_s^a &amp;= \mathbb{E}[R_{t+1} | S_t = s, A_t = a]<br>
-\end{align*}<br>
-这里的reward不仅仅与state相关，而是与tuple $\lt state，action\gt$相关。</p>
-<h3 id="回报">回报</h3>
-<p>MDP中的$G_t$和式子$(1)$的$G_t$是一样的，将$G_t$写成和后继时刻相关的形式如下：<br>
-\begin{align*}<br>
-G_t &amp;= R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \gamma^3 R_{t+4} + …\\<br>
-&amp;= R_{t+1} + \gamma (R_{t+2} + \gamma^1 R_{t+3} + \gamma^2 R_{t+4} + …)\\<br>
-&amp;= R_{t+1} + \gamma G_{t+1} \tag{2}<br>
-\end{align*}<br>
-这里引入$\gamma$之后，即使是在continuing情况下，只要$G_t$是非零常数，$G_t$也可以通过等比数列求和公式进行计算，即:<br>
-$$G_t = \sum_{k=1}^{\infty} \gamma^k = \frac{1}{1-\gamma} \tag{3}$$</p>
-<h3 id="策略-policy">策略(policy)</h3>
-<p>策略$\pi$的定义:给定状态时采取各个动作的概率分布。<br>
-$$\pi(a|s) = P[A_t = a | S_t = a] \tag{4}$$</p>
-<h3 id="值函数-value-function-v2">值函数(value function)</h3>
-<p>这里给出的是值函数的定义，就是这么定义的。<br>
-MDP的值函数有两种，状态值函数(state value function)和动作值函数(action value function), 这两种值函数的含义其实是一样的，也可以相互转换。具体来说, 值函数定义为给定一个policy $\pi$，得到的回报的期望(expected return)。<br>
-一个MDP的状态s对应的值函数(state value function) $v_{\pi}(s)$是从状态s开始采取策略$\pi$得到的回报的期望。<br>
-\begin{align*}<br>
-v_{\pi}(s) &amp;= \mathbb{E}_{\pi}[G_t|S_t = s]\\<br>
-&amp;=\mathbb{E}_{\pi}[\sum_{k=0}^{\infty} \gamma^{k} R_{t+k+1}|S_t=s] \tag{5}<br>
-\end{align*}<br>
-这里的$G_t$是式子(2)中的回报。<br>
-一个MDP过程中动作值函数(action value function) $q_{\pi}(s,a)$是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。<br>
-&lt;action value function $q_{\pi}(s,a)$ is the expected return starting from states, taking action a, and then following policy \pi.&gt;<br>
-\begin{align*}<br>
-q_{\pi}(s,a) &amp;= \mathbb{E}_{\pi}\left[G_t | S_t = s, A_t = a\right]\\<br>
-&amp;= \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} \gamma^{k} R_{t+k+1}|S_t=s, A_t=a\right] \tag{6}<br>
-\end{align*}</p>
-<h4 id="状态值函数-state-value-function">状态值函数(state value function)</h4>
-<p>\begin{align*}<br>
-v_{\pi}(s) &amp;= \sum_{a \epsilon A} \pi(a|s) q_{\pi} (s,a) \tag{7}\\<br>
-v_{\pi}(s) &amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_{\pi}(s’) \right] \tag{8}\\<br>
-\end{align*}<br>
-式子$(7)$是$v(s)$和$q(s,a)$的关系，式子$(8)$是$v(s)$和它的后继状态$v(s’)$的关系。<br>
-式子$(8)$的推导如下：<br>
-\begin{align*}<br>
-v_{\pi}(s) &amp;= \mathbb{E}_{\pi}[G_t|S_t = s]\\<br>
-&amp;= \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}|S_t = s\right]\\<br>
-&amp;= \sum_a \pi(a|s)\sum_{s’}\sum_rp(s’,r|s,a) \left[r + \gamma \mathbb{E}_{\pi}\left[G_{t+1}|S_{t+1}=s’\right]\right]\\<br>
-&amp;= \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a) \left[r + \gamma v_{\pi}(s’) \right]\\<br>
-\end{align*}</p>
-<h4 id="动作值函数-action-value-function">动作值函数(action value function)</h4>
-<p>\begin{align*}<br>
-q_{\pi}(s,a) &amp;= \sum_{s’}\sum_r p(s’,r|s,a)(r + \gamma  v_{\pi}(s’)) \tag{9}\\<br>
-q_{\pi}(s,a) &amp;= \sum_{s’}\sum_r p(s’,r|s,a)(r + \gamma  \sum_{a’}\pi(a’|s’)q(s’,a’)) \tag{10}\\<br>
-\end{align*}<br>
-式子$(9)$是$q(s,a)$和$v(s)$的关系，式子$(10)$是$q(s,a)$和它的后继状态$q(s’,a’)$的关系。<br>
-以上都是针对MDP来说的，在MDP中，给定policy $\pi$下，状态s下选择a的action value function，$q_{\pi}(s,a)$类似MRP里面的v(s)，而MDP中的v(s)是要考虑在state s下采率各个action后的情况。</p>
-<h3 id="贝尔曼期望方程-bellmam-expectation-equation">贝尔曼期望方程(Bellmam expectation equation)</h3>
-<p>\begin{align*}<br>
-v_{\pi}(s) &amp;= \mathbb{E}_{\pi}[R_{t+1} + \gamma v_{\pi}(S_{t+1})|S_t = s] \tag{11}\\<br>
-v_{\pi}(s) &amp;= \mathbb{E}_{\pi}\left[q_{\pi}(S_t,A_t)|S_t=s,A_t=a\right]\tag{12}\\<br>
-q_{\pi}(s,a)&amp;= \mathbb{E}_{\pi}\left[R_{t+1} + \gamma v_{\pi}(S_{t+1}) |S_t=s,A_t=a\right]\tag{13}\\<br>
-q_{\pi}(s,a) &amp;= \mathbb{E}_{\pi}[R_{t+1} + \gamma q_{\pi}(S_{t+1},A_{t+1}) | S_t = s, A_t = a] \tag{14}<br>
-\end{align*}</p>
-<h4 id="矩阵形式">矩阵形式</h4>
-<p>\begin{align*}<br>
-v_{\pi} &amp;= R^{\pi} + \gamma P^{\pi} v_{\pi}\\<br>
-v_{\pi} &amp;= (I-\gamma P^{\pi} )^{-1} R^{\pi}<br>
-\end{align*}</p>
-<h2 id="最优策程的求解-how-to-find-optimal-policy">最优策程的求解(how to find optimal policy)</h2>
-<h3 id="最优价值函数-optimal-value-function">最优价值函数(optimal value function)</h3>
-<p>$v_{*} = \max_{\pi}v_{\pi}(s)$,从所有策略产生的state value function中，选取使得state s的价值最大的函数<br>
-$q_{*}(s,a) = \max_{\pi} q_{\pi}(s,a)$,从所有策略产生的action value function中，选取使$\lt s,a\gt$价值最大的函数<br>
-当我们得到了optimal value function，也就知道了每个state的最优价值，便认为这个MDP被解决了</p>
-<h3 id="最优策略-optimal-policy">最优策略(optimal policy)</h3>
-<p>对于每一个state s，在policy $\pi$下的value 大于在policy $\pi’$的value， 就称策略$\pi$优于策略$\pi’$， $\pi \ge \pi’$ if $v_{\pi}(s) \ge v_{\pi’}(s)$, 对于任意s都成立<br>
-对于任何MDP，都满足以下条件：</p>
-<ol>
-<li>都存在一个optimal policy，它比其他策略好或者至少相等；</li>
-<li>所有的optimal policy的optimal value function是相同的；</li>
-<li>所有的optimal policy 都有相同的 action value function.</li>
-</ol>
-<h3 id="寻找最优策略">寻找最优策略</h3>
-<p>寻找optimal policy可以通过寻找optimal action value function来实现：<br>
-$${\pi}_{*}(a|s) =<br>
-\begin{cases}1, &amp;if\quad a = \arg\max\ q_{*}(s,a)\\0, &amp;otherwise\end{cases}$$</p>
-<h3 id="贝尔曼最优方程-bellman-optimal-equation">贝尔曼最优方程(bellman optimal equation)</h3>
-<p>*号表示最优的策略。</p>
-<h4 id="最优状态值函数-state-value-function">最优状态值函数(state value function)</h4>
-<p>\begin{align*}<br>
-v_{*}(s) &amp;= \max_a q_{*}(s,a)\\<br>
-&amp;= \max_a\mathbb{E}_{\pi_{*}}\left[G_t|S_t=s,A_t=a\right]\\<br>
-&amp;= \max_a\mathbb{E}_{\pi_{*}}\left[R_{t+1}+\gamma G_t|S_t=s,A_t=a\right]\\<br>
-&amp;= \max_a\mathbb{E}\left[R_{t+1} +\gamma v_{*}(S_{t+1})|S_t=s,A_t=a\right]\\<br>
-&amp;= \max_a \left[\sum_{s’,r} p(s’,r|s,a)(r+\gamma v_{*}(s’) )\right] \tag{15}\\<br>
-\end{align*}</p>
-<h4 id="最优动作值函数-action-value-function">最优动作值函数(action value function)</h4>
-<p>\begin{align*}<br>
-q_{*}(s,a) &amp;= \sum_{s’,r} p(s’,r|s,a) (r + \gamma v_{*}(s’))\\<br>
-&amp;= \sum_{s’,r} p(s’,r|s,a) (r + \gamma \max_{a’} q_{*}(s’,a’))\\<br>
-&amp;=\mathbb{E}\left[R_{t+1}+\gamma \max_{a’}q_{*}(S_{t+1},a’)|S_t=s,A_t=a \right]\tag{16}\\<br>
-\end{align*}</p>
-<h3 id="贝尔曼最优方程的求解-solution-to-bellman-optimal-equation">贝尔曼最优方程的求解(solution to Bellman optimal equation)</h3>
-<p>Bellman equation和Bellman optimal equation相比，一个是对于给定的策略，求其对应的value function,是对一个策略的估计，而bellman optimal equation是要寻找最优策略，通过对action value function进行贪心。<br>
-Bellman最优方程是非线性的，没有固定的解决方案，只能通过迭代法来解决，如Policy iteration，value iteration，Q-learning，Sarsa等。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="http://incompleteideas.net/book/the-book-2nd.html" target="_blank" rel="noopener">http://incompleteideas.net/book/the-book-2nd.html</a><br>
-2.<a href="https://www.bilibili.com/video/av32149008/?p=2" target="_blank" rel="noopener">https://www.bilibili.com/video/av32149008/?p=2</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/20/linux-常见问题/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/20/linux-常见问题/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/20/index.html">linux 常见问题（不定期更新）</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-20 20:30:34" itemprop="dateCreated datePublished" datetime="2018-12-20T20:30:34+08:00">2018-12-20</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-04 10:37:22" itemprop="dateModified" datetime="2019-06-04T10:37:22+08:00">2019-06-04</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题1-undefined-reference-to-pthread-create-in-linux">问题1 Undefined reference to pthread_create in Linux</h2>
-<p>在阅读自然语言处理的一篇论文时，读到了bype pair encoding(bpe)算法。在github找到了一个实现<a href="https://github.com/glample/fastBPE" target="_blank" rel="noopener">fastBPE</a>, 算法是用C++写的，在编译的过程中遇到了问题&quot;Undefined reference to pthread_create in Linux&quot;,</p>
-<h3 id="terminal下解决方案">terminal下解决方案</h3>
-<p>查阅资料了解到pthread不是Linux操作系统默认的库函数，所以需要在编译的时候将pthread链接该库函数，后来在看fastBPE的文档时发现文档中已经有说明:<br>
-Compile with:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g++ -std=c++11 -pthread -O3 fast.cc -o fast</span><br></pre></td></tr></table></figure>
-<h3 id="codeblocks下解决方案">codeblocks下解决方案</h3>
-<p>上面给出的方案是使用gcc在terminal进行编译时加入静态库，但是对于不习惯在命令行使用gdb进行调试的人来说没有用。<br>
-在codeblocks中，如果要链接静态库,找到Settings --&gt; Compiler… --&gt; Linker settings，点击add，添加相应的库函数即可。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1:<a href="https://stackoverflow.com/questions/1662909/undefined-reference-to-pthread-create-in-linux" target="_blank" rel="noopener">https://stackoverflow.com/questions/1662909/undefined-reference-to-pthread-create-in-linux</a><br>
-2:<a href="https://blog.csdn.net/zhaoyue007101/article/details/7705753" target="_blank" rel="noopener">https://blog.csdn.net/zhaoyue007101/article/details/7705753</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/18/随笔/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/18/随笔/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/20/index.html">随笔</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-18 15:43:11" itemprop="dateCreated datePublished" datetime="2018-12-18T15:43:11+08:00">2018-12-18</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-12 12:02:11" itemprop="dateModified" datetime="2019-05-12T12:02:11+08:00">2019-05-12</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/工具/" itemprop="url" rel="index"><span itemprop="name">工具</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1>目的</h1>
-<p>看到别人在本科，硕士阶段记录了很多自己学到的东西，再看看自己，本科四年什么都没留下，现在进入实验室已经一年多了，没有沉淀下来，本来是很好的一手牌，被自己打的稀烂。今天就下定决心搭建一个自己的博客，用来记录自己的收获，一方面防止自己忘记，另一方面也确定自己是否已经懂了，能否把一个东西讲解出来。</p>
-<h1>恩！</h1>
-<p>爱你呦，荟荟～</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/19/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><span class="page-number current">20</span>
+    <a class="extend prev" rel="prev" href="/page/19/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/19/">19</a><span class="page-number current">20</span><a class="page-number" href="/page/21/">21</a><a class="extend next" rel="next" href="/page/21/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -3522,7 +3632,7 @@ Compile with:</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">200</span>
+                    <span class="site-state-item-count">204</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -4122,7 +4232,9 @@ Compile with:</p>
                     
                       
                     
-                    <span class="site-state-item-count">268</span>
+                      
+                    
+                    <span class="site-state-item-count">269</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>

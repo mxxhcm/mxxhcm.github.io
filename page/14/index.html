@@ -327,6 +327,1021 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-service/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/07/linux-service/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">linux service and daemon</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 16:47:38" itemprop="dateCreated datePublished" datetime="2019-05-07T16:47:38+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-23 22:39:36" itemprop="dateModified" datetime="2019-06-23T22:39:36+08:00">2019-06-23</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="service和daemon">service和daemon</h2>
+<p>service（服务）：系统提供某些功能的一些服务(包括系统本身以及网络service)<br>
+daemon：实现service的程序叫做daemon</p>
+<h2 id="daemon的分类">daemon的分类</h2>
+<ul>
+<li>stand alone daemon</li>
+<li>super daemon</li>
+</ul>
+<h3 id="stand-alone-daemon">stand_alone daemon</h3>
+<p>独立启动，启动并加载到内存后就一直占用内存与系统资源运行。因此对于客户端的请求响应特别快。比如WWW的daemon(httpd)，FTP的daemon(vsftpd)</p>
+<h3 id="super-daemon">super daemon</h3>
+<p>由一个统一daemon唤起的service，这个特殊的daemon叫做super daemon早期是inetd,后来被xinetd替代了。没有客户端请求时，service被关闭，收到客户端请求时，super daemon唤醒相应的service，请求结束后，这个service就会关闭，service反应时间会比较慢。常见的有telnetservice。<br>
+signal-control和interval-control，信号管理的daemon以及每隔一段时间主动执行某项job的daemon每一个service程序文件名都会加上d，d代表daemon。</p>
+<h2 id="sysvinit-service">SysVInit service</h2>
+<h3 id="配置文件路径">配置文件路径</h3>
+<ul>
+<li>/etc/rc.d/rcX.d/ (X 代表运行级别 0-6) # 不同runlevel的service存放位置</li>
+<li>/etc/rc.d/rc.local    # 用户自定义的service</li>
+</ul>
+<h3 id="自定义文件示例">自定义文件示例</h3>
+<p>创建/etc/init.d/shadowsocks_client service如下所示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line"></span><br><span class="line">### BEGIN INIT INFO</span><br><span class="line"># Provides:          shadowsocks client</span><br><span class="line"># Required-Start:    $local_fs $remote_fs $network $syslog</span><br><span class="line"># Required-Stop:     $local_fs $remote_fs $network $syslog</span><br><span class="line"># Default-Start:     2 3 4 5</span><br><span class="line"># Default-Stop:      0 1 6</span><br><span class="line"># Short-Description: shadowsocks service</span><br><span class="line"># Description:       shadowsocks service daemon</span><br><span class="line">### END INIT INFO</span><br><span class="line">start()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d start</span><br><span class="line">&#125;</span><br><span class="line">stop()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d stop</span><br><span class="line">&#125;</span><br><span class="line">case “$1” in</span><br><span class="line">start)</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">stop)</span><br><span class="line">　　　stop</span><br><span class="line">　　　;;</span><br><span class="line">reload)</span><br><span class="line">　　　stop</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">\*)</span><br><span class="line">　　　echo “Usage: $0 &#123;start|reload|stop&#125;”</span><br><span class="line">　　　exit 1</span><br><span class="line">　　　;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+<p>然后执行以下命令进行更新<br>
+~$:sudo chomod a+x /etc/init.d/shadowsocks_client<br>
+~$:sudo update_rc.d shadowsocks defaults</p>
+<h3 id="运行方式">运行方式</h3>
+<p>service shadowsocks_client start</p>
+<h2 id="systemd">SystemD</h2>
+<h3 id="配置文件路径-v2">配置文件路径</h3>
+<ul>
+<li>/etc/systemd/system	系统service，不要动。大部分是软连接，指向/usr/lib/systemd/sytem</li>
+<li>/run/systemd/system	Runtime units</li>
+<li>/usr/local/lib/systemd/system	管理员安装的System units</li>
+<li>/usr/lib/systemd/system	包管理器安装的System units(for centos)</li>
+<li>/lib/systemd/system   包管理器安装的System units(for debian/ubuntu)</li>
+<li>/etc/systemd/system/**.service.wants/*：此目录内的文件为链接文件，设置相依服务的链接。意思是启动了 **.service 之后，最好再加上这目录下面建议的服务。</li>
+<li>/etc/systemd/system/vsftpd.service.requires/*：此目录内的文件为链接文件，设置相依服务的链接。意思是在启动 vsftpd.service 之前，需要事先启动哪些服务的意思。</li>
+</ul>
+<h3 id="自定义unit文件示例">自定义unit文件示例</h3>
+<p>在/lib/systemd/system/创建ss_client.service，如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=ss v4 client daemon</span><br><span class="line"> </span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/usr/bin/sslocal -c /etc/shadowsocks_v4_client.json &lt;/dev/null &amp;&gt;&gt;/home/mxxmhh/.log/ss-local.log </span><br><span class="line">WorkingDirectory=/home/mxxmhh/</span><br><span class="line"># Restart=on-failure</span><br><span class="line">StartLimitBurst=2</span><br><span class="line">StartLimitInterval=30</span><br><span class="line">User=mxxmhh</span><br><span class="line">ExecReload=/bin/kill -SIGHUP $MAINPID</span><br><span class="line">ExecStop=/bin/kill -SIGINT $MAINPID</span><br><span class="line"> </span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>然后执行以下命令<br>
+~$:sudo systemctl start ss-client.service<br>
+~$:sudo systemctl enable ss-client.service</p>
+<blockquote>
+<p>Created symlink /etc/systemd/system/multi-user.target.wants/ss-client.service → /lib/systemd/system/ss-client.service.</p>
+</blockquote>
+<p>执行以下命令发现报错<br>
+~$:sudo systemctl status ss-client.service</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ss-client.service: Start request repeated too</span><br><span class="line">ss-client.service: Failed with result &apos;exit-c</span><br></pre></td></tr></table></figure>
+<p>根据参考文献13使用下列命令常看详细log<br>
+~$:journalctl -u ss-client.service<br>
+发现报错：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss-client.service: Failed at step USER spawning /usr/bin/sslocal: No such proces</span><br></pre></td></tr></table></figure>
+<p>然后根据参考文献12发现可能是自己的文件写的有问题，最后发现是user复制的时候出错了，修改之后就好了。执行以下命令加载修改后的配置文件，然后restart服务。<br>
+~$: sudo systemctl daemon-reload<br>
+~$: sudo systemctl restart ss-client.service<br>
+~$: sudo systemctl status ss-client.service</p>
+<h3 id="unit文件的编写">Unit文件的编写</h3>
+<p>每个unit都有一个配置文件，定义了这个unit启动的条件。</p>
+<h4 id="unit格式">Unit格式</h4>
+<p>下面是 SSH service的unit文件，service unit文件以.service 为文件名后缀。<br>
+~$:cat /etc/systemd/system/sshd.service</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=OpenSSH server daemon</span><br><span class="line">[Service]</span><br><span class="line">EnvironmentFile=/etc/sysconfig/sshd</span><br><span class="line">ExecStartPre=/usr/sbin/sshd-keygen</span><br><span class="line">ExecStart=/usrsbin/sshd –D $OPTIONS</span><br><span class="line">ExecReload=/bin/kill –HUP $MAINPID</span><br><span class="line">KillMode=process</span><br><span class="line">Restart=on-failure</span><br><span class="line">RestartSec=42s</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>Unit部分仅仅有一个描述信息;Service中，ExecStartPre定义启动service之前应该运行的命令；ExecStart定义启动service的具体命令行语法；Install部分，WangtedBy 表明这个service是在多用户模式下所需要的，multi-user.target</p>
+<h4 id="unit的配置文件区块">Unit的配置文件区块</h4>
+<p>一个文件通常由[Unit]，[Service]（或者其他unit类型）和[Install]构成。<br>
+[Unit]区块通常是配置文件的第一个区块，用来定义 Unit 的元数据，以及配置与其他 Unit 的关系。它的主要字段如下。</p>
+<ul>
+<li>Description：简短描述</li>
+<li>Documentation：文档地址</li>
+<li>Requires：当前 Unit 依赖的其他 Unit，如果它们没有运行，当前 Unit 会启动失败</li>
+<li>Wants：与当前 Unit 配合的其他 Unit，如果它们没有运行，当前 Unit 不会启动失败</li>
+<li>BindsTo：与Requires类似，它指定的 Unit 如果退出，会导致当前 Unit 停止运行</li>
+<li>Before：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之后启动</li>
+<li>After：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之前启动</li>
+<li>Conflicts：这里指定的 Unit 不能与当前 Unit 同时运行</li>
+<li>Condition…：当前 Unit 运行必须满足的条件，否则不会运行</li>
+<li>Assert…：当前 Unit 运行必须满足的条件，否则会报启动失败</li>
+</ul>
+<p>[Install]通常是配置文件的最后一个区块，用来定义如何启动，以及是否开机启动。它的主要字段如下。</p>
+<ul>
+<li>WantedBy：它的值是一个或多个 Target，当前 Unit 激活时（enable）符号链接会放入/etc/systemd/system目录下面以 Target 名 + .wants后缀构成的子目录中</li>
+<li>RequiredBy：它的值是一个或多个 Target，当前 Unit 激活时，符号链接会放入/etc/systemd/system目录下面以 Target 名 + .required后缀构成的子目录中</li>
+<li>Alias：当前 Unit 可用于启动的别名</li>
+<li>Also：当前 Unit 激活（enable）时，会被同时激活的其他 Unit</li>
+</ul>
+<p>[Service]区块用来 Service 的配置，只有 Service 类型的 Unit 才有这个区块。它的主要字段如下。</p>
+<ul>
+<li>Type：定义启动时的进程行为。它有以下几种值。</li>
+<li>Type=simple：默认值，执行ExecStart指定的命令，启动主进程</li>
+<li>Type=forking：以 fork 方式从父进程创建子进程，创建后父进程会立即退出</li>
+<li>Type=oneshot：一次性进程，Systemd 会等当前服务退出，再继续往下执行</li>
+<li>Type=dbus：当前服务通过D-Bus启动</li>
+<li>Type=notify：当前服务启动完毕，会通知Systemd，再继续往下执行</li>
+<li>Type=idle：若有其他任务执行完毕，当前服务才会运行</li>
+<li>ExecStart：启动当前服务的命令</li>
+<li>ExecStartPre：启动当前服务之前执行的命令</li>
+<li>ExecStartPost：启动当前服务之后执行的命令</li>
+<li>ExecReload：重启当前服务时执行的命令</li>
+<li>ExecStop：停止当前服务时执行的命令</li>
+<li>ExecStopPost：停止当其服务之后执行的命令</li>
+<li>RestartSec：自动重启当前服务间隔的秒数</li>
+<li>Restart：定义何种情况 Systemd 会自动重启当前服务，可能的值包括always（总是重启）、on-success、on-failure、on-abnormal、on-abort、on-watchdog</li>
+<li>TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数</li>
+<li>Environment：指定环境变量</li>
+</ul>
+<h3 id="日志">日志</h3>
+<p>Systemd统一管理所有Unit的启动日志。带来的好处就是，可以只用journalctl一个命令，查看所有日志（内核日志和应用日志）。日志的配置文件是/etc/systemd/journald.conf。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">~$:sudo journalctl  # 查看所有日志（默认情况下 ，只保存本次启动的日志）</span><br><span class="line">~$: sudo journalctl -k    # 查看内核日志（不显示应用日志）</span><br><span class="line"><span class="meta">#</span> 查看系统本次启动的日志</span><br><span class="line">~$:sudo journalctl -b    </span><br><span class="line">~$:sudo journalctl -b -0</span><br><span class="line">~$:sudo journalctl -b -1 # 查看上一次启动的日志（需更改设置）</span><br><span class="line"><span class="meta">#</span> 查看指定时间的日志</span><br><span class="line">~$:sudo journalctl --since="2012-10-30 18:17:16"</span><br><span class="line">~$:sudo journalctl --since "20 min ago"</span><br><span class="line">~$:sudo journalctl --since yesterday</span><br><span class="line">~$:sudo journalctl --since "2015-01-10" --until "2015-01-11 03:00"</span><br><span class="line">~$:sudo journalctl --since 09:00 --until "1 hour ago"</span><br><span class="line">~$:sudo journalctl -n   # 显示尾部的最新10行日志</span><br><span class="line">~$:sudo journalctl -n 20    # 显示尾部指定行数的日志</span><br><span class="line">~$:sudo journalctl -f   # 实时滚动显示最新日志</span><br><span class="line">~$:sudo journalctl /usr/lib/systemd/systemd # 查看指定服务的日志</span><br><span class="line">~$:sudo journalctl _PID=1   # 查看指定进程的日志</span><br><span class="line">~$:sudo journalctl /usr/bin/bash    # 查看某个路径的脚本的日志</span><br><span class="line">~$:sudo journalctl _UID=33 --since today    # 查看指定用户的日志</span><br><span class="line"><span class="meta">#</span> 查看某个 Unit 的日志</span><br><span class="line">~$:sudo journalctl -u nginx.service</span><br><span class="line">~$:sudo journalctl -u nginx.service --since today</span><br><span class="line">~$:sudo journalctl -u nginx.service -f  # 实时滚动显示某个 Unit 的最新日志</span><br><span class="line">~$:journalctl -u nginx.service -u php-fpm.service --since today # 合并显示多个 Unit 的日志</span><br><span class="line"><span class="meta">#</span> 查看指定优先级（及其以上级别）的日志，共有8级</span><br><span class="line"><span class="meta">#</span> 0: emerg</span><br><span class="line"><span class="meta">#</span> 1: alert</span><br><span class="line"><span class="meta">#</span> 2: crit</span><br><span class="line"><span class="meta">#</span> 3: err</span><br><span class="line"><span class="meta">#</span> 4: warning</span><br><span class="line"><span class="meta">#</span> 5: notice</span><br><span class="line"><span class="meta">#</span> 6: info</span><br><span class="line"><span class="meta">#</span> 7: debug</span><br><span class="line">~$:sudo journalctl -p err -b</span><br><span class="line">~$:sudo journalctl --no-pager   # 日志默认分页输出，--no-pager 改为正常的标准输出</span><br><span class="line">~$:sudo journalctl -b -u nginx.service -o json  # 以 JSON 格式（单行）输出</span><br><span class="line">~$:sudo journalctl -b -u nginx.serviceqq -o json-pretty # 以 JSON 格式（多行）输出，可读性更好</span><br><span class="line">~$:sudo journalctl --disk-usage # 显示日志占据的硬盘空间</span><br><span class="line">~$:sudo journalctl --vacuum-size=1G # 指定日志文件占据的最大空间</span><br><span class="line">~$:sudo journalctl --vacuum-time=1years # 指定日志文件保存多久</span><br></pre></td></tr></table></figure>
+<h3 id="systemctl-工具">systemctl 工具</h3>
+<p>~$:systemctl list-units     列出正在运行的 Unit<br>
+~$:systemctl list-units --all   列出所有Unit，包括没有找到配置文件的或者启动失败的<br>
+~$:systemctl list-units --all --state=inactive      列出所有没有运行的 Unit<br>
+~$:systemctl list-units --failed    列出所有加载失败的 Unit<br>
+~$:systemctl list-units --type=service  列出所有正在运行的、类型为 service 的 Unit<br>
+~$:systemctl list-unit-files    列出所有配置文件<br>
+~$:systemctl list-unit-files --type=service     列出指定类型的配置文件<br>
+~$:systemctl start foo.service	用来启动一个service (并不会重启现有的)<br>
+~$:systemctl stop foo.service	用来停止一个service (并不会重启现有的)。<br>
+~$:systemctl restart foo.service	用来停止并启动一个service。<br>
+~$:systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+~$:systemctl condrestart foo.service	如果service正在运行那么重启它。<br>
+~$:systemctl status foo.service	汇报service是否正在运行。<br>
+~$:systemctl list-unit-files --type=service	用来列出可以启动或停止的service列表。<br>
+~$:systemctl enable foo.service	在下次启动时或满足其他触发条件时设置service为启用。创建一个符号链接从/etc/systemd/system/some_target.target.wants指向/lib/systemd/system或者/etc/systemd/system。<br>
+~$:systemctl disable foo.service	在下次启动时或满足其他触发条件时设置service为禁用<br>
+~$:systemctl is-enabled foo.service	用来检查一个service在当前环境下被配置为启用还是禁用。<br>
+~$:systemctl list-unit-files --type=service	输出在各个运行级别下service的启用和禁用情况<br>
+~$:systemctl daemon-reload	当您创建新service文件或者变更设置时使用。<br>
+~$:systemctl isolate multi-user.target (OR systemctl isolate runlevel3.target OR telinit 3)	改变至多用户运行级别。<br>
+~$:ls /etc/SystemD/system/*.wants/foo.service	用来列出该service在哪些运行级别下启用和禁用。</p>
+<h2 id="配置文件">配置文件</h2>
+<p>/etc/init.d/*　# 基本上所有的service启动脚本都被放置在该目录<br>
+/etc/rcX.d/    # X指的是数字，从$0-6$，代表不同的run-level，是/etc/init.d/目录下service的软连接<br>
+/etc/systemd/system     # systemd的service文件位置，是/usr/lib/systemd/sytem的软连接<br>
+/etc/default    # 一些配置文件<br>
+/etc/*  # 各service各自的配置文件</p>
+<h2 id="service-initctl-systemctl命令对照表">service，initctl，systemctl命令对照表</h2>
+<p>Service 命令|UpStart initctl 命令|SystemD 命令|备注<br>
+—|---|<br>
+service foo start|initctl start|systemctl start foo.service	用来启动一个service (并不会重启现有的)<br>
+service foo stop|initctl stop|systemctl stop foo.service	用来停止一个service (并不会重启现有的)<br>
+service foo reload|systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+service foo restart|initctl restart|systemctl restart foo.service	用来停止并启动一个service<br>
+service foo status|initctl status|systemctl status foo.service	汇报service是否正在运行。<br>
+service foo reload|initctl reload|systemctl reload foo.service	当支持时，重新装载配置文件而不中断等待操作。<br>
+service foo condrestart||systemctl condrestart foo.service	如果service正在运行那么重启它。</p>
+<h2 id="xinted">xinted</h2>
+<p>xinted是/etc/init.d/目录中的一个脚本。<br>
+xinted 是inted的扩展，是super daemon，它本身管理了一系列的daemon，只有在用户调用时才由xinetd启动，他们要比独立的daemon启动晚。<br>
+!!!xinted默认在ubuntu中是不存在的,<br>
+~$:sudo apt-get install xinetd<br>
+/etc/xinetd.conf   #super daemon配置文件<br>
+/etc/xinetd.d/*    #它所管理的进程<br>
+/var/lib/*  各service产生的数据库<br>
+/var/run/*  各service的程序的pid记录处</p>
+<h3 id="stand-alone的启动">stand alone的启动</h3>
+<ol>
+<li>用/etc/init.d/*启动<br>
+~#:/etc/init.d/cron start|stop|status|restart|reload|force-reload</li>
+</ol>
+<p>2.用service [service-name] (start|…)启动<br>
+service-name必须与/etc/init.d/相照应<br>
+–status-all 将所有的stand_aloneservice列出来<br>
+~#:service --status-all<br>
+~#:service cron</p>
+<h3 id="super-daemon的启动方式">super daemon的启动方式</h3>
+<p>super daemon本身也是一个stand alone的service，但是它所管理的其他文件就不是了。<br>
+查看某个service是否可用。<br>
+~#:grep -i ‘disable’ /etc/xinted.d/* # disable表示取消，若为yes，表示该service未开启，no表示开启</p>
+<h4 id="示例">示例</h4>
+<p>开启timeservice<br>
+~#:vim /etc/xinted.d/time<br>
+将disable改为no<br>
+重新启动xinted service<br>
+~#:service xinted restart<br>
+!!!注意是重启xinted service</p>
+<p>查看该service的信息<br>
+~#:grep -i ‘time’ /etc/services<br>
+~#:netstat -nltp | grep ‘time port’</p>
+<h3 id="默认值配置文件以及参数介绍">默认值配置文件以及参数介绍</h3>
+<p>/etc/xinetd.conf<br>
+log_type    SYSLOG daemon info 日志文件的记录service类型<br>
+log_on_failure  发生错误时需要记录的信息<br>
+log_on_success  成功启动时的记录信息<br>
+cps 同一秒内的最大连接个数，若超过则暂停<br>
+instance    同一service的最大连接数<br>
+per_source  同一来源的客户端的最大连接数<br>
+v6only  是否运行ipv6<br>
+groups<br>
+umask</p>
+<p>/etc/xinetd.d/<br>
+service <service name><br>
+{<br>
+disable 启动与否<br>
+id  service识别<br>
+server  程序文件名  这个service的启动程序<br>
+server_args 程序参数    设置server_args=–daemon<br>
+user    service所属id<br>
+group   用户组<br>
+socket_type 数据包类型  stream|dgram|raw stream使用tcp,   udp使用dgram,raw代表erver需要与ip直接交互。<br>
+protocol    数据包类型  tcp|udp与socket_type重复，<br>
+wait    连接机制    yes(single) no(multi) 一般udp为yes，tcp为no<br>
+instances   最大连接数<br>
+per_source  单用户来源  (一个数字或者NULIMTED)<br>
+cps 新连接限制<br>
+log_type    日志文件类型    以什么日志选项记载和需要记载的等级(默认为info)<br>
+log_on_success,log_on_failure,设置值,[PID,HOST,USERID,EXIT,DURATION]<br>
+PID为service启动时的pid,host为远程主机的ip，userid为登陆者的账号，EXIT为离开时记录的项目，DURATION为该用户使用此service多久。<br>
+env 额外环境变量设置    设置环境变量<br>
+port    非正规端口号    设置不同的service与对应的端口号，port与service名必须与/etc/services的值相同<br>
+redirect    service转址    [IP port] 将客户端的请求转到另一台主机<br>
+includedir  调用外部设置    表示将某个目录所有文件都放入xinetd.conf中，<br>
+bind    service端口锁定    运行此service的适配卡<br>
+interface   与bind相同<br>
+only_from   [0.0.0.0,192.168.1.0/24,hostname,domainname]设置为这里面的ip或者主机名才能访问，0.0.0.0表示所有主机皆能访问，如果是192.168.1.0/24则表示为C　class的域，即由(192.168.1.1~192.168.1.255)皆可登录。另外，也可选择域名，如bit.edu.cn表示运行北理工的ip登录你的主机<br>
+no_acess    表示的是不可登录的主机<br>
+acess_time  时间控制    [00:00-24:00,HH:MM-HH:MM]<br>
+umask   设置用户新建目录或者文件时候的属性<br>
+}</service></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《鸟哥的LINUX私房菜》<br>
+2.<a href="https://askubuntu.com/questions/911525/difference-between-systemctl-init-d-and-service" target="_blank" rel="noopener">https://askubuntu.com/questions/911525/difference-between-systemctl-init-d-and-service</a><br>
+3.<a href="http://www.r9it.com/20180613/ubuntu-18.04-auto-start.html" target="_blank" rel="noopener">http://www.r9it.com/20180613/ubuntu-18.04-auto-start.html</a><br>
+4.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html</a><br>
+5.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-</a><br>
+6.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-</a><br>
+7.<a href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a><br>
+8.<a href="https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html" target="_blank" rel="noopener">https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/150.html</a><br>
+9.<a href="https://www.freedesktop.org/software/systemd/man/systemd.unit.html" target="_blank" rel="noopener">https://www.freedesktop.org/software/systemd/man/systemd.unit.html</a><br>
+10.<a href="https://unix.stackexchange.com/questions/206315/whats-the-difference-between-usr-lib-systemd-system-and-etc-systemd-system" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/206315/whats-the-difference-between-usr-lib-systemd-system-and-etc-systemd-system</a><br>
+11.<a href="https://stackoverflow.com/questions/35452591/start-request-repeated-too-quickly" target="_blank" rel="noopener">https://stackoverflow.com/questions/35452591/start-request-repeated-too-quickly</a><br>
+12.<a href="https://superuser.com/questions/1156676/what-causes-systemd-failed-at-step-user-spawning-usr-sbin-opendkim-no-such-p" target="_blank" rel="noopener">https://superuser.com/questions/1156676/what-causes-systemd-failed-at-step-user-spawning-usr-sbin-opendkim-no-such-p</a><br>
+13.<a href="https://stackoverflow.com/questions/39202644/caddy-service-start-request-repeated-too-quickly" target="_blank" rel="noopener">https://stackoverflow.com/questions/39202644/caddy-service-start-request-repeated-too-quickly</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-log文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/07/linux-log文件/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">linux log文件</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 16:44:36" itemprop="dateCreated datePublished" datetime="2019-05-07T16:44:36+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-20 09:47:30" itemprop="dateModified" datetime="2019-06-20T09:47:30+08:00">2019-06-20</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="常见的日志文件">常见的日志文件</h2>
+<p>/var/log/cron.log	crontab调度有没有执行，有没有错误以及/etc/crontab是否正确编写<br>
+/var/log/lastlog	所有账号最后一次的登录信息，非ASCII文件<br>
+/var/log/mail.log	所有邮件的往来信息<br>
+/var/log/messages	各种错误信息<br>
+/var/log/secure		<br>
+/var/log/wtmp		登录成功与识别的账号信息<br>
+/var/log/apport.log	应用程序崩溃记录<br>
+/var/log/apt/*		apt-get 安装卸载软件的日志<br>
+/var/log/auth.log	登录认证log(与/etc/var/secure挺像)<br>
+/var/log/boot.log	系统启动的日志<br>
+/var/log/btmp		记录所有失败者的信息<br>
+/var/log/cups/* 		<br>
+/var/log/dist-upgrade	dist-upgrade这种更新方式的日志<br>
+/var/log/dmesg		内核缓冲信息<br>
+/var/log/dpkg.log	安装或dpkg命令清除软件包的日志<br>
+/var/log/faillog	用户登录失败信息，错误登录命令也会显示<br>
+/var/log/fontconfig.log	字体设置有关的日志<br>
+/var/log/fsck		文件系统日志<br>
+/var/log/hp		<br>
+/var/log/install	<br>
+/var/log/kern.log	内核产生的日志<br>
+/var/log/samba		samba存储的信息<br>
+/var/log/syslog		系统登录信息<br>
+/var/log/upstart	<br>
+/var/log/wtmp		包含登录信息，找出谁正在登录进入系统以及谁用命令显示这个文件或者信息等<br>
+/var/log/xorg.*.log	来自X的日志信息</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-启动流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/07/linux-启动流程/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">linux-启动流程</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 16:41:27" itemprop="dateCreated datePublished" datetime="2019-05-07T16:41:27+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-18 17:40:46" itemprop="dateModified" datetime="2019-05-18T17:40:46+08:00">2019-05-18</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="linux的启动流程">Linux的启动流程</h2>
+<p>BIOS   MBR    boot loader    boot sector</p>
+<h2 id="bios">BIOS</h2>
+<p>BIOS(Basic Input Ouput System)是一套程序,它被写死到主板上面的一个内存芯片，这个内存芯片没有电时也能将数据记录下来，那就是一个ROM(Read Only Memory)。BIOS是系统开机时首先会去读取的一个小程序，它控制着开机时候的各项硬件参数的取得，它掌握了系统硬件的详细信息以及开机设备的选择，BIOS程序代码也会被适度修改，但是如果写在ROM中是无法修改的，现在多把BIOS写入Flash Memory 或者EEPROM中。</p>
+<p>BIOS通过硬件的INT13中断功能来读取MBR的，所以只要BIOS能检测到磁盘那么他就能够通过INT13这条信道来读取该磁盘的第一个扇区内的MBR，这样就能够执行boot loader</p>
+<h2 id="boot-loader">Boot Loader</h2>
+<p>boot loader的最主要功能就是认识操作系统的文件格式并且加载该操作系统的内核到内存中执行。不同操作系统的文件类型不同，所以boot loader也是不同的，那么如果通过一个MBR来安装多操作系统呢。</p>
+<h2 id="boot-sector">Boot Sector</h2>
+<p>对于文件系统来说，每个文件系统都会有保留一个引导扇区(boot sector)提供给操作系统来安装boot loader。<br>
+每个操作系统默认会安装一个boot loader到它的文件系统中。对于Linux来说，我们可以选择将boot loader安装到MBR，也可以不选择，那样boot loader只会安装在它自己的文件系统中的即是(boot sector)。但是Windows操作系统会默认直接将boot loader安装在MBR以及boot sector中，所以说安装双系统时，最好先装Windows，再装Linux，否则反过来的话，那么Windows的boot loader可能就会覆盖掉Linux的boot loader.<br>
+但是，系统的MBR只有一个，所以，如何执行boot sector中的boot loader呢，那就需要谈到boot loader的功能了。<br>
+boot loader的功能<br>
+		提供菜单<br>
+		加载内核文件<br>
+		转交其他loader<br>
+我们可以通过MBR中的boot loader选择其他的loader，这样就可以选择其他的操作系统运行了。<br>
+通过boot loader的管理读取了内核文件之后，那么就要进行工作了，重新检测硬件等。<br>
+但是从某些版本之后，内核是可以动态加载内核模块的，这些模块被放在/lib/modules/目录内，模块放置到磁盘根目录内，因此，启动过程中内核必须要挂载根目录，这样才能动态读取内核模块提供加载驱动程序的功能。<br>
+一般来说，非必要的功能可以编译成模块的内核功能，许多Linux会将内核编译成模块。USB，SATA,SCSI等设备的驱动程序都是通过模块的方式存在的。<br>
+那么问题来了，内核是不认识SATA硬盘的，所以根目录无法挂载，更无法通过根目录下的/lib/modules来驱动SATA硬盘了。这时候，就用到了虚拟文件系统(/boot/initrd)来管理。<br>
+虚拟文件系统能够通过boot loader加载到内存中，解压缩被当成一个根目录，从而通过该程序加载启动过程中所最需要的内核模块,通常是USB,RAID,LVM,SCSI等文件系统以及硬盘的驱动程序。<br>
+需要initrd的原因是因为启动时无法挂载根目录，如果根目录能被挂载，那么就不需要了，根目录再USB,SATA,SCSI等磁盘，或者文件系统比较特殊，为LVM，RAID等，那么是需要<br>
+载入这些模块之后，initd就会帮助内核重新调用/sbin/init进行后续正常的启动</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-cpu信息查看/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/07/linux-cpu信息查看/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">linux cpu信息查看</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 16:30:27" itemprop="dateCreated datePublished" datetime="2019-05-07T16:30:27+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-12 11:16:52" itemprop="dateModified" datetime="2019-06-12T11:16:52+08:00">2019-06-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="查看cpu核数和cpu信息">查看cpu核数和cpu信息</h2>
+<p>~$:lscpu</p>
+<blockquote>
+<p>Architecture:          x86_64<br>
+CPU op-mode(s):        32-bit, 64-bit<br>
+Byte Order:            Little Endian<br>
+CPU(s):                16<br>
+On-line CPU(s) list:   0-15<br>
+Thread(s) per core:    2<br>
+Core(s) per socket:    8<br>
+Socket(s):             1<br>
+NUMA node(s):          1<br>
+Vendor ID:             AuthenticAMD<br>
+CPU family:            23<br>
+Model:                 8<br>
+Model name:            AMD Ryzen 7 2700X Eight-Core Processor<br>
+Stepping:              2<br>
+CPU MHz:               3921.420<br>
+CPU max MHz:           3700.0000<br>
+CPU min MHz:           2200.0000<br>
+BogoMIPS:              7385.61<br>
+Virtualization:        AMD-V<br>
+L1d cache:             32K<br>
+L1i cache:             64K<br>
+L2 cache:              512K<br>
+L3 cache:              8192K<br>
+NUMA node0 CPU(s):     0-15<br>
+Flags:                 fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb hw_pstate sme ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx smap clflushopt sha_ni xsaveopt xsavec xgetbv1 xsaves clzero irperf xsaveerptr arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overflow_recov succor smca</p>
+</blockquote>
+<p>总核数 = 物理CPU个数 X 每颗物理CPU的核数<br>
+总逻辑CPU数 = 物理CPU个数 X 每颗物理CPU的核数 X 超线程数<br>
+拿我做测试的机器来说，一个cpu，每个cpu八核，每个核两个超线程。</p>
+<h2 id="查看物理cpu个数">查看物理CPU个数</h2>
+<p>~$:cat /proc/cpuinfo| grep “physical id”| sort| uniq |wc -l</p>
+<blockquote>
+<p>1</p>
+</blockquote>
+<h2 id="查看每个物理cpu中core的个数-即核数">查看每个物理CPU中core的个数(即核数)</h2>
+<p>~$:cat /proc/cpuinfo| grep “cpu cores”</p>
+<blockquote>
+<p>8</p>
+</blockquote>
+<h2 id="查看逻辑cpu的个数">查看逻辑CPU的个数</h2>
+<p>~$:cat /proc/cpuinfo| grep “processor”| wc -l</p>
+<blockquote>
+<p>processor	: 0<br>
+processor	: 1<br>
+processor	: 2<br>
+processor	: 3<br>
+processor	: 4<br>
+processor	: 5<br>
+processor	: 6<br>
+processor	: 7<br>
+processor	: 8<br>
+processor	: 9<br>
+processor	: 10<br>
+processor	: 11<br>
+processor	: 12<br>
+processor	: 13<br>
+processor	: 14<br>
+processor	: 15</p>
+</blockquote>
+<h2 id="参考文献">参考文献</h2>
+<p>1.鸟哥的Linux私房菜</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-jobs-nohup-fg/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1495,1111 +2510,11 @@ P屏蔽集显处理器</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">reinforcement learning an introduction 第5章笔记</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-29 15:53:02" itemprop="dateCreated datePublished" datetime="2019-04-29T15:53:02+08:00">2019-04-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-04 14:58:54" itemprop="dateModified" datetime="2019-08-04T14:58:54+08:00">2019-08-04</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="mc-methods">MC Methods</h2>
-<p>这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft policy，即有一定概率随机选择action，其余情况下选择最好的action。这种情况下学习到的policy不是greedy的，同时也能进行一定的exploration。一种是off-policy的方法，这种方法使用两个不同的policy，一个用来采样的behaviour policy，一个用来评估的target policy。target policy是一个deterministic policy，而behaviour policy用来exploration。<br>
-MC方法通过采样估计值函数有三个优势，从真实experience中学习，从仿真环境中学习，以及每个state value的计算独立于其他state。<br>
-MC和DP不一样的是，它不需要环境的信息，只需要experience即可，不管是从真实交互还是从仿真环境中得到的state,action,reward序列都行。从真实交互中学习不需要环境的信息，从仿真环境中学习需要一个model，但是这个model只用于生成sample transition，并不需要像DP那样需要所有transition的完整概率分布。在很多情况下，生成experience sample要比显示的得到概率分布容易很多。<br>
-MC基于average sample returns估计值函数。为了保证returns是可用的，这里定义蒙特卡洛算法是episodic的，即所有的experience都有一个terminal state。只有在一个episode结束的时候，value estimate和policy才会改变。蒙塔卡洛算法可以在episode和episode实现增量式，不能在step和step之间实现增量式。(Monte Carlo methods can thus be incremental in an episode-by-episode sense, but not in a step-by-step online sense.)<br>
-在一个state采取action得到的return取决于同一个episode后续状态的action，因为所有的action都是在不断学习中采取，从早期state的角度来看，这个问题是non-stationary的。为了解决non-stationary问题，采用GPI中的idea。DP从已知的MDP中计算value function，蒙特卡洛使用MDP的sample returns学习value function。然后value function和对应的policy交互获得好的value和policy。<br>
-这一章就是把DP中的各种想法推广到了MC上，解决prediction和control问题，DP使用的是整个MDP，而MC使用的是MDP的采样。</p>
-<h2 id="mc-prediction">MC Prediction</h2>
-<p>Prediction problem就是估计value function，value function又分为state value function和action value function。这里会分别给出state value function和action value function的估计方法。</p>
-<h3 id="state-value-function">State value function</h3>
-<p>从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。</p>
-<h4 id="first-visti-mc-method">First visti MC method</h4>
-<p>这里主要介绍两个算法，一个叫做first visit MC method，另一个是every visit MC method。比如要估计策略$\pi$下的$v(s)$，使用策略$\pi$采样一系列经过$s$的episodes，$s$在每一个episode中出现一次叫做一个visit，一个$s$可能在一个episode中出现多次。First visit就是只取第一次visit估计$v(s)$，every visit就是每一次visit都用。<br>
-下面给出first visit的算法：<br>
-算法1 <strong>First visit MC preidction</strong><br>
-<strong>输入</strong> 被评估的policy $\pi$<br>
-<strong>初始化</strong>:<br>
-$\qquad V(s)\in R,\forall s \in S$<br>
-$\qquad Returns(s) \leftarrow empty list,\forall s \in S$<br>
-<strong>Loop</strong> for each episeode:<br>
-$\qquad$生成一个episode<br>
-$\qquad G\leftarrow 0$<br>
-$\qquad$<strong>Loop</strong> for each step, $t= T-1,T-2, \cdots, 1$<br>
-$\qquad\qquad G\leftarrow G + \gamma R_t$<br>
-$\qquad\qquad$ IF $S_t$没有在$S_0, \cdots , S_{t-1}$中出现过<br>
-$\qquad\qquad\qquad Returns(S_t).apppend(G)$<br>
-$\qquad\qquad\qquad V(S_t)\leftarrow average(Returns(S_t))$<br>
-$\qquad\qquad END IF$<br>
-Every visit算法的话，不用判断$S_t$是否出现。当$s$的visit趋于无穷的时候，first vist和every visit算法$v_{\pi}(s)$都能收敛。First visit中，每一个return都是$v_{\pi}(s)$的一个独立同分布估计。根据大数定律，估计平均值（$average(Returns(S_0),\cdots, average(Returns(S_t)$）的序列收敛于它的期望。每一个average都是它自己的一个无偏估计，标准差是$\frac{1}{\sqrt{n}}$。every visit的收敛更难直观的去理解，但是它二次收敛于$v_{\pi}(s)$。<br>
-补充一点：<br>
-大数定律：无论抽象分布如何，均值服从正态分布。<br>
-中心极限定理：样本大了，抽样分布近似于整体分布。</p>
-<p>这里再次对比一下DP和MC，在扑克牌游戏中，我们知道环境的所有信息，但是我们不知道摸到下一张牌的概率，比如我们手里有很多牌了，我们知道下一张摸到什么牌会赢，但是我们不知道这件事发生的概率。使用MC可以采样获得，所以说，即使有时候知道环境信息，MC方法可能也比DP方法好。</p>
-<h4 id="mc-backup-diagram">MC backup diagram</h4>
-<p>能不能推广DP中的backup图到MC中？什么是backup图？backup图顶部是一个root节点，表示要被更新的节点，下面是所有的transitions，leaves是对于更新有用的reward或者estimated values。<br>
-MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹，以terminal state为终止节点。DP backup diagram展示了所有可能的transitions，而MC backup diagram只展示了采样的那个episode；DP backup diagram只包含一步的transitions，而MC backup diagram包含一个episode的所有序列。<br>
-<img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt="mc backup"><br>
-<img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt="dp backup page 59"></p>
-<h4 id="mc的特点">MC的特点</h4>
-<p>DP中每个state的估计都依赖于它的后继state，而MC中每个state value的计算都不依赖于任何其他state value（MC算法不进行bootstrap），所以可以单独估计某一个state或者states的一个子集。而且估计单个state的计算复杂度和states的数量无关，我们可以只取感兴趣的states子集进行评估，这是MC的第三个优势。前两个优势是从actural experience中学习和从simulated的experience中学习。</p>
-<h3 id="action-value-function">Action value function</h3>
-<p>如果没有model的话，需要估计state-action value而不是state value。有model的话，只有state value就可以确定policy，选择使reward和next_state value加起来最大的action即可。没有model的话，只有state value是不够的，因为不知道下一个state是什么。而使用action value，就可以确定policy，选择$q$值最大的那个action value，取相应的action即可。<br>
-所以这一节的目标是学习action value function。有一个问题是许多state-action可能一次也没有被访问过，如果$\pi$是deterministic的，每一个state只输出一个action，其他action的MC估计没有returns进行平均，就无法进行更新。所以，我们需要估计每一个state对应的所有action，这是exploration问题。<br>
-对于action value的policy evaluation，必须保证continual exploration。一种实现方式是指定episode开始的state-action pair，每一个pair都有大于$0$的概率被选中,这就保证了每一个action-pair在无限个episode中会被访问无限次，这叫做exploring starts。这种假设有时候有用，但是在某些时候，我们无法控制环境产生的experience，可行的方法是使用stochastic policy。</p>
-<h2 id="mc-control">MC Control</h2>
-<p>MC control使用的还是GPI的想法，估计当前policy的action value，基于action value改进policy，不断迭代。考虑经典的policy iteration，执行一次完全的iterative policy evaluation，再执行一次完全的policy improvement，不断迭代。对于policy evaluation，每次evaluation都使用多个episodes的experience，每次action value都会离true value function更近。假设我们有无限个exploring starts生成的episodes，满足这些条件时，对于任意$\pi_k$都会精确计算出$q_{\pi_k}$。进行policy improvement时，只要对于当前的action value function进行贪心即可，即：<br>
-$$\pi(s) = arg\ max_a q(s,a)\tag{1}$$<br>
-第$4$章给出了证明，即policy improvement theorem。在每一轮improvement中，对所有的$s\in S$，执行：<br>
-\begin{align*}<br>
-q_{\pi_k}(s,\pi_{k+1}(s)) &amp;=q_{\pi_k}(s, argmax_a q_{\pi_k}(s,a))\\<br>
-&amp;=max_a q_{\pi_k}(s,a)\\<br>
-&amp;\ge q_{\pi_k}(s, \pi_k(s))\\<br>
-&amp;\ge v_{\pi_k}(s)\\<br>
-\end{align*}<br>
-MC算法的收敛保证需要满足两个假设，一个是exploring start，一个是policy evaluation需要无限个episode的experience。但是现实中，这两个条件是不可能满足的，我们需要替换掉这些条件近似接近最优解。</p>
-<h3 id="mc-control-without-infinte-episodes">MC Control without infinte episodes</h3>
-<p>无限个episodes的条件比较容易去掉，在DP方法中也有这些问题。在DP和MC任务中，都有两种方法去掉无限episode的限制，第一种方法是像iterative policy evaluation一样，规定一个误差的bound，在每一次evaluation迭代，逼近$q_{\pi_k}$，通过足够多的迭代确保误差小于bound，可能需要很多个episode才能达到这个bound。第二种是进行不完全的policy evaluation，和DP一样，使用小粒度的policy evaluation，可以只执行iterative policy evaluation的一次迭代，也可以执行一次单个state的improvement和evaluation。对于MC方法来说，很自然的就想到基于一个episode进行evaluation和improvement。每经历一个episode，执行该episode内相应state的evaluation和improvement。也就是说一个是规定每次迭代的bound，一个是规定每次迭代的次数。</p>
-<h4 id="伪代码">伪代码</h4>
-<p>算法2 <strong>First visit MCES</strong><br>
-<strong>初始化</strong><br>
-$\qquad$任意初始化$\pi(s)\in A(s), \forall s\in S$<br>
-$\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$<br>
-$\qquad$Returns(s,a)$\leftarrow$ empty list, $\forall s\in S, \forall a \in A(s)$<br>
-<strong>Loop forever(for each episode)</strong><br>
-$\qquad$随机选择满足$S_0\in S, A_0\in A(S_0)$的state-action$(S_0,A_0)$，满足概率大于$0$<br>
-$\qquad$从$S_0,A_0$生成策略$\pi$下的一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$<br>
-$\qquad G\leftarrow 0$<br>
-$\qquad$<strong>Loop for each step of episode</strong>,$t=T-1,T-2,\cdots,0$<br>
-$\qquad\qquad G\leftarrow \gamma G+R_{t+1}$<br>
-$\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过<br>
-$\qquad\qquad\qquad$Returns($S_t,A_t$).append(G)<br>
-$\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$<br>
-$\qquad\qquad\qquad \pi(S_t) \leftarrow argmax_a Q(S_t,a)$<br>
-这个算法一定会收敛到全局最优解，因为如果收敛到一个suboptimal policy，value function在迭代过程中会收敛到该policy的true value function，接下来的policy improvement会改进该suboptimal policy。</p>
-<h2 id="on-policy-mc-control-without-es">On-policy MC Control without ES</h2>
-<p>上节主要是去掉了无穷个episode的限制，这节需要去掉ES的限制，解决方法是需要agents一直能够去选择所有的actions。目前有两类方法实现，一种是on-policy，一种是off-policy。</p>
-<h3 id="on-policy和off-policy">on-policy和off-policy</h3>
-<p>On-policy算法中，用于evaluation或者improvement的policy和用于决策的policy是相同的，而off-policy算法中，evaluation和improvement的policy和决策的policy是不同的。</p>
-<h3 id="varepsilon-soft和-varepsilon-greedy">$\varepsilon$ soft和$\varepsilon$ greedy</h3>
-<p>在on-policy算法中，policy一般是soft的，整个policy整体上向一个deterministic policy偏移。<br>
-在$\varepsilon$ soft算法中，只要满足$\pi(a|s)\gt 0,\forall s\in S, a\in A$即可。<br>
-在$\varepsilon$ greedy算法中，用$\frac{\varepsilon}{|A(s)|}$的概率选择non-greedy的action，使用$1 -\varepsilon + \frac{\varepsilon}{|A(s)|}$的概率选择greedy的action。<br>
-$\varepsilon$ greedy是$\varepsilon$ soft算法中的一类，可以看成一种特殊的$\varepsilon$ soft算法。<br>
-本节介绍的on policy方法使用$\varepsilon$ greedy算法。</p>
-<h3 id="on-policy-first-visit-mc">On-policy first visit MC</h3>
-<p>本节介绍的on policy MC算法整体的思路还是GPI，首先使用first visit MC估计当前policy的action value function。去掉exploring starting条件之后，为了保证exploration，不能直接对所有的action value进行贪心，使用$\varepsilon$ greedy算法保持exploration。<br>
-算法3 <strong>On policy first visit MC Control</strong><br>
-$\varepsilon \gt 0$<br>
-<strong>初始化</strong><br>
-$\qquad$用任意$\varepsilon$ soft算法初始化$\pi$<br>
-$\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$<br>
-$\qquad$Returns(s,a) $\leftarrow$ empty list, $\forall s\in S, \forall a \in A(s)$<br>
-<strong>Loop forever(for each episode)</strong><br>
-$\qquad$根据policy $\pi$生成一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$<br>
-$\qquad G\leftarrow 0$<br>
-$\qquad$<strong>Loop for each step of episode</strong>,$t=T-1,T-2,\cdots,0$<br>
-$\qquad\qquad G\leftarrow \gamma G+R_{t+1}$<br>
-$\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过<br>
-$\qquad\qquad\qquad$Returns($S_t,A_t$).append(G)<br>
-$\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$<br>
-$\qquad\qquad\qquad A^{*}\leftarrow argmax_a Q(S_t,a)$<br>
-$\qquad\qquad\qquad$<strong>For all</strong> $a \in A(S_t) : $<br>
-$\qquad\qquad\qquad\qquad\pi(a|S_t)\leftarrow \begin{cases}1-\varepsilon+\frac{\varepsilon}{|A(S_t)|}\qquad if\ a = A^{*}\\ \frac{\varepsilon}{|A(S_t)|}\qquad a\neq A^{*}\end{cases}$</p>
-<p>对于任意的$\varepsilon$ soft policy $\pi$，相对于$q_{\pi}$的$\varepsilon$ greedy算法至少和$\pi$一样好。用$\pi’$表示$\varepsilon$ greedy policy，对于$\forall s\in S$，都满足policy improvement theorem的条件：<br>
-\begin{align*}<br>
-q_{\pi}(s,\pi’(s))&amp;=\sum_a\pi’(a|s)q_{\pi}(s,a)\\<br>
-&amp;=\frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + (1- \varepsilon) max_a q_{\pi}(s,a) \tag{2}\\<br>
-&amp;\ge \frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + (1-\varepsilon) \sum_a\frac{\pi(a|s) - \frac{\varepsilon}{|A(s)|}}{1-\varepsilon}q_{\pi}(s,a) \tag{3}\\<br>
-&amp;=\frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) - \frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + \sum_a \pi(a|s)\sum_aq_{\pi}(s,a)\\<br>
-&amp;=v(s)<br>
-\end{align*}<br>
-式子2到式子3是怎么变换的，我有点没看明白！！！（不懂）。后来终于想明白了，式子3的第二项分子服从的是$\pi(a|s)$，而式子2的第二项这个$a$是新的$\pi’(a|s)$。<br>
-接下来证明，当$\pi$和$\pi’$都是optimal $\varepsilon$ policy的时候，可以取到等号。这个我看这没什么意思，就不证明了。。在p102。</p>
-<h2 id="off-policy-prediction-via-importance-sampling">Off-policy Prediction via Importance Sampling</h2>
-<p>所有的control方法都要面临一个问题：一方面需要选择optimal的action估计action value，另一方面需要exploration，不能一直选择optimal action，那么该如何控制这两个问题之间的比重。on-policy方法采样的方法是学习一个接近但不是optimal的policy保持exploriation。off-policy的方法使用两个policy，一个用于采样的behavior policy，一个用于evaluation的target policy。用于学习target policy的data不是target policy自己产生的，所以叫做off-policy learning。</p>
-<h3 id="on-policy-vs-off-policy">on-policy vs off-policy</h3>
-<p>on policy更简单，off policy使用两个不同的policy，所以variance更大，收敛的更慢，但是off-policy效果更好，更通用。On-policy可以看成off-policy的特例，target policy和behaviour policy是相同的。Off-policy可以使用非学习出来的data，比如人工生成的data。</p>
-<h3 id="off-policy-prediction-problem">off-policy prediction problem</h3>
-<p>对于prediction problem，target policy和behaviour policy都是固定的。$\pi$是target policy，$b$是behaviour policy，我们要使用$b$生成的episode去估计$q_{\pi}$或者$v_{\pi}$。为了使用$b$生成的episodes估计$\pi$，需要满足一个假设，policy $\pi$中采取的action在$b$中也要能有概率被采取，即$\pi(a|s)\gt 0$表明$b(a|s) \gt 0$，这是coverage假设。<br>
-在control问题中，target policy通常是相对于当前action value的deterministic greedy policy，最后target policy是一个deterministic optimal policy而behaviour policy通常是$\varepsilon$ greedy的探索策略。</p>
-<h3 id="importance-sampling和importance-sampling-ratio">importance sampling和importance sampling ratio</h3>
-<p>很多off policy方法使用importance sampling，利用一个distribution的samples估计另一个distribution的value function。Importance sampling通过计算trajectoried在target和behaviour policy中出现的概率比值对returns进行加权，这个相对概率称为importance sampling ratio。给定以$S_t$为初始状态的sate-action trajectory，它在任何一个policy $\pi$中发生的概率如下：<br>
-\begin{align*}<br>
-&amp;Pr\{A_t, S_{t+1},A_{t+1},\cdots,S_T|A_{t:T-1}\sim \pi,S_t\}\\<br>
-=&amp;\pi(A_t|S_t)p(S_{t+1}|S_t,A_t)\pi(A_{t+1}|S_{t+1})\cdots p(S_T|S_{T-1},A_{T-1})\\<br>
-=&amp;\prod_{k=t}^{T-1}\pi(A_k|S_k)p(S_{k+1}|S_k,A_k)<br>
-\end{align*}<br>
-其中$p$是状态转换概率，imporrance sampling计算如下：<br>
-$$\rho_{t:T-1}=\frac{\prod_{k=t}^{T-1} \pi(A_k|S_k)p(S_{k+1}|S_k,A_k)}{\prod_{k=t}^{T-1} b(A_k|S_k)p(S_{k+1}|S_k,A_k)}=\prod_{k=t}^{T-1}\frac{\pi(A_k|S_k)}{b(A_k|S_k}\tag{2}$$<br>
-因为p跟policy无关，所以可以直接消去。importance sampling ratio只和policies以及sequences有关。<br>
-根据behaviour policy的returns $G_t$，我们可以得到一个Expectation，即$\mathbb{E}[G_t|S_t=s]=v_b(s)$，显然，这是b的value function而不是$\pi$的value function，这个时候就用到了importance sampling，ratio $\rho_{t:T-1}$对b的returns进行转换，得到了另一个期望：<br>
-$$\mathbb{E}[\rho_{t:T-1}G_t|S_t=s]=v_{\pi}(s)\tag{3}$$</p>
-<h3 id="符号定义">符号定义</h3>
-<p>假设我们想要从policy b 中的一些episodes中估计$v_{\pi}(s)$，</p>
-<ul>
-<li>用$t$表示episode中的每一步，有些不同的是，$t$在不同episode之间是连续的，比如第$1$个episode有$100$个timesteps，第$2$个episode的timsteps从$101$开始。</li>
-<li>用$J(s)$表示state $s$在不同episodes中第一次出现的$t$。</li>
-<li>用$T(t)$表示从$t$所在那个episode的terminal timestep。</li>
-<li>用$\left\{G_t\right\}_{t\in J(s)}$表示所有state $s$的return list。</li>
-<li>用$\left\{\rho_{t:T(t)-1}\right\}_{t\in J(s)}$表示相应的importance ratio。</li>
-</ul>
-<h3 id="importance-sampling">importance sampling</h3>
-<p>有两种importance sampling方法估计$v_{\pi}(s)$，一种是oridinary importance sampling，一种是weighted importance sampling。</p>
-<h4 id="oridinary-importance-sampling">oridinary importance sampling</h4>
-<p>直接对多个结果进行平均<br>
-$$V(s) = \frac{\sum_{t\in J(s)}\rho_{t:T(t)-1} G_t}{|J(s)|}\tag{4}$$</p>
-<h4 id="weighted-importance-sampling">weighted importance sampling</h4>
-<p>对多个结果进行加权平均<br>
-$$V(s) = \frac{\sum_{t\in J(s)}\rho_{t:T(t)-1} G_t}{\sum_{t\in J(s)}\rho_{t:T(t)-1}}\tag{5}$$</p>
-<h4 id="异同点">异同点</h4>
-<p>为了比较这两种importance sampling的异同，考虑state s只有一个returns的first vist MC方法，在加权平均中，ratio会约分约掉，这个returns的expectation是$v_b(s)$而不是$v_{\pi}(s)$，是一个有偏估计；而普通平均，returns的expectation还是$v_{\pi}(s)$，是一个无偏估计，但是可能会很极端，比如ratio是$10$，就说明$v_{\pi}(s)$是$v_b(s)$的$10$倍，可能与实际相差很大。<br>
-在fisrt visit算法中，就偏差和方差来说。普通平均的偏差是无偏的，而加权平均的偏差是有偏的（逐渐趋向$0$）。普通平均的方差是unbounded，因为ratio可以是unbounded，而加权平均对于每一个returns来说，权重最大是$1$。事实上，假定returns是bounded，即使ratios的方差是infinite，加权平均的方差也会趋于$0$。实践中，加权平均有更小的方差，通常更多的被采用。<br>
-在every visit算法中，普通平均和加权平均都是有偏的，随着样本的增加，偏差也趋向于$0$。在实践中，因为every visit不需要记录哪个状态是否被记录过，所以要比first visit常用。</p>
-<h3 id="无穷大方差">无穷大方差</h3>
-<p><img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/figure_5_4.png" alt="example of oridinary importance ratio"><br>
-考虑一个例子。只有一个non-terminal state s，两个ation，left和right，right action是deterministic transition到termination，left action有$0.9$的概率回到s，有$0.1$的概率到termination。left action回到termination会产生$+1$的reward，其他操作的reward是$0$。所有target policy策略下的episodes都会经过一些次回到state s然后到达terminal state，总的returns是$1(\gamma = 1)$。使用behaviour policy等概率选择left和right action。<br>
-这个例子中returns的真实期望是$1$。first visit中weighted importance sampling中return的期望是$1$，因为behaviour policy中选择right的action 在target policy中概率为$0$，不满足之前假设的条件，所以没有影响。而oridinary importance sampling的returns期望也是$1$，但是可能经过了几百万个episodes之后，也不一定收敛到$1$。<br>
-接下来我们证明oridinary importance sampling中returns的variance是infinite。<br>
-$$Var(X) = \mathbb{E}\left[(X-\bar{X})^2\right] = \mathbb{E}\left[X^2-2\bar{X}X +\bar{x}^2\right]= \mathbb{E}\left[X^2\right]-\bar{X}^2 \tag{6}$$<br>
-如果mean是finite，只有当random variable的平方的Expectation为infinte时variance是infinte。所以，我们需要证明：<br>
-$$\mathbb{E}_b\left[\left(\prod_{t=0}^{T-1}\frac{\pi(A_t|S_t)}{b(A_t|S_t)}G_0\right)^2\right] \tag{7}$$<br>
-是infinte的。<br>
-这里我们按照一个episode一个episode的进行计算。但是需要注意的是，behaviour policy可以选择right action，而target policy只有left action，当behaviour policy选择right的话，ratio是$0$。我们只需要考虑那些一直选择left action回到state s，然后通过left action到达terminal state的episodes。按照下式计算期望，注意这个和上面用oridinary important ratio估计$v_{\pi}(s)$可不一样，上面是用采样估计$v_{\pi}(s)$，这个是计算真实的$v_{\pi}(s)$的期望，不对，是它的平方的期望。<br>
-\begin{align*}<br>
-\mathbb{E}_b\left[\left( \prod_{t=0}^{T-1}\frac{\pi(A_t|S_t)}{b(A_t|S_t)}G_0\right)^2\right] = &amp; \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\right)^2\tag{长度为1的episode}\\<br>
-&amp;+\frac{1}{2}\cdot 0.9\cdot\frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为2的episode}\\<br>
-&amp;+\frac{1}{2}\cdot 0.9\cdot \frac{1}{2} \cdot 0.9 \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为3的episode}\\<br>
-&amp;+ \cdots\\<br>
-=&amp;0.1 \sum_{k=0}^{\infty}0.9^k\cdot 2^k \cdot 2\\<br>
-=&amp;0.2 \sum_{k=0}^{\infty}1.8^k\\<br>
-=&amp;\infty \tag{8}\<br>
-\end{align*}</p>
-<h3 id="incremental-implementation">Incremental Implementation</h3>
-<p>Monte Carlo prediction可以增量式实现，用episode-by-episode bias。<br>
-在on-policy算法中，$V_t$的估计通过直接对多个episode的$G_t$进行平均得到。<br>
-$$V_n(s) = \frac{G_1 + G_2 + \cdots + G_{n-1}}{n - 1} \tag{9}$$<br>
-其中$V_n(s)$表示在第$n$个epsisode估计的state $s$的value function，$n-1$表示采样得到的总共$n-$个episode，$G_1$表示每个episode中第一次遇到$s$时的Return。<br>
-在第$n+1$个episodes估计$V(s)$时：<br>
-\begin{align*}<br>
-V_{n+1}(s) &amp;= \frac{G_1 + G_2 + \cdots + G_n}{n}\\<br>
-nV_{n+1}(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1} + G_n\tag{上式两边同时乘上n}\\<br>
-(n-1)V_n(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1}\tag{用n-1代替n}\\<br>
-nV_{n+1}(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1} + G_n\tag{分解V_{n+1}(s)}\\<br>
-&amp;= (G_1 + G_2 + \cdots + G_{n - 1}) + G_n\\<br>
-&amp;= (n-1)V_n(s) + G_n\\<br>
-\frac{nV_{n+1}(s)}{n}&amp;= \frac{(n-1)V_n(s) + G_n}{n}\tag{上式两边同时除以n}\\<br>
-V_{n+1}(s)&amp;= \frac{(n-1)V_n(s) + G_n}{n}\\<br>
-&amp; = V_n(s) +\frac{G_n-V_n(s)}{n} \tag{10}<br>
-\end{align*}<br>
-这个更新规则的一般形式如下：<br>
-$$NewEstimate \leftarrow OldEstimate + StepSize \left[Target - OldEstimate\right] \tag{11}$$<br>
-表达式$\left[Target - OldEstimate\right]$是一个estimate error，通过向&quot;Target&quot;走一步减小error。这个&quot;Target&quot;给定了更新的方向，当然也有可能是noisy，在式子$10$中，target是第$n$个episode中state s的return。式子$10$的更新规则中StepSize$\frac{1}{n}$是在变的，一般我们叫它步长或者学习率，用$\alpha$表示。<br>
-在off-policy算法中，odrinary importance sampling和weighted importance sampling要分开。因为odirinary importance sampling只是对ratio缩放后的不同returns做了平均，还可以使用上面的公式。而对于weighted imporatance sampling，假设一系列episodes的returns是$G_1,G_2,\cdots, G_{n-1}$，对应的权重为$W_i$（比如$W_i=\rho_{t_i:T(t_i)-1}$），有：<br>
-$$V_n = \frac{\sum_{k=1}^{n-1}W_kG_k}{\sum_{k=1}^{n-1}W_k} \tag{11}$$<br>
-用$C_n$表示前$n$个episode returns的权重和，即$C_n=\sum_{k=1}^nW_k$，$V_n$的更新规则如下：<br>
-\begin{align*}<br>
-V_{n+1}&amp;=\frac{\sum_{k=1}^{n}W_kG_k}{\sum_{k=1}^{n}W_k}\\<br>
-&amp;=\frac{\sum_{k=1}^{n-1}W_kG_k + W_nG_n}{\sum_{k=1}^{n}W_k}\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(\sum_{k=1}^{n-1}W_kG_k + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(\frac{\sum_{k=1}^{n-1}W_kG_k}{\sum_{k=1}^{n-1}W_k}(\sum_{k=1}^{n-1}W_k) + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}^{n-1}W_k) + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}^{n-1}W_k + W_n - W_n) + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}^{n}W_k - W_n) + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}^{n}W_k) + W_nG_n - W_nV_n\right)\\<br>
-&amp;=\frac{V_n\cdot(\sum_{k=1}^{n}W_k)}{\sum_{k=1}^{n}W_k} + \frac{W_nG_n-W_nV_n}{\sum_{k=1}^{n}W_k}\\<br>
-&amp;=V_n + \frac{W_n}{C_n}(G_n-V_n)\\<br>
-\end{align*}<br>
-其中$C_0=0, C_{n+1} = C_n + W_{n+1}$，事实上，在$W_k=1$的情况下，即$\pi=b$时，上面的公式就变成了on-policy的公式。接下来给出一个episode-by-episode的MC  policy evaluation incremental algorithm，使用的是weighted importance sampling。</p>
-<h3 id="off-policy-mc-prediction-算法">Off-policy MC Prediction 算法</h3>
-<p>算法 4 Off-policy MC prediction(policy evaluation)<br>
-输入: 一个任意的target policy $\pi$<br>
-初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s)$<br>
-<strong>Loop</strong> forever (for each episode)<br>
-$\qquad$$b\leftarrow$ 任意覆盖target policy $\pi$的behaviour policy<br>
-$\qquad$用behaviour policy $b$生成一个episode，$S_0,A_0,R_1,\cdots, S_{T-1},A_{T-1},R_T$<br>
-$\qquad$$G\leftarrow 0$<br>
-$\qquad$$W\leftarrow 1$<br>
-$\qquad$<strong>FOR</strong> $t \in T-1,T-2,\cdots, 0$并且$W\neq 0$<br>
-$\qquad\qquad$$G\leftarrow G+\gamma R_{t+1}$<br>
-$\qquad\qquad$$W\leftarrow = W\cdot \frac{\pi(A_t|S_t)}{b(A_t|S_t)}$！！！原书中这个是放在最后一行的，我怎么觉得应该放在这里。。<br>
-$\qquad\qquad$$C(S_t, A_t)\leftarrow C(S_t, A_t)+W$<br>
-$\qquad\qquad$$Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_t-Q(S_t,A_t))$<br>
-$\qquad$<strong>END FOR</strong><br>
-<strong>思考：这里怎么把它转换为first-visit的算法</strong></p>
-<h2 id="off-policy-mc-control">Off-policy MC Control</h2>
-<p>这一节给出一个off-policy的MC control算法，target policy是greedy算法，而behaviour policy是soft算法，在不同的episode中可以采用不同的behaviour policy。<br>
-算法 5 Off-policy MC control<br>
-初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s), \pi(s)\leftarrow arg max_aQ(s, a)$<br>
-<strong>Loop</strong> forever (for each episode)<br>
-$\qquad$$b\leftarrow$ 任意覆盖target policy $\pi$的behaviour policy<br>
-$\qquad$用behaviour policy $b$生成一个episode，$S_0,A_0,R_1,\cdots, S_{T-1},A_{T-1},R_T$<br>
-$\qquad$$G\leftarrow 0$<br>
-$\qquad$$W\leftarrow 1$<br>
-$\qquad$<strong>for</strong> $t \in T-1,T-2,\cdots, 0$并且$W\neq 0$<br>
-$\qquad\qquad$$G\leftarrow G+\gamma R_{t+1}$<br>
-$\qquad\qquad$$C(S_t, A_t)\leftarrow C(S_t, A_t)+W$<br>
-$\qquad\qquad$$Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_t-Q(S_t, A_t)$<br>
-$\qquad\qquad\pi(s)\leftarrow arg max_aQ(S_t,a)$<br>
-$\qquad\qquad$<strong>if</strong> $A_t\neq\pi(S_t)$ then<br>
-$\qquad\qquad\qquad$break for循环<br>
-$\qquad\qquad$<strong>end if</strong><br>
-$\qquad\qquad$$W\leftarrow = W\cdot \frac{1}{b(A_t|S_t)}$这个为什么放最后一行，我能理解要进行一下if判断，但是放在这里importance ratio不就不对了吗。。<br>
-$\qquad$<strong>end for</strong></p>
-<h2 id="discounting-aware-importance-sampling">Discounting-aware Importance Sampling</h2>
-<p>这一节介绍了discounting的importance sampling，假设有$100$个steps的一个episode，$\gamma=0$，其实它的returns在第一步以后就确定了，后面的$99$步已经没有影响了，因为$\gamma=0$，这里就介绍了discount importance sampling。<br>
-…</p>
-<h2 id="per-decision-importance-sampling">Per-decision Importance Sampling</h2>
-<p>根据每一个Reward确定进行importance sampling，而不是根据每一个returns。<br>
-…</p>
-<h2 id="summary">Summary</h2>
-<p>MC相对于DP的好处</p>
-<ol>
-<li>model-free</li>
-<li>sample比较容易</li>
-<li>很容易focus在一个我们需要的subset上</li>
-<li>不进行bootstrap</li>
-</ol>
-<p>在MC control算法中，估计的是action-value fucntion，因为action value function能够在不知道model dynamic的情况下改进policy。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/26/linux-NVIDIA驱动安装/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/26/linux-NVIDIA驱动安装/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">ubuntu NVIDIA 驱动安装</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-26 21:03:02" itemprop="dateCreated datePublished" datetime="2019-04-26T21:03:02+08:00">2019-04-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-05 21:43:42" itemprop="dateModified" datetime="2019-08-05T21:43:42+08:00">2019-08-05</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="方法1-命令行安装">方法1.命令行安装</h2>
-<h3 id="步骤">步骤</h3>
-<p>卸载原有驱动<br>
-~$:sudo apt purge nvidia*<br>
-禁用nouveau<br>
-~$:sudo vim /etc/modprobe.d/blacklist.conf<br>
-在文件最后添加<br>
-blacklist nouveau<br>
-更新内核<br>
-~$:sudo update-initramfs -u<br>
-使用如下命令，如果没有输出，即已经关闭了nouveau<br>
-~$:lsmod | grep nouveau<br>
-关闭X service<br>
-~$:sudo service lightdm stop<br>
-接下来执行如下语句即可：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential pkg-config xserver-xorg-dev linux-headers-`uname -r` sudo apt-get install mesa-common-dev</span><br><span class="line">sudo apt-get install freeglut3-dev</span><br><span class="line">sudo chmod a+x NVIDIA-Linux-x86_64-375.66.run</span><br><span class="line">sudo sh NVIDIA-Linux-x86_64-375.66.run -no-opengl-files</span><br><span class="line">sudo reboot</span><br></pre></td></tr></table></figure>
-<h2 id="方法2-图形界面">方法2.图形界面</h2>
-<h2 id="方法3-apt安装">方法3.apt安装</h2>
-<h3 id="添加apt源">添加apt源</h3>
-<p>~$:sudo add-apt-repository ppa:graphics-drivers/ppa<br>
-~$:sudo apt update</p>
-<h3 id="apt安装">apt安装</h3>
-<p>~$:sudo ubuntu-drivers devices<br>
-~$:sudo ubuntu-drivers autoinstall</p>
-<!-- ### 更新grub
-~$:sudo vim /etc/default/grub
-将"splash"改为"splash acpi_osi=linux"
-~$:sudo update-grub
--->
-<h2 id="安装cuda-9-0">安装cuda 9.0</h2>
-<p>到NVIDIA官网下载cuda 9.0的runfile，然后执行<br>
-~$:sudo sh cuda*.run</p>
-<h3 id="测试报错">测试报错</h3>
-<blockquote>
-<p>Error: unsupported compiler: 7.4.0. Use --override to override this check.</p>
-</blockquote>
-<p>安装gcc低版本<br>
-~$:sudo apt install gcc-6</p>
-<p>从CUDA 4.1版本开始，支持gcc 4.5。gcc 4.6和4.7不受支持。<br>
-从CUDA 5.0版本开始，支持gcc 4.6。gcc 4.7不受支持。<br>
-从CUDA 6.0版本开始，支持gcc 4.7。<br>
-从CUDA 7.0版本开始，支持gcc 4.8，在Ubuntu 14.04和Fedora 21上支持4.9。<br>
-从CUDA 7.5版开始，支持gcc 4.8，在Ubuntu 14.04和Fedora 21上支持4.9。<br>
-从CUDA 8版本开始，Ubuntu 16.06和Fedora 23支持gcc 5.3。<br>
-从CUDA 9版本开始，Ubuntu 16.04，Ubuntu 17.04和Fedora 25支持gcc 6。<br>
-使用update-alternatives修改默认gcc版本<br>
-~$:sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g+±6 50<br>
-~$:sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50</p>
-<p>然后继续安装：<br>
-~$:sudo sh cuda*.run</p>
-<p>cuda安装在/usr/local/cuda-9.0 目录下<br>
-卸载的话进入/usr/loca/cuda-9.0/bin 找到uninstall_cuda_9.0.pl运行卸载。</p>
-<h3 id="import-tensorflow-报错">import tensorflow 报错</h3>
-<blockquote>
-<p>ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory<br>
-Failed to load the native TensorFlow runtime.</p>
-</blockquote>
-<p>配置cuda环境变量<br>
-在bashrc文件中加入<br>
-export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}<br>
-export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}<br>
-export CUDA_HOME=/usr/local/cuda<br>
-执行<br>
-~$:source ~/.bashrc</p>
-<p>继续报错<br>
-然后我才发现我没有装cudnn，按照参考文献[1]安装cudnn即可。<br>
-解压cudnn<br>
-~$:tar -xvf cudnn-x.x-linuz-x64-vx.x.tar.gz<br>
-然后执行</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo cp cuda/include/cudnn.h /usr/local/cuda/include/</span><br><span class="line">sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64/</span><br><span class="line">sudo chmod a+r /usr/local/cuda/include/cudnn.h</span><br><span class="line">sudo chmod a+r /usr/local/cuda/lib64/libcudnn*</span><br></pre></td></tr></table></figure>
-<p>即可</p>
-<h2 id="版本对应">版本对应</h2>
-<h3 id="显卡">显卡</h3>
-<p>RTX 20系列显卡，需要使用cuda 10</p>
-<h3 id="pytorch">pytorch</h3>
-<p>而pytorch目前不支持cuda 10.1，所以只能使用cuda 10.0。</p>
-<h3 id="tensorflow">tensorflow</h3>
-<p>tensorflow 13.1 – cuda 10.0  – cudnn 7.3</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/" target="_blank" rel="noopener">http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan XP+CUDA8.0+cudnn5.0/</a><br>
-2.<a href="https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#axzz4qYJp45J2" target="_blank" rel="noopener">https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#axzz4qYJp45J2</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/26/hexo-常见问题/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/26/hexo-常见问题/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">hexo常见问题（常见问题）</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-26 20:36:32" itemprop="dateCreated datePublished" datetime="2019-04-26T20:36:32+08:00">2019-04-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-26 00:07:43" itemprop="dateModified" datetime="2019-05-26T00:07:43+08:00">2019-05-26</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/hexo/" itemprop="url" rel="index"><span itemprop="name">hexo</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题1">问题1</h2>
-<p>Error: pandoc exited with code 7: pandoc: Unknown extension: smart</p>
-<blockquote>
-<p>INFO  Start processing<br>
-FATAL Something’s wrong. Maybe you can find the solution here: <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">http://hexo.io/docs/troubleshooting.html</a><br>
-Error: pandoc exited with code 7: pandoc: Unknown extension: smart<br>
-at ChildProcess.<anonymous> (/home/mxxmhh/github/blog/node_modules/hexo-renderer-pandoc/index.js:94:20)<br>
-at emitTwo (events.js:126:13)<br>
-at ChildProcess.emit (events.js:214:7)<br>
-at maybeClose (internal/child_process.js:925:16)<br>
-at Socket.stream.socket.on (internal/child_process.js:346:11)<br>
-at emitOne (events.js:116:13)<br>
-at Socket.emit (events.js:211:7)<br>
-at Pipe._handle.close [as _onclose] (net.js:567:12)</anonymous></p>
-</blockquote>
-<h3 id="解决方法">解决方法</h3>
-<p>卸载pandoc<br>
-~$:npm un hexo-renderer-pandoc --save</p>
-<h2 id="问题2">问题2</h2>
-<p>部分公式无法解析。<br>
-是因为markdown和mathjax的解析有一些冲突，按照参考文献$1$中进行修改即可，原因见[2]。<br>
-修改node_modules/kramed/lib/rules/inline.js文件，将第11行替换成&quot;escape: /^\([`*[]()#$+-.!_&gt;])/&quot;，将第19行替换成&quot;em: /<sup>\b_((?:__|[\s\S])+?)_\b|</sup>*((?😗*|[\s\S])+?)*(?!*)/&quot;。（不用加双引号）<br>
-第一次修改是去掉\的转义。<br>
-第二次修改是去掉下划线转义。</p>
-<h2 id="问题3">问题3</h2>
-<p>Ubuntu 16.04直接使用命令安装nodejs，版本太老，需要使用源代码安装<br>
-~$:sudo apt install nodejs npm<br>
-上述命令可以在Ubuntu 18.04直接使用。</p>
-<h2 id="问题4">问题4</h2>
-<p>昨天发现博客的一些公式不能渲染，刚开始的时候以为是没有修改kramed文件，就是和问题2一样，后来发现不是，是^符号后面没有设置好。比如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$a^&#123;x+y&#125;b$</span><br></pre></td></tr></table></figure>
-<p>应该写成</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$a^&#123;x+y&#125; b$</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$a\^&#123;x+y&#125;b$</span><br></pre></td></tr></table></figure>
-<p>就是要多一个空格才行，否则就会解析错误。<br>
-还有就是\可能没转义成功，就用\\去代替\吧。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://hexo-guide.readthedocs.io/zh_CN/latest/theme/%5BNexT%5D%E9%85%8D%E7%BD%AEMathJax.html" target="_blank" rel="noopener">https://hexo-guide.readthedocs.io/zh_CN/latest/theme/[NexT]配置MathJax.html</a><br>
-2.<a href="https://shomy.top/2016/10/22/hexo-markdown-mathjax/" target="_blank" rel="noopener">https://shomy.top/2016/10/22/hexo-markdown-mathjax/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/26/hexo-安装/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/26/hexo-安装/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">hexo 安装</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-26 18:56:46" itemprop="dateCreated datePublished" datetime="2019-04-26T18:56:46+08:00">2019-04-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-06 22:31:41" itemprop="dateModified" datetime="2019-10-06T22:31:41+08:00">2019-10-06</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/hexo/" itemprop="url" rel="index"><span itemprop="name">hexo</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="安装">安装</h2>
-<h3 id="安装git">安装git</h3>
-<p>~\$:sudo apt install git</p>
-<h3 id="安装nodejs">安装nodejs</h3>
-<h4 id="ubuntu-16-04安装">ubuntu 16.04安装</h4>
-<p>注意在ubuntu 16.04安装的时候，一直报错，</p>
-<blockquote>
-<p>ERROR Local hexo not found in ~/mxxhcm/mxxhcm.github.io<br>
-ERROR Try running: ‘npm install hexo --save’</p>
-</blockquote>
-<p>其实就是安装的nodejs版本太老了。</p>
-<p>在官网下载linux 64位nodejs安装包<br>
-解压之后放在/usr/local/nodejs目录下。<br>
-然后在PATH环境变量中添加/usr/local/nodejs/bin即可（在.bashrc文件中修改即可）。<br>
-使用以下命令查看nodejs版本<br>
-~\$:node -v</p>
-<h4 id="ubuntu-18-04安装">ubuntu 18.04安装</h4>
-<p>在ubuntu 18.04可以直接使用以下命令安装。<br>
-安装nodejs<br>
-~\$:sudo apt install nodejs<br>
-安装npm<br>
-~\$:sudo apt install npm</p>
-<h3 id="安装hexo">安装hexo</h3>
-<p>~\$:sudo npm install -g hexo-cli</p>
-<h2 id="配置">配置</h2>
-<p>以下二选一<br>
-创建文件夹<br>
-~\$:git clone your repo<br>
-或者直接<br>
-~\$:hexo init your repo</p>
-<p>安装依赖包<br>
-~\$:npm install<br>
-解决问题<br>
-参见<a href="https://mxxhcm.github.io/2019/04/26/hexo-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">参考文献</a></p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.cnblogs.com/SHOR/p/9581661.html" target="_blank" rel="noopener">https://www.cnblogs.com/SHOR/p/9581661.html</a><br>
-如果换了主题，需要在主题的_config.yml文件修改。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/20/">20</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/13/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/13/">13</a><span class="page-number current">14</span><a class="page-number" href="/page/15/">15</a><span class="space">&hellip;</span><a class="page-number" href="/page/21/">21</a><a class="extend next" rel="next" href="/page/15/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2644,7 +2559,7 @@ ERROR Try running: ‘npm install hexo --save’</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">200</span>
+                    <span class="site-state-item-count">204</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3244,7 +3159,9 @@ ERROR Try running: ‘npm install hexo --save’</p>
                     
                       
                     
-                    <span class="site-state-item-count">268</span>
+                      
+                    
+                    <span class="site-state-item-count">269</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3497,15 +3414,15 @@ ERROR Try running: ‘npm install hexo --save’</p>
       
     
       
+    
+      
+    
+      
+    
+      
+    
+      
         
-      
-    
-      
-    
-      
-    
-      
-    
       
     
       
