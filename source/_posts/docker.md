@@ -1,9 +1,9 @@
 ---
-title: docker
+title: Docker
 date: 2019-10-14 15:42:19
 tags:
  - 工具
- - docker
+ - Docker
 categories: 工具
 ---
 
@@ -58,6 +58,63 @@ docker run hello-world
 ```
 
 ## Docker命令
+### 常见命令
+- 列出本地镜像
+``` shell
+docker images
+```
+- 使用Dockerfile创建镜像
+``` shell
+docker build -t name:tag #使用当前目标的Dockerfile创建镜像
+docker build github.com/creack/docker-firefox #使用URL地址创建镜像
+docker build -f /path/to/a/Dockerfile   # 使用-f指定Dockerfile文件位置
+```
+- 从Docker仓库拉取指定镜像
+``` shell
+docker pull [OPTIONS] NAME[:TAG]
+# -a:拉取所有tagged镜像
+# --disable-content-trust:忽略镜像的校验，默认是开启的
+docker pull java # 从Docker Hub下载最新版Java镜像
+```
+- 将本地镜像上传到镜像仓库，需要先登录
+``` shell
+docker push [OPTIONS] NAME[:TAG]
+# --disable-content-trust:忽略镜像的校验，默认是开启的
+```
+- 从Docker Hub查找镜像
+``` shell
+docker search [OPTIONS] TERM
+# --automated：
+# --no-trunc：显示完整的镜像描述
+# -s：列出收藏数不小于指定值的镜像
+```
+- 运行一个容器
+``` shell
+docker run --name container-name -d images-name:tag
+# --name:自己指定一个容器名字，
+# -d表示后台运行
+# images-name:运行的image名称
+# tag:镜像的版本
+
+```
+- 开始，停止，重启一个容器
+``` shell
+docker start/stop/restart container-name
+```
+- 杀死一个运行中的容器
+``` shell
+docker kill -s KILL container-name
+```
+- 创建一个容器但是不启动
+``` shell
+docker create --name container-name -d images-name:tag
+```
+- 列出容器
+```
+docker ps
+# 加上-a显示所有的容器，包含未运行的
+```
+
 ### 容器生命周期管理
 - run
 - start/stop/restart
@@ -101,6 +158,10 @@ docker run hello-world
 
 ### info/version
 - info
+``` shell
+docker info
+# 
+```
 - version
 
 
