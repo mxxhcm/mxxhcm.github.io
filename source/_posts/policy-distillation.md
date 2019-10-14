@@ -1,5 +1,5 @@
 ---
-title: policy distillation
+title: Policy Distillation
 date: 2019-10-13 14:45:01
 tags:
  - 强化学习
