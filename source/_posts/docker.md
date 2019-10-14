@@ -58,59 +58,62 @@ docker run hello-world
 ```
 
 ## Docker命令
+NAME[:TAG]默认是 NAME:latest
+
 ### 常见命令
-- 列出本地镜像
-``` shell
+- 列出本地镜像``` shell
 docker images
 ```
-- 使用Dockerfile创建镜像
-``` shell
-docker build -t name:tag #使用当前目标的Dockerfile创建镜像
-docker build github.com/creack/docker-firefox #使用URL地址创建镜像
-docker build -f /path/to/a/Dockerfile   # 使用-f指定Dockerfile文件位置
-```
-- 从Docker仓库拉取指定镜像
-``` shell
-docker pull [OPTIONS] NAME[:TAG]
-# -a:拉取所有tagged镜像
-# --disable-content-trust:忽略镜像的校验，默认是开启的
-docker pull java # 从Docker Hub下载最新版Java镜像
-```
-- 将本地镜像上传到镜像仓库，需要先登录
-``` shell
-docker push [OPTIONS] NAME[:TAG]
-# --disable-content-trust:忽略镜像的校验，默认是开启的
-```
-- 从Docker Hub查找镜像
-``` shell
+- 从Docker Hub查找镜像``` shell
 docker search [OPTIONS] TERM
 # --automated：
 # --no-trunc：显示完整的镜像描述
 # -s：列出收藏数不小于指定值的镜像
+docker search ubuntu
 ```
-- 运行一个容器
-``` shell
-docker run --name container-name -d images-name:tag
+- 从Docker仓库拉取指定镜像``` shell
+docker pull [OPTIONS] [Docker Registry地址] NAME[:TAG]
+# -a:拉取所有tagged镜像
+# --disable-content-trust:忽略镜像的校验，默认是开启的
+# 默认的Docker registry地址是DockerHub
+docker pull java # 从Docker Hub下载最新版Java镜像
+docker pull ubuntu:14.04 
+# 完整的仓库名和标签名是libary/ubuntu:14.04
+```
+- 使用Dockerfile创建镜像``` shell
+docker build -t name:tag #使用当前目标的Dockerfile创建镜像
+docker build github.com/creack/docker-firefox #使用URL地址创建镜像
+docker build -f /path/to/a/Dockerfile   # 使用-f指定Dockerfile文件位置
+```
+- 将本地镜像上传到镜像仓库，需要先登录``` shell
+docker push [OPTIONS] NAME[:TAG]
+# --disable-content-trust:忽略镜像的校验，默认是开启的
+```
+- 运行一个容器``` shell
+docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
 # --name:自己指定一个容器名字，
+# -t为容器重新分配一个伪输入终端，常和-i连用
+# -i以交互模式运行容器，常和-t连用
 # -d表示后台运行
+# -p指定端口映射，格式为：主机端口:容器端口
 # images-name:运行的image名称
 # tag:镜像的版本
-
+docker run --name container-name -d images-name:tag
+docker run --name docker_tensorflow -it tensroflow/tensorflow  bash
 ```
-- 开始，停止，重启一个容器
-``` shell
+- 连接到正在运行的容器``` shell
+docker attach [OPTIONS] CONTAINER
+```
+- 开始，停止，重启一个容器``` shell
 docker start/stop/restart container-name
 ```
-- 杀死一个运行中的容器
-``` shell
+- 杀死一个运行中的容器``` shell
 docker kill -s KILL container-name
 ```
-- 创建一个容器但是不启动
-``` shell
+- 创建一个容器但是不启动``` shell
 docker create --name container-name -d images-name:tag
 ```
-- 列出容器
-```
+- 列出容器``` shell
 docker ps
 # 加上-a显示所有的容器，包含未运行的
 ```
@@ -158,38 +161,51 @@ docker ps
 
 ### info/version
 - info
-``` shell
-docker info
-# 
-```
 - version
-
 
 ## Dockerfile
 在Dockerfile中，每一条指令都会创建一个镜像层，增加整体镜像的大小。
+https://www.cnblogs.com/lsgxeva/p/8746644.html
 
 ## 在Docker上运行应用程序
 ### 从Docker仓库pull镜像
-#### 过程
-首先安装docker和编辑器，然后拉取docker镜像打包的依赖资源。
-1. pull一个镜像
-2. 使用容器运行这个镜像
-
 Docker client利用pull命令从Docker registry拉取Docker Image到Docker host，然后使用run命令在Docker host上运行一个Docker container运行拉取的Docker image。
-
-#### 命令
-Docker pull命令的格式：
-docker pull \[选项\] \[Docker Registry地址\] \<仓库名\>:\<标签名\>
-默认的Docker registry地址是DockerHub。仓库名：这里的仓库名是两段式名称，既 / ，“/”前面一般是用户名。对于 Docker Hub，如果不给出用户名，则默认为 library ，也就是官方镜像。
-示例
-``` shell
-docker pull ubuntu:14.04 
-# 完整的仓库名和标签名是libary/ubuntu:14.04
-```
 
 ### Push镜像到Docker仓库
 或者反过来，Docker client通过build命令在Docker host创建一个子集的Docker image，然后Docker client使用push命令将Docker iamge推送到Docker Registry。这个Docker Image就可以被自己或者其他人pull了。
 
+## 示例
+### Docker安装tensorflow
+``` shell
+docker pull tensorflow/tensorflow:1.14.0-py3
+docker run --name docker-tensorflow-1.14-py3 -ti tensorflow/tensorflow:1.14.0-py3 /bin/bash
+```
+
+### Docker安装python 3.7
+``` shell
+docker pull python:3.7
+mkdir -p ~/python/myapp
+cd ~/python/myapp
+# 在该目录下创建helloworl.py文件
+docker run -v $PWD/myapp:/usr/src/myapp -w /usr/src/myapp python:3.7 helloworld.py
+# -v $PWD/myapp:/usr/src/myapp: 将主机中当前目录的myapp挂在到容器中的/usr/src/myapp
+# -w /usr/src/myapp:指定容器的/usr/src/myapp为工作目录
+# python helloworl.py 使用容器中的python命令执行工作目录中的helloworld.py
+```
+
+### 基于tensorflow创建RL docker
+编写Dockerfile如下
+``` txt
+# tensorflow=1.14.0, gym=0.15.3, torch=1.3.0
+FROM tensorflow/tensorflow:1.14.0-py3
+MAINTAINER Docker mxxhcm mxxhcm@gmail.com
+RUN pip install --upgrade pip
+RUN pip install torch==1.3.0+cpu torchvision==0.4.1+cpu -f https://download.pytorch.org/whl/torch_stable.html && pip install gym==0.15.3
+```
+然后创建image：
+``` shell
+docker build -t mxxhcm/rl-py-3.6:v1
+```
 
 ## 参考文献
 1.https://zhuanlan.zhihu.com/p/66857204
