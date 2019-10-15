@@ -33,17 +33,43 @@ $\beta$用来控制两个objective的权重。直观上来说，我们可以把p
 ## Transfering Knowledge
 通过优化actor-mimic objective，我们得到一个在所有source target上都表现不错的expert network，接下来我们可以把它迁移到相关的target task上。为了迁移到新的task上，首先移除掉AMN的final softmax layer，然后用AMN的参数初始化一个DQN在新的task上继续训练，接下来和标准的DQN训练方式一样。Multitask pretaining可以看成学习了related tasks中对于policies definition相当有效的特征，然后初始化DQN。如果source和target tasks很像的话，pretained features对于target task是相当有效的。
 
-## Experiments
-### Multitask
+## Multitask experiments
+### 简介
 Multitask任务中并不进行transfer，仅仅使用policy regression objective同时在multitask上训练一个AMN。
-DQN训练到收敛，使用的是一直到收敛过程中的max test reward，收敛过程中最后10个epochs的mean test reward。 
-AMN在每个source game上训练100个epochs， 每一个epoch是250000 frames，总共有2500万 frames。AMN使用了100个epochs中最大的test reward和最后100个epochs的mean test reward。
-尽管AMN被设计成复现expert的表现而不是改善reward，实验表明在某些游戏中，AMN的表现能够超过expert DQN。
 
-### Transfer
+### baselines
+- Multitask DQN: 使用多个games训练一个DQN，只有最后的full-connected layer不同。
+- Multitask Convolutions DQN: 使用多个games训练一个DQN，但是只共享convolutional layer，每个game都有自己的全连接层和softmax层。
+
+### 网络架构：
+32个步长为$4$的$8\times 8$filters
+64个步长为$2$的$4\times 4$filters
+64个步长为$1$的$3\times 3$filters
+$512$ fully-connected units
+$18$个actions
+除了最后一层都有一个relu。
+
+### 实验数据采集
+#### AMN和DQN expert对比
+DQN训练到收敛，使用的是训练到收敛过程中的max test reward，收敛过程中最后10个epochs的mean test reward。 
+AMN在每个source game上训练100个epochs， 每一个epoch是250000 frames，总共有2500万 frames。图中展示了AMN在100个epochs中最大的test reward和最后100个epochs的mean test reward。
+
+#### AMN和MDQN，MCDQN对比
+AMN，MDQN和MCDQN在每个source game上训练40个epochs， 每一个epoch是250000 frames，总共有2500万frames，每一个training epoch之后进行一个$125000$ frames的tesing epoch。最后图中展示了AMN,MDQN以及MCDQN在每个tesing epoch的test average episode rewrad。
+
+## Transfer experiments
 小的AMN（和DQN expert架构相同）的AMN能够学习多个source tasks的knowledge，而大一些的AMN能够更容易的迁移。在transfer实验中，使用了比DQN expert更复杂的AMN model，能够同时玩13个source games。为了防止过拟合，AMN在每个source game上训练400万个frames。
 然后用训练完的AMN当做新任务上DQN的初始化权重。仅仅使用policy regression objective的叫做AMN-policy，而使用feature和policy objective的叫做AMN-feature。将AMN-feature以及AMN-policy的结果和随机初始化的DQN baseline进行比较。
 每隔4个traing epoches，每个training epoch后都有一个testing epoch，输出这4个epoches的average test reward。
+使用的网络架构：
+256个步长为$4$的$8\times 8$filters
+512个步长为$2$的$4\times 4$filters
+512个步长为$1$的$3\times 3$filters
+512个步长为$1$的$3\times 3$filters
+$2048$ fully-connected units
+$1024$ fully-connected units
+$18$个actions
+除了最后一层都有一个relu。
 
 ## AMN的细节
 所有的AMN使用Adam优化器，有一个18-unit的output layer，每一个对应atari 18个actions中可能的一个，使用18个actions简化了不同游戏有不同的action subsets。训练一个特定的游戏时，mask那些not valid的actions，然后在valid actions上使用softmax。AMN每个game使用100000大小的replay memeory。
