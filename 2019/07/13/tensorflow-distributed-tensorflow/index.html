@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="Distributed Tensorflow 这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。 Cluster和Server 简介 tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个t">
+  <meta name="description" content="Distributed Tensorflow这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。 Cluster和Server简介tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个tens">
 <meta name="keywords" content="python,tensorflow,distributed tensorflow">
 <meta property="og:type" content="article">
 <meta property="og:title" content="tensorflow distributed tensorflow">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/07/13/tensorflow-distributed-tensorflow/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="Distributed Tensorflow 这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。 Cluster和Server 简介 tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个t">
+<meta property="og:description" content="Distributed Tensorflow这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。 Cluster和Server简介tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个tens">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-07-13T14:01:56.649Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="tensorflow distributed tensorflow">
-<meta name="twitter:description" content="Distributed Tensorflow 这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。 Cluster和Server 简介 tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个t">
+<meta name="twitter:description" content="Distributed Tensorflow这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。 Cluster和Server简介tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个tens">
 
 
 
@@ -437,40 +437,15 @@
       
 
       
-        <h2 id="distributed-tensorflow">Distributed Tensorflow</h2>
-<p>这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。</p>
-<h2 id="cluster和server">Cluster和Server</h2>
-<h3 id="简介">简介</h3>
-<p>tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个tensorflow server相关联，这个server可能包含一个&quot;master&quot;用来创建session，或者&quot;worker&quot;用来执行图中的op。一个cluster可以被分成更多jobs，每一个job包含一个或者更多个tasks。<br>
-为了创建一个cluster，需要给每一个task指定一个server。每一个task都运行在不同的devices上。在每一个task上，做以下事情：</p>
+        <h2 id="Distributed-Tensorflow"><a href="#Distributed-Tensorflow" class="headerlink" title="Distributed Tensorflow"></a>Distributed Tensorflow</h2><p>这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。</p>
+<h2 id="Cluster和Server"><a href="#Cluster和Server" class="headerlink" title="Cluster和Server"></a>Cluster和Server</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个tensorflow server相关联，这个server可能包含一个”master”用来创建session，或者”worker”用来执行图中的op。一个cluster可以被分成更多jobs，每一个job包含一个或者更多个tasks。<br>为了创建一个cluster，需要给每一个task指定一个server。每一个task都运行在不同的devices上。在每一个task上，做以下事情：</p>
 <ol>
 <li>创建一个tf.train.ClusterSpec描述这个cluster的所有tasks，这对于所有的task都是一样的。</li>
 <li>创建一个tf.train.Server，需要的参数是tr.train.ClusterSpec，识别local task使用job name和task index。</li>
 </ol>
-<h3 id="创建一个tf-train-clusterspec">创建一个tf.train.ClusterSpec</h3>
-<p>下面的表格中给出了两个cluster的示例。传入的参数是一个dictionary，key是job的name，value是该job的所有可用devices。第二列对应的task的scope name。</p>
-<table>
-<thead>
-<tr>
-<th>tf.train.ClusterSpec construction</th>
-<th>Available tasks</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>tf.train.ClusterSpec({“local”: [“localhost:2222”, “localhost:2223”]})</td>
-<td>/job:local/task:0/job:local/task:1</td>
-</tr>
-<tr>
-<td>tf.train.ClusterSpec({ “worker”: [ “<a href="http://worker0.example.com:2222" target="_blank" rel="noopener">worker0.example.com:2222</a>”, “<a href="http://worker1.example.com:2222" target="_blank" rel="noopener">worker1.example.com:2222</a>”, “<a href="http://worker2.example.com:2222" target="_blank" rel="noopener">worker2.example.com:2222</a>”], “ps”: [“<a href="http://ps0.example.com:2222" target="_blank" rel="noopener">ps0.example.com:2222</a>”, “<a href="http://ps1.example.com:2222" target="_blank" rel="noopener">ps1.example.com:2222</a>”]})</td>
-<td>/job:worker/task:0    /job:worker/task:1  /job:worker/task:2  /job:ps/task:0  /job:ps/task:1</td>
-</tr>
-</tbody>
-</table>
-<h3 id="为每一个task创建一个tf-train-server-instance">为每一个task创建一个tf.train.Server instance</h3>
-<p>tf.train.Server对象包含local devices的集合，和其他tasks的connections</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/distributed.md" target="_blank" rel="noopener">https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/distributed.md</a></p>
+<h3 id="创建一个tf-train-ClusterSpec"><a href="#创建一个tf-train-ClusterSpec" class="headerlink" title="创建一个tf.train.ClusterSpec"></a>创建一个tf.train.ClusterSpec</h3><p>下面的表格中给出了两个cluster的示例。传入的参数是一个dictionary，key是job的name，value是该job的所有可用devices。第二列对应的task的scope name。<br>tf.train.ClusterSpec construction|Available tasks<br>—|—|—<br>tf.train.ClusterSpec({“local”: [“localhost:2222”, “localhost:2223”]}) | /job:local/task:0/job:local/task:1<br>tf.train.ClusterSpec({ “worker”: [ “worker0.example.com:2222”, “worker1.example.com:2222”, “worker2.example.com:2222”], “ps”: [“ps0.example.com:2222”, “ps1.example.com:2222”]}) | /job:worker/task:0    /job:worker/task:1  /job:worker/task:2  /job:ps/task:0  /job:ps/task:1</p>
+<h3 id="为每一个task创建一个tf-train-Server-instance"><a href="#为每一个task创建一个tf-train-Server-instance" class="headerlink" title="为每一个task创建一个tf.train.Server instance"></a>为每一个task创建一个tf.train.Server instance</h3><p>tf.train.Server对象包含local devices的集合，和其他tasks的connections</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/distributed.md" target="_blank" rel="noopener">https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/distributed.md</a></p>
 
       
     </div>
@@ -1276,7 +1251,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#distributed-tensorflow"><span class="nav-number">1.</span> <span class="nav-text">Distributed Tensorflow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cluster和server"><span class="nav-number">2.</span> <span class="nav-text">Cluster和Server</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建一个tf-train-clusterspec"><span class="nav-number">2.2.</span> <span class="nav-text">创建一个tf.train.ClusterSpec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为每一个task创建一个tf-train-server-instance"><span class="nav-number">2.3.</span> <span class="nav-text">为每一个task创建一个tf.train.Server instance</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Distributed-Tensorflow"><span class="nav-number">1.</span> <span class="nav-text">Distributed Tensorflow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cluster和Server"><span class="nav-number">2.</span> <span class="nav-text">Cluster和Server</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建一个tf-train-ClusterSpec"><span class="nav-number">2.2.</span> <span class="nav-text">创建一个tf.train.ClusterSpec</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为每一个task创建一个tf-train-Server-instance"><span class="nav-number">2.3.</span> <span class="nav-text">为每一个task创建一个tf.train.Server instance</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
