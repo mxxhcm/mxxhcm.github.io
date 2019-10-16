@@ -26,15 +26,11 @@ DockerMachine是一个Docker安装的命令行工具。
 ``` shell
 wget -qO- https://get.docker.com/ | sh
 # 从https://get.docker.com下载安装脚本，通过管道执行
-```
-报错：
-``` txt
+```报错：``` txt
 Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.40/images/json: dial unix /var/run/docker.sock: connect: permission denied
-```
-是因为docker daemon使用socker at unix，需要root权限才可以访问，解决方案有以下两种：
+```是因为docker daemon使用socker at unix，需要root权限才可以访问，解决方案有以下两种：
 1.使用sudo
-2.docker daemon启动时，会给docker用户组读写unix socket的权限，所以只需要将当前用户加入docker用户组即可：
-``` shell
+2.docker daemon启动时，会给docker用户组读写unix socket的权限，所以只需要将当前用户加入docker用户组即可：``` shell
 sudo groudadd docker    # 添加docker用户组
 cat /etc/group | grep 'docker'  # 查看docker group中的成员
 sudo gpasswd -a $USER docker    # 将当前用户加入到docker用户组中
