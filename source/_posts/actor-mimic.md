@@ -14,7 +14,7 @@ mathjax: true
 ## Policy Regression Objective
 给定多个sources games $S\_1, \cdots, S\_N$，我们的第一个目标是获得一个能玩任何source games，并且尽可能和expert DQN性能相近的single multitask policy network。为了训练这样一个网络，使用$N$个expert DQN $E\_1, \cdots, E\_N$进行指导。一个可能的方法是定义student network和expert network之间$Q$值的均方根误差。因为expert values funcitons在不同的游戏之间可能变化很大，所以作者首先将$Q$值经过softmax变成了policies，softmax的输出都在$0$和$1$之间，所以可以提高训练的稳定性。我们可以把softmax看成让student更多的关注expert DQN在每个state选择的action（DQN选择的是Q值最大的action），经过softmax相当于让它更sharp了。
 最后得到了一个actor，或者说是一个policy，它模仿了所有DQN experts的decisions。比如，在$Q$值上计算Boltzman分布：
-$$\pi\_{E\_i} (a|s) = \frac{ e^{\tau^{-1} Q\_{E\_i}(s,a) } }{\sum\_{a'\in A\_{E\_i} } e^{\tau^{-1} Q\_{E\_i}(s,a) } } \tag{1}$$
+$$\pi\_{E\_i} (a|s) = \frac{ e\^{\tau^{-1} Q\_{E\_i}(s,a) } }{\sum\_{a'\in A\_{E\_i} } e\^{\tau^{-1} Q\_{E\_i}(s,a) } } \tag{1}$$
 其中$\tau$是温度，$A\_{E\_i}$是expert DQN $E\_i$使用的action space。给定$S\_i$的一个state s，定义multitask  network的policy objective是expert network's policy和currnet multitask policcy的cross-entropy:
 $$L^i\_{policy}(\theta) = \sum\_{a\in A\_{E\_i} }\pi\_{E\_i} (a|s) \log \pi\_{AMN}(a|s;\theta) \tag{2}$$
 其中$\pi\_{AMN}(a|s;\theta) $是$\theta$参数化的multitask Actor Mimic Network policy。和Q-learning把自身当做target value相比，AMN得到了一个stable supervised training signal (expert network)指导 multitask network训练。
