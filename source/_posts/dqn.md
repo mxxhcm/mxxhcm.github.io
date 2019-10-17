@@ -137,6 +137,8 @@ $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Every $C$ steps reset $\hat{Q} = Q$
 $\ \ \ \ \ \ \ \ $end for
 end for
 
+### 实验
+
 ## Double DQN
 ### 目的
 解决overestimate问题，Q-learning中在estimated values上进行了max操作，可能会导致某些更偏爱overestimated value而不是underestimated values。
