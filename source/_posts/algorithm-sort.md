@@ -1,5 +1,5 @@
 ---
-title: sort
+title: algorithm-sort
 date: 2019-10-16 15:06:10
 tags:
  - 数据结构
