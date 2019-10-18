@@ -59,14 +59,14 @@ DQN算法使用卷积神经网络代替Q-learning中tabular的值函数，并提
 3. 预处理函数$\phi$是一个卷积神经网络，输入是$84\times 84\times 4$的图像矩阵，经过$16$个stride为$4$的$8\times 8$filter，经过relu激活函数，再经过$32$个stride为$2$的$4\times 4$filter，经过relu激活函数，最后接一个256个单元的全连接层。输出层的大小根据不同游戏的动作个数决定。
 4. $Q$网络的输入是预处理后的图像state，输出是所有当前state可能采取的action的$Q$值。
 
-#### 网络结构
+### 网络结构
 输入：[batch_size, 84, 84, 4]
 第一个隐藏层：16个步长为$4$的$8\times 8$的filters
 第二个隐藏层：32个步长为$2$的$4\times 4$的filters
 全连接层：256个units
 输出层：softmax
 
-#### DQN算法
+### 算法
 算法 1 Deep Q-learning with Experience Replay
 Initialize replay memory D to capacity N
 Initialize action-value function Q with random weights
@@ -122,17 +122,18 @@ https://github.com/devsisters/DQN-tensorflow
 > This instability has several causes: the correlations present in the sequence of observations, the fact that small updates to Q may significantly change the policy and therefore change the data distribution, and the correlations between the action-values (Q) and the target values $r+\gamma \max_{a'}Q(s',a')$. 
 > We address these instabilities with a novel variant of Q-learning, which uses two key ideas. First, we used a biologically inspired mechanism termed experience replay that randomizes over the data, thereby removing correlations in the observation sequence and smoothing over changes in the data distribution. Second, we used an iterative update that adjusts the action-values (Q) towards target values that are only periodically updated, thereby reducing correlations with the target.
 
-### Nature DQN改进 
+### 解决方案
 1. 预处理的结构变了,CNN的层数增加了一层，
 2. 加了target network，
 3. 将error限制在$[-1,1]$之间。
 > clip the error term from the update $r + \gamma \max_{a'} Q(s',a';\theta_i\^{-} - Q(s,a;\theta_i)$ to be between $-1$ and $1$. Because the absolute value loss function $|x|$ has a derivative of $-1$ for all negative values of $x$ and a derivative of $1$ for all positive values of $x$, clipping the squared error to be between $-1$ and $1$ corresponds to using an absolute value loss function for errors outside of the $(-1,1)$ interval. 
 
-### 框架
+### 框架和网络结构
+#### 框架
 Nature-DNQ的框架如下所示
 ![ndqn](nature-dqn.png)
 
-### 网络结构
+#### 网络结构
 输入:[batch_size, 84, 84, 4]
 三个卷积层，两个全连接层（包含输出层）
 第一个隐藏层：$32$个步长为$4$的$8\times 8$filters，以及一个relu
@@ -141,7 +142,7 @@ Nature-DNQ的框架如下所示
 第四个隐藏层：$512$个units
 输出层：softmax，输出每个action对应的$Q$值
 
-### 伪代码
+### 算法
 算法 2 deep Q-learning with experience replay, target network
 Initialize replay memory D to capacity N
 Initialize action-value function Q with random weights $\theta$
@@ -161,8 +162,8 @@ $\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Every $C$ steps reset $\hat{Q} = Q$
 $\ \ \ \ \ \ \ \ $end for
 end for
 
-### 实验
-#### 参数设置
+### Experiments
+#### Settings
 - batch-size: 32
 - replacy memory size: 1000000 frames
 - history length: 4
@@ -180,28 +181,50 @@ end for
 - replay start size: 50000
 - no-op max: 30
 - reward: clipped to [-1, 1]
-- total train frames: 50 millons frame（更新次数乘上batch)。
+- total train frames: 50 millons frame（实际上是200 millions emulated frames，因为有设置为$4$ frame skip）。
 - 选择random作为一个baseline，因为人类的极限是$10$hz，为了公平起见，random baseline以$10$hz的频率随机选择一个action，atari视频的频率是$60$hz，所以每隔$6$帧，随机选择一个action，在选择action中间的帧中保持这一个action。
 
-#### 实验
+#### Experiments
 - Average score和average action value
-这个是在训练过程中，下面的三个实验都是在训练完成后。
-总共train $50$million frames，大概有$200$个epoch，也就是一个epoch是$25$万frames，在每个epoch后使用$\epsilon$-greedy($\epsilon =0.05$)evaluate $520k$个frames。
+每个training epoch之后进行一次evaluation，记录evaluation过程中average episode reward。总共train $50$million frames，大概有$200$个epoch，也就是一个epoch是$25$万frames，在每个epoch后使用$\epsilon$-greedy($\epsilon =0.05$)策略evaluate $520k$个frames。
 - Main-Evaluation: Compartion between DQN and other baselines
 Baselines有Random play, best linear learner，SARSA，Huamn等。
-DQN总共训练了$50$ million frames，replay buffer存放最近的$1$ million framems。在完成训练后，从不同的随机初始状态开始，使用$\epsilon$-greedy($\epsilon=0.05$)玩相应的游戏$30$次，每次至多$5$分钟。
-Human的数据是在进行了$2$个小时训练之后，大约20 episodes，每个episode最长5 min的 average reward。
-表格中最后一列还给出了一个百分比，$100\times \frac{\text{DQN score} - \text{random play score}}{\text{human score} - \text{random play score}}。
+DQN总共训练了$50$ million frames，replay buffer存放最近的$1$ million framems。在完成训练后，至多执行$30$次no-op，产生随机初始状态，使用$\epsilon$-greedy($\epsilon=0.05$)玩$5$分钟，对多次结果取平均。
+Human的数据是在玩家首先进行了$2$个小时训练后，然后玩大约20 episodes，每个episode最长5 min的 average reward。
+表格中最后一列还给出了一个百分比，$100\times \frac{\text{DQN score} - \text{random play score}}{\text{human score} - \text{random play score}}$。
 - Replay buffer和target network的abalation实验
-在三个不同的learning rate下使用standard hyperparameters训练DQN $10$ million frames。每隔250,000 training frames对每个agent进行$135,000$ frames的validation，记录最高的average episode score。 这些valuation episodes并没有在5 min的时候截断，这个实验中Enduro得到的score要比main evaluation中高。这个实验中training的帧数(50 million frames)要比baseline中training的frames(10 million frames)少。
+在三个不同的learning rate下使用standard hyperparameters训练DQN $10$ million frames。每隔$250,000$ training frames对每个agent进行$135,000$ frames的validation，记录最高的average episode score。 这些valuation episodes并没有在$5$ min的时候截断，这个实验中Enduro得到的score要比main evaluation中高。这个实验中training的帧数($10$ million frames)要比baseline中training的frames($50$ million frames)少。
 - DQN和linear function approximator比较
 除了function approximator由CNN变成linear的，其他都没有变。
-在5个validation games上，每个agent在三个不同的learning rates使用标准的参数训练了$10$ million frames。每隔$250000$个training frames对agent进行$135,000$ frames的validation，reported 最高的average episode score。 这些valuation episodes并没有在5 min的时候截断，这个实验中Enduro得到的score要比main evaluation中高。这个实验中training的帧数(50 million frames)要比baseline中training的frames(10 million frames)少。
+在$5$个validation games上，每个agent在三个不同的learning rates使用标准的参数训练了$10$ million frames。每隔$250000$个training frames对agent进行$135,000$ frames的validation，reported 最高的average episode score。 这些valuation episodes并没有在$5$ min的时候截断，这个实验中Enduro得到的score要比main evaluation中高。这个实验中training的帧数($10$ million frames)要比baseline中training的frames($50$ million frames)少。
+
+## Gorila DQN
+论文名称：
+Massively Parallel Methods for Deep Reinforcement Learning
+下载地址：
+https://arxiv.org/pdf/1507.04296.pdf
+
+### Experiments
+
+#### Settings
+- 网络结构和nature DQN一样。
+- 使用了frame-skip，设置为$4$。
+- Replay memory是$1$M>
+
+#### Evaluation
+Evaluation有两种：
+
+##### null op starts
+每个agent在它训练的游戏上evaluated $30$个episodes，每个episode随机的至多执行$30$次no-op之后，评估$5$min的emulator时间($18000$ frames)。然后取这$100$次的平均值。
+
+##### human starts
+Human starts是用来衡量它对于agent可能没有遇到过的state的泛化能力。对于每一个游戏，从一个人类玩家的gameplay中随机取$100$个开始点，使用$\epsilon$-greedy policy玩三十分钟emulator时间（即$108000$frames)。
 
 ## Double DQN
-### 目的
+### DQN中的overestimate问题
 解决overestimate问题，Q-learning中在estimated values上进行了max操作，可能会导致某些更偏爱overestimated value而不是underestimated values。
 本文将Double Q-learning的想法推广到了dqn上形成了double-dqn。实验结果表明了overestimated value对于policy有影响，double 会产生好的action value，同时在一些游戏上会得到更高的scores。
+
 ### Contributions
 1. 解释了在large scale 问题上，Q-learning被overoptimistic的原因是学习固有的estimation errors。
 2. overestimation在实践中是很常见，也很严重的。
@@ -219,7 +242,7 @@ target policy还是greedy policy，通过使用$\theta$对应的网络选择acti
 $$y = r + \gamma Q(s', \arg\max_a' Q(s',a;\theta_t);\theta_t)\tag{6}$$
 即选择action和计算target value都是使用的同一个网络。
 
-### Double dqn
+### Double DQN
 ![double-dqn](double-dqn.png)
 Double Q-learnign的做法是分解target action中的max opearation为选择和evaluation。而在Nature-dqn中，提出了target network，所以分别使用network和target network去选择和evaluation action是一个很好的做法，这样子公式就变成了
 $$y = r + \gamma Q(s', \arg\max_a' Q(s',a;\theta_t);\theta\^{-}\_t)\tag{7}$$
@@ -228,11 +251,11 @@ $$y = r + \gamma Q(s', \arg\max_a' Q(s',a;\theta_t);\theta\^{-}\_t)\tag{7}$$
 ### Double Q learning vs Q-learning
 可以在数学上证明，Q-learning是overestimation的，但是double q leraing是无偏的。。。证明留待以后再说。
 <TODO>
-<TODO>
+
 ### 网络结构
 网络结构和nature DQN一样。
 
-### 伪代码
+### 算法
 算法 3: Double DQN Algorithm.
 输入: replay buffer $D$, 初始network参数$\theta$,target network参数$\theta\^{-}$ 
 输入 : replay buffer的大小$N_r$, batch size $N_b$, target network更新频率$N\^{-}$
@@ -254,19 +277,22 @@ $\qquad\qquad$每隔$N\^{-}$个步骤更新一下target network 参数$\theta\^{
 $\qquad$**end**
 **end**
 
-### 实验
+### Experiments
 
 #### Settings
 Tunned Double DQN，update frequency从$10000$改成了$30000$，训练时$\epsilon$在$1$ millon内从$0.1$退火到$0.01$。Evaluation时是$0.001$。
-总共train了$50$ million个steps，即$200$ millons frames，因为使用了frame-skip。每隔$4$步取一个minibatch=$32$更新网络参数。
+
+#### Evaluation
+和Gorila DQN一样，用了两种：no-op和human starts。
+
+#### Training
+在每个游戏上，网络都训练了$200$M frames，也就是$50$M steps。每隔$1$M step进行一次evaluation，从evaluations中选出最好的policy作为输出。
 
 #### Metric
 提出了一个指标，normalized score，计算公式如下：
 $$score\_{normalized} = \frac{score\_{agent}- score\_{random}}{score\_{human}-score\_{random}}\tag{8}$$
 分母是human和random之差，对应$100%$。
 
-#### 实验
-训练完成后，使用Human starts, 分别对DQN，Double DQN和Double DQN(tunned)在$49$个游戏上进行一个$30$分钟($10800$ frams)的evaluation。
 
 ## Prioritized DQN(PER)
 ### contributions
@@ -299,7 +325,7 @@ weigth的计算公式如下：
 $$w_i = (\frac{1}{N}\cdot \frac{1}{P(i)})\^{\beta}\tag{10}$$
 OK,这里IS的作用有些不明白。。。。<TODO>
 
-### 伪代码
+### 算法
 算法 4
 输入: minibatch $k$, 学习率（步长）$\eta$, replay period $K$ and size $N$ , exponents $\alpha$ and $\beta$, budget $T$.
 初始化replay memory $H = \emptyset, \Delta = 0, p_1 = 1$
@@ -321,7 +347,7 @@ $\qquad$**end if**
 $\qquad$选择action $A_t \sim \pi\_{\theta}(S_t)$
 **end for**
 
-### 实验
+### Experiments
 两组实验，
 一组是DQN和proportional prioritization作比较。
 一组是tuned Double DQN和rank-based以及proportional prioritizaiton。
@@ -353,7 +379,7 @@ $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alph
 $$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alpha)- \frac{1}{|A|}\sum\_{a'}A(s, a'; \theta, \alpha)\right)\tag{13}$$
 一方面这种方法失去了$V$和$A$的原始语义，因为它们有一个常数的off-target，但是另一方面它增加了优化的稳定性，因为上式中advantage的改变只需要和mean保持一致即可，不需要optimal action's advantange一有变化就要改变。
 
-### 伪代码
+### 算法
 
 ## Distributed DQN
 
@@ -415,7 +441,7 @@ A3C算法中没有像$\epsilon$-greedy这样进行action exploration，选中的
 在unfactorised noisy networks中，每个$\mu\_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{3}{p}}, \sqrt{\frac{3}{p}}\right]$中采样初始化，其中$p$是对应linear layer的输入个数，$\sigma\_{i,j}$设置为一个常数$0.0017$，这是从监督学习的任务中借鉴的。
 在factorised noisy netowrks中，每个$\mu\_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{1}{p}}, \sqrt{\frac{1}{p}}\right]$中进行采样，$\sigma\_{i,j}$设置为$\frac{\sigma_0}{p}$，超参数$\sigma_0$设置为$0.5$。
 
-### 伪代码
+### 算法
 算法5 NoisyNet-DQN / NoisyNet-Dueling
 输入: Env Environment; $\varepsilon$ random variables of the network的集合
 输入: DUELING Boolean; "true"代表NoisyNet-Dueling and "false"代表 NoisyNet-DQN

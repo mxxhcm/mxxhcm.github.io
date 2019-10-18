@@ -29,7 +29,7 @@ Wrapper(Env)
 - overwrite reset(self) # 调用的是传入参数env的reset函数
 
 ActionWrapper(Wrapper)
-- overwrite step(self, action): self.env.step(action) # 调用的是self.env的step函数
+- overwrite step(self, action): self.env.step(self.action(action)) # 调用的是self.env的step函数
 - overwrite reset(self) # 调用的是self.env的step函数
 - abstract action(self, action)
 - abstract reverse_action(self, action)
@@ -87,6 +87,9 @@ if __name__ == "__main__":
             total_reward = 0
 
 ```
+
+在这个例子中，env其实是RandomActionWrapper的对象，而RandomActionWrapper继承自ActionWrapper，对ActionWrapper的action方法进行了重载。这个Wrapper对象拥有CartPole environment的对象，调用wrapper对象的step方法时，其实调用的是ActionWrapper的step方法，而ActionWrapper调用的是self.env.env(self.action(action))。
+最终其实就是将env.step(action)改成了env.step(action(action))。
 
 ## 什么是Monitors
 使用gym.wrapper.Monior记录当前agent的执行动作。它的使用方法很简单，如下所示：
