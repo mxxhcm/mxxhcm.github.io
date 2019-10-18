@@ -384,12 +384,73 @@ void counting_sort(int a[], int n, int exp)
 
 ### 桶排序
 #### 思路
+计数排序是桶排序的一个特例，计数排序中使用的桶的个数和max-min+1的值相同，而通排序中桶的个数要小于等于max-min+1，等于max-min+1时，桶排序就退化成了计数排序。
 
 #### 属性
+- 稳定
+- 最好的时间复杂度是$O(n)$
+- 最坏的时间复杂度是$O(n^2 )$
+- 平均时间复杂度是$O(n+k)$
+- 空间复杂度是$O(n+k)$
 
 #### 代码
 ```
+int get_min(int a[], int n)
+{
+    int min = a[0];
+    for(int i=1; i < n; i++)
+    {
+        if(a[i] < min)
+        {
+            min = a[i];
+        }
+    }
+    return min;
+}
 
+int get_max(int a[], int n)
+{
+    int max = a[0];
+    for(int i=1; i < n; i++)
+    {
+        if(a[i] > max)
+        {
+            max = a[i];
+        }
+    }
+    return max;
+}
+
+
+void bucket_sort(int a[], int n, int bucket_number)
+{
+    // 1.创建n个桶
+    std::vector<int> b[bucket_number];
+
+    int max = get_max(a, n);
+    int min = get_min(a, n);
+
+    // 2.每个桶的大小
+    int bucket_size = (max - min + 1) / bucket_number;
+    for(int i = 0 ; i< n; i++)
+    {
+        int bucket_index = (a[i] - min) / bucket_size;
+        b[bucket_index].push_back(a[i]);
+    }
+
+    for(int i = 0; i < bucket_number; i++)
+    {
+        sort(b[i].begin(), b[i].end());
+    }
+    int count = 0;
+    for(int i = 0; i < bucket_number; i++)
+    {
+        for(int j = 0; j < b[i].size(); j++)
+        {
+            a[count++] = b[i][j];
+        }
+    }
+}
 ```
 
 
