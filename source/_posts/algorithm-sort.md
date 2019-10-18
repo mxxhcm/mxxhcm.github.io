@@ -236,6 +236,76 @@ void selection_sort(int a[], int n)
 3.http://www.techgeekbuzz.com/heap-sort-in-c/
 4.https://www.zentut.com/c-tutorial/c-heapsort/
 
+## 非比较排序
+### 计数排序
+#### 思路
+
+#### 排序过程
+输入数组：[2, 5, 3, 0, 2, 3, 0, 3]
+排序后的数组应该是：[0, 0, 2, 2, 3, 3, 3, 5]
+1. 输入待排序数组a：
+     0, 1, 2, 3, 4, 5, 6, 7
+a = [2, 5, 3, 0, 2, 3, 0, 3], n=8
+2. 使用数组c统计出现的次数：
+     0, 1, 2, 3, 4, 5
+c = [2, 0, 2, 3, 0, 1], k=5
+3. 对c进行操作，计算每个值应该在的位置
+     0, 1, 2, 3, 4, 5
+c = [2, 2, 4, 7, 7, 8], k=5
+4. 根据数组c和数组a给出排序后的数组output:
+遍历数组的每一个值，给出他们应该在哪个位置
+a[0] = 2, c[a[0]] = c[2] = 4, c[2]=3, output[4] = a[0] = 2;
+a[1] = 5，c[a[1]] = c[5] = 8, c[5]=7, output[8] = a[1] = 5;
+a[2] = 5，c[a[2]] = c[3] = 7, c[3]=6, output[7] = a[2] = 3; 7中放的是第一个3
+a[3] = 5，c[a[3]] = c[0] = 2, c[0]=1, output[2] = a[3] = 0;
+a[4] = 5，c[a[4]] = c[2] = 3, c[2]=2, output[3] = a[4] = 2;
+a[5] = 5，c[a[5]] = c[3] = 6, c[3]=5, output[6] = a[5] = 3;
+a[6] = 5，c[a[6]] = c[0] = 1, c[0]=0, output[1] = a[6] = 0;
+a[7] = 5，c[a[7]] = c[3] = 5, c[3]=4, output[5] = a[7] = 3;
+**正序遍历是不稳定的，倒序遍历是稳定的。上面就是正序的，可以发现不稳定**
+
+#### 属性
+- 稳定
+- 不基于比较
+- 时间复杂度是$O(n+k)$
+- 空间复杂度是$O(n+k)$
+
+#### 代码
+``` c
+void bucket_sort(int a[], int n, int k)
+{
+    int output[n];
+    int freq[k];
+    memset(freq, 0, sizeof(freq));
+
+    // freq[i] contains the number of elements equal to i
+    for(int i = 0; i < n; i++)
+    {
+        freq[a[i]] ++;
+    }
+    
+    // freq[i] contains the number of elements equal or less to i
+    for(int i = 1; i <= k; i++)
+    {
+        freq[i] = freq[i] + freq[i-1];
+    }
+    
+    for(int i = n - 1; i >= 0 ; i--)
+    {
+        output[freq[a[i]]--] = a[i];
+    }
+               
+    for(int i = 0; i < n; i++)
+    {
+        a[i] = output[i+1];
+    }
+}
+
+```
+
+
+### 基数排序
+### 桶排序
 ## 简单排序
 常见的三大简单排序：冒泡排序，简单选择排序，简单插入排序。
 冒泡排序：
