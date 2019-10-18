@@ -237,8 +237,10 @@ void selection_sort(int a[], int n)
 4.https://www.zentut.com/c-tutorial/c-heapsort/
 
 ## 非比较排序
+
 ### 计数排序
 #### 思路
+假设输入的$n$个数都在$0-k$之间，对于输入的每个元素$x$，统计比它小的值或者和它相等的值的个数，那么这个值在排序后的位置也就确定了。
 
 #### 排序过程
 输入数组：[2, 5, 3, 0, 2, 3, 0, 3]
@@ -272,7 +274,7 @@ a[7] = 5，c[a[7]] = c[3] = 5, c[3]=4, output[5] = a[7] = 3;
 
 #### 代码
 ``` c
-void bucket_sort(int a[], int n, int k)
+void counting_sort(int a[], int n, int k)
 {
     int output[n];
     int freq[k];
@@ -303,9 +305,94 @@ void bucket_sort(int a[], int n, int k)
 
 ```
 
-
 ### 基数排序
+#### 思路
+借助多关键字排序的思想对单逻辑关键字排序。简单来说，对于十进制数字，依次按照个十百千万上每个位上的数字进行排序，假设有$d$位，需要分别对这$d$位进行排序。对每一位进行排序时，可以使用计数排序，因为$k$不大。
+
+#### 排序过程
+给出一组待排序数字：[329, 457, 657, 839, 436, 726, 255]
+先按照个位数进行排序，
+再按照十位数进行排序，
+最后按照百位数进行排序
+
+#### 属性
+- 稳定
+- 时间复杂度$O(d(n+k))$
+- 空间复杂度$O(n+k)$
+
+#### 代码
+``` c
+void bucket_sort(int a[], int n)
+{
+    int max = get_max(a, n);
+    printf("max=%d\n", max);
+    for(int exp=1; max/exp > 0; exp*=10)
+    {
+        counting_sort(a, n, exp);
+    }
+}
+
+
+int get_max(int a[], int n)
+{
+    int max = a[0];
+    for(int i = 1; i < n ;i++)
+    {
+        if(a[i] > max)
+            max = a[i];
+    }
+    return max;
+}
+
+
+void counting_sort(int a[], int n, int exp)
+{
+    int count[10];
+    int output[n+1];
+    memset(count, 0, sizeof(count));
+
+    //329, 457, 657, 839, 436, 726, 255
+    // 1.count
+    for(int i = 0; i < n; i ++)
+    {
+        int temp = (a[i] / exp) % 10;
+        count[temp] ++;
+    }
+
+    // 2.accumulate count
+    for(int i = 1; i < 10; i++)
+    {
+        count[i] = count[i] + count[i-1];
+    }
+
+    // 3.sort
+    for(int i = n - 1; i >= 0; i--)
+    {
+        int temp = (a[i] / exp) % 10;
+        output[count[temp]--] = a[i];
+    }
+
+    // 4. copy
+    for(int i = 0; i < n; i++)
+    {
+        a[i] = output[i+1];
+        printf("%d, ", a[i]);
+    }
+    printf("\n");
+}
+```
+
 ### 桶排序
+#### 思路
+
+#### 属性
+
+#### 代码
+```
+
+```
+
+
 ## 简单排序
 常见的三大简单排序：冒泡排序，简单选择排序，简单插入排序。
 冒泡排序：
@@ -326,3 +413,4 @@ void bucket_sort(int a[], int n, int k)
 1.https://www.quora.com/What-is-the-time-complexity-of-quick-sort/answer/Lakshmi-Narayana-217
 2.https://www.cnblogs.com/Good-good-stady-day-day-up/p/9055698.html
 3.https://www.cnblogs.com/onepixel/p/7674659.html
+4.https://www.geeksforgeeks.org/radix-sort/
