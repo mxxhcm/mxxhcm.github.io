@@ -2107,7 +2107,7 @@ $18$个actions<br>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-18 12:19:45" itemprop="dateModified" datetime="2019-10-18T12:19:45+08:00">2019-10-18</time>
+                <time title="修改时间：2019-10-18 15:02:57" itemprop="dateModified" datetime="2019-10-18T15:02:57+08:00">2019-10-18</time>
               
             
           </span>
@@ -2221,8 +2221,8 @@ $$L_{KL} (D^T, \theta_{S}) = - \sum_{i=1}^{\vert D\vert} softmax(\frac{\mathbf{q
 <li>online policy distillation</li>
 </ul>
 <p>Single game policy distillation实验中，teacher network是一个已经训练完成的model，选择一个DQN expert作为teacher network，训练student network时，teacher network不进行Q-learning，只是用来采样，相当于产生监督学习的样本。Student network学习teacher network是怎么将输入和label对应的。Teacher network的输入(images)和输出(Q值）都被存在buffer中。Multitask policy distillation的训练过程类似。<br>
-除了模型压缩时候用到的DQN，以及一个$10$个games的multi-task distillation任务中用到的DQN，它的参数比nature DQN多四倍还有额外的fully connected layer，所有其他的DQN都和nature DQN的结构一样。</p>
-<p>评价指标用的是Double DQN中的score。</p>
+除了模型压缩时候用到的DQN，以及一个$10$个games的multi-task distillation任务中用到的DQN，它的参数比nature DQN多四倍还有额外的fully connected layer，所有其他的DQN都和nature DQN的结构一样。<br>
+评价指标用的是Double DQN中的normalized score。</p>
 <h3 id="single-game-policy-distillation">single game policy distillation</h3>
 <p>在这个实验中，作者测试了single game的distillation，将一个DQN expert的knowledge迁移到一个新的结构相同的随机初始化的DQN。分别使用了三种loss：MSE, NLL，KL散度进行训练。结构证明KL好于NLL好于MSE。<br>
 原因分析：<br>
@@ -2230,11 +2230,31 @@ MSE是因为$Q$值在一定范围内，MSE loss都会很小，如果某个state�
 NLL loss假设每次只有一个optimal action，原则上没有错。但是我们的teacher network可能不是optimal，最小化NLL的过程可能将一些noise也进行了变化。</p>
 <h3 id="policy-distillation-with-model-compression">policy distillation with model compression</h3>
 <p>这一节介绍的是policy distillation model compression。训练的时候，模型大一些有助于训练，但是训练好的模型进行压缩也保留性能。　<br>
-分别在$10$个不同的atarti游戏上进行single-game distilled，使用的都是KL loss，student分别压缩为teacher的$25\%, 7\%, 4\%$，压缩到$25\%$ student network的平均性能是teacher network的$108\%$,压缩到$25\%$ student network的平均性能是teacher network的$102\%$, 压缩到$25\%$ student network的$4\%$的平均性能是teacher network的$84\%$。</p>
+分别在$10$个不同的atarti游戏上进行single-game distilled，使用的都是KL loss，student分别压缩为teacher的$25\%, 7\%, 4\%$，压缩到$25\%$ student network的平均性能是teacher network的$108\%$,压缩到$25\%$ student network的平均性能是teacher network的$102\%$, 压缩到$25\%$ student network的$4\%$的平均性能是teacher network的$84\%$。<br>
+single policy distillation with model compression中网络结构：<br>
+Agent | Input | Conv. 1 | Conv. 2 | Conv. 3 | F.C. 1 | Output | Parameters<br>
+Teacher (DQN) | 4 |  32 | 64 | 64 | 512 | up to 18 | 1,693,362<br>
+Dist-KL-net1 | 4 | 16 | 32 | 32 | 256 | up to 18 | 427,874<br>
+Dist-KL-net2 | 4 | 16 | 16 | 16 | 128 | up to 18 | 113,346<br>
+Dist-KL-net3 | 4 | 16 | 16 | 16 | 64 | up to 18 | 61,954<br>
+模型压缩只改变了参数的数量，没有改变模型架构。</p>
 <h3 id="multi-game-policy-distillation">multi-game policy distillation</h3>
 <p>Multi-task DQN是multi-task distillation的baseline，实验使用了三个游戏，multi-task DQN和单个DQN的训练过程一样，但是使用了三个游戏的experient进行训练。对比了multi task DQN，multi distillation NLL，multi distillation KL，他们的网络大小都是一样的。<br>
-最后作者还将$10$个游戏distill到一个single student network中，这个network大小是nature DQN的四倍。</p>
+最后作者还将$10$个游戏distill到一个single student network中，这个network大小是nature DQN的四倍。<br>
+multi-task distilltaion experiments中网络结构：<br>
+Agent | Input | Conv. 1 | Conv. 2 | Conv. 3 | F.C. 1 | F.C. 2 | Output | Parameters<br>
+One Teacher (DQN) | 4 | 32 | 64 | 64 | 512 | n/a | up to 18 | 1,693,362<br>
+Multi-DQN/Dist (3 games) | 4 | 32 | 64 | 64 | 512 | 128 (x3) | up to 18 (x3) | 1,882,668<br>
+Multi-Dist-KL (10 games) | 4 | 64 | 64 | 64 | 1500 | 128 (x10) | up to 18 (x10) | 6,756,721</p>
 <h3 id="online-policy-distillation">online policy distillation</h3>
+<h2 id="experimental-details">Experimental Details</h2>
+<h3 id="policy-distillation-training">Policy Distillation Training</h3>
+<p>Policy distillation online data collection和nature DQN中agent evaluation一样，DQN随机执行最多$30$个null-ops初始化episode，使用$\epsilon$-greedy($\epsilon=0.05$)算法进行$30$分钟即$108000$frames的evaluation。<br>
+DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小时的experience（$15$Hz下共$54000$个control steps），</p>
+<h3 id="distillation-targets">Distillation Targets</h3>
+<h3 id="agent-evaluation">Agent Evaluation</h3>
+<p>使用human starts，使用$\epsilon$-greedy($\epsilon=0.05$)算法进行$30$分钟即$108000$frames的evaluation。<br>
+在multitask中，使用$\frac{\text{student score}}{\text{DQN score}}$当做metric。</p>
 <h2 id="代码">代码</h2>
 <p>官方没有放出代码，有其他人的复现版本：<br>
 <a href="https://github.com/ciwang/policydistillation" target="_blank" rel="noopener">https://github.com/ciwang/policydistillation</a></p>
