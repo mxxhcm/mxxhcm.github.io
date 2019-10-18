@@ -58,6 +58,38 @@ Multi-task distillation和multi-task DQN之间的区别：
 
 Policy distillation可能提供了一种方式将多个polices组合到一个model中而不损害performance，在distillation process中，policy被压缩并且refined了。
 
+
+## 实验
+- single game policy distillation:
+四个游戏，四个网络：dqn expert, distill-MSE, distill-NLL,distill-KL，四个网络的大小都和nature DQN一样。
+- single game policy distillation with compression
+十个游戏，四个网络：dqn expert, $25\\%$ distill-KL，$7\\%$ distill-KL，$4\\%$ distill-KL，后面三个网络大小分别是dqn expert的$25\\%, 7\\%, 4\\%$。
+- multi-task distillation
+三个游戏，三个网络：multi-dqn, multi-dist-NLL, multi-dist-KL，这三个网络的大小都和nature dqn一样。
+十个游戏，一个网络：multi-dist-KL，大小是nature dqn的4倍。
+- online policy distillation
+
+Single game policy distillation实验中，teacher network是一个已经训练完成的model，选择一个DQN expert作为teacher network，训练student network时，teacher network不进行Q-learning，只是用来采样，相当于产生监督学习的样本。Student network学习teacher network是怎么将输入和label对应的。Teacher network的输入(images)和输出(Q值）都被存在buffer中。Multitask policy distillation的训练过程类似。
+除了模型压缩时候用到的DQN，以及一个$10$个games的multi-task distillation任务中用到的DQN，它的参数比nature DQN多四倍还有额外的fully connected layer，所有其他的DQN都和nature DQN的结构一样。
+
+评价指标用的是Double DQN中的score。
+
+### single game policy distillation
+在这个实验中，作者测试了single game的distillation，将一个DQN expert的knowledge迁移到一个新的结构相同的随机初始化的DQN。分别使用了三种loss：MSE, NLL，KL散度进行训练。结构证明KL好于NLL好于MSE。
+原因分析：
+MSE是因为$Q$值在一定范围内，MSE loss都会很小，如果某个state处不同action的Q值很接近的话，即使MSE很小，也会产生误差。
+NLL loss假设每次只有一个optimal action，原则上没有错。但是我们的teacher network可能不是optimal，最小化NLL的过程可能将一些noise也进行了变化。
+
+### policy distillation with model compression
+这一节介绍的是policy distillation model compression。训练的时候，模型大一些有助于训练，但是训练好的模型进行压缩也保留性能。　
+分别在$10$个不同的atarti游戏上进行single-game distilled，使用的都是KL loss，student分别压缩为teacher的$25\\%, 7\\%, 4\\%$，压缩到$25\\%$ student network的平均性能是teacher network的$108\\%$,压缩到$25\\%$ student network的平均性能是teacher network的$102\\%$, 压缩到$25\\%$ student network的$4\\%$的平均性能是teacher network的$84\\%$。
+
+### multi-game policy distillation
+Multi-task DQN是multi-task distillation的baseline，实验使用了三个游戏，multi-task DQN和单个DQN的训练过程一样，但是使用了三个游戏的experient进行训练。对比了multi task DQN，multi distillation NLL，multi distillation KL，他们的网络大小都是一样的。
+最后作者还将$10$个游戏distill到一个single student network中，这个network大小是nature DQN的四倍。
+
+### online policy distillation
+
 ## 代码
 官方没有放出代码，有其他人的复现版本：
 https://github.com/ciwang/policydistillation
