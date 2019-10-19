@@ -13,7 +13,7 @@ Policy iteration有两种方式实现，一种是使用两个数组，一个保�
 In-place的方法是高斯赛德尔方法。就是用来解方程组的迭代法。
 
 ## Dynamic Programming
-DP指的是给定环境的模型，通常是一个MDP，计算智能体最优策略的一类算法。经典的DP算法应用场景有限，因为它需要环境的模型，以及很高的计算代价，但是DP的思路是很重要的。其他的许多算法都是在减少计算代价和环境信息的前提下尽可能获得和DP接近的性能。
+DP指的是给定环境的模型，通常是一个MDP，计算智能体最优策略的一类算法。经典的DP算法应用场景有限，因为它需要环境的模型，计算量很高，但是DP的思路是很重要的。许多其他的算法都是在尽量减少计算量和对环境信息情况，尽可能获得和DP接近的性能。
 通常我们假定环境是一个有限(finite)的MDP，也就是state, action, reward都是有限的。尽管DP可以应用于连续(continuous)的state和action space，但是只能应用在几个特殊的场景上。一个常见的做法是将连续state和action quantize(量化)，然后使用有限MDP。
 DP关键在于使用value function寻找好的policy，在找到了满足Bellman optimal equation的optimal value function之后，可以找到optimal policy，参见[第三章推导](https://mxxhcm.github.io/2018/12/21/reinforcement-learning-an-introduction-%E7%AC%AC3%E7%AB%A0%E7%AC%94%E8%AE%B0/)：
 Bellman optimal equation:

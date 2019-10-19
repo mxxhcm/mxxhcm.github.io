@@ -85,7 +85,7 @@ void bubble_sort(int a[], int n)
 - 最坏时间复杂度$O(n^2 )$，在数组基本有序的情况下退化成冒泡排序了。
 - 最好时间复杂度$O(n\log n )$
 - 平均时间复杂度$O(n\log n )$
-- 空间复杂度$O(n\log n)$
+- 最好空间复杂度$O(\log n)$，最差是$O(n)$的空间复杂度。每一次需要$O(1)$常数空间存储pivot的位置，在递归调用保存栈的时候需要空间。至多有$\log n$或者$O(n)$次，所以空间复杂度就是$O(n)$。
 
 #### 时间复杂度计算
 ##### 最坏情况下
@@ -195,6 +195,7 @@ void insert_sort(int a[], int n)
 ```
 
 ### 希尔排序
+
 ## 选择排序
 ### 简单选择排序
 #### 思路简介
@@ -235,6 +236,70 @@ void selection_sort(int a[], int n)
 2.http://www.techgeekbuzz.com/heap-sort-in-c/
 3.http://www.techgeekbuzz.com/heap-sort-in-c/
 4.https://www.zentut.com/c-tutorial/c-heapsort/
+
+
+## 归并排序
+### 思路
+
+### 属性
+- 稳定
+- 最坏时间复杂度$O(n\log n)$
+- 最好时间复杂度$O(n\log n)$
+- 平均时间复杂度$O(n\log n)$
+- 空间复杂度$O(n)$
+
+
+### 代码
+``` c
+void merge_sort(int a[], int l, int r)
+{
+    if(l < r)
+    {
+        //int middle = (l+r)/2 may be overflow, use (r-l)/2 + l 
+        int m = (r-l)/2 + l;
+        merge_sort(a, l, m);
+        merge_sort(a, m+1, r);
+        merge(a, l , m, r);
+    }
+
+}
+
+
+void merge(int a[], int l, int m, int r)
+{
+    int res[100] = { 0 };
+    int i = l, j = m+1, k = 0;
+    // merge
+    while((i <= m) && (j <= r))
+    {
+        if(a[i] < a[j])
+        {
+            res[k++] = a[i++];
+        }
+        else
+        {
+            res[k++] = a[j++];
+        }
+    }
+
+    // copy left
+    for( ; i <= m; )
+    {
+        res[k++] = a[i++];
+    }
+
+    for( ; j <= r; )
+    {
+        res[k++] = a[j++];
+    }
+
+    // copy to a
+    for(int t = l; t <=r; t++)
+    {
+        a[t] = res[t-l];
+    }
+}
+```
 
 ## 非比较排序
 
@@ -453,6 +518,13 @@ void bucket_sort(int a[], int n, int bucket_number)
 }
 ```
 
+## 快速排序vs归并排序
+1. 辅助空间：快排可以使用in-place方法实现，在每一个排序过程中不需要额外的空间，但是快排的递归实现，需要保存栈调用（是常数），平均情况下是$O(\log n)$，最坏情况下是$O(n)$；[使用尾递归的快排最坏情况下空间复杂度也是$O(\log n)$](https://www.geeksforgeeks.org/quicksort-tail-call-optimization-reducing-worst-case-space-log-n/)。而归并排序需要临时数组存储归并后的排序数组，需要$O(n)$的空间复杂度。[https://cs.stackexchange.com/a/35510]。
+2. 时间复杂度：快排在最坏情况下的时间复杂度是$O(n^2 )$，但是可以使用随机选择pivot的方式避免。
+3. 归并排序更适合大的数据结构，mergesore是稳定排序，可以修改成适合链表等数据结构的算法，以及内存和网络上的排序。因为在链表中，插入的时间和空间复杂度都是$O(1)$，因此链表的归并排序可以不需要额外的辅助空间。
+4. 快排和归并的平均时间复杂度都是$O(n\log n)$，但是因为归并排序需要分配以及销毁临时数组，所以要更慢一些。
+5. 快排是cache friendly的，对于数据来说，他有locality of reference。（即是否很大可能性从cache中读取大量元素）[https://stackoverflow.com/a/70631/8939281]。
+
 
 ## 简单排序
 常见的三大简单排序：冒泡排序，简单选择排序，简单插入排序。
@@ -475,3 +547,6 @@ void bucket_sort(int a[], int n, int bucket_number)
 2.https://www.cnblogs.com/Good-good-stady-day-day-up/p/9055698.html
 3.https://www.cnblogs.com/onepixel/p/7674659.html
 4.https://www.geeksforgeeks.org/radix-sort/
+5.https://www.geeksforgeeks.org/quicksort-better-mergesort/
+6.https://cs.stackexchange.com/a/35510
+7.https://www.geeksforgeeks.org/quicksort-tail-call-optimization-reducing-worst-case-space-log-n/
