@@ -519,11 +519,11 @@ void bucket_sort(int a[], int n, int bucket_number)
 ```
 
 ## 快速排序vs归并排序
-1. 辅助空间：快排可以使用in-place方法实现，在每一个排序过程中不需要额外的空间，但是快排的递归实现，需要保存栈调用（是常数），平均情况下是$O(\log n)$，最坏情况下是$O(n)$；[使用尾递归的快排最坏情况下空间复杂度也是$O(\log n)$](https://www.geeksforgeeks.org/quicksort-tail-call-optimization-reducing-worst-case-space-log-n/)。而归并排序需要临时数组存储归并后的排序数组，需要$O(n)$的空间复杂度。[https://cs.stackexchange.com/a/35510]。
-2. 时间复杂度：快排在最坏情况下的时间复杂度是$O(n^2 )$，但是可以使用随机选择pivot的方式避免。
-3. 归并排序更适合大的数据结构，mergesore是稳定排序，可以修改成适合链表等数据结构的算法，以及内存和网络上的排序。因为在链表中，插入的时间和空间复杂度都是$O(1)$，因此链表的归并排序可以不需要额外的辅助空间。
-4. 快排和归并的平均时间复杂度都是$O(n\log n)$，但是因为归并排序需要分配以及销毁临时数组，所以要更慢一些。
-5. 快排是cache friendly的，对于数据来说，他有locality of reference。（即是否很大可能性从cache中读取大量元素）[https://stackoverflow.com/a/70631/8939281]。
+- 辅助空间：快排可以使用in-place方法实现，在每一个排序过程中不需要额外的空间，但是快排的递归实现，需要保存栈调用（是常数），平均情况下是$O(\log n)$，最坏情况下是$O(n)$；[使用尾递归的快排最坏情况下空间复杂度也是$O(\log n)$](https://www.geeksforgeeks.org/quicksort-tail-call-optimization-reducing-worst-case-space-log-n/)。而归并排序需要临时数组存储归并后的排序数组，[需要$O(n)$的空间复杂度](https://cs.stackexchange.com/a/35510)。
+- 时间复杂度：快排在最坏情况下的时间复杂度是$O(n^2 )$，但是可以使用随机选择pivot的方式避免。
+- 归并排序更适合大的数据结构，mergesore是稳定排序，可以修改成适合链表等数据结构的算法，以及内存和网络上的排序。因为在链表中，插入的时间和空间复杂度都是$O(1)$，因此链表的归并排序可以不需要额外的辅助空间。
+- 快排和归并的平均时间复杂度都是$O(n\log n)$，但是因为归并排序需要分配以及销毁临时数组，所以要更慢一些。
+- 快排是cache friendly的，对于数据来说，他有locality of reference。（[即是否很大可能性从cache中读取大量元素](https://stackoverflow.com/a/70631/8939281)）。
 
 
 ## 简单排序
