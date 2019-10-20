@@ -201,7 +201,6 @@ numpy.random.binomial(
 	size=None
 )
 ```
-
 ### 介绍
 二项分布，共有三个参数，前两个是必选参数，第三个是可选参数。$n$是实验的个数，比如同时扔三枚硬币，这里就是$n=3$,$p$是为$1$的概率。$size$是总共进行多少次实验。
 返回值是在每次试验中，trival成功的个数。如果是一个scalar，代表$size=1$，如果是一个list，代表$size\gt 1$。
@@ -287,6 +286,24 @@ print(a2)
 a3 = np.random.permutation(np.arange(9).reshape(3, 3))
 print(a3)
 ```
+
+## np.random.normal
+### API
+```
+numpy.random.normal(loc=0.0, scale=1.0, size=None)  
+loc:float，正态分布的均值，对应着整个分布的center
+scale:float，正态分布的标准差，对应于分布的宽度，scale越大越矮胖，scale越小，越瘦高
+size:int or tuple of ints，输出的shape，默认为None，只输出一个值
+np.random.randn(size)相当于np.random.normal(loc=0, scale=1, size)
+```
+
+## np.argsort
+### API
+numpy.argsort(a, axis=-1, kind='quicksort', order=None)
+axis:对哪个axis进行排序，默认是-1
+
+### 功能
+将数组排序后（默认是从小到大排序），返回排序后的数组在原数组中的位置。
 
 
 
