@@ -188,13 +188,15 @@ C++sort：
 
 #### 代码
 ``` c
+//首先我写了下面的代码，实际上是有问题的，
+//错误示例！！！！！！！！！！！！！！！！！！！！！！！
 void insert_sort(int a[], int n)
 {
-    for(int i = 1; i < n; i++)
+    int i = -1, j = -1, temp = -1;
+    for(i = 1; i < n; i++)
     {
-        
-        int temp = a[i];
-        for(int j = i - 1; j >= 0; j--)
+        temp = a[i];
+        for(j = i - 1; j >= 0; j--)
         {
             if(a[j] > temp)
             {
@@ -202,15 +204,73 @@ void insert_sort(int a[], int n)
             }
             else 
             {
+                //如果第j论插入应该插入在0位置时，会跳过这一步的执行。
                 a[j+1] = temp;
                 break;
             }
         }
     }
 }
+//正确示例
+void insert_sort(int a[], int n)
+{
+    int i = -1, j = -1, temp = -1;
+    for(i = 1; i < n; i++)
+    {
+        temp = a[i];
+        for(j = i - 1; j >= 0; j--)
+        {
+            if(a[j] > temp)
+            {
+                a[j+1] = a[j];
+            }
+            else 
+            {
+                break;
+            }
+        }
+        a[j+1] = temp;
+    }
+}
 ```
 
 ### 希尔排序
+#### 思路简介
+希尔排序是对插入排序的扩展。
+
+#### 属性
+- 不稳定
+- 平均的时间复杂度$O(n^{1.3} )$
+- 最坏的时间复杂度$O(n^2 )$
+- 最好的时间复杂度$O(n )$
+- 空间复杂度是$O(1)$
+
+#### 代码
+``` c
+void shell_sort(int a[], int n)
+{
+    int i = -1, j = -1, temp = -1;
+    for(int gap = n/2; gap > 0; gap/=2)
+    {
+        for(i = gap; i < n; i++)
+        {
+            temp = a[i];
+            for(j = i - gap; j >= 0; j -= gap)
+            {
+                if(temp < a[j])
+                {
+                    a[j+gap] =  a[j];
+                }
+                else
+                {
+                    break;
+                }
+            }
+            a[j+gap] = temp;
+        }
+    }
+}
+```
 
 ## 选择排序
 ### 简单选择排序
