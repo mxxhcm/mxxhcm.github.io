@@ -99,6 +99,18 @@ env = gym.wrappers.Monitor(env, "path")
 ```
 只需要在env的外面套上一个Monitor即可，它会自动记录玩游戏的过程。
 
+## Wrapper in baselines
+Openai baselines中实现了许多wrappers。它们包括：
+- 将一个大的episode切分成更小的episode，一个游戏可能有好几条命，原来的实现中是这几条命都是一个episode，现在把它改成一条命一个episode
+- 执行至多$30$个no-op。
+- frame-skip和取最后两帧中pixel更大的那个当做observation
+- 在游戏开始时Pressing FIRE，一般在重置游戏的时候，有些游戏需要按一下fire才会开始，否则一直都是fixed。
+- Image cropped,将$210\times 160$三通道转换成$84\times 84$单通道
+- Stacking $4$ frames当做observation
+- Clipped reward 到$-1, 0, 1$，或者$[-1, 1]$
+- 将$0-255$之间的值转换成$[0.0, 1.0]$
+
+
 ## Monitors示例
 ``` python
 import gym
@@ -132,3 +144,4 @@ if __name__ == "__main__":
 ## 参考文献
 1.https://hub.packtpub.com/openai-gym-environments-wrappers-and-monitors-tutorial/
 2.https://www.packtpub.com/big-data-and-business-intelligence/deep-reinforcement-learning-hands
+3.https://discuss.pytorch.org/t/in-the-official-q-learning-example-what-does-the-env-unwrapped-do-exactly/28695/2
