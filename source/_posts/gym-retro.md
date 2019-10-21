@@ -86,7 +86,7 @@ Sonic benmeark对frame skip做了一些改变，叫做stick frame skip。对于a
 所有的Sega Genesis游戏的action space包含：
 B, A, MODE, START, UP, DOWN, LEFT, RIGHT, C, Y, X, Z
 Sonic game中有八个很重要的buttion combinations:
-{{}, {LEFT},  {RIGHT}, {LEFT, DOWN}, {RIGHT, DOWN}, {DOWN}, {DOWN, B}, {B}}
+{ {}, {LEFT},  {RIGHT}, {LEFT, DOWN}, {RIGHT, DOWN}, {DOWN}, {DOWN, B}, {B} }
 
 ### Rewards
 在一个episode中，cumulative reward和玩家的初始位置到当前位置的偏移是成正比的。也就是说往右走产生正的reward，往左走产生负的reward。
@@ -105,8 +105,7 @@ Reward由horimontal offset和completion bonus构成。Completion bonus是$1000$�
 
 ## Baselines
 - Humans：四个玩家，每个玩家在training levels上训练两个小时。然后在每个test level玩一个小时。
-- RainBow：设置$V\_{max} = 200$，replay buffer从$1M$改成了$0.5$M，直接使用Rainbow的初值。Action space：{{LEFT}, {RIGHT}, {LEFT, DOWN}, {RIGHT, DOWN}
-{DOWN}, {DOWN, B}, {B}}。Agent的reward是基于agent到过的最大$x$，这样子不会惩罚它往回走。
+- RainBow：设置$V\_{max} = 200$，replay buffer从$1M$改成了$0.5$M，直接使用Rainbow的初值。Action space：{ {LEFT}, {RIGHT}, {LEFT, DOWN}, {RIGHT, DOWN}, {DOWN}, {DOWN, B}, {B} }。Agent的reward是基于agent到过的最大$x$，这样子不会惩罚它往回走。
 - JERK：并没有使用depp learning，叫JERK(Just Enough Retained Knowledge)。使用一个简单的算法进行explore，然后回放训练过程中的best action。因为环境是stochasitc，不知道哪个action是最好的，因此次他仅仅是一个mean。
 - PPO：在每个test levels上，单独的调用PPO。和Rainbow的action，observation spaces一样，CNN架构和ppo论文中一样。超参数：
 Hyper-parameter|Value
