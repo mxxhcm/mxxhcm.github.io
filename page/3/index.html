@@ -327,6 +327,1150 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/05/coinrun/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/09/05/coinrun/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">CoinRun</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-05 12:25:40" itemprop="dateCreated datePublished" datetime="2019-09-05T12:25:40+08:00">2019-09-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-21 13:18:10" itemprop="dateModified" datetime="2019-10-21T13:18:10+08:00">2019-10-21</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="quantifying-generalization-in-reinforcement-learning">Quantifying Generalization in Reinforcement Learning</h2>
+<h3 id="下载地址">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>这篇文章研究的是drl中的overfitting问题。在绝大多数的RL benchmark中，训练和测试都习惯性的在相同环境中，这就让agent’s的泛化能力不够优秀。本文通过程序生成环境构建不同的training set和testing set解决这个问题，设计了一个新的CoinRun环境用于RL的generalization。<br>
+实验证明更深的cnn能够改善generalization，监督学习中常用的一些方法，如$L2$正则化，dropout，data augmentation以及batch normalization。<br>
+这篇文章的贡献：</p>
+<ol>
+<li>transfer需要的训练环境数量要远远高于之前的工作中使用到的。</li>
+<li>使用CoinRun benchmark提出了一个generalization metric。</li>
+<li>找到了不同网络结构和正则化项中最好的那些设置。</li>
+</ol>
+<h3 id="related-work">Related Work</h3>
+<p>这篇文章是从Sonic benchmark中得到的idea，agents可以在training set上训练任意的长度，在test时候执行$1$ million timesteps进行fine-tuning，sonic benchmark的目标是解决&quot;training on the test set&quot;的问题。</p>
+<h3 id="简介">简介</h3>
+<p>尽管RL agents能解决很复杂的任务，将experience迁移到新环境，或者在不同的RL tasks之间进行泛化是很困难的。即使已经掌握了$10$ video game的agents，在初次遇到第$11$级时也会失败，agents在训练的时候只学习到了和这个环境相关的知识。<br>
+RL agents的训练其实是过拟合的，但是绝大多数的benchmark还是鼓励在相同的环境中进行train和evaluation。和Sonic Benchmark一样，作者认为分train和test集是必要的，同时作者认为量化agent的泛化能力也是很有用的。<br>
+Sonic Benchmark通过对环境划分训练集和测试集，解决了在测试集上训练的问题。而Farebrother认识到，没有划分训练集和测试集，使得RL训练中缺乏正则化手段，通过使用监督学习中的$L2$正则化和dropout，使得agents能够学习更多泛化特征。<br>
+Zhang等利用程序生成划分train和test环境，他们在gridworld mase上进行实验，得出了许多RL agents为什么过拟合的结论。通过让agents记住在训练集中具体的levels，以及stick actions，random starts，可以减少过拟合的发生。</p>
+<h3 id="quantifying-generalization">Quantifying Generalization</h3>
+<h4 id="coinrun">CoinRun</h4>
+<p>CoinRun环境很简单，一个智能体，从最左边，一直往右走，收集在最右边的金币，中间或均匀或随机的散布着一些障碍，只有得到金币后有一个常数的reward。一个episode结束有以下三种可能性：</p>
+<ul>
+<li>当agent死亡，</li>
+<li>或者采集到coin，</li>
+<li>或者$1000$个timesteps后自动结束。</li>
+</ul>
+<p>CoinRun和Sonic很像，但是更简单，更容易泛化。给定足够数量的training levels和足够的training time，算法能够学习一个接近最优的optimal policy for all CointRun levels。每一个level都是从一个给定的seed中顺序生成的，能够给智能体相当多并且易于量化提供的training data。</p>
+<h4 id="coinrun泛化曲线">CoinRun泛化曲线</h4>
+<p>使用CoinRun可以衡量agents从给定的training level中训练迁移到没有见过的test levels上的效果。随着training中使用的levels数量增多，即使是训练固定的timesteps时，我们期望在test set上的性能变好。test时，作者在test set上进行了zero-shot performance评估，即没有在test set上进行fine-tuning。<br>
+作者训练了$9$个agents 运行CoinRun，每一个都在具有不同levels数量的训练集上运行。训练过程中，每一个episode从相应的set中随机采样一个level。前$8$个agents使用的train sets中level的数量从$100$到$16000$，最后一个agent在无限个levels的训练集上。Level的seed是$2^32$，所以几乎不可能发生冲突。训练集包含$2$M个独一无二的levels，在test的时候仍然不会遇到已经遇到过的level。整个实验进行了$5$次，每次重新生成training sets。<br>
+使用nature-dqn中的三层CNN进行训练，然后使用$8$个workers的PPO总共训练了$256M$步。每个agents都训练相同的timesteps，然后在每个mini-batch的$8$个works上取gradients的均值。<br>
+最后的结果中，对$10000$个episodes的final performance进行平均，我们可以看出来，在$4000$个levels以内，过拟合很严重，即使是$1600$个training levels，过拟合也是很多的。当agents遇到的都是新的levels时，表现最好。</p>
+<h3 id="evaluating-architectures">Evaluating Architectures</h3>
+<p>比较Nature-CNN和IMPALA-CNN，结果证明IMPALA-CNN要好一些。为了评估generalization performance，可以直接在无限个levels的train set上训练agents，然后比较learning curves。在这个settings中，智能体不可能过拟合某一些levels的子集，每一个level都是新的。因为Impala-cnn的记过更好，所以作者尝试了更深的网络，发现效果更好，新的网络使用了$5$个residual blocks，每层的channels数量是原来的两倍。再进一步增加网络深度的时候，发现了returns逐渐变小，同时花费的时间也更多了。<br>
+当然，使用无限的training set并不会总是会带来性能的提升。选择好的超参数能够加快训练速度，但是并不一定会改善generalization的性能。通常来讲，在固定levels的训练集上训练，能产生一个更有用的metric。</p>
+<h3 id="evaluating-regularization">Evaluating Regularization</h3>
+<p>正则化在监督学习中有很重要的作用，因为监督学习更关心的是generalization。监督学习的数据集通常分为训练集和数据集，有很多正则化技巧可以用来减少generalization gap。但是因为RL中训练集和测试集通常是同一个，所以正则化技术就没什么效果。<br>
+现在既然RL中要衡量generalization，可能正则化技术就能起到作用。作者分别在CoinRun environment中试了$L2$正则化，dropout，data augmentation以及batch normalization。<br>
+这一节中，所有的agents都是在$500$个levels的CoinRun环境中进行的。我们可以看到有过拟合发生，所以就希望这个setting能够evaluating出不同正则化技术的效果。所有接下来实验的均值和方差都是runs$3$次得到的。使用的是有$3$个残差块的IMPALA-CNN。</p>
+<h4 id="dropout和l2正则化">Dropout和L2正则化</h4>
+<p>作者分别试了dropout为$p\in [0, 0.05, 0.10, 0.15, 0.20, 0.25]$，以及L2正则化权重$w\in [0, 0.5, 1.0, 1.5, 2.0, 2.5]\times 10^{-1} $，一次只试了一个。最终找到了$p=0.1$以及$w=10^{-4} $。使用$L2$正则化训练了$256M$ timesteps，使用dropout训练了$512M$ timesteps，dropout更难收敛，而且效果没有$L2$正则化好用。</p>
+<h4 id="data-augmentation">Data Augmentation</h4>
+<p>监督学习中，数据增强的手段主要用于图像，包括变换，旋转，亮度调整，锐化等等。不同的数据集可能需要使用不同的augmentations。这里作用使用的是Cutout的一个变形。对于每一个observation，可变大小的矩阵区别被masked掉，这些masked的区域给一个随机的颜色，这个和domain randomization非常相似，用于机器人从仿真到真实世界的transfer。</p>
+<h4 id="batch-normalization">Batch Normalization</h4>
+<p>在IMPALA-CNN架构中每层CNN之后使用batch normalization。</p>
+<h4 id="stochasticity">Stochasticity</h4>
+<p>这个随机性很有意思哦。作者考虑了两种方法，一种是改变环境的stochasticity，另一个是改变policy的stochasticity。首先，使用$\epsilon$-greedy action selection算法向环境中加入stochasticity，在每一个timestep中，有$\epsilon$的概率，使用random action代替policy的action。在之前的一些研究中，$\epsilon$-greedy用来鼓励exploration和防止overfitting。然后，通过改变PPO中的entropy bonus控制policy stochasticity。Baseline中使用的entropy bonus是$k_H = 0.01$。<br>
+同时增加训练时间步到$512M$个timesteps。单独向环境或者policy加入stochasticity都能改善generalization。</p>
+<h4 id="combining-regularization-methods">Combining Regularization Methods</h4>
+<p>作者尝试将data augmentation,batch normalization和L2结合起来，结果表明比任意单独的一种都要好，但是提升的大小并不是很大，可以说这三种方法解决的过拟合问题差不多。<br>
+由于某些未知的原因，将stochastic和正则化手段结合起来的效果不理想。</p>
+<h2 id="其他环境">其他环境</h2>
+<h3 id="cointrun-platforms">CointRun-Platforms</h3>
+<h3 id="randommazes">RandomMazes</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a><br>
+2.<a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/04/convex-optimization-chapter-3-convex-functions/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/09/04/convex-optimization-chapter-3-convex-functions/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">convex optimization chapter 3 convex functions</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-04 20:49:37 / 修改时间：21:44:30" itemprop="dateCreated datePublished" datetime="2019-09-04T20:49:37+08:00">2019-09-04</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/凸优化/" itemprop="url" rel="index"><span itemprop="name">凸优化</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="凸函数-convex-functions">凸函数(convex functions)</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.stephen boyd. Convex optimization</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/31/c-plus-plus/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/08/31/c-plus-plus/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">c++常用函数</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-31 11:31:32" itemprop="dateCreated datePublished" datetime="2019-08-31T11:31:32+08:00">2019-08-31</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-17 17:14:18" itemprop="dateModified" datetime="2019-09-17T17:14:18+08:00">2019-09-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="stl">STL</h2>
+<h3 id="顺序容器">顺序容器</h3>
+<h4 id="vector">vector</h4>
+<ul>
+<li>内部数据结构为数组，可以自动增长</li>
+<li>在后端插入和删除，push_back()和pop_back()，时间复杂度为$O(1)$</li>
+<li>在中间和前段插入和删除，insert()和erase()，时间和空间复杂度是$O(n)$</li>
+<li>分配连续内存，</li>
+<li>支持随机数组存取，查找的时间复杂度$O(1)$</li>
+<li>支持[]访问</li>
+<li>头文件vector</li>
+</ul>
+<h4 id="list">list</h4>
+<ul>
+<li>内部数据结构为双向环状链表</li>
+<li>任意位置插入和删除的时间复杂度是$O(1)$</li>
+<li>链式存储，非连续内存</li>
+<li>不支持随机存取，查找的时间复杂度是$O(n)$</li>
+<li>不支持[]访问</li>
+<li>头文件list</li>
+</ul>
+<h4 id="deque">deque</h4>
+<ul>
+<li>vector和deque的结合，使用若干个内存片段进行链接。兼有vector和list的好处。</li>
+<li>内部数据结构为数组</li>
+<li>头文件deque</li>
+</ul>
+<h3 id="关联容器">关联容器</h3>
+<h4 id="map-multimap">map, multimap</h4>
+<p>封装了二叉树</p>
+<h4 id="set-multiset">set, multiset</h4>
+<p>封装了二叉树</p>
+<h2 id="命令空间">命令空间</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cin</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cout</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>;:<span class="built_in">vector</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">string</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="字符串">字符串</h2>
+<h3 id="string">string</h3>
+<ol>
+<li>导包</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>string转字符串数组</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span>.c_str()</span><br></pre></td></tr></table></figure>
+<h2 id="vector-v2">vector</h2>
+<ol>
+<li>初始化</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.初始化一个size为0的vecotr</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; a; </span><br><span class="line"></span><br><span class="line"><span class="comment">//2.初始化size为10，默认值为0的vector</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; b(<span class="number">10</span>);  </span><br><span class="line"></span><br><span class="line"><span class="comment">//3.初始化size为10，默认值为1的vector</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; c(<span class="number">10</span>, <span class="number">1</span>);   </span><br><span class="line"></span><br><span class="line"><span class="comment">//4.使用vector初始化vector</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; d(a);   </span><br><span class="line"></span><br><span class="line"><span class="comment">//5.使用数组初始化vector</span></span><br><span class="line"><span class="keyword">int</span> e = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; f(e, e+<span class="number">3</span>);</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>vector的读取方式</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//[]和迭代器,at</span></span><br><span class="line"><span class="keyword">int</span> a = &#123; <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>&#125;;</span><br><span class="line"><span class="built_in">vector</span> &lt;<span class="keyword">int</span>&gt; b(a, a+ <span class="number">4</span>);</span><br><span class="line"><span class="comment">//1.[]</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%d\n"</span>, a[<span class="number">3</span>]);</span><br><span class="line"><span class="comment">//2.迭代器</span></span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">auto</span> it = b.begin(); it != b.end(); it++)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, *it);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//3.at</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"%d\n"</span>, a.at(<span class="number">3</span>));</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>向量长度</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vector.size()</span><br></pre></td></tr></table></figure>
+<h2 id="vector的vector">vector的vector</h2>
+<ol>
+<li>声明</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">vector</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> len = <span class="number">100</span>;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &gt; a(len);</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>访问</li>
+</ol>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">vector</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> len = <span class="number">0</span>;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &gt; a(len);</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; temp;</span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; &gt;::iterator it ;</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len; i++)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> j =<span class="number">0</span>; j &lt; len; j++)</span><br><span class="line">    &#123;</span><br><span class="line">        temp.push_back(j);</span><br><span class="line">    &#125;</span><br><span class="line">    a.push_back(temp);</span><br><span class="line">    temp.clear();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://blog.csdn.net/xiexievv/article/details/6831194" target="_blank" rel="noopener">https://blog.csdn.net/xiexievv/article/details/6831194</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/28/linear-algebra-eigenvalues-and-eigenvectors/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/08/28/linear-algebra-eigenvalues-and-eigenvectors/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">eigenvalues and eigenvectors（特征值和特征向量）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-28 17:21:43" itemprop="dateCreated datePublished" datetime="2019-08-28T17:21:43+08:00">2019-08-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-09 16:53:24" itemprop="dateModified" datetime="2019-09-09T16:53:24+08:00">2019-09-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="特征值和特征向量">特征值和特征向量</h2>
+<p>这里介绍的东西都是针对于方阵来说的。</p>
+<h3 id="定义">定义</h3>
+<p>$Ax=\lambda x $，满足该式子的$x$称为矩阵$A$的特征向量，相应的$\lambda$称为特征值。</p>
+<h3 id="求解">求解</h3>
+<p>将$Ax=\lambda x$进行移项，得到$(A-\lambda I) x =0$，其中$A-\lambda I$必须是sigular（即不可逆），如果$A - \lambda I$是非奇异矩阵，也就是说它的列向量相互独立，那么只有零解，无意义。令$det (A-\lambda I)=0$，求出相应的$\lambda$和$x$。</p>
+<h3 id="属性">属性</h3>
+<ol>
+<li>$n$个特征值的乘积等于行列式。</li>
+<li>$n$个特征值之和等于对角线元素之和。</li>
+</ol>
+<h2 id="迹">迹</h2>
+<h3 id="定义-v2">定义</h3>
+<p>主对角线元素之和叫做迹（trace）。<br>
+$$\lambda_1 +\cdots + \lambda_n = trace = a_{11} + \cdots + a_{nn}$$</p>
+<h2 id="矩阵对角化">矩阵对角化</h2>
+<h3 id="定义-v3">定义</h3>
+<p>如果合适的使用矩阵$A$的特征向量，可以把$A$转换成一个对角矩阵。<br>
+假设$n\times n$的矩阵$A$有$n$个线性独立的特征向量$x_1,\cdots, x_n$，把它们当做列向量，构成一个新的矩阵$S=\left[x_1, \cdots, x_n\right]$。<br>
+$$AS = A\left[x_1, \cdots, x_n\right] = \left[\lambda_1 x_1, \cdots, \lambda_n x_n\right] = \left[x_1, \cdots, x_n\right] \begin{bmatrix} \lambda_1 &amp;\cdots &amp; 0 \\ \vdots&amp;\lambda_i &amp; \vdots\\ 0&amp; \cdots &amp; \lambda_n\end{bmatrix} = S\Lambda$$<br>
+即$AS = S\Lambda$，所以有$S^{-1} AS = \Lambda, A = S\Lambda S^{-1} $，这里我们假设$A$的$n$个特征向量都是线性无关的。$A, \Lambda$的特征值相同，特征向量不同。$A$的特征向量用来对角化$A$。</p>
+<h3 id="属性-v2">属性</h3>
+<p>如果一个矩阵有$n$个不同的实特征值，那么它一定可对角化。<br>
+如果存在重复的特征值，可能但不一定可对角化，单位矩阵就有重复特征值，但可对角化。</p>
+<h2 id="可逆和对角化">可逆和对角化</h2>
+<p>矩阵可逆和矩阵可对角化之间没有关联。<br>
+矩阵可逆和特征值是否为$0$有关，而矩阵可对角化与特征向量有关，是否有足够的线性无关的特征向量。</p>
+<h2 id="矩阵的幂">矩阵的幂</h2>
+<h3 id="矩阵幂">矩阵幂</h3>
+<p>$A= S\Lambda S^{-1} $,<br>
+$A^2 = S\Lambda S^{-1}S\Lambda S^{-1} = S\Lambda^2 S^{-1} $,<br>
+$A^k = S\Lambda^k S^{-1}$<br>
+所以，$A^k $和$A$的特征向量相同，特征值是$\Lambda^k $。当$k\rightarrow \infty$时，如果所有的特征值$\lambda_i \lt 1$，那么$A^k \rightarrow 0$。</p>
+<h3 id="以解方程组-u-k-1-au-k">以解方程组$u_{k+1} = Au_k$</h3>
+<p>从给定的向量$u_0$开始，$u_1 = Au_0, u_2 = Au_1, u_k = A^k u_0$<br>
+假设$u_0 = c_1 x_1 + c_2 x_2 + \cdots + c_nx_n$，$x_1, \cdots, x_n$是一组正交基。<br>
+$Au_0 =  c_1 \lambda_1 x_1 + \cdots + c_n\lambda_n x_n$<br>
+$u_{100} = A^{100} u_0 = c_1 \lambda_1^{100} x_1 + \cdots + c_n \lambda_n^{100} x_n$<br>
+$u_{100} = A^{100} u_0 = \Lambda^{100} S c$</p>
+<h2 id="微分方程">微分方程</h2>
+<h2 id="指数矩阵">指数矩阵</h2>
+<h2 id="markov-matrices">Markov Matrices</h2>
+<h3 id="定义-v4">定义</h3>
+<p>马尔科夫矩阵满足两个条件</p>
+<ol>
+<li>所有元素大于$0$</li>
+<li>行向量之和为$1$</li>
+</ol>
+<h3 id="属性-v3">属性</h3>
+<ol>
+<li>$\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&amp;b\\c&amp;d\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&amp;b\\c&amp;d - 1\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。</li>
+<li>所有其他的特征值小于$1$。</li>
+</ol>
+<h3 id="马尔科夫矩阵的幂">马尔科夫矩阵的幂</h3>
+<p>$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$<br>
+如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightaroow \infty, \lambda_k \neq 1$。</p>
+<h2 id="对称矩阵">对称矩阵</h2>
+<h3 id="定义-v5">定义</h3>
+<p>满足$A= A^T $的矩阵$A$被称为对称矩阵。</p>
+<h3 id="属性-v4">属性</h3>
+<ol>
+<li>实对称矩阵的特征值都是实数<br>
+证明：由$Ax= \lambda x$，得到$A\bar{x} = \bar{\lambda} \bar{x}$，$\bar{x}$是$x$的共轭，转置得：<br>
+$$\bar{x}^T A^T = \bar{x}^T A = \bar{x}^T \bar{\lambda}$$<br>
+$Ax = \lambda x$的左边乘上$\bar{x}^T $，在$\bar{x}^T A = \bar{x}^T \lambda$的右边同时乘上$x$：<br>
+$$\bar{x}^T Ax = \bar{x}^T \lambda x = \bar{x}^T A x= \bar{x}^T \bar{\lambda} x$$<br>
+即$\bar{x}^T \lambda x = \bar{x}^T \bar{\lambda} x$，而$\bar{x}^T x= \vert x\vert \ge 0 $，如果$x\neq 0$，则$\lambda = \bar{\lambda}$，即$\lambda$的虚部为$0$，即特征值都是实数。</li>
+<li>对称矩阵有单位正交的特征向量。<br>
+证明：假设$S = \left[v_1, \cdots, v_i, \cdots, v_n\right]$是矩阵$A$的特征向量矩阵，根据矩阵对角化公式：<br>
+$$A = S \Lambda S^{-1}  $$<br>
+而$A=A^T $，所以得到<br>
+$$S\Lambda S^{-1} = A = A^T = \left(S \Lambda S^{-1} \right)^T = S^{-T} \Lambda^T S^T = S^{-T} \Lambda S^T $$<br>
+可以得出$S^T = S^{-1} $，所以$S S^T = I$，即$v_i^T v_i = 1, v_i^T v_j = 0, \forall i\neq j$。</li>
+<li>所有的对称矩阵都是可对角化的。</li>
+</ol>
+<h3 id="谱定理-spectral-theorem">谱定理（Spectral Theorem）</h3>
+<p>对称矩阵的对角化可以从$A=S\Lambda S^{-1} $变成$A=Q\Lambda Q^{-1} =Q\Lambda Q^T $。<br>
+谱定理：每一个对称矩阵都有以下分解$A = Q\Lambda Q^T $，$\Lambda$是实特征值，$Q$是单位正交向量矩阵。<br>
+$$A = Q\Lambda Q^{-1} = Q\Lambda Q^T $$<br>
+$A$是对称的，$Q \Lambda Q^T $也是对称的。</p>
+<h2 id="正定矩阵">正定矩阵</h2>
+<p>正定矩阵，负定矩阵，半正定矩阵，半负定矩阵都是对于对称矩阵来说的。</p>
+<h3 id="定义-v6">定义</h3>
+<p>如果对于所有的非零向量$x$，$x^T Ax$都是大于$0$的，我们称矩阵$A$是正定矩阵。</p>
+<h3 id="属性-v5">属性</h3>
+<ol>
+<li>所有的$n$个特征值都是正的</li>
+<li>所有的$n$个左上行列式都是正的</li>
+<li>所有的$n$个主元都是正的</li>
+<li>对于任意$x\neq 0$，$x^T A x$大于$0$。</li>
+<li>$A=R^T R$，$R$是一个具有$n$个独立column的矩阵。</li>
+</ol>
+<p>如果任意矩阵$A$拥有以上属性中的任意一个，那么它就有其他四个性质，或者说上面五个属性都可以用来判定矩阵是否为正定矩阵。</p>
+<h3 id="半正定矩阵">半正定矩阵</h3>
+<p>如果对于所有的非零向量$x$，$x^T Ax$都是大于等于$0$的，我们称矩阵$A$是半正定矩阵。</p>
+<h3 id="属性-v6">属性</h3>
+<p>对于任何矩阵$A$，$A^T A$和$A A^T $都是对称矩阵，并且它们一定是半正定矩阵。<br>
+假设$A = \begin{bmatrix} a&amp;b\\c&amp;d\end{bmatrix}$，如何判断$A^T A$是不是正定的？根据定义，判断$x^T (A^T A) x$的符号：<br>
+$$x^T (A^T A) x = x^T A^T Ax = (Ax)^T (Ax) = \vert Ax \vert $$<br>
+相当于计算向量$Ax$的模长，它一定是大于等于$0$的。<br>
+同理$A A^T $的二次型相当于计算$A^T x$的模长，大于等于$0$。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课<br>
+2.<a href="http://maecourses.ucsd.edu/~mdeolive/mae280a/lecture11.pdf" target="_blank" rel="noopener">http://maecourses.ucsd.edu/~mdeolive/mae280a/lecture11.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/28/linear-algebra-determinants/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/08/28/linear-algebra-determinants/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">determinants（行列式）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-28 14:45:18" itemprop="dateCreated datePublished" datetime="2019-08-28T14:45:18+08:00">2019-08-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-09 16:53:24" itemprop="dateModified" datetime="2019-09-09T16:53:24+08:00">2019-09-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="行列式-determinants">行列式（Determinants）</h2>
+<p>这一章介绍行列式相关知识，行列式的一些属性等等。</p>
+<ul>
+<li>矩阵不可逆，行列式为$0$。</li>
+<li>主元的乘积是行列式。</li>
+<li>交换任意两行和两列，行列式的符号改变。</li>
+<li>行列式的绝对值等于这个矩阵描述的space的体积。</li>
+<li>行列式的计算公式有三个：
+<ol>
+<li>主元公式，就是所有主元的乘积</li>
+<li>big formula</li>
+<li>cofact formula</li>
+</ol>
+</li>
+</ul>
+<h2 id="定义以及性质">定义以及性质</h2>
+<p>行列式用det表示，给出以下的几个属性：</p>
+<ol>
+<li>$n\times n$的单位矩阵$I$的行列式$det I = I$<br>
+$$\begin{vmatrix}1&amp;0\\0&amp;1 \end{vmatrix} = 1$$</li>
+<li>交换任意两行，行列式符号取反。<br>
+$$\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix} = - \begin{vmatrix}c&amp;d\\a&amp;b \end{vmatrix}$$</li>
+<li>行列式是每一行的线性函数<br>
+$$\begin{vmatrix}ta&amp;tb\\c&amp;d \end{vmatrix} = t \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$<br>
+$$\begin{vmatrix}a+a’&amp;b+b’\\c&amp;d \end{vmatrix} = \begin{vmatrix}a’&amp;b’\\c&amp;d \end{vmatrix}+\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$</li>
+</ol>
+<p>以上的三个属性是行列式的性质，事实上，它们定义了行列式是什么，从这几个基本属性出发，我们能推导出更多的属性。</p>
+<ol start="4">
+<li>如果$A$的两行相等，那么$det A=0$，交换两行，还是矩阵$A$，行列式变号，所以行列式只能为$0$。<br>
+假设$A = \begin{bmatrix}a&amp;b\\a&amp;b \end{bmatrix}$，$\begin{vmatrix}a&amp;b\\a&amp;b \end{vmatrix}= - \begin{vmatrix}a&amp;b\\a&amp;b \end{vmatrix}$</li>
+<li>从某一行减去其他行的倍数，行列式不变<br>
+$$\begin{vmatrix}a&amp;b\\c- la&amp;d-lb \end{vmatrix}= \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix} -l \begin{vmatrix}a&amp;b\\a&amp;b\end{vmatrix}   = \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$</li>
+<li>某一行为$0$矩阵，行列式为$0$。<br>
+$$\begin{vmatrix}0&amp;0\\c&amp;d \end{vmatrix} = \begin{vmatrix}c&amp;d\\c&amp;d \end{vmatrix} = 0$$</li>
+<li>如果$A$是三角矩阵，行列式的值等于对角元素乘积。<br>
+$$\begin{vmatrix}a&amp;b\\0&amp;d \end{vmatrix} = \begin{vmatrix}a&amp;0\\c&amp;d \end{vmatrix} = \begin{vmatrix}a&amp;0\\0&amp;d \end{vmatrix} = ad \begin{vmatrix}1&amp;0\\0&amp;1 \end{vmatrix} = ad$$</li>
+<li>当且仅当$A$不可逆的时候，$det A\neq 0$<br>
+$det A = det U$，如果$A$不可逆，$U$中有零行，从$6$我们知道，行列式为$0$。如果$A$可逆，行列式的值等于主元的乘积。</li>
+<li>矩阵$AB$的行列式等于矩阵$A$的行列式以及矩阵$B$的行列式。<br>
+$$\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}\begin{vmatrix}p&amp;q\\r&amp;s \end{vmatrix} = \begin{vmatrix}ap+br&amp;aq+bs\\cp+dr&amp;cq+ds \end{vmatrix}$$<br>
+证明：<br>
+对于$2\times 2$的情况，有$\begin{vmatrix}A\end{vmatrix}\begin{vmatrix}B\end{vmatrix} = (ad - bc) ( ps - qr) = (ap + br) (cq+ds) - (aq+bs)(cp+dr) \begin{vmatrix}AB \end{vmatrix}$<br>
+当$B$是$A^{-1} $的时候，有$det (A A^{-1}) = det (I) = 1 = det (A) det(A^{-1} )$，所以$det A^{-1} = \frac{1}{det A}$</li>
+<li>$A^T$和$A$的行列式相同。<br>
+$PA=LU, A^T P^T = U^T L^T$，$det L = det L^T = 1, det U = det U^T $，$L$是对角线元素为$1$的对角矩阵，$U$是对角矩阵，$P$是置换矩阵，$P^T P = I$，$det P det P^T = 1$，则$det P = det P^T = 1$，这个为什么？我有点不明明白。最后有$det A = det A^T $。</li>
+</ol>
+<h2 id="行列式的计算">行列式的计算</h2>
+<h3 id="主元公式">主元公式</h3>
+<p>行列式等于主元的乘积。</p>
+<h3 id="大公式">大公式</h3>
+<p>$n=2$的情况下：<br>
+$$A= \begin{bmatrix} a &amp; b\\c&amp;d\\\end{bmatrix}$$<br>
+$$det A = \begin{vmatrix}a&amp;0\\c&amp;d\end{vmatrix}+\begin{vmatrix}0&amp;b\\c&amp;d\end{vmatrix} = \begin{vmatrix}a&amp;0\\c&amp;0\end{vmatrix}+\begin{vmatrix}a&amp;0\\0&amp;d\end{vmatrix}+\begin{vmatrix}0&amp;b\\c&amp;0\end{vmatrix} \begin{vmatrix}0&amp;b\\0&amp;d\end{vmatrix} = ad - bc$$<br>
+$n=3$的情况下，最后有六项不为$0$的取值，$3!= 3\times 2\times 1= 6$<br>
+在$n$的情况下，有$n!$个项，将它们加起来求和。</p>
+<h3 id="代数余子式-cofactors">代数余子式（Cofactors）</h3>
+<h4 id="定义">定义</h4>
+<p>用$C$表示代数余子式，用$M_{ij}$表示划去$i$行，$j$列的子矩阵，<br>
+$$C_{ij} = (-1)^{i+j} det  M_{ij} $$</p>
+<h4 id="计算行列式">计算行列式</h4>
+<p>行列式可以沿着任意一行或者任意一列，利用代数余子式进行计算，<br>
+沿着第$i$行计算的公式如下：<br>
+$$ det A = \sum_{j=1}^n a_{ij} C_{ij}$$<br>
+沿着第$j$列计算的公式如下：<br>
+$$ det A = \sum_{i=1}^m a_{ij} C_{ij}$$<br>
+可以递归下去进行计算。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课视频</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/27/linear-algebra-orthogonality/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1580,1237 +2724,11 @@ MCTS是一种rollout算法，所以它拥有online，incremental，sample-based�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">reinforcement learning an introduction 第7章笔记</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-07-30 09:59:50" itemprop="dateCreated datePublished" datetime="2019-07-30T09:59:50+08:00">2019-07-30</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-06 21:59:10" itemprop="dateModified" datetime="2019-10-06T21:59:10+08:00">2019-10-06</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="n-step-bootstrapping">n-step Bootstrapping</h2>
-<p>这章要介绍的n-step TD方法，将MC和one-step TD用一个统一的框架整合了起来。在一个任务中，两种方法可以无缝切换。n-step方法生成了一系列方法，MC在一头，one-step在另一头。最好的方法往往不是MC也不是one-step TD。One-step TD每隔一个timestep进行bootstrapping，在许多需要及时更新变化的问题，这种方法很有用，但是一般情况下，经历了长时间的稳定变化之后，bootstrap的效果会更好。N-step TD就是将one-step TD方法中time interval的one改成了n。N-step方法的idea和eligibility traces很像，eligibility traces同时使用多个不同的time intervals进行bootstarp。</p>
-<h2 id="n-step-td-prediction">n-step TD Prediction</h2>
-<p>对于使用采样进行policy evaluation的方法来说，不断使用policy $\pi$生成sample episodes，然后估计$v_{\pi}$。MC方法用的是每一个episode中每个state的return进行更新，即无穷步reward之和。TD方法使用每一个state执行完某一个action之后的下一个reward加上下一个state的估计值进行更新。N-step方法使用的是每一个state接下来n步的reward之和加上第n步之后的state的估计值。相应的backup diagram如下所示：<br>
-<img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n_step_backup_diagram.png" alt="n_step_diagram"></p>
-<p>n-step方法还是属于TD方法，因为n-step的更新还是基于时间维度上不同estimate的估计进行的。</p>
-<blockquote>
-<p>n-step updates are still TD methods because they still chagne an erlier estimate based on how it differs from a later estimate. Now the later estimate is not one step later, but n steps later。</p>
-</blockquote>
-<p>正式的，假设$S_t$的estimated value是基于state-reward sequence $S_t, R_{t+1}, S_{t+1}, R_{t+2}, \cdots, R_T,S_T$得到的。<br>
-MC方法更新基于completer return：<br>
-$$G_T = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \cdots + \gamma^{T-t-1}R_T \tag{1}$$<br>
-one-step TD更新基于one-step return：<br>
-$$G_{t:t+1} = R_{t+1}+ \gamma V_t(S_{t+1}) \tag{2}$$<br>
-two-step TD更新基于two-step return：<br>
-$$G_{t:t+2} = R_{t+1}+ \gamma V_t(S_{t+1}) + \gamma^2 V_{t+1}(S_{t+2}) \tag{3}$$<br>
-n-step TD更新基于n-step return：<br>
-$$G_{t:t+n} = R_{t+1}+ \gamma V_t(S_{t+1}) + \gamma^2 V_{t+1}(S_{t+2}) +\cdots + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n}), n\ge1, 0\le t\le T-n \tag{4}$$<br>
-所有的n-step方法都可以看成使用n steps的rewards之和加上$V_{t+n-1}(S_{t+n})$近似其余项的rewards近似return。如果$t+n \ge T$时，$T$步以后的reward以及estimated value当做$0$，相当于定义$t+n \ge T$时，$G_{t:t+1} = G_t$。<br>
-当$n &gt; 1$时，只有在$t+n$时刻之后，$R_{t+n},S_{t+n}$也是已知的，所以不能使用real time的算法。使用$t+n-1$时刻的$V$近似估计$V_{t+n-1}(S_{t+n})$，将n-step return当做n-step TD的target，得到的更新公式如下：<br>
-$$V_{t+n}(S_t) = V_{t+n-1} (S_t) + \gamma(G_{t:t+n} - V_{t+n-1}(S_{t}))\tag{5}$$<br>
-当更新$V_{t+n}(S_t)$时，所有其他states的$V$不变，用公式来表示是$V_{t+n}(s) = V_{t+n-1}(s), \forall s\neq S_t$。在每个episode的前$n-1$步中，不进行任何更新，为了弥补这几步，在每个episode结束以后，即到达terminal state之后，仍然继续进行更新，直到下一个episode开始之前，依然进行updates。完整的n-step TD算法如下：</p>
-<h3 id="n-step-td-prediction伪代码">n-step TD prediction伪代码</h3>
-<p>n-step TD估计$V\approx v_{\pi}$<br>
-输入：一个policy $\pi$<br>
-算法参数：step size $\alpha \in (0, 1]$，正整数$n$<br>
-随机初始化$V(s), \forall s\in S$<br>
-Loop for each episode<br>
-$\qquad$初始化 $S_0 \neq terminal$<br>
-$\qquad$$T\leftarrow \infty$<br>
-$\qquad$Loop for $t=0, 1, 2, \cdots:$<br>
-$\qquad$ IF $t\lt T$, THEN<br>
-$\qquad\qquad$ 根据$\pi(\cdot|S_t)$执行action<br>
-$\qquad\qquad$ 接收并记录$R_{t+1}, S_{t+1}$<br>
-$\qquad\qquad$ 如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$<br>
-$\qquad$ END IF<br>
-$\qquad$ $\tau \leftarrow t - n + 1, \tau$是当前更新的时间<br>
-$\qquad$ If $\tau \ge 0$, then<br>
-$\qquad\qquad$ $G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>
-$\qquad\qquad$ 如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$<br>
-$\qquad\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$<br>
-$\qquad$ End if<br>
-Until $\tau = T-1$<br>
-n-step return有一个重要的属性叫做error reduction property，在最坏的情况下，n-step returns的期望也是一个比$V_{t+n-1}$更好的估计：<br>
-$$max_{s}|\mathbb{E}_{\pi}\left[G_{t:t+n}|S_t = s\right]- v_{\pi}(s)| \le \gamma^n max_s | V_{t+n-1}(s)-v_{\pi}(s)| \tag{6}$$<br>
-所以所有的n-step TD方法都可以收敛到真实值，MC和one-step TD是其中的一种特殊情况。</p>
-<h2 id="n-step-sarsa">n-step Sarsa</h2>
-<p>介绍完了prediction算法，接下来要介绍的就是control算法了。因为TD方法是model-free的，所以，还是要估计action value function。上一章介绍了one-step Sarsa，这一章自然介绍一下n-step Sarsa。n-step Sarsa的backup图如下所示：<br>
-<img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n_step_sarsa.png" alt="n_step_sarsa"><br>
-就是将n-step TD的state换成state-action就行了。定义action value的n-step returns如下：<br>
-$$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+1} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^n Q_{t+n-1}(S_{t+n},A_{t+n}), n\ge 1, 0\le t\le T-n\tag{7}$$<br>
-如果$t+n\ge T$，那么$G_{t:t+n} = G_t$。<br>
-完整的$n$-step Sarsa如下所示：</p>
-<h3 id="n-step-sarsa算法伪代码">n-step Sarsa算法伪代码</h3>
-<p>n-step Sarsa算法，估计$Q\approx q_{*}$<br>
-随机初始化$Q(s,a),\forall s\in S, a\in A$<br>
-初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>
-算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>
-Loop for each episode<br>
-$\qquad$初始化$S_0\neq$ terminal<br>
-$\qquad$ 选择action $A_0= \pi(\cdot| S_0)$<br>
-$\qquad$ $T\leftarrow \infty$<br>
-$\qquad$ Loop for $t=0,1,2,\cdots$<br>
-$\qquad\qquad$ If $t\lt T$,then:<br>
-$\qquad\qquad\qquad$ 采取action $A_t$，<br>
-$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>
-$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>
-$\qquad\qquad$ $T\leftarrow t+1$<br>
-$\qquad\qquad$ 否则选择$A_{t+1} = \pi(\cdot|S_{t+1})$<br>
-$\qquad\qquad$End if<br>
-$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>
-$\qquad\qquad$ If $\tau \ge 0$<br>
-$\qquad\qquad\qquad$ $G\leftarrow \sum_{i=\tau +1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>
-$\qquad\qquad\qquad$ If $\tau+n \le T$,then<br>
-$\qquad\qquad\qquad$ $G\leftarrow G+\gamma^n Q(S_{\tau+n}, A_{\tau+n})$<br>
-$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>
-$\qquad\qquad$End if<br>
-$\qquad$ Until $\tau =T-1$</p>
-<h3 id="n-step-expected-sarsa">n-step Expected Sarsa</h3>
-<p>n-step Expected Sarsa的n-step return定义为：<br>
-$$G_{t:t+n} = R_{t+1} +\gamma R_{t+1} + \cdots +\gamma^{n-1} R_{t+n} + \gamma^n \bar{V}_{t+n-1}(S_{t+n}) \tag{8}$$<br>
-其中$\bar{V}_t(s) = \sum_{a}\pi(a|s) Q_t(s,a), \forall s\in S$<br>
-如果$s$是terminal，它的期望是$0$。</p>
-<h2 id="n-step-off-policy-learning">n-step Off-policy Learning</h2>
-<p>Off-policy算法使用behaviour policy采样的内容得到target policy的value function，但是需要使用他们在不同policy下采取某个action的relavtive probability。在$n$-step方法中，我们感兴趣的只有对应的$n$个actions，所以最简单的off-policy $n$-step TD算法，$t$时刻的更新可以使用importance sampling ratio $\rho_{t:t+n-1}$：<br>
-$$V_{t+n}(S_t) = V_{t+n-1} S_t + \alpha \rho_{t:t+n-1}\left[G_{t:t+n} - V_{t+n-1}(S_t)\right], 0\le t\le T \tag{9}$$<br>
-$\rho_{t:t+n-}$计算的是从$A_t$到$A_{t+n-1}$这$n$个action在behaviour policy和target policy下的relative probability，计算公式如下：<br>
-$$\rho_{t:h} = \prod_{k=t}^{min(h, T-1)} \frac{\pi(A_k|S_k)}{b(A_k|S_k)} \tag{10}$$<br>
-如果$\pi(A_k|S_k) = 0$，那么对应的$n$-step return对应的权重就应该是$0$，如果policy $pi$下选中某个action的概率很大，那么对应的return就应该比$b$下的权重大一些。因为在$b$下出现的概率下，很少出现，所以权重就该大一些啊。如果是on-policy的话，importance sampling ratio一直是$1$，所以公式$9$可以将on-policy和off-policy的$n$-step TD概括起来。同样的，$n$-step的Sarsa的更新公式也可以换成：<br>
-$$Q_{t+n}(S_t,A_t) = Q_{t+n-1}(S_t,A_t) + \alpha \rho_{t+1:t+n}\left[G_{t:t+n} - Q_{t+n-1} (S_t,A_t)\right], 0\le t\le T \tag{11}$$<br>
-公式$11$中的importance sampling ratio要比公式$9$中计算的晚一步。这是因为我们是在更新一个state-action pair，我们并不关心有多大的概率选中这个action，我们现在已经选中了它，importance sampling只是用于后续actions的选择。这个解释也让我理解了为什么Q-learning和Sarsa为什么没有使用importance sampling。完整的伪代码如下。</p>
-<h3 id="off-policy-n-step-sarsa-估计-q">Off-policy $n$-step Sarsa 估计$Q$</h3>
-<p>输入：任意的behaviour policy $b$, $b(a|s)\gt 0, \forall s\in S, a\in A$<br>
-随机初始化$Q(s,a), \forall s\in S, a\in A$<br>
-初始化$\pi$是相对于$Q$的greedy policy<br>
-算法参数：步长$\alpha \in (0,1]$，正整数$n$<br>
-Loop for each episode<br>
-$\qquad$初始化$S_0\neq terminal$<br>
-$\qquad$选择并存储$A_0 \sim b(\cdot|S_0)$<br>
-$\qquad T\leftarrow \infty$<br>
-$\qquad$Loop for $t=0,1,2,\cdots$<br>
-$\qquad\qquad$IF $t\lt T$,then<br>
-$\qquad\qquad\qquad$执行action $A_t$，接收$R_{t+1}, S_{t+1}$<br>
-$\qquad\qquad\qquad$如果$S_{t+1}$是terminal，那么$T\leftarrow t+1$<br>
-$\qquad\qquad\qquad$否则选择并记录$A_{t+1} \sim b(\cdot| S_{t+1})$<br>
-$\qquad\qquad$END IF<br>
-$\qquad\qquad \tau \leftarrow t-n +1$  (加$1$表示下标是从$0$开始的)<br>
-$\qquad\qquad$ IF $\tau \ge 0$<br>
-$\qquad\qquad\qquad \rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n,T)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n}$，这里是不是写成了Expected Sarsa公式）<br>
-$\qquad\qquad\qquad G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)}\gamma^{i-\tau -1}R_i$ （计算$n$个reward, $R_{\tau+1}+\cdots+R_{\tau+n}$）<br>
-$\qquad\qquad\qquad$如果$\tau+n \lt T$，$G\leftarrow G + \gamma^n Q(S_{\tau+n},A_{\tau+n})$ （因为没有$Q(S_T,A_T)$）<br>
-$\qquad\qquad\qquad Q(S_{\tau}, A_{\tau}) \leftarrow Q(S_{\tau}, A_{\tau})+\alpha \rho \left[G-Q(S_{\tau}, A_{\tau})\right]$（计算$Q(S_{\tau+n},A_{\tau+n})$）<br>
-$\qquad\qquad\qquad$确保$\pi$是相对于$Q$的greedy policy<br>
-$\qquad\qquad$ END IF<br>
-$\qquad$Until $\tau = T-1$<br>
-上面介绍的算法是$n$-step的Sarsa，计算importance ratio使用的$\rho_{t+1:t+n}$，$n$-step的Expected Sarsa计算importance ratio使用的是$\rho_{t+1:t+n-1}$，因为在估计$\bar{V}_{t+n-1}$时候，考虑到了last state中所有的actions。</p>
-<h2 id="n-step-tree-backup算法">$n$-step Tree Backup算法</h2>
-<p>这一章介绍的是不适用importance sampling的off-policy算法，叫做tree-backup algorithm。如下图所示，是一个$3$-step的tree-backup diaqgram。<br>
-沿着中间这条路走，有三个sample states和rewards以及两个sample actions。在旁边的是没有被选中的actions。对于这些没有选中的actions，因为没有采样，所以使用bootstrap计算target value。因为它的backup diagram有点像tree，所以就叫做tree backup upadte。或者更精确的说，backup update使用的是所用tree的叶子结点action value的估计值进行计算的。非叶子节点的action对应的是采样的action，不参与更新，所有叶子节点对于target的贡献都有一个权重正比于它在target policy下发生的概率。在$S_{t+1}$处的除了$A_{t+1}$之外所有action权重是$\pi(a|S_{t+1})$，$A_{t+1}$一点贡献没有；在$S_{t+2}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(a’|S_{t+2})$；在$S_{t+3}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(A_{t+2}|S_{t+2})\pi(a’’|S_{t+3})$<br>
-one-step Tree backup 算法其实就是Expected Sarsa：<br>
-$$G_{t:t+1} = R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1 \tag{12}$$<br>
-two-step Tree backup算法return计算公式如下：<br>
-\begin{align*}<br>
-G_{t:t+2} &amp;= R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})(R_{t+2} + \sum_{a} \pi(a|S_{t+2})Q(a, S_{t+2})\\<br>
-&amp;=R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})G_{t+1:t+2}, t \lt T-2<br>
-\end{align*}<br>
-下面的形式给出了tree-backup的递归形式如下：<br>
-$$G_{t:t+n} = R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a,S_{t+1}) + \gamma\pi(A_{t+1}|S_{t+1}) G_{t+1:t+n}, n\ge 2, t\lt T-1, \tag{13}$$<br>
-当$n=1$时除了$G_{T-1:t+n} = R_T$，其他的和式子$12$一样。使用这个新的target代替$n$-step Sarsa中的target就可以得到$n$-step tree backup 算法。<br>
-完整的算法如下所示：</p>
-<h3 id="n-step-tree-backup-算法">$n$-step Tree Backup 算法</h3>
-<p>随机初始化$Q(s,a),\forall s\in S, a\in A$<br>
-初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>
-算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>
-Loop for each episode<br>
-$\qquad$初始化$S_0\neq$ terminal<br>
-$\qquad$ 根据$S_0$随机选择action $A_0$<br>
-$\qquad$ $T\leftarrow \infty$<br>
-$\qquad$ Loop for $t=0,1,2,\cdots$<br>
-$\qquad\qquad$ If $t\lt T$,then:<br>
-$\qquad\qquad\qquad$ 采取action $A_t$，<br>
-$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>
-$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>
-$\qquad\qquad$ $T\leftarrow t+1$<br>
-$\qquad\qquad$ 根据$S_{t+1}$随机选择action $A_{t+1}$<br>
-$\qquad\qquad$End IF<br>
-$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>
-$\qquad\qquad\qquad$ IF $\tau+n\ge T$ then<br>
-$\qquad\qquad\qquad\qquad G\leftarrow R_T$<br>
-$\qquad\qquad\qquad$ ELSE<br>
-$\qquad\qquad\qquad\qquad G\leftarrow R_{t+1}+\gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1})$<br>
-$\qquad\qquad\qquad$ END IF<br>
-$\qquad\qquad\qquad$Loop for $k = min(t, T-1)$ down $\tau+1$<br>
-$\qquad\qquad\qquad G\leftarrow R_k+\gamma^n\sum_{a\neq A_k}\pi(a|S_k)Q(a, S_k) + \gamma \pi(A_k|S_k) G$<br>
-$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>
-$\qquad\qquad$End if<br>
-$\qquad$ Until $\tau =T-1$</p>
-<h2 id="n-step-q-sigma">$n$-step $Q(\sigma)$</h2>
-<p>现在已经讲了$n$-step Sarsa，$n$-step Expected Sarsa，$n$-step Tree Backup，$4$-step的一个backup diagram如下所示。它们其实有很多共同的特性，可以用一个框架把它们统一起来。<br>
-具体的算法就不细说了。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《reinforcement learning an introduction》第二版<br>
-2.<a href="https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/16/gradient-method-deterministic-policy-gradient/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/07/16/gradient-method-deterministic-policy-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">policy gradient</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-07-16 10:31:55" itemprop="dateCreated datePublished" datetime="2019-07-16T10:31:55+08:00">2019-07-16</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-07 15:58:09" itemprop="dateModified" datetime="2019-10-07T15:58:09+08:00">2019-10-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介">简介</h2>
-<p>本文主要介绍了deterministic policy gradient算法。它属于policy gradient的一种，只不过是将stochastic policy改成了deterministic policy，和stochastic policy一样，deterministic policy也有相应的deterministic policy gradient theorem。<br>
-实际上deterministic policy gradient是action value function的gradient的期望，这让deterministic policy gradient比stochastic policy gradient要更efficiently。还介绍了保证足够的exploration的off-policy actor-critic算法学习determinitic target policy。</p>
-<h2 id="stochastic-policy-gradient-vs-deterministic-policy-gradiet">stochastic policy gradient vs deterministic policy gradiet</h2>
-<h3 id="sotchastic-policy-gradient">sotchastic policy gradient</h3>
-<p>Policy gradient的basic idea是用参数化的probability distribution $\pi_\theta(a|s) = \mathbb{P}\left[a|s,\theta\right]$表示policy，在state $s$处根据$\theta$表示的policy $\pi$随机选择action $a$。Policy gradient通过对policy 进行采样，根据stochastic policy gradient theorem近似计算$J$相对于参数$\theta$的累计梯度然后调整policy的参数$\theta$朝着使$J$更大的方向移动。</p>
-<h3 id="deterministic-policy-gradient">deterministic policy gradient</h3>
-<p>用$a=\mu_\theta(s)$表示deterministic policy，根据stochastic policy gradient theorm，很容易想到是否有deterministic policy gardient theorem，即朝着使得cumulative reward更大的方向更新policy的参数。<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">deterministic policy gradient</a>证明了deterministic policy gradient是存在的，可以使用action value function的梯度近似得到。在某些情况下，deterministic policy gradient还可以看成stochastic policy gradient的特殊情况。</p>
-<h3 id="spg-vs-dpg">spg vs dpg</h3>
-<p>spg和dpg的区别和联系</p>
-<ol>
-<li>spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy gradient是在action和state spaces上进行积分的，而dpg的policy gradient仅仅在state space上进行积分。因此，计算spg需要更多samples，尤其是action spaces维度很高的情况下。</li>
-<li>为了充分explore整个state和action space，需要使用stochastic policy。而在使用deterministic policy时，为了确保能够持续的进行explore，就需要使用off-policy的算法了，behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用deterministic policy gradient推导出了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后利用这个function的梯度更新policy的参数，同时为了确保policy gradient没有bias，使用而来compatible function。</li>
-</ol>
-<h2 id="stochastic-policy-gradient-theorem">stochastic policy gradient theorem</h2>
-<p>详细的介绍可以查看<a href="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/">policy gradient</a>。spg的基本想法就是朝着$J$的梯度方向更新policy的参数。对$J(\pi_{\theta})$对$\theta$求导，得到：<br>
-\begin{align*}<br>
-\nabla_{\theta} J(\pi_{\theta})&amp;=\int_S\rho^{\pi} (s) \int_A\nabla_\theta\pi_\theta (a|s)Q^{\pi} (s,a) dads \tag{1}\\<br>
-&amp;=\mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_\theta}\left[\nabla_\theta \log\pi_\theta(a|s)Q^{\pi} (s,a)\right] \tag{2}<br>
-\end{align*}<br>
-这就是policy gradient theorem。从这个theorem中，我们得到了一个有用的信息，state distribution $\rho\pi(s)$取决于policy parameters。我们计算$J$关于$\theta$的梯度时，需要计算statedistribution，很难实现，policy gradient theorem消去了对$\rho^{\pi} $的依赖，具有很重要的实用价值。同时利用log derivative trick将performance gradient的估计变成了一个期望，可以通过sampling估计。这个方法中需要使用$Q^{\pi} (s,a)$，估计$Q$不同方法就是不同的算法。比如最简单的使用sample return $G_t$估计$Q^{\pi} (s, a)$，就是REINFORCE算法。</p>
-<h2 id="stochastic-actor-critic-算法">stochastic actor-critic 算法</h2>
-<p>Actor-critic是一个基于policy gradient theorem的结构，包含policy和value function两个部分。Actors通过stochastic gradient ascent调整stochastic policy $\pi_\theta(s)$的参数$\theta$；同时critic用一个action-value function $Q^w (s,a)$近似$Q^\pi (s,a)$, $w$是function approximation的参数。Critic一般使用policy evaluation方法进行学习，比如使用td和mc等估计action value function $Q^w (s,a)\approx Q^\pi (s,a)$。一般来说，使用$Q^w (s,a)$代替真实的$Q^\pi (s,a)$会引入bias，但是，如果function approximator是compatible，即满足以下两个条件，就会是无偏的：</p>
-<ol>
-<li>$Q^w (s,a) = \nabla_\theta \log\pi_\theta(a|s)^T w$</li>
-<li>参数$w$最小化mse: $\epsilon^2 (w)=\mathbb{E}_{s\sim \rho^\pi ,a\sim \pi_\theta}\left[(Q^w (s, a)-Q^\pi (s,a))^2 \right]$，这样就没有bias了，即：<br>
-$$\nabla_\theta J(\pi_\theta)=\mathbb{E}_{s\sim \rho^\pi, a\sim \pi_\theta}\left[\nabla_\theta \log\pi_\theta(a|s)Q^w (s,a)\right] \tag{3}$$</li>
-</ol>
-<p>直观上来说，条件1说的是compatible function approximators是stochastic policy梯度$\nabla_\theta \log\pi_\theta(a|s)$的线性features，条件2需要满足$Q^w (s,a)$是$Q^\pi (s,a)$的linear regression soulution。在实际应用中，条件2会放宽，使用如TD之类policy evaluation算法更efficiently的估计value function。事实上，如果条件1和2都满足的话，整个算法等价于没有使用critic，和REINFORCE算法很像。</p>
-<h2 id="off-policy-actor-critic">off-policy actor critic</h2>
-<p>在off-policy设置中，performance objective通常改成target policy的value function在behaviour policy的state distribution上进行平均，用$\beta(a|s)$表示behaviour policy：<br>
-\begin{align*}<br>
-J_\beta(\pi_\theta) &amp;= \int_S\rho^\beta (s) V^\pi (s)ds\tag{4}\\<br>
-&amp;=\int_S\int_A\rho^\beta (s)\pi_\theta(a|s)Q^\pi (s,a)dads \tag{5}\\<br>
-\end{align*}<br>
-对其求导和近似，得到：<br>
-\begin{align*}<br>
-\nabla_\theta J_\beta(\pi_\theta) &amp;\approx \int_S\int_A\rho^\beta (s)\nabla_\theta\pi_\theta(a|s) Q^\pi (s,a)dads\tag{6} \\<br>
-&amp;=\mathbb{E}_{s\sim \rho\beta, a\sim \beta}\left[\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}\nabla_\theta \log\pi_\theta(a|s) Q^\pi (s,a) \right]\tag{7}<br>
-\end{align*}<br>
-这个近似去掉了一项：$\nabla_\theta Q^\pi (s,a)$，已经有人证明去掉这一项之后仍然会收敛到局部最优。Off-policy actor-critic算法使用behaviour policy $\beta$生成trajectories，critic off-policy的从那些trajectories中估计state value function $V^v (s)\approx v^\pi (s)$。actor使用sgd从这些trajectories中off policy的更新policy paramters $\theta$，同时使用TD-error估计$Q^\pi (s,a)$。actor和critic都是用importance sampling ratio $\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}$。</p>
-<h2 id="action-value-gradients">action value gradients</h2>
-<p>绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。一个替代的方法是让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，对每一个访问到的state $s$，policy parameters $\theta^{k+1} $的更新正比于$\nabla_{\theta} Q^{ {\mu}^k } (s, \mu_{\theta}(s) )$。每一个state给出一个不同的方向，可以使用state distribution $\rho^{\mu} (s)$求期望，对最终的方向进行平均：<br>
-$$\theta^{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_\theta Q^{ {\mu}^k } (s, \mu_{\theta}(s))\right] \tag{8}$$<br>
-通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：<br>
-$$\theta_{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_{\theta}\mu_{\theta}(s)\nabla_a Q^{ {\mu}^k } (s,a)|_{a=\mu_\theta(s_0)}\right] \tag{9}$$<br>
-按照惯例来说，$\nabla_{\theta}\mu_{\theta}(s)$是一个jacobian matrix，每一列是policy的$dth$ action对$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。如果改变了policy，state distribution　$\rho^{\mu} $也会改变。如果不考虑distribution的变化的话，这个方法是保证收敛的。不过幸运的是，已经有人证明了和sgd一样，有deterministic policy gradient theorem，不需要计算state distributiond的gradient即可更新参数。</p>
-<h2 id="deterministic-policy-gradient-theorem">deterministic policy gradient theorem</h2>
-<h3 id="新的术语定义">新的术语定义</h3>
-<ul>
-<li>$\rho_0(s)$：初始状态分布</li>
-<li>$\rho^{\mu} (s\rightarrow s’, k)$：在policy $\mu$下从state $s$出发经过$k$步到达$s’$的概率。</li>
-<li>$\rho^{\mu} (s’)$：带有折扣因子的状态分布，定义为：<br>
-$$\rho^{\mu} (s’) = \int_S \sum_{k=0}^{\infty} \gamma^{k} \rho_0(s) \rho^{\mu} (s\rightarrow s’, k)ds\tag{10}$$</li>
-</ul>
-<h3 id="证明">证明</h3>
-<p>deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}^n $。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[G_0|\mu\right]$，将performance objective写成expectation如下：<br>
-\begin{align*}<br>
-J(\mu_\theta) &amp; = \int_S\rho^\mu (s) G_0 ds\tag{11}\\<br>
-&amp;= \mathbb{E}_{s\sim \rho^\mu }\left[G_0\right] \tag{12}<br>
-\end{align*}<br>
-给出deterministic policy gradient theorem：<br>
-假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q^\mu (s,a)$存在，那么deterministic policy gradient存在，<br>
-\begin{align*}<br>
-\nabla_\theta J(\mu_\theta) &amp;= \int_S\rho^\mu (s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}ds\tag{13}\\<br>
-&amp;=\mathbb{E}_{s\sim \rho^\mu }\left[\nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}\right] \tag{14}<br>
-\end{align*}<br>
-证明：<br>
-\begin{align*}<br>
-\nabla_{\theta}V^{\mu} (s) &amp; =  \nabla_{\theta} Q^{\mu} (s, \mu(s))\tag{15}\\<br>
-&amp; = \nabla_{\theta} \left( R(s,\mu(s)) + \int_S \gamma p(s’|s,\mu(s))V^{\mu} (s’) ds’ \right)\tag{16}\\<br>
-&amp; = \nabla_{\theta}\mu(s) \nabla_a R(s,a)|_{a=\mu(s)} + \nabla_{\theta}\int_S \gamma p(s’|s,\mu(s))V^{\mu} (s’) ds’\tag{17}\\<br>
-&amp; = \nabla_{\theta}\mu(s) \nabla_a R(s,a)|_{a=\mu(s)} + \int_S \gamma \left(p(s’|s,\mu(s))\nabla_{\theta} V^{\mu} (s’) + \nabla_{\theta}\mu(s)\nabla_a p(s’|s, a)|_{a=\mu(s)} V^{\mu} (s’) \right) ds’\tag{18}\\<br>
-&amp; = \nabla_{\theta}\mu(s) \nabla_a \left( R(s,a) + \nabla_{\theta}\mu(s)\nabla_a p(s’|s, a)|_{a=\mu(s)} V^{\mu} (s’)ds’ \right) |_{a=\mu(s)} + \int_S \gamma p(s’|s,\mu(s))\nabla_{\theta} V^{\mu} (s’)  ds’\tag{19}\\<br>
-&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)} + \int_S \gamma p(s\rightarrow s’, 1, \mu(s))\nabla_{\theta} V^{\mu} (s’)  ds’\tag{20}\\<br>
-&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
-&amp;\qquad+ \int_S \gamma p(s\rightarrow s’, 1, \mu) \left(\nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)}  + \int_S \gamma p(s’ \rightarrow s^{’’}, 1, \mu(s’) ) \nabla_{\theta} V^{\mu} (s’’) ds^{’’} \right) ds’ \tag{21}\\<br>
-&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
-&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)}ds’ \\<br>
-&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \int_S \gamma p(s’ \rightarrow s^{’’}, 1, \mu(s’) )\nabla_{\theta} V^{\mu} (s’)ds^{’’} ds’ \tag{22}\\<br>
-&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
-&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)} ds’\\<br>
-&amp;\qquad + \int_S \gamma^2 p(s\rightarrow s’, 2, \mu)\nabla_{\theta} V^{\mu} (s’) ds’ \tag{23}\\<br>
-&amp; = \int_S \sum_{t=0}^{\infty} \gamma^t p(s\rightarrow s’, t, \mu)\nabla_{\theta} \mu(s’)\nabla_{a} Q^{\mu} (s’, a)|_{a=\mu(s’)} ds’ \tag{24}\\<br>
-\end{align*}<br>
-所以：<br>
-\begin{align*}<br>
-\nabla_{\theta} J(\mu) &amp; = \nabla_{\theta} \int_S \rho_0(s) V^{\mu} (s) ds \tag{25}\\<br>
-&amp; = \int_S \rho_0(s) \nabla_{\theta} V^{\mu} (s) ds \tag{26}\\<br>
-&amp; = \int_S\int_S \sum_{t=0}^{\infty} \gamma^t\rho_0(s) p(s\rightarrow s’, t, \mu)\nabla_{\theta} \mu(s’)\nabla_{a} Q^{\mu} (s’, a)|_{a=\mu(s’)} ds’ ds\tag{27}\\<br>
-&amp; = \int_S\rho^{\mu} (s) \nabla_{\theta} \mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} ds\tag{28}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^\mu}\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{30}\\<br>
-\end{align*}<br>
-公式$(25)$到公式$(26)$是因为$\rho_0(s_0)$和$\mu$无关。。</p>
-<h2 id="spg的limit">spg的limit</h2>
-<p>dpg实际上可以看成是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。<br>
-考虑一个stochastic policy $\pi_{\mu_{\theta,\sigma}}$让$\pi_{\mu_{\theta,\sigma}}(s,a)=v_\sigma(\mu_\theta(s),a)$，其中$\sigma$是控制方差的参数，并且$v_\sigma$满足条件B.1，以及MDP满足条件A.1和A.2，那么<br>
-$$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla_\theta J(\mu_\theta) \tag{31} $$<br>
-其中左边的gradient是标准spg的gradient，右边是dpg的gradient。这就说明spg的很多方法同样也是适用于dpg的。</p>
-<h2 id="deterministic-actor-critic">deterministic actor-critic</h2>
-<p>接下来使用dpg theorem推导on-policy和off-policy的actor-critic算法。从最简单的on-policy update开始，使用Sarsa critic，然后介绍off-policy算法，使用Q-learning critic介绍核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入了biases，off-policy引入了不稳定性，可以使用compatiable function approximation的方法以及gradient td learning解决这些问题。</p>
-<h3 id="on-policy-deterministic-actor-critic">on-policy deterministic actor-critic</h3>
-<p>使用deterministic behaviour policy不能确保足够的exploration，会产生suboptimal solutions。但是我们还是要首先介绍on-policy actor-critic算法，它对于我们理解算法背后的核心思路很有用。尤其是在环境有噪音，即使使用deterministic behaviour policy也能够保证充足的exploration时。<br>
-和stochastic actor-critic一样。deterministic actor-critic也由actor和critic两部分组成，actor使用梯度下降调整$\mu(s)$的参数$\theta$，critic使用policy evaluation方法估计$Q^w (s,a) \approx Q^{\mu} (s, a)$指导actor的更新。比如critic使用Sarsa估计action value：<br>
-\begin{align*}<br>
-\delta_t &amp; = R_{t+1} + \gamma Q^w (s_{t+1}, a_{t+1}) - Q^w(s_t, a_t) \tag{32}\\<br>
-w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{33}\\<br>
-\theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{34}\\<br>
-\end{align*}</p>
-<h3 id="off-policy-deterministic-actor-critic">off-policy deterministic actor-critic</h3>
-<p>考虑off-policy actor-critic方法。目标函数是使用behaviour policy对target policy的value function求期望：<br>
-\begin{align*}<br>
-J_{\beta}(\mu) &amp; = \int_S \rho^{\beta}(s) V^{\mu} (s) ds\\<br>
-&amp; = \int_S \rho^{\beta} (s) Q^{\mu} (s, \mu(s,a) ) ds \tag{35}\\<br>
-\end{align*}<br>
-求梯度是：<br>
-\begin{align*}<br>
-\nabla_{\theta}J_{\beta}(\theta) &amp; \approx \int_S\rho^\beta (s) \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a) ds \\<br>
-&amp; = \mathbb{E}_{s\sim \rho^\beta }\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{36}\\<br>
-\end{align*}<br>
-critic使用Q-learning更新action value function：<br>
-\begin{align*}<br>
-\delta_t &amp; = R_{t+1} + \gamma Q^w (s_{t+1}, \mu_{\theta}(s_{t+1})) - Q^w(s_t, a_t) \tag{37}\\<br>
-w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{38}\\<br>
-\theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{39}\\<br>
-\end{align*}<br>
-在stochastic off-policy actor-critic中，actor和critic都使用了importance sampling，而在deterministic off policy actor-critic中，deterministic去掉了对actions的积分，所以避免了actor的importance sampling，使用one step Q-learning去掉了critic中的importance sampling。</p>
-<h2 id="总结">总结</h2>
-<p>Deterministic policy gradient比stochastic policy gradient要好，尤其是high dimensional tasks上。此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noise，这种情况下dpg更合适。<br>
-目标函数：</p>
-<h3 id="stochastic-policy-gradient-theorem-v2">stochastic policy gradient theorem:</h3>
-<p>具体证明可以见<a href="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/">policy gradient</a>。<br>
-\begin{align*}<br>
-J(\pi_\theta) &amp; = \int_S\rho^{\pi} (s)\int_A\pi(s,a) R(s,a) da ds \tag{40}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_{\theta}} \left [R(s,a) \right]\tag{41}\\<br>
-\end{align*}</p>
-<p>\begin{align*}<br>
-\nabla_{\theta}J(\pi_\theta) &amp; = \int_S\rho^{\pi} (s)\int_A \nabla\pi(s,a) Q^{\pi} (s,a) da ds\tag{42}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_{\theta}} \left [\log \nabla_{\theta} \pi(a|s)Q^{\pi} (s,a) \right]\tag{43}\\<br>
-\end{align*}</p>
-<h3 id="stochastic-off-policy-actor-crtic">stochastic off-policy actor-crtic</h3>
-<p>具体证明可以参考<a href="https://arxiv.org/pdf/1205.4839.pdf" target="_blank" rel="noopener">Linear off-policy actor-critic</a>。<br>
-\begin{align*}<br>
-J(\pi_\theta) &amp; = \int_S\rho^{\beta}(s) V^{\pi} (s) ds\tag{44}\\<br>
-&amp; = \int_S \int_A\rho^{\beta}(s) \pi(a|s) Q^{\pi} (s, a) ds\tag{45}\\<br>
-\end{align*}</p>
-<p>\begin{align*}<br>
-\nabla_{\theta}J(\pi_\theta) &amp; \approx \int_S\int_A\rho^{\pi} (s) \nabla_{\theta} \pi_{\theta}(s,a) Q^{\pi} (s,a) da ds\tag{46}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^{\beta}, a\sim \beta} \left[ \frac{\pi_{\theta}(a|s) }{\beta_{\theta}(a|s) } \nabla_{\theta}\log \pi_{\theta}(s,a) Q^{\pi} (s,a) \right]\tag{47}\\<br>
-\end{align*}</p>
-<h3 id="deterministic-policy-gradient-theorem-v2">deterministic policy gradient theorem:</h3>
-<p>具体证明见本文上半部分。但是我还有一些疑问，在stochastic policy gradient theorem中，$p(s’, r|s, a)$是$a$的函数，$a = \pi(s)$，所以$p(s’,r|s, a)$不应该也是$\theta$的函数吗？<br>
-\begin{align*}<br>
-J(\mu_{\theta}) &amp; = \int_S\rho^{\mu} (s) R(s, \mu_{\theta}(s)) da ds\tag{48}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^{\mu} } \left[R(s, \mu_{\theta}(s) \right]\tag{49}\\<br>
-\end{align*}</p>
-<p>\begin{align*}<br>
-\nabla_{\theta} J(\mu_\theta) &amp; = \int_S\rho^{\mu} (s)\nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} da ds\tag{50}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^{\mu} (s)} \left[ \nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} \right]\tag{51}\\<br>
-\end{align*}</p>
-<h3 id="deterministic-off-policy-actor-critic">deterministic off-policy actor-critic</h3>
-<p>具体证明可以参考<a href="https://arxiv.org/pdf/1205.4839.pdf" target="_blank" rel="noopener">Linear off-policy actor-critic</a>。<br>
-\begin{align*}<br>
-J_{\beta}(\mu_\theta) &amp; = \int_S\rho^{\beta} (s) V^{\mu} (s) ds\tag{52}\\<br>
-&amp; = \int_S\rho^{\beta} (s) Q^{\mu} (s, \mu_{\theta}(s)) ds\tag{53}\\<br>
-\end{align*}<br>
-\begin{align*}<br>
-\nabla_{\theta} J_{\beta} (\mu_\theta) &amp; \approx \int_S\rho^{\beta} (s)\nabla_{\theta}\mu_{\theta}(a|s) \nabla_a Q^{\mu} (s, a) ds\tag{54}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^{\beta}}\left[\nabla_{\theta}\mu_{\theta}(a|s) \nabla_a Q^{\mu} (s, a) \right]\tag{55}\\<br>
-\end{align*}</p>
-<h2 id="参考文献">参考文献</h2>
-<p>Policy Gradient<br>
-1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a><br>
-2.<a href="http://www0.cs.ucl.ac.uk/staff/d.silver/web/Publications_files/deterministic-policy-gradients.pdf" target="_blank" rel="noopener">http://www0.cs.ucl.ac.uk/staff/d.silver/web/Publications_files/deterministic-policy-gradients.pdf</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-distributed-tensorflow/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/07/13/tensorflow-distributed-tensorflow/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">tensorflow distributed tensorflow</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-07-13 21:11:06 / 修改时间：22:01:56" itemprop="dateCreated datePublished" datetime="2019-07-13T21:11:06+08:00">2019-07-13</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="distributed-tensorflow">Distributed Tensorflow</h2>
-<p>这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。</p>
-<h2 id="cluster和server">Cluster和Server</h2>
-<h3 id="简介">简介</h3>
-<p>tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个tensorflow server相关联，这个server可能包含一个&quot;master&quot;用来创建session，或者&quot;worker&quot;用来执行图中的op。一个cluster可以被分成更多jobs，每一个job包含一个或者更多个tasks。<br>
-为了创建一个cluster，需要给每一个task指定一个server。每一个task都运行在不同的devices上。在每一个task上，做以下事情：</p>
-<ol>
-<li>创建一个tf.train.ClusterSpec描述这个cluster的所有tasks，这对于所有的task都是一样的。</li>
-<li>创建一个tf.train.Server，需要的参数是tr.train.ClusterSpec，识别local task使用job name和task index。</li>
-</ol>
-<h3 id="创建一个tf-train-clusterspec">创建一个tf.train.ClusterSpec</h3>
-<p>下面的表格中给出了两个cluster的示例。传入的参数是一个dictionary，key是job的name，value是该job的所有可用devices。第二列对应的task的scope name。</p>
-<table>
-<thead>
-<tr>
-<th>tf.train.ClusterSpec construction</th>
-<th>Available tasks</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>tf.train.ClusterSpec({“local”: [“localhost:2222”, “localhost:2223”]})</td>
-<td>/job:local/task:0/job:local/task:1</td>
-</tr>
-<tr>
-<td>tf.train.ClusterSpec({ “worker”: [ “<a href="http://worker0.example.com:2222" target="_blank" rel="noopener">worker0.example.com:2222</a>”, “<a href="http://worker1.example.com:2222" target="_blank" rel="noopener">worker1.example.com:2222</a>”, “<a href="http://worker2.example.com:2222" target="_blank" rel="noopener">worker2.example.com:2222</a>”], “ps”: [“<a href="http://ps0.example.com:2222" target="_blank" rel="noopener">ps0.example.com:2222</a>”, “<a href="http://ps1.example.com:2222" target="_blank" rel="noopener">ps1.example.com:2222</a>”]})</td>
-<td>/job:worker/task:0    /job:worker/task:1  /job:worker/task:2  /job:ps/task:0  /job:ps/task:1</td>
-</tr>
-</tbody>
-</table>
-<h3 id="为每一个task创建一个tf-train-server-instance">为每一个task创建一个tf.train.Server instance</h3>
-<p>tf.train.Server对象包含local devices的集合，和其他tasks的connections</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/distributed.md" target="_blank" rel="noopener">https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/distributed.md</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-Coordinator/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/07/13/tensorflow-Coordinator/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">tensosrflow Coordinator</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-07-13 20:17:13 / 修改时间：20:29:31" itemprop="dateCreated datePublished" datetime="2019-07-13T20:17:13+08:00">2019-07-13</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="coordinator">Coordinator</h2>
-<h3 id="简介">简介</h3>
-<p>这个类用来协调多个thread同时工作，同时停止。常用的方法有：</p>
-<ul>
-<li>should_stop()：如果满足thread停止条件的话，返回True</li>
-<li>request_stop()：请求thread停止，调用该方法后，should_stop()返回True</li>
-<li>join(<list of threads>)：等待所有的threads停止。</list></li>
-</ul>
-<h3 id="理解">理解</h3>
-<p>其实我觉得这个类的作用好像没有那么大，或者我没有用到这种场景。反正就是满足thread的终止条件时，调用request_stop()函数，让should_stop()返回True。</p>
-<h2 id="代码示例">代码示例</h2>
-<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_train_Coordinator.py" target="_blank" rel="noopener">代码地址</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line">n = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(index)</span>:</span></span><br><span class="line">    <span class="keyword">global</span> n</span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">not</span> coord.should_stop():</span><br><span class="line">    <span class="comment">#while True:</span></span><br><span class="line">        <span class="keyword">if</span> n &gt; <span class="number">10</span>:</span><br><span class="line">            print(index, <span class="string">" done"</span>)</span><br><span class="line">            coord.request_stop()</span><br><span class="line">            <span class="comment">#break</span></span><br><span class="line">        print(<span class="string">"before A, thread "</span>, index, n)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        print(<span class="string">"after A, thread "</span>, index, n)</span><br><span class="line">        time.sleep(random.random())</span><br><span class="line">        print(<span class="string">"before B, thread "</span>, index, n)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        print(<span class="string">"after B, thread "</span>, index, n)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">        coord = tf.train.Coordinator()</span><br><span class="line"></span><br><span class="line">        jobs = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>):</span><br><span class="line">            jobs.append(threading.Thread(target=add, args=(i,)))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> jobs:</span><br><span class="line">            j.start()</span><br><span class="line"></span><br><span class="line">        coord.join(jobs)</span><br><span class="line">        print(<span class="string">"Hello World!"</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://wiki.jikexueyuan.com/project/tensorflow-zh/how_tos/threading_and_queues.html" target="_blank" rel="noopener">https://wiki.jikexueyuan.com/project/tensorflow-zh/how_tos/threading_and_queues.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-one-hot/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/07/13/tensorflow-one-hot/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/3/index.html">tensorflow one_hot</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-07-13 12:08:55" itemprop="dateCreated datePublished" datetime="2019-07-13T12:08:55+08:00">2019-07-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-11 13:30:51" itemprop="dateModified" datetime="2019-10-11T13:30:51+08:00">2019-10-11</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="tf-one-hot">tf.one_hot</h2>
-<h3 id="一句话介绍">一句话介绍</h3>
-<p>返回一个one-hot tensor</p>
-<h3 id="api">API</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tf.one_hot(</span><br><span class="line">    indices,    <span class="comment"># 每一个one-hot向量不为0的维度</span></span><br><span class="line">    depth,  <span class="comment"># 指定每一个one-hot向量的维度</span></span><br><span class="line">    on_value=<span class="literal">None</span>,  <span class="comment"># indices上取该值</span></span><br><span class="line">    off_value=<span class="literal">None</span>,     <span class="comment">#其他地方取该值</span></span><br><span class="line">    axis=<span class="literal">None</span>,</span><br><span class="line">    dtype=<span class="literal">None</span>,</span><br><span class="line">    name=<span class="literal">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<h3 id="代码示例">代码示例</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">indices = [<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>]</span><br><span class="line">depth = <span class="number">5</span></span><br><span class="line"></span><br><span class="line">result = tf.one_hot(indices, depth)</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">print(sess.run(result))</span><br><span class="line"><span class="comment"># [[0. 1. 0. 0. 0.]</span></span><br><span class="line"><span class="comment">#  [0. 1. 0. 0. 0.]</span></span><br><span class="line"><span class="comment">#  [0. 1. 0. 0. 0.]]</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.tensorflow.org/api_docs/python/tf/one_hot" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/one_hot</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2855,7 +2773,7 @@ J_{\beta}(\mu_\theta) &amp; = \int_S\rho^{\beta} (s) V^{\mu} (s) ds\tag{52}\\<br
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">140</span>
+                    <span class="site-state-item-count">146</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2906,7 +2824,7 @@ J_{\beta}(\mu_\theta) &amp; = \int_S\rho^{\beta} (s) V^{\mu} (s) ds\tag{52}\\<br
                     
                       
                     
-                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-count">12</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3491,7 +3409,7 @@ J_{\beta}(\mu_\theta) &amp; = \int_S\rho^{\beta} (s) V^{\mu} (s) ds\tag{52}\\<br
                     
                       
                     
-                    <span class="site-state-item-count">168</span>
+                    <span class="site-state-item-count">176</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3742,9 +3660,9 @@ J_{\beta}(\mu_\theta) &amp; = \int_S\rho^{\beta} (s) V^{\mu} (s) ds\tag{52}\\<br
   
     
       
-        
-      
     
+      
+        
       
     
       

@@ -327,6 +327,1232 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">reinforcement learning an introduction 第7章笔记</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-30 09:59:50" itemprop="dateCreated datePublished" datetime="2019-07-30T09:59:50+08:00">2019-07-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-06 21:59:10" itemprop="dateModified" datetime="2019-10-06T21:59:10+08:00">2019-10-06</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="n-step-bootstrapping">n-step Bootstrapping</h2>
+<p>这章要介绍的n-step TD方法，将MC和one-step TD用一个统一的框架整合了起来。在一个任务中，两种方法可以无缝切换。n-step方法生成了一系列方法，MC在一头，one-step在另一头。最好的方法往往不是MC也不是one-step TD。One-step TD每隔一个timestep进行bootstrapping，在许多需要及时更新变化的问题，这种方法很有用，但是一般情况下，经历了长时间的稳定变化之后，bootstrap的效果会更好。N-step TD就是将one-step TD方法中time interval的one改成了n。N-step方法的idea和eligibility traces很像，eligibility traces同时使用多个不同的time intervals进行bootstarp。</p>
+<h2 id="n-step-td-prediction">n-step TD Prediction</h2>
+<p>对于使用采样进行policy evaluation的方法来说，不断使用policy $\pi$生成sample episodes，然后估计$v_{\pi}$。MC方法用的是每一个episode中每个state的return进行更新，即无穷步reward之和。TD方法使用每一个state执行完某一个action之后的下一个reward加上下一个state的估计值进行更新。N-step方法使用的是每一个state接下来n步的reward之和加上第n步之后的state的估计值。相应的backup diagram如下所示：<br>
+<img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n_step_backup_diagram.png" alt="n_step_diagram"></p>
+<p>n-step方法还是属于TD方法，因为n-step的更新还是基于时间维度上不同estimate的估计进行的。</p>
+<blockquote>
+<p>n-step updates are still TD methods because they still chagne an erlier estimate based on how it differs from a later estimate. Now the later estimate is not one step later, but n steps later。</p>
+</blockquote>
+<p>正式的，假设$S_t$的estimated value是基于state-reward sequence $S_t, R_{t+1}, S_{t+1}, R_{t+2}, \cdots, R_T,S_T$得到的。<br>
+MC方法更新基于completer return：<br>
+$$G_T = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \cdots + \gamma^{T-t-1}R_T \tag{1}$$<br>
+one-step TD更新基于one-step return：<br>
+$$G_{t:t+1} = R_{t+1}+ \gamma V_t(S_{t+1}) \tag{2}$$<br>
+two-step TD更新基于two-step return：<br>
+$$G_{t:t+2} = R_{t+1}+ \gamma V_t(S_{t+1}) + \gamma^2 V_{t+1}(S_{t+2}) \tag{3}$$<br>
+n-step TD更新基于n-step return：<br>
+$$G_{t:t+n} = R_{t+1}+ \gamma V_t(S_{t+1}) + \gamma^2 V_{t+1}(S_{t+2}) +\cdots + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n}), n\ge1, 0\le t\le T-n \tag{4}$$<br>
+所有的n-step方法都可以看成使用n steps的rewards之和加上$V_{t+n-1}(S_{t+n})$近似其余项的rewards近似return。如果$t+n \ge T$时，$T$步以后的reward以及estimated value当做$0$，相当于定义$t+n \ge T$时，$G_{t:t+1} = G_t$。<br>
+当$n &gt; 1$时，只有在$t+n$时刻之后，$R_{t+n},S_{t+n}$也是已知的，所以不能使用real time的算法。使用$t+n-1$时刻的$V$近似估计$V_{t+n-1}(S_{t+n})$，将n-step return当做n-step TD的target，得到的更新公式如下：<br>
+$$V_{t+n}(S_t) = V_{t+n-1} (S_t) + \gamma(G_{t:t+n} - V_{t+n-1}(S_{t}))\tag{5}$$<br>
+当更新$V_{t+n}(S_t)$时，所有其他states的$V$不变，用公式来表示是$V_{t+n}(s) = V_{t+n-1}(s), \forall s\neq S_t$。在每个episode的前$n-1$步中，不进行任何更新，为了弥补这几步，在每个episode结束以后，即到达terminal state之后，仍然继续进行更新，直到下一个episode开始之前，依然进行updates。完整的n-step TD算法如下：</p>
+<h3 id="n-step-td-prediction伪代码">n-step TD prediction伪代码</h3>
+<p>n-step TD估计$V\approx v_{\pi}$<br>
+输入：一个policy $\pi$<br>
+算法参数：step size $\alpha \in (0, 1]$，正整数$n$<br>
+随机初始化$V(s), \forall s\in S$<br>
+Loop for each episode<br>
+$\qquad$初始化 $S_0 \neq terminal$<br>
+$\qquad$$T\leftarrow \infty$<br>
+$\qquad$Loop for $t=0, 1, 2, \cdots:$<br>
+$\qquad$ IF $t\lt T$, THEN<br>
+$\qquad\qquad$ 根据$\pi(\cdot|S_t)$执行action<br>
+$\qquad\qquad$ 接收并记录$R_{t+1}, S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$<br>
+$\qquad$ END IF<br>
+$\qquad$ $\tau \leftarrow t - n + 1, \tau$是当前更新的时间<br>
+$\qquad$ If $\tau \ge 0$, then<br>
+$\qquad\qquad$ $G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>
+$\qquad\qquad$ 如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$<br>
+$\qquad\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$<br>
+$\qquad$ End if<br>
+Until $\tau = T-1$<br>
+n-step return有一个重要的属性叫做error reduction property，在最坏的情况下，n-step returns的期望也是一个比$V_{t+n-1}$更好的估计：<br>
+$$max_{s}|\mathbb{E}_{\pi}\left[G_{t:t+n}|S_t = s\right]- v_{\pi}(s)| \le \gamma^n max_s | V_{t+n-1}(s)-v_{\pi}(s)| \tag{6}$$<br>
+所以所有的n-step TD方法都可以收敛到真实值，MC和one-step TD是其中的一种特殊情况。</p>
+<h2 id="n-step-sarsa">n-step Sarsa</h2>
+<p>介绍完了prediction算法，接下来要介绍的就是control算法了。因为TD方法是model-free的，所以，还是要估计action value function。上一章介绍了one-step Sarsa，这一章自然介绍一下n-step Sarsa。n-step Sarsa的backup图如下所示：<br>
+<img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n_step_sarsa.png" alt="n_step_sarsa"><br>
+就是将n-step TD的state换成state-action就行了。定义action value的n-step returns如下：<br>
+$$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+1} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^n Q_{t+n-1}(S_{t+n},A_{t+n}), n\ge 1, 0\le t\le T-n\tag{7}$$<br>
+如果$t+n\ge T$，那么$G_{t:t+n} = G_t$。<br>
+完整的$n$-step Sarsa如下所示：</p>
+<h3 id="n-step-sarsa算法伪代码">n-step Sarsa算法伪代码</h3>
+<p>n-step Sarsa算法，估计$Q\approx q_{*}$<br>
+随机初始化$Q(s,a),\forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>
+算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq$ terminal<br>
+$\qquad$ 选择action $A_0= \pi(\cdot| S_0)$<br>
+$\qquad$ $T\leftarrow \infty$<br>
+$\qquad$ Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$ If $t\lt T$,then:<br>
+$\qquad\qquad\qquad$ 采取action $A_t$，<br>
+$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>
+$\qquad\qquad$ $T\leftarrow t+1$<br>
+$\qquad\qquad$ 否则选择$A_{t+1} = \pi(\cdot|S_{t+1})$<br>
+$\qquad\qquad$End if<br>
+$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>
+$\qquad\qquad$ If $\tau \ge 0$<br>
+$\qquad\qquad\qquad$ $G\leftarrow \sum_{i=\tau +1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>
+$\qquad\qquad\qquad$ If $\tau+n \le T$,then<br>
+$\qquad\qquad\qquad$ $G\leftarrow G+\gamma^n Q(S_{\tau+n}, A_{\tau+n})$<br>
+$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>
+$\qquad\qquad$End if<br>
+$\qquad$ Until $\tau =T-1$</p>
+<h3 id="n-step-expected-sarsa">n-step Expected Sarsa</h3>
+<p>n-step Expected Sarsa的n-step return定义为：<br>
+$$G_{t:t+n} = R_{t+1} +\gamma R_{t+1} + \cdots +\gamma^{n-1} R_{t+n} + \gamma^n \bar{V}_{t+n-1}(S_{t+n}) \tag{8}$$<br>
+其中$\bar{V}_t(s) = \sum_{a}\pi(a|s) Q_t(s,a), \forall s\in S$<br>
+如果$s$是terminal，它的期望是$0$。</p>
+<h2 id="n-step-off-policy-learning">n-step Off-policy Learning</h2>
+<p>Off-policy算法使用behaviour policy采样的内容得到target policy的value function，但是需要使用他们在不同policy下采取某个action的relavtive probability。在$n$-step方法中，我们感兴趣的只有对应的$n$个actions，所以最简单的off-policy $n$-step TD算法，$t$时刻的更新可以使用importance sampling ratio $\rho_{t:t+n-1}$：<br>
+$$V_{t+n}(S_t) = V_{t+n-1} S_t + \alpha \rho_{t:t+n-1}\left[G_{t:t+n} - V_{t+n-1}(S_t)\right], 0\le t\le T \tag{9}$$<br>
+$\rho_{t:t+n-}$计算的是从$A_t$到$A_{t+n-1}$这$n$个action在behaviour policy和target policy下的relative probability，计算公式如下：<br>
+$$\rho_{t:h} = \prod_{k=t}^{min(h, T-1)} \frac{\pi(A_k|S_k)}{b(A_k|S_k)} \tag{10}$$<br>
+如果$\pi(A_k|S_k) = 0$，那么对应的$n$-step return对应的权重就应该是$0$，如果policy $pi$下选中某个action的概率很大，那么对应的return就应该比$b$下的权重大一些。因为在$b$下出现的概率下，很少出现，所以权重就该大一些啊。如果是on-policy的话，importance sampling ratio一直是$1$，所以公式$9$可以将on-policy和off-policy的$n$-step TD概括起来。同样的，$n$-step的Sarsa的更新公式也可以换成：<br>
+$$Q_{t+n}(S_t,A_t) = Q_{t+n-1}(S_t,A_t) + \alpha \rho_{t+1:t+n}\left[G_{t:t+n} - Q_{t+n-1} (S_t,A_t)\right], 0\le t\le T \tag{11}$$<br>
+公式$11$中的importance sampling ratio要比公式$9$中计算的晚一步。这是因为我们是在更新一个state-action pair，我们并不关心有多大的概率选中这个action，我们现在已经选中了它，importance sampling只是用于后续actions的选择。这个解释也让我理解了为什么Q-learning和Sarsa为什么没有使用importance sampling。完整的伪代码如下。</p>
+<h3 id="off-policy-n-step-sarsa-估计-q">Off-policy $n$-step Sarsa 估计$Q$</h3>
+<p>输入：任意的behaviour policy $b$, $b(a|s)\gt 0, \forall s\in S, a\in A$<br>
+随机初始化$Q(s,a), \forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的greedy policy<br>
+算法参数：步长$\alpha \in (0,1]$，正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq terminal$<br>
+$\qquad$选择并存储$A_0 \sim b(\cdot|S_0)$<br>
+$\qquad T\leftarrow \infty$<br>
+$\qquad$Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$IF $t\lt T$,then<br>
+$\qquad\qquad\qquad$执行action $A_t$，接收$R_{t+1}, S_{t+1}$<br>
+$\qquad\qquad\qquad$如果$S_{t+1}$是terminal，那么$T\leftarrow t+1$<br>
+$\qquad\qquad\qquad$否则选择并记录$A_{t+1} \sim b(\cdot| S_{t+1})$<br>
+$\qquad\qquad$END IF<br>
+$\qquad\qquad \tau \leftarrow t-n +1$  (加$1$表示下标是从$0$开始的)<br>
+$\qquad\qquad$ IF $\tau \ge 0$<br>
+$\qquad\qquad\qquad \rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n,T)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n}$，这里是不是写成了Expected Sarsa公式）<br>
+$\qquad\qquad\qquad G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)}\gamma^{i-\tau -1}R_i$ （计算$n$个reward, $R_{\tau+1}+\cdots+R_{\tau+n}$）<br>
+$\qquad\qquad\qquad$如果$\tau+n \lt T$，$G\leftarrow G + \gamma^n Q(S_{\tau+n},A_{\tau+n})$ （因为没有$Q(S_T,A_T)$）<br>
+$\qquad\qquad\qquad Q(S_{\tau}, A_{\tau}) \leftarrow Q(S_{\tau}, A_{\tau})+\alpha \rho \left[G-Q(S_{\tau}, A_{\tau})\right]$（计算$Q(S_{\tau+n},A_{\tau+n})$）<br>
+$\qquad\qquad\qquad$确保$\pi$是相对于$Q$的greedy policy<br>
+$\qquad\qquad$ END IF<br>
+$\qquad$Until $\tau = T-1$<br>
+上面介绍的算法是$n$-step的Sarsa，计算importance ratio使用的$\rho_{t+1:t+n}$，$n$-step的Expected Sarsa计算importance ratio使用的是$\rho_{t+1:t+n-1}$，因为在估计$\bar{V}_{t+n-1}$时候，考虑到了last state中所有的actions。</p>
+<h2 id="n-step-tree-backup算法">$n$-step Tree Backup算法</h2>
+<p>这一章介绍的是不适用importance sampling的off-policy算法，叫做tree-backup algorithm。如下图所示，是一个$3$-step的tree-backup diaqgram。<br>
+沿着中间这条路走，有三个sample states和rewards以及两个sample actions。在旁边的是没有被选中的actions。对于这些没有选中的actions，因为没有采样，所以使用bootstrap计算target value。因为它的backup diagram有点像tree，所以就叫做tree backup upadte。或者更精确的说，backup update使用的是所用tree的叶子结点action value的估计值进行计算的。非叶子节点的action对应的是采样的action，不参与更新，所有叶子节点对于target的贡献都有一个权重正比于它在target policy下发生的概率。在$S_{t+1}$处的除了$A_{t+1}$之外所有action权重是$\pi(a|S_{t+1})$，$A_{t+1}$一点贡献没有；在$S_{t+2}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(a’|S_{t+2})$；在$S_{t+3}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(A_{t+2}|S_{t+2})\pi(a’’|S_{t+3})$<br>
+one-step Tree backup 算法其实就是Expected Sarsa：<br>
+$$G_{t:t+1} = R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1 \tag{12}$$<br>
+two-step Tree backup算法return计算公式如下：<br>
+\begin{align*}<br>
+G_{t:t+2} &amp;= R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})(R_{t+2} + \sum_{a} \pi(a|S_{t+2})Q(a, S_{t+2})\\<br>
+&amp;=R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})G_{t+1:t+2}, t \lt T-2<br>
+\end{align*}<br>
+下面的形式给出了tree-backup的递归形式如下：<br>
+$$G_{t:t+n} = R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a,S_{t+1}) + \gamma\pi(A_{t+1}|S_{t+1}) G_{t+1:t+n}, n\ge 2, t\lt T-1, \tag{13}$$<br>
+当$n=1$时除了$G_{T-1:t+n} = R_T$，其他的和式子$12$一样。使用这个新的target代替$n$-step Sarsa中的target就可以得到$n$-step tree backup 算法。<br>
+完整的算法如下所示：</p>
+<h3 id="n-step-tree-backup-算法">$n$-step Tree Backup 算法</h3>
+<p>随机初始化$Q(s,a),\forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>
+算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq$ terminal<br>
+$\qquad$ 根据$S_0$随机选择action $A_0$<br>
+$\qquad$ $T\leftarrow \infty$<br>
+$\qquad$ Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$ If $t\lt T$,then:<br>
+$\qquad\qquad\qquad$ 采取action $A_t$，<br>
+$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>
+$\qquad\qquad$ $T\leftarrow t+1$<br>
+$\qquad\qquad$ 根据$S_{t+1}$随机选择action $A_{t+1}$<br>
+$\qquad\qquad$End IF<br>
+$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>
+$\qquad\qquad\qquad$ IF $\tau+n\ge T$ then<br>
+$\qquad\qquad\qquad\qquad G\leftarrow R_T$<br>
+$\qquad\qquad\qquad$ ELSE<br>
+$\qquad\qquad\qquad\qquad G\leftarrow R_{t+1}+\gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1})$<br>
+$\qquad\qquad\qquad$ END IF<br>
+$\qquad\qquad\qquad$Loop for $k = min(t, T-1)$ down $\tau+1$<br>
+$\qquad\qquad\qquad G\leftarrow R_k+\gamma^n\sum_{a\neq A_k}\pi(a|S_k)Q(a, S_k) + \gamma \pi(A_k|S_k) G$<br>
+$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>
+$\qquad\qquad$End if<br>
+$\qquad$ Until $\tau =T-1$</p>
+<h2 id="n-step-q-sigma">$n$-step $Q(\sigma)$</h2>
+<p>现在已经讲了$n$-step Sarsa，$n$-step Expected Sarsa，$n$-step Tree Backup，$4$-step的一个backup diagram如下所示。它们其实有很多共同的特性，可以用一个框架把它们统一起来。<br>
+具体的算法就不细说了。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《reinforcement learning an introduction》第二版<br>
+2.<a href="https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/16/gradient-method-deterministic-policy-gradient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/16/gradient-method-deterministic-policy-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">policy gradient</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-16 10:31:55" itemprop="dateCreated datePublished" datetime="2019-07-16T10:31:55+08:00">2019-07-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-07 15:58:09" itemprop="dateModified" datetime="2019-10-07T15:58:09+08:00">2019-10-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介">简介</h2>
+<p>本文主要介绍了deterministic policy gradient算法。它属于policy gradient的一种，只不过是将stochastic policy改成了deterministic policy，和stochastic policy一样，deterministic policy也有相应的deterministic policy gradient theorem。<br>
+实际上deterministic policy gradient是action value function的gradient的期望，这让deterministic policy gradient比stochastic policy gradient要更efficiently。还介绍了保证足够的exploration的off-policy actor-critic算法学习determinitic target policy。</p>
+<h2 id="stochastic-policy-gradient-vs-deterministic-policy-gradiet">stochastic policy gradient vs deterministic policy gradiet</h2>
+<h3 id="sotchastic-policy-gradient">sotchastic policy gradient</h3>
+<p>Policy gradient的basic idea是用参数化的probability distribution $\pi_\theta(a|s) = \mathbb{P}\left[a|s,\theta\right]$表示policy，在state $s$处根据$\theta$表示的policy $\pi$随机选择action $a$。Policy gradient通过对policy 进行采样，根据stochastic policy gradient theorem近似计算$J$相对于参数$\theta$的累计梯度然后调整policy的参数$\theta$朝着使$J$更大的方向移动。</p>
+<h3 id="deterministic-policy-gradient">deterministic policy gradient</h3>
+<p>用$a=\mu_\theta(s)$表示deterministic policy，根据stochastic policy gradient theorm，很容易想到是否有deterministic policy gardient theorem，即朝着使得cumulative reward更大的方向更新policy的参数。<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">deterministic policy gradient</a>证明了deterministic policy gradient是存在的，可以使用action value function的梯度近似得到。在某些情况下，deterministic policy gradient还可以看成stochastic policy gradient的特殊情况。</p>
+<h3 id="spg-vs-dpg">spg vs dpg</h3>
+<p>spg和dpg的区别和联系</p>
+<ol>
+<li>spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy gradient是在action和state spaces上进行积分的，而dpg的policy gradient仅仅在state space上进行积分。因此，计算spg需要更多samples，尤其是action spaces维度很高的情况下。</li>
+<li>为了充分explore整个state和action space，需要使用stochastic policy。而在使用deterministic policy时，为了确保能够持续的进行explore，就需要使用off-policy的算法了，behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用deterministic policy gradient推导出了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后利用这个function的梯度更新policy的参数，同时为了确保policy gradient没有bias，使用而来compatible function。</li>
+</ol>
+<h2 id="stochastic-policy-gradient-theorem">stochastic policy gradient theorem</h2>
+<p>详细的介绍可以查看<a href="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/">policy gradient</a>。spg的基本想法就是朝着$J$的梯度方向更新policy的参数。对$J(\pi_{\theta})$对$\theta$求导，得到：<br>
+\begin{align*}<br>
+\nabla_{\theta} J(\pi_{\theta})&amp;=\int_S\rho^{\pi} (s) \int_A\nabla_\theta\pi_\theta (a|s)Q^{\pi} (s,a) dads \tag{1}\\<br>
+&amp;=\mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_\theta}\left[\nabla_\theta \log\pi_\theta(a|s)Q^{\pi} (s,a)\right] \tag{2}<br>
+\end{align*}<br>
+这就是policy gradient theorem。从这个theorem中，我们得到了一个有用的信息，state distribution $\rho\pi(s)$取决于policy parameters。我们计算$J$关于$\theta$的梯度时，需要计算statedistribution，很难实现，policy gradient theorem消去了对$\rho^{\pi} $的依赖，具有很重要的实用价值。同时利用log derivative trick将performance gradient的估计变成了一个期望，可以通过sampling估计。这个方法中需要使用$Q^{\pi} (s,a)$，估计$Q$不同方法就是不同的算法。比如最简单的使用sample return $G_t$估计$Q^{\pi} (s, a)$，就是REINFORCE算法。</p>
+<h2 id="stochastic-actor-critic-算法">stochastic actor-critic 算法</h2>
+<p>Actor-critic是一个基于policy gradient theorem的结构，包含policy和value function两个部分。Actors通过stochastic gradient ascent调整stochastic policy $\pi_\theta(s)$的参数$\theta$；同时critic用一个action-value function $Q^w (s,a)$近似$Q^\pi (s,a)$, $w$是function approximation的参数。Critic一般使用policy evaluation方法进行学习，比如使用td和mc等估计action value function $Q^w (s,a)\approx Q^\pi (s,a)$。一般来说，使用$Q^w (s,a)$代替真实的$Q^\pi (s,a)$会引入bias，但是，如果function approximator是compatible，即满足以下两个条件，就会是无偏的：</p>
+<ol>
+<li>$Q^w (s,a) = \nabla_\theta \log\pi_\theta(a|s)^T w$</li>
+<li>参数$w$最小化mse: $\epsilon^2 (w)=\mathbb{E}_{s\sim \rho^\pi ,a\sim \pi_\theta}\left[(Q^w (s, a)-Q^\pi (s,a))^2 \right]$，这样就没有bias了，即：<br>
+$$\nabla_\theta J(\pi_\theta)=\mathbb{E}_{s\sim \rho^\pi, a\sim \pi_\theta}\left[\nabla_\theta \log\pi_\theta(a|s)Q^w (s,a)\right] \tag{3}$$</li>
+</ol>
+<p>直观上来说，条件1说的是compatible function approximators是stochastic policy梯度$\nabla_\theta \log\pi_\theta(a|s)$的线性features，条件2需要满足$Q^w (s,a)$是$Q^\pi (s,a)$的linear regression soulution。在实际应用中，条件2会放宽，使用如TD之类policy evaluation算法更efficiently的估计value function。事实上，如果条件1和2都满足的话，整个算法等价于没有使用critic，和REINFORCE算法很像。</p>
+<h2 id="off-policy-actor-critic">off-policy actor critic</h2>
+<p>在off-policy设置中，performance objective通常改成target policy的value function在behaviour policy的state distribution上进行平均，用$\beta(a|s)$表示behaviour policy：<br>
+\begin{align*}<br>
+J_\beta(\pi_\theta) &amp;= \int_S\rho^\beta (s) V^\pi (s)ds\tag{4}\\<br>
+&amp;=\int_S\int_A\rho^\beta (s)\pi_\theta(a|s)Q^\pi (s,a)dads \tag{5}\\<br>
+\end{align*}<br>
+对其求导和近似，得到：<br>
+\begin{align*}<br>
+\nabla_\theta J_\beta(\pi_\theta) &amp;\approx \int_S\int_A\rho^\beta (s)\nabla_\theta\pi_\theta(a|s) Q^\pi (s,a)dads\tag{6} \\<br>
+&amp;=\mathbb{E}_{s\sim \rho\beta, a\sim \beta}\left[\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}\nabla_\theta \log\pi_\theta(a|s) Q^\pi (s,a) \right]\tag{7}<br>
+\end{align*}<br>
+这个近似去掉了一项：$\nabla_\theta Q^\pi (s,a)$，已经有人证明去掉这一项之后仍然会收敛到局部最优。Off-policy actor-critic算法使用behaviour policy $\beta$生成trajectories，critic off-policy的从那些trajectories中估计state value function $V^v (s)\approx v^\pi (s)$。actor使用sgd从这些trajectories中off policy的更新policy paramters $\theta$，同时使用TD-error估计$Q^\pi (s,a)$。actor和critic都是用importance sampling ratio $\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}$。</p>
+<h2 id="action-value-gradients">action value gradients</h2>
+<p>绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。一个替代的方法是让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，对每一个访问到的state $s$，policy parameters $\theta^{k+1} $的更新正比于$\nabla_{\theta} Q^{ {\mu}^k } (s, \mu_{\theta}(s) )$。每一个state给出一个不同的方向，可以使用state distribution $\rho^{\mu} (s)$求期望，对最终的方向进行平均：<br>
+$$\theta^{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_\theta Q^{ {\mu}^k } (s, \mu_{\theta}(s))\right] \tag{8}$$<br>
+通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：<br>
+$$\theta_{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_{\theta}\mu_{\theta}(s)\nabla_a Q^{ {\mu}^k } (s,a)|_{a=\mu_\theta(s_0)}\right] \tag{9}$$<br>
+按照惯例来说，$\nabla_{\theta}\mu_{\theta}(s)$是一个jacobian matrix，每一列是policy的$dth$ action对$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。如果改变了policy，state distribution　$\rho^{\mu} $也会改变。如果不考虑distribution的变化的话，这个方法是保证收敛的。不过幸运的是，已经有人证明了和sgd一样，有deterministic policy gradient theorem，不需要计算state distributiond的gradient即可更新参数。</p>
+<h2 id="deterministic-policy-gradient-theorem">deterministic policy gradient theorem</h2>
+<h3 id="新的术语定义">新的术语定义</h3>
+<ul>
+<li>$\rho_0(s)$：初始状态分布</li>
+<li>$\rho^{\mu} (s\rightarrow s’, k)$：在policy $\mu$下从state $s$出发经过$k$步到达$s’$的概率。</li>
+<li>$\rho^{\mu} (s’)$：带有折扣因子的状态分布，定义为：<br>
+$$\rho^{\mu} (s’) = \int_S \sum_{k=0}^{\infty} \gamma^{k} \rho_0(s) \rho^{\mu} (s\rightarrow s’, k)ds\tag{10}$$</li>
+</ul>
+<h3 id="证明">证明</h3>
+<p>deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}^n $。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[G_0|\mu\right]$，将performance objective写成expectation如下：<br>
+\begin{align*}<br>
+J(\mu_\theta) &amp; = \int_S\rho^\mu (s) G_0 ds\tag{11}\\<br>
+&amp;= \mathbb{E}_{s\sim \rho^\mu }\left[G_0\right] \tag{12}<br>
+\end{align*}<br>
+给出deterministic policy gradient theorem：<br>
+假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q^\mu (s,a)$存在，那么deterministic policy gradient存在，<br>
+\begin{align*}<br>
+\nabla_\theta J(\mu_\theta) &amp;= \int_S\rho^\mu (s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}ds\tag{13}\\<br>
+&amp;=\mathbb{E}_{s\sim \rho^\mu }\left[\nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}\right] \tag{14}<br>
+\end{align*}<br>
+证明：<br>
+\begin{align*}<br>
+\nabla_{\theta}V^{\mu} (s) &amp; =  \nabla_{\theta} Q^{\mu} (s, \mu(s))\tag{15}\\<br>
+&amp; = \nabla_{\theta} \left( R(s,\mu(s)) + \int_S \gamma p(s’|s,\mu(s))V^{\mu} (s’) ds’ \right)\tag{16}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a R(s,a)|_{a=\mu(s)} + \nabla_{\theta}\int_S \gamma p(s’|s,\mu(s))V^{\mu} (s’) ds’\tag{17}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a R(s,a)|_{a=\mu(s)} + \int_S \gamma \left(p(s’|s,\mu(s))\nabla_{\theta} V^{\mu} (s’) + \nabla_{\theta}\mu(s)\nabla_a p(s’|s, a)|_{a=\mu(s)} V^{\mu} (s’) \right) ds’\tag{18}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a \left( R(s,a) + \nabla_{\theta}\mu(s)\nabla_a p(s’|s, a)|_{a=\mu(s)} V^{\mu} (s’)ds’ \right) |_{a=\mu(s)} + \int_S \gamma p(s’|s,\mu(s))\nabla_{\theta} V^{\mu} (s’)  ds’\tag{19}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)} + \int_S \gamma p(s\rightarrow s’, 1, \mu(s))\nabla_{\theta} V^{\mu} (s’)  ds’\tag{20}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
+&amp;\qquad+ \int_S \gamma p(s\rightarrow s’, 1, \mu) \left(\nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)}  + \int_S \gamma p(s’ \rightarrow s^{’’}, 1, \mu(s’) ) \nabla_{\theta} V^{\mu} (s’’) ds^{’’} \right) ds’ \tag{21}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
+&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)}ds’ \\<br>
+&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \int_S \gamma p(s’ \rightarrow s^{’’}, 1, \mu(s’) )\nabla_{\theta} V^{\mu} (s’)ds^{’’} ds’ \tag{22}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
+&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)} ds’\\<br>
+&amp;\qquad + \int_S \gamma^2 p(s\rightarrow s’, 2, \mu)\nabla_{\theta} V^{\mu} (s’) ds’ \tag{23}\\<br>
+&amp; = \int_S \sum_{t=0}^{\infty} \gamma^t p(s\rightarrow s’, t, \mu)\nabla_{\theta} \mu(s’)\nabla_{a} Q^{\mu} (s’, a)|_{a=\mu(s’)} ds’ \tag{24}\\<br>
+\end{align*}<br>
+所以：<br>
+\begin{align*}<br>
+\nabla_{\theta} J(\mu) &amp; = \nabla_{\theta} \int_S \rho_0(s) V^{\mu} (s) ds \tag{25}\\<br>
+&amp; = \int_S \rho_0(s) \nabla_{\theta} V^{\mu} (s) ds \tag{26}\\<br>
+&amp; = \int_S\int_S \sum_{t=0}^{\infty} \gamma^t\rho_0(s) p(s\rightarrow s’, t, \mu)\nabla_{\theta} \mu(s’)\nabla_{a} Q^{\mu} (s’, a)|_{a=\mu(s’)} ds’ ds\tag{27}\\<br>
+&amp; = \int_S\rho^{\mu} (s) \nabla_{\theta} \mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} ds\tag{28}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^\mu}\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{30}\\<br>
+\end{align*}<br>
+公式$(25)$到公式$(26)$是因为$\rho_0(s_0)$和$\mu$无关。。</p>
+<h2 id="spg的limit">spg的limit</h2>
+<p>dpg实际上可以看成是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。<br>
+考虑一个stochastic policy $\pi_{\mu_{\theta,\sigma}}$让$\pi_{\mu_{\theta,\sigma}}(s,a)=v_\sigma(\mu_\theta(s),a)$，其中$\sigma$是控制方差的参数，并且$v_\sigma$满足条件B.1，以及MDP满足条件A.1和A.2，那么<br>
+$$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla_\theta J(\mu_\theta) \tag{31} $$<br>
+其中左边的gradient是标准spg的gradient，右边是dpg的gradient。这就说明spg的很多方法同样也是适用于dpg的。</p>
+<h2 id="deterministic-actor-critic">deterministic actor-critic</h2>
+<p>接下来使用dpg theorem推导on-policy和off-policy的actor-critic算法。从最简单的on-policy update开始，使用Sarsa critic，然后介绍off-policy算法，使用Q-learning critic介绍核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入了biases，off-policy引入了不稳定性，可以使用compatiable function approximation的方法以及gradient td learning解决这些问题。</p>
+<h3 id="on-policy-deterministic-actor-critic">on-policy deterministic actor-critic</h3>
+<p>使用deterministic behaviour policy不能确保足够的exploration，会产生suboptimal solutions。但是我们还是要首先介绍on-policy actor-critic算法，它对于我们理解算法背后的核心思路很有用。尤其是在环境有噪音，即使使用deterministic behaviour policy也能够保证充足的exploration时。<br>
+和stochastic actor-critic一样。deterministic actor-critic也由actor和critic两部分组成，actor使用梯度下降调整$\mu(s)$的参数$\theta$，critic使用policy evaluation方法估计$Q^w (s,a) \approx Q^{\mu} (s, a)$指导actor的更新。比如critic使用Sarsa估计action value：<br>
+\begin{align*}<br>
+\delta_t &amp; = R_{t+1} + \gamma Q^w (s_{t+1}, a_{t+1}) - Q^w(s_t, a_t) \tag{32}\\<br>
+w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{33}\\<br>
+\theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{34}\\<br>
+\end{align*}</p>
+<h3 id="off-policy-deterministic-actor-critic">off-policy deterministic actor-critic</h3>
+<p>考虑off-policy actor-critic方法。目标函数是使用behaviour policy对target policy的value function求期望：<br>
+\begin{align*}<br>
+J_{\beta}(\mu) &amp; = \int_S \rho^{\beta}(s) V^{\mu} (s) ds\\<br>
+&amp; = \int_S \rho^{\beta} (s) Q^{\mu} (s, \mu(s,a) ) ds \tag{35}\\<br>
+\end{align*}<br>
+求梯度是：<br>
+\begin{align*}<br>
+\nabla_{\theta}J_{\beta}(\theta) &amp; \approx \int_S\rho^\beta (s) \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a) ds \\<br>
+&amp; = \mathbb{E}_{s\sim \rho^\beta }\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{36}\\<br>
+\end{align*}<br>
+critic使用Q-learning更新action value function：<br>
+\begin{align*}<br>
+\delta_t &amp; = R_{t+1} + \gamma Q^w (s_{t+1}, \mu_{\theta}(s_{t+1})) - Q^w(s_t, a_t) \tag{37}\\<br>
+w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{38}\\<br>
+\theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{39}\\<br>
+\end{align*}<br>
+在stochastic off-policy actor-critic中，actor和critic都使用了importance sampling，而在deterministic off policy actor-critic中，deterministic去掉了对actions的积分，所以避免了actor的importance sampling，使用one step Q-learning去掉了critic中的importance sampling。</p>
+<h2 id="总结">总结</h2>
+<p>Deterministic policy gradient比stochastic policy gradient要好，尤其是high dimensional tasks上。此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noise，这种情况下dpg更合适。<br>
+目标函数：</p>
+<h3 id="stochastic-policy-gradient-theorem-v2">stochastic policy gradient theorem:</h3>
+<p>具体证明可以见<a href="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/">policy gradient</a>。<br>
+\begin{align*}<br>
+J(\pi_\theta) &amp; = \int_S\rho^{\pi} (s)\int_A\pi(s,a) R(s,a) da ds \tag{40}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_{\theta}} \left [R(s,a) \right]\tag{41}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta}J(\pi_\theta) &amp; = \int_S\rho^{\pi} (s)\int_A \nabla\pi(s,a) Q^{\pi} (s,a) da ds\tag{42}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_{\theta}} \left [\log \nabla_{\theta} \pi(a|s)Q^{\pi} (s,a) \right]\tag{43}\\<br>
+\end{align*}</p>
+<h3 id="stochastic-off-policy-actor-crtic">stochastic off-policy actor-crtic</h3>
+<p>具体证明可以参考<a href="https://arxiv.org/pdf/1205.4839.pdf" target="_blank" rel="noopener">Linear off-policy actor-critic</a>。<br>
+\begin{align*}<br>
+J(\pi_\theta) &amp; = \int_S\rho^{\beta}(s) V^{\pi} (s) ds\tag{44}\\<br>
+&amp; = \int_S \int_A\rho^{\beta}(s) \pi(a|s) Q^{\pi} (s, a) ds\tag{45}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta}J(\pi_\theta) &amp; \approx \int_S\int_A\rho^{\pi} (s) \nabla_{\theta} \pi_{\theta}(s,a) Q^{\pi} (s,a) da ds\tag{46}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\beta}, a\sim \beta} \left[ \frac{\pi_{\theta}(a|s) }{\beta_{\theta}(a|s) } \nabla_{\theta}\log \pi_{\theta}(s,a) Q^{\pi} (s,a) \right]\tag{47}\\<br>
+\end{align*}</p>
+<h3 id="deterministic-policy-gradient-theorem-v2">deterministic policy gradient theorem:</h3>
+<p>具体证明见本文上半部分。但是我还有一些疑问，在stochastic policy gradient theorem中，$p(s’, r|s, a)$是$a$的函数，$a = \pi(s)$，所以$p(s’,r|s, a)$不应该也是$\theta$的函数吗？<br>
+\begin{align*}<br>
+J(\mu_{\theta}) &amp; = \int_S\rho^{\mu} (s) R(s, \mu_{\theta}(s)) da ds\tag{48}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} } \left[R(s, \mu_{\theta}(s) \right]\tag{49}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta} J(\mu_\theta) &amp; = \int_S\rho^{\mu} (s)\nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} da ds\tag{50}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} (s)} \left[ \nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} \right]\tag{51}\\<br>
+\end{align*}</p>
+<h3 id="deterministic-off-policy-actor-critic">deterministic off-policy actor-critic</h3>
+<p>具体证明可以参考<a href="https://arxiv.org/pdf/1205.4839.pdf" target="_blank" rel="noopener">Linear off-policy actor-critic</a>。<br>
+\begin{align*}<br>
+J_{\beta}(\mu_\theta) &amp; = \int_S\rho^{\beta} (s) V^{\mu} (s) ds\tag{52}\\<br>
+&amp; = \int_S\rho^{\beta} (s) Q^{\mu} (s, \mu_{\theta}(s)) ds\tag{53}\\<br>
+\end{align*}<br>
+\begin{align*}<br>
+\nabla_{\theta} J_{\beta} (\mu_\theta) &amp; \approx \int_S\rho^{\beta} (s)\nabla_{\theta}\mu_{\theta}(a|s) \nabla_a Q^{\mu} (s, a) ds\tag{54}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\beta}}\left[\nabla_{\theta}\mu_{\theta}(a|s) \nabla_a Q^{\mu} (s, a) \right]\tag{55}\\<br>
+\end{align*}</p>
+<h2 id="参考文献">参考文献</h2>
+<p>Policy Gradient<br>
+1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a><br>
+2.<a href="http://www0.cs.ucl.ac.uk/staff/d.silver/web/Publications_files/deterministic-policy-gradients.pdf" target="_blank" rel="noopener">http://www0.cs.ucl.ac.uk/staff/d.silver/web/Publications_files/deterministic-policy-gradients.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-distributed-tensorflow/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/13/tensorflow-distributed-tensorflow/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">tensorflow distributed tensorflow</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-13 21:11:06 / 修改时间：22:01:56" itemprop="dateCreated datePublished" datetime="2019-07-13T21:11:06+08:00">2019-07-13</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="distributed-tensorflow">Distributed Tensorflow</h2>
+<p>这篇文章主要介绍如何创建cluster of tensorflow serves，并且将一个computation graph分发到这个cluster上。</p>
+<h2 id="cluster和server">Cluster和Server</h2>
+<h3 id="简介">简介</h3>
+<p>tensorflow中，一个cluster是一系列参与tensorflow graph distriuted execution的tasks。每个task和一个tensorflow server相关联，这个server可能包含一个&quot;master&quot;用来创建session，或者&quot;worker&quot;用来执行图中的op。一个cluster可以被分成更多jobs，每一个job包含一个或者更多个tasks。<br>
+为了创建一个cluster，需要给每一个task指定一个server。每一个task都运行在不同的devices上。在每一个task上，做以下事情：</p>
+<ol>
+<li>创建一个tf.train.ClusterSpec描述这个cluster的所有tasks，这对于所有的task都是一样的。</li>
+<li>创建一个tf.train.Server，需要的参数是tr.train.ClusterSpec，识别local task使用job name和task index。</li>
+</ol>
+<h3 id="创建一个tf-train-clusterspec">创建一个tf.train.ClusterSpec</h3>
+<p>下面的表格中给出了两个cluster的示例。传入的参数是一个dictionary，key是job的name，value是该job的所有可用devices。第二列对应的task的scope name。</p>
+<table>
+<thead>
+<tr>
+<th>tf.train.ClusterSpec construction</th>
+<th>Available tasks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tf.train.ClusterSpec({“local”: [“localhost:2222”, “localhost:2223”]})</td>
+<td>/job:local/task:0/job:local/task:1</td>
+</tr>
+<tr>
+<td>tf.train.ClusterSpec({ “worker”: [ “<a href="http://worker0.example.com:2222" target="_blank" rel="noopener">worker0.example.com:2222</a>”, “<a href="http://worker1.example.com:2222" target="_blank" rel="noopener">worker1.example.com:2222</a>”, “<a href="http://worker2.example.com:2222" target="_blank" rel="noopener">worker2.example.com:2222</a>”], “ps”: [“<a href="http://ps0.example.com:2222" target="_blank" rel="noopener">ps0.example.com:2222</a>”, “<a href="http://ps1.example.com:2222" target="_blank" rel="noopener">ps1.example.com:2222</a>”]})</td>
+<td>/job:worker/task:0    /job:worker/task:1  /job:worker/task:2  /job:ps/task:0  /job:ps/task:1</td>
+</tr>
+</tbody>
+</table>
+<h3 id="为每一个task创建一个tf-train-server-instance">为每一个task创建一个tf.train.Server instance</h3>
+<p>tf.train.Server对象包含local devices的集合，和其他tasks的connections</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/distributed.md" target="_blank" rel="noopener">https://github.com/tensorflow/examples/blob/master/community/en/docs/deploy/distributed.md</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-Coordinator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/13/tensorflow-Coordinator/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">tensosrflow Coordinator</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-13 20:17:13 / 修改时间：20:29:31" itemprop="dateCreated datePublished" datetime="2019-07-13T20:17:13+08:00">2019-07-13</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="coordinator">Coordinator</h2>
+<h3 id="简介">简介</h3>
+<p>这个类用来协调多个thread同时工作，同时停止。常用的方法有：</p>
+<ul>
+<li>should_stop()：如果满足thread停止条件的话，返回True</li>
+<li>request_stop()：请求thread停止，调用该方法后，should_stop()返回True</li>
+<li>join(<list of threads>)：等待所有的threads停止。</list></li>
+</ul>
+<h3 id="理解">理解</h3>
+<p>其实我觉得这个类的作用好像没有那么大，或者我没有用到这种场景。反正就是满足thread的终止条件时，调用request_stop()函数，让should_stop()返回True。</p>
+<h2 id="代码示例">代码示例</h2>
+<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_train_Coordinator.py" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line">n = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(index)</span>:</span></span><br><span class="line">    <span class="keyword">global</span> n</span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">not</span> coord.should_stop():</span><br><span class="line">    <span class="comment">#while True:</span></span><br><span class="line">        <span class="keyword">if</span> n &gt; <span class="number">10</span>:</span><br><span class="line">            print(index, <span class="string">" done"</span>)</span><br><span class="line">            coord.request_stop()</span><br><span class="line">            <span class="comment">#break</span></span><br><span class="line">        print(<span class="string">"before A, thread "</span>, index, n)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        print(<span class="string">"after A, thread "</span>, index, n)</span><br><span class="line">        time.sleep(random.random())</span><br><span class="line">        print(<span class="string">"before B, thread "</span>, index, n)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        print(<span class="string">"after B, thread "</span>, index, n)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">        coord = tf.train.Coordinator()</span><br><span class="line"></span><br><span class="line">        jobs = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>):</span><br><span class="line">            jobs.append(threading.Thread(target=add, args=(i,)))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> jobs:</span><br><span class="line">            j.start()</span><br><span class="line"></span><br><span class="line">        coord.join(jobs)</span><br><span class="line">        print(<span class="string">"Hello World!"</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://wiki.jikexueyuan.com/project/tensorflow-zh/how_tos/threading_and_queues.html" target="_blank" rel="noopener">https://wiki.jikexueyuan.com/project/tensorflow-zh/how_tos/threading_and_queues.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-one-hot/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/13/tensorflow-one-hot/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">tensorflow one_hot</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-13 12:08:55" itemprop="dateCreated datePublished" datetime="2019-07-13T12:08:55+08:00">2019-07-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-11 13:30:51" itemprop="dateModified" datetime="2019-10-11T13:30:51+08:00">2019-10-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="tf-one-hot">tf.one_hot</h2>
+<h3 id="一句话介绍">一句话介绍</h3>
+<p>返回一个one-hot tensor</p>
+<h3 id="api">API</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tf.one_hot(</span><br><span class="line">    indices,    <span class="comment"># 每一个one-hot向量不为0的维度</span></span><br><span class="line">    depth,  <span class="comment"># 指定每一个one-hot向量的维度</span></span><br><span class="line">    on_value=<span class="literal">None</span>,  <span class="comment"># indices上取该值</span></span><br><span class="line">    off_value=<span class="literal">None</span>,     <span class="comment">#其他地方取该值</span></span><br><span class="line">    axis=<span class="literal">None</span>,</span><br><span class="line">    dtype=<span class="literal">None</span>,</span><br><span class="line">    name=<span class="literal">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="代码示例">代码示例</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">indices = [<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>]</span><br><span class="line">depth = <span class="number">5</span></span><br><span class="line"></span><br><span class="line">result = tf.one_hot(indices, depth)</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">print(sess.run(result))</span><br><span class="line"><span class="comment"># [[0. 1. 0. 0. 0.]</span></span><br><span class="line"><span class="comment">#  [0. 1. 0. 0. 0.]</span></span><br><span class="line"><span class="comment">#  [0. 1. 0. 0. 0.]]</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.tensorflow.org/api_docs/python/tf/one_hot" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/one_hot</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/python-slice/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1630,1163 +2856,11 @@ cat /etc/passwd | awk ‘BEGIN {FS=&quot;:&quot;} $3 &lt; 10 {print $1 “\t” 
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/16/linux-cp-scp-vs-rsync/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/16/linux-cp-scp-vs-rsync/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">linux cp, scp vs rsync</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-16 16:29:17" itemprop="dateCreated datePublished" datetime="2019-06-16T16:29:17+08:00">2019-06-16</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-24 19:26:25" itemprop="dateModified" datetime="2019-08-24T19:26:25+08:00">2019-08-24</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="cp">cp</h2>
-<h3 id="参数介绍">参数介绍</h3>
-<h3 id="示例">示例</h3>
-<h2 id="scp">scp</h2>
-<h3 id="参数介绍-v2">参数介绍</h3>
-<h3 id="示例-v2">示例</h3>
-<h2 id="rsync">rsync</h2>
-<p>rsync相对于scp有以下优点：<br>
-1.支持断点续传<br>
-2.支持ssh<br>
-3.可分块传输<br>
-~$:rsync options source destination</p>
-<h3 id="参数介绍-v3">参数介绍</h3>
-<p>rsync [-zvra] source destination<br>
--z  传输前进行压缩<br>
--v  显示详细信息<br>
--r  递归拷贝<br>
--a  保留时间戳，owner,group<br>
--e ssh  使用ssh<br>
-–partial    单个文件的断点续传<br>
-–progress  显示同步进度<br>
--P等于–paritial和–progress一同使用<br>
-–include   只同步某些目录<br>
-–exclude   不同步某些目录</p>
-<h3 id="示例-v3">示例</h3>
-<p>~$:rsync -avc --exclude=**<strong>pycache</strong>  --exclude=**data --exclude=**tmp --exclude=**result_pictures experimental/ ~/<br>
-~$:rsync -rP source_dir target_dir</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/4585929/how-to-use-cp-command-to-exclude-a-specific-directory" target="_blank" rel="noopener">https://stackoverflow.com/questions/4585929/how-to-use-cp-command-to-exclude-a-specific-directory</a><br>
-2.<a href="https://www.cnblogs.com/bangerlee/archive/2013/04/07/3003243.html" target="_blank" rel="noopener">https://www.cnblogs.com/bangerlee/archive/2013/04/07/3003243.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/10/linux-ssh-tunnel内网穿透/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/10/linux-ssh-tunnel内网穿透/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">linux ssh tunnel内网穿透</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-10 21:33:16" itemprop="dateCreated datePublished" datetime="2019-06-10T21:33:16+08:00">2019-06-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-30 21:12:34" itemprop="dateModified" datetime="2019-06-30T21:12:34+08:00">2019-06-30</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="ssh-命令介绍">ssh 命令介绍</h2>
-<p>ssh是一种安全传输协议，此外还有tunnel转发功能，可以用来内网渗透。</p>
-<h3 id="参数介绍">参数介绍</h3>
-<p>-L port:host:hostport，访问本机的port端口就相当于访问host的hostport端口。<br>
-将本机的某个端口转发到远端指定机器的指定端口。本机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发出去。<br>
--R port:host:hostport，将远程主机的某个端口转发到指定的本地机器的指定端口。远程主机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发到指定的本地机器的指定端口。<br>
--N 不指定脚本或者命令<br>
--f 后台认证，需要和-N连用</p>
-<p>-L和-R的区别，-L是ssh隧道，-R是ssh反向隧道。</p>
-<h2 id="示例">示例</h2>
-<h3 id="翻墙ssh-l">翻墙ssh -L</h3>
-<p>执行以下命令的本机(localhost)通过中间服务器(45.32.22.289)访问被屏蔽的网站(google)。<br>
-~$:ssh -L 1234:google_ip:80 root@45.32.22.289<br>
-拿这个举个例子，可能不是很恰当，但是有助于理解。我自己的机器(A)是不能访问google©的，但是我有一台vps(B)，地址为45.32.22.289是可以访问google的，可以通过ssh隧道将A的端口(1234)通过B映射到C的端口(80)。</p>
-<h3 id="本机访问局域网的tensorboard-server">本机访问局域网的tensorboard server</h3>
-<h4 id="本机设置">本机设置</h4>
-<p>~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:mxxmhh@127.0.0.1" target="_blank" rel="noopener">mxxmhh@127.0.0.1</a><br>
-将本机的12345端口映射到10.1.114.50的6006端口，中间服务器使用的是本机。<br>
-或者可以使用10.1.114.50作为中间服务器。<br>
-~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
-或者可以使用如下方法：<br>
-~$:ssh -L 12345:127.0.0.1:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
-从这个方法中，可以看出127.0.0.1这个ip是中间服务器可以访问的ip。<br>
-以上三种方法中，-L后的端口号12345可以随意设置，只要不冲突即可。</p>
-<h4 id="服务端设置">服务端设置</h4>
-<p>然后在服务端运行以下命令：<br>
-~$:tensorboard --logdir logdir -port 6006<br>
-这个端口号也是可以任意设置的，不冲突即可。</p>
-<h4 id="运行">运行</h4>
-<p>然后在本机访问<br>
-<a href="https://127.0.0.1:12345" target="_blank" rel="noopener">https://127.0.0.1:12345</a>即可。</p>
-<h3 id="内网穿透ssh-r">内网穿透ssh -R</h3>
-<p>外网A(123.123.123.123)访问处于内网B的(127.0.0.1)的机器。<br>
-~$:ssh -N -f -R 2222:127.0.0.1:22 <a href="mailto:root@123.123.123.123" target="_blank" rel="noopener">root@123.123.123.123</a></p>
-<p>可以在外网机器A(123.123.123.123)上通过如下命令访问(-R)指定的内网机器B：<br>
-~$:ssh -p 2222 userB@localhost</p>
-<h3 id="报错">报错</h3>
-<p>Host key verification failed<br>
-直接把/home/username/.ssh/known_hosts中相应的给删了。</p>
-<h3 id="内网访问内网-挖洞">内网访问内网（挖洞）</h3>
-<p>A是家里的内网（无公网IP）上机器(196.)，B是VPS（有公网IP）(45.32.)，C是公司内网（无公网IP）机器(10.)。<br>
-要在家里的内网访问公司的内网，即A访问C。在C上建立ssh反向隧道：<br>
-~$:ssh -N -f -R 2222:127.0.0.1:22 userB@B.ip<br>
-在A上访问：<br>
-~$:ssh -p  2222 userC@B.ip</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html" target="_blank" rel="noopener">https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html</a><br>
-2.<a href="https://blog.creke.net/722.html" target="_blank" rel="noopener">https://blog.creke.net/722.html</a><br>
-3.<a href="http://arondight.me/2016/02/17/%E4%BD%BF%E7%94%A8SSH%E5%8F%8D%E5%90%91%E9%9A%A7%E9%81%93%E8%BF%9B%E8%A1%8C%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" target="_blank" rel="noopener">http://arondight.me/2016/02/17/使用SSH反向隧道进行内网穿透/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/07/pytorch-nn-Conv2d-vs-nn-functional-conv2d/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/07/pytorch-nn-Conv2d-vs-nn-functional-conv2d/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">pytorch nn.Conv2d vs nn.functional.conv2d</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-07 12:45:21 / 修改时间：13:09:47" itemprop="dateCreated datePublished" datetime="2019-06-07T12:45:21+08:00">2019-06-07</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="nn-conv2d-vs-nn-functional-conv2d">nn.Conv2d vs nn.functional.conv2d</h2>
-<ul>
-<li>nn.functional包中是函数接口，是从输入到输出的一个变换，内部没有Variable，不能够构成一个layer；nn包中是nn.functional函数对应的类封装，nn中的类可能有Variable（如Conv2d)，也可能没有（如Dropout，Maxpooling）</li>
-<li>nn中的类一般是nn.Module的子类，继承了nn.Module的方法和属性。</li>
-<li>nn中的类需要传入参数实例化，然后用函数调用的方法调用实例化对象传入数据。而nn.functional是函数，不需要实例化可以直接调用，需要同时传入filters的weights和biases。</li>
-</ul>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/66782101/answer/579393790" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/579393790</a><br>
-2.<a href="https://www.zhihu.com/question/66782101/answer/246460048" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/246460048</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/06/python-json/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/06/python-json/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">python json</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-06 15:58:02 / 修改时间：16:16:11" itemprop="dateCreated datePublished" datetime="2019-06-06T15:58:02+08:00">2019-06-06</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="什么是json"><a href="#什么是json" class="headerlink" title="什么是json"></a>什么是json</h2><p>是一种文件格式<br>json object和python的字典差不多。<br>json在python中可以以字符串形式读入。</p>
-<h2 id="python读取json"><a href="#python读取json" class="headerlink" title="python读取json"></a>python读取json</h2><h3 id="json-loads"><a href="#json-loads" class="headerlink" title="json.loads()"></a>json.loads()</h3><p>json.loads()从内存中读取。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import json</span><br><span class="line"></span><br><span class="line">person = &apos;&#123;&quot;name&quot;: &quot;Bob&quot;, &quot;languages&quot;: [&quot;English&quot;, &quot;Fench&quot;]&#125;&apos;</span><br><span class="line">person_dict = json.loads(person)</span><br><span class="line"></span><br><span class="line"># Output: &#123;&apos;name&apos;: &apos;Bob&apos;, &apos;languages&apos;: [&apos;English&apos;, &apos;Fench&apos;]&#125;</span><br><span class="line">print( person_dict)</span><br><span class="line"></span><br><span class="line"># Output: [&apos;English&apos;, &apos;French&apos;]</span><br><span class="line">print(person_dict[&apos;languages&apos;])</span><br></pre></td></tr></table></figure></p>
-<h3 id="json-load"><a href="#json-load" class="headerlink" title="json.load()"></a>json.load()</h3><p>json.load()从文件对象中读取。<br>假设有名为person.json的json文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">&quot;name&quot;: &quot;Bob&quot;, </span><br><span class="line">&quot;languages&quot;: [&quot;English&quot;, &quot;Fench&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>直接从文件对象中读取<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'person.json'</span>) <span class="keyword">as</span> f:</span><br><span class="line">  data = json.load(f)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Output: &#123;'name': 'Bob', 'languages': ['English', 'Fench']&#125;</span></span><br><span class="line">print(data)</span><br></pre></td></tr></table></figure></p>
-<h2 id="python写json文件"><a href="#python写json文件" class="headerlink" title="python写json文件"></a>python写json文件</h2><h3 id="json-dumps"><a href="#json-dumps" class="headerlink" title="json.dumps()"></a>json.dumps()</h3><p>json.dumps()将字典转化为JSON字符串<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_dict = &#123;<span class="string">'name'</span>: <span class="string">'Bob'</span>,</span><br><span class="line"><span class="string">'age'</span>: <span class="number">12</span>,</span><br><span class="line"><span class="string">'children'</span>: <span class="literal">None</span></span><br><span class="line">&#125;</span><br><span class="line">person_json = json.dumps(person_dict)</span><br><span class="line"></span><br><span class="line">print(person_json)</span><br></pre></td></tr></table></figure></p>
-<h3 id="json-dump"><a href="#json-dump" class="headerlink" title="json.dump()"></a>json.dump()</h3><p>json.dump()直接将字典写入文件对象<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_dict = &#123;<span class="string">"name"</span>: <span class="string">"Bob"</span>,</span><br><span class="line"><span class="string">"languages"</span>: [<span class="string">"English"</span>, <span class="string">"Fench"</span>],</span><br><span class="line"><span class="string">"married"</span>: <span class="literal">True</span>,</span><br><span class="line"><span class="string">"age"</span>: <span class="number">32</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'person.txt'</span>, <span class="string">'w'</span>) <span class="keyword">as</span> json_file:</span><br><span class="line">  json.dump(person_dict, json_file)</span><br></pre></td></tr></table></figure></p>
-<h2 id="pretty-JSON"><a href="#pretty-JSON" class="headerlink" title="pretty JSON"></a>pretty JSON</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_string = <span class="string">'&#123;"name": "Bob", "languages": "English", "numbers": [2, 1.6, null]&#125;'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Getting dictionary</span></span><br><span class="line">person_dict = json.loads(person_string)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Pretty Printing JSON string back</span></span><br><span class="line">print(json.dumps(person_dict, indent = <span class="number">4</span>, sort_keys=<span class="literal">True</span>))</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.programiz.com/python-programming/json" target="_blank" rel="noopener">https://www.programiz.com/python-programming/json</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/03/linux-process-ps-kill-top-pstree-nice/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/03/linux-process-ps-kill-top-pstree-nice/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">linux process ps kill top pstree nice</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-03 21:30:04" itemprop="dateCreated datePublished" datetime="2019-06-03T21:30:04+08:00">2019-06-03</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-07-09 10:08:45" itemprop="dateModified" datetime="2019-07-09T10:08:45+08:00">2019-07-09</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="概述">概述</h2>
-<p>这一节介绍和process相关的命令，包含ps,top,kill, pstree, nice, fuser, lsof, pidof, /proc/等</p>
-<h2 id="ps查看进程">ps查看进程</h2>
-<h3 id="参数介绍">参数介绍</h3>
-<p>ps [-Aauf] [xlj]<br>
--A 所有的进程全部显示出来<br>
-a 现行终端机下所有程序，包含其他用户<br>
-u 有效用户相关的进程，主要以用户为主的格式来区分<br>
-f 用ASCII字符显示树状结构，表达进程间的关系<br>
-x　通常与a这个参数一块使用，显示所有程序，不以终端机来区分<br>
-l　较长，较详细的将该PID的信息列出<br>
-j　工作的格式</p>
-<h3 id="示例">示例</h3>
-<p>~$:ps aux　查看系统所有的进程数据<br>
-~$:ps -lA　查看所有系统的数据<br>
-~$:ps axjf　连同部分进程树状态<br>
-~$:ps aux | grep ‘sslocal’ #查看sslocal程序是否运行<br>
-~$:ps ax # 显示当前系统进程的列表<br>
-~$:ps aux #显示当前系统进程详细列表以及进程用户<br>
-~$:ps -A  #列出进程号<br>
-~$:ps aux |grep 2222’|grep -v grep  # 找出所有包含2222的进程，grep -v 过滤掉含有grep字符的行</p>
-<h3 id="aux-查看系统所有进程">aux 查看系统所有进程</h3>
-<p>~$:ps aux     # 使用BSD格式显示进程<br>
-输出<br>
-USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND<br>
-USER<br>
-PID<br>
-%CPU    该进程使用掉的CPU资源百分比<br>
-%MEM    该进程占用物理内存百分比<br>
-VSZ 该进程占用虚拟内存量<br>
-RSS 该进程占用固定内存量(KB)<br>
-TTY pts/0　表示由网络连接进主机的进程<br>
-STAT    进程状态<br>
-START   该进程被触发的时间<br>
-TIME    CPU时间<br>
-COMMAND     该进程实际命令</p>
-<p>僵尸进程(<defunct>)</defunct></p>
-<h3 id="ps-ef">ps -ef</h3>
-<p>~\$:ps -ef  # 使用标准格式显示进程<br>
-输出<br>
-UID        PID  PPID  C STIME TTY          TIME CMD<br>
-UID 用户名<br>
-PID 进程ID<br>
-PPID    父进程ID<br>
-C   CPU占用百分比<br>
-STIME   进程启动到现在的时间<br>
-TTY     在哪个终端上运行，ps/0表示网络连接<br>
-TIME<br>
-CMD     命令的名称和参数</p>
-<h3 id="l仅查看自己相关的bash进程">-l仅查看自己相关的bash进程</h3>
-<p>~\$:ps -l #仅查看自己相关的bash进程<br>
-输出<br>
-F S UID PID PPID C PR NI ADDZ SZ WCHAN TTY TIME CMD<br>
-F  说明进程权限<br>
-S　进程状态STAT<br>
-R(running)　S(sleep)　D(不可被唤醒的睡眠状态,通常是IO的进程)　T(stop)　Z(zombie僵尸状态)进程已终止，但无法被删除到到内存外,PCB还在，但是其他资源全部被收回，是由父进程负责收回资源。<br>
-UID/PID/PPID<br>
-C CPU使用率<br>
-PR/NI  Priority/Nice的缩写，此进程被CPU执行的优先级<br>
-ADDR/SZ/WCHAN都与内存有关，ADDR是kernel function ,指出该进程在内存的哪个部分，如果是个running的过程，显示-;SZ代表用掉多少内存;WCHAN表示目前进程是否运行，-表示正在运行<br>
-TTY 使用的终端接口<br>
-TIME    使用掉的CPU时间，而不是系统时间<br>
-CMD command缩写,造成此进程被触发的命令</p>
-<h2 id="top-动态查看进程的变化">top 动态查看进程的变化</h2>
-<h3 id="参数介绍-v2">参数介绍</h3>
-<p>top [-d 数字] | top [-bnp]<br>
--d　整个进程界面更新的秒数<br>
--b  以批次的方式执行top，<br>
--n  与-b搭配，意义是，需要进行几次top的输出结果<br>
--p  指定某个PID来查看<br>
-在top执行中可以使用的命令<br>
-?查询所有的命令<br>
-P 按CPU使用率排序<br>
-M Mem排序<br>
-N PID排序<br>
-T CPU累计时间排序<br>
-k 给某个PID一个信号<br>
-r 给某个PID重新制定一个nice值<br>
-q 离开top软件</p>
-<h3 id="示例-v2">示例</h3>
-<p>~\$:top -d 2 #每两秒钟刷新一次top，默认为5s<br>
-~\$:top -b -n 2 &gt; ~/tmp/top.out</p>
-<h3 id="top输出内容">top输出内容</h3>
-<p>第一行top<br>
-目前时间　<br>
-开机到现在时间　up n days , hh:mm<br>
-登陆的用户<br>
-系统在1,5,15分钟时的负载，batch工作方式负载小于0.8即为这个负载，代表的是1,5,15分钟，系统平均要负责多少个程序。越小说明系统越闲<br>
-第二行task<br>
-目前进程总量，分别有多少个处于什么状态，不能有处于zombie的进程，<br>
-第三行%cpu<br>
-wa代表的是I/Owait，系统变慢都是由于I/O产生问题较多<br>
-第四五行内存和swap使用情况，swap被使用的应该尽量少，否则说明物理内存实在不足。<br>
-第六行<br>
-PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND<br>
-PID　每个进程ID<br>
-USER　该进程所属用户<br>
-PR　Priority 进程的优先级顺序，越小越早被执行<br>
-NI　Nice 与Priority有关，越小越早被执行<br>
-VIRT<br>
-RES<br>
-SHR<br>
-S   STAT<br>
-%CPU　CPU使用率<br>
-%MEM　内存使用率<br>
-TIME+  CPU使用时间的累加<br>
-COMMAND</p>
-<h2 id="pstree-查看进程树">pstree 查看进程树</h2>
-<h3 id="参数介绍-v3">参数介绍</h3>
-<p>pstree [-A|-U] [-up]<br>
--A  各进程树直接以ASCII字符连接<br>
--U  各进程树之间以utf-8字符连接<br>
--u  显示进程所属账号名<br>
--p  显示pid</p>
-<h3 id="示例-v3">示例</h3>
-<p>~\$:pstree -Aup</p>
-<h2 id="kill管理进程">kill管理进程</h2>
-<h3 id="参数介绍-v4">参数介绍</h3>
-<p>kill -signals %jobnumber 杀掉某个job<br>
--l  列出所有signal<br>
--1  重新读取一次参数的配置文件<br>
--2  与ctrl+c　一样<br>
--9  强制删除一个job，非正常状态<br>
--15 让一个job正常结束</p>
-<h3 id="查看signal种类">查看signal种类</h3>
-<p>~\$:man 7 signal</p>
-<h3 id="kill示例">kill示例</h3>
-<p>kill -signal %jobnum<br>
-kill -signal pid<br>
-这两种情况是不同的，第一种是job，第二种是pid,不能弄混</p>
-<h3 id="killall将系统中所有以某个命令启动的服务全部删除">killall将系统中所有以某个命令启动的服务全部删除</h3>
-<p>killall [-iIe]  用来删除某个服务<br>
--i iteractive<br>
--e exact<br>
--I 忽略大小写</p>
-<h3 id="killall示例">killall示例</h3>
-<p>~\$:killall utserver<br>
-~\$:killall -1 syslogd<br>
-~\$:killall -9 httpd<br>
-~\$:killall -i -9 bash</p>
-<h2 id="nice管理进程优先级">nice管理进程优先级</h2>
-<p>PRI(priority)与NI(nice)<br>
-PRI值是由内核动态调整的，用户无法直接调整PRI值<br>
-PRI(new)=PRI(old)+nice</p>
-<p>nice值虽然可以影响PRI，但是并不是说原来PRI为50,nice为5,就会让PRI变为55,<br>
-这是需要经过系统分析之后决定的</p>
-<p>nice值<br>
-a.可调整范围为-20~19<br>
-b.root可随意调整任何人的nice值-20~19间的任意一个值<br>
-c.一般用户仅可以调整自己nice值，且范围在0~19<br>
-d.一般用户仅可将nice值调高，而无法降低<br>
-e.调整nice值的方法<br>
-新执行的命令手动设置nice值<br>
-nice -n [number] command</p>
-<h3 id="示例-v4">示例</h3>
-<p>~\$:nice -n -5 vim &amp;</p>
-<h3 id="已存在的进程调整nice值">已存在的进程调整nice值</h3>
-<p>renice [number] command<br>
-~\$:ps -l | grep ‘\*bash\$’<br>
-~\$:renice 10 \$(ps -l|grep ‘bash\$’ | awk ‘{print \$4}’)</p>
-<h2 id="fuser找到使用某文件的程序">fuser找到使用某文件的程序</h2>
-<h3 id="参数介绍-v5">参数介绍</h3>
-<p>fuser [-muv] [-k [i] [-signal]] name<br>
--m  后面接的文件名会主动提到文件顶层<br>
--u  user<br>
--v  verbose<br>
--k  SIGKILL<br>
--i  询问用户，与-k搭配<br>
--signal  -1,-15等，默认为-9</p>
-<h3 id="示例-v5">示例</h3>
-<p>~\$:mount -o loop ubuntu.iso /mnt/iso<br>
-~\$:cd /mnt/iso<br>
-~\$:umount /mnt/iso<br>
-error<br>
-~\$:fuser -muv   /mnt/iso<br>
-…<br>
-~\$:cd<br>
-~\$:umount /mnt/iso</p>
-<p>~\$:fuser -muv /proc<br>
-~\$:fuser -ki /bin/bash</p>
-<h2 id="lsof找到被进程打开的文件">lsof找到被进程打开的文件</h2>
-<h3 id="参数介绍-v6">参数介绍</h3>
-<p>lsof [-uaU] [+d]<br>
--a 相当于and连接符<br>
--u 某个用户的相关进程打开的文件<br>
--U Unix like 的socket文件类型<br>
-+d 某个目录下被打开的文件</p>
-<h3 id="示例-v6">示例</h3>
-<p>~\$:lsof +d ~/Desktop<br>
-~\$:lsof -u mxx | grep ‘bash’<br>
-~\$:lsof -u mxx -a -U</p>
-<h2 id="pidof找出某个正在进行的进程的pid">pidof找出某个正在进行的进程的pid</h2>
-<h3 id="参数介绍-v7">参数介绍</h3>
-<p>pidof [-sx] program_name<br>
--s 仅列出一个pid而不列出所有的pid<br>
--x 列出该进程可能的ppid的pid</p>
-<h2 id="获取进程id">获取进程id</h2>
-<p>ps -A |grep “command” | awk '{print $1}'<br>
-pidof 'command’<br>
-pgrep ‘command’</p>
-<h2 id="proc-文件">/proc/\* 文件</h2>
-<p>/proc/cmdline   加载kernel执行的参数<br>
-/proc/cpuinfo   CPU相关信息<br>
-/proc/devices   主要设备代号　与mknod相关<br>
-/proc/filesystems   目前已加载的文件系统<br>
-/proc/interrupts    系统上IRQ分配状态<br>
-/proc/ioports   目前系统上每个设备配置的I/O地址<br>
-/proc/loadavg   top/uptime显示的负载<br>
-/proc/kcore 内存大写<br>
-/proc/meminfo   free<br>
-/proc/modules   目前系统已加载的模块列表，可想成驱动程序<br>
-/proc/mounts　mount<br>
-/proc/swaps  系统加载的内存使用的分区记录<br>
-/proc/partitions　fdisk -l<br>
-/proc/pci　PCI总线上每个设备的详细情况　lspci<br>
-/proc/uptime　uptime<br>
-/proc/version　内核版本 uname -a<br>
-/proc/bus/\*　总线设备，USB设备</p>
-<h2 id="具有suid-sgid的程序">具有SUID，SGID的程序</h2>
-<p>如passwd，当触发passwd之后，会取得一个新的进程与PID,该PID产生时通过SUID给予该PID特殊的权限设置。<br>
-在一个bash中执行passwd会衍生出一个passwd进程，而且权限为root<br>
-~\$:passwd &amp;<br>
-~\$:pstree -up找到该进程</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《鸟哥的LINUX私房菜》基础篇</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/3/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><a class="extend next" rel="next" href="/page/5/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2831,7 +2905,7 @@ pgrep ‘command’</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">140</span>
+                    <span class="site-state-item-count">146</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2882,7 +2956,7 @@ pgrep ‘command’</p>
                     
                       
                     
-                    <span class="site-state-item-count">11</span>
+                    <span class="site-state-item-count">12</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3467,7 +3541,7 @@ pgrep ‘command’</p>
                     
                       
                     
-                    <span class="site-state-item-count">168</span>
+                    <span class="site-state-item-count">176</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3718,6 +3792,8 @@ pgrep ‘command’</p>
   
     
       
+        
+      
     
       
     
@@ -3739,6 +3815,36 @@ pgrep ‘command’</p>
     
   
 
+  
+    
+      <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      TeX: {equationNumbers: { autoNumber: "AMS" }}
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+    overflow: auto hidden;
+}
+</style>
+
+    
   
 
 
