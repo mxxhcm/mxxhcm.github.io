@@ -21,7 +21,7 @@ $$ S(x) = \frac{1}{1+e^{x} }$$
 ![logistic_func](logistic_function.png)
 它的取值在$[0,1]$之间。
 logistic regression的目标函数是：
-$$h(x) = \frac{1}{1+e^{-\theta^T x}}$$
+$$h(x) = \frac{1}{1+e^{-\theta^T x} }$$
 其中$x$是输入，$\theta$是要求的参数。
 
 ### 思路
