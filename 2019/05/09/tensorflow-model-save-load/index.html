@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="tf.train.Saver保存和恢复模型 12saver = tf.train.Saver()saver.save() 调用上述代码之后会存存储以下几个文件： 1234checkpointmodel.ckpt.data-00000-of-00001model.ckpt.indexmodel.ckpt.meta 其中checkpoint文件存储的是最近保存的文件的名字，meta文件存放的是计算图的">
+<meta name="keywords" content="python,tensorflow,Saver,save,restore">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tensorflow model save load">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/05/09/tensorflow-model-save-load/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="tf.train.Saver保存和恢复模型 12saver = tf.train.Saver()saver.save() 调用上述代码之后会存存储以下几个文件： 1234checkpointmodel.ckpt.data-00000-of-00001model.ckpt.indexmodel.ckpt.meta 其中checkpoint文件存储的是最近保存的文件的名字，meta文件存放的是计算图的">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-09-28T10:25:35.998Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tensorflow model save load">
+<meta name="twitter:description" content="tf.train.Saver保存和恢复模型 12saver = tf.train.Saver()saver.save() 调用上述代码之后会存存储以下几个文件： 1234checkpointmodel.ckpt.data-00000-of-00001model.ckpt.indexmodel.ckpt.meta 其中checkpoint文件存储的是最近保存的文件的名字，meta文件存放的是计算图的">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/05/09/tensorflow-model-save-load/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>tensorflow model save load | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/09/tensorflow-model-save-load/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">tensorflow model save load
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-09 15:14:26" itemprop="dateCreated datePublished" datetime="2019-05-09T15:14:26+08:00">2019-05-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-28 18:25:35" itemprop="dateModified" datetime="2019-09-28T18:25:35+08:00">2019-09-28</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/05/09/tensorflow-model-save-load/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/05/09/tensorflow-model-save-load/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="tf-train-saver保存和恢复模型">tf.train.Saver保存和恢复模型</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">saver = tf.train.Saver()</span><br><span class="line">saver.save()</span><br></pre></td></tr></table></figure>
+<p>调用上述代码之后会存存储以下几个文件：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">checkpoint</span><br><span class="line">model.ckpt.data-00000-of-00001</span><br><span class="line">model.ckpt.index</span><br><span class="line">model.ckpt.meta</span><br></pre></td></tr></table></figure>
+<p>其中checkpoint文件存储的是最近保存的文件的名字，meta文件存放的是计算图的定义，index和data文件存放的是权重文件。</p>
+<p>下面介绍一下上述代码中出现的两个API，tf.train.Saver()和tf.train.Saver().save()。</p>
+<h3 id="tf-train-saver">tf.train.Saver()</h3>
+<p>Saver是类，不是函数。可以用来保存，恢复variable和model，Saver对象提供save()和restore()等函数，save()保存模型，restore()加载模型。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">__init__(</span><br><span class="line">    var_list=<span class="literal">None</span>, <span class="comment"># 指定要保存的variablelist</span></span><br><span class="line">    reshape=<span class="literal">False</span>,</span><br><span class="line">    sharded=<span class="literal">False</span>,</span><br><span class="line">    max_to_keep=<span class="number">5</span>, <span class="comment"># 最多保留最近的几个checkpoints</span></span><br><span class="line">    keep_checkpoint_every_n_hours=<span class="number">10000.0</span>,</span><br><span class="line">    name=<span class="literal">None</span>,</span><br><span class="line">    restore_sequentially=<span class="literal">False</span>,</span><br><span class="line">    saver_def=<span class="literal">None</span>,</span><br><span class="line">    builder=<span class="literal">None</span>,</span><br><span class="line">    defer_build=<span class="literal">False</span>,</span><br><span class="line">    allow_empty=<span class="literal">False</span>,</span><br><span class="line">    write_version=tf.train.SaverDef.V2,</span><br><span class="line">    pad_step_number=<span class="literal">False</span>,</span><br><span class="line">    save_relative_paths=<span class="literal">False</span>,</span><br><span class="line">    filename=<span class="literal">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="tf-train-saver-save">tf.train.Saver.save()</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">save(</span><br><span class="line">    sess,       \\传入当前要保存的session</span><br><span class="line">    save_path,  \\指定checkpoint的路径</span><br><span class="line">    global_step=<span class="literal">None</span>,   \\当前存的model的step</span><br><span class="line">    latest_filename=<span class="literal">None</span>,</span><br><span class="line">    meta_graph_suffix=<span class="string">'meta'</span>,</span><br><span class="line">    write_meta_graph=<span class="literal">True</span>,  \\指定是否要保存计算图</span><br><span class="line">    write_state=<span class="literal">True</span>,</span><br><span class="line">    strip_default_attrs=<span class="literal">False</span>,</span><br><span class="line">    save_debug_info=<span class="literal">False</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>这里说一下save_path，如果不指定的话，文件名默认是空的，在linux下是以.开头的（即当前目录），所以会显示成隐藏文件。通常情况下我们指定checkpoint要保存的路径，以及名字，比如叫model.ckpt，在load的时候还使用这个名字就行。指定了global_step之后，tf会自动在路径后面加上step进行区分。</p>
+<h2 id="读取graph">读取graph</h2>
+<h3 id="读取图的定义">读取图的定义</h3>
+<p>meta文件中存放了计算图的定义，可以直接使用API tf.train.import_meta_graph()函数调用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    saver = tf.train.import_meta_graph(<span class="string">"model.ckpt.meta"</span>)</span><br></pre></td></tr></table></figure>
+<p>这时计算图就已经定义在当前sess中了。上述代码会保留原始的device信息，如果迁移到其他设备时，可能由于没有指定设备出错，这个问题可以通过指定一个特殊的参数clear_devices解决：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    saver = tf.train.import_meta_graph(<span class="string">"model.ckpt.meta"</span>, clear_devices=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<p>这样子就和device无关了。</p>
+<h3 id="访问graph中的参数">访问graph中的参数</h3>
+<h4 id="通过collection访问计算图中collection的键">通过collection访问计算图中collection的键</h4>
+<p>这里的键指的是graph中都有哪些<a href>collections</a>。</p>
+<ul>
+<li>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(sess.graph.get_all_collection_keys())</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(sess.graph.collections)</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tf.get_default_graph().get_all_collection_keys()</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="访问collection">访问collection</h4>
+<ul>
+<li>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sess.graph.get_collection(<span class="string">"summaries"</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tf.get_collection(<span class="string">""</span>)</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>示例</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="comment">#saver = tf.train.Saver()</span></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    new_saver = tf.train.import_meta_graph(<span class="string">"saver1.ckpt.meta"</span>)</span><br><span class="line">    print(sess.graph)</span><br><span class="line">    <span class="keyword">for</span> var <span class="keyword">in</span> tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):</span><br><span class="line">        print(var)</span><br></pre></td></tr></table></figure>
+<h4 id="通过operation访问">通过operation访问</h4>
+<ul>
+<li>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sess.graph.get_opeartions()</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> op <span class="keyword">in</span> sess.graph.get_opeartions():</span><br><span class="line">    print(op.name, op.values())</span><br></pre></td></tr></table></figure>
+</li>
+<li>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">sess.graph.get_operation_by_name(<span class="string">"op_name"</span>).node_def</span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line"><span class="comment">## 保存和恢复variables</span></span><br><span class="line"><span class="comment">### 保存和恢复全部variables</span></span><br><span class="line">- 恢复variable时，无需初始化。</span><br><span class="line">- 恢复variable时，使用的是variable的name，不是op的name。只要知道variable的name即可。save和restore的op name不需要相同，只要variable name相同即可。</span><br><span class="line">- 对于使用tf.Variable()创建的variable，如果没有指定variable名字的话，系统会为其生成默认名字，在恢复的时候，需要使用tf.get_variable()恢复variable，同时传variable name和shape。</span><br><span class="line"></span><br><span class="line"><span class="comment">#### 保存全部variables</span></span><br><span class="line">``` python</span><br><span class="line">saver = tf.train.Saver()</span><br><span class="line">saver.save(sess, save_path) <span class="comment"># 需要指定的是checkpoint的名字而不是目录</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="恢复全部variables">恢复全部variables</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">saver = tf.train.Saver()</span><br><span class="line">saver.restore(sess, save_path)</span><br></pre></td></tr></table></figure>
+<h3 id="保存和恢复部分variables">保存和恢复部分variables</h3>
+<h4 id="保存全部variable">保存全部variable</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">saver = tf.train.Saver(&#123;<span class="string">"variable_name1"</span>: op_name1,..., <span class="string">"variable_namen"</span>: op_namen&#125;)</span><br><span class="line">saver.save(sess, save_path) <span class="comment"># 需要指定的是checkpoint的名字而不是目录</span></span><br></pre></td></tr></table></figure>
+<h4 id="恢复全部variable">恢复全部variable</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">saver = tf.train.Saver(&#123;<span class="string">"variable_name1"</span>: op_name1,..., <span class="string">"variable_namen"</span>: op_namen&#125;)</span><br><span class="line">saver.restore(sess, save_path)</span><br></pre></td></tr></table></figure>
+<h2 id="保存和恢复模型">保存和恢复模型</h2>
+<p>其实和保存恢复变量没有什么区别。只是把整个模型的variables都save和restore了。</p>
+<h2 id="代码示例">代码示例</h2>
+<p><a href="https://github.com/mxxhcm/code/tree/master/tf/some_ops/saver_restore" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">graph = tf.Graph()</span><br><span class="line"><span class="keyword">with</span> graph.as_default():</span><br><span class="line">    W = tf.Variable([<span class="number">0.3</span>], dtype=tf.float32)</span><br><span class="line">    b = tf.Variable([<span class="number">-0.3</span>], dtype=tf.float32)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># input and output</span></span><br><span class="line">    x = tf.placeholder(tf.float32)</span><br><span class="line">    y = tf.placeholder(tf.float32)</span><br><span class="line">    predicted_y = W*x+b</span><br><span class="line"></span><br><span class="line">    <span class="comment"># MSE loss</span></span><br><span class="line">    loss = tf.reduce_mean(tf.square(y - predicted_y))</span><br><span class="line">    <span class="comment"># optimizer</span></span><br><span class="line">    optimizer = tf.train.GradientDescentOptimizer(<span class="number">0.01</span>)</span><br><span class="line">    train_op = optimizer.minimize(loss)</span><br><span class="line"></span><br><span class="line">inputs = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line">outputs = [<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session(graph=graph) <span class="keyword">as</span> sess:</span><br><span class="line">    saver = tf.train.Saver()</span><br><span class="line">    init_op = tf.global_variables_initializer()</span><br><span class="line">    sess.run(init_op)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5000</span>):</span><br><span class="line">        sess.run(train_op, feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    l_, W_, b_ = sess.run([loss, W, b], feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    print(<span class="string">"loss: "</span>, l_, <span class="string">"w: "</span>, W_, <span class="string">"b:"</span>, b_)</span><br><span class="line">    checkpoint = <span class="string">"./checkpoint/saver1.ckpt"</span></span><br><span class="line">    save_path = saver.save(sess, checkpoint)</span><br><span class="line">    print(<span class="string">"Model has been saved in %s."</span> % save_path)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session(graph=graph) <span class="keyword">as</span> sess:</span><br><span class="line">    saver = tf.train.Saver()</span><br><span class="line">    saver.restore(sess, checkpoint)</span><br><span class="line">    l_, W_, b_ = sess.run([loss, W, b], feed_dict=&#123;x: inputs, y: outputs&#125;)</span><br><span class="line">    print(<span class="string">"loss: "</span>, l_, <span class="string">"w: "</span>, W_, <span class="string">"b:"</span>, b_)</span><br><span class="line">    print(<span class="string">"Model has been restored."</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="获取最新的checkpoint文件">获取最新的checkpoint文件</h2>
+<h3 id="tf-train-get-checkpoint-state">tf.train.get_checkpoint_state()</h3>
+<p>给出checkpoint文件所在目录，可以使用get_checkpoint_state()获得最新的checkpoint文件：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ckpt = tf.train.get_checkpoint_state(checkpoint_dir)</span><br><span class="line"><span class="keyword">if</span> ckpt <span class="keyword">and</span> ckpt.model_checkpoint_path:</span><br><span class="line">    save.restore(sess, ckpt.model_checkpoint_path)</span><br></pre></td></tr></table></figure>
+<h3 id="使用inspect-checkpoint库">使用inspect_checkpoint库</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># import the inspect_checkpoint library</span></span><br><span class="line"><span class="keyword">from</span> tensorflow.python.tools <span class="keyword">import</span> inspect_checkpoint <span class="keyword">as</span> chkp</span><br><span class="line"></span><br><span class="line"><span class="comment"># 打印checkpoint文件中所有variable</span></span><br><span class="line">chkp.print_tensors_in_checkpoint_file(<span class="string">"saver/variables/all_variables.ckpt"</span>, tensor_name=<span class="string">''</span>, all_tensors=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 打印变量"v1"</span></span><br><span class="line">chkp.print_tensors_in_checkpoint_file(<span class="string">"saver/variables/all_variables.ckpt"</span>, tensor_name=<span class="string">'v1'</span>, all_tensors=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line">chkp.print_tensors_in_checkpoint_file(<span class="string">"saver/variables/all_variables.ckpt"</span>, tensor_name=<span class="string">'v2'</span>, all_tensors=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="模型的冻结">模型的冻结</h2>
+<p>模型的冻结是不在训练模型，只用于正向推导，所以把变量转换成常量后，和计算图一起保存在协议缓冲区文件(.pb)文件中，因此需要在计算图中预先定义输出节点的名称，示例如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">output_nodes = [<span class="string">"Accuracy/prediction"</span>, <span class="string">"Metric/Dice"</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加载计算图</span></span><br><span class="line">saver = tf.train.import_meta_graph(<span class="string">"model.ckpt.meta"</span>, clear_devices=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    input_graph_def = sess.graph.as_graph_def()</span><br><span class="line">    <span class="comment"># load model</span></span><br><span class="line">    saver.restore(sess, <span class="string">"model.ckpt"</span>)</span><br><span class="line">    <span class="comment"># 将变量转换为常量</span></span><br><span class="line">    output_graph_def = tf.graph_util.convert_variables_to_constants(sess, input_graph_def, output_nodes)</span><br><span class="line">    <span class="comment"># 写入pb文件</span></span><br><span class="line">    <span class="keyword">with</span> open(<span class="string">"frozen_model.pb"</span>, <span class="string">"wb"</span>) <span class="keyword">as</span> f:</span><br><span class="line">        f.write(output_graph_def.SerializeToString())</span><br></pre></td></tr></table></figure>
+<h2 id="模型的执行">模型的执行</h2>
+<p>从协议缓冲区文件(.pb)文件中读取模型，导入计算图</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 读取模型并保存到序列化模型对象中</span></span><br><span class="line"><span class="keyword">with</span> open(frozen_graph_path, <span class="string">"rb"</span>) <span class="keyword">as</span> f:</span><br><span class="line">    graph_def = tf.GraphDef()</span><br><span class="line">    graph_def.ParseFromString(f.read())</span><br><span class="line"><span class="comment"># 导入计算图</span></span><br><span class="line">graph = tf.Graph()</span><br><span class="line"><span class="keyword">with</span> graph.as_default():</span><br><span class="line">    tf.import_graph_def(graph_def, name=<span class="string">"Test"</span>)</span><br></pre></td></tr></table></figure>
+<p>获取输入和输出的张量，然后将测试数据feed给输入张量，得到结果。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">x_tensor = graph.get_tensor_by_name(<span class="string">"Test/input/image-input:0"</span>)</span><br><span class="line">y_tensor = graph.get_tensor_by_name(<span class="string">"Test/input/label-input:0"</span>)</span><br><span class="line">keep_prob = graph.get_tensor_by_name(<span class="string">"Test/dropout/Placeholder:0"</span>)</span><br><span class="line">acc_op = graph.get_tensor_by_name(<span class="string">"Test/accuracy/prediction:0"</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> tensorflow.examples.tutorials.mnist <span class="keyword">import</span> input_data</span><br><span class="line">mnist = input_data.read_data_sets(<span class="string">"mnist_data"</span>, one_hot=<span class="literal">True</span>)</span><br><span class="line">x_values, y_values = mnist.test.next_batch(<span class="number">10000</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session(graph=graph) <span class="keyword">as</span> sess:</span><br><span class="line">    accuracy = sess.run(acc_op, feed_dict=&#123;x_tensor: x_values,</span><br><span class="line">                                          y_tensor: y_values,</span><br><span class="line">                                          keep_prob: <span class="number">1.0</span>&#125;)</span><br><span class="line">    print(accuracy)</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.jarvis73.cn/2018/04/25/Tensorflow-Model-Save-Read/" target="_blank" rel="noopener">https://www.jarvis73.cn/2018/04/25/Tensorflow-Model-Save-Read/</a><br>
+2.<a href="https://www.tensorflow.org/guide/saved_model" target="_blank" rel="noopener">https://www.tensorflow.org/guide/saved_model</a><br>
+3.<a href="https://www.tensorflow.org/api_docs/python/tf/train/Saver" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/train/Saver</a><br>
+4.<a href="https://www.bilibili.com/read/cv681031/" target="_blank" rel="noopener">https://www.bilibili.com/read/cv681031/</a><br>
+5.<a href="https://cv-tricks.com/tensorflow-tutorial/save-restore-tensorflow-models-quick-complete-tutorial/" target="_blank" rel="noopener">https://cv-tricks.com/tensorflow-tutorial/save-restore-tensorflow-models-quick-complete-tutorial/</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+            <a href="/tags/tensorflow/" rel="tag"># tensorflow</a>
+          
+            <a href="/tags/Saver/" rel="tag"># Saver</a>
+          
+            <a href="/tags/save/" rel="tag"># save</a>
+          
+            <a href="/tags/restore/" rel="tag"># restore</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/05/09/tensorflow-reduction/" rel="next" title="tensorflow reduction">
+                <i class="fa fa-chevron-left"></i> tensorflow reduction
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/09/python-cv2-imresize/" rel="prev" title="python cv2.imresize图像缩放">
+                python cv2.imresize图像缩放 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">66</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">68</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#tf-train-saver保存和恢复模型"><span class="nav-number">1.</span> <span class="nav-text">tf.train.Saver保存和恢复模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tf-train-saver"><span class="nav-number">1.1.</span> <span class="nav-text">tf.train.Saver()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tf-train-saver-save"><span class="nav-number">1.2.</span> <span class="nav-text">tf.train.Saver.save()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#读取graph"><span class="nav-number">2.</span> <span class="nav-text">读取graph</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#读取图的定义"><span class="nav-number">2.1.</span> <span class="nav-text">读取图的定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#访问graph中的参数"><span class="nav-number">2.2.</span> <span class="nav-text">访问graph中的参数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#通过collection访问计算图中collection的键"><span class="nav-number">2.2.1.</span> <span class="nav-text">通过collection访问计算图中collection的键</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#访问collection"><span class="nav-number">2.2.2.</span> <span class="nav-text">访问collection</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#通过operation访问"><span class="nav-number">2.2.3.</span> <span class="nav-text">通过operation访问</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#恢复全部variables"><span class="nav-number">2.2.4.</span> <span class="nav-text">恢复全部variables</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#保存和恢复部分variables"><span class="nav-number">2.3.</span> <span class="nav-text">保存和恢复部分variables</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#保存全部variable"><span class="nav-number">2.3.1.</span> <span class="nav-text">保存全部variable</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#恢复全部variable"><span class="nav-number">2.3.2.</span> <span class="nav-text">恢复全部variable</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#保存和恢复模型"><span class="nav-number">3.</span> <span class="nav-text">保存和恢复模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码示例"><span class="nav-number">4.</span> <span class="nav-text">代码示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取最新的checkpoint文件"><span class="nav-number">5.</span> <span class="nav-text">获取最新的checkpoint文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#tf-train-get-checkpoint-state"><span class="nav-number">5.1.</span> <span class="nav-text">tf.train.get_checkpoint_state()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用inspect-checkpoint库"><span class="nav-number">5.2.</span> <span class="nav-text">使用inspect_checkpoint库</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模型的冻结"><span class="nav-number">6.</span> <span class="nav-text">模型的冻结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模型的执行"><span class="nav-number">7.</span> <span class="nav-text">模型的执行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
