@@ -327,7 +327,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/07/pytorch-nn-Conv2d-vs-nn-functional-conv2d/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/08/mean-variance-covariance-dependent-independent/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -347,7 +347,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/06/07/pytorch-nn-Conv2d-vs-nn-functional-conv2d/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">pytorch nn.Conv2d vs nn.functional.conv2d</a>
+                <a href="/2019/08/08/mean-variance-covariance-dependent-independent/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">均值、方差、矩、协方差、独立和相关</a>
               
             
           </h1>
@@ -372,12 +372,24 @@
                 
               
 
-              <time title="创建时间：2019-06-07 12:45:21 / 修改时间：13:09:47" itemprop="dateCreated datePublished" datetime="2019-06-07T12:45:21+08:00">2019-06-07</time>
+              <time title="创建时间：2019-08-08 19:01:15" itemprop="dateCreated datePublished" datetime="2019-08-08T19:01:15+08:00">2019-08-08</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-17 20:45:11" itemprop="dateModified" datetime="2019-09-17T20:45:11+08:00">2019-09-17</time>
               
             
           </span>
@@ -394,7 +406,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论/" itemprop="url" rel="index"><span itemprop="name">概率论</span></a></span>
 
                 
                 
@@ -430,15 +442,152 @@
       
         
           
-            <h2 id="nn-conv2d-vs-nn-functional-conv2d">nn.Conv2d vs nn.functional.conv2d</h2>
+            <h2 id="均值-期望">均值（期望）</h2>
+<h3 id="简单介绍">简单介绍</h3>
+<p>在概率论和统计学中，一个离散型随机变量的期望值是试验中每次可能的结果乘以相应概率的加和。<br>
+换句话说，期望值是变量取值的加权平均。期望并不一定包含于变量的值域内。</p>
+<h3 id="定义">定义</h3>
+<p>如果$X$是概率空间$(\Omega, F,P)$中的随机变量，它的期望值$\mathbb{E}(X)$定义为：<br>
+$$\mathbb{E}(X) = \int_{\Omega} XdP$$<br>
+如果$X$是离散的随机变量，取值$x_1,x_2,\cdots$的概率分别为$p_1, p_2, \cdots, p_1+p_2+\cdots = 1$，它的期望定义为：<br>
+$$\mathbb{E}(X) = \sum_i x_ip_i$$</p>
+<h3 id="性质">性质</h3>
 <ul>
-<li>nn.functional包中是函数接口，是从输入到输出的一个变换，内部没有Variable，不能够构成一个layer；nn包中是nn.functional函数对应的类封装，nn中的类可能有Variable（如Conv2d)，也可能没有（如Dropout，Maxpooling）</li>
-<li>nn中的类一般是nn.Module的子类，继承了nn.Module的方法和属性。</li>
-<li>nn中的类需要传入参数实例化，然后用函数调用的方法调用实例化对象传入数据。而nn.functional是函数，不需要实例化可以直接调用，需要同时传入filters的weights和biases。</li>
+<li>$\mathbb{E}(cX) = c\mathbb{E}(X)$</li>
+<li>$\mathbb{E}(X+c) = \mathbb{E}(X) + c$</li>
+<li>$\mathbb{E}(X+Y) = \mathbb{E}(X) + \mathbb{E}(Y)$</li>
+<li>$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，（$X,Y$独立）</li>
+<li>$\mathbb{E}(aX+bY) = a\mathbb{E}(X) + b\mathbb{E}(Y)$</li>
 </ul>
+<h2 id="方差">方差</h2>
+<h3 id="简单介绍-v2">简单介绍</h3>
+<p>方差描述的是一个随机变量的离散程度。</p>
+<h3 id="定义-v2">定义</h3>
+<p>假设$X$是服从分布$F$的随机变量，用$\mu=\mathbb{E}(X)$表示随机变量$X$的期望。<br>
+随机变量$X$的方差为：<br>
+$$Var(X) = \mathbb{E}\left[(X-\mu)^2\right]$$</p>
+<h3 id="性质-v2">性质</h3>
+<ol>
+<li>方差总是大于等于$0$的<br>
+$$Var(X)\ge 0$$</li>
+<li>常数的方差为$0$<br>
+$$Var ( c ) = 0$$</li>
+<li>随机变量$X$加上一个常数$c$，它的方差不变<br>
+\begin{align*}<br>
+Var(X+c) &amp;= \mathbb{E}\left[(X+c - \mathbb{E}(X+c))^2\right]\\<br>
+&amp;= \mathbb{E}\left[(X-\mathbb{E}(X))^2\right]\\<br>
+&amp;=Var(X)<br>
+\end{align*}</li>
+<li>随机变量$X$乘上一个常数$c$，它的方差变为原来的$c^2$倍。<br>
+\begin{align*}<br>
+Var(cX) &amp;= \mathbb{E}\left[(cX - \mathbb{E}(cX))^2\right]\\<br>
+&amp;= \mathbb{E}\left[c^2 X^2 - 2c^2 X \mathbb{E}(X) + (\mathbb{E}(cX))^2\right]\\<br>
+&amp; = c^2 \mathbb{E}\left[X^2 - 2X \mathbb{E}(X) + \mathbb{E}(X)\cdot \mathbb{E}(X)\right]\\<br>
+&amp;=c^2 Var(x)<br>
+\end{align*}</li>
+</ol>
+<h2 id="期望和方差关系">期望和方差关系</h2>
+<p>\begin{align*}<br>
+Var(X) &amp;= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])^2\right]\\<br>
+&amp;= \mathbb{E}\left[(X^2 - 2X \mathbb{E} \cdot \left[X\right]+\mathbb{E}\left[X\right] \cdot \mathbb{E}\left[X\right] )\right]\\<br>
+&amp;= \mathbb{E}\left[(X^2) \right] - 2\mathbb{E}\left[(X \cdot \mathbb{E}\left[ X \right]) \right]+\mathbb{E}\left[(\mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right])\right]\\<br>
+&amp;= \mathbb{E}    \left[(X^2) \right] -     \mathbb{E}\left[(\mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right])\right]\\<br>
+&amp;= \mathbb{E}    \left[(X^2) \right] -  \mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right]\\<br>
+\end{align*}</p>
+<h2 id="均值和样本均值">均值和样本均值</h2>
+<p>样本均值是均值的无偏估计。<br>
+假设用随机变量$X$表示所有男性的身高，得到一组样本值为$x_1, x_2, \cdots, x_n$，样本均值的计算方式如下：<br>
+$$\bar{X} = \frac{x_1 + \cdots +x_n}{n}$$<br>
+$\bar{X}$是对$\mu$的一个估计，真实的$\mu$我们不知道，但是我们能根据多个样本计算出来多个样本均值，这些样本均值的均值会收敛于均值。所以叫它无偏估计。</p>
+<h2 id="方差和样本方差">方差和样本方差</h2>
+<p>样本方差的分母如果是$n$的话，是方差的有偏估计，如果分母是$n-1$的话，是方差的无偏估计。<br>
+随机变量$X$方差的计算公式为：<br>
+$$Var(X) = \mathbb{E}\left[(X-\mu)^2\right]$$<br>
+但是我们往往不知道$X$的真实分布，所以经常用样本方差$S^2$来估计真实方差$Var(X)$：<br>
+$$S^2 = \frac{\sum_{i=1}^n (X_i - \mu)^2}{n}$$<br>
+而均值$\mu$往往也是不知道的，用样本均值$\bar{X}$代替均值$\mu$，得到<br>
+$$S^2 = \frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2$$<br>
+为什么是$\frac{1}{n-1}$呢？<br>
+这里先给出几个辅助计算：</p>
+<ol>
+<li>样本均值的方差是样本方差的$\frac{1}{n}$<br>
+\begin{align*}<br>
+Var(\bar{X}) &amp;= Var(\frac{\sum_{i=1}^n X_i}{n})\\<br>
+&amp; = \frac{1}{n^2} Var(\sum_{i=1}^n X_i)\\<br>
+&amp; =  \frac{1}{n^2} \sum_{i=1}^n Var(X_i)\\<br>
+&amp; = \frac{n\sigma^2 }{n^2 }\\<br>
+&amp;=\frac{\sigma^2 }{n}<br>
+\end{align*}</li>
+</ol>
+<p>如果使用$\frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2$进行计算<br>
+\begin{align*}<br>
+\mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2\right]&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}+\mu-\mu\right)^2 \right]\\<br>
+&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\mu - (\bar{X} - \mu)\right)^2 \right]\\<br>
+&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left((X_i-\mu)^2 - 2(X_i-\mu)(\bar{X} - \mu) + (\bar{X} - \mu)^2 \right)\right]\\<br>
+&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - \frac{2}{n}\sum_{i=1}^n (X_i-\mu)(\bar{X} - \mu) + \frac{1}{n}\sum_{i=1}^n (\bar{X} - \mu)^2 \right]\\<br>
+&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - 2(\bar{X}-\mu)(\bar{X} - \mu) + \frac{1}{n}\sum_{i=1}^n (\bar{X} - \mu)^2 \right]\\<br>
+&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - 2(\bar{X}-\mu)^2 +  (\bar{X} - \mu)^2 \right]\\<br>
+&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - (\bar{X}-\mu)^2\right]\\<br>
+&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 \right]-\mathbb{E}\left[ (\bar{X}-\mu)^2\right]\\<br>
+&amp;= Var(X) - Var(\bar{X})\\<br>
+&amp;= \sigma^2 - \frac{\sigma^2}{n}\\<br>
+&amp;= \frac{n-1}{n}\sigma^2<br>
+\end{align*}<br>
+最后得到$\mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2  \right] = \frac{n-1}{n}\sigma^2 $，少算了$\frac{1}{n}\sigma^2 $，<br>
+所以，如果取$\mathbb{E}\left[S^2 \right] =\mathbb{E}\left[\frac{1}{n-1}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2 \right]$，最后能得到$\mathbb{E}\left[S^2 \right] =\sigma^2$，是无偏估计。</p>
+<h2 id="矩">矩</h2>
+<p>设$X$为随机变量，$c$为常数，$k$为正整数，称$\mathbb{E}\left[(X-c)^k\right] = \int_{-\infty}^{\infty} (X-c)^k f(X) dX $ 为$X$关于$c$的$k$阶矩。</p>
+<ol>
+<li>$c=0, \alpha_k=\mathbb{E}\left[X^k\right] = \int_{-\infty}^{\infty} X^k f(X) dX  $称为$X$的$k$阶原点矩。</li>
+<li>$c=\mathbb{E}\left[X\right],\mu_k=\mathbb{E}\left[(X-\mathbb{E}(X))^k \right] = \int_{-\infty}^{\infty}( X^k - \mathbb{E}(X))^k f(X)dX $称为$X$的$k$阶中心矩。</li>
+</ol>
+<p>一阶原点矩为期望，任意随机变量的一阶中心距为$0$，二阶中心矩为方差。三阶中心矩表示偏度，任何对称分布的偏度为$0$，分布尾部在左侧比较长具有负偏度，分布尾部在右侧较长具有正偏度。四阶中心距表示峰度，俗称方差的方差。</p>
+<h2 id="协方差">协方差</h2>
+<p>方差和标准差通常是用来描述一维随机变量的特性。那么对于多维随机变量来说，怎么衡量它们之间的关系呢？引入了协方差衡量两维随机变量之间的关系。</p>
+<h3 id="定义-v3">定义</h3>
+<p>$\mathbb{E}\left[(X-\mathbb{E}(X))(Y-\mathbb{E}(Y)\right]$称为$X,Y$的协方差，记为$Cov(X,Y)$。<br>
+当$X=Y$时，其实就是方差的定义。</p>
+<h3 id="属性">属性</h3>
+<ol>
+<li>\begin{align*}<br>
+Cov(c_1X+c_2, c_3Y + c_4) &amp;= \mathbb{E}\left[(c_1X +c_2 - \mathbb{E}(c_1X+c_2))(c_3Y +c_4 - \mathbb{E}(c_3Y+c_4))\right]\\<br>
+&amp;= \mathbb{E}\left[(c_1X - c_1\mathbb{E}\left[X\right])(c_3Y - c_3\mathbb{E}\left[Y\right])\right]\\<br>
+&amp;= c_1c_3\mathbb{E}\left[(X - \mathbb{E}\left[X\right])(Y - \mathbb{E}\left[Y\right])\right]\\<br>
+&amp;= c_1c_3Cov(X,Y)\\<br>
+\end{align*}</li>
+<li>\begin{align*}<br>
+Cov(X,Y) &amp;= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])(Y-\mathbb{E}\left[Y\right])\right]\\<br>
+&amp;= \mathbb{E}\left[XY - \mathbb{E}\left[Y\right]X - \mathbb{E}\left[X\right]Y + \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\right]\\<br>
+&amp;= \mathbb{E}\left[XY\right] - \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\\<br>
+\end{align*}</li>
+</ol>
+<h3 id="独立与协方差之间的关系">独立与协方差之间的关系</h3>
+<p>若$X,Y$独立，则$Cov(X,Y) = 0$，因为独立变量有$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，所以：<br>
+$$\mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y) = Cov(X,Y) = 0$$</p>
+<h3 id="协方差矩阵">协方差矩阵</h3>
+<p>用一个矩阵表示多维随机变量之间的关系，比如三个维度的随机变量。可以两两求出它们之间的协方差，因为协方差是对称的，所以这个矩阵是对称矩阵，对角线元素是方差。<br>
+协方差矩阵一般记为$\Sigma$，计算公式如下：<br>
+$$\sigma = \mathbb{E}\left[(\mathbf{X} - \mathbb{E}\left[\mathbf{X}\right])(\mathbf{X} - \mathbb{E}\left[\mathbf{X}\right])^T \right]$$<br>
+这里的$\mathbf{X}$是多维的随机向量，而方差和期望中的$\mathbf{X}$是一维的随机变量。</p>
+<h2 id="相关系数">相关系数</h2>
+<h3 id="定义-v4">定义</h3>
+<p>称$Cov(X,Y)/(\sigma_1,\sigma_2)$为$X,Y$的相关系数，记为$Corr(X,Y)$。</p>
+<h3 id="性质-v3">性质</h3>
+<ol>
+<li>若$X,Y$独立，则$Covv(X,Y) = 0$</li>
+<li>$\Vert Corr(X,Y)\Vert \le 1$，等号当且仅当$X$和$Y$有严格线性关系时取到</li>
+<li>当$Corr(X,Y)= 0$或者$Cov(X,Y) = 0$时，称$X,Y$不相关。</li>
+</ol>
+<h2 id="独立和相关">独立和相关</h2>
+<p>$X,Y$独立能够推出他们不相关，因为$Corr(X,Y) = 0$，满足不相关的定义。而$Corr(X,Y) = 0$不一定能推出$X,Y$独立。<br>
+即独立一定相关，但是相关不一定独立。有一个特例是正太分布，独立和相关互为充要条件。</p>
 <h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/66782101/answer/579393790" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/579393790</a><br>
-2.<a href="https://www.zhihu.com/question/66782101/answer/246460048" target="_blank" rel="noopener">https://www.zhihu.com/question/66782101/answer/246460048</a></p>
+<p>1.<a href="https://zh.wikipedia.org/wiki/%E6%9C%9F%E6%9C%9B%E5%80%BC" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/期望值</a><br>
+2.<a href="https://zh.wikipedia.org/wiki/%E6%96%B9%E5%B7%AE" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/方差</a><br>
+3.<a href="https://www.zhihu.com/question/22983179/answer/404391738" target="_blank" rel="noopener">https://www.zhihu.com/question/22983179/answer/404391738</a><br>
+4.<a href="https://www.matongxue.com/madocs/607.html" target="_blank" rel="noopener">https://www.matongxue.com/madocs/607.html</a><br>
+5.<a href="https://math.stackexchange.com/a/2113753/629287" target="_blank" rel="noopener">https://math.stackexchange.com/a/2113753/629287</a><br>
+6.<a href="https://blog.csdn.net/yangdashi888/article/details/52397990" target="_blank" rel="noopener">https://blog.csdn.net/yangdashi888/article/details/52397990</a></p>
 
           
         
@@ -495,7 +644,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/06/python-json/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -515,7 +664,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/06/06/python-json/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">python json</a>
+                <a href="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">reinforcement learning an introduction 第8章笔记</a>
               
             
           </h1>
@@ -540,7 +689,339 @@
                 
               
 
-              <time title="创建时间：2019-06-06 15:58:02 / 修改时间：16:16:11" itemprop="dateCreated datePublished" datetime="2019-06-06T15:58:02+08:00">2019-06-06</time>
+              <time title="创建时间：2019-08-07 16:32:52" itemprop="dateCreated datePublished" datetime="2019-08-07T16:32:52+08:00">2019-08-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-20 21:05:53" itemprop="dateModified" datetime="2019-08-20T21:05:53+08:00">2019-08-20</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="planning-and-learning-with-tabular-methods">Planning and Learning with Tabular Methods</h2>
+<p>前面几章，介绍了MC算法，TD算法，再用$n$-step TD框架把它们统一了起来，此外，这些算法都属于model free的方法。这一章要介绍model based方法，model based方法主要用于planning，而model free的方法主要用于learning。</p>
+<h2 id="models和planning">Models和Planning</h2>
+<h3 id="model">Model</h3>
+<h4 id="定义">定义</h4>
+<p>Environment的model是agents用来预测environment会如何对agent的action做出响应的任何东西。给定一个state和一个action，model可以预测下一个state和action。如果model是stochastic的话，有多个可能的next states和rewards，每一个都有一定概率。Distribution models计算所有可能性以及相应概率，sample models根据概率进行采样，只计算采样的结果。</p>
+<h4 id="用处">用处</h4>
+<p>Model可以用来模仿或者仿真。给定一个start state和action，sample model产生一个transition，distribution model产生所有可能的transitions，并使用概率进行加权。给定start state和一个policy，sample model产生一个episode，distribution model产生所有可能的episodes以及相应的概率。Model被用来模拟environment或者产生simulated experience。</p>
+<h4 id="示例">示例</h4>
+<p>DP中使用的$p(s’, r|s,a)$就是distribution model，第五章中blackjack例子中使用的模型是sample model。Distribution model可以用来产生samples，但是sample model要比distribution models好获得。考虑投掷很多骰子的和，distribution models计算所有可能值和相应的概率，而sample model只计算根据概率产生的一个样本。</p>
+<h3 id="planning">Planning</h3>
+<h4 id="定义-v2">定义</h4>
+<p>Planning的定义是给定model，不断的与environment交互生成或者改进poilcy的过程。有两种planning的方法，state space在state space中寻找一个optimal policy或者optimal path，这本书中介绍的方法都是这类。Plan-space planning在plans space中search。Plan-sapce 方法很难高效的应用到stochastic sequential decision problems，在这本书中不做过多介绍。<br>
+这一章要介绍的state-space planning方法具有相同的结构，这个结构在learing和planning中都有。基本的想法是：计算value funtions，通过应用simulated experience的update以及backup操作计算value functions。</p>
+<h4 id="示例-v2">示例</h4>
+<p>如DP方法，扫描整个state space，然后生成每一个state可能的transitions的distribution，用于计算update target，更新state’s estimated value。这一章介绍的其他方法，也满足这个结构，只不过计算target的方式顺序以及长度不同而已。</p>
+<h4 id="planning和learning的关系">planning和learning的关系</h4>
+<p>将planning方法表示成这种形式主要是为了强调planning方法和learning方法之间的联系。learning和planning的重点都是使用backup update op更新estimations of value functions。区别在于plannning使用了model生成的simulate experience，而learning使用environment生成的real experience。同时perfomance measure以及experience的灵活性也不同，但是由于相同的结构，许多learning的方法可以直接应用到planning上去，使用simulated experience代替real experience即可。<br>
+给出一个利用sample model和Q-learning结合起来的planning算法：</p>
+<h3 id="learning算法示例">learning算法示例</h3>
+<p>Random-sample one-step tabular Q-planning<br>
+Loop forever<br>
+$\qquad 1.$随机选择初始state $S\in \mathbb{S}, A\in \mathbb{A}$<br>
+$\qquad 2.$将$S,A$发送给sample model，得到next state和reward $S’, R$<br>
+$\qquad 3.$应用one-step Q-learning更新公式：<br>
+$\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+\gamma mx_a Q(S’, a) - Q(S, A)\right]$</p>
+<h2 id="dyna">Dyna</h2>
+<h3 id="简介">简介</h3>
+<p>Online的planning更新需要不断的与environment交互，从交互中获得的information可能会改变model，以及与environment的交互，所以可能model也需要不断的学习。这一节主要介绍Dyna-Q，将online planning需要的内容都整合了起来，Dyna算法中包含了planning, acting以及learning。<br>
+Planning中real experience至少有两个作用，一个是改进model，叫做model-learning，另一个是使用learning的方法直接改进value function和policy，叫做direct reinforcement learning。相应的关系如下图所示：<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/model_learning.png" alt="model_learning"><br>
+如图所示，experience可以直接改进value function，也可以通过model间接改进value fucntion，叫做indirect reinforcement learning。Direct learning和indirect learning各有优势，indirect方法能够充分利用有限的experience，得到一个更好的policy；direct方法更简单，不会受到model bias的影响。</p>
+<h3 id="dyna-q-简介">Dyna-$Q$简介</h3>
+<p>Dyna-$Q$包含planning, acting, model-learning和direct RL。planning是random-sample one-step tabular Q-planning；direct RL就是one-step tabular Q-learning，model-learning是table-based并且假设environment是deterministic，对于每一个transition $S_t,A_t\rightarrow R_{t+1}, S_{t+1}$，model用表格的形式记录下$S_t,A_t$的prediction值是$R_{t+1}, S_{t+1}$。如下图是Dyna算法的整体框架图（Dyna-Q是一个示例）。<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/dyna.png" alt="dyna_q"><br>
+左边使用real experience进行direct RL，右边是model-based的方法，从real experience中学习出model，然后利用model生成simulated experience。search control指的是从model生成的simulated experiences中选择指定starting state和actions的experience。最后，planning使用simulated experience更新value function。从概念上来讲，Dyna agents中planning, acting, model-learning以及direct RL几乎同时发生。但是在实现的时候，还是需要串行的进行。Dyna-$Q$中，计算量主要集中在planning上。具体的算法如下：</p>
+<h3 id="tabular-dyna-q">Tabular Dyna-Q</h3>
+<p>初始化$Q(s,a), Model(s,a), s\in \mathbb{S}, a\in \mathbb{A}$<br>
+Loop forever<br>
+$\qquad (a)S\leftarrow$ current state<br>
+$\qquad (b)A\leftarrow \epsilon$-greedy$(S,Q)$<br>
+$\qquad ( c )$采取action $A$，得到下一时刻的state $S’$和reward $R$<br>
+$\qquad (d)Q(S,A) \leftarrow Q(S,A) + \alpha\left[R+\gamma max_a Q(S’, a) -Q(S,A)\right]$<br>
+$\qquad (e)Model(S,A)\leftarrow R,S’$（假设deterministic environment)<br>
+$\qquad (f)$Loop repeat $n$ 次<br>
+$\qquad\qquad S\leftarrow$ 任意之前的观测状态<br>
+$\qquad\qquad A\leftarrow$ 在$S$处采取的任意action $A$<br>
+$\qquad\qquad R,S’\leftarrow Model(S,A)$<br>
+$\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha\left[R+\gamma max_a Q(S’, a) -Q(S,A)\right]$</p>
+<p>其中$Model(s,a)$表示预测$(s,a)$的next state。(d)是direct RL，(e)是model-learning，(f)是planning。如果忽略了(e,f)，就是one-step tabular Q-learning。</p>
+<h2 id="如果model出错">如果model出错</h2>
+<p>前面给的例子很简单，model是不会错的。但是如果environment是stochastic的，或者samples很少的话，或者function approximation效果不好，或者environment刚刚改变，新的behaviour还没有被观测到，model就可能会出错。当model是错的话，就可能会产生suboptimal policy。在一些情况下，suboptimal会发现并且纠正model的error。当模型预测的结果比真实的结果好的时候就会发生这种情况。这里给出两个例子。一个environment变坏，一个environment变好。<br>
+第一个例子，有一个迷宫，如图所示。<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/blocking_maze.png" alt="blocking mase"><br>
+刚开始，路在右边，1000步之后，右边的路被堵上了，左边有一条新的路。<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/shortcut_maze.png" alt="blocking mase"><br>
+第二个例子，刚开始路在左边，3000步之后，右边有一条新的路，左边的路也被保留。<br>
+这又是一个exploration和exploitation问题。在planning中，exploration意味着尝试那些让model变得更好的actions，而exploitation意味着给定当前的model，选择optimal action。我们想要agents能够explore environment的变化，但是不影响performance。</p>
+<h3 id="启发式搜索">启发式搜索</h3>
+<p>Dyna-Q+ 使用了一个简单有效的heuristics，agent记录每一个state-action pair 在real environment中从上次使用到现在经历了多少个time steps，累计的时间步越多，说明这个pair改变的可能性越大，model不对的可能性越大。为了鼓励使用很久没有用的action，这里加了一个bonus reward，如果一个transition的reward是$r$，这个transition已经有$\tau$步没有试过，在planning进行update的时候，用一个新的reward $r + k\sqrt{\tau}$，$k$很小。不过新添加的bonus会有一定的cost，而且会对value function造成影响，但是在上面的两个例子中，这个cost比performance的提升要好。</p>
+<h2 id="优先级">优先级</h2>
+<p>在Dyna进行planning时，所有的state-action pair被选中的概率是一样的，显然是不合理的，planning的效率太低，可以有效的集中在某些state-action pair中。举个例子，在dyna_maze例子中，在第二个episode开始的时候，只有goal state前的那个state会产生正的reward，其余的都仍然是$0$，这里意味着很多updates都是无意义的。从一个value为$0$的state转移到另一个value为$0$的state，这个updates是没有意义的。只有那些在goal前面的state才会被更新，或者，那些value不为$0$的state的前面的state的value的更新才有意义。在planning过程中，有用的更新变多了，但是离effcient还差得多。在真实应用中，states可能相当大，这种没有重点的更新是非常低效的。。</p>
+<h3 id="backward-focusing">backward focusing</h3>
+<p>Dyna maze的例子给了我们一个提示，从goal state backward的进行更新。这里的goal state不是一个具体的goal state，指的是抽象的goal state。一般来说，包括goal state以及value改变的state。假设model的value都是正确的，如果agent发现了environment的一个变化以及相应state value的变化，首先更新这个state的predecessor states value，然后一直往前利用value改变的state进行更新就行了。这种想法叫做backward focusing。对于那些低效的state，不更新就是了。<br>
+Backward过程很快，会有很多state-action被更新，但并不是所有的pair是等价的。有的state value变化很大，有的变化很小。在stochastic环境中，对transiton probability变化的估计也会导致change大小的变化和紧急性的变化。所以，根据紧急性对不同的pair排一个优先级，然后根据这个优先级进行更新。用一个queue记录如果更新某个state-action pair的话，它的estimated value会变多少，根据这个值的大小排优先级。队头的元素取出来进行更新以后，计算它的predecessor pair变化大小。如果这个大小大于某个阈值，就使用新的优先级，把它加入队列，如果queue中有这个pair了，queue中保存大的优先级。完整的算法如下所示：</p>
+<h3 id="deteriministic-environment下的优先级">deteriministic environment下的优先级</h3>
+<p>初始化$Q(s,a), Model(s,a), \forall s, a$，置$PQueue$为空<br>
+Loop forever<br>
+$\qquad(a) S\leftarrow$ currnet state<br>
+$\qquad(b) A\leftarrow policy(S,Q)$<br>
+$\qquad( c )$采取action $A$；得到下一个reward $R$和state $S’$<br>
+$\qquad(d)Model(S,A) \leftarrow R, S’$<br>
+$\qquad(e) P\leftarrow |R+\gamma max_aQ(S’,a) - Q(S,A)|$<br>
+$\qquad$(f)如果$P\gt \theta$，将$S,A$以$P$的优先级插入$PQueue$<br>
+$\qquad$(g) Loop repeat $n$次，当$PQueue$非空的时候<br>
+$\qquad S, A\leftarrow fisrt(PQueue)$<br>
+$\qquad R,S’\leftarrow Model(S,A)$<br>
+$\qquad Q(S,A) \leftarrow Q(S,A) +\alpha \left[R+\gamma max_a Q(S’,a) -Q(S,A)\right]$<br>
+$\qquad$Loop for all 预计能到$S$的$\bar{S}, \bar{A} $<br>
+$\qquad\qquad \bar{R} \leftarrow $predicted reward for $\bar{S}, \bar{A}, S$<br>
+$\qquad\qquad P\leftarrow |\bar{R}+\gamma max_aQ(S,a) -Q(\bar{S}, \bar{A})$<br>
+$\qquad\qquad$如果$P\gt \theta$，将$\bar{S},\bar{A}$以$P$的优先级插入到$PQueue$</p>
+<p>推广到stochastic environment上，用model记录state-action pair experience的次数，以及next state，计算出概率，然后进行expected update。Expected update会计算许多低概率transition上，浪费资源，所以可以使用sample update。<br>
+Sample update相对于expected update的好处，相当于将完整的backup分解成单个更小的transition。这个idea是从van Seijen和Sutton(2013)的一篇论文中得到的，叫做&quot;small backups&quot;，使用单个的transition进行更新，像sample update，但是使用的是这个transition的概率，而不是sampling的$1$。</p>
+<h2 id="expected-updates和sample-updates">Expected updates和Sample updates</h2>
+<p>这本书介绍了不同的value function updates，就one-step方法来说，主要有三个binary dimensions。第一个是估计state values还是action values；第二个是估计optimal policy还是random policy的value，对应四种组合:$q_{*}, v_{*}, q_{\pi}, v_{\pi}$；第三个是使用expected updates还是sample updates，也是这节的内容。总共有八种组合，其中七种对应具体的算法，如下图所示：<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/seven_backup.png" alt="seven_bakcup"><br>
+这些算法都可以用来planning，之前介绍的Dyna-$Q$使用的是$q_{*}$ sample update，也可以用$q_{*}$ expected update，还可以用$q_{\pi}$ sample updates。</p>
+<h3 id="简介和比较">简介和比较</h3>
+<p>Expected update对于每一个$(s,a)$ pair，考虑所有可能的next state和next action $(s’,a’)$，需要distributions model进行精确计算；而sample update仅仅需要sample model，考虑一个next state，会有采样误差。所以expected upadte一定要比sample update好，但是需要的计算量也大。当环境是deteriministic的话，expected udpaet和sample update其实是一样的，只有在stochastic环境下才有区别。<br>
+假设每一个state有$b$个next state，expected upadte要比sample update的计算量大$b$倍。如果有足够的时间进行完全的expected update，进行一次完全的expected update一定比进行$b$次sample update好，因为虽然计算次数相等，但是sample update有sampling error；如果没有足够的时间的话，在计算次数小于$b$次的时候，sample update要比expected update好，sample update至少进行了一部分improvement，而sample update只有完全进行$b$次计算后才会得到正确的value function。而当state-action pairs很多的情况下，进行完全的expected update是不可能的，sample update是一个可行的方案。<br>
+给定一个state-action pair，到底是进行一些（小于$b$次）expected update好呢，还是进行$b$次sample updates好呢？如下图所示，展示了expected update和sample update在不同的$b$下，estimation error关于计算次数的函数。<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/fig_8_7.png" alt="fig_8_7"><br>
+在这个例子中，所有$b$个后继状态出现的可能性相等，开始的error为$1$。假设所有的next state value都是正确的，expected update完成之后，error从$1$变成了$0$。而sample updates根据$\sqrt{\frac{b-1}{bt}}$减少error。对于$b$很大的值来说，进行$b$的很小比例次数的更新，error就会下降很快。</p>
+<h3 id="sample-updates的好处">Sample updates的好处</h3>
+<p>上图中，sample update的结果可能要比实际结果差一些。在实际问题中，后继状态的value会被它们自身更新。他们的estimate value会更精确，从后继状态进行backup也会更精确。</p>
+<h3 id="结论">结论</h3>
+<p>在stochastic环境下，如果每个state处可能的next state数量非常多，并且有很多个states，那么sample update可能要比expected update好。</p>
+<h2 id="trajectory-sampling">Trajectory Sampling</h2>
+<p>这里比较两种distributing updates。<br>
+DP进行update的时候，每一次扫描整个state spaces，很多state其实是没有用的，没有focus，所有的states地位一样。原则上，只要确保收敛，任何distributed方法都行，然而在实际上常用的是exhaustive sweep。<br>
+第二种是根据一些distributions从state space或者state action space中进行采样。Dyna-$Q$使用均匀分布采样，和exhaustive sweep问题一样，没有focus。使用on-policy distribution是一种很不错的想法，根据当前的policy不断的与model交互，产生一个trajectory。Sample state transitions以及reward是model给出来的，sample action是当前的policy给出来的。这种方法叫做generating experience和update trajectory sampling。</p>
+<h3 id="原因">原因</h3>
+<p>如果on-policy的distribution是已知的，可以根据这个distribution对所有的states进行加权，但是这和exhaustive sweeps的计算量差不多。或者从distribution中采样state-action paris，这比simulating trajectories好在哪里呢？事实上我们不知道distribution，当policy改变，计算distribution的计算量和policy evaluation相等。</p>
+<h3 id="分析">分析</h3>
+<p>使用on-policy distribution可以去掉很多我们不感兴趣的内容，或者一遍又一遍的进行无用的重复更新。通过一个小例子分析它的效果。使用one-step expected updates，公式如下：<br>
+$$Q(s,a) \leftarrow \sum_{s’,r} \hat{p}(s’,r|s,a)\left[r+\gamma max_{a’}Q(s’,a’)\right]$$<br>
+使用均匀分布的时候，对所有的state-action pair进行in place的expected update更新；使用on-policy的时候，使用当前$\epsilon$-greedy policy（$\epsilon=0.1$）直接生成episodes，对episodes中出现的state-action pair进行expected update。也就是说一个是随机选的，一个是on-policy中出现的，选择的方式不一样，但是都是进行expected update。<br>
+简单介绍一下environment。每个state都有两个action，等可能性的到达$b$个next states，$b$对于所有state-action pair都是一样的，所有的transition都有$0.1$的概率到达terminal state。Expected reward服从均值为$0$,方差为$1$的高斯分布。<br>
+在planning过程中的任何一步都可以停止，根据当前估计的action value，计算greedy policy $\hat{\pi}$下start state的value $v_{\hat{\pi}}(s_0)$，也就是说告诉我们使用greedy重新开始一个新的episodes，agent的表现会怎么样。（假设model是正确的）。<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/fig_8_8.png" alt="fig_8_8"><br>
+上半部分是进行了$200$次sample任务，$1000$个states，$b$分别为$1,3,10$的结果。在图中根据on-policy 采样更新的方法，一开始很快，时间一长，就慢下来了。当$b$越小的时候，效果越好，越快。另一个实验中表明，随着states数量的增加，on-policy distribution采样的效果也在变好。<br>
+使用on-policy distribtion进行采样，能够帮助我们关注start state的后继状态。如果states很多，并且$b$很小，这个效果很好并且会持续很久。在长时间的计算中，使用on-policy distribution采样可能会有副作用，因为一直在更新那些value已经正确的states。对它们进行采样没用了，还不如采样一些其他的states。这就是为什么在长时间的运行中使用均匀分布进行采样的效果更好。</p>
+<h2 id="real-time-dp">Real-time DP</h2>
+<p>Real time DP是DP的on-policy trajectory sampling版本。RLDP和上一节介绍的on-policy expected update的区别在update的方式不同，上一届实际上使用的是state-action pair，而这一节DP用的是state，它的更新公式是：<br>
+$$v_{k+1}(s) = \max_a \sum_{s’,r}p(s’,r|s,a) \left[r+\gamma v_k(s’)\right]$$<br>
+一个是更新action value function，一个是更新state valut function。</p>
+<h3 id="irrelevant-states">irrelevant states</h3>
+<p>如果trajectories可以仅仅从指定的states开始，我们感兴趣的仅仅是给定policy下states的value，on-policy trajectory sampling可以完全跳过给定policy下不能到达的states。这些states跟prediction问题无关。对于control问题，目标是找到optimal policy而不是evaluating一个给定的policy，可能存在无论从哪个start states开始都无法到达的states，所以就没有必要给出这些无关states的action。我们需要的是一个optimal partial policy，对于relevant states，给出optimal policy，而对于irrelevant states，给出任意的actions。<br>
+找到这样一个policy，按道理来说需要访问所有的state-action pairs无数次，包括那些无关状态。<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.137.1955&amp;rep=rep1&amp;type=pdf" target="_blank" rel="noopener">Korf</a>证明了在满足以下条件的时候，能够在很少访问relevant states甚至不访问的时候，找到这样一个policy。</p>
+<ol>
+<li>goal state的初始value为$0$</li>
+<li>存在至少一个policy保证从任何start state都能到达goal state</li>
+<li>所有到达的非goal states的reward是严格为负的</li>
+<li>所有states的初始value要大于等于optimal values（可以设置为$0$，一定比负值大）</li>
+</ol>
+<p>如果满足这些条件，RTDP一定会收敛到relevant states的optimal policy。</p>
+<h2 id="决策时进行planning">决策时进行planning</h2>
+<h3 id="backgroud-planning">backgroud planning</h3>
+<p>进行planning至少有两种方法。第一种是已经介绍的DP和Dyna这些算法，使用planning基于从model得到的simulated experience不断的改进policy和value function。通过比较某一个state处不同state-action pairs value值的大小选择action。在action被选择之前，planning更新所有的$Q$值。这里planning的结果被很多个states用来选择action。这种planning叫做background planning。</p>
+<h3 id="decision-time-planning">decision-time planning</h3>
+<p>第二种方法是使用planning输出单个state的action，遇到一个新的state $S_t$，输出是单个的action $A_t$，然后再下一个时间步根据$S_{t+1}$继续计算$A_{t+1}$。最简单的一个例子是当只有states value可以使用的时候，通过比较model预测每一个action能够到达的后继state的value（也就是使用after state value）选择相应的action，。这种方法叫做decision-time planning。<br>
+事实上，decision-time planning和background planning的流程是一样的，都是使用simulated experience到backup values再到policy。只不过decision-time planning只是对当前可访问的单个state和action的value和policy进行planning。在许多decision-time planning的过程中，用于选择当前state对应的action时，使用到的value和policy用过以后都被丢弃了，这并不会造成太大的计算损失，因为在大部分任务中很多states在短时间内都不会被再次访问到。</p>
+<h3 id="应用场景">应用场景</h3>
+<p>decision-time planning适用于不需要快速实时相应的场景，比如各种下棋。如果需要快速响应的，那么最好使用backgroud planning计算一个policy可以快速应用到新的states。</p>
+<h2 id="启发式搜索-v2">启发式搜索</h2>
+<p>AI中经典的state-space方法都是decision-time planning方法，统称为heuristic search。在启发式搜索中，会使用树进行搜索，近似的value function应用到叶子节点，进行backup到根节点（当前state），相应的backup diagram和optimal的expected updates类似。根据计算的backed-up值，选择相应的action之后，丢弃这些值。<br>
+传统的启发式搜索并不保存backup value，它更像是多步的greedy policy，目的是更好的选择actions。如果我们有一个perfect model以及imperfect action value function，搜索的越深结果越好。如果search沿着所有可能的路一直到episode结束，那么imperfect value function的结果被抵消了，选出来的action也是optimal。如果搜索的深度$k$足够深，$\gamma^k$接近于$0$,那么找到的action也是近乎于最优的。当然，搜索的深度越深，需要的计算资源就越多。<br>
+启发式搜索的的updates集中在current state，它的search tree集中在接下来可能的states和actions，这也是它的结果为什么很好的原因。在某些特殊的情况下，我们可以将具体的启发式搜索算法构建出一个tree，自底向上的执行one-step update，如下图所示：<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/heuristic_search_tree.png" alt="heuristic_search_tree"><br>
+如果update是有序的，并且使用tabular representation，整个updates可以看成深搜，所有的state-space搜索可以看成很多个one-step updates的组合。我们得出了一个结论，搜索深度越深，性能越好的原因不是multistep updates的使用，因为它实际上使用的是多个one-step update。真正的原因是更新都集中在current state downstream的states和actions上，所有的计算都集中在candidate actions相关的states和actions上。</p>
+<h2 id="rollout算法">Rollout算法</h2>
+<h3 id="什么是rollout算法">什么是Rollout算法</h3>
+<p>Rollout算法是将Monte Carlo Control应用到从current state开始的simulate trajectories上的decision-time planning算法。Rollout算法根据给定的policy，这个policy叫做rolloutpolicy，从当前state可能采取的所有action开始生成很多simulated trajectories，对得到的returns进行平均估计aciton values。当action value估计的足够精确的时候，选择最大的那个action执行。<br>
+和MC Control的区别在于，MC Control的目的是估计整个action value function $q_{\pi}$或者$q_{*}$，而Rollout算法的目的是对于每一个current state，在一个给定policy下估计每一个可能的action的value。Rollout是decision-time planning算法，计算完相应的estimate action value之后，就丢弃它们。</p>
+<h3 id="rollout算法做了什么">Rollout算法做了什么</h3>
+<p>Rollout算法和policy iteration差不多。在policy improvement theorem理论中，如果在一个state处采取新的action，它的value要比原来的value高，那么就说这个新的policy要比老的policy好。Rollout算法在每个current state处，估计不同的state action value，然后选择最好的，其实就相当于one-step的policy iteration，或者更像on-step的asynchronous value iteration。<br>
+也就是说，rollout算法的目的是改进rollout policy，而不是寻找最优的policy。Rollout算法非常有效，但是它的效果也取决于rollout policy，roloout policy越好，最后算法生成的policy就越好。</p>
+<h3 id="如何选择好的rollout-policy">如何选择好的rollout policy</h3>
+<p>更好的rollout policy也就需要更多的资源，因为是decision-time算法，时间约束一定要满足，rollout算法的计算时间取决于每一个decision需要选择的action数量，sample trajectories的长度，rollout policy做决策的事件，以及足够的sample trajectories的数量。接下来给出几种方法去权衡这些影响因素：<br>
+第一个方法，MC trials都是独立的，所以可以使用多个分开的处理器运行多个trials。第二个方法是在simulated trajectories结束之前截断，通过一个分类评估函数对truncated returns进行修正。第三个方法是剪枝，剪掉那些不可能是最优的actions，或者那些和当前最优结果没啥差别的acitons。</p>
+<h3 id="rollout算法和learning算法的关系">rollout算法和learning算法的关系</h3>
+<p>Rollout算法并不是learning算法，因为它没有保存values和polices。但是rollout算法具有rl很多好的特征。作为MC Control的应用，他们使用sample trajectories，避免了DP的exhausstive sweeps，同时不需要使用distributin models，使用sample models。最后，rollout算法还使用了policy improvement property，即选择当前estimate action values最大的action。</p>
+<h2 id="monte-carlo-tree-search">Monte Carlo Tree Search</h2>
+<p>MCTS是decision-time planning算法，实际上，MCTS是一个rollout算法，它在上一节介绍的rollout算法上，加上了acucumulating value estimates的均值。MCTS是AlphaGO的基础算法。<br>
+每到达一个新的state，MCTS根据state选择action，到达新的state，再选择action，持续下去。在大多数情况下，simulated trajectories使用rollout policy生成actions。当model和rollout policy都不需要大量计算的时候，可以在短时间内生成大量simulated trajectories。只保留在接下来的几步内最后可能访问到的state-action pairs的子集，形成一棵树，如下图所示。任意simulated trajectory都会经过这棵树，并且从叶子节点退出。在tree的外边，使用rollout policy选择actions，在tree的内部使用一个新的policy，称为tree policy，平衡exploration和exploitation。Tree policy可以使用$\epsilon$-greedy算法。<br>
+<img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/mcts.png" alt="mcts"><br>
+MCTS总共有四个部分，一直在迭代进行，第一步是Selection，根据tree policy生成一个episode的前半部分；第二步是expansion，从选中的叶子节点处的上一个节点探索其他没有探索过的节点；第三步是simulation，从选中节点，或者第二步中增加的节点处，使用rollout policy生成一个episode的后半部分；第四步是backup，从第一二三步得到的episode进行backup。这四步一直迭代下去，等到资源耗尽，或者没有time的时候，就退出，然后根据生成的tree中的信息选择相应的aciton，比如可以选择root node处action value最大的action，也可以选择最经常访问的action。<br>
+MCTS是一种rollout算法，所以它拥有online，incremental，sample-based和policy improvement等优点。同时，它保存了tree边上的estimate action value，并且使用sample update进行更新。优势是让trivals的初始部分集中在之前simulated的high-return trajectories的公共部分。然后不断的expanding这个tree，高效增长相关的action value table，通过这样子，MCTS避免了全局近似value funciton，同时又能够利用过去的experience指定exploraion。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《reinforcement learning an introduction》第二版</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/06/python-selenium安装/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/08/06/python-selenium安装/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">python selenium</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-06 11:24:09 / 修改时间：15:18:18" itemprop="dateCreated datePublished" datetime="2019-08-06T11:24:09+08:00">2019-08-06</time>
             
 
             
@@ -598,14 +1079,11 @@
       
         
           
-            <h2 id="什么是json"><a href="#什么是json" class="headerlink" title="什么是json"></a>什么是json</h2><p>是一种文件格式<br>json object和python的字典差不多。<br>json在python中可以以字符串形式读入。</p>
-<h2 id="python读取json"><a href="#python读取json" class="headerlink" title="python读取json"></a>python读取json</h2><h3 id="json-loads"><a href="#json-loads" class="headerlink" title="json.loads()"></a>json.loads()</h3><p>json.loads()从内存中读取。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import json</span><br><span class="line"></span><br><span class="line">person = &apos;&#123;&quot;name&quot;: &quot;Bob&quot;, &quot;languages&quot;: [&quot;English&quot;, &quot;Fench&quot;]&#125;&apos;</span><br><span class="line">person_dict = json.loads(person)</span><br><span class="line"></span><br><span class="line"># Output: &#123;&apos;name&apos;: &apos;Bob&apos;, &apos;languages&apos;: [&apos;English&apos;, &apos;Fench&apos;]&#125;</span><br><span class="line">print( person_dict)</span><br><span class="line"></span><br><span class="line"># Output: [&apos;English&apos;, &apos;French&apos;]</span><br><span class="line">print(person_dict[&apos;languages&apos;])</span><br></pre></td></tr></table></figure></p>
-<h3 id="json-load"><a href="#json-load" class="headerlink" title="json.load()"></a>json.load()</h3><p>json.load()从文件对象中读取。<br>假设有名为person.json的json文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">&quot;name&quot;: &quot;Bob&quot;, </span><br><span class="line">&quot;languages&quot;: [&quot;English&quot;, &quot;Fench&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>直接从文件对象中读取<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'person.json'</span>) <span class="keyword">as</span> f:</span><br><span class="line">  data = json.load(f)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Output: &#123;'name': 'Bob', 'languages': ['English', 'Fench']&#125;</span></span><br><span class="line">print(data)</span><br></pre></td></tr></table></figure></p>
-<h2 id="python写json文件"><a href="#python写json文件" class="headerlink" title="python写json文件"></a>python写json文件</h2><h3 id="json-dumps"><a href="#json-dumps" class="headerlink" title="json.dumps()"></a>json.dumps()</h3><p>json.dumps()将字典转化为JSON字符串<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_dict = &#123;<span class="string">'name'</span>: <span class="string">'Bob'</span>,</span><br><span class="line"><span class="string">'age'</span>: <span class="number">12</span>,</span><br><span class="line"><span class="string">'children'</span>: <span class="literal">None</span></span><br><span class="line">&#125;</span><br><span class="line">person_json = json.dumps(person_dict)</span><br><span class="line"></span><br><span class="line">print(person_json)</span><br></pre></td></tr></table></figure></p>
-<h3 id="json-dump"><a href="#json-dump" class="headerlink" title="json.dump()"></a>json.dump()</h3><p>json.dump()直接将字典写入文件对象<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_dict = &#123;<span class="string">"name"</span>: <span class="string">"Bob"</span>,</span><br><span class="line"><span class="string">"languages"</span>: [<span class="string">"English"</span>, <span class="string">"Fench"</span>],</span><br><span class="line"><span class="string">"married"</span>: <span class="literal">True</span>,</span><br><span class="line"><span class="string">"age"</span>: <span class="number">32</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'person.txt'</span>, <span class="string">'w'</span>) <span class="keyword">as</span> json_file:</span><br><span class="line">  json.dump(person_dict, json_file)</span><br></pre></td></tr></table></figure></p>
-<h2 id="pretty-JSON"><a href="#pretty-JSON" class="headerlink" title="pretty JSON"></a>pretty JSON</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">person_string = <span class="string">'&#123;"name": "Bob", "languages": "English", "numbers": [2, 1.6, null]&#125;'</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Getting dictionary</span></span><br><span class="line">person_dict = json.loads(person_string)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Pretty Printing JSON string back</span></span><br><span class="line">print(json.dumps(person_dict, indent = <span class="number">4</span>, sort_keys=<span class="literal">True</span>))</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.programiz.com/python-programming/json" target="_blank" rel="noopener">https://www.programiz.com/python-programming/json</a></p>
+            <h2 id="ubuntu-安装chrome-driver"><a href="#ubuntu-安装chrome-driver" class="headerlink" title="ubuntu 安装chrome driver"></a>ubuntu 安装chrome driver</h2><ol>
+<li>下载chrome driver<br><a href="http://chromedriver.chromium.org/downloads" target="_blank" rel="noopener">http://chromedriver.chromium.org/downloads</a><br>根据自己的操作系统和chrome下载相应的chrome driver</li>
+<li>解压<br>将解压后的chromedriver放置在PATH环境变量中的任意目录即可，我是放置在了/usr/local/bin</li>
+</ol>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.jianshu.com/p/dd848e40c7ad" target="_blank" rel="noopener">https://www.jianshu.com/p/dd848e40c7ad</a></p>
 
           
         
@@ -662,7 +1140,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/03/linux-process-ps-kill-top-pstree-nice/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/06/python-spider/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -682,7 +1160,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/06/03/linux-process-ps-kill-top-pstree-nice/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">linux process ps kill top pstree nice</a>
+                <a href="/2019/08/06/python-spider/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">python-spider</a>
               
             
           </h1>
@@ -707,7 +1185,7 @@
                 
               
 
-              <time title="创建时间：2019-06-03 21:30:04" itemprop="dateCreated datePublished" datetime="2019-06-03T21:30:04+08:00">2019-06-03</time>
+              <time title="创建时间：2019-08-06 10:53:56" itemprop="dateCreated datePublished" datetime="2019-08-06T10:53:56+08:00">2019-08-06</time>
             
 
             
@@ -724,7 +1202,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-07-09 10:08:45" itemprop="dateModified" datetime="2019-07-09T10:08:45+08:00">2019-07-09</time>
+                <time title="修改时间：2019-08-09 16:37:45" itemprop="dateModified" datetime="2019-08-09T16:37:45+08:00">2019-08-09</time>
               
             
           </span>
@@ -741,7 +1219,204 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="requests"><a href="#requests" class="headerlink" title="requests"></a>requests</h2><p>获取网页<br>response = requests.post(url, headers)<br>返回的response包含有网页返回的内容。<br>response.text以文字方式访问。</p>
+<h2 id="beautiful-soup"><a href="#beautiful-soup" class="headerlink" title="beautiful soup"></a>beautiful soup</h2><p>soup.find_all()</p>
+<h2 id="selenium"><a href="#selenium" class="headerlink" title="selenium"></a>selenium</h2><ol>
+<li><p>xpath查找<br>查找class为”wos-style-checkbox”，type为”checkbox”的任意elements。可以把*号换成input，就变成查找满足上述条件的input elemetns。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">driver.find_elements_by_xpath(<span class="string">"//*[@type='checkbox'][@class='wos-style-checkbox']"</span>)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>访问元素的内容<br>element.text</p>
+</li>
+<li><p>复选框选中与取消选中</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">checkbox = driver.find_element_by_id(<span class="string">"checkbox"</span>)</span><br><span class="line"><span class="keyword">if</span> checkbox.is_selected():  <span class="comment">#如果被选中</span></span><br><span class="line">    checkbox.click()    <span class="comment"># 再点击一次，就变成了取消选中</span></span><br><span class="line"><span class="keyword">else</span>:   <span class="comment"># 如果没有被选中</span></span><br><span class="line">    checkbox.click()    <span class="comment"># 再点击一次，就变成了选中</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>提交表单</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">keywords = driver.find_element_by_id(<span class="string">"input"</span>)</span><br><span class="line"><span class="comment"># 清空表单默认值</span></span><br><span class="line">keywords.clear()</span><br><span class="line"><span class="comment"># 提交表单</span></span><br><span class="line">keywords.send_keys(values)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>输完表单内容需要回车<br>直接在表单内容中添加\n即可。</p>
+</li>
+<li><p>下拉框<br>使用Select对象</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from selenium.webdriver.support.ui import Select</span><br><span class="line">from selenium import webdriver</span><br><span class="line">s = Select(driver.find_element_by_id(&quot;databases&quot;))</span><br><span class="line"></span><br><span class="line">s.select_by_value(&quot;value&quot;)</span><br><span class="line">s.select_by_index(index)</span><br><span class="line">s.select_by_visible_text(&quot;visible_text&quot;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>模拟鼠标操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">from selenium.webdriver.common.action_chains import ActionChains</span><br><span class="line"></span><br><span class="line"># 定位element</span><br><span class="line">arrow = driver.find_element_by_id(&quot;next&quot;)</span><br><span class="line"># 单击</span><br><span class="line">ActionChains(driver).click(arrow).perform()</span><br><span class="line"># 双击</span><br><span class="line">ActionChains(driver).double_click(arrow).perform()</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>display:none和visible: hidden<br>display:none表示完全不可见，不占据页面空间，而visible: hidden仅仅隐藏了element的显示效果，仍然占据页面空间，并且是可以被定位到，但是无法被访问（如selenium的click,clear以及send_keys等，会报错ElementNotVisibleException’: Message: Element is not currently visible and so may not be interacted with）。</p>
+</li>
+</ol>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.w3schools.com/xml/xml_xpath.asp" target="_blank" rel="noopener">https://www.w3schools.com/xml/xml_xpath.asp</a><br>2.<a href="https://devhints.io/xpath" target="_blank" rel="noopener">https://devhints.io/xpath</a><br>3.<a href="https://zhuanlan.zhihu.com/p/31604356" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/31604356</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/01/Monte-Carlo-Markov-Chain/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/08/01/Monte-Carlo-Markov-Chain/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">Monte Carlo Markov Chain</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-01 20:07:38" itemprop="dateCreated datePublished" datetime="2019-08-01T20:07:38+08:00">2019-08-01</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-24 20:22:14" itemprop="dateModified" datetime="2019-09-24T20:22:14+08:00">2019-09-24</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
 
                 
                 
@@ -778,1051 +1453,47 @@
         
           
             <h2 id="概述">概述</h2>
-<p>这一节介绍和process相关的命令，包含ps,top,kill, pstree, nice, fuser, lsof, pidof, /proc/等</p>
-<h2 id="ps查看进程">ps查看进程</h2>
-<h3 id="参数介绍">参数介绍</h3>
-<p>ps [-Aauf] [xlj]<br>
--A 所有的进程全部显示出来<br>
-a 现行终端机下所有程序，包含其他用户<br>
-u 有效用户相关的进程，主要以用户为主的格式来区分<br>
-f 用ASCII字符显示树状结构，表达进程间的关系<br>
-x　通常与a这个参数一块使用，显示所有程序，不以终端机来区分<br>
-l　较长，较详细的将该PID的信息列出<br>
-j　工作的格式</p>
-<h3 id="示例">示例</h3>
-<p>~$:ps aux　查看系统所有的进程数据<br>
-~$:ps -lA　查看所有系统的数据<br>
-~$:ps axjf　连同部分进程树状态<br>
-~$:ps aux | grep ‘sslocal’ #查看sslocal程序是否运行<br>
-~$:ps ax # 显示当前系统进程的列表<br>
-~$:ps aux #显示当前系统进程详细列表以及进程用户<br>
-~$:ps -A  #列出进程号<br>
-~$:ps aux |grep 2222’|grep -v grep  # 找出所有包含2222的进程，grep -v 过滤掉含有grep字符的行</p>
-<h3 id="aux-查看系统所有进程">aux 查看系统所有进程</h3>
-<p>~$:ps aux     # 使用BSD格式显示进程<br>
-输出<br>
-USER PID %CPU %MEM VSZ RSS TTY STAT START TIME COMMAND<br>
-USER<br>
-PID<br>
-%CPU    该进程使用掉的CPU资源百分比<br>
-%MEM    该进程占用物理内存百分比<br>
-VSZ 该进程占用虚拟内存量<br>
-RSS 该进程占用固定内存量(KB)<br>
-TTY pts/0　表示由网络连接进主机的进程<br>
-STAT    进程状态<br>
-START   该进程被触发的时间<br>
-TIME    CPU时间<br>
-COMMAND     该进程实际命令</p>
-<p>僵尸进程(<defunct>)</defunct></p>
-<h3 id="ps-ef">ps -ef</h3>
-<p>~\$:ps -ef  # 使用标准格式显示进程<br>
-输出<br>
-UID        PID  PPID  C STIME TTY          TIME CMD<br>
-UID 用户名<br>
-PID 进程ID<br>
-PPID    父进程ID<br>
-C   CPU占用百分比<br>
-STIME   进程启动到现在的时间<br>
-TTY     在哪个终端上运行，ps/0表示网络连接<br>
-TIME<br>
-CMD     命令的名称和参数</p>
-<h3 id="l仅查看自己相关的bash进程">-l仅查看自己相关的bash进程</h3>
-<p>~\$:ps -l #仅查看自己相关的bash进程<br>
-输出<br>
-F S UID PID PPID C PR NI ADDZ SZ WCHAN TTY TIME CMD<br>
-F  说明进程权限<br>
-S　进程状态STAT<br>
-R(running)　S(sleep)　D(不可被唤醒的睡眠状态,通常是IO的进程)　T(stop)　Z(zombie僵尸状态)进程已终止，但无法被删除到到内存外,PCB还在，但是其他资源全部被收回，是由父进程负责收回资源。<br>
-UID/PID/PPID<br>
-C CPU使用率<br>
-PR/NI  Priority/Nice的缩写，此进程被CPU执行的优先级<br>
-ADDR/SZ/WCHAN都与内存有关，ADDR是kernel function ,指出该进程在内存的哪个部分，如果是个running的过程，显示-;SZ代表用掉多少内存;WCHAN表示目前进程是否运行，-表示正在运行<br>
-TTY 使用的终端接口<br>
-TIME    使用掉的CPU时间，而不是系统时间<br>
-CMD command缩写,造成此进程被触发的命令</p>
-<h2 id="top-动态查看进程的变化">top 动态查看进程的变化</h2>
-<h3 id="参数介绍-v2">参数介绍</h3>
-<p>top [-d 数字] | top [-bnp]<br>
--d　整个进程界面更新的秒数<br>
--b  以批次的方式执行top，<br>
--n  与-b搭配，意义是，需要进行几次top的输出结果<br>
--p  指定某个PID来查看<br>
-在top执行中可以使用的命令<br>
-?查询所有的命令<br>
-P 按CPU使用率排序<br>
-M Mem排序<br>
-N PID排序<br>
-T CPU累计时间排序<br>
-k 给某个PID一个信号<br>
-r 给某个PID重新制定一个nice值<br>
-q 离开top软件</p>
-<h3 id="示例-v2">示例</h3>
-<p>~\$:top -d 2 #每两秒钟刷新一次top，默认为5s<br>
-~\$:top -b -n 2 &gt; ~/tmp/top.out</p>
-<h3 id="top输出内容">top输出内容</h3>
-<p>第一行top<br>
-目前时间　<br>
-开机到现在时间　up n days , hh:mm<br>
-登陆的用户<br>
-系统在1,5,15分钟时的负载，batch工作方式负载小于0.8即为这个负载，代表的是1,5,15分钟，系统平均要负责多少个程序。越小说明系统越闲<br>
-第二行task<br>
-目前进程总量，分别有多少个处于什么状态，不能有处于zombie的进程，<br>
-第三行%cpu<br>
-wa代表的是I/Owait，系统变慢都是由于I/O产生问题较多<br>
-第四五行内存和swap使用情况，swap被使用的应该尽量少，否则说明物理内存实在不足。<br>
-第六行<br>
-PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ COMMAND<br>
-PID　每个进程ID<br>
-USER　该进程所属用户<br>
-PR　Priority 进程的优先级顺序，越小越早被执行<br>
-NI　Nice 与Priority有关，越小越早被执行<br>
-VIRT<br>
-RES<br>
-SHR<br>
-S   STAT<br>
-%CPU　CPU使用率<br>
-%MEM　内存使用率<br>
-TIME+  CPU使用时间的累加<br>
-COMMAND</p>
-<h2 id="pstree-查看进程树">pstree 查看进程树</h2>
-<h3 id="参数介绍-v3">参数介绍</h3>
-<p>pstree [-A|-U] [-up]<br>
--A  各进程树直接以ASCII字符连接<br>
--U  各进程树之间以utf-8字符连接<br>
--u  显示进程所属账号名<br>
--p  显示pid</p>
-<h3 id="示例-v3">示例</h3>
-<p>~\$:pstree -Aup</p>
-<h2 id="kill管理进程">kill管理进程</h2>
-<h3 id="参数介绍-v4">参数介绍</h3>
-<p>kill -signals %jobnumber 杀掉某个job<br>
--l  列出所有signal<br>
--1  重新读取一次参数的配置文件<br>
--2  与ctrl+c　一样<br>
--9  强制删除一个job，非正常状态<br>
--15 让一个job正常结束</p>
-<h3 id="查看signal种类">查看signal种类</h3>
-<p>~\$:man 7 signal</p>
-<h3 id="kill示例">kill示例</h3>
-<p>kill -signal %jobnum<br>
-kill -signal pid<br>
-这两种情况是不同的，第一种是job，第二种是pid,不能弄混</p>
-<h3 id="killall将系统中所有以某个命令启动的服务全部删除">killall将系统中所有以某个命令启动的服务全部删除</h3>
-<p>killall [-iIe]  用来删除某个服务<br>
--i iteractive<br>
--e exact<br>
--I 忽略大小写</p>
-<h3 id="killall示例">killall示例</h3>
-<p>~\$:killall utserver<br>
-~\$:killall -1 syslogd<br>
-~\$:killall -9 httpd<br>
-~\$:killall -i -9 bash</p>
-<h2 id="nice管理进程优先级">nice管理进程优先级</h2>
-<p>PRI(priority)与NI(nice)<br>
-PRI值是由内核动态调整的，用户无法直接调整PRI值<br>
-PRI(new)=PRI(old)+nice</p>
-<p>nice值虽然可以影响PRI，但是并不是说原来PRI为50,nice为5,就会让PRI变为55,<br>
-这是需要经过系统分析之后决定的</p>
-<p>nice值<br>
-a.可调整范围为-20~19<br>
-b.root可随意调整任何人的nice值-20~19间的任意一个值<br>
-c.一般用户仅可以调整自己nice值，且范围在0~19<br>
-d.一般用户仅可将nice值调高，而无法降低<br>
-e.调整nice值的方法<br>
-新执行的命令手动设置nice值<br>
-nice -n [number] command</p>
-<h3 id="示例-v4">示例</h3>
-<p>~\$:nice -n -5 vim &amp;</p>
-<h3 id="已存在的进程调整nice值">已存在的进程调整nice值</h3>
-<p>renice [number] command<br>
-~\$:ps -l | grep ‘\*bash\$’<br>
-~\$:renice 10 \$(ps -l|grep ‘bash\$’ | awk ‘{print \$4}’)</p>
-<h2 id="fuser找到使用某文件的程序">fuser找到使用某文件的程序</h2>
-<h3 id="参数介绍-v5">参数介绍</h3>
-<p>fuser [-muv] [-k [i] [-signal]] name<br>
--m  后面接的文件名会主动提到文件顶层<br>
--u  user<br>
--v  verbose<br>
--k  SIGKILL<br>
--i  询问用户，与-k搭配<br>
--signal  -1,-15等，默认为-9</p>
-<h3 id="示例-v5">示例</h3>
-<p>~\$:mount -o loop ubuntu.iso /mnt/iso<br>
-~\$:cd /mnt/iso<br>
-~\$:umount /mnt/iso<br>
-error<br>
-~\$:fuser -muv   /mnt/iso<br>
-…<br>
-~\$:cd<br>
-~\$:umount /mnt/iso</p>
-<p>~\$:fuser -muv /proc<br>
-~\$:fuser -ki /bin/bash</p>
-<h2 id="lsof找到被进程打开的文件">lsof找到被进程打开的文件</h2>
-<h3 id="参数介绍-v6">参数介绍</h3>
-<p>lsof [-uaU] [+d]<br>
--a 相当于and连接符<br>
--u 某个用户的相关进程打开的文件<br>
--U Unix like 的socket文件类型<br>
-+d 某个目录下被打开的文件</p>
-<h3 id="示例-v6">示例</h3>
-<p>~\$:lsof +d ~/Desktop<br>
-~\$:lsof -u mxx | grep ‘bash’<br>
-~\$:lsof -u mxx -a -U</p>
-<h2 id="pidof找出某个正在进行的进程的pid">pidof找出某个正在进行的进程的pid</h2>
-<h3 id="参数介绍-v7">参数介绍</h3>
-<p>pidof [-sx] program_name<br>
--s 仅列出一个pid而不列出所有的pid<br>
--x 列出该进程可能的ppid的pid</p>
-<h2 id="获取进程id">获取进程id</h2>
-<p>ps -A |grep “command” | awk '{print $1}'<br>
-pidof 'command’<br>
-pgrep ‘command’</p>
-<h2 id="proc-文件">/proc/\* 文件</h2>
-<p>/proc/cmdline   加载kernel执行的参数<br>
-/proc/cpuinfo   CPU相关信息<br>
-/proc/devices   主要设备代号　与mknod相关<br>
-/proc/filesystems   目前已加载的文件系统<br>
-/proc/interrupts    系统上IRQ分配状态<br>
-/proc/ioports   目前系统上每个设备配置的I/O地址<br>
-/proc/loadavg   top/uptime显示的负载<br>
-/proc/kcore 内存大写<br>
-/proc/meminfo   free<br>
-/proc/modules   目前系统已加载的模块列表，可想成驱动程序<br>
-/proc/mounts　mount<br>
-/proc/swaps  系统加载的内存使用的分区记录<br>
-/proc/partitions　fdisk -l<br>
-/proc/pci　PCI总线上每个设备的详细情况　lspci<br>
-/proc/uptime　uptime<br>
-/proc/version　内核版本 uname -a<br>
-/proc/bus/\*　总线设备，USB设备</p>
-<h2 id="具有suid-sgid的程序">具有SUID，SGID的程序</h2>
-<p>如passwd，当触发passwd之后，会取得一个新的进程与PID,该PID产生时通过SUID给予该PID特殊的权限设置。<br>
-在一个bash中执行passwd会衍生出一个passwd进程，而且权限为root<br>
-~\$:passwd &amp;<br>
-~\$:pstree -up找到该进程</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《鸟哥的LINUX私房菜》基础篇</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/03/linux-系统资源查看/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/03/linux-系统资源查看/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">linux 系统资源查看</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-03 21:20:52" itemprop="dateCreated datePublished" datetime="2019-06-03T21:20:52+08:00">2019-06-03</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-24 21:37:59" itemprop="dateModified" datetime="2019-06-24T21:37:59+08:00">2019-06-24</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="查看内存">查看内存</h2>
-<p>free [-bkmg] -t<br>
--t  输出结果中显示free和swap加在一起的总量<br>
-free -h</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">~$:sudo dmidecode -t memory |grep "Number Of Devices" |awk '&#123;print $NF&#125;'    # 卡槽数量</span><br><span class="line">~$:sudo dmidecode -t memory |grep -A16 "Memory Device$" |grep 'Size:.*MB' |wc -l    # 内存数量</span><br><span class="line">~$:sudo dmidecode -t memory |grep -A16 "Memory Device$" |grep "Type:"  # 内存支持类型</span><br><span class="line">~$:sudo dmidecode -t memory |grep -A16 "Memory Device$" |grep "Speed:" # 每个内存频率</span><br><span class="line">~$:sudo dmidecode -t memory |grep -A16 "Memory Device$" |grep "Size:"  # 每个内存大小</span><br></pre></td></tr></table></figure>
-<h2 id="查看磁盘">查看磁盘</h2>
-<p>df -h 查看磁盘占用情况<br>
-du -h --max-depth=2 统计当前目录下深度为2的文件和目录大小</p>
-<h2 id="查看cpu占用">查看cpu占用</h2>
-<p>top<br>
-<a href="https://mxxhcm.github.io//2019/05/07/linux-cpu%E4%BF%A1%E6%81%AF%E6%9F%A5%E7%9C%8B/">点击查看cpu信息命令</a></p>
-<h2 id="查看系统与内核相关信息">查看系统与内核相关信息</h2>
-<p>uname [-asrmpi]<br>
--a 所有系统相关的信息，<br>
--s 系统内核名称<br>
--r 内核版本<br>
--m 本系统硬件名称<br>
--p CPU类型，与-m类似，显示的是CPU类型<br>
--i 硬件平台</p>
-<h2 id="查看系统启动时间与工作负载">查看系统启动时间与工作负载</h2>
-<p>uptime</p>
-<h2 id="查看网络">查看网络</h2>
-<p>netstat [-atunlp]<br>
--a 将目前系统上所有连接监听，socket列出来<br>
--t 列出tcp网络数据包的数据<br>
--u 列出udp网络数据包的数据<br>
--n 不列出进程的服务名称，以端口号来显示<br>
--l 列出目前正在网络监听(listen)的服务<br>
--p 列出该网络服务的进程pid<br>
-~$:netstat -tnlp　　#找出目前系统上已经在监听的网络连接及其PID</p>
-<h2 id="分析内核产生的信息">分析内核产生的信息</h2>
-<p>dmesg | more<br>
-dmesg | grep -i 'sd’<br>
-dmesg | grep -i ‘eth’</p>
-<h2 id="动态分析系统资源使用情况">动态分析系统资源使用情况</h2>
-<p>man vmstat 查看各字段含义</p>
-<p>vmstat      动态查看系统资源<br>
-vmstat [-a]     display active and inactive memory<br>
-vmstat [-d] report sisk statistics<br>
-vmstat [-p 分区]　Detailed statistics about partition<br>
-vmstat [-S 单位]  B K M G<br>
-vmstat [-f]  displays the num of forks since boot<br>
-~$:vmstat<br>
-~$:vmstat -a<br>
-~$:vmstat -p /dev/sda1<br>
-~$:vmstat -S M<br>
-~$:vmstat -f</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《鸟哥的LINUX私房菜》</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/03/linux-python调用shell脚本并将输出重定向到文件/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/03/linux-python调用shell脚本并将输出重定向到文件/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">linux python调用shell脚本并将输出重定向到文件</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-03 20:11:38" itemprop="dateCreated datePublished" datetime="2019-06-03T20:11:38+08:00">2019-06-03</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-26 11:32:08" itemprop="dateModified" datetime="2019-06-26T11:32:08+08:00">2019-06-26</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-                  ，
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="python执行shell脚本并且重定向输出到文件">python执行shell脚本并且重定向输出到文件</h2>
-<p>目的：有一些shell脚本的参数需要调整，在shell中处理有些麻烦，就用python控制参数，然后调用shell，问题就是如何将shell脚本的输出进行重定向。最开始我想直接用python调用终端中shell重定向的语法，我用的是os.system(command)，command包含重定向的命令，在实践中证明是不可行的。为什么？？？留待解决。</p>
-<p>找到的解决方案是调用subprocess包，将要执行的命令存入一个list，将这个list当做参数传入，获得返回值，进行文件读写。这里拿ls命令举个例子，注意一点是，包含重定向语句的ls命令使用os.system()也能重定向成功，我使用的一个命令就不行了。</p>
-<h3 id="call-0">call <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">subprocess.call([<span class="string">'ls'</span>, <span class="string">'-l'</span>, <span class="string">'.'</span>]) <span class="comment"># 直接将程序执行结果输出，没有返回值。</span></span><br></pre></td></tr></table></figure></h3>
-<h3 id="popen">Popen</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">results = subprocess.Popen([<span class="string">'ls'</span>, <span class="string">'-l'</span>, <span class="string">'.'</span>], </span><br><span class="line">            stdout=subprocess.PIPE, </span><br><span class="line">            stderr=subprocess.STDOUT)</span><br><span class="line">stdout, stderr = results.communicate() </span><br><span class="line">res = stdout.decode(<span class="string">'utf-8'</span>) <span class="comment"># 利用res将结果输出到文件</span></span><br></pre></td></tr></table></figure>
-<h3 id="run">run</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">result = subprocess.run([<span class="string">'ls'</span>, <span class="string">'-l'</span>], stdout=subprocess.PIPE) </span><br><span class="line">res = result.stdout.decode(<span class="string">'utf-8'</span>)  <span class="comment"># 利用res将结果输出到文件</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/4760215/running-shell-command-and-capturing-the-output" target="_blank" rel="noopener">https://stackoverflow.com/questions/4760215/running-shell-command-and-capturing-the-output</a><br>
-2.<a href="https://linuxhandbook.com/execute-shell-command-python/" target="_blank" rel="noopener">https://linuxhandbook.com/execute-shell-command-python/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/03/linux-custom-configure-file/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/03/linux-custom-configure-file/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">linux custom configure file</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-03 10:40:12" itemprop="dateCreated datePublished" datetime="2019-06-03T10:40:12+08:00">2019-06-03</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-07-03 14:57:20" itemprop="dateModified" datetime="2019-07-03T14:57:20+08:00">2019-07-03</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="bashrc自定义配置">bashrc自定义配置</h2>
-<p>~/.bashrc文件详细内容，<a href="https://github.com/mxxhcm/code/blob/master/shell/bashrc" target="_blank" rel="noopener">代码地址</a></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> 使用alias给常用文件夹起别名</span><br><span class="line">alias post-dir='/home/mxxmhh/mxxhcm/blog/source/_posts'</span><br><span class="line">alias code-dir='/home/mxxmhh/mxxhcm/code/'</span><br><span class="line">alias matplotlib-dir='/home/mxxmhh/mxxhcm/code/tools/matplotlib/'</span><br><span class="line">alias numpy-dir='/home/mxxmhh/mxxhcm/code/tools/numpy/'</span><br><span class="line">alias shell-dir='/home/mxxmhh/mxxhcm/code/shell'</span><br><span class="line">alias github-dir='/home/mxxmhh/github/'</span><br><span class="line">alias torch-dir='/home/mxxmhh/mxxhcm/code/pytorch'</span><br><span class="line">alias tf-dir='/home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line">alias rl-dir='/home/mxxmhh/mxxhcm/code/rl'</span><br><span class="line">alias ops-dir='/home/mxxmhh/mxxhcm/code/tf/ops'</span><br><span class="line">alias paper-dir='/home/mxxmhh/mxxhcm/papers'</span><br><span class="line">alias tf-dir='/home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 使用alias直接cd到常用文件夹</span><br><span class="line">alias post='cd /home/mxxmhh/mxxhcm/blog/source/_posts'</span><br><span class="line">alias code='cd /home/mxxmhh/mxxhcm/code/'</span><br><span class="line">alias matplotlib='cd /home/mxxmhh/mxxhcm/code/tools/matplotlib/'</span><br><span class="line">alias numpy='cd /home/mxxmhh/mxxhcm/code/tools/numpy/'</span><br><span class="line">alias shell='cd /home/mxxmhh/mxxhcm/code/shell'</span><br><span class="line">alias github='cd /home/mxxmhh/github/'</span><br><span class="line">alias torch='cd /home/mxxmhh/mxxhcm/code/pytorch'</span><br><span class="line">alias tf='cd /home/mxxmhh/mxxhcm/code/tf'</span><br><span class="line">alias rl='cd /home/mxxmhh/mxxhcm/code/rl'</span><br><span class="line">alias ops='cd /home/mxxmhh/mxxhcm/code/tf/ops'</span><br><span class="line">alias paper='cd /home/mxxmhh/mxxhcm/papers'</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> hexo博客相关命令</span><br><span class="line">alias update='hexo g -d'</span><br><span class="line">alias n='hexo n '</span><br><span class="line">alias new='hexo n '</span><br><span class="line"><span class="meta">#</span> git相关命令</span><br><span class="line">alias status='git status'</span><br><span class="line">alias add='git add .'</span><br><span class="line">alias remove='git rm'</span><br><span class="line">alias commit='git commit -m '</span><br><span class="line">alias branch='git branch'</span><br><span class="line">alias check='git checkout '</span><br><span class="line">alias push-master='git push origin master'</span><br><span class="line">alias pull-master='git pull origin master'</span><br><span class="line">alias push-hexo='git push origin hexo'</span><br><span class="line">alias pull-hexo='git pull origin hexo'</span><br><span class="line">alias utorrent='utserver -settingspath /opt/utorrent/'</span><br><span class="line"><span class="meta">#</span> shadowsocks local运行</span><br><span class="line">alias ssr='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr4='nohup sslocal -c /etc/shadowsocks_v4.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr5='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line">alias ssr6='nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp; '</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 获得sslocal进程id</span><br><span class="line">function sspid()&#123;</span><br><span class="line">	ps aux |grep 'sslocal'</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> kill sslocal进程</span><br><span class="line">function killss()&#123;</span><br><span class="line">	pid=`ps -A | grep 'sslocal' |awk '&#123;print $1&#125;'`</span><br><span class="line">	echo $pid</span><br><span class="line">	kill -9 $pid</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 失效了</span><br><span class="line">function anaconda_on()&#123;</span><br><span class="line">	export PATH=/home/mxxmhh/anaconda3/bin:$PATH</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 连接到我的vultr账户</span><br><span class="line">function vultr()&#123;</span><br><span class="line">	ssh root@2001:19f0:7001:20f8:5400:01ff:fee6:aff6</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 定义函数实现hexo博客的add, commit, push整个流程</span><br><span class="line">function deploy-upload-hexo()&#123;</span><br><span class="line">	git add .</span><br><span class="line">	git commit -m "update blog"</span><br><span class="line">	git push origin hexo</span><br><span class="line">	hexo g -d</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 定义函数实现普通repo的add, commit, push整个流程</span><br><span class="line">function upload-master()&#123;</span><br><span class="line">	git add .</span><br><span class="line">	git commit -m "update code"</span><br><span class="line">	git push origin master</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 获得当前folder的大小</span><br><span class="line">function folder-size()&#123;</span><br><span class="line">	dir=`pwd`</span><br><span class="line">	du -h --max-depth=1</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 更新环境变量</span><br><span class="line"><span class="meta">#</span> PATH</span><br><span class="line">export PATH=/home/mxxmhh/anaconda3/bin:$PATH</span><br><span class="line">export PATH=/usr/local/cuda/bin$&#123;PATH:+:$&#123;PATH&#125;&#125;</span><br><span class="line"><span class="meta">#</span> CUDA PATH</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/:$&#123;LD_LIBRARY_PATH:+:$&#123;LD_LIBRARY_PATH&#125;&#125;</span><br><span class="line">export CUDA_HOME=/usr/local/cuda</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> terminal走privoxy设置</span><br><span class="line">export https_proxy="http://127.0.0.1:8118"</span><br><span class="line">export http_proxy="http://127.0.0.1:8118"</span><br><span class="line">export HTTP_PROXY="http://127.0.0.1:8118"</span><br><span class="line">export HTTPS_PROXY="http://127.0.0.1:8118"</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> 关闭terminal走privoxy设置</span><br><span class="line">function proxyv6_off()&#123;</span><br><span class="line">	unset https_proxy</span><br><span class="line">	unset http_proxy</span><br><span class="line">	unset HTTP_PROXY</span><br><span class="line">	unset HTTPS_PROXY</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="bash-aliases">.bash_aliases</h2>
-<p>在.bashrc文件中会发现下面几行：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if [ -f ~/.bash_aliases ]; then</span><br><span class="line">    . ~/.bash_aliases</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
-<p>即.bashrc包含.bash_aliases文件。<br>
-.bash_aliases放置常用的命令别名。</p>
-<h2 id="vim自定义配置">vim自定义配置</h2>
-<p>关于vim详细介绍，可以查看<a href="https://mxxhcm.github.io/2019/05/07/linux-vim/">linux-vim</a><br>
-vimrc文件如下，<a href="https://github.com/mxxhcm/code/blob/master/shell/vimrc" target="_blank" rel="noopener">代码地址</a></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> 使用四个空格代替tab键</span><br><span class="line">set expandtab</span><br><span class="line">set tabstop=4</span><br><span class="line">set shiftwidth=4</span><br><span class="line">set softtabstop=4	</span><br><span class="line">			</span><br><span class="line">" 打开文件类型检测</span><br><span class="line">filetype on</span><br><span class="line">" 根据不同的文件类型加载插件</span><br><span class="line">filetype plugin on</span><br><span class="line">set ignorecase</span><br><span class="line"></span><br><span class="line">" 定义前缀键</span><br><span class="line">" let mappleader=";"</span><br><span class="line"></span><br><span class="line">" 设置ctrl+a全选，ctrl+c复制，;y粘贴</span><br><span class="line">vnoremap ; "+</span><br><span class="line">nnoremap ; "+</span><br><span class="line">nmap ;p "+p</span><br><span class="line">nnoremap &lt;C-C&gt; "+y</span><br><span class="line">vnoremap &lt;C-C&gt; "+y</span><br><span class="line">nnoremap &lt;C-A&gt; ggVG</span><br><span class="line">vnoremap &lt;C-A&gt; ggVG</span><br><span class="line"></span><br><span class="line">" 删除#号开头</span><br><span class="line">nnoremap ;d3 :g/^#.*$/d&lt;CR&gt;</span><br><span class="line">nnoremap ;d# :g/^#.*$/d&lt;CR&gt;</span><br><span class="line">" 删除空行</span><br><span class="line">nnoremap ;ds :g/^\s*$/d&lt;CR&gt;</span><br><span class="line">" 删除以tab开头的tab</span><br><span class="line">nnoremap ;rt :0,$s/^\t//g&lt;CR&gt;</span><br><span class="line">" 用\^代替^</span><br><span class="line">nnoremap ;r6 :0,$s/\^/\\^/g&lt;CR&gt;</span><br><span class="line">nnoremap ;r^ :0,$s/\^/\\^/g&lt;CR&gt;</span><br><span class="line">" 用\\\\代替\\</span><br><span class="line">nnoremap ;r/ :0,$s/\\\\/\\\\\\\\/g&lt;CR&gt;</span><br><span class="line">nnoremap ;r? :0,$s/\\\\/\\\\\\\\/g&lt;CR&gt;</span><br><span class="line"></span><br><span class="line">" 给选中行加注释</span><br><span class="line">" cnoremap &lt;C-#&gt; s/^/# /g&lt;CR&gt;</span><br><span class="line">nmap ;ic :s/^/# /g&lt;CR&gt;</span><br><span class="line">vmap ;ic :s/^/# /g&lt;CR&gt;</span><br><span class="line">nmap ;dc :s/^# //g&lt;CR&gt;</span><br><span class="line">vmap ;dc :s/^# //g&lt;CR&gt;</span><br><span class="line">"vmap &lt;C-#&gt; :s/^/#/g&lt;CR&gt;</span><br><span class="line">"nmap &lt;C-#&gt; :s/^/#/g&lt;CR&gt;</span><br><span class="line"></span><br><span class="line">""" 状态栏设置</span><br><span class="line">" 总是显示状态栏</span><br><span class="line">set laststatus=2</span><br><span class="line">" 状态信息</span><br><span class="line">set statusline=%f%m%r%h%w\ %=#%n\ [%&#123;&amp;fileformat&#125;:%&#123;(&amp;fenc==\"\"?&amp;enc:&amp;fenc).((exists(\"\+bomb\")\ &amp;&amp;\ &amp;bomb)?\"\+B\":\"\").\"\"&#125;:%&#123;strlen(&amp;ft)?&amp;ft:'**'&#125;]\ [%c,%l/%L]\ %p%%</span><br><span class="line"></span><br><span class="line">"""光标设置</span><br><span class="line">" 设置显示光标当前位置</span><br><span class="line">set ruler</span><br><span class="line"></span><br><span class="line">" 开启行号显示</span><br><span class="line">set number</span><br><span class="line">" 高亮显示当前行/列</span><br><span class="line">set cursorline</span><br><span class="line">" set cursorcolumn</span><br><span class="line">" 高亮显示搜索结果</span><br><span class="line">set hlsearch</span><br><span class="line">" 显示文件名</span><br><span class="line"></span><br><span class="line">" 开启语法高亮</span><br><span class="line">syntax enable</span><br><span class="line">" 允许用指定语法高亮配色方案替换默认方案</span><br><span class="line">syntax on</span><br><span class="line">" 将制表符扩展为空格</span><br><span class="line">" 设置编辑时制表符占用空格数</span><br><span class="line">" 设置格式化时制表符占用空格数</span><br><span class="line">" 让 vim 把连续数量的空格视为一个制表符</span><br><span class="line">set autoindent</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《鸟哥的LINUX私房菜》基础篇<br>
-2.<a href="https://github.com/yangyangwithgnu/use_vim_as_ide" target="_blank" rel="noopener">https://github.com/yangyangwithgnu/use_vim_as_ide</a><br>
-3.<a href="https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029" target="_blank" rel="noopener">https://vi.stackexchange.com/questions/9028/what-is-the-command-for-select-all-in-vim-and-vsvim/9029</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/03/linux-stdin-stdout和stderr/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/03/linux-stdin-stdout和stderr/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">linux stdin stdout和stderr</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-03 00:09:27" itemprop="dateCreated datePublished" datetime="2019-06-03T00:09:27+08:00">2019-06-03</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-07-01 23:02:07" itemprop="dateModified" datetime="2019-07-01T23:02:07+08:00">2019-07-01</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="stdin-stdout-stderr">stdin, stdout, stderr</h2>
-<p>standard input(file handle 0)：标准输入，process利用这个file handle从用户读取数据<br>
-standard output(file handle 1)：标准输出，process向这个file handle写normal infor，会将输出输出到屏幕<br>
-standard error(file handle 2)：标准错误，process向这个file hanle写error infor</p>
-<h2 id="数据流重定向">数据流重定向</h2>
-<blockquote>
-<p>, &gt;&gt;, &lt;, &lt;&lt;</p>
-</blockquote>
-<h3 id="输出重定向">输出重定向</h3>
-<blockquote>
-<p>是将std output进行重定向，&gt;&gt;是将std output进行追加。如果要将std error重定向或者追加，需要使用2表示表示std error。<br>
-~$:ls -ld /etc/ &gt;~/etc_dir.txt</p>
-</blockquote>
-<h4 id="std-output-重定向">std output 重定向</h4>
-<p>~$:find / -name ~/.bashrc &gt;find_result</p>
-<h4 id="std-errort重定向">std errort重定向</h4>
-<p>~$:find / -name ~/.bashrc &gt;fing_right 2&gt; find_error<br>
-~$:find / -name ~/.bashrc &gt; find_result 2&gt;/dev/null<br>
-~$:find / -name ~/.bashrc &gt;find_result 2&gt;&amp;1</p>
-<h3 id="输入重定向">输入重定向</h3>
-<h4 id="从键盘读入">&lt;从键盘读入</h4>
-<p>~$:cat &gt; catfile<br>
-&gt;<br>
-&gt;<br>
-&gt; ctrl + D</p>
-<h4 id="从文件中读入数据">从文件中读入数据</h4>
-<p>cat &gt; catfile &lt; ~/.bashrc</p>
-<h4 id="重定义输入结束符">重定义输入结束符</h4>
-<p>cat &gt; catfile &lt;&lt; “eof”</p>
+<p>Monte Carlo方法在很多地方都出现过，但是它具体到底是干什么的，之前从来没有仔细了解过，这次正好趁着这个机会好好学习一下。<br>
+统计模拟中有一个重要的问题就是给定一个概率分布$p(x)$，生成它的样本。对于一些简单的分布，可以使用均匀分布产生的样本进行样本。但是对于一些复杂的样本，单单使用均匀分布就不行了，需要使用更加复杂的随机模拟方法。Markov Chain Monte Carlo就是一种随机模拟方法(simple simulation)，我们常见的gibbs sampling也是。通过多次模拟，产生多组实验数据，进行积分啊什么的。</p>
+<h2 id="monte-carlov-markov-chain">Monte Carlov Markov Chain</h2>
+<p>考虑以下，给定一个beta分布，如何进行采样？MCMC提供了从任意概率分布中采样的方法，尤其是当我们计算后验概率时极为有用。在贝叶斯公式中，如下图所示，我们需要从后验分布中进行采样，但是后验分布并不是那么好计算的，因为牵扯到$p(D)$的计算，根据全概率公式，需要进行积分，而beta分布的积分并不好解。<br>
+<img src="/2019/08/01/Monte-Carlo-Markov-Chain/bayesian.png" alt="bayesian"></p>
+<p>Wikipedia上MCMC的定义：MCMC是一类方法的统称，MCMC方法构建一个Markov chain，这个Markov chain的stationary distribution是我们的目标distribution，然后进行采样。经过很多步之后的一个state可以看成是我们目标distribution的一个样本。简单解释以下就是，给定一个概率分布$p(x)$，我们想要生成这个概率分布的一些样本。因为马尔科夫链能够收敛到stationary distribution，我们的想法就是构造一个转移矩阵为$P$的马尔科夫连，使得该马尔科夫的stationry distribution是$p(x)$，那么不管我们从任何初始状态$x_0$出发，得到一个马尔科夫链$x_0,x_1,\cdots, x_t,x_{t+1}, \cdots$，如果马尔科夫链在第$n$步已经到了stationary distribution，那么$t+1$后的states都可以看成$p(x)$的样本。</p>
 <h2 id="示例">示例</h2>
-<h3 id="示例1">示例1</h3>
-<p>~$:my_command &lt;inputfile 2&gt;errorfile | grep XYZ<br>
-执行my_command，<br>
-打开inputfile文件作为标准输入，<br>
-打开errorfile文件作为标准错误，<br>
-|重定向上述命令的结果到grep 命令</p>
-<h3 id="示例2">示例2</h3>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">echo "hello"</span><br><span class="line"><span class="meta">#</span> 是将"hello"给了echo的stdin的简写</span><br><span class="line">echo &lt; text.txt</span><br><span class="line"><span class="meta">#</span> 将text.txt给echo的stdin</span><br><span class="line">ps | grep 1000</span><br><span class="line"><span class="meta">#</span> |将ps的stdout给了grep的stdin</span><br><span class="line">ls . &gt; current_dir_list.txt</span><br><span class="line"><span class="meta">#</span> &gt;将ls .的stdout输出到相应文件</span><br><span class="line">ls. &gt;&gt; current_dir_list.txt</span><br><span class="line"><span class="meta">#</span> &gt;&gt;是追加，&gt;不是</span><br></pre></td></tr></table></figure>
-<h2 id="2-1和">2&gt;&amp;1和&amp;&gt;</h2>
-<p>2&gt;&amp;1是将stderr重定向到stdout，比如&quot;command &gt;/dev/null 2&gt;&amp;1&quot;是先将comand的stdout重定向到/dev/null中，然后将stderr重定向到stdout，因为stdout已经指向了/dev/null，所以stderr就重定向到了/dev/null。&quot;command &gt;out.txt 2&gt;&amp;1&quot;是先将stdout重定向到out.txt，然后将stderr重定向到stdout，也就是out.txt。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">command &gt; output_error.txt 2&gt;&amp;1，</span><br><span class="line">#可以将2&gt;&amp;1看成将stderr重定向到stdout，如果写成2&gt;1的话看起来像是将stderr重定向到一个名为$1$的文件。在redirece的上下文中，&amp;可以看成file descriptor的意思。为什么不写成&amp;2&gt;&amp;1，这会被解析成&amp; 和2&amp;1，第一个&amp;会被解析成后台运行，然后剩下的就是2&gt;&amp;1了。</span><br><span class="line"># 将command的stdout和stderr都输出到该文件</span><br><span class="line">command &amp;&gt; /dev/null</span><br><span class="line"># 将command的stderr和stdout输出到/dev/null，将会什么也不输出</span><br></pre></td></tr></table></figure>
-<p>&amp;&gt;是bash的扩展，而2&gt;&amp;1是standard Bourne/POSIX shell。</p>
-<h2 id="一个神奇的命令-dev-null">一个神奇的命令&lt;/dev/null &amp;&gt;</h2>
-<p>/dev/null是一个神奇的文件，它代表null device，会抛弃所有写入它的数据，但是会report写操作成功了，并且它不会向读取它的任何process提供任何数据，也就是向读取它的程序发送一个EOF。<br>
-所以&lt;/dev/null会发送一个EOF到stdin，&amp;就是将程序放在后台运行，&amp;的详细介绍可见<a href>linux process章节</a><br>
-这时候如果再加一个重定向命令，就是将命令的输出重定向到某个文件中而不在stdout中显示。</p>
-<h2 id="示例-v2">示例</h2>
-<p>~$:nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp;  # 后台运行sslocal<br>
-~$:nohup /home/mxxmhh/anaconda3/bin/python <a href="http://main.py" target="_blank" rel="noopener">main.py</a> &gt;log_name 2&gt;&amp;1 &amp;</p>
+<p>我们从Beta分布中进行采样，Beta分布的公式如下所示：<br>
+$$f(\theta;\alpha, \beta) = \frac{1}{B(\alpha, \beta)}\theta^{\alpha-1}(1-\theta)^{\beta-1},\alpha\gt 0,\beta\gt 0, x\in \left[0,1\right]$$<br>
+其中，$\frac{1}{B(\alpha, \beta)} = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$，是$\alpha,\beta$的函数，这里我们假设$\alpha,\beta$是固定的。<br>
+MCMC方法能够创建一个Markov chain，它的stationary distribution是Beta distribution。</p>
+<p>定义$s=(s_1,s_2,\cdots, s_M)$是desired stationary distribution。我们的目标是创建一个Markov Chain，它的stationary distribution是desitred stationary distribution。随机初始化一个具有$M$个states的Markov Chain，transition matrix 是$P$，$p_{ij}$代表从state $i$到$j$的概率。<br>
+随机初始化的Markov Chain肯定有一个stationary distribution，但是不是我们想要的哪个。我们的目标就是改变这个Markov Chain让它的stationary distribution是我们想要的。为了实现这个目的：</p>
+<ol>
+<li>随机选择一个初始state $i$</li>
+<li>根据$P$的第$i$行随机选择一个新的proposal state</li>
+<li>计算一个measure称作Acceptance Probabiliby：<br>
+$$a_{ij} = min(\frac{s_j p_{ji}}{s_ip_{ij}},1)$$</li>
+<li>投掷一枚正面向上概率为$a_{ij}$的硬币，如果正面向上，accept这个proposal，移动到下一个state，否则，reject 这个proposal，留在当前state。</li>
+<li>重复下去</li>
+</ol>
+<p>经过很长时间以后，这个chain会收敛，我们可以使用这个chain的states作为从任意distribution的采样。不同的分布，使用的acceptance probability不同而已，其实就是根据给出的分布计算一个接收概率而已。</p>
+<h3 id="从beta分布中采样">从beta分布中采样</h3>
+<p>Beta分布是定义在$[0,1]$上的连续分布，它有$[0,1]$上的无穷多个states。假设具有$[0,1]$上无限个states的markov chain的transition matrix $P$是一个对称矩阵，即$p_{ij}=p_{ji}$，acceptance probability中的$p_{ij}$项就可以消掉。<br>
+接下来我们要做的是：</p>
+<ol>
+<li>从均匀分布$(0,1)$中随机选择一个初始state $i$</li>
+<li>根据$P$的第$i$行值随机选择一个新的proposal state。</li>
+<li>计算Acceptance Probability：<br>
+$$a_{ij} = min(\frac{s_j p_{ji}}{s_ip_{ij}},1)$$<br>
+可以化简为：<br>
+$$a_{ij} = min(\frac{s_j}{s_i},1)$$<br>
+其中$s_i = Ci^{\alpha-1} (1-i)^{\beta-1},s_j = Cj^{\alpha-1} (1-j)^{\beta-1}$，</li>
+<li>投掷一枚正面向上概率为$a_{ij}$的硬币，如果正面向上，accept这个proposal，移动到下一个state，否则，reject 这个proposal，留在当前state。</li>
+<li>重复下去</li>
+</ol>
 <h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://unix.stackexchange.com/questions/27955/the-usage-of-dev-null-in-the-command-line" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/27955/the-usage-of-dev-null-in-the-command-line</a><br>
-2.<a href="https://stackoverflow.com/questions/3385201/confused-about-stdin-stdout-and-stderr" target="_blank" rel="noopener">https://stackoverflow.com/questions/3385201/confused-about-stdin-stdout-and-stderr</a><br>
-3.<a href="https://stackoverflow.com/questions/818255/in-the-shell-what-does-21-mean" target="_blank" rel="noopener">https://stackoverflow.com/questions/818255/in-the-shell-what-does-21-mean</a><br>
-4.<a href="https://askubuntu.com/questions/635065/what-is-the-differences-between-and-21" target="_blank" rel="noopener">https://askubuntu.com/questions/635065/what-is-the-differences-between-and-21</a></p>
+<p>1.<a href="https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson</a><br>
+2.<a href="https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1" target="_blank" rel="noopener">https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1</a><br>
+3.<a href="http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf" target="_blank" rel="noopener">http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA数学八卦.pdf</a><br>
+4.<a href="https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/" target="_blank" rel="noopener">https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/</a></p>
 
           
         
@@ -1879,7 +1550,7 @@ standard error(file handle 2)：标准错误，process向这个file hanle写erro
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/31/markov-matrices/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -1899,7 +1570,7 @@ standard error(file handle 2)：标准错误，process向这个file hanle写erro
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">reinforcement learning an introduction 第6章笔记</a>
+                <a href="/2019/07/31/markov-matrices/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">Markov Matrices</a>
               
             
           </h1>
@@ -1924,7 +1595,7 @@ standard error(file handle 2)：标准错误，process向这个file hanle写erro
                 
               
 
-              <time title="创建时间：2019-06-02 14:31:49" itemprop="dateCreated datePublished" datetime="2019-06-02T14:31:49+08:00">2019-06-02</time>
+              <time title="创建时间：2019-07-31 20:18:10" itemprop="dateCreated datePublished" datetime="2019-07-31T20:18:10+08:00">2019-07-31</time>
             
 
             
@@ -1941,7 +1612,7 @@ standard error(file handle 2)：标准错误，process向这个file hanle写erro
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-07 10:53:38" itemprop="dateModified" datetime="2019-10-07T10:53:38+08:00">2019-10-07</time>
+                <time title="修改时间：2019-09-24 21:19:37" itemprop="dateModified" datetime="2019-09-24T21:19:37+08:00">2019-09-24</time>
               
             
           </span>
@@ -1994,244 +1665,74 @@ standard error(file handle 2)：标准错误，process向这个file hanle写erro
       
         
           
-            <h2 id="td-learning">TD Learning</h2>
-<p>TD方法是DP和MC方法的结合，像MC一样，TD可以不需要model直接从experience中学习，像DP一样，TD是bootstrap的方法。<br>
-本章的结构和之前一样，首先研究policy evaluation或者叫prediction问题，即给定一个policy $\pi$，估计$v_{\pi}$；然后研究control问题。DP,TD,MC方法都是使用GPI方法解control问题，不同点在于prediction问题的解法。<br>
-为什么叫TD？<br>
-因为TD更新是基于不同时间上两个estimate的估计进行的。</p>
-<h2 id="td-prediction">TD prediction</h2>
-<p>TD和MC都是利用采样获得的experience求解prediction问题。给定policy $\pi$下的一个experience，TD和MC方法使用该experience中出现的non-terminal state $S_t$估计$v_{\pi}$的$V$。他们的不同之处在于MC需要等到整个experience的return知道以后，把这个return当做$V(S_t)$的target，every visit MC方法的更新规则如下：<br>
-$$V(S_t) = V(S_t) + \alpha \left[G_t - V(S_t)\right]\tag{1}$$<br>
-其中$G_t$是从时刻$t$到这个episode结束的return，$\alpha$是一个常数的步长，这个方法叫做$constant-\alpha$ MC。MC方法必须等到一个episode结束，才能进行更新，因为只有这个时候$G_t$才知道。为了更方便的训练，就有了TD方法。TD方法做的改进是使用$t+1$时刻state $V(S_{t+1})$的估计值和reward $R_{t+1}$的和作为target：<br>
-$$V(S_t) = V(S_t) + \alpha \left[R_{t+1}+\gamma V(S_{t+1}) - V(S_t)\right]\tag{2}$$<br>
-如果V在变的话，是不是应该是下面的公式？？<br>
-$$V_{t+1}(S_t) = V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]$$<br>
-即只要有了到$S_{t+1}$的transition并且接收到了reward $R_{t+1}$就可以进行上述更新。MC方法的target是$G_t$，而TD方法的target是$\gamma V(S_{t+1} + R_{t+1})$，这种TD方法叫做$TD-0$或者$one\ step\ TD$，它是$TD(\lambda)$和$n-step\ TD$的一种特殊情况。</p>
-<h3 id="算法">算法</h3>
-<p>下面是$TD(0)$的完整算法：<br>
-算法1 Tabular TD(0) for $V$<br>
-输入： 待评估的policy $\pi$<br>
-算法参数：步长$\alpha \in (0,1]$<br>
-初始化： $V(s), \forall s\in S^{+}，V(terminal) = 0$<br>
-<strong>Loop</strong> for each episode<br>
-$\qquad$初始化$S$<br>
-$\qquad A\leftarrow \pi(a|S)$<br>
-$\qquad$<strong>Loop</strong> for each step of episode<br>
-$\qquad\qquad$执行action $A$，得到$S’$和$R$<br>
-$\qquad\qquad V(S) = V(S) + \alpha \left[R + \gamma V(S’) - V(S)\right]$<br>
-$\qquad\qquad$$S\leftarrow S’$<br>
-$\qquad$<strong>Until</strong> $S$ 是terminal state</p>
-<p>$TD(0)$是bootstrap方法，因为它基于其他state的估计value进行更新。从第三章中我们知道：<br>
-\begin{align*}<br>
-v_{\pi}(s) &amp; = \mathbb{E}_{\pi}\left[G_t\right]\tag{3}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma G_{t+1}| S_t = s\right]\tag{4}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[R_{t+1}+\gamma v_{\pi}(S_{t+1})|S_t = s\right]\tag{5}\\<br>
-\end{align*}<br>
-MC使用式子$(3)$的estimate作为target，而DP使用式子$(5)$的estimate作为target。MC方法用一个sample的return代替式子$(3)$中真实的未知expected return $G_t$；DP是用$V(S_{t+1})$作为$v_{\pi}(S_{t+1})$的一个估计，因为$v_{\pi}(S_{t+1})$的真实值是不知道的。TD结合了MC的采样以及DP的bootstrap，它对式子$(4)$的tranisition进行sample，同时使用$v_{\pi}$的估计值$V$进行计算。<br>
-<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/backup_td.png" alt="backup_TD"><br>
-TD的backup图如图所示。TD和MC updates被称为sample updates，因为这两个算法的更新都牵涉到采样一个sample successor state，使用这个state的value和它后继的这条路上的reward计算一个backed-up value，然后根据这个值更新该state的value。sample updates和DP之类的expected updates的不同在于，sample updates使用一个sample successor进行更新，expected updates使用所有可能的successors distribution进行更新。<br>
-$R_{t+1} + \gamma V(S_{t+1}) - V(S_t)$可以看成一种error，衡量了$S_t$当前的estimated value $V(S_t)$和一个更好的estimated value之间的差异$R_{t+1} +\gamma V(S_{t+1})$，我们把它叫做$TD-error$，用$\delta_t$表示。$\delta_t$是$t$时刻的$TD-error$，在$t+1$时刻可用，用公式表示是：<br>
-$$\delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) \tag{6}$$<br>
-如果$V$在一个episode中改变的话，那么上述公式是不是应该写成：<br>
-$$\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)$$<br>
-应该在$t$时刻，计算的TD error是用来更新$t+1$时刻的value的。如果$V$在一个episdoe中不变的话，就像MC方法一样，那么MC error可以写成TD errors的和。<br>
-\begin{align*}<br>
-G_t - V(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V(S_t) + \gamma V(S_{t+1}) - \gamma V(S_{t+1})\\<br>
-&amp; = R_{t+1} + \gamma V(S_{t+1}) - V(S_t) + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
-&amp; = \delta_t + \gamma G_{t+1} - \gamma V(S_{t+1})\\<br>
-&amp; = \delta_t + \gamma(G_{t+1} - V(S_{t+1}))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2(G_{t+2} - V(S_{t+2}))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(G_T-V(S_T))\\<br>
-&amp; = \delta_t + \gamma\delta_{t+1} + \gamma^2\delta_{t+2} + \cdots + \gamma^{T-t-1}\delta_{T-1} + \gamma^{T-t}(0-0)\\<br>
-&amp; = \sum_{k=t}^{T-1} \gamma^{k-t}\delta_k \tag{7}\\<br>
-\end{align*}<br>
-如果$V$在一个episode中改变了的话，像$TD(0)$一样，这个公式就不精确成立了，如果$\alpha$足够小的话，还是近似成立的。<br>
-$$\delta_t = R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)$$<br>
-\begin{align*}<br>
-V_{t+1}(S_t) &amp;= V_t(S_t) + \alpha \left[R_{t+1}+\gamma V_t(S_{t+1}) - V_t(S_t)\right]\\<br>
-&amp;= V_t(S_t) + \alpha \delta_t<br>
-\end{align*}</p>
-<p>\begin{align*}<br>
-G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t}) - \gamma V_{t+1}(S_{t})\\<br>
-&amp; = R_{t+1} + \gamma V_{t+1}(S_{t}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
-&amp; = R_{t+1} + \gamma (V_t(S_t) + \alpha \delta_t) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
-&amp; = R_{t+1} + \gamma V_t(S_t) - V_t(S_t) + \gamma \alpha \delta_t + \gamma G_{t+1}- \gamma V_{t+1}(S_{t})\\<br>
-\end{align*}<br>
-然而上面是错误的，因为$\delta_t$需要的是$V_t(S_{t+1})$<br>
-\begin{align*}<br>
-G_t - V_t(S_t) &amp; = R_{t+1} + \gamma G_{t+1} - V_t(S_t) + \gamma V_{t+1}(S_{t+1}) - \gamma V_{t+1}(S_{t+1})\\<br>
-&amp; = R_{t+1} + \gamma V_{t+1}(S_{t+1}) - V_t(S_t) + \gamma G_{t+1}- \gamma V_{t+1}(S_{t+1})\\<br>
-\end{align*}<br>
-\begin{align*}<br>
-\delta_t &amp;= R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\\<br>
-\delta_{t+1} &amp;= R_{t+2} + \gamma V_{t+1}(S_{t+2}) - V_{t+1}(S_{t+1})\\<br>
-\delta_{t+2} &amp;= R_{t+3} + \gamma V_{t+2}(S_{t+3}) - V_{t+2}(S_{t+2})\\<br>
-\delta_{t+3} &amp;= R_{t+4} + \gamma V_{t+3}(S_{t+4}) - V_{t+3}(S_{t+3})\\<br>
-\end{align*}</p>
-<p>\begin{align*}<br>
-&amp;\delta_t+\delta_{t+1}+\delta_{t+2}+\delta_{t+3}\\<br>
-= &amp;R_{t+1} + \gamma V_t(S_{t+1}) - V_t(S_t)\\<br>
-+&amp;R_{t+2} + \gamma V_{t+1}(S_{t+2}) - V_{t+1}(S_{t+1})\\<br>
-+&amp;R_{t+3} + \gamma V_{t+2}(S_{t+3}) - V_{t+2}(S_{t+2})\\<br>
-+&amp;R_{t+4} + \gamma V_{t+3}(S_{t+4}) - V_{t+3}(S_{t+3})\\<br>
-\end{align*}<br>
-OK。。。还是没有算出来。。</p>
-<h3 id="td例子">TD例子</h3>
-<p>TD的一个例子。每天下班的时候，你会估计需要多久能到家。你回家的事件和星期，天气等相关。在周五的晚上6点，下班之后，你估计需要30分钟到家。到车旁边是$6:05$，而且天快下雨了。下雨的时候会有些堵车，所以估计从现在开始大概还需要$35$分钟才能到家。十五分钟后，下了高速，这个时候你估计总共的时间是$35$分钟（包括到达车里的$5$分钟）。然后就遇到了堵车，真正到达家里的街道是$6:40$，三分钟后到家了。</p>
+            <h2 id="markov-matrices">Markov Matrices</h2>
+<h3 id="定义">定义</h3>
+<p>马尔科夫矩阵满足两个条件</p>
+<ol>
+<li>所有元素大于$0$</li>
+<li>行向量之和为$1$</li>
+</ol>
+<h3 id="属性">属性</h3>
+<ol>
+<li>$\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&amp;b\\c&amp;d\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&amp;b\\c&amp;d - 1\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)\begin{bmatrix}1\\ \vdots\\ 1\end{bmatrix} = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。</li>
+<li>所有其他的特征值小于$1$。</li>
+</ol>
+<h2 id="markov-property">Markov Property</h2>
+<p>简单的来说，就是下一时刻的状态只取决于当前状态，跟之前所有时刻的状态无关，即：<br>
+$$P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t) \tag{1}$$</p>
+<h2 id="markov-chain-process">Markov Chain(Process)</h2>
+<p>如果一个Chain(process)是Markov的，就叫它Markov Chain(Process)。</p>
+<h2 id="stationary-distribution">Stationary Distribution</h2>
+<p>为什么要用Markov Chain呢？因为它有一个很好的性质，叫做stationary distribution。简单的来说，就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。举个例子，股票有牛市和熊市，还有波动状态，它们的转换关系如下所示：<br>
+<img src="/2019/07/31/markov-matrices/markov_transition.png" alt="markov_transition"><br>
+状态转义矩阵矩阵如下表所示：</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:center">State</th>
-<th style="text-align:center">Elapsed Time</th>
-<th style="text-align:center">Predicted Time to Go</th>
-<th style="text-align:center">Predicted Total Time</th>
+<th style="text-align:center"></th>
+<th style="text-align:center">牛市</th>
+<th style="text-align:center">熊市</th>
+<th style="text-align:center">波动</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:center">leaveing office</td>
-<td style="text-align:center">0</td>
-<td style="text-align:center">30</td>
-<td style="text-align:center">30</td>
+<td style="text-align:center">牛市</td>
+<td style="text-align:center">0.9</td>
+<td style="text-align:center">0.075</td>
+<td style="text-align:center">0.025</td>
 </tr>
 <tr>
-<td style="text-align:center">reach car</td>
-<td style="text-align:center">5</td>
-<td style="text-align:center">35</td>
-<td style="text-align:center">40</td>
+<td style="text-align:center">熊市</td>
+<td style="text-align:center">0.15</td>
+<td style="text-align:center">0.8</td>
+<td style="text-align:center">0.05</td>
 </tr>
 <tr>
-<td style="text-align:center">下高速</td>
-<td style="text-align:center">20</td>
-<td style="text-align:center">15</td>
-<td style="text-align:center">35</td>
-</tr>
-<tr>
-<td style="text-align:center">堵车</td>
-<td style="text-align:center">30</td>
-<td style="text-align:center">10</td>
-<td style="text-align:center">40</td>
-</tr>
-<tr>
-<td style="text-align:center">门口的街道</td>
-<td style="text-align:center">40</td>
-<td style="text-align:center">3</td>
-<td style="text-align:center">43</td>
-</tr>
-<tr>
-<td style="text-align:center">到家</td>
-<td style="text-align:center">43</td>
-<td style="text-align:center">0</td>
-<td style="text-align:center">43</td>
+<td style="text-align:center">波动</td>
+<td style="text-align:center">0.25</td>
+<td style="text-align:center">0.25</td>
+<td style="text-align:center">0.5</td>
 </tr>
 </tbody>
 </table>
-<p>rewards是每一个journey leg的elapsed times，这里我们研究的是evaluation问题，所以可以直接使用elapsed time，如果是control问题，要在elapsed times前加负号。state value是expected time。上面的第一列数值是reward，第二列是当前state的value估计值。<br>
-如果使用$\alpha = 1$的TD和MC方法。对于MC方法，对于$S_t$的所有state，都有：<br>
-\begin{align*}<br>
-V(S_t) &amp;= V(S_t) + (G_t - V(S_t))\\<br>
-&amp; = G_t \\<br>
-&amp; = 43<br>
-\end{align*}<br>
-对于TD方法，让$\gamma=1$，有：<br>
-\begin{align*}<br>
-V(S_t) &amp;= V_t(S_t) + \alpha (R_{t+1} +  \gamma V_t(S_{t+1}) - V(S_t))\\<br>
-&amp;= R_{t+1} + V_t(S_{t+1})<br>
-\end{align*}</p>
-<h3 id="td-prediction的好处">TD Prediction的好处</h3>
-<p>TD是bootstrap方法，相对于MC和DP来说，TD的好处有以下几个：</p>
-<ol>
-<li>相对于DP，不需要environment, reward model以及next-state probability distribution。</li>
-<li>相对于MC，TD是online，incremental的。MC需要等到一个episode结束，而TD只需要等一个时间步（本节介绍的TD0）。</li>
-<li>TD在table-base case可以为证明收敛，而general linear function不一定收敛。</li>
-</ol>
-<p>但是具体TD好还是MC好，目前还没有明确的数学上的理论证明。而实践上表明，TD往往要比constant $\alpha$ MC算法收敛的快。</p>
-<h2 id="td-0-的优势">TD(0)的优势</h2>
-<p>如果我们只有很少的experience的话，比如有$10$个episodes，或者有$100$个timesteps。这种情况下，我们会重复的使用这些这些experience进行训练直到算法收敛。具体方法是，给定一个approximate value function $V$，在每一个只要不是terminal state的时间$t$处，计算MC和TD增量，最后使用所有增量之和只更新value function一次。举个例子好了，假如我们有三个episdoes，<br>
-A,B,C<br>
-B,A<br>
-A,A<br>
-更新的方法是，$V(A) = V(A) + \alpha(G_1 - V(A) + G_2 - V(A) + G_{31} - V(A) + G_{32} -V(A))$<br>
-这种方法叫做batch updating，因为只有在一个batch完全处理完之后才进行更新，其实这个和DP挺像的，只不过DP直接利用的是environment dynamic，而我们使用的是样本。<br>
-在batch updating中，TD(0)一定会收敛到一个与$\alpha$无关的结果，只要$\alpha$足够下即可，同理batch constant $\alpha$ MC算法同样条件下也会收敛到一个确定的结果，只不过和batch TD结果不同而已。Normal updating的方法并没有朝着整个batch increments的方法移动，但是大概方向差不多。其实就是一个把整个batch的所有experience的increment加起来一起更新，一个是每一个experience更新一次，就这么点区别。<br>
-具体来说，batch TD和batch MC哪个更好一些呢？这就牵扯到他们的原理了。Batch MC的目标是最小化training set上的mse，而batch TD的目标是寻找Markov process的最大似然估计。一般来说，maximum likeliood estimate是进行参数估计的。在这里的话，TD使用mle从已有episodes中生成markov process模型的参数：从$i$到$j$的transition probatility是观测到从$i$到$j$的transition所占的百分比，对应的expected reward是观测到的rewards的均值。给出了这个model之后，如果这个模型是exactly correct的话，那么我们就可以准确的计算出value function的estimate，这个成为certainty-equivalence estimate，因为它相当于假设markov process的model是一致的，而不是approximated，一般来说，batch TD(0)收敛到cetainty-equivalence estimate。<br>
-从而，我们可以简单的解释以下为什么batch TD比batch MC收敛的快。因为batch TD计算的是真实的cetainty-equivalence estimate。同样的，对于non batch的TD和MC来说，虽然TD没有使用cetainty-equivalence，但是它们大概在向那个方向移动。<br>
-尽管cetrinty-equivalence是最优解，但是，但是，但是，cost太大了，如果有$n$个states，计算mle需要$n^2$的空间，计算value function时候，需要$n^3$的计算步数。当states太多的话，实际上并不可行，还是老老实实的使用TD把，只会用不超过$n$的空间。。</p>
-<h2 id="td具体算法介绍">TD具体算法介绍</h2>
-<h3 id="sarsa">Sarsa</h3>
-<h4 id="介绍">介绍</h4>
-<p>Sarsa是一个on-policy的 TD control算法。按照GPI的思路来，先进行policy evaluation，在进行policy improvement。首先解prediction问题，按照以下action value的$TD(0)$公式估计当前policy $\pi$下，所有action和state的$q$值$q_{\pi}(s,a)$：<br>
-$$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right] \tag{8}$$<br>
-当$S_{t+1} = 0$时，$Q(S_{t+1}, A_{t+1})=0$，相应的backup diagram如下图所示。<br>
-<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/ff.png" alt="f"><br>
-第二步解control问题，在on-policy的算法中，不断的估计behaviour policy $\pi$的$q_{\pi}$，同时改变$\pi$朝着$q_{\pi}$更大的方向移动。Sarsa算法中，behaviour policy和target policy是一样的，在不断的改变。完整的算法如下：<br>
-<em><em>Sarsa算法(on-policy control) 估计$Q\approx q_</em>$</em>*<br>
-对于所有$s\in S^{+}, a\in A(s)$，随机初始化$Q(s,a)$，$Q(terminal, \cdot) = 0$<br>
-Loop for each episode<br>
-$\qquad$ 获得初始状态$S$<br>
-$\qquad$ 使用policy（如$\epsilon$-greedy算法）根据state $S$选择当前动作$A$<br>
-$\qquad$ Loop for each step of episode<br>
-$\qquad\qquad$ 采取action，得到R和S’<br>
-$\qquad\qquad$ 使用policy（和上面的policy一样）根据S’选择A’<br>
-$\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma Q(S’,A’) - Q(S,A)\right]$<br>
-$\qquad\qquad S\leftarrow S’, A\leftarrow A’$<br>
-$\qquad$ until $S$是terminal</p>
-<h4 id="示例">示例</h4>
-<h3 id="q-learning">Q-learning</h3>
-<p>$$Q(S_t,A_T) \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma max Q(S_{t+1}, A_{t+1}) -Q(S_t,A_t)\right]\tag{9}$$<br>
-这一节介绍的是off-policy的TD contrl算法，Q-learning。对于off-policy算法来说，behaviour policy用来选择action，target policy是要评估的算法。在Q-learning算法中，直接学习的就是target policy的optimal action value function $q_{*}$，和behaviour policy无关。完整的Q-learning算法如下：<br>
-<strong>Q-learning算法(off-policy control) 估计$\pi \approx \pi_{*}$</strong><br>
-对于所有$s\in S^{+}, a\in A(s)$，随机初始化$Q(s,a)$，$Q(terminal, \cdot) = 0$<br>
-Loop for each episode<br>
-$\qquad$ 获得初始状态$S$<br>
-$\qquad$ Loop for each step of episode<br>
-$\qquad\qquad$ 使用behaviour policy（如$\epsilon$-greedy算法）根据state $S$选择当前动作$A$<br>
-$\qquad\qquad$ 执行action $A$，得到$R$和$S’$<br>
-$\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+ \gamma max Q(S’,A’) - Q(S,A)\right]$<br>
-$\qquad\qquad S\leftarrow S’$<br>
-$\qquad$ until $S$是terminal</p>
-<h3 id="expected-sarsa">Expected Sarsa</h3>
-<p>Q-learning对所有next state-action pairs取了max操作。如果不是取max，而是取期望呢？<br>
-\begin{align*}<br>
-Q(S_t,A_T) &amp; \leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \mathbb{E}_{\pi}\left[ Q(S_{t+1}, A_{t+1})| S_{t+1} \right] -Q(S_t,A_t)\right]\\<br>
-&amp;\leftarrow Q(S_t,A_t) + \alpha \left[R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q -Q(S_t,A_t)\right]\tag{10}<br>
-\end{align*}<br>
-其他的和Q-learning保持一致。给定next state $S_{t+1}$，算法在expectation上和sarsa移动的方向一样，所以被称为expected sarsa。这个算法可以是on-policy，但是通常它是是off-policy的。比如，on-policy的话，policy使用$\epsilon$ greedy算法，off-policy的话，behaviour policy使用stochastic policy，而target policy使用greedy算法，这其实就是Q-learning算法了。所以，Expected Sarsa实际上是对Q-learning的一个归纳，同时又有对Sarsa的改进。<br>
-Q-learning和Expected Sarsa的backup diagram如下所示：<br>
-<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/q_learning_and_expected_Sarsa_backup_diagram.png" alt="q_learning_and_expected_Sarsa_backup_diagram"></p>
-<h3 id="sarsa-vs-q-learning-vs-expected-sarsa">Sarsa vs Q-learning vs Expected Sarsa</h3>
-<p>Sarsa是on-policy的，behaviour policy和target policy一直在变（$\epsilon$在变），但是behaviour policy和target policy一直都是一样的。<br>
-Q-learning是off-policy的，target policy和behaviour policy一直都不变（可能$\epsilon$会变，但是这个不是Q-learning的重点），behaviour policy保证exploration，target policy是greedy算法。<br>
-Q-learning是off-policy算法，那么又为什么one-step Q-learning不需要importance sampling？Importance sampling的作用是为了使用policy $b$下观察到的rewards估计policy $\pi$下的expected rewards。尽管在Q-learning中，behaviour policy和target policy不同，behaviour policy仅仅用来采样$s_t, a_t, R_{t+1}$，在更新$Q$值时，使用target policy(epsilon policy)生成的实际上是$a’ = \max_a Q(s_{t+1}, a)$。Target policy和behaviour policy不同的实际上是$a_t$，但是在更新$Q$值时，用的也是$a_t$。也就是说使用behaviour policy选择的是$a_t$，接下来使用target policy选择执行$a_t$后的新action $a_{t+1}$。<br>
-Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$中，action $a$已经被选择了，用哪个policy选择的是无关紧要的，TD error可以使用$Q(s’,*)$上的boostrap进行计算，而不需要behaviour policy。</p>
-<h2 id="maximization-bias和double-learning">Maximization Bias和Double Learning</h2>
-<p>目前介绍的所有control算法，都涉及到target polices的maximization操作。Q-learning中有greedy target policy，Sarsa的policy通常是$\epsilon$ greedy，也会牵扯到maximization。Max操作会引入一个问题，加入某一个state，它的许多action对应的$q(s,a)=0$，然后它的估计值$Q(s,a)$是不确定的，可能比$0$大，可能比$0$小，还可能就是$0$。如果使用max $Q(s,a)$的话，得到的值一定是大于等于$0$的，显然有一个positive bias，这就叫做maximization bias。</p>
-<h3 id="maximization-bias例子">Maximization Bias例子</h3>
-<p>给出如下的一个例子：<br>
-<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/example_6_7.png" alt="example_6_7"><br>
-这个MDP有四个state，A,B,C,D，C和D是terminal state，A总是start state，并且有left和right两个action，right action转换到C，reward是0,left action转换到B，reward是$0$，B有很多个actions，都是转换到$D$，但是rewards是不同，reward服从一个均值为$-0.5$，方差为$1.0$的正态分布。所以reward的期望是负的，$-0.5$。这就意味着在大量实验中，reward的均值往往是小于$0$的。<br>
-基于这个假设，在A处总是选择left action是很蠢的，但是因为其中有一些reward是positive，如果使用max操作的话，整个policy会倾向于选择left action，这就造成了在一些episodes中，reward是正的，但是如果在long run中，reward的期望就是负的。</p>
-<h3 id="maximizaiton-bias出现的直观解释">Maximizaiton Bias出现的直观解释</h3>
-<p>那么为什么会出现这种问题呢？<br>
-用$X1$和$X2$表示reward的两组样本数据。如下所示：<br>
-<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/maximization_bias.png" alt="maximization_bias"><br>
-在$X1$这组样本中，样本均值是$-0.43$，X2样本均值是$-0.36$。在增量式计算样本均值$\mu$时，得到的最大样本均值的期望是$0.09$，而实际上计算出来的期望的最大值$\mathbb{E}(X)$是$-0.36$。要使用$\mathbb{E} \left[max\ (\mu)\right]$估计$max\ \mathbb{E}(X)$，显然它们的差距有点大，$max(\mu)$是$max E(X)$的有偏估计。也就是说使用$max Q(s’,a’)$更新$Q(s,a)$时，$Q(s,a)$并没有朝着它的期望$-0.5$移动。估计这只是一个直观的解释，严格的证明可以从论文中找。</p>
-<h3 id="如何解决maximization-bias问题">如何解决Maximization Bias问题</h3>
-<p>那么怎么解决这个问题呢，就是同时学习两个$Q$函数$Q_1, Q_2$，这两个$Q$函数的地位是一样的，每次随机选择一个选择action，然后更新另一个。证明的话，Van Hasselt证明了$\mathbb{E}(Q_2(s’,a*)\le max\ Q_1(s’,a*)$，也就是说$Q_1(s,a)$不再使用它自己的max value进行更新了。<br>
-下面是$Q$-learning和Double $Q$-learning在训练过程中在A处选择left的统计：<br>
-<img src="/2019/06/02/reinforcement-learning-an-introduction-第6章笔记/q_learning_vs_double_q_learning.png" alt="q_learning_vs_double_q_learning"><br>
-可以看出来，Double $Q$-learning要比$Q$-learning收敛的快和好。<br>
-当然，Sarsa和Expected Sarsa也有maximization bias问题，然后有对应的double版本，Double Sarsa和Double Expected Sarsa。</p>
-<h2 id="afterstates">Afterstates</h2>
-<p>之前介绍了state value function和action value function。这里介绍一个afterstate value function，afterstate value function就是在某个state采取了某个action之后再进行评估，一开始我想这步就是action value function。事实上不是的，action value function估计的是$Q(s,a)$，重点是state和action这些pair，对于afterstate value来说，可能有很多个state和action都能到同一个next state，这个时候它们的作用是一样的，因为我们估计的是next state的value。<br>
-象棋就是一个这样的例子。。这里只是介绍一下，还有很多各种各样特殊的形式，它们可以用来解决各种各样的特殊问题。具体可以自己多了解一下。</p>
-<h2 id="总结">总结</h2>
-<p>这一章主要介绍了最简单的一种TD方法，one-step，tabular以及model-free。接下来的两章会介绍一些n-step的TD方法，可以和MC方法联系起来，以及包含一个模型的方法，和DP联系起来。在第二部分的时候，会将tabular的TD扩展到function approximation的形式，和deep learning以及artificial neural networks联系起来。</p>
+<p>假如从熊市开始，初始state是熊市，用数值表示就是$(0, 1, 0)^T$。根据当前时刻计算下一时刻的公式为：<br>
+$$s_{t+1} = s_t Q \tag{2}$$<br>
+相应结果为$s_{t+1} = (0.15, 0.8, 0.05)^T$<br>
+$t+2$时刻的计算公式为：<br>
+$$s_{t+2} = s_t Q^2 \tag{3}$$<br>
+这样一直计算下去，可以到达一个稳定state $s$满足:<br>
+$$sQ = s \tag{4}$$<br>
+对于这个例子来说，不管从什么初始状态开始，最后都会到达稳定状态$s = (0.625, 0.3125, 0.0625)^T$。<br>
+那么这个stationary distribution有什么用呢？它能够给出一个process稳定以后在任意时刻某个state出现的概率，比如牛市出现的概率是$62.5\% $，熊市出现的概率是$31.25\%$。</p>
+<h3 id="马尔科夫链的稳定性">马尔科夫链的稳定性</h3>
+<p>如果一个非周期性马尔科夫链有转移矩阵$P$，并且它的任意两个状态都是连通的，那么$lim_{n\rightarrow \infty} P_{ij}^m$存在，且与$i$无关，记为$lim_{n\rightarrow \infty }P_{ij}^n = \pi(j)$，即矩阵$P^n$的所有第$j$列都是$\pi(j)$，与$P$的初始值无关。</p>
+<h2 id="马尔科夫矩阵的幂">马尔科夫矩阵的幂</h2>
+<p>$u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到<br>
+$$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots \tag{5}$$<br>
+如果只有一个特征值为$1$，对于所有其他特征值$\lambda \neq 1$，当$k\rightarrow \infty$时，幂运算$\lambda^k \rightarrow 0$，能到达一个稳态。</p>
 <h2 id="参考文献">参考文献</h2>
-<p>1.《reinforcement learning an introduction》第二版<br>
-2.<a href="https://stats.stackexchange.com/a/297892" target="_blank" rel="noopener">https://stats.stackexchange.com/a/297892</a><br>
-3.<a href="https://towardsdatascience.com/double-q-learning-the-easy-way-a924c4085ec3" target="_blank" rel="noopener">https://towardsdatascience.com/double-q-learning-the-easy-way-a924c4085ec3</a><br>
-4.<a href="https://stats.stackexchange.com/a/347090/254953" target="_blank" rel="noopener">https://stats.stackexchange.com/a/347090/254953</a></p>
+<p>1.<a href="https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1" target="_blank" rel="noopener">https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1</a></p>
 
           
         
@@ -2288,7 +1789,7 @@ Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$�
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/29/reinforcement-learning-terms/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/31/各类分布/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -2308,7 +1809,7 @@ Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$�
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/05/29/reinforcement-learning-terms/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">reinforcment learning terms</a>
+                <a href="/2019/07/31/各类分布/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">各类分布</a>
               
             
           </h1>
@@ -2333,7 +1834,7 @@ Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$�
                 
               
 
-              <time title="创建时间：2019-05-29 17:59:28" itemprop="dateCreated datePublished" datetime="2019-05-29T17:59:28+08:00">2019-05-29</time>
+              <time title="创建时间：2019-07-31 11:25:10" itemprop="dateCreated datePublished" datetime="2019-07-31T11:25:10+08:00">2019-07-31</time>
             
 
             
@@ -2350,7 +1851,423 @@ Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$�
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-09-28 11:55:24" itemprop="dateModified" datetime="2019-09-28T11:55:24+08:00">2019-09-28</time>
+                <time title="修改时间：2019-09-09 15:37:11" itemprop="dateModified" datetime="2019-09-09T15:37:11+08:00">2019-09-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论/" itemprop="url" rel="index"><span itemprop="name">概率论</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="常见的离散分布和连续分布">常见的离散分布和连续分布</h2>
+<p>常见的离散分布有伯努利分布，二项分布，泊松分布，几何分布，多项分布。</p>
+<h2 id="伯努利分布">伯努利分布</h2>
+<h3 id="定义">定义</h3>
+<p>伯努利实验是单次随机试验，只有成功和失败两种结果。它服从的分布叫做伯努利分布，伯努利分布也叫两点分布或者$0-1$分布。</p>
+<h3 id="概率密度函数">概率密度函数</h3>
+<h3 id="期望和方差">期望和方差</h3>
+<h2 id="二项分布">二项分布</h2>
+<h3 id="定义-v2">定义</h3>
+<p>如果某个试验是伯努利试验，事件A在一次试验中发生的概率是$p$，现在独立的重复该试验$n$次，用$X$表示事件A在发生的次数，$X=i$的所有的可能取值为$0,1,\cdots,n$。$X$所服从的分布就叫二项分布，它的计算公式如下：<br>
+$$P(X=i|\theta)= \begin{pmatrix}n\\ i\end{pmatrix}p^i(1-p)^{n-i}$$<br>
+二项分布有两个条件，一个是独立的进行$n$次试验，相互之间互不干扰，一个是同分布，即所有试验中A发生的概率都是相等的。</p>
+<h3 id="概率密度函数-v2">概率密度函数</h3>
+<h3 id="期望和方差-v2">期望和方差</h3>
+<h2 id="几何分布和负二项分布">几何分布和负二项分布</h2>
+<h3 id="定义-v3">定义</h3>
+<h3 id="概率密度函数-v3">概率密度函数</h3>
+<h3 id="期望和方差-v3">期望和方差</h3>
+<h2 id="多项分布">多项分布</h2>
+<h3 id="定义-v4">定义</h3>
+<p>如果把事件A的取值推广到多个，而不是两个，独立进行$n$次实验，求$X=i$的所有可能的取值就是一个多项分布。比如掷骰子$100$次，出现$50$次$1$，$30$次$2$和$20$次$3$的概率就是一个多项分布。<br>
+多项分布的计算公式如下：<br>
+$$P(x_1,x_2,\cdots, x_k; n, p_1,p_2, \cdots,p_k) = \frac{n!}{x_1!\cdots x_k!}p_1^{x_1}\cdots p_k^{x_k},\sum_{i=1}^{k}p_i = 1$$</p>
+<h3 id="概率密度函数-v4">概率密度函数</h3>
+<h3 id="期望和方差-v4">期望和方差</h3>
+<h2 id="泊松分布">泊松分布</h2>
+<h3 id="定义-v5">定义</h3>
+<h3 id="概率密度函数-v5">概率密度函数</h3>
+<h3 id="期望和方差-v5">期望和方差</h3>
+<h2 id="gamma函数">Gamma函数</h2>
+<p>Gamma函数的定义：<br>
+$$\Gamma(x) = \int_0^{\infty}t^{x-1}e^{-t}dt$$<br>
+通过分部积分，可以推导出来这个函数有如下的性质：<br>
+$$\Gamma(x+1) = x\Gamma(x)$$<br>
+可以证明，$\Gamma(x)$函数是阶乘在实数集合上的扩展：<br>
+$$\Gamma(n) = (n-1)!$$<br>
+只不过这里是$(n-1)!$，而不是$n!$。事实上，如果把$t^{x-1}$替换成$t^x$就能得到$\Gamma(n) = n!$，但是欧拉不知道为什么，还是使用了$t^{x-1}$。</p>
+<h2 id="beta分布">Beta分布</h2>
+<h3 id="定义-v6">定义</h3>
+<p>我们常用的贝叶斯估计，是将先验概率转化为了后验概率。。比如说抛硬币，我们通常假设硬币是公平的，也就是说正面向上的概率是$0.5$，这个先验概率就是$0.5$，然后根据观测到的事件将先验概率转化为后验概率。<br>
+这里的先验分布我们取得是一个值，如果不取一个值，而是选择一个分布呢？比如Beta分布：<br>
+$$f(\theta;\alpha, \beta) = \frac{1}{B(\alpha, \beta)}\theta^{\alpha-1}(1-\theta)^{\beta-1},\alpha\gt 0,\beta\gt 0, x\in \left[0,1\right]$$<br>
+其中，$\frac{1}{B(\alpha, \beta)} = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$</p>
+<p>然后使用贝叶斯推断，得到一个后验概率分布。Beta分布有一个神奇的特点就是使用贝叶斯推断得到的后验概率也是一个Beta分布，这个特点叫做共轭分布，接下来就会介绍。</p>
+<h3 id="特点">特点</h3>
+<p>Beta分布可以表示各种各种的曲线，从而也能表示各种各样的先验分布。</p>
+<h3 id="均值和方差">均值和方差</h3>
+<p>Beta分布的均值是$\frac{\alpha}{\alpha+\beta}$。</p>
+<h2 id="共轭先验分布">共轭先验分布</h2>
+<p>在贝叶斯概率理论中，如果后验概率和先验概率服从相同类型的分布，那么先验分布和后验分布被叫做共轭分布。同时，先验分布叫做似然函数的共轭先验分布。<br>
+Beta分布就是一个共轭分布，但是有一个前提，就是数据符合二项分布的时候，参数的先验和后验都可以是Beta分布，也称Beta分布是二项分布的共轭先验分布，似然函数是二项分布。</p>
+<h3 id="证明beta分布是二项分布的共轭先验分布">证明Beta分布是二项分布的共轭先验分布</h3>
+<p>已知条件：先验是Beta分布，数据服从二项分布<br>
+根据贝叶斯公式，后验概率的计算公式如下：<br>
+$$P(\theta|data) = \frac{P(data|\theta)P(\theta)}{P(data)} \propto P(data|\theta)P(\theta)$$<br>
+而$P(data|\theta)$可以根据似然函数的定义来计算$L(\theta|data) = P(data|\theta)$，又因为数据服从二项分布，有$P(data|\theta) \propto \theta^z(1-\theta)^{n-z}$，而Beta分布有$P(\theta) = Beta(\theta;\alpha,\beta) \propto \theta^{(\alpha-1)}(1-\theta)^{\beta-1}$，而$P(data)$与$\theta$无关，所以<br>
+$$P(\theta|data) \propto P(data|\theta)P(\theta) = \theta^{z+\alpha-1}(1-\theta)^{\beta+n-z-1}$$<br>
+也就是说后验分布服从Beta$(\alpha+z, \beta+n-z)$，得证。</p>
+<h2 id="狄利克雷分布">狄利克雷分布</h2>
+<h3 id="定义-v7">定义</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf" target="_blank" rel="noopener">http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA数学八卦.pdf</a><br>
+2.<a href="https://zhuanlan.zhihu.com/p/49267988" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/49267988</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/31/概率论基础/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/31/概率论基础/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">概率论基础</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-31 11:24:55" itemprop="dateCreated datePublished" datetime="2019-07-31T11:24:55+08:00">2019-07-31</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-04 12:35:47" itemprop="dateModified" datetime="2019-08-04T12:35:47+08:00">2019-08-04</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论/" itemprop="url" rel="index"><span itemprop="name">概率论</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="先验-后验-似然-条件概率">先验，后验，似然，条件概率</h2>
+<h3 id="先验和后验">先验和后验</h3>
+<p>假设的概率，或者给出的概率。<br>
+比如给出一个硬币，求随机投掷一次正面向上的概率。。在不知道任何其他条件的情况下，我们假设它是公平的，这就是一个先验。然后随机投掷了十次，发现十次正面都是向上的，显然，这个硬币不是公平的，根据这个事件我们可以修改这个硬币正面向上的概率，这时候得到的概率就是后延概率。</p>
+<h3 id="似然">似然</h3>
+<p>用$\theta$表示一个随机过程的参数，观测到的事件是$O$。$P(O|\theta)$是这件事发生的概率。然而，在现实生活中，我们常常是不知道$\theta$的，我们只能根据观测到的$O$，计算$P(\theta|O)$。而估计$P(\theta|O)$最常用的方法就是最大似然估计，即寻找使得当前观测$O$出现概率最大化的参数。似然的定义是给定观测$O$关于未知参数$\theta$的函数：<br>
+$$L(\theta|O) = P(O|\theta)$$<br>
+$L(\theta|O)$被称为似然，左面是似然，右面是概率密度（函数）。这两个函数从定义上来说是完全不同的对象，前者是$\theta$的函数，后者是$O$的函数，这里的等号意思是函数值相等，而不是两个函数本身就是同一个函数。</p>
+<h3 id="条件概率">条件概率</h3>
+<p>似然就是一种条件概率。</p>
+<h2 id="参考文献">参考文献</h2>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">reinforcement learning an introduction 第7章笔记</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-30 09:59:50" itemprop="dateCreated datePublished" datetime="2019-07-30T09:59:50+08:00">2019-07-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-06 21:59:10" itemprop="dateModified" datetime="2019-10-06T21:59:10+08:00">2019-10-06</time>
               
             
           </span>
@@ -2403,97 +2320,169 @@ Q(0)和Expected Sarsa(0)都没有使用importance sampling，因为在$Q(s,a)$�
       
         
           
-            <h2 id="术语定义">术语定义</h2>
-<p>更多介绍可以点击查看<a href="https://mxxhcm.github.io/2018/12/21/reinforcement-learning-an-introduction-%E7%AC%AC3%E7%AB%A0%E7%AC%94%E8%AE%B0/">reinforcement learning an introduction 第三章</a></p>
-<h3 id="状态集合">状态集合</h3>
-<p>$\mathcal{S}$是有限states set，包含所有state的可能取值</p>
-<h3 id="动作集合">动作集合</h3>
-<p>$\mathcal{A}$是有限actions set，包含所有action的可能取值</p>
-<h3 id="转换概率矩阵或者状态转换函数">转换概率矩阵或者状态转换函数</h3>
-<p>$P:\mathcal{S}\times \mathcal{A}\times \mathcal{S} \rightarrow \mathbb{R}$是transition probability distribution，或者写成$p(s_{t+1}|s_t,a_t)$</p>
-<h3 id="奖励函数">奖励函数</h3>
-<p>$R:\mathcal{S}\times \mathcal{A}\rightarrow \mathbb{R}$是reward function</p>
-<h3 id="折扣因子">折扣因子</h3>
-<p>$\gamma \in (0, 1)$</p>
-<h3 id="初始状态分布">初始状态分布</h3>
-<p>$\rho_0$是初始状态$s_0$服从的distribution，$s_0\sim \rho_0$</p>
-<h3 id="带折扣因子的mdp">带折扣因子的MDP</h3>
-<p>定义为tuple $\left(\mathcal{S},\mathcal{A},P,R,\rho_0, \gamma\right)$</p>
-<h3 id="随机策略">随机策略</h3>
-<p>选择action，stochastic policy表示为：$\pi_\theta: \mathcal{S}\rightarrow P(\mathcal{A})$，其中$P(\mathcal{A})$是选择$\mathcal{A}$中每个action的概率，$\theta$表示policy的参数，$\pi_\theta(a_t|s_t)$是在$s_t$处取action $a_t$的概率</p>
-<h3 id="accumulated-reward">Accumulated Reward</h3>
-<h4 id="期望折扣回报">期望折扣回报</h4>
-<p>定义<br>
-$$G_t =\mathbb{E} \left[\sum_{k=t}^{\infty} \gamma^{k-t} R_{k+1}\right] \tag{1}$$<br>
-为expected discounted returns，表示从$t$时刻开始的expected discounted return；</p>
-<h4 id="状态值函数">状态值函数</h4>
-<p>state value function的定义是从$t$时刻的$s_t$开始的累计期望折扣奖励：<br>
-$$V^{\pi} (s_t) = \mathbb{E}_{a_{t}, s_{t+1},\cdots\sim \pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{2}$$<br>
-或者有时候也定义成从$t=0$开始的expected return：<br>
-$$V^{\pi} (s_0) = \mathbb{E}_{\pi}\left[G_0|S_0=s_0;\pi\right]=\mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0;\pi \right] \tag{3}$$</p>
-<h4 id="动作值函数">动作值函数</h4>
-<p>action value function定义为从$t$时刻的$s_t, a_t$开始的累计期望折扣奖励：<br>
-$$Q^{\pi} (s_t, a_t) = \mathbb{E}_{s_{t+1}, a_{t+1},\cdots\sim\pi}\left[\sum_{k=0}^{\infty} \gamma^k R_{t+k+1} \right] \tag{4}$$<br>
-或者有时候也定义为从$t=0$开始的return的期望：<br>
-$$Q^{\pi} (s_0, a_0) = \mathbb{E}_{\pi}\left[G_0|S_0=s_0,A_0=a_0;\pi\right]=\mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}|S_0=s_0,A_0=a_0;\pi \right] \tag{5}$$</p>
-<h4 id="优势函数">优势函数</h4>
-<p>$$A^{\pi} (s,a) = Q^{\pi}(s,a) -V^{\pi} (s) \tag{6}$$<br>
-其中$a_t\sim \pi(a_t|s_t), s_{t+1}\sim P(s_{t+1}|s_t, a_t)$。$V^{\pi} (s)$可以看成状态$s$下所有$Q(s,a)$的期望，而$A^{\pi} (s,a)$可以看成当前的单个$Q(s,a)$是否要比$Q(s,a)$的期望要好，如果为正，说明这个$Q$比$Q$的期望要好，否则就不好。<br>
-优势函数的期望是$0$：<br>
-$$\mathbb{E}_{\pi}\left[A^{\pi}(s,a)\right] = \mathbb{E}_{\pi}\left[Q^{\pi}(s,a) - V^{\pi}(s)\right] = \mathbb{E}_{\pi}\left[Q^{\pi}(s,a)\right] -  \mathbb{E}_{\pi}\left[V^{\pi}(s)\right] = V^{\pi}(s) - V^{\pi}(s) = 0$$</p>
-<h4 id="目标函数">目标函数</h4>
-<p>Agents的目标是找到一个policy，最大化从state $s_0$开始的expected return：$J(\pi)=\mathbb{E}_{\pi} \left[G_0|\pi\right]$，或者写成：<br>
-$$\eta(\pi)= \mathbb{E}_{s_0, a_0, \cdots\sim \pi}\left[\sum_{t=0}^{\infty} \gamma^t R_{t+1}\right] \tag{7}$$<br>
-表示$t=0$时policy $\pi$的expected discounted return，其中$s_0\sim\rho_0(s_0)$, $a_t\sim\pi(a_t|s_t)$, $s_{t+1}\sim P(s_{t+1}|s_t,a_t)$。</p>
-<h4 id="station-distribution">station distribution</h4>
-<p>用$p(s_0\rightarrow s,t,\pi)$表示从$s_0$经过$t$个timesteps到$s$的概率，则<a href="https://zhuanlan.zhihu.com/p/60257706" target="_blank" rel="noopener">policy $\pi$下$s$服从的概率分布为</a>：<br>
-$$\rho^{\pi} (s) = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0(s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{8}$$<br>
-其中$\rho_0(s_0)$是初始状态$s_0$服从的概率分布，当指定$s_0$时，可以看成$\rho_0(s_0) = 1$。$\rho^{\pi} (s)$可以理解为：<br>
-$$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots \tag{9}$$<br>
-表示policy $\pi$下state $s$出现的概率。在每一个timestep $t$处，$s_t=s$都有一定概率发生的，也就是式子$9$。</p>
-<h3 id="average-reward">Average Reward</h3>
-<h4 id="目标函数-v2">目标函数</h4>
-<p>定义average reward $\eta$为在state distribution $\rho^\pi $和policy $\pi_\theta$上的期望：<br>
+            <h2 id="n-step-bootstrapping">n-step Bootstrapping</h2>
+<p>这章要介绍的n-step TD方法，将MC和one-step TD用一个统一的框架整合了起来。在一个任务中，两种方法可以无缝切换。n-step方法生成了一系列方法，MC在一头，one-step在另一头。最好的方法往往不是MC也不是one-step TD。One-step TD每隔一个timestep进行bootstrapping，在许多需要及时更新变化的问题，这种方法很有用，但是一般情况下，经历了长时间的稳定变化之后，bootstrap的效果会更好。N-step TD就是将one-step TD方法中time interval的one改成了n。N-step方法的idea和eligibility traces很像，eligibility traces同时使用多个不同的time intervals进行bootstarp。</p>
+<h2 id="n-step-td-prediction">n-step TD Prediction</h2>
+<p>对于使用采样进行policy evaluation的方法来说，不断使用policy $\pi$生成sample episodes，然后估计$v_{\pi}$。MC方法用的是每一个episode中每个state的return进行更新，即无穷步reward之和。TD方法使用每一个state执行完某一个action之后的下一个reward加上下一个state的估计值进行更新。N-step方法使用的是每一个state接下来n步的reward之和加上第n步之后的state的估计值。相应的backup diagram如下所示：<br>
+<img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n_step_backup_diagram.png" alt="n_step_diagram"></p>
+<p>n-step方法还是属于TD方法，因为n-step的更新还是基于时间维度上不同estimate的估计进行的。</p>
+<blockquote>
+<p>n-step updates are still TD methods because they still chagne an erlier estimate based on how it differs from a later estimate. Now the later estimate is not one step later, but n steps later。</p>
+</blockquote>
+<p>正式的，假设$S_t$的estimated value是基于state-reward sequence $S_t, R_{t+1}, S_{t+1}, R_{t+2}, \cdots, R_T,S_T$得到的。<br>
+MC方法更新基于completer return：<br>
+$$G_T = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \cdots + \gamma^{T-t-1}R_T \tag{1}$$<br>
+one-step TD更新基于one-step return：<br>
+$$G_{t:t+1} = R_{t+1}+ \gamma V_t(S_{t+1}) \tag{2}$$<br>
+two-step TD更新基于two-step return：<br>
+$$G_{t:t+2} = R_{t+1}+ \gamma V_t(S_{t+1}) + \gamma^2 V_{t+1}(S_{t+2}) \tag{3}$$<br>
+n-step TD更新基于n-step return：<br>
+$$G_{t:t+n} = R_{t+1}+ \gamma V_t(S_{t+1}) + \gamma^2 V_{t+1}(S_{t+2}) +\cdots + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n}), n\ge1, 0\le t\le T-n \tag{4}$$<br>
+所有的n-step方法都可以看成使用n steps的rewards之和加上$V_{t+n-1}(S_{t+n})$近似其余项的rewards近似return。如果$t+n \ge T$时，$T$步以后的reward以及estimated value当做$0$，相当于定义$t+n \ge T$时，$G_{t:t+1} = G_t$。<br>
+当$n &gt; 1$时，只有在$t+n$时刻之后，$R_{t+n},S_{t+n}$也是已知的，所以不能使用real time的算法。使用$t+n-1$时刻的$V$近似估计$V_{t+n-1}(S_{t+n})$，将n-step return当做n-step TD的target，得到的更新公式如下：<br>
+$$V_{t+n}(S_t) = V_{t+n-1} (S_t) + \gamma(G_{t:t+n} - V_{t+n-1}(S_{t}))\tag{5}$$<br>
+当更新$V_{t+n}(S_t)$时，所有其他states的$V$不变，用公式来表示是$V_{t+n}(s) = V_{t+n-1}(s), \forall s\neq S_t$。在每个episode的前$n-1$步中，不进行任何更新，为了弥补这几步，在每个episode结束以后，即到达terminal state之后，仍然继续进行更新，直到下一个episode开始之前，依然进行updates。完整的n-step TD算法如下：</p>
+<h3 id="n-step-td-prediction伪代码">n-step TD prediction伪代码</h3>
+<p>n-step TD估计$V\approx v_{\pi}$<br>
+输入：一个policy $\pi$<br>
+算法参数：step size $\alpha \in (0, 1]$，正整数$n$<br>
+随机初始化$V(s), \forall s\in S$<br>
+Loop for each episode<br>
+$\qquad$初始化 $S_0 \neq terminal$<br>
+$\qquad$$T\leftarrow \infty$<br>
+$\qquad$Loop for $t=0, 1, 2, \cdots:$<br>
+$\qquad$ IF $t\lt T$, THEN<br>
+$\qquad\qquad$ 根据$\pi(\cdot|S_t)$执行action<br>
+$\qquad\qquad$ 接收并记录$R_{t+1}, S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$<br>
+$\qquad$ END IF<br>
+$\qquad$ $\tau \leftarrow t - n + 1, \tau$是当前更新的时间<br>
+$\qquad$ If $\tau \ge 0$, then<br>
+$\qquad\qquad$ $G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>
+$\qquad\qquad$ 如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$<br>
+$\qquad\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$<br>
+$\qquad$ End if<br>
+Until $\tau = T-1$<br>
+n-step return有一个重要的属性叫做error reduction property，在最坏的情况下，n-step returns的期望也是一个比$V_{t+n-1}$更好的估计：<br>
+$$max_{s}|\mathbb{E}_{\pi}\left[G_{t:t+n}|S_t = s\right]- v_{\pi}(s)| \le \gamma^n max_s | V_{t+n-1}(s)-v_{\pi}(s)| \tag{6}$$<br>
+所以所有的n-step TD方法都可以收敛到真实值，MC和one-step TD是其中的一种特殊情况。</p>
+<h2 id="n-step-sarsa">n-step Sarsa</h2>
+<p>介绍完了prediction算法，接下来要介绍的就是control算法了。因为TD方法是model-free的，所以，还是要估计action value function。上一章介绍了one-step Sarsa，这一章自然介绍一下n-step Sarsa。n-step Sarsa的backup图如下所示：<br>
+<img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n_step_sarsa.png" alt="n_step_sarsa"><br>
+就是将n-step TD的state换成state-action就行了。定义action value的n-step returns如下：<br>
+$$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+1} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^n Q_{t+n-1}(S_{t+n},A_{t+n}), n\ge 1, 0\le t\le T-n\tag{7}$$<br>
+如果$t+n\ge T$，那么$G_{t:t+n} = G_t$。<br>
+完整的$n$-step Sarsa如下所示：</p>
+<h3 id="n-step-sarsa算法伪代码">n-step Sarsa算法伪代码</h3>
+<p>n-step Sarsa算法，估计$Q\approx q_{*}$<br>
+随机初始化$Q(s,a),\forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>
+算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq$ terminal<br>
+$\qquad$ 选择action $A_0= \pi(\cdot| S_0)$<br>
+$\qquad$ $T\leftarrow \infty$<br>
+$\qquad$ Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$ If $t\lt T$,then:<br>
+$\qquad\qquad\qquad$ 采取action $A_t$，<br>
+$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>
+$\qquad\qquad$ $T\leftarrow t+1$<br>
+$\qquad\qquad$ 否则选择$A_{t+1} = \pi(\cdot|S_{t+1})$<br>
+$\qquad\qquad$End if<br>
+$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>
+$\qquad\qquad$ If $\tau \ge 0$<br>
+$\qquad\qquad\qquad$ $G\leftarrow \sum_{i=\tau +1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>
+$\qquad\qquad\qquad$ If $\tau+n \le T$,then<br>
+$\qquad\qquad\qquad$ $G\leftarrow G+\gamma^n Q(S_{\tau+n}, A_{\tau+n})$<br>
+$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>
+$\qquad\qquad$End if<br>
+$\qquad$ Until $\tau =T-1$</p>
+<h3 id="n-step-expected-sarsa">n-step Expected Sarsa</h3>
+<p>n-step Expected Sarsa的n-step return定义为：<br>
+$$G_{t:t+n} = R_{t+1} +\gamma R_{t+1} + \cdots +\gamma^{n-1} R_{t+n} + \gamma^n \bar{V}_{t+n-1}(S_{t+n}) \tag{8}$$<br>
+其中$\bar{V}_t(s) = \sum_{a}\pi(a|s) Q_t(s,a), \forall s\in S$<br>
+如果$s$是terminal，它的期望是$0$。</p>
+<h2 id="n-step-off-policy-learning">n-step Off-policy Learning</h2>
+<p>Off-policy算法使用behaviour policy采样的内容得到target policy的value function，但是需要使用他们在不同policy下采取某个action的relavtive probability。在$n$-step方法中，我们感兴趣的只有对应的$n$个actions，所以最简单的off-policy $n$-step TD算法，$t$时刻的更新可以使用importance sampling ratio $\rho_{t:t+n-1}$：<br>
+$$V_{t+n}(S_t) = V_{t+n-1} S_t + \alpha \rho_{t:t+n-1}\left[G_{t:t+n} - V_{t+n-1}(S_t)\right], 0\le t\le T \tag{9}$$<br>
+$\rho_{t:t+n-}$计算的是从$A_t$到$A_{t+n-1}$这$n$个action在behaviour policy和target policy下的relative probability，计算公式如下：<br>
+$$\rho_{t:h} = \prod_{k=t}^{min(h, T-1)} \frac{\pi(A_k|S_k)}{b(A_k|S_k)} \tag{10}$$<br>
+如果$\pi(A_k|S_k) = 0$，那么对应的$n$-step return对应的权重就应该是$0$，如果policy $pi$下选中某个action的概率很大，那么对应的return就应该比$b$下的权重大一些。因为在$b$下出现的概率下，很少出现，所以权重就该大一些啊。如果是on-policy的话，importance sampling ratio一直是$1$，所以公式$9$可以将on-policy和off-policy的$n$-step TD概括起来。同样的，$n$-step的Sarsa的更新公式也可以换成：<br>
+$$Q_{t+n}(S_t,A_t) = Q_{t+n-1}(S_t,A_t) + \alpha \rho_{t+1:t+n}\left[G_{t:t+n} - Q_{t+n-1} (S_t,A_t)\right], 0\le t\le T \tag{11}$$<br>
+公式$11$中的importance sampling ratio要比公式$9$中计算的晚一步。这是因为我们是在更新一个state-action pair，我们并不关心有多大的概率选中这个action，我们现在已经选中了它，importance sampling只是用于后续actions的选择。这个解释也让我理解了为什么Q-learning和Sarsa为什么没有使用importance sampling。完整的伪代码如下。</p>
+<h3 id="off-policy-n-step-sarsa-估计-q">Off-policy $n$-step Sarsa 估计$Q$</h3>
+<p>输入：任意的behaviour policy $b$, $b(a|s)\gt 0, \forall s\in S, a\in A$<br>
+随机初始化$Q(s,a), \forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的greedy policy<br>
+算法参数：步长$\alpha \in (0,1]$，正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq terminal$<br>
+$\qquad$选择并存储$A_0 \sim b(\cdot|S_0)$<br>
+$\qquad T\leftarrow \infty$<br>
+$\qquad$Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$IF $t\lt T$,then<br>
+$\qquad\qquad\qquad$执行action $A_t$，接收$R_{t+1}, S_{t+1}$<br>
+$\qquad\qquad\qquad$如果$S_{t+1}$是terminal，那么$T\leftarrow t+1$<br>
+$\qquad\qquad\qquad$否则选择并记录$A_{t+1} \sim b(\cdot| S_{t+1})$<br>
+$\qquad\qquad$END IF<br>
+$\qquad\qquad \tau \leftarrow t-n +1$  (加$1$表示下标是从$0$开始的)<br>
+$\qquad\qquad$ IF $\tau \ge 0$<br>
+$\qquad\qquad\qquad \rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n,T)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n}$，这里是不是写成了Expected Sarsa公式）<br>
+$\qquad\qquad\qquad G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)}\gamma^{i-\tau -1}R_i$ （计算$n$个reward, $R_{\tau+1}+\cdots+R_{\tau+n}$）<br>
+$\qquad\qquad\qquad$如果$\tau+n \lt T$，$G\leftarrow G + \gamma^n Q(S_{\tau+n},A_{\tau+n})$ （因为没有$Q(S_T,A_T)$）<br>
+$\qquad\qquad\qquad Q(S_{\tau}, A_{\tau}) \leftarrow Q(S_{\tau}, A_{\tau})+\alpha \rho \left[G-Q(S_{\tau}, A_{\tau})\right]$（计算$Q(S_{\tau+n},A_{\tau+n})$）<br>
+$\qquad\qquad\qquad$确保$\pi$是相对于$Q$的greedy policy<br>
+$\qquad\qquad$ END IF<br>
+$\qquad$Until $\tau = T-1$<br>
+上面介绍的算法是$n$-step的Sarsa，计算importance ratio使用的$\rho_{t+1:t+n}$，$n$-step的Expected Sarsa计算importance ratio使用的是$\rho_{t+1:t+n-1}$，因为在估计$\bar{V}_{t+n-1}$时候，考虑到了last state中所有的actions。</p>
+<h2 id="n-step-tree-backup算法">$n$-step Tree Backup算法</h2>
+<p>这一章介绍的是不适用importance sampling的off-policy算法，叫做tree-backup algorithm。如下图所示，是一个$3$-step的tree-backup diaqgram。<br>
+沿着中间这条路走，有三个sample states和rewards以及两个sample actions。在旁边的是没有被选中的actions。对于这些没有选中的actions，因为没有采样，所以使用bootstrap计算target value。因为它的backup diagram有点像tree，所以就叫做tree backup upadte。或者更精确的说，backup update使用的是所用tree的叶子结点action value的估计值进行计算的。非叶子节点的action对应的是采样的action，不参与更新，所有叶子节点对于target的贡献都有一个权重正比于它在target policy下发生的概率。在$S_{t+1}$处的除了$A_{t+1}$之外所有action权重是$\pi(a|S_{t+1})$，$A_{t+1}$一点贡献没有；在$S_{t+2}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(a’|S_{t+2})$；在$S_{t+3}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(A_{t+2}|S_{t+2})\pi(a’’|S_{t+3})$<br>
+one-step Tree backup 算法其实就是Expected Sarsa：<br>
+$$G_{t:t+1} = R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1 \tag{12}$$<br>
+two-step Tree backup算法return计算公式如下：<br>
 \begin{align*}<br>
-\eta(\pi) &amp;= \int_S \rho^{\pi} (s) \int_A \pi(s,a) R^{\pi}(s,a)dads\\<br>
-&amp;= \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi}\left[R^{\pi}(s,a)\right] \tag{10}\\<br>
+G_{t:t+2} &amp;= R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})(R_{t+2} + \sum_{a} \pi(a|S_{t+2})Q(a, S_{t+2})\\<br>
+&amp;=R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})G_{t+1:t+2}, t \lt T-2<br>
 \end{align*}<br>
-其中$R(s,a) = \mathbb{E}\left[ r_{t+1}|s_t=s, a_t=a\right]$，是state action pair $(s,a)$的immediate reward的期望值。</p>
-<h4 id="动作值函数-v2">动作值函数</h4>
-<p>根据average reward，给出一种新的state-action value的定义方式：<br>
-$$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{11}$$</p>
-<h4 id="状态值函数-v2">状态值函数</h4>
-<p>Value function定义还和原来一样，形式没有变，但是因为$Q$计算方法变了，所以$V$的值也变了：<br>
-$$V^{\pi} (s) = \mathbb{E}_{\pi(a’;s)}\left[Q^{\pi}(s,a’)\right] \tag{12}$$</p>
-<h4 id="stationary-distribution">stationary distribution</h4>
-<p>对于average reward来说，它的stationary distribution和accumulated reward有一些不同：<br>
-$$\rho^{\pi}(s) = \lim_{t\rightarrow \infty}Pr\left[s_t=s|s_0, \pi\right] \tag{13}$$<br>
-表示的是当MDP稳定之后，state $s$出现的概率。</p>
-<h3 id="accumulated-reward和average-reward">Accumulated Reward和Average Reward</h3>
-<p>这两种方式，accumulated reward需要加上折扣因子，而average reward不需要。我们常见的都是accumulated reward这种方式的动作值函数以及状态值函数。</p>
-<h2 id="分类方式">分类方式</h2>
-<h3 id="online-vs-offline">online vs offline</h3>
-<p>online方法中训练数据一直在不断增加，基本上强化学习都是online的，而监督学习是offline的。</p>
-<h3 id="on-policy-vs-off-policy">on-policy vs off-policy</h3>
-<p>behaviour policy是采样的policy。<br>
-target policy是要evaluation的policy。<br>
-behaviour policy和target policy是不是相同的，相同的就是on-policy，不同的就是off-policy，带有replay buffer的都是off-policy的方法。</p>
-<h2 id="bootstrap">bootstrap</h2>
-<p>当前value的计算是否基于其他value的估计值。<br>
-常见的bootstrap算法有DP，TD-gamma<br>
-MC算法不是bootstrap算法。</p>
-<h2 id="value-based-vs-policy-gradient-vs-actor-critic">value-based vs policy gradient vs actor-critic</h2>
-<h3 id="value-based">value-based</h3>
-<p>values-based方法主要有policy iteration和value iteration。policy iteration又分为policy evaluation和policy improvement。<br>
-给出一个任务，如果可以使用value-based。随机初始化一个policy，然后可以计算这个policy的value function，这就叫做policy evaluation，然后根据这个value function，可以对policy进行改进，这叫做policy improvement，可以证明policy一定会更好。policy evaluation和policy improvement交替迭代，在线性case下，收敛性是可以证明的，在non-linear情况下，就不一定了。<br>
-policy iteraion中，policy evaluation每一次都要进行收敛后才进行policy improvemetn，如果policy evalution只进行一次，然后就进行一次policy improvemetn的话，也就是policy evalution的粒度变小后，就是value iteration。</p>
-<h3 id="policy-gradient">policy gradient</h3>
-<p>value-based方法只适用于discrete action space，对于contionous action space的话，就无能为力了。这个时候就有了policy gradient，给出一个state，policy gradient给出一个policy直接计算出相应的action，然后给出一个衡量action好坏的指标，直接对policy的参数求导，最后收敛之后就求解出一个使用与contionous的policy</p>
-<h3 id="actor-critic">actor-critic</h3>
-<p>如果policy gradient的metrics选择使用value function，一般是aciton value function的话，我们把这个value function叫做critic，然后把policy叫做actor。通过value funciton Q对policy的参数求导进行优化。<br>
-critic跟policy没有关系，而critic指导actor的训练，通过链式法则实现。critic对a求偏导，a对actor的参数求偏导。</p>
+下面的形式给出了tree-backup的递归形式如下：<br>
+$$G_{t:t+n} = R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a,S_{t+1}) + \gamma\pi(A_{t+1}|S_{t+1}) G_{t+1:t+n}, n\ge 2, t\lt T-1, \tag{13}$$<br>
+当$n=1$时除了$G_{T-1:t+n} = R_T$，其他的和式子$12$一样。使用这个新的target代替$n$-step Sarsa中的target就可以得到$n$-step tree backup 算法。<br>
+完整的算法如下所示：</p>
+<h3 id="n-step-tree-backup-算法">$n$-step Tree Backup 算法</h3>
+<p>随机初始化$Q(s,a),\forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>
+算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq$ terminal<br>
+$\qquad$ 根据$S_0$随机选择action $A_0$<br>
+$\qquad$ $T\leftarrow \infty$<br>
+$\qquad$ Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$ If $t\lt T$,then:<br>
+$\qquad\qquad\qquad$ 采取action $A_t$，<br>
+$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>
+$\qquad\qquad$ $T\leftarrow t+1$<br>
+$\qquad\qquad$ 根据$S_{t+1}$随机选择action $A_{t+1}$<br>
+$\qquad\qquad$End IF<br>
+$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>
+$\qquad\qquad\qquad$ IF $\tau+n\ge T$ then<br>
+$\qquad\qquad\qquad\qquad G\leftarrow R_T$<br>
+$\qquad\qquad\qquad$ ELSE<br>
+$\qquad\qquad\qquad\qquad G\leftarrow R_{t+1}+\gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1})$<br>
+$\qquad\qquad\qquad$ END IF<br>
+$\qquad\qquad\qquad$Loop for $k = min(t, T-1)$ down $\tau+1$<br>
+$\qquad\qquad\qquad G\leftarrow R_k+\gamma^n\sum_{a\neq A_k}\pi(a|S_k)Q(a, S_k) + \gamma \pi(A_k|S_k) G$<br>
+$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>
+$\qquad\qquad$End if<br>
+$\qquad$ Until $\tau =T-1$</p>
+<h2 id="n-step-q-sigma">$n$-step $Q(\sigma)$</h2>
+<p>现在已经讲了$n$-step Sarsa，$n$-step Expected Sarsa，$n$-step Tree Backup，$4$-step的一个backup diagram如下所示。它们其实有很多共同的特性，可以用一个框架把它们统一起来。<br>
+具体的算法就不细说了。</p>
 <h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stats.stackexchange.com/questions/897/online-vs-offline-learning" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/897/online-vs-offline-learning</a></p>
+<p>1.《reinforcement learning an introduction》第二版<br>
+2.<a href="https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning</a></p>
 
           
         
@@ -2550,7 +2539,7 @@ critic跟policy没有关系，而critic指导actor的训练，通过链式法则
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/22/linux-ubuntu-18-04-gnome-shell-自定义操作/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/16/maddpg/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -2570,7 +2559,7 @@ critic跟policy没有关系，而critic指导actor的训练，通过链式法则
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/05/22/linux-ubuntu-18-04-gnome-shell-自定义操作/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">linux-ubuntu 18.04 gnome-shell自定义操作</a>
+                <a href="/2019/07/16/maddpg/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">maddpg</a>
               
             
           </h1>
@@ -2595,46 +2584,12 @@ critic跟policy没有关系，而critic指导actor的训练，通过链式法则
                 
               
 
-              <time title="创建时间：2019-05-22 21:22:29" itemprop="dateCreated datePublished" datetime="2019-05-22T21:22:29+08:00">2019-05-22</time>
+              <time title="创建时间：2019-07-16 10:31:58" itemprop="dateCreated datePublished" datetime="2019-07-16T10:31:58+08:00">2019-07-16</time>
             
 
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-07-30 17:02:01" itemprop="dateModified" datetime="2019-07-30T17:02:01+08:00">2019-07-30</time>
-              
             
           </span>
 
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
           
 
           
@@ -2665,67 +2620,7 @@ critic跟policy没有关系，而critic指导actor的训练，通过链式法则
       
         
           
-            <h2 id="dock-配置">dock 配置</h2>
-<h3 id="基本设置">基本设置</h3>
-<p>打开Settings &gt;&gt; Dock，可以设置dock的位置和大小，以及自动隐藏。这些是ubuntu安装的默认配置。</p>
-<h3 id="dconf安装">dconf安装</h3>
-<p>为了更多的设置，需要安装dconf-editor，dconf相当于windows注册表的gnome，存储应用程序设置的gnome技术。<br>
-~\$:sudo apt install dconf-tools<br>
-按下Win键，搜索dconfig-editor，打开它。<br>
-找到org&gt;&gt;gnome&gt;&gt;shell&gt;&gt;extensions&gt;&gt;dash-to-dock，然后就可以修改相应的配置了。也可以在命令行中进行相应的设置，这里就不说了，可以查看参考文献尝试。</p>
-<h2 id="ubuntu-18-04合上笔记本盖子后不挂起">ubuntu 18.04合上笔记本盖子后不挂起</h2>
-<p>~\$:sudo apt install gnome-tweak-tool<br>
-~\$:gnome-tweaks<br>
-找到Power选项，设置Suspend when lapto lid is closed为OFF。[6]</p>
-<h2 id="显示cpu和gpu温度">显示cpu和gpu温度</h2>
-<h3 id="安装lm-sensors">安装lm-sensors</h3>
-<p>~\$:sudo apt-get install lm-sensors<br>
-然后执行以下命令进行配置：<br>
-~\$:sudo sensors-detect<br>
-执行sensors命令获得各项硬件的温度<br>
-~\$:sensors</p>
-<h2 id="安装gnome-shell">安装gnome-shell</h2>
-<h3 id="安装gnome-tweak-tool">安装gnome tweak tool</h3>
-<p>~\$:sudo apt install gnome-tweak-tool<br>
-~\$:gnome-shell --version<br>
-gnome tweak用来查看本地的gnome 插件。</p>
-<h3 id="从ubuntu-仓库安装extensions">从ubuntu 仓库安装extensions</h3>
-<p>ubuntu 提供了gnome-shell-extensions包，该包中有部分gnome扩展。然后可以使用gnome tweaks查看已经安装的程序。<br>
-~\$:sudo apt install gnome-shell-extensions</p>
-<h3 id="在浏览器上安装gnome-shell-integration插件">在浏览器上安装gnome shell integration插件</h3>
-<p>在firfox或者chrome上安装相应的gnome shell integration插件，直接google搜索安装就行了。<br>
-这个时候是不能添加插件的，因为还缺少一个东西，叫做native host connector<br>
-这种方法和从ubuntu仓库中装extension的不同之处是，ubuntu包中的扩展是固定的一部分，这中方法可以自定义安装。<br>
-安装完之后可以直接在浏览器的gnome shell integration插件上查看在浏览器上安装的gnome shell扩展，也可以使用gnome tweaks查看浏览器上安装的shell extensions。</p>
-<h4 id="安装chrome-gnome-shell-native-host-connector">安装chrome-gnome-shell native host connector</h4>
-<p>执行以下命令进行安装，chrome-gnome-shell并不是代表chrome浏览器的意思，用任何浏览器都要执行以下命令<br>
-~\$:sudo apt install chrome-gnome-shell<br>
-查看gnome shell版本<br>
-~\$:gnome-shell --version</p>
-<h4 id="安装浏览器附加组件">安装浏览器附加组件</h4>
-<h5 id="浏览器中安装">浏览器中安装</h5>
-<p>直接打开gnome shell extensions图形化界面进行搜索安装</p>
-<h5 id="命令行安装">命令行安装</h5>
-<p>搜索<br>
-~\$:sudo apt search gnome-shell-extension<br>
-安装<br>
-~\$:sudo apt install gnome-shell-extension-package-name</p>
-<h3 id="插件推荐">插件推荐</h3>
-<ul>
-<li>Coverflow Alt-Tab 按alt tab切换程序效果[7]</li>
-</ul>
-<h2 id="修改主题">修改主题</h2>
-<p>下载系统主题文件，解压缩，放置在/usr/share/themes文件夹下。然后在tweaks中的Apperance选项修改。<br>
-下载鼠标和图标主题，放置在/usr/share/icons文件夹下。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://linuxconfig.org/how-to-customize-dock-panel-on-ubuntu-18-04-bionic-beaver-linux" target="_blank" rel="noopener">https://linuxconfig.org/how-to-customize-dock-panel-on-ubuntu-18-04-bionic-beaver-linux</a><br>
-2.<a href="https://zhuanlan.zhihu.com/p/37852274" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/37852274</a><br>
-3.<a href="https://askubuntu.com/questions/15832/how-do-i-get-the-cpu-temperature" target="_blank" rel="noopener">https://askubuntu.com/questions/15832/how-do-i-get-the-cpu-temperature</a><br>
-4.<a href="https://linuxhint.com/install_gnome3_extensions_ubuntu_1804/" target="_blank" rel="noopener">https://linuxhint.com/install_gnome3_extensions_ubuntu_1804/</a><br>
-5.<a href="https://linux.cn/article-9447-1.html" target="_blank" rel="noopener">https://linux.cn/article-9447-1.html</a><br>
-6.<a href="https://askubuntu.com/a/1062401" target="_blank" rel="noopener">https://askubuntu.com/a/1062401</a><br>
-7.<a href="https://zhuanlan.zhihu.com/p/37852274" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/37852274</a></p>
-
+            
           
         
       
@@ -2770,7 +2665,7 @@ gnome tweak用来查看本地的gnome 插件。</p>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/16/">16</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/5/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><span class="page-number current">6</span><a class="page-number" href="/page/7/">7</a><span class="space">&hellip;</span><a class="page-number" href="/page/22/">22</a><a class="extend next" rel="next" href="/page/7/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2815,7 +2710,7 @@ gnome tweak用来查看本地的gnome 插件。</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">160</span>
+                    <span class="site-state-item-count">215</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2866,7 +2761,7 @@ gnome tweak用来查看本地的gnome 插件。</p>
                     
                       
                     
-                    <span class="site-state-item-count">16</span>
+                    <span class="site-state-item-count">19</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3451,7 +3346,7 @@ gnome tweak用来查看本地的gnome 插件。</p>
                     
                       
                     
-                    <span class="site-state-item-count">193</span>
+                    <span class="site-state-item-count">286</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3702,21 +3597,21 @@ gnome tweak用来查看本地的gnome 插件。</p>
   
     
       
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
-    
-      
         
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
       
     
       
