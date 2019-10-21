@@ -307,7 +307,6 @@ axis:对哪个axis进行排序，默认是-1
 
 
 
-
 参考文献
 1.https://stackoverflow.com/questions/47231852/np-random-rand-vs-np-random-random
 2.https://stackoverflow.com/questions/21174961/how-to-create-a-numpy-array-of-all-true-or-all-false

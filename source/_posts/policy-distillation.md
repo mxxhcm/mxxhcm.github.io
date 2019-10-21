@@ -67,7 +67,7 @@ Policy distillation可能提供了一种方式将多个polices组合到一个mod
 - multi-task distillation
 三个游戏，三个网络：multi-dqn, multi-dist-NLL, multi-dist-KL，这三个网络的大小都和nature dqn一样。
 十个游戏，一个网络：multi-dist-KL，大小是nature dqn的4倍。
-- online policy distillation
+- online policy distillation：
 
 Single game policy distillation实验中，teacher network是一个已经训练完成的model，选择一个DQN expert作为teacher network，训练student network时，teacher network不进行Q-learning，只是用来采样，相当于产生监督学习的样本。Student network学习teacher network是怎么将输入和label对应的。Teacher network的输入(images)和输出(Q值）都被存在buffer中。Multitask policy distillation的训练过程类似。
 除了模型压缩时候用到的DQN，以及一个$10$个games的multi-task distillation任务中用到的DQN，它的参数比nature DQN多四倍还有额外的fully connected layer，所有其他的DQN都和nature DQN的结构一样。
@@ -102,7 +102,7 @@ Multi-Dist-KL (10 games) | 4 | 64 | 64 | 64 | 1500 | 128 (x10) | up to 18 (x10) 
 ### online policy distillation
 
 ## Experimental Details
-### Policy Distillation Training
+### Policy Distillation Training Data collection
 Policy distillation online data collection和nature DQN中agent evaluation一样，DQN随机执行最多$30$个null-ops初始化episode，使用$\epsilon$-greedy($\epsilon=0.05$)算法进行$30$分钟即$108000$frames的evaluation。
 DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小时的experience（$15$Hz下共$54000$个control steps），
 
