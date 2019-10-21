@@ -40,7 +40,7 @@ $$J(\theta) = -\frac{1}{n}\left[\sum\_{i=1}^m \sum_k y_k^{(i)} \log h(x_k^{(i)} 
 $$J(\theta) = -\frac{1}{n}\left[\sum\_{i=1}^m  y^{(i)} \log h(x^{(i)} ) + (1-y^{(i)}) \log (1-h(x^{(i)} ))\right]$$ 
 
 ### 梯度下降
-$$\nabla J = 
+$$\nabla J =
 
 
 ## 参考文献
