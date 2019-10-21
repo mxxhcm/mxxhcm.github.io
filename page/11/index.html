@@ -327,6 +327,647 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/26/linux-NVIDIA驱动安装/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/26/linux-NVIDIA驱动安装/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">ubuntu NVIDIA 驱动安装</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-26 21:03:02" itemprop="dateCreated datePublished" datetime="2019-04-26T21:03:02+08:00">2019-04-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-05 21:43:42" itemprop="dateModified" datetime="2019-08-05T21:43:42+08:00">2019-08-05</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="方法1-命令行安装">方法1.命令行安装</h2>
+<h3 id="步骤">步骤</h3>
+<p>卸载原有驱动<br>
+~$:sudo apt purge nvidia*<br>
+禁用nouveau<br>
+~$:sudo vim /etc/modprobe.d/blacklist.conf<br>
+在文件最后添加<br>
+blacklist nouveau<br>
+更新内核<br>
+~$:sudo update-initramfs -u<br>
+使用如下命令，如果没有输出，即已经关闭了nouveau<br>
+~$:lsmod | grep nouveau<br>
+关闭X service<br>
+~$:sudo service lightdm stop<br>
+接下来执行如下语句即可：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential pkg-config xserver-xorg-dev linux-headers-`uname -r` sudo apt-get install mesa-common-dev</span><br><span class="line">sudo apt-get install freeglut3-dev</span><br><span class="line">sudo chmod a+x NVIDIA-Linux-x86_64-375.66.run</span><br><span class="line">sudo sh NVIDIA-Linux-x86_64-375.66.run -no-opengl-files</span><br><span class="line">sudo reboot</span><br></pre></td></tr></table></figure>
+<h2 id="方法2-图形界面">方法2.图形界面</h2>
+<h2 id="方法3-apt安装">方法3.apt安装</h2>
+<h3 id="添加apt源">添加apt源</h3>
+<p>~$:sudo add-apt-repository ppa:graphics-drivers/ppa<br>
+~$:sudo apt update</p>
+<h3 id="apt安装">apt安装</h3>
+<p>~$:sudo ubuntu-drivers devices<br>
+~$:sudo ubuntu-drivers autoinstall</p>
+<!-- ### 更新grub
+~$:sudo vim /etc/default/grub
+将"splash"改为"splash acpi_osi=linux"
+~$:sudo update-grub
+-->
+<h2 id="安装cuda-9-0">安装cuda 9.0</h2>
+<p>到NVIDIA官网下载cuda 9.0的runfile，然后执行<br>
+~$:sudo sh cuda*.run</p>
+<h3 id="测试报错">测试报错</h3>
+<blockquote>
+<p>Error: unsupported compiler: 7.4.0. Use --override to override this check.</p>
+</blockquote>
+<p>安装gcc低版本<br>
+~$:sudo apt install gcc-6</p>
+<p>从CUDA 4.1版本开始，支持gcc 4.5。gcc 4.6和4.7不受支持。<br>
+从CUDA 5.0版本开始，支持gcc 4.6。gcc 4.7不受支持。<br>
+从CUDA 6.0版本开始，支持gcc 4.7。<br>
+从CUDA 7.0版本开始，支持gcc 4.8，在Ubuntu 14.04和Fedora 21上支持4.9。<br>
+从CUDA 7.5版开始，支持gcc 4.8，在Ubuntu 14.04和Fedora 21上支持4.9。<br>
+从CUDA 8版本开始，Ubuntu 16.06和Fedora 23支持gcc 5.3。<br>
+从CUDA 9版本开始，Ubuntu 16.04，Ubuntu 17.04和Fedora 25支持gcc 6。<br>
+使用update-alternatives修改默认gcc版本<br>
+~$:sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g+±6 50<br>
+~$:sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 50</p>
+<p>然后继续安装：<br>
+~$:sudo sh cuda*.run</p>
+<p>cuda安装在/usr/local/cuda-9.0 目录下<br>
+卸载的话进入/usr/loca/cuda-9.0/bin 找到uninstall_cuda_9.0.pl运行卸载。</p>
+<h3 id="import-tensorflow-报错">import tensorflow 报错</h3>
+<blockquote>
+<p>ImportError: libcublas.so.9.0: cannot open shared object file: No such file or directory<br>
+Failed to load the native TensorFlow runtime.</p>
+</blockquote>
+<p>配置cuda环境变量<br>
+在bashrc文件中加入<br>
+export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}<br>
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}<br>
+export CUDA_HOME=/usr/local/cuda<br>
+执行<br>
+~$:source ~/.bashrc</p>
+<p>继续报错<br>
+然后我才发现我没有装cudnn，按照参考文献[1]安装cudnn即可。<br>
+解压cudnn<br>
+~$:tar -xvf cudnn-x.x-linuz-x64-vx.x.tar.gz<br>
+然后执行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo cp cuda/include/cudnn.h /usr/local/cuda/include/</span><br><span class="line">sudo cp cuda/lib64/libcudnn* /usr/local/cuda/lib64/</span><br><span class="line">sudo chmod a+r /usr/local/cuda/include/cudnn.h</span><br><span class="line">sudo chmod a+r /usr/local/cuda/lib64/libcudnn*</span><br></pre></td></tr></table></figure>
+<p>即可</p>
+<h2 id="版本对应">版本对应</h2>
+<h3 id="显卡">显卡</h3>
+<p>RTX 20系列显卡，需要使用cuda 10</p>
+<h3 id="pytorch">pytorch</h3>
+<p>而pytorch目前不支持cuda 10.1，所以只能使用cuda 10.0。</p>
+<h3 id="tensorflow">tensorflow</h3>
+<p>tensorflow 13.1 – cuda 10.0  – cudnn 7.3</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan%20XP+CUDA8.0+cudnn5.0/" target="_blank" rel="noopener">http://gwang-cv.github.io/2017/07/26/Faster-RCNN+Ubuntu16.04+Titan XP+CUDA8.0+cudnn5.0/</a><br>
+2.<a href="https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#axzz4qYJp45J2" target="_blank" rel="noopener">https://docs.nvidia.com/deeplearning/sdk/cudnn-install/index.html#axzz4qYJp45J2</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/25/pytorch-Module-children-vs-Module-modules/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/25/pytorch-Module-children-vs-Module-modules/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">pytorch Module.children() vs Module.modules()</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-25 21:06:46" itemprop="dateCreated datePublished" datetime="2019-04-25T21:06:46+08:00">2019-04-25</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-08 22:16:21" itemprop="dateModified" datetime="2019-05-08T22:16:21+08:00">2019-05-08</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="module-modules">Module.modules()</h2>
+<p>modules()会返回所有的模块，包括它自己。<br>
+如下代码所示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">model = nn.Sequential(nn.Linear(<span class="number">5</span>, <span class="number">3</span>), nn.Sequential(nn.Linear(<span class="number">3</span>, <span class="number">2</span>)))</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> module <span class="keyword">in</span> model.modules():</span><br><span class="line">    print(module)</span><br></pre></td></tr></table></figure>
+<p>输出如下：</p>
+<blockquote>
+<p>Sequential(<br>
+(0): Linear(in_features=5, out_features=3, bias=True)<br>
+(1): Sequential(<br>
+(0): Linear(in_features=3, out_features=2, bias=True)<br>
+)<br>
+)<br>
+Linear(in_features=5, out_features=3, bias=True)<br>
+Sequential(<br>
+(0): Linear(in_features=3, out_features=2, bias=True)<br>
+)<br>
+Linear(in_features=3, out_features=2, bias=True)</p>
+</blockquote>
+<p>可以看出来，上面总共含有四个modules。</p>
+<h2 id="module-children">Module.children()</h2>
+<p>而children()不会返回它自己。<br>
+如下代码所示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">model = nn.Sequential(nn.Linear(<span class="number">5</span>, <span class="number">3</span>), nn.Sequential(nn.Linear(<span class="number">3</span>, <span class="number">2</span>)))</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> child <span class="keyword">in</span> model.children():</span><br><span class="line">    print(child)</span><br></pre></td></tr></table></figure>
+<p>输出如下：</p>
+<blockquote>
+<p>Linear(in_features=5, out_features=3, bias=True)<br>
+Sequential(<br>
+(0): Linear(in_features=3, out_features=2, bias=True)<br>
+)</p>
+</blockquote>
+<p>可以看出来，上面只给出了Sequential里面的modules。</p>
+<h3 id="完整代码">完整代码</h3>
+<p><a href="https://github.com/mxxhcm/myown_code/blob/master/pytorch/tutorials/module_vs_children.py" target="_blank" rel="noopener">https://github.com/mxxhcm/myown_code/blob/master/pytorch/tutorials/module_vs_children.py</a></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://discuss.pytorch.org/t/module-children-vs-module-modules/4551/2" target="_blank" rel="noopener">https://discuss.pytorch.org/t/module-children-vs-module-modules/4551/2</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/25/python-defaultdict/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/25/python-defaultdict/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">python defaultdict</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-25 10:24:36" itemprop="dateCreated datePublished" datetime="2019-04-25T10:24:36+08:00">2019-04-25</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="使用defaultdict创建字典的值默认类型"><a href="#使用defaultdict创建字典的值默认类型" class="headerlink" title="使用defaultdict创建字典的值默认类型"></a>使用defaultdict创建字典的值默认类型</h2><h3 id="使用defaultdict创建值类型为dict的字典"><a href="#使用defaultdict创建值类型为dict的字典" class="headerlink" title="使用defaultdict创建值类型为dict的字典"></a>使用defaultdict创建值类型为dict的字典</h3><p>如下示例<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br><span class="line"></span><br><span class="line">ddd = defaultdict(dict)</span><br><span class="line">print(ddd)</span><br><span class="line"></span><br><span class="line">m = ddd[<span class="string">'a'</span>]</span><br><span class="line">m[<span class="string">'step'</span>] = <span class="number">1</span></span><br><span class="line">m[<span class="string">'exp'</span>] = <span class="number">3</span></span><br><span class="line">print(type(m))</span><br><span class="line">print(ddd)</span><br><span class="line"></span><br><span class="line">m = ddd[<span class="string">'b'</span>]</span><br><span class="line">m[<span class="string">'step'</span>] = <span class="number">1</span></span><br><span class="line">m[<span class="string">'exp'</span>] = <span class="number">3</span></span><br><span class="line">print(ddd)</span><br></pre></td></tr></table></figure></p>
+<p>上述代码创建了一个dict，dict的value类型还是一个dict</p>
+<blockquote>
+<p>defaultdict(class ‘dict’&amp;gt , {})<br>&amp;lt class ‘dict’&amp;gt<br>defaultdict(&amp;lt class ‘dict’&amp;gt , {‘a’: {‘step’: 1, ‘exp’: 3}})<br>defaultdict(&amp;lt class ‘dict’&amp;gt , {‘a’: {‘step’: 1, ‘exp’: 3}, ‘b’: {‘step’: 1, ‘exp’: 3}})</p>
+</blockquote>
+<h3 id="使用defaultdict创建值类型为list的dict"><a href="#使用defaultdict创建值类型为list的dict" class="headerlink" title="使用defaultdict创建值类型为list的dict"></a>使用defaultdict创建值类型为list的dict</h3><p>如下示例<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict</span><br><span class="line"></span><br><span class="line">ddl = defaultdict(list)</span><br><span class="line">print(ddl)</span><br><span class="line">m = ddl[<span class="string">'a'</span>]</span><br><span class="line">print(type(m))</span><br><span class="line">m.append(<span class="number">3</span>)</span><br><span class="line">m.append(<span class="string">'hhhh'</span>)</span><br><span class="line">print(ddl)</span><br></pre></td></tr></table></figure></p>
+<p>上述代码创建了一个dict，dict的value类型是一个list，输出如下</p>
+<blockquote>
+<p>defaultdict(&amp;lt class ‘list’&amp;gt , {})<br>&amp;lt class ‘list’&amp;gt<br>defaultdict(&amp;lt class ‘list’&amp;gt , {‘a’: [3, ‘hhhh’]})</p>
+</blockquote>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><p>点击获得<a href="https://github.com/mxxhcm/myown_code/blob/master/tools/python/defaultdict_test.py" target="_blank" rel="noopener">完整代码</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="http://www.cnblogs.com/dancesir/p/8142775.html" target="_blank" rel="noopener">http://www.cnblogs.com/dancesir/p/8142775.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/23/python-multiprocessing-vs-threading/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -554,6 +1195,236 @@
 <h2 id="join方法"><a href="#join方法" class="headerlink" title="join方法"></a>join方法</h2><h3 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h3><p>用来阻塞当前进程，直到该进程执行完毕，再继续执行后续代码。</p>
 <h3 id="代码示例-5"><a href="#代码示例-5" class="headerlink" title="代码示例"></a>代码示例</h3><p><a href="https://github.com/mxxhcm/myown_code/blob/master/tools/py_process_thread/mp/mp_join.py" target="_blank" rel="noopener">代码地址</a><br>可以看出来，调用join()函数的时候，会等子进程执行完之后再继续执行；而不使用join()函数的话，在子进程开始执行的时候，就会继续向后执行了。</p>
 <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.cnblogs.com/lipijin/p/3709903.html" target="_blank" rel="noopener">https://www.cnblogs.com/lipijin/p/3709903.html</a><br>2.<a href="https://www.ellicium.com/python-multiprocessing-pool-process/" target="_blank" rel="noopener">https://www.ellicium.com/python-multiprocessing-pool-process/</a><br>3.<a href="https://stackoverflow.com/questions/8533318/multiprocessing-pool-when-to-use-apply-apply-async-or-map" target="_blank" rel="noopener">https://stackoverflow.com/questions/8533318/multiprocessing-pool-when-to-use-apply-apply-async-or-map</a><mp pool apply, apply_async, map用法><br>4.<a href="https://stackoverflow.com/questions/31711378/python-multiprocessing-how-to-know-to-use-pool-or-process" target="_blank" rel="noopener">https://stackoverflow.com/questions/31711378/python-multiprocessing-how-to-know-to-use-pool-or-process</a><mp process和pool.map获得不同目标函数process的结果，对mp.process无序结果进行排序><br>5.<a href="https://stackoverflow.com/questions/18176178/python-multiprocessing-process-or-pool-for-what-i-am-doing" target="_blank" rel="noopener">https://stackoverflow.com/questions/18176178/python-multiprocessing-process-or-pool-for-what-i-am-doing</a><mp pool.apply_async, process不同函数的多process><br>6.<a href="https://stackoverflow.com/questions/10415028/how-can-i-recover-the-return-value-of-a-function-passed-to-multiprocessing-proce" target="_blank" rel="noopener">https://stackoverflow.com/questions/10415028/how-can-i-recover-the-return-value-of-a-function-passed-to-multiprocessing-proce</a>&lt;获得传递给mp Process函数返回值的方法&gt;<br>7.<a href="https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes" target="_blank" rel="noopener">https://docs.python.org/3/library/multiprocessing.html#sharing-state-between-processes</a><br>8.<a href="https://sebastianraschka.com/Articles/2014_multiprocessing.html" target="_blank" rel="noopener">https://sebastianraschka.com/Articles/2014_multiprocessing.html</a><br>9.<a href="https://opensource.com/article/17/4/grok-gil" target="_blank" rel="noopener">https://opensource.com/article/17/4/grok-gil</a><gil解释></gil解释></mp></mp></mp></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/19/a3c/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/19/a3c/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">Asynchronous Methods for Deep Reinforcement Learning</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-19 18:11:56" itemprop="dateCreated datePublished" datetime="2019-04-19T18:11:56+08:00">2019-04-19</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-27 15:27:09" itemprop="dateModified" datetime="2019-09-27T15:27:09+08:00">2019-09-27</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>DQN使用experience replay buffer来稳定学习过程。本文提出一个异步框架来代替buffer，稳定学习过程。这个框架同时适用于on-policy和off-policy环境，也能应用于离散动作空间和连续的动作空间，既能训练前馈智能体，也能训练循环智能体。</p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>强化学习算法一般都是online的，而online学习是不稳定的，并且online更新通常都是强相关的。DQN通过引入experience replay buffer解决了这个问题，但是DQN只能应用在off policy算法上。DQN通过引入replay buffer取得了很大成功，但是replay buffer还有以下的几个缺点：</p>
+<ul>
+<li>在每一步交互的时候使用了更多的内存和计算资源</li>
+<li>它只能应用在off policy的算法上，也就是说权重的更新可能会使用到很久之前的数据。</li>
+</ul>
+<p>这篇文章提出不使用replay buffer，而是使用异步的框架，同时在多个相同的环境中操作多个智能体（每个环境中一个智能体）并行的采集数据。这种并行性也能将智能体的数据分解成更稳定的过程（即和experience replay buffer起到了相同的作用），因为在给定的一个时间步，智能体可能会experience很多个不同的states。<br>这个框架既可以应用在on policy算法，如Sarsa，n-step methods和actor-critc等方法上，也可以应用在off policy算法如Q-learning上。</p>
+<h2 id="异步框架"><a href="#异步框架" class="headerlink" title="异步框架"></a>异步框架</h2><p>作者给出了一个框架，将够将on-policy search的actor-critic方法以及off-policy value-based的Q-learning方法都包括进去。<br>具体的，使用一台机器上的多CPU线程，这样子可以避免在不同机器上传递参数和梯度的消耗。然后，多个并行的actor-learner可能会探索环境的不同部分，每个actor-learner可以设置不同的exploration policy。不同的thread运行不同的exploration policy，多个actor-learner并行执行online update可能比单智能体更新在时间上更不相关。所以这里使用了不同的探索策略取代了DQN中buffer稳定学习过程的作用。<br>除了稳定学习过程之外，多个actor-learner还可以减少训练时间，此外，不使用buffer以后还可以使用on-policy的方法进行训练。</p>
+<p><strong>总的来说，下面要介绍的四个算法，前面三个算法都使用了target network，第四个A3C算法没有使用target network。最重要的是所有四个算法都使用了多个actor-learner进行训练，并且使用累计的梯度进行更新（相当于batch的作用）。总共出现了三类参数，一类是network参数，一类是target network参数，一类是thread-specific（每个线程的参数）的参数。thread-specific参数是每个线程自己持有的，通过更新每个线程的参数更新network的参数，然后使用network的参数更新target network的参数，target network参数比network参数更新的要慢很多。<br>A3C算法的实质就是在多个线程中同步训练。分为主网络和线程中的网络，主网络不需要训练，主要用来存储和传递参数，每个线程中的网络用来训练参数。总的来说，多个线程同时训练提高了效率，另一方面，减小了数据之间的相关性，比如，线程$1$和$2$中都用主网络复制来的参数计算梯度，但是同一时刻只能有一个线程更新主网络的参数，比如线程$1$更新主网络的参数，那么线程$2$利用原来主网络参数计算的梯度会更新在线程$1$更新完之后的主网络参数上。</strong></p>
+<h3 id="异步的one-step-Q-learning"><a href="#异步的one-step-Q-learning" class="headerlink" title="异步的one-step Q-learning"></a>异步的one-step Q-learning</h3><ul>
+<li>每个thread都和它自己的环境副本进行交互，在每一个时间步计算Q-learning loss的梯度。</li>
+<li>通过使用不同的exploration策略，可以改进性能，这里实现exploration policy不同的方式就是使用$\epsilon$的不同取值实现。</li>
+<li>使用一个共享的更新的比较缓慢的target network，就是和DQN中的target network一样。</li>
+<li>同时也使用多个时间步上的累计梯度，和batch挺像的，这就减少了multi actor learner重写其他更新的可能性，同时也在计算效率和数据效率方面做了一个权衡。</li>
+</ul>
+<h4 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>Algorithm 1</strong> 异步的one-step Q-learning－－每个actor-learn线程的伪代码<br>用$\theta,\theta\^{-}$表示全局共享参数，计数器$T=0$，<br>初始化线程时间步计数器$t\leftarrow 0$，<br>初始化target network权重$\theta\^{-} \leftarrow 0$,<br>初始化network梯度$d\theta\leftarrow 0$，<br>初始化，得到初始状态$s$，<br><strong>repeat</strong><br>$\qquad$使用$\epsilon-$greedy策略采取action $a$，<br>$\qquad$接收下一个状态$s’$和reward $r$，<br>$\qquad$设置target value，$y=\begin{cases}r,&amp;for terminal s’ \\\ r+\gamma max_{a’}Q(s’,a’;\theta\^{-}), &amp;for non-terminal s’\end{cases}$<br>$\qquad$累计和$\theta$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))\^2}{\partial \theta}$<br>$\qquad s\leftarrow s’$<br>$\qquad T\leftarrow T+1, t\leftarrow t+1$<br>$\qquad$<strong>if</strong> $T  mod  I_{target} ==0 $，那么<br>$\qquad\qquad$更新target network $\theta\^{-}\leftarrow 0$<br>$\qquad$<strong>end if</strong><br>$\qquad$<strong>if</strong> $t  mod  I_{AsyncUpdate} ==0$或者$s$是terminal state，那么<br>$\qquad\qquad$使用$d\theta$异步更新$\theta$<br>$\qquad\qquad$将累计梯度$d\theta\leftarrow 0$<br>$\qquad$<strong>end if</strong><br><strong>until</strong> $T\ge T_{max}$</p>
+<h3 id="异步的one-step-Sarsa"><a href="#异步的one-step-Sarsa" class="headerlink" title="异步的one-step Sarsa"></a>异步的one-step Sarsa</h3><h4 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h4><ul>
+<li>和算法$1$很像，$Q-learning$计算target value使用$r+\gamma max_{a’}Q(s’,a’;\theta\^{-})$，而Sarsa计算target value使用$r+\gamma Q(s’,a’;\theta\^{-})$，即Q-learning的bahaviour policy和评估的策略是不一样的，而Sarsa的behaviour policy和评估策略是一样的。</li>
+<li>使用target network，</li>
+<li>同时使用多个时间步的累计梯度更新用来稳定学习过程。</li>
+</ul>
+<h4 id="伪代码-1"><a href="#伪代码-1" class="headerlink" title="伪代码"></a>伪代码</h4><p>和算法$1$很像。</p>
+<h3 id="异步的n-step-Q-learning"><a href="#异步的n-step-Q-learning" class="headerlink" title="异步的n-step Q-learning"></a>异步的n-step Q-learning</h3><h4 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h4><ul>
+<li>计算$n-step$的return</li>
+<li>在计算一次更新的时候，使用exploration policy采样到$t_{max}$步或者到terminal state。然后累加从上次更新到$t_{max}$时间步的reward。</li>
+<li>然后计算$n-step$更新对于上次更新之后所有state-action的梯度。</li>
+<li>使用单个时间步中的累计梯度进行更新。</li>
+<li>使用了target network。</li>
+</ul>
+<h4 id="伪代码-2"><a href="#伪代码-2" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>Algorithm 2</strong> 异步的n-step Q-learning算法－－每个actor-learner线程的伪代码<br>用$\theta,\theta\^{-}$表示全局共享的network参数和target network参数，用$T=0$表示全局共享计数器。<br>初始化线程步计数器$t\leftarrow 1$，<br>初始化target network参数$\theta\^{-}\leftarrow \theta$<br>初始化每个线程的参数参数$\theta\^{-}\leftarrow \theta$<br>初始化网络梯度$d\theta\leftarrow 0$<br><strong>repeat</strong><br>$\qquad$重置累计梯度$d\theta\leftarrow0$<br>$\qquad$同步每个线程的参数$\theta’=\theta$<br>$\qquad t_{start}=t$<br>$\qquad$得到$s_t$<br>$\qquad$<strong>repeat</strong><br>$\qquad\qquad$根据基于$Q(s_t,a;\theta’)$的$\epsilon-greedy$策略执行动作$a_t$，<br>$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，<br>$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>$\qquad$ <strong>until</strong> terminal $s_t$或者$t-t_{start}==t_{max}$<br>$\qquad$设置奖励$R=\begin{cases}0,&amp;for terminal s_t\\max_aQ(s_t,a;\theta\^{-}), &amp;for non-terminal s_t\end{cases}$<br>$\qquad$<strong>for</strong> $i\in\{t-1,\cdots,t_{start}\}$ do<br>$\qquad\qquad R\leftarrow r_i+\gamma R$<br>$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s_t,a;\theta’))\^2}{\partial \theta’}$<br>$\qquad$<strong>end for</strong><br>$\qquad$使用$d\theta$异步更新$\theta$.<br>$\qquad$<strong>if</strong>$\quad T\quad mod\quad I_{target}==0$那么<br>$\qquad\qquad\theta\^{-}\leftarrow \theta$<br>$\qquad$<strong>end if</strong><br><strong>until</strong> $T\gt T_{max}$</p>
+<h3 id="异步的advantage-actor-critic"><a href="#异步的advantage-actor-critic" class="headerlink" title="异步的advantage actor-critic"></a>异步的advantage actor-critic</h3><h4 id="概述-2"><a href="#概述-2" class="headerlink" title="概述"></a>概述</h4><ul>
+<li>A3C算法，是一个on-policy的actor-critic方法，使用值函数$V(s_t;\theta_v)$辅助学习policy $\pi(a_t|s_t;\theta)$，同时这里使用$n-step$的returns更新policy和value function。</li>
+<li>每隔$t_{max}$个action更新一次或者到了terminal state更新一次。</li>
+<li>Actor的更新方向为$\nabla_{\theta’}log\pi(a_t|s_t;\theta’)A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum_{i=0}\^{k-1} \gamma\^ir_{t+i}+\gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$计算。</li>
+<li>这里同样使用并行的actor-learner和累计的梯度用来稳定学习。$\theta$和$\theta_v$在实现上通常共享参数。</li>
+<li>添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla_{\theta’}log\pi(a_t|s_t;\theta’)(R_t-V(s_t;\theta_v))+\beta\nabla_{\theta’}H(\pi(s_t;\theta’))$。这里的$R$就是上面的$\sum_{i=0}\^{k-1}\gamma\^ir_{t+i}+\gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。</li>
+<li>Critic的更新方向通过最小化loss来实现，这里的loss指的是TD-error，即$\sum_{i=0}\^{k-1}\gamma\^ir_{t+i} + \gamma\^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。</li>
+<li>没有使用target network。</li>
+</ul>
+<h4 id="伪代码-3"><a href="#伪代码-3" class="headerlink" title="伪代码"></a>伪代码</h4><p><strong>Algorithm 3</strong> A3C－－每个actor-learn线程的伪代码<br>用$\theta,\theta_v$表示全局共享参数，用$T=0$表示全局共享计数器，<br>用$\theta’,\theta’_v$表示每个线程中的参数<br>初始化线程步计数器$t\leftarrow 1$，<br><strong>repeat</strong><br>$\qquad$重置梯度$d\theta\leftarrow 0,d\theta_v\leftarrow 0$，<br>$\qquad$同步线程参数$\theta’=\theta,\theta’_v=\theta_v$<br>$\qquad t_{start}=t$<br>$\qquad$得到状态$s_t$，<br>$\qquad$<strong>repeat</strong><br>$\qquad\qquad$根据策略$\pi(a_t|s_t;\theta’)$执行动作$a_t$，<br>$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，<br>$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>$\qquad$ <strong>until</strong> terminal $s_t$或者$t-t_{start}==t_{max}$<br>$\qquad$设置奖励$R=\begin{cases}0,&amp;for terminal s_t\\\ V(s_t,\theta’_v), &amp;for non-terminal s_t\end{cases}$<br>$\qquad$<strong>for</strong> $i\in\{t-1,\cdots,t_{start}\}$ do<br>$\qquad\qquad R\leftarrow r_i+\gamma R$<br>$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))\^2}{\partial \theta}$<br>$\qquad\qquad$累计和$\theta’_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta’_v))\^2}{\partial \theta’_v}$<br>$\qquad$<strong>end for</strong><br>$\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.<br><strong>until</strong> $T\ge T_{max}$</p>
+<h3 id="优化方法"><a href="#优化方法" class="headerlink" title="优化方法"></a>优化方法</h3><p>作者尝试了三种不同的优化方法，带有momentum的SGD，带有共享statistics的RMSProp以及不带shared statistics的RMSProp。</p>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><h3 id="优化细节"><a href="#优化细节" class="headerlink" title="优化细节"></a>优化细节</h3><p>作者在异步框架中测试了两个优化算法SGD和RMSProp，并且因为效率原因没有使用线程锁。</p>
+<h3 id="设置"><a href="#设置" class="headerlink" title="设置"></a>设置</h3><ul>
+<li>Atari环境中，每个实验使用$16$个actor-learner线程。</li>
+<li>所有方法都每隔$5$个actions更新一次，并且使用共享的RMSProp进行优化。</li>
+<li>三个异步的value-based算法使用每隔$40000$帧更新的共享target network，</li>
+<li>使用了DQN中action repeat of $4$.</li>
+<li>网络架构和DQN一样</li>
+<li>基于值的方法只有一个线性输出层，每个输出单元代表一个action的值。</li>
+<li>actor-critic方法有两个输出层，一个softmax表示选择某一个action的概率，一个线性输出代表值函数。</li>
+<li>所有实验使用的$\gamma=0.99$，RMSProp的衰减因子$\alpha = 0.99$。</li>
+<li>Value-based方法采用的exploration rate $\epsilon$有三个取值$\epsilon_1,\epsilon_2,\epsilon_3$，相应的概率为$0.4,0.3,0.3$，它们的值在前$4$百万帧中从$1$退火到$0.1,0.01,0.5$。</li>
+<li>A3C使用了entropy进行正则化，entropy项的权重为$\beta=0.01$</li>
+<li>初始学习率从分布$LogUniform(10\^{-4},10\^{-2})$中进行采样，在训练过程中退火到$0$。</li>
+</ul>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><h3 id="代码地址"><a href="#代码地址" class="headerlink" title="代码地址"></a>代码地址</h3><p><a href="https://github.com/ikostrikov/pytorch-a3c" target="_blank" rel="noopener">https://github.com/ikostrikov/pytorch-a3c</a></p>
+<h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>如果直接git下来运行的话，会出问题，需要在main()下加上这样一句<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mp.set_start_method(<span class="string">"forkserver"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>可能是因为Unix系统默认的多进程方式是fork，这里只要不设置为fork,设置为其他两种方式spawn, forkserver都行。</p>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p>1.<a href="https://arxiv.org/pdf/1602.01783.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1602.01783.pdf</a></p>
 
           
         
@@ -1540,838 +2411,11 @@ alias posts='cd /home/mxxmhh/github/blog/source/_posts’<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/13/python-regex/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/13/python-regex/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">python regex</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-13 14:50:41" itemprop="dateCreated datePublished" datetime="2019-04-13T14:50:41+08:00">2019-04-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-06 15:47:18" itemprop="dateModified" datetime="2019-06-06T15:47:18+08:00">2019-06-06</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="regex-examples"><a href="#regex-examples" class="headerlink" title="regex examples"></a>regex examples</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># 找出每一行的数字</span></span><br><span class="line">string = <span class="string">"""a9apple1234</span></span><br><span class="line"><span class="string">2banana5678</span></span><br><span class="line"><span class="string">a3coconut9012"""</span></span><br><span class="line">pattern = <span class="string">"[0-9]+"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># search</span></span><br><span class="line">result = re.search(pattern, string)</span><br><span class="line">print(type(result))</span><br><span class="line">print(result[<span class="number">0</span>])</span><br><span class="line">print(result.group(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># match</span></span><br><span class="line"><span class="comment"># 即使设置了MULTILINE模式，也只会匹配string的开头而不是每一行的开头</span></span><br><span class="line">result = re.match(pattern, string, re.S| re.M)  </span><br><span class="line">print(type(result))</span><br><span class="line"><span class="comment"># print(result[0])</span></span><br><span class="line"><span class="comment"># print(result.group(0))</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># findall</span></span><br><span class="line">result = re.findall(pattern, string)</span><br><span class="line">print(type(result))</span><br><span class="line">print(result)</span><br></pre></td></tr></table></figure>
-<h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><p>.   匹配除了newline的任意character，如果要匹配newline，需要添加re.DOTALL flag<br>*  重复至少$0$次<br>+  重复至少$1$次<br>?   重复$0$次或者$1$次<br>{}  重复多少次，如a{3,5}表示重复$3-5$次<br>[]  匹配方括号内的内容,如[1-9]表示匹配$1-9$中任意一个<br>^   matching the start of the string<br>$   matching the end os the string<br>+,*.?    都是贪婪匹配，如果加一个?为非贪婪匹配<br>+?,*?,??    为非贪婪匹配<br>()  匹配括号内的正则表达式，表示一个group的开始和结束<br>|   或<br>\number<br>\b  匹配empty string<br>\B<br>\d  匹配数字<br>\D  匹配非数字<br>\s  匹配空白符[ \t\n\r\f\v]<br>\S  匹配非空白符<br>\w  匹配unicode<br>\W<br>\A<br>\Z</p>
-<h2 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h2><ul>
-<li>re.compile(patern, flags=0)</li>
-<li>re.match(pattern, string, flags=0)</li>
-<li>re.fullmatch(pattern,string,flags=0)</li>
-<li>re.search(pattern, string, flags=0)</li>
-<li>re.split(pattern, string, maxflit=0, flags=0)</li>
-<li>re.findall(pattern,string,flags=0)</li>
-<li>re.sub(pattern,repl,string,count=0,flags=0)</li>
-<li>re.subn(pattern,repl,string,count=0,flags=0)</li>
-</ul>
-<h3 id="flags"><a href="#flags" class="headerlink" title="flags"></a>flags</h3><blockquote>
-<p>flags can be re.DEBUG, re.I, re.IGNORECASE, re.L, re.LOCALE, re.M, re.MULTILINE, re.S, re.DOTALL, re.U, re.UNICODE, re.X, re.VERBOSE</p>
-</blockquote>
-<ul>
-<li>re.I(re.IGNORECASE) 忽略大小写</li>
-<li>re.L(re.LOCALE) </li>
-<li>re.M(re.MULTILINE) 多行模式，设置以后.匹配newline。指定re.S时，’^’匹配string的开始和each line的开始(紧跟着each newline); ‘$’匹配string的结束和each line的结束($在newline之前，immediately preceding each newline)。如果不指定的话, ‘^’只匹配string的开始,’$’只匹配string的结束和immediately before the newline (if any) at the end of the string，对应inline flag (?m).</li>
-<li>re.S(re.DOTALL)  </li>
-<li>re.U(re.UNICODE)</li>
-<li>re.X(re.VERBOSE)</li>
-<li>re.DEBUG</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line"></span><br><span class="line">print(re.I)</span><br><span class="line">print(re.IGNORECASE)</span><br><span class="line">print(re.L)</span><br><span class="line">print(re.LOCALE)</span><br><span class="line">print(re.M)</span><br><span class="line">print(re.MULTILINE)</span><br><span class="line">print(re.S)</span><br><span class="line">print(re.DOTALL)</span><br><span class="line">print(re.U)</span><br><span class="line">print(re.UNICODE)</span><br><span class="line">print(re.X)</span><br><span class="line">print(re.VERBOSE)</span><br><span class="line">print(re.DEBUG)</span><br><span class="line"></span><br><span class="line">print(re.M <span class="keyword">is</span> re.MULTILINE)</span><br><span class="line">print(re.I <span class="keyword">is</span> re.IGNORECASE)</span><br></pre></td></tr></table></figure>
-<p>re.M例子<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">text = <span class="string">"""First line.</span></span><br><span class="line"><span class="string">Second line.</span></span><br><span class="line"><span class="string">Third line."""</span></span><br><span class="line"></span><br><span class="line">pattern = <span class="string">"^.*$"</span>  <span class="comment"># 匹配从开始到结束的任何字符</span></span><br><span class="line"><span class="comment"># 默认情况下， . 不匹配newlines，所以默认情况下不会有任何匹配结果，因为$之前有newline，而.不能匹配</span></span><br><span class="line"><span class="comment"># re.search(pattern, text) is None  # Nothing matches!</span></span><br><span class="line">print(re.search(pattern, text))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果设置MULTILINE模式, $匹配每一行的结尾，这个时候第一行就满足要求了，设置MULTILINE模式后，$匹配string的结尾和每一行的结尾（each newline之前)</span></span><br><span class="line">print(re.search(pattern, text, re.M).group())</span><br><span class="line"><span class="comment"># First line.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果同时设置MULTILINE和DOTALL模式, .能够匹配newlines，所以第一行和第二行的newline都匹配了，在贪婪模式下，就匹配了整个字符串。</span></span><br><span class="line">print(re.search(pattern, text, re.M | re.S).group())</span><br><span class="line"><span class="comment"># First line.</span></span><br><span class="line"><span class="comment"># Second line.</span></span><br><span class="line"><span class="comment"># Third line.</span></span><br></pre></td></tr></table></figure></p>
-<h3 id="re-compile-patern-flags-0"><a href="#re-compile-patern-flags-0" class="headerlink" title="re.compile(patern, flags=0)"></a>re.compile(patern, flags=0)</h3><p>将一个正则表达式语句编译成一个正则表达式对象，可以调用正则表达式的match()和search()函数进行matching。</p>
-<blockquote>
-<p>complie a regular expression pattern into a regular expression object,which can be used for matching using its match() and search()</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">str = <span class="string">"https://abc https://dcdf https://httpfn https://hello"</span></span><br><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line"></span><br><span class="line">prog = re.compile(pattern)</span><br><span class="line">results = prog.match(string)</span><br><span class="line"><span class="comment"># 上面两行等价于下面一行</span></span><br><span class="line"></span><br><span class="line">results = re.match(pattern, string)</span><br></pre></td></tr></table></figure>
-<h3 id="re-match-pattern-string-flags-0-or-re-fullmatch-pattern-string-flags-0"><a href="#re-match-pattern-string-flags-0-or-re-fullmatch-pattern-string-flags-0" class="headerlink" title="re.match(pattern, string, flags=0) or re.fullmatch(pattern,string,flags=0)"></a>re.match(pattern, string, flags=0) or re.fullmatch(pattern,string,flags=0)</h3><p>在给定的string开始位置进行查找，返回一个match object。<strong>即使设置了MULTILINE mode, re.match()也只会在string的开始而不是each line的每一行开始匹配。</strong></p>
-<h3 id="re-search-pattern-string-flags-0"><a href="#re-search-pattern-string-flags-0" class="headerlink" title="re.search(pattern, string, flags=0)"></a>re.search(pattern, string, flags=0)</h3><p>在给定的string任意位置进行查找，返回一个match object。</p>
-<blockquote>
-<p>locat a match anywhere in string</p>
-</blockquote>
-<h3 id="search-vs-match"><a href="#search-vs-match" class="headerlink" title="search() vs. match()"></a>search() vs. match()</h3><p>re.macth()在string的开头查找，而re.search在string的任意位置查找，他们都返回match object对象。如果不匹配，返回None。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import re</span><br><span class="line"></span><br><span class="line">match1 = re.match(&quot;cd&quot;, &quot;abcdef&quot;)     # match</span><br><span class="line">match2 = re.search(&quot;cd&quot;, &quot;abcdef&quot;)    # search</span><br><span class="line">print(match1)</span><br><span class="line">print(match2)</span><br><span class="line">print(match2.group(0))</span><br><span class="line"># None</span><br><span class="line"># &lt;regex.Match object; span=(2, 4), match=&apos;cd&apos;&gt;</span><br><span class="line"># cd</span><br><span class="line"></span><br><span class="line">with open(&quot;content.txt&quot;, &quot;r&quot;) as f:</span><br><span class="line">    s = f.read()</span><br><span class="line">match3 = re.match(&quot;cd&quot;, s)     # match</span><br><span class="line">match4 = re.search(&quot;cd&quot;, s)</span><br><span class="line">print(match3)</span><br><span class="line">print(match4)</span><br><span class="line"># None</span><br><span class="line"># &lt;regex.Match object; span=(4, 6), match=&apos;cd&apos;&gt;</span><br></pre></td></tr></table></figure></p>
-<h3 id="re-findall-pattern-string-flags-0"><a href="#re-findall-pattern-string-flags-0" class="headerlink" title="re.findall(pattern,string,flags=0)"></a>re.findall(pattern,string,flags=0)</h3><p>查找字符string所有匹配pattern的字符<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line">str = <span class="string">"https://abc https://dcdf https://httpfn https://hello"</span></span><br><span class="line">p2 = <span class="string">"https.+? "</span>    <span class="comment"># pay attention to space here</span></span><br><span class="line">results = re.findall(p2,str)</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>[‘<a href="https://abc" target="_blank" rel="noopener">https://abc</a> ‘, ‘<a href="https://dcdf" target="_blank" rel="noopener">https://dcdf</a> ‘, ‘<a href="https://httpfn" target="_blank" rel="noopener">https://httpfn</a> ‘]    # pay attention to the last ,since the end of str is \n</p>
-</blockquote>
-<h3 id="re-split-pattern-string-maxflit-0-flags-0"><a href="#re-split-pattern-string-maxflit-0-flags-0" class="headerlink" title="re.split(pattern, string, maxflit=0, flags=0)"></a>re.split(pattern, string, maxflit=0, flags=0)</h3><p>按照patten对string进行分割<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line">str = <span class="string">"https://abc https://dcdf https://httpfn https://hello"</span></span><br><span class="line">p1 = <span class="string">" "</span></span><br><span class="line">results = re.split(p1,str)</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>[‘<a href="https://abc" target="_blank" rel="noopener">https://abc</a>‘, ‘<a href="https://dcdf" target="_blank" rel="noopener">https://dcdf</a>‘, ‘<a href="https://httpfn" target="_blank" rel="noopener">https://httpfn</a>‘, ‘<a href="https://hello" target="_blank" rel="noopener">https://hello</a>‘]</p>
-</blockquote>
-<h3 id="re-sub-pattern-repl-string-count-0-flags-0"><a href="#re-sub-pattern-repl-string-count-0-flags-0" class="headerlink" title="re.sub(pattern,repl,string,count=0,flags=0)"></a>re.sub(pattern,repl,string,count=0,flags=0)</h3><h3 id="re-subn-pattern-repl-string-count-0-flags-0"><a href="#re-subn-pattern-repl-string-count-0-flags-0" class="headerlink" title="re.subn(pattern,repl,string,count=0,flags=0)"></a>re.subn(pattern,repl,string,count=0,flags=0)</h3><h3 id="…"><a href="#…" class="headerlink" title="…"></a>…</h3><h2 id="正则表达式对象-regular-express-object"><a href="#正则表达式对象-regular-express-object" class="headerlink" title="正则表达式对象(regular express object)"></a>正则表达式对象(regular express object)</h2><p>class re.RegexObject<br>只有re.compile()函数会产生正则表达式对象，正则</p>
-<blockquote>
-<p>only re.compile() will create a direct regular express object,<br>it’s a special class which design for re.compile().<br>正则表达式对象支持下列方法和属性</p>
-<ul>
-<li>match(string[,pos[,endpos]])</li>
-<li>search(string[,pos[,endpos]])</li>
-<li>findall(string[,pos[,endpos]])</li>
-<li>split(string,maxsplit=0)</li>
-<li>sub()</li>
-<li>flags</li>
-<li>groups</li>
-<li>groupindex</li>
-<li>pattern</li>
-</ul>
-</blockquote>
-<h3 id="match-string-pos-endpos"><a href="#match-string-pos-endpos" class="headerlink" title="match(string[,pos[,endpos]])"></a>match(string[,pos[,endpos]])</h3><h3 id="search-string-pos-endpos"><a href="#search-string-pos-endpos" class="headerlink" title="search(string[,pos[,endpos]])"></a>search(string[,pos[,endpos]])</h3><h3 id="findall-string-pos-endpos"><a href="#findall-string-pos-endpos" class="headerlink" title="findall(string[,pos[,endpos]])"></a>findall(string[,pos[,endpos]])</h3><h3 id="split-string-maxsplit-0"><a href="#split-string-maxsplit-0" class="headerlink" title="split(string,maxsplit=0)"></a>split(string,maxsplit=0)</h3><h3 id="sub"><a href="#sub" class="headerlink" title="sub()"></a>sub()</h3><h3 id="flags-1"><a href="#flags-1" class="headerlink" title="flags"></a>flags</h3><h3 id="groups"><a href="#groups" class="headerlink" title="groups"></a>groups</h3><h3 id="groupindex"><a href="#groupindex" class="headerlink" title="groupindex"></a>groupindex</h3><h3 id="pattern"><a href="#pattern" class="headerlink" title="pattern"></a>pattern</h3><h2 id="匹配对象-match-objects"><a href="#匹配对象-match-objects" class="headerlink" title="匹配对象(match objects)"></a>匹配对象(match objects)</h2><p>class re.MatchObject<br>匹配是否成功</p>
-<blockquote>
-<p>match objects have a boolean value of True.</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">match = re.search(pattern, string)</span><br><span class="line">if match:</span><br><span class="line">   processs(match)</span><br></pre></td></tr></table></figure>
-<p>MatchObject支持以下方法和属性</p>
-<ul>
-<li>group([group1,..])</li>
-<li>groups([default=None])</li>
-<li>groupdict(default=None)</li>
-<li>start([group])</li>
-<li>end([group])</li>
-<li>span([group])</li>
-<li>pos</li>
-<li>endpos</li>
-<li>lstindex</li>
-<li>lastgroup</li>
-<li>re</li>
-<li>string</li>
-</ul>
-<h3 id="group-group1"><a href="#group-group1" class="headerlink" title="group([group1,..])"></a>group([group1,..])</h3><p>group的话pattern需要多个()</p>
-<h3 id="groups-default"><a href="#groups-default" class="headerlink" title="groups([default])"></a>groups([default])</h3><p>返回一个元组</p>
-<blockquote>
-<p>return a tuple containing all the subgroups of the match.</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">re.match(<span class="string">r"(\d+)\.(\d+)"</span>,<span class="string">"24.1632"</span>)</span><br><span class="line">m.groups()</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>(‘24’,’1632’)</p>
-</blockquote>
-<p>show default<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m = re.match(<span class="string">r"(\d+)\.?(\d+)?"</span>, <span class="string">"24"</span>)</span><br><span class="line">m.groups()      <span class="comment"># Second group defaults to None.</span></span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>(‘24’, None)</p>
-</blockquote>
-<p>change default to 0<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m.groups(<span class="string">'0'</span>)  <span class="comment"># Now, the second group defaults to '0'.</span></span><br><span class="line">(<span class="string">'24'</span>, <span class="string">'0'</span>)</span><br></pre></td></tr></table></figure></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://stackoverflow.com/questions/180986/what-is-the-difference-between-re-search-and-re-match" target="_blank" rel="noopener">https://stackoverflow.com/questions/180986/what-is-the-difference-between-re-search-and-re-match</a><br>2.<a href="https://devdocs.io/python~3.7/library/re" target="_blank" rel="noopener">https://devdocs.io/python~3.7/library/re</a><br>3.<a href="https://mail.python.org/pipermail/python-list/2014-July/674576.html" target="_blank" rel="noopener">https://mail.python.org/pipermail/python-list/2014-July/674576.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/13/python-数组初始化/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/13/python-数组初始化/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">python数组初始化</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-13 14:49:35" itemprop="dateCreated datePublished" datetime="2019-04-13T14:49:35+08:00">2019-04-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-09 11:10:21" itemprop="dateModified" datetime="2019-06-09T11:10:21+08:00">2019-06-09</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="array-initialize"><a href="#array-initialize" class="headerlink" title="array initialize"></a>array initialize</h2><p>array_one_dimension =  [ 0 for i in range(cols)]<br>array_multi_dimension  = [[0 for i in range(cols)] for j in range(rows)]</p>
-<h2 id="numpy"><a href="#numpy" class="headerlink" title="numpy"></a>numpy</h2><ul>
-<li>numpy.array()</li>
-<li>numpy.zeros()</li>
-<li>numpy.empty()</li>
-</ul>
-<p>返回np.ndarray数组</p>
-<h3 id="np-ndarray属性"><a href="#np-ndarray属性" class="headerlink" title="np.ndarray属性"></a>np.ndarray属性</h3><p>ndarray.shape        #array的shape<br>ndarray.ndim            #array的维度<br>ndarray.size            #the number of ndarray in array<br>ndarray.dtype        #type of the number in array<br>ndarray.itemsize        #size of the element in array<br>array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论array的维度是多少</p>
-<h3 id="numpy-array"><a href="#numpy-array" class="headerlink" title="numpy.array()"></a>numpy.array()</h3><p>np.array(object,dtype=None,copy=True,order=False,subok=False,ndim=0)</p>
-<h3 id="numpy-zeros"><a href="#numpy-zeros" class="headerlink" title="numpy.zeros()"></a>numpy.zeros()</h3><p>np.zeros(shape,dtype=float,order=’C’)</p>
-<h3 id="numpy-empty"><a href="#numpy-empty" class="headerlink" title="numpy.empty()"></a>numpy.empty()</h3><p>np.empty(shape,dtype=float,order=’C’)</p>
-<h3 id="numpy-random-randn-shape"><a href="#numpy-random-randn-shape" class="headerlink" title="numpy.random.randn(shape)"></a>numpy.random.randn(shape)</h3><p>np.random.randn(3,4)</p>
-<h3 id="numpy-arange"><a href="#numpy-arange" class="headerlink" title="numpy.arange()"></a>numpy.arange()</h3><h3 id="numpy-linspace"><a href="#numpy-linspace" class="headerlink" title="numpy.linspace()"></a>numpy.linspace()</h3>
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/13/python-dict/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/13/python-dict/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">python2和python3中的dict</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-13 14:46:26" itemprop="dateCreated datePublished" datetime="2019-04-13T14:46:26+08:00">2019-04-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="python2和python3的dict"><a href="#python2和python3的dict" class="headerlink" title="python2和python3的dict"></a>python2和python3的dict</h2><h3 id="将object转换为dict"><a href="#将object转换为dict" class="headerlink" title="将object转换为dict"></a>将object转换为dict</h3><p>vars([object]) -&gt; dictionary</p>
-<h3 id="python2-dict"><a href="#python2-dict" class="headerlink" title="python2 dict"></a>python2 dict</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">m_dict = &#123;&apos;a&apos;: 10, &apos;b&apos;: 20&#125;</span><br><span class="line"></span><br><span class="line">values = m_dict.values()</span><br><span class="line">print(type(values))</span><br><span class="line">print(values)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">items = m_dict.items()</span><br><span class="line">print(type(items))</span><br><span class="line">print(items)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">keys = m_dict.keys()</span><br><span class="line">print(type(keys))</span><br><span class="line">print(keys)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">l_values = list(values)</span><br><span class="line">print(type(l_values))</span><br><span class="line">print(l_values)</span><br><span class="line"></span><br><span class="line">输出：</span><br></pre></td></tr></table></figure>
-<h3 id="python3-dict"><a href="#python3-dict" class="headerlink" title="python3 dict"></a>python3 dict</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">m_dict = &#123;&apos;a&apos;: 10, &apos;b&apos;: 20&#125;</span><br><span class="line"></span><br><span class="line">values = m_dict.values()</span><br><span class="line">print(type(values))</span><br><span class="line">print(values) print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">items = m_dict.items()</span><br><span class="line">print(type(items))</span><br><span class="line">print(items)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">keys = m_dict.keys()</span><br><span class="line">print(type(keys))</span><br><span class="line">print(keys)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">l_values = list(values)</span><br><span class="line">print(type(l_values))</span><br><span class="line">print(l_values)</span><br></pre></td></tr></table></figure>
-<p>输出：</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/13/python-深复制和浅复制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/13/python-深复制和浅复制/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">python中的深复制和浅复制</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-13 14:43:31" itemprop="dateCreated datePublished" datetime="2019-04-13T14:43:31+08:00">2019-04-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简单赋值，浅拷贝，深拷贝"><a href="#简单赋值，浅拷贝，深拷贝" class="headerlink" title="简单赋值，浅拷贝，深拷贝"></a>简单赋值，浅拷贝，深拷贝</h2><h3 id="简单赋值"><a href="#简单赋值" class="headerlink" title="简单赋值"></a>简单赋值</h3><h4 id="str"><a href="#str" class="headerlink" title="str"></a>str</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">'hello'</span></span><br><span class="line">b = <span class="string">'hello'</span></span><br><span class="line">c = a</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>2432356754632  2432356754632  2432356754632</p>
-</blockquote>
-<p>这里打印出a，b，c的id是一样的，因为他们全是指向’hello’这个字符串在内存中的地址<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">'world'</span></span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>2432356757376  2432356754632  2432356754632</p>
-</blockquote>
-<p>将a指向一个新的字符串’world’,所以变量a的地址就改变了，指向字符串’world’的地址，但是b和c还是指向字符串’hello’的地址。</p>
-<h4 id="list"><a href="#list" class="headerlink" title="list"></a>list</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="string">'hello'</span>]</span><br><span class="line">b = [<span class="string">'hello'</span>]</span><br><span class="line">c = a</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>2432356788424 2432356797064 2432356788424</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">b = [<span class="string">'world'</span>]</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>2432356798024 2432356797064 2432356788424</p>
-</blockquote>
-<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>简单赋值是先给一个变量分配内存，然后把变量的地址赋值给一个变量名。<br>对于一些不可变的类型，比如str，int等，某一个值在内存中的地址是固定的，如果用赋值操作直接指向一个值的话，那么变量名指向的就是这个值在内存中地址。<br>比如a=’hello’,b=’hello’,这样a和b的id是相同的，都指向内存中hello的地址<br>对于一些可变的类型，比如list，因为他是可变的，所以如果用赋值操作指向同一个值的话，那么这几个变量的地址也不一样<br>比如a =[‘hello’],b=[‘hello’],这样a和b的id是不同的，虽然他们指向的值是一样的，</p>
-<h3 id="浅拷贝"><a href="#浅拷贝" class="headerlink" title="浅拷贝"></a>浅拷贝</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="string">'hello'</span> , [<span class="number">123</span>] ]</span><br><span class="line">b = a[:]</span><br><span class="line">a = [<span class="string">'hello'</span> , [<span class="number">123</span>] ]</span><br><span class="line">b = a[:]</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>[‘hello’, [123]] [‘hello’, [123]]<br>2432356775368 2432356775432 2432356754632 2432356774984<br>2432356754632 2432356774984</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt;a[<span class="number">0</span>] = <span class="string">'world'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(a,b)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(a),id(b))</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>[‘world’, [123]] [‘hello’, [123]]<br>2432356775368 2432356775432<br>2432356756424 2432356774984<br>2432356754632 2432356774984</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a[<span class="number">1</span>].append(<span class="number">3</span>)</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>[‘world’, [123, 3]] [‘hello’, [123, 3]]<br>2432356775368 2432356775432<br>2432356756424 2432356774984<br>2432356754632 2432356774984</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">a[<span class="number">1</span>] = [<span class="number">123</span>]</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br><span class="line">``` </span><br><span class="line">&gt; [<span class="string">'world'</span>, [<span class="number">123</span>]] [<span class="string">'hello'</span>, [<span class="number">123</span>, <span class="number">3</span>]]</span><br><span class="line"><span class="number">2432356775368</span> <span class="number">2432356775432</span></span><br><span class="line"><span class="number">2432356756424</span> <span class="number">2432356822984</span></span><br><span class="line"><span class="number">2432356754632</span> <span class="number">2432356774984</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### 深拷贝</span></span><br><span class="line">``` python</span><br><span class="line"><span class="keyword">from</span> copy <span class="keyword">import</span> deepcopy</span><br><span class="line">a = [<span class="string">'hello'</span>,[<span class="number">123</span>,<span class="number">234</span>]</span><br><span class="line">b = deepcopy(a)</span><br></pre></td></tr></table></figure>
-<p>a，b以及a，b中任何元素（除了str，int等类型）的地址都是不一样的</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/10/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><a class="page-number" href="/page/13/">13</a><a class="extend next" rel="next" href="/page/12/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/10/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/14/">14</a><a class="extend next" rel="next" href="/page/12/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2416,7 +2460,7 @@ alias posts='cd /home/mxxmhh/github/blog/source/_posts’<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">129</span>
+                    <span class="site-state-item-count">134</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2467,7 +2511,7 @@ alias posts='cd /home/mxxmhh/github/blog/source/_posts’<br>
                     
                       
                     
-                    <span class="site-state-item-count">8</span>
+                    <span class="site-state-item-count">10</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3052,7 +3096,7 @@ alias posts='cd /home/mxxmhh/github/blog/source/_posts’<br>
                     
                       
                     
-                    <span class="site-state-item-count">131</span>
+                    <span class="site-state-item-count">153</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3305,13 +3349,13 @@ alias posts='cd /home/mxxmhh/github/blog/source/_posts’<br>
       
     
       
+    
+      
+    
+      
+    
+      
         
-      
-    
-      
-    
-      
-    
       
     
       
