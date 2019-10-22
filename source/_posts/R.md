@@ -29,8 +29,13 @@ ls()
 ```
 ### 矩阵
 ``` R
-matrix()    # 创建一个矩阵
+#matrix()    # 创建一个矩阵
 matrix(data=c(1,2,3,4), nrow=2, ncol=2,byrow=TRUE) # byrow=TRUE表示先行后列
+```
+### 转置
+``` R
+a = matrix(c(1,2,3,4), 4, 4)
+at = t(a)
 ```
 ### 幂和开方
 ``` R
@@ -152,6 +157,9 @@ identify(horsepower, mpg, name)
 # 6.summary()给出指定变量的描述信息
 summary(auto_data)
 ```
+
+## 库
+
 
 
 ## 参考文献
