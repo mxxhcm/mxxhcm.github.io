@@ -20,6 +20,12 @@ KNN的思路很简单，从训练集中（带标签）找到$k$个离待预测�
 - 竞争学习：训练集中的每个元素都竞争预测结果。
 - 懒惰学习：不需要训练，直到需要预测的时候才会建立模型。
 
+## KNN classification
+$$\text{Pr}(Y=j|X=X_0) = \frac{1}{K} \sum\_{x_i\in N_0}I(y_i=j)
+
+
+## KNN regression
+$$\hat{f}(x_0) = \frac{1}{K} \sum\_{x_i\in N_0} y_i$$
 
 ## 参考文献
 1.https://zhuanlan.zhihu.com/p/36549000
