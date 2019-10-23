@@ -144,6 +144,11 @@ $h_i$的取值总是在$\frac{1}{n}$和$1$之间，求所有观测的平均杠�
 $$ VIF(\hat{\beta_j}) = \frac{1}{1-R^2\_{X_j|X\_{-j} } }$$
 其中$R^2\_{X_j|X\_{-j} }$表示对$X_j$对所有自变量回归的$R^2$，如果它接近于$1$,就存在共线性。
 
+## KNN regression vs linear regression
+真实情况是线性情况下，KNN可能会略逊于linear regression。
+在真实情况是非线性情况下，当变量个数$p$取$1$或者$2$时，KNN优于linear regression。取$3$时，不确定。当$p\ge 4$时，linear regression优于KNN。更高的话会有curse of dimension。
+如果变量个数很少，样本数很多，多项式拟合可能会拟合到误差。
+当$K=1,2$时，
 
 
 ## 参考文献

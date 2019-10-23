@@ -159,6 +159,16 @@ summary(auto_data)
 ```
 
 ## 库
+### 安装package
+``` R
+install.packages("ISLR")
+```
+
+### 加载package
+``` 
+library(ISLR)
+```
+
 
 
 

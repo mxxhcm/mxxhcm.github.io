@@ -1,5 +1,5 @@
 ---
-title: numpy笔记
+title: numpy
 date: 2019-03-18 15:15:29
 tags:
  - python
@@ -9,7 +9,7 @@ mathjax: true
 ---
 
 ## numpy.ndarray
-### attribute of the np.ndarray
+### np.ndarray的属性
 ndarray.shape        #array的shape
 ndarray.ndim            #array的维度
 ndarray.size            #the number of ndarray in array
@@ -18,6 +18,7 @@ ndarray.itemsize        #size of the element in array
 ``` python
 array[array>0].size    #统计一个数组有多少个非零元素，不论array的维度是多少
 ```
+
 ### 改变数组数据类型
 将整形数组改为字符型
 ``` python
@@ -58,7 +59,7 @@ a.flatten()
 - numpy.random()
 
 ### numpy.array()
-#### API
+#### 函数原型
 ``` python
 np.array(
     object,
@@ -71,7 +72,7 @@ np.array(
 ```
 
 ### numpy.zeros()
-#### API
+#### 函数原型
 ``` python
 np.zeros(
     shape,
@@ -87,7 +88,7 @@ np.zeros((3, 4),dtype='i')
 ``` 
 
 ### numpy.empty()
-#### API
+#### 函数原型
 ``` python
 np.empty(
     shape,
@@ -187,13 +188,9 @@ for i in range(3):
 np.ones([2, 2], dtype=bool)
 np.zeros([2, 2], dtype=bool)
 
-### others
-#### numpy.arange()
-
-#### numpy.linspace()
-
-## np.random.binomial
-### API
+## np.random
+### np.random.binomial
+#### 函数原型
 ``` python
 numpy.random.binomial(
 	n, 
@@ -201,11 +198,11 @@ numpy.random.binomial(
 	size=None
 )
 ```
-### 介绍
+#### 介绍
 二项分布，共有三个参数，前两个是必选参数，第三个是可选参数。$n$是实验的个数，比如同时扔三枚硬币，这里就是$n=3$,$p$是为$1$的概率。$size$是总共进行多少次实验。
 返回值是在每次试验中，trival成功的个数。如果是一个scalar，代表$size=1$，如果是一个list，代表$size\gt 1$。
 
-### 代码示例
+#### 代码示例
 ``` python
 import numpy as np
 
@@ -230,8 +227,8 @@ print(rand)
 # [2 2 3 3 2]
 ```
 
-## np.random.choice
-### API
+### np.random.choice
+#### 函数原型
 ``` python
 numpy.random.choice(
     a,  # 1d array或者int，如果是一个数组，从其中生成样本；如果是一个整数，从np.arange(a)中生成样本
@@ -241,7 +238,7 @@ numpy.random.choice(
 )
 ```
 
-### 代码示例
+#### 代码示例
 [代码地址]()
 ``` python
 import numpy as np
@@ -261,17 +258,17 @@ a3 = np.random.choice([1, 2, 3, 8, 9], 5, replace=False)
 print(a3)
 ```
 
-## np.random.permutation
-### API
+### np.random.permutation
+#### 函数原型
 ``` python
 np.random.permutation(
     x   # int或者array，如果是int，置换np.arange(x)。如果是array，make a copy，随机打乱元素。
 )
 ```
-### 简介
+#### 简介
 对输入序列进行排列组合，如果输入是多维的话，只会在第一维重新排列。
 
-### 代码示例
+#### 代码示例
 [代码地址]()
 ``` python
 import numpy as np
@@ -287,8 +284,8 @@ a3 = np.random.permutation(np.arange(9).reshape(3, 3))
 print(a3)
 ```
 
-## np.random.normal
-### API
+### np.random.normal
+#### 函数原型
 ```
 numpy.random.normal(loc=0.0, scale=1.0, size=None)  
 loc:float，正态分布的均值，对应着整个分布的center
@@ -298,7 +295,7 @@ np.random.randn(size)相当于np.random.normal(loc=0, scale=1, size)
 ```
 
 ## np.argsort
-### API
+### 函数原型
 numpy.argsort(a, axis=-1, kind='quicksort', order=None)
 axis:对哪个axis进行排序，默认是-1
 
@@ -306,8 +303,7 @@ axis:对哪个axis进行排序，默认是-1
 将数组排序后（默认是从小到大排序），返回排序后的数组在原数组中的位置。
 
 
-
-参考文献
+## 参考文献
 1.https://stackoverflow.com/questions/47231852/np-random-rand-vs-np-random-random
 2.https://stackoverflow.com/questions/21174961/how-to-create-a-numpy-array-of-all-true-or-all-false
 3.https://docs.scipy.org/doc/numpy/reference/generated/numpy.random.choice.html
