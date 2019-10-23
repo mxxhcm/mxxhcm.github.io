@@ -327,6 +327,182 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-启动流程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/07/linux-启动流程/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/15/index.html">linux-启动流程</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-07 16:41:27" itemprop="dateCreated datePublished" datetime="2019-05-07T16:41:27+08:00">2019-05-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-18 17:40:46" itemprop="dateModified" datetime="2019-05-18T17:40:46+08:00">2019-05-18</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="linux的启动流程">Linux的启动流程</h2>
+<p>BIOS   MBR    boot loader    boot sector</p>
+<h2 id="bios">BIOS</h2>
+<p>BIOS(Basic Input Ouput System)是一套程序,它被写死到主板上面的一个内存芯片，这个内存芯片没有电时也能将数据记录下来，那就是一个ROM(Read Only Memory)。BIOS是系统开机时首先会去读取的一个小程序，它控制着开机时候的各项硬件参数的取得，它掌握了系统硬件的详细信息以及开机设备的选择，BIOS程序代码也会被适度修改，但是如果写在ROM中是无法修改的，现在多把BIOS写入Flash Memory 或者EEPROM中。</p>
+<p>BIOS通过硬件的INT13中断功能来读取MBR的，所以只要BIOS能检测到磁盘那么他就能够通过INT13这条信道来读取该磁盘的第一个扇区内的MBR，这样就能够执行boot loader</p>
+<h2 id="boot-loader">Boot Loader</h2>
+<p>boot loader的最主要功能就是认识操作系统的文件格式并且加载该操作系统的内核到内存中执行。不同操作系统的文件类型不同，所以boot loader也是不同的，那么如果通过一个MBR来安装多操作系统呢。</p>
+<h2 id="boot-sector">Boot Sector</h2>
+<p>对于文件系统来说，每个文件系统都会有保留一个引导扇区(boot sector)提供给操作系统来安装boot loader。<br>
+每个操作系统默认会安装一个boot loader到它的文件系统中。对于Linux来说，我们可以选择将boot loader安装到MBR，也可以不选择，那样boot loader只会安装在它自己的文件系统中的即是(boot sector)。但是Windows操作系统会默认直接将boot loader安装在MBR以及boot sector中，所以说安装双系统时，最好先装Windows，再装Linux，否则反过来的话，那么Windows的boot loader可能就会覆盖掉Linux的boot loader.<br>
+但是，系统的MBR只有一个，所以，如何执行boot sector中的boot loader呢，那就需要谈到boot loader的功能了。<br>
+boot loader的功能<br>
+		提供菜单<br>
+		加载内核文件<br>
+		转交其他loader<br>
+我们可以通过MBR中的boot loader选择其他的loader，这样就可以选择其他的操作系统运行了。<br>
+通过boot loader的管理读取了内核文件之后，那么就要进行工作了，重新检测硬件等。<br>
+但是从某些版本之后，内核是可以动态加载内核模块的，这些模块被放在/lib/modules/目录内，模块放置到磁盘根目录内，因此，启动过程中内核必须要挂载根目录，这样才能动态读取内核模块提供加载驱动程序的功能。<br>
+一般来说，非必要的功能可以编译成模块的内核功能，许多Linux会将内核编译成模块。USB，SATA,SCSI等设备的驱动程序都是通过模块的方式存在的。<br>
+那么问题来了，内核是不认识SATA硬盘的，所以根目录无法挂载，更无法通过根目录下的/lib/modules来驱动SATA硬盘了。这时候，就用到了虚拟文件系统(/boot/initrd)来管理。<br>
+虚拟文件系统能够通过boot loader加载到内存中，解压缩被当成一个根目录，从而通过该程序加载启动过程中所最需要的内核模块,通常是USB,RAID,LVM,SCSI等文件系统以及硬盘的驱动程序。<br>
+需要initrd的原因是因为启动时无法挂载根目录，如果根目录能被挂载，那么就不需要了，根目录再USB,SATA,SCSI等磁盘，或者文件系统比较特殊，为LVM，RAID等，那么是需要<br>
+载入这些模块之后，initd就会帮助内核重新调用/sbin/init进行后续正常的启动</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-cpu信息查看/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2411,217 +2587,6 @@ export CUDA_HOME=/usr/local/cuda<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/26/hexo-常见问题/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/26/hexo-常见问题/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/15/index.html">hexo常见问题（常见问题）</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-26 20:36:32" itemprop="dateCreated datePublished" datetime="2019-04-26T20:36:32+08:00">2019-04-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-26 00:07:43" itemprop="dateModified" datetime="2019-05-26T00:07:43+08:00">2019-05-26</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/hexo/" itemprop="url" rel="index"><span itemprop="name">hexo</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题1">问题1</h2>
-<p>Error: pandoc exited with code 7: pandoc: Unknown extension: smart</p>
-<blockquote>
-<p>INFO  Start processing<br>
-FATAL Something’s wrong. Maybe you can find the solution here: <a href="http://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">http://hexo.io/docs/troubleshooting.html</a><br>
-Error: pandoc exited with code 7: pandoc: Unknown extension: smart<br>
-at ChildProcess.<anonymous> (/home/mxxmhh/github/blog/node_modules/hexo-renderer-pandoc/index.js:94:20)<br>
-at emitTwo (events.js:126:13)<br>
-at ChildProcess.emit (events.js:214:7)<br>
-at maybeClose (internal/child_process.js:925:16)<br>
-at Socket.stream.socket.on (internal/child_process.js:346:11)<br>
-at emitOne (events.js:116:13)<br>
-at Socket.emit (events.js:211:7)<br>
-at Pipe._handle.close [as _onclose] (net.js:567:12)</anonymous></p>
-</blockquote>
-<h3 id="解决方法">解决方法</h3>
-<p>卸载pandoc<br>
-~$:npm un hexo-renderer-pandoc --save</p>
-<h2 id="问题2">问题2</h2>
-<p>部分公式无法解析。<br>
-是因为markdown和mathjax的解析有一些冲突，按照参考文献$1$中进行修改即可，原因见[2]。<br>
-修改node_modules/kramed/lib/rules/inline.js文件，将第11行替换成&quot;escape: /^\([`*[]()#$+-.!_&gt;])/&quot;，将第19行替换成&quot;em: /<sup>\b_((?:__|[\s\S])+?)_\b|</sup>*((?😗*|[\s\S])+?)*(?!*)/&quot;。（不用加双引号）<br>
-第一次修改是去掉\的转义。<br>
-第二次修改是去掉下划线转义。</p>
-<h2 id="问题3">问题3</h2>
-<p>Ubuntu 16.04直接使用命令安装nodejs，版本太老，需要使用源代码安装<br>
-~$:sudo apt install nodejs npm<br>
-上述命令可以在Ubuntu 18.04直接使用。</p>
-<h2 id="问题4">问题4</h2>
-<p>昨天发现博客的一些公式不能渲染，刚开始的时候以为是没有修改kramed文件，就是和问题2一样，后来发现不是，是^符号后面没有设置好。比如</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$a^&#123;x+y&#125;b$</span><br></pre></td></tr></table></figure>
-<p>应该写成</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$a^&#123;x+y&#125; b$</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$a\^&#123;x+y&#125;b$</span><br></pre></td></tr></table></figure>
-<p>就是要多一个空格才行，否则就会解析错误。<br>
-还有就是\可能没转义成功，就用\\去代替\吧。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://hexo-guide.readthedocs.io/zh_CN/latest/theme/%5BNexT%5D%E9%85%8D%E7%BD%AEMathJax.html" target="_blank" rel="noopener">https://hexo-guide.readthedocs.io/zh_CN/latest/theme/[NexT]配置MathJax.html</a><br>
-2.<a href="https://shomy.top/2016/10/22/hexo-markdown-mathjax/" target="_blank" rel="noopener">https://shomy.top/2016/10/22/hexo-markdown-mathjax/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2671,7 +2636,7 @@ at Pipe._handle.close [as _onclose] (net.js:567:12)</anonymous></p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">216</span>
+                    <span class="site-state-item-count">217</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3313,7 +3278,9 @@ at Pipe._handle.close [as _onclose] (net.js:567:12)</anonymous></p>
                     
                       
                     
-                    <span class="site-state-item-count">289</span>
+                      
+                    
+                    <span class="site-state-item-count">290</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3568,9 +3535,9 @@ at Pipe._handle.close [as _onclose] (net.js:567:12)</anonymous></p>
       
     
       
-        
-      
     
+      
+        
       
     
       
