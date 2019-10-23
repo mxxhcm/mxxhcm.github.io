@@ -327,143 +327,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/14/soft-Q-learning/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/14/soft-Q-learning/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">soft Q-learning</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-14 11:44:03" itemprop="dateCreated datePublished" datetime="2019-10-14T11:44:03+08:00">2019-10-14</time>
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/14/actor-mimic/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -579,68 +442,26 @@
       
         
           
-            <h2 id="actor-mimic">Actor Mimic</h2>
-<p>本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。</p>
-<h2 id="policy-regression-objective">Policy Regression Objective</h2>
-<p>给定多个sources games $S_1, \cdots, S_N$，我们的第一个目标是获得一个能玩任何source games，并且尽可能和expert DQN性能相近的single multitask policy network。为了训练这样一个网络，使用$N$个expert DQN $E_1, \cdots, E_N$进行指导。一个可能的方法是定义student network和expert network之间$Q$值的均方根误差。因为expert values funcitons在不同的游戏之间可能变化很大，所以作者首先将$Q$值经过softmax变成了policies，softmax的输出都在$0$和$1$之间，所以可以提高训练的稳定性。我们可以把softmax看成让student更多的关注expert DQN在每个state选择的action（DQN选择的是Q值最大的action），经过softmax相当于让它更sharp了。<br>
-最后得到了一个actor，或者说是一个policy，它模仿了所有DQN experts的decisions。比如，在$Q$值上计算Boltzman分布：<br>
-$$\pi_{E_i} (a|s) = \frac{ e^{\tau^{-1} Q_{E_i}(s,a) } }{\sum_{a’\in A_{E_i} } e^{\tau^{-1} Q_{E_i}(s,a) } } \tag{1}$$<br>
-其中$\tau$是温度，$A_{E_i}$是expert DQN $E_i$使用的action space。给定$S_i$的一个state s，定义multitask  network的policy objective是expert network’s policy和currnet multitask policcy的cross-entropy:<br>
-$$L^i_{policy}(\theta) = \sum_{a\in A_{E_i} }\pi_{E_i} (a|s) \log \pi_{AMN}(a|s;\theta) \tag{2}$$<br>
-其中$\pi_{AMN}(a|s;\theta) $是$\theta$参数化的multitask Actor Mimic Network policy。和Q-learning把自身当做target value相比，AMN得到了一个stable supervised training signal (expert network)指导 multitask network训练。<br>
-为了获得训练数据，可以sample expert network后者使用AMN action outputs生成trajectories。即使AMN还在学习过程中，也能得到好的结果。至少在AMN是linear function approximator时，可以证明AMN会收敛到expert policy。</p>
-<h2 id="feature-regression-objective">Feature Regression Objective</h2>
-<p>除了对policy进行回归以外，还可以对feature进行回归。用$h_{AMN}(s)$和$h_{E_i}(s)$分别表示AMN和第$i$个expert network在state s处feature的hidden activation，他们两个的dimension不一定要相等。使用一个feature回归网络$f_i(h_{AMN}(s))$，预测$s$处$h_{E_i}(s)$到$h_{AMN}(s)$的映射，映射$f_i$的结构是随意的，可以使用以下的回归loss进行训练：<br>
-$$L^i_{FeatureRegression}(\theta, \theta_{f_i}) = || f_i(h_{AMN}(s;\theta); \theta_{f_i}) - h_{E_i}(s) ||^2_2 \tag{3}$$<br>
-其中$\theta$是AMN的参数，$\theta_{f_i}$是第$i$个特征回归网络的参数。使用这个loss训练，最终我们的目标是得到一个multitask network能够包含多个expert network的features。</p>
-<h2 id="actor-mimic-objective">Actor-Mimic Objective</h2>
-<p>将policy objective和feature objective结合在一起，就得到了actor-mimic objective：<br>
-$$ L^i_{ActorMimic}(\theta, \theta_{f_i}) = L^i_{policy}(\theta) + \beta L^i_{FeatureRegression}(\theta, \theta_{f_i}) \tag{4}$$<br>
-$\beta$用来控制两个objective的权重。直观上来说，我们可以把policy objective看成expert network教会AMN该怎么act（模仿expert的action），而feature objective类似于expert network教会AMN为什么这样act，模仿expert的思考过程（特征提取过程）。</p>
-<h2 id="transfering-knowledge">Transfering Knowledge</h2>
-<p>通过优化actor-mimic objective，我们得到一个在所有source target上都表现不错的expert network，接下来我们可以把它迁移到相关的target task上。为了迁移到新的task上，首先移除掉AMN的final softmax layer，然后用AMN的参数初始化一个DQN在新的task上继续训练，接下来和标准的DQN训练方式一样。Multitask pretaining可以看成学习了related tasks中对于policies definition相当有效的特征，然后初始化DQN。如果source和target tasks很像的话，pretained features对于target task是相当有效的。</p>
-<h2 id="multitask-experiments">Multitask experiments</h2>
-<h3 id="简介">简介</h3>
-<p>Multitask任务中并不进行transfer，仅仅使用policy regression objective同时在multitask上训练一个AMN。</p>
-<h3 id="baselines">baselines</h3>
-<ul>
+            <h2 id="Actor-Mimic"><a href="#Actor-Mimic" class="headerlink" title="Actor Mimic"></a>Actor Mimic</h2><p>本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。</p>
+<h2 id="Policy-Regression-Objective"><a href="#Policy-Regression-Objective" class="headerlink" title="Policy Regression Objective"></a>Policy Regression Objective</h2><p>给定多个sources games $S_1, \cdots, S_N$，我们的第一个目标是获得一个能玩任何source games，并且尽可能和expert DQN性能相近的single multitask policy network。为了训练这样一个网络，使用$N$个expert DQN $E_1, \cdots, E_N$进行指导。一个可能的方法是定义student network和expert network之间$Q$值的均方根误差。因为expert values funcitons在不同的游戏之间可能变化很大，所以作者首先将$Q$值经过softmax变成了policies，softmax的输出都在$0$和$1$之间，所以可以提高训练的稳定性。我们可以把softmax看成让student更多的关注expert DQN在每个state选择的action（DQN选择的是Q值最大的action），经过softmax相当于让它更sharp了。<br>最后得到了一个actor，或者说是一个policy，它模仿了所有DQN experts的decisions。比如，在$Q$值上计算Boltzman分布：</p>
+<script type="math/tex; mode=display">\pi\_{E\_i} (a|s) = \frac{ e\^{\tau^{-1} Q\_{E\_i}(s,a) } }{\sum\_{a'\in A\_{E\_i} } e\^{\tau^{-1} Q\_{E\_i}(s,a) } } \tag{1}</script><p>其中$\tau$是温度，$A_{E_i}$是expert DQN $E_i$使用的action space。给定$S_i$的一个state s，定义multitask  network的policy objective是expert network’s policy和currnet multitask policcy的cross-entropy:</p>
+<script type="math/tex; mode=display">L^i\_{policy}(\theta) = \sum\_{a\in A\_{E\_i} }\pi\_{E\_i} (a|s) \log \pi\_{AMN}(a|s;\theta) \tag{2}</script><p>其中$\pi_{AMN}(a|s;\theta) $是$\theta$参数化的multitask Actor Mimic Network policy。和Q-learning把自身当做target value相比，AMN得到了一个stable supervised training signal (expert network)指导 multitask network训练。<br>为了获得训练数据，可以sample expert network后者使用AMN action outputs生成trajectories。即使AMN还在学习过程中，也能得到好的结果。至少在AMN是linear function approximator时，可以证明AMN会收敛到expert policy。</p>
+<h2 id="Feature-Regression-Objective"><a href="#Feature-Regression-Objective" class="headerlink" title="Feature Regression Objective"></a>Feature Regression Objective</h2><p>除了对policy进行回归以外，还可以对feature进行回归。用$h_{AMN}(s)$和$h_{E_i}(s)$分别表示AMN和第$i$个expert network在state s处feature的hidden activation，他们两个的dimension不一定要相等。使用一个feature回归网络$f_i(h_{AMN}(s))$，预测$s$处$h_{E_i}(s)$到$h_{AMN}(s)$的映射，映射$f_i$的结构是随意的，可以使用以下的回归loss进行训练：</p>
+<script type="math/tex; mode=display">L^i\_{FeatureRegression}(\theta, \theta\_{f\_i}) = || f\_i(h\_{AMN}(s;\theta); \theta\_{f\_i}) - h\_{E\_i}(s) ||^2\_2 \tag{3}</script><p>其中$\theta$是AMN的参数，$\theta_{f_i}$是第$i$个特征回归网络的参数。使用这个loss训练，最终我们的目标是得到一个multitask network能够包含多个expert network的features。</p>
+<h2 id="Actor-Mimic-Objective"><a href="#Actor-Mimic-Objective" class="headerlink" title="Actor-Mimic Objective"></a>Actor-Mimic Objective</h2><p>将policy objective和feature objective结合在一起，就得到了actor-mimic objective：</p>
+<script type="math/tex; mode=display">L^i\_{ActorMimic}(\theta, \theta\_{f\_i}) = L^i\_{policy}(\theta) + \beta L^i\_{FeatureRegression}(\theta, \theta\_{f\_i}) \tag{4}</script><p>$\beta$用来控制两个objective的权重。直观上来说，我们可以把policy objective看成expert network教会AMN该怎么act（模仿expert的action），而feature objective类似于expert network教会AMN为什么这样act，模仿expert的思考过程（特征提取过程）。</p>
+<h2 id="Transfering-Knowledge"><a href="#Transfering-Knowledge" class="headerlink" title="Transfering Knowledge"></a>Transfering Knowledge</h2><p>通过优化actor-mimic objective，我们得到一个在所有source target上都表现不错的expert network，接下来我们可以把它迁移到相关的target task上。为了迁移到新的task上，首先移除掉AMN的final softmax layer，然后用AMN的参数初始化一个DQN在新的task上继续训练，接下来和标准的DQN训练方式一样。Multitask pretaining可以看成学习了related tasks中对于policies definition相当有效的特征，然后初始化DQN。如果source和target tasks很像的话，pretained features对于target task是相当有效的。</p>
+<h2 id="Multitask-experiments"><a href="#Multitask-experiments" class="headerlink" title="Multitask experiments"></a>Multitask experiments</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>Multitask任务中并不进行transfer，仅仅使用policy regression objective同时在multitask上训练一个AMN。</p>
+<h3 id="baselines"><a href="#baselines" class="headerlink" title="baselines"></a>baselines</h3><ul>
 <li>Multitask DQN: 使用多个games训练一个DQN，只有最后的full-connected layer不同。</li>
 <li>Multitask Convolutions DQN: 使用多个games训练一个DQN，但是只共享convolutional layer，每个game都有自己的全连接层和softmax层。</li>
 </ul>
-<h3 id="网络架构：">网络架构：</h3>
-<p>32个步长为$4$的$8\times 8$filters<br>
-64个步长为$2$的$4\times 4$filters<br>
-64个步长为$1$的$3\times 3$filters<br>
-$512$ fully-connected units<br>
-$18$个actions<br>
-除了最后一层都有一个relu。</p>
-<h3 id="实验数据采集">实验数据采集</h3>
-<h4 id="amn和dqn-expert对比">AMN和DQN expert对比</h4>
-<p>DQN训练到收敛，使用的是训练到收敛过程中的max test reward，收敛过程中最后10个epochs的mean test reward。<br>
-AMN在每个source game上训练100个epochs， 每一个epoch是250000 frames，总共有2500万 frames。图中展示了AMN在100个epochs中最大的test reward和最后100个epochs的mean test reward。</p>
-<h4 id="amn和mdqn-mcdqn对比">AMN和MDQN，MCDQN对比</h4>
-<p>AMN，MDQN和MCDQN在每个source game上训练40个epochs， 每一个epoch是250000 frames，总共有2500万frames，每一个training epoch之后进行一个$125000$ frames的tesing epoch。最后图中展示了AMN,MDQN以及MCDQN在每个tesing epoch的test average episode rewrad。</p>
-<h2 id="transfer-experiments">Transfer experiments</h2>
-<p>小的AMN（和DQN expert架构相同）的AMN能够学习多个source tasks的knowledge，而大一些的AMN能够更容易的迁移。在transfer实验中，使用了比DQN expert更复杂的AMN model，能够同时玩13个source games。为了防止过拟合，AMN在每个source game上训练400万个frames。<br>
-然后用训练完的AMN当做新任务上DQN的初始化权重。仅仅使用policy regression objective的叫做AMN-policy，而使用feature和policy objective的叫做AMN-feature。将AMN-feature以及AMN-policy的结果和随机初始化的DQN baseline进行比较。<br>
-每隔4个traing epoches，每个training epoch后都有一个testing epoch，输出这4个epoches的average test reward。<br>
-使用的网络架构：<br>
-256个步长为$4$的$8\times 8$filters<br>
-512个步长为$2$的$4\times 4$filters<br>
-512个步长为$1$的$3\times 3$filters<br>
-512个步长为$1$的$3\times 3$filters<br>
-$2048$ fully-connected units<br>
-$1024$ fully-connected units<br>
-$18$个actions<br>
-除了最后一层都有一个relu。</p>
-<h2 id="amn的细节">AMN的细节</h2>
-<p>所有的AMN使用Adam优化器，有一个18-unit的output layer，每一个对应atari 18个actions中可能的一个，使用18个actions简化了不同游戏有不同的action subsets。训练一个特定的游戏时，mask那些not valid的actions，然后在valid actions上使用softmax。AMN每个game使用100000大小的replay memeory。<br>
-在feature regression objective中，设置$\beta$是$0.01$，设置$f_i$是第$i$个expert feature的线性投影。在训练过程中，AMN使用的$\epsilon$-greedy policy中$\epsilon$是常数$0.1$。在训练过程中，基于AMN而不是expert DQN选择actions。<br>
-在实验中使用的DQN，使用RMSProp优化，和nature-DQN的架构，超参数以及训练过程都一样。Replay memory总共有1000000 frames。</p>
-<h2 id="参考文献">参考文献</h2>
-<ol>
-<li></li>
-</ol>
+<h3 id="网络架构："><a href="#网络架构：" class="headerlink" title="网络架构："></a>网络架构：</h3><p>32个步长为$4$的$8\times 8$filters<br>64个步长为$2$的$4\times 4$filters<br>64个步长为$1$的$3\times 3$filters<br>$512$ fully-connected units<br>$18$个actions<br>除了最后一层都有一个relu。</p>
+<h3 id="实验数据采集"><a href="#实验数据采集" class="headerlink" title="实验数据采集"></a>实验数据采集</h3><h4 id="AMN和DQN-expert对比"><a href="#AMN和DQN-expert对比" class="headerlink" title="AMN和DQN expert对比"></a>AMN和DQN expert对比</h4><p>DQN训练到收敛，使用的是训练到收敛过程中的max test reward，收敛过程中最后10个epochs的mean test reward。<br>AMN在每个source game上训练100个epochs， 每一个epoch是250000 frames，总共有2500万 frames。图中展示了AMN在100个epochs中最大的test reward和最后100个epochs的mean test reward。</p>
+<h4 id="AMN和MDQN，MCDQN对比"><a href="#AMN和MDQN，MCDQN对比" class="headerlink" title="AMN和MDQN，MCDQN对比"></a>AMN和MDQN，MCDQN对比</h4><p>AMN，MDQN和MCDQN在每个source game上训练40个epochs， 每一个epoch是250000 frames，总共有2500万frames，每一个training epoch之后进行一个$125000$ frames的tesing epoch。最后图中展示了AMN,MDQN以及MCDQN在每个tesing epoch的test average episode rewrad。</p>
+<h2 id="Transfer-experiments"><a href="#Transfer-experiments" class="headerlink" title="Transfer experiments"></a>Transfer experiments</h2><p>小的AMN（和DQN expert架构相同）的AMN能够学习多个source tasks的knowledge，而大一些的AMN能够更容易的迁移。在transfer实验中，使用了比DQN expert更复杂的AMN model，能够同时玩13个source games。为了防止过拟合，AMN在每个source game上训练400万个frames。<br>然后用训练完的AMN当做新任务上DQN的初始化权重。仅仅使用policy regression objective的叫做AMN-policy，而使用feature和policy objective的叫做AMN-feature。将AMN-feature以及AMN-policy的结果和随机初始化的DQN baseline进行比较。<br>每隔4个traing epoches，每个training epoch后都有一个testing epoch，输出这4个epoches的average test reward。<br>使用的网络架构：<br>256个步长为$4$的$8\times 8$filters<br>512个步长为$2$的$4\times 4$filters<br>512个步长为$1$的$3\times 3$filters<br>512个步长为$1$的$3\times 3$filters<br>$2048$ fully-connected units<br>$1024$ fully-connected units<br>$18$个actions<br>除了最后一层都有一个relu。</p>
+<h2 id="AMN的细节"><a href="#AMN的细节" class="headerlink" title="AMN的细节"></a>AMN的细节</h2><p>所有的AMN使用Adam优化器，有一个18-unit的output layer，每一个对应atari 18个actions中可能的一个，使用18个actions简化了不同游戏有不同的action subsets。训练一个特定的游戏时，mask那些not valid的actions，然后在valid actions上使用softmax。AMN每个game使用100000大小的replay memeory。<br>在feature regression objective中，设置$\beta$是$0.01$，设置$f_i$是第$i$个expert feature的线性投影。在训练过程中，AMN使用的$\epsilon$-greedy policy中$\epsilon$是常数$0.1$。在训练过程中，基于AMN而不是expert DQN选择actions。<br>在实验中使用的DQN，使用RMSProp优化，和nature-DQN的架构，超参数以及训练过程都一样。Replay memory总共有1000000 frames。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.</p>
 
           
         
@@ -812,17 +633,8 @@ $18$个actions<br>
       
         
           
-            <h2 id="自定义链表">自定义链表</h2>
-<h2 id="链表的性质">链表的性质</h2>
-<p>读写<br>
-查找</p>
-<h2 id="和数组的比较">和数组的比较</h2>
-<h2 id="链表逆序">链表逆序</h2>
-<h2 id="链表的排序">链表的排序</h2>
-<h2 id="参考文献">参考文献</h2>
-<ol>
-<li></li>
-</ol>
+            <h2 id="自定义链表"><a href="#自定义链表" class="headerlink" title="自定义链表"></a>自定义链表</h2><h2 id="链表的性质"><a href="#链表的性质" class="headerlink" title="链表的性质"></a>链表的性质</h2><p>读写<br>查找</p>
+<h2 id="和数组的比较"><a href="#和数组的比较" class="headerlink" title="和数组的比较"></a>和数组的比较</h2><h2 id="链表逆序"><a href="#链表逆序" class="headerlink" title="链表逆序"></a>链表逆序</h2><h2 id="链表的排序"><a href="#链表的排序" class="headerlink" title="链表的排序"></a>链表的排序</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.</p>
 
           
         
@@ -994,10 +806,7 @@ $18$个actions<br>
       
         
           
-            <h2 id="简介">简介</h2>
-<p>Policy Distillation可以extract a policy到一个参数更少更高效的model；还可以将多个任务的policy提取到一个model中。作者使用的基本算法是DQN，DQN既作为baseline和distilled policy的性能进行比较，同时也使用DQN作为teacher用于policy distillation。<br>
-一般来说，distillation应用在网络输出为概率的情况。DQN中，网络输出的是real-valued and unbounded的action value。当多个actions的$Q$值接近时，很难选择那个action，而某些actions的$Q$值很大时，很容易进行选择。<br>
-Policy distillation的优势：</p>
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Policy Distillation可以extract a policy到一个参数更少更高效的model；还可以将多个任务的policy提取到一个model中。作者使用的基本算法是DQN，DQN既作为baseline和distilled policy的性能进行比较，同时也使用DQN作为teacher用于policy distillation。<br>一般来说，distillation应用在网络输出为概率的情况。DQN中，网络输出的是real-valued and unbounded的action value。当多个actions的$Q$值接近时，很难选择那个action，而某些actions的$Q$值很大时，很容易进行选择。<br>Policy distillation的优势：</p>
 <ol>
 <li>将网络大小压缩到原来的$\frac{1}{15}$，而不损失性能。</li>
 <li>多个expert polices可以用一个单独的multi-task policy表示。</li>
@@ -1010,31 +819,18 @@ Policy distillation的优势：</p>
 <li>multi-game distillation</li>
 <li>online distillation</li>
 </ol>
-<h2 id="single-task-policy-distillation">Single Task Policy Distillation</h2>
-<p>Distillation将teacher model T的knowledge进行迁移，得到一个参数更少更加高效的student model S。分类网络中distillation的目标通常是将teacher network layer的最后一层传入softmax layer，使用回归学习student model S的参数。<br>
-而本节介绍的single task policy distillation，是对$Q$函数而不是对classifier进行transfer，会面临以下问题：</p>
+<h2 id="Single-Task-Policy-Distillation"><a href="#Single-Task-Policy-Distillation" class="headerlink" title="Single Task Policy Distillation"></a>Single Task Policy Distillation</h2><p>Distillation将teacher model T的knowledge进行迁移，得到一个参数更少更加高效的student model S。分类网络中distillation的目标通常是将teacher network layer的最后一层传入softmax layer，使用回归学习student model S的参数。<br>而本节介绍的single task policy distillation，是对$Q$函数而不是对classifier进行transfer，会面临以下问题：</p>
 <ul>
 <li>一方面，Q是unbounded and unstable，所以它的scale很难确定。此外，计算一个fixed policy的Q值需要很大的计算量。</li>
 <li>另一方面，让S只预测一个single best action也可能会出现问题，可能有很多actions的Q值接近。</li>
 </ul>
-<p>给定teach model T，用它生成大小为$N$的样本集合$D^T = \left[(s_i, \mathbf{q}_i)\right]_{i=0}^T $，每一个样本是$s_i$和$\mathbf{q}_i$，$s_i$是一个observation，$\mathbf{q}_i$是对应$s_i$处每一个action的$q$值向量。<br>
-作者给出了三种policy distillation方法。如下所示：</p>
-<h3 id="negative-log-likelyhood-loss-nll">Negative log likelyhood loss (NLL)</h3>
-<p>第一种方法使用teacher中具有最大$Q$值的action $a_{i,best} = \arg\max(\mathbf{q}_i$，使用负的log似然loss训练student model $S$直接预测action：<br>
-$$L_{NLL} (D^T, \theta_{S}) = - \sum_{i=1}^{\vert D\vert} \log P(a_i=a_{i,best} | x_i, \theta_S)\tag{1}$$</p>
-<h3 id="mean-squared-error-loss-mse">Mean squared error loss (MSE)</h3>
-<p>第二种方法计算S和T中$Q$值的mse loss：<br>
-$$L_{MSE} (D^T, \theta_{S}) = - \sum_{i=1}^{\vert D\vert} || \mathbf{q}_i^T - \mathbf{q}_i^S ||^2_2 \tag{2}$$<br>
-这种方法在student model中保留每个action的所有$Q$值。</p>
-<h3 id="kl-divergence">KL divergence</h3>
-<p>第三种方法将$Q$值输入softmax layer，相当于求了policy，然后计算S和T的KL散度：<br>
-$$L_{KL} (D^T, \theta_{S}) = - \sum_{i=1}^{\vert D\vert} softmax(\frac{\mathbf{q}_i^T }{\tau})\log \frac{softmax(\frac{\mathbf{q}_i^T}{\tau}) }{softmax(\mathbf{q}_i^T) }\tag{3}$$<br>
-在传统的分类问题中，$\mathbf{q}^T $的输出是一个peaked distribution，可以通过提高softmax的温度进行soften将更多的信息transfer到student model。<br>
-而在policy distillation中，teacher的输出不是一个distribution，而是每个state下所有可能actions的$q$值，我们的目的不是soften它们，而是想要让它们更sharper。<br>
-这个和actor-mimic中的policy regressive objective是不是一样。</p>
-<h2 id="multi-task-policy-distillation">Multi-Task Policy Distillation</h2>
-<p>上面介绍的是单个任务的distillation，这一节介绍multi-task distillation。multi task distillation和single task distallation的过程一样，只不过在中multi task的distillation使用$n$个单独训练完成的DQN experts，使用这$n$个task上的DQN experts distill一个student model，每一个episode切换一个task。因为不同的tasks可能有不同的action sets，每一个task都有一个单独的output layer。在multitask中使用了KL和NLL loss。<br>
-这篇文章还对比了multi-task DQN agents和multi-task distillation agents的性能，Multi task DQN是训练一个network同时玩多个游戏，但是没有DQN exoerts的指导。Multi-task DQN和single-game learning的过程类似，不断的优化网络参数，预测给定state处action的$q$值。和multi-task distillation过程一样，每一个episode切换一个task，每一个task有单独的buffer，在每一个task之间不断的交错训练，并且每一个task有单独的output layer。但是multi-task DQN agents无法达到单个DQN expert的性能。可能是因为在训练过程中，不同task之间policy,reward等的相互干扰。</p>
+<p>给定teach model T，用它生成大小为$N$的样本集合$D^T = \left[(s_i, \mathbf{q}_i)\right]_{i=0}^T $，每一个样本是$s_i$和$\mathbf{q}_i$，$s_i$是一个observation，$\mathbf{q}_i$是对应$s_i$处每一个action的$q$值向量。<br>作者给出了三种policy distillation方法。如下所示：</p>
+<h3 id="Negative-log-likelyhood-loss-NLL"><a href="#Negative-log-likelyhood-loss-NLL" class="headerlink" title="Negative log likelyhood loss (NLL)"></a>Negative log likelyhood loss (NLL)</h3><p>第一种方法使用teacher中具有最大$Q$值的action $a_{i,best} = \arg\max(\mathbf{q}_i$，使用负的log似然loss训练student model $S$直接预测action：</p>
+<script type="math/tex; mode=display">L\_{NLL} (D^T, \theta\_{S}) = - \sum\_{i=1}^{\vert D\vert} \log P(a_i=a\_{i,best} | x_i, \theta\_S)\tag{1}</script><h3 id="Mean-squared-error-loss-MSE"><a href="#Mean-squared-error-loss-MSE" class="headerlink" title="Mean squared error loss (MSE)"></a>Mean squared error loss (MSE)</h3><p>第二种方法计算S和T中$Q$值的mse loss：</p>
+<script type="math/tex; mode=display">L\_{MSE} (D^T, \theta\_{S}) = - \sum\_{i=1}^{\vert D\vert} || \mathbf{q}\_i^T - \mathbf{q}\_i^S ||^2_2 \tag{2}</script><p>这种方法在student model中保留每个action的所有$Q$值。</p>
+<h3 id="KL-divergence"><a href="#KL-divergence" class="headerlink" title="KL divergence"></a>KL divergence</h3><p>第三种方法将$Q$值输入softmax layer，相当于求了policy，然后计算S和T的KL散度：</p>
+<script type="math/tex; mode=display">L\_{KL} (D^T, \theta\_{S}) = - \sum\_{i=1}^{\vert D\vert} softmax(\frac{\mathbf{q}\_i^T }{\tau})\log \frac{softmax(\frac{\mathbf{q}\_i^T}{\tau}) }{softmax(\mathbf{q}\_i^T) }\tag{3}</script><p>在传统的分类问题中，$\mathbf{q}^T $的输出是一个peaked distribution，可以通过提高softmax的温度进行soften将更多的信息transfer到student model。<br>而在policy distillation中，teacher的输出不是一个distribution，而是每个state下所有可能actions的$q$值，我们的目的不是soften它们，而是想要让它们更sharper。<br>这个和actor-mimic中的policy regressive objective是不是一样。</p>
+<h2 id="Multi-Task-Policy-Distillation"><a href="#Multi-Task-Policy-Distillation" class="headerlink" title="Multi-Task Policy Distillation"></a>Multi-Task Policy Distillation</h2><p>上面介绍的是单个任务的distillation，这一节介绍multi-task distillation。multi task distillation和single task distallation的过程一样，只不过在中multi task的distillation使用$n$个单独训练完成的DQN experts，使用这$n$个task上的DQN experts distill一个student model，每一个episode切换一个task。因为不同的tasks可能有不同的action sets，每一个task都有一个单独的output layer。在multitask中使用了KL和NLL loss。<br>这篇文章还对比了multi-task DQN agents和multi-task distillation agents的性能，Multi task DQN是训练一个network同时玩多个游戏，但是没有DQN exoerts的指导。Multi-task DQN和single-game learning的过程类似，不断的优化网络参数，预测给定state处action的$q$值。和multi-task distillation过程一样，每一个episode切换一个task，每一个task有单独的buffer，在每一个task之间不断的交错训练，并且每一个task有单独的output layer。但是multi-task DQN agents无法达到单个DQN expert的性能。可能是因为在训练过程中，不同task之间policy,reward等的相互干扰。</p>
 <p>Multi-task distillation和multi-task DQN之间的区别：</p>
 <ul>
 <li>multi-task distillation使用了$n$个DQN expert，即已经训练好的在单个task上都表现不错model，使用他们distill一个新的model。</li>
@@ -1043,57 +839,20 @@ $$L_{KL} (D^T, \theta_{S}) = - \sum_{i=1}^{\vert D\vert} softmax(\frac{\mathbf{q
 <li>multi-task learning 是train。</li>
 </ul>
 <p>Policy distillation可能提供了一种方式将多个polices组合到一个model中而不损害performance，在distillation process中，policy被压缩并且refined了。</p>
-<h2 id="实验">实验</h2>
-<ul>
-<li>single game policy distillation:<br>
-四个游戏，四个网络：dqn expert, distill-MSE, distill-NLL,distill-KL，四个网络的大小都和nature DQN一样。</li>
-<li>single game policy distillation with compression<br>
-十个游戏，四个网络：dqn expert, $25\%$ distill-KL，$7\%$ distill-KL，$4\%$ distill-KL，后面三个网络大小分别是dqn expert的$25\%, 7\%, 4\%$。</li>
-<li>multi-task distillation<br>
-三个游戏，三个网络：multi-dqn, multi-dist-NLL, multi-dist-KL，这三个网络的大小都和nature dqn一样。<br>
-十个游戏，一个网络：multi-dist-KL，大小是nature dqn的4倍。</li>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><ul>
+<li>single game policy distillation:<br>四个游戏，四个网络：dqn expert, distill-MSE, distill-NLL,distill-KL，四个网络的大小都和nature DQN一样。</li>
+<li>single game policy distillation with compression<br>十个游戏，四个网络：dqn expert, $25\\%$ distill-KL，$7\\%$ distill-KL，$4\\%$ distill-KL，后面三个网络大小分别是dqn expert的$25\\%, 7\\%, 4\\%$。</li>
+<li>multi-task distillation<br>三个游戏，三个网络：multi-dqn, multi-dist-NLL, multi-dist-KL，这三个网络的大小都和nature dqn一样。<br>十个游戏，一个网络：multi-dist-KL，大小是nature dqn的4倍。</li>
 <li>online policy distillation：</li>
 </ul>
-<p>Single game policy distillation实验中，teacher network是一个已经训练完成的model，选择一个DQN expert作为teacher network，训练student network时，teacher network不进行Q-learning，只是用来采样，相当于产生监督学习的样本。Student network学习teacher network是怎么将输入和label对应的。Teacher network的输入(images)和输出(Q值）都被存在buffer中。Multitask policy distillation的训练过程类似。<br>
-除了模型压缩时候用到的DQN，以及一个$10$个games的multi-task distillation任务中用到的DQN，它的参数比nature DQN多四倍还有额外的fully connected layer，所有其他的DQN都和nature DQN的结构一样。<br>
-评价指标用的是Double DQN中的normalized score。</p>
-<h3 id="single-game-policy-distillation">single game policy distillation</h3>
-<p>在这个实验中，作者测试了single game的distillation，将一个DQN expert的knowledge迁移到一个新的结构相同的随机初始化的DQN。分别使用了三种loss：MSE, NLL，KL散度进行训练。结构证明KL好于NLL好于MSE。<br>
-原因分析：<br>
-MSE是因为$Q$值在一定范围内，MSE loss都会很小，如果某个state处不同action的Q值很接近的话，即使MSE很小，也会产生误差。<br>
-NLL loss假设每次只有一个optimal action，原则上没有错。但是我们的teacher network可能不是optimal，最小化NLL的过程可能将一些noise也进行了变化。</p>
-<h3 id="policy-distillation-with-model-compression">policy distillation with model compression</h3>
-<p>这一节介绍的是policy distillation model compression。训练的时候，模型大一些有助于训练，但是训练好的模型进行压缩也保留性能。　<br>
-分别在$10$个不同的atarti游戏上进行single-game distilled，使用的都是KL loss，student分别压缩为teacher的$25\%, 7\%, 4\%$，压缩到$25\%$ student network的平均性能是teacher network的$108\%$,压缩到$25\%$ student network的平均性能是teacher network的$102\%$, 压缩到$25\%$ student network的$4\%$的平均性能是teacher network的$84\%$。<br>
-single policy distillation with model compression中网络结构：<br>
-Agent | Input | Conv. 1 | Conv. 2 | Conv. 3 | F.C. 1 | Output | Parameters<br>
-Teacher (DQN) | 4 |  32 | 64 | 64 | 512 | up to 18 | 1,693,362<br>
-Dist-KL-net1 | 4 | 16 | 32 | 32 | 256 | up to 18 | 427,874<br>
-Dist-KL-net2 | 4 | 16 | 16 | 16 | 128 | up to 18 | 113,346<br>
-Dist-KL-net3 | 4 | 16 | 16 | 16 | 64 | up to 18 | 61,954<br>
-模型压缩只改变了参数的数量，没有改变模型架构。</p>
-<h3 id="multi-game-policy-distillation">multi-game policy distillation</h3>
-<p>Multi-task DQN是multi-task distillation的baseline，实验使用了三个游戏，multi-task DQN和单个DQN的训练过程一样，但是使用了三个游戏的experient进行训练。对比了multi task DQN，multi distillation NLL，multi distillation KL，他们的网络大小都是一样的。<br>
-最后作者还将$10$个游戏distill到一个single student network中，这个network大小是nature DQN的四倍。<br>
-multi-task distilltaion experiments中网络结构：<br>
-Agent | Input | Conv. 1 | Conv. 2 | Conv. 3 | F.C. 1 | F.C. 2 | Output | Parameters<br>
-One Teacher (DQN) | 4 | 32 | 64 | 64 | 512 | n/a | up to 18 | 1,693,362<br>
-Multi-DQN/Dist (3 games) | 4 | 32 | 64 | 64 | 512 | 128 (x3) | up to 18 (x3) | 1,882,668<br>
-Multi-Dist-KL (10 games) | 4 | 64 | 64 | 64 | 1500 | 128 (x10) | up to 18 (x10) | 6,756,721</p>
-<h3 id="online-policy-distillation">online policy distillation</h3>
-<h2 id="experimental-details">Experimental Details</h2>
-<h3 id="policy-distillation-training-data-collection">Policy Distillation Training Data collection</h3>
-<p>Policy distillation online data collection和nature DQN中agent evaluation一样，DQN随机执行最多$30$个null-ops初始化episode，使用$\epsilon$-greedy($\epsilon=0.05$)算法进行$30$分钟即$108000$frames的evaluation。<br>
-DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小时的experience（$15$Hz下共$54000$个control steps），</p>
-<h3 id="distillation-targets">Distillation Targets</h3>
-<h3 id="agent-evaluation">Agent Evaluation</h3>
-<p>使用human starts，使用$\epsilon$-greedy($\epsilon=0.05$)算法进行$30$分钟即$108000$frames的evaluation。<br>
-在multitask中，使用$\frac{\text{student score}}{\text{DQN score}}$当做metric。</p>
-<h2 id="代码">代码</h2>
-<p>官方没有放出代码，有其他人的复现版本：<br>
-<a href="https://github.com/ciwang/policydistillation" target="_blank" rel="noopener">https://github.com/ciwang/policydistillation</a></p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://arxiv.org/pdf/1511.06295.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1511.06295.pdf</a></p>
+<p>Single game policy distillation实验中，teacher network是一个已经训练完成的model，选择一个DQN expert作为teacher network，训练student network时，teacher network不进行Q-learning，只是用来采样，相当于产生监督学习的样本。Student network学习teacher network是怎么将输入和label对应的。Teacher network的输入(images)和输出(Q值）都被存在buffer中。Multitask policy distillation的训练过程类似。<br>除了模型压缩时候用到的DQN，以及一个$10$个games的multi-task distillation任务中用到的DQN，它的参数比nature DQN多四倍还有额外的fully connected layer，所有其他的DQN都和nature DQN的结构一样。<br>评价指标用的是Double DQN中的normalized score。</p>
+<h3 id="single-game-policy-distillation"><a href="#single-game-policy-distillation" class="headerlink" title="single game policy distillation"></a>single game policy distillation</h3><p>在这个实验中，作者测试了single game的distillation，将一个DQN expert的knowledge迁移到一个新的结构相同的随机初始化的DQN。分别使用了三种loss：MSE, NLL，KL散度进行训练。结构证明KL好于NLL好于MSE。<br>原因分析：<br>MSE是因为$Q$值在一定范围内，MSE loss都会很小，如果某个state处不同action的Q值很接近的话，即使MSE很小，也会产生误差。<br>NLL loss假设每次只有一个optimal action，原则上没有错。但是我们的teacher network可能不是optimal，最小化NLL的过程可能将一些noise也进行了变化。</p>
+<h3 id="policy-distillation-with-model-compression"><a href="#policy-distillation-with-model-compression" class="headerlink" title="policy distillation with model compression"></a>policy distillation with model compression</h3><p>这一节介绍的是policy distillation model compression。训练的时候，模型大一些有助于训练，但是训练好的模型进行压缩也保留性能。　<br>分别在$10$个不同的atarti游戏上进行single-game distilled，使用的都是KL loss，student分别压缩为teacher的$25\\%, 7\\%, 4\\%$，压缩到$25\\%$ student network的平均性能是teacher network的$108\\%$,压缩到$25\\%$ student network的平均性能是teacher network的$102\\%$, 压缩到$25\\%$ student network的$4\\%$的平均性能是teacher network的$84\\%$。<br>single policy distillation with model compression中网络结构：<br>Agent | Input | Conv. 1 | Conv. 2 | Conv. 3 | F.C. 1 | Output | Parameters<br>Teacher (DQN) | 4 |  32 | 64 | 64 | 512 | up to 18 | 1,693,362<br>Dist-KL-net1 | 4 | 16 | 32 | 32 | 256 | up to 18 | 427,874<br>Dist-KL-net2 | 4 | 16 | 16 | 16 | 128 | up to 18 | 113,346<br>Dist-KL-net3 | 4 | 16 | 16 | 16 | 64 | up to 18 | 61,954<br>模型压缩只改变了参数的数量，没有改变模型架构。</p>
+<h3 id="multi-game-policy-distillation"><a href="#multi-game-policy-distillation" class="headerlink" title="multi-game policy distillation"></a>multi-game policy distillation</h3><p>Multi-task DQN是multi-task distillation的baseline，实验使用了三个游戏，multi-task DQN和单个DQN的训练过程一样，但是使用了三个游戏的experient进行训练。对比了multi task DQN，multi distillation NLL，multi distillation KL，他们的网络大小都是一样的。<br>最后作者还将$10$个游戏distill到一个single student network中，这个network大小是nature DQN的四倍。<br>multi-task distilltaion experiments中网络结构：<br>Agent | Input | Conv. 1 | Conv. 2 | Conv. 3 | F.C. 1 | F.C. 2 | Output | Parameters<br>One Teacher (DQN) | 4 | 32 | 64 | 64 | 512 | n/a | up to 18 | 1,693,362<br>Multi-DQN/Dist (3 games) | 4 | 32 | 64 | 64 | 512 | 128 (x3) | up to 18 (x3) | 1,882,668<br>Multi-Dist-KL (10 games) | 4 | 64 | 64 | 64 | 1500 | 128 (x10) | up to 18 (x10) | 6,756,721</p>
+<h3 id="online-policy-distillation"><a href="#online-policy-distillation" class="headerlink" title="online policy distillation"></a>online policy distillation</h3><h2 id="Experimental-Details"><a href="#Experimental-Details" class="headerlink" title="Experimental Details"></a>Experimental Details</h2><h3 id="Policy-Distillation-Training-Data-collection"><a href="#Policy-Distillation-Training-Data-collection" class="headerlink" title="Policy Distillation Training Data collection"></a>Policy Distillation Training Data collection</h3><p>Policy distillation online data collection和nature DQN中agent evaluation一样，DQN随机执行最多$30$个null-ops初始化episode，使用$\epsilon$-greedy($\epsilon=0.05$)算法进行$30$分钟即$108000$frames的evaluation。<br>DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小时的experience（$15$Hz下共$54000$个control steps），</p>
+<h3 id="Distillation-Targets"><a href="#Distillation-Targets" class="headerlink" title="Distillation Targets"></a>Distillation Targets</h3><h3 id="Agent-Evaluation"><a href="#Agent-Evaluation" class="headerlink" title="Agent Evaluation"></a>Agent Evaluation</h3><p>使用human starts，使用$\epsilon$-greedy($\epsilon=0.05$)算法进行$30$分钟即$108000$frames的evaluation。<br>在multitask中，使用$\frac{\text{student score}}{\text{DQN score}}$当做metric。</p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><p>官方没有放出代码，有其他人的复现版本：<br><a href="https://github.com/ciwang/policydistillation" target="_blank" rel="noopener">https://github.com/ciwang/policydistillation</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://arxiv.org/pdf/1511.06295.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1511.06295.pdf</a></p>
 
           
         
@@ -1265,12 +1024,7 @@ DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小�
       
         
           
-            <h2 id="pytorch-agent-net-library">PyTorch Agent Net library</h2>
-<h2 id="none"></h2>
-<h2 id="参考文献">参考文献</h2>
-<ol>
-<li></li>
-</ol>
+            <h2 id="PyTorch-Agent-Net-library"><a href="#PyTorch-Agent-Net-library" class="headerlink" title="PyTorch Agent Net library"></a>PyTorch Agent Net library</h2><h1 id><a href="#" class="headerlink" title="#"></a>#</h1><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.</p>
 
           
         
@@ -1430,28 +1184,12 @@ DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小�
       
         
           
-            <h2 id="iteration">Iteration</h2>
-<p>Iteration并不是一个具体的东西，它是一个抽象的名词，指的是一个接一个的取某个对象的每一个项。包含隐式的，显式的loop，即while，do, for等，这叫iteration。</p>
-<h2 id="iterable和iterator">Iterable和iterator</h2>
-<p>而在python中，有iterator和iterable。<br>
-一个iterable object是实现了__iter__方法的object或者定义了__getitem__方法。一个iteratable object是一个可以得到iterator的object，但是它自己并不一定是iterator object。<br>
-而iterator是一个实现了__next__和__iter__方法的object。<br>
-<strong>iterable object不一定是iterator，iterator一定是iterable object。</strong><br>
-<strong>可以使用for循环的都是ieterable object，比如str，list，但是它们不是itertor，可以使用iter()方法得到iterator</strong><br>
-<strong>可以next()的都是iterator</strong></p>
-<h2 id="iter和-iter">iter和__iter__</h2>
-<p>所有实现了__iter__方法的object，都是iterable object，可以通过iter()方法产生iterator object。<br>
-具体示例</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">from collections import Iterator</span><br><span class="line">from collections import Iterable</span><br><span class="line"></span><br><span class="line">class Fibs:</span><br><span class="line">    def __init__(self, a, b):</span><br><span class="line">        self.a = a</span><br><span class="line">        self.b = b</span><br><span class="line"></span><br><span class="line">    def __iter__(self):</span><br><span class="line">        a = self.a</span><br><span class="line">        b = self.b</span><br><span class="line">        while True:</span><br><span class="line">            yield a</span><br><span class="line">            a, b = b, a + b</span><br><span class="line"></span><br><span class="line">real_fibs = Fibs(0,1)</span><br><span class="line"></span><br><span class="line">print(&quot;real_fibs is iterator? &quot;, isinstance(real_fibs, Iterator))</span><br><span class="line">print(&quot;real_fibs is iterable? &quot;, isinstance(real_fibs, Iterable))</span><br><span class="line">print(&quot;iter(real_fibs) is iterator? &quot;, isinstance(iter(real_fibs), Iterator))</span><br><span class="line">print(&quot;iter(real_fibs) is iterable? &quot;, isinstance(iter(real_fibs), Iterable))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">for idx, i in enumerate(real_fibs):</span><br><span class="line">    print(i)</span><br><span class="line">    if idx &gt; 10:</span><br><span class="line">        break</span><br></pre></td></tr></table></figure>
+            <h2 id="Iteration"><a href="#Iteration" class="headerlink" title="Iteration"></a>Iteration</h2><p>Iteration并不是一个具体的东西，它是一个抽象的名词，指的是一个接一个的取某个对象的每一个项。包含隐式的，显式的loop，即while，do, for等，这叫iteration。</p>
+<h2 id="Iterable和iterator"><a href="#Iterable和iterator" class="headerlink" title="Iterable和iterator"></a>Iterable和iterator</h2><p>而在python中，有iterator和iterable。<br>一个iterable object是实现了<strong>iter</strong>方法的object或者定义了<strong>getitem</strong>方法。一个iteratable object是一个可以得到iterator的object，但是它自己并不一定是iterator object。<br>而iterator是一个实现了<strong>next</strong>和<strong>iter</strong>方法的object。<br><strong>iterable object不一定是iterator，iterator一定是iterable object。</strong><br><strong>可以使用for循环的都是ieterable object，比如str，list，但是它们不是itertor，可以使用iter()方法得到iterator</strong><br><strong>可以next()的都是iterator</strong></p>
+<h2 id="iter和-iter"><a href="#iter和-iter" class="headerlink" title="iter和__iter__"></a>iter和__iter__</h2><p>所有实现了<strong>iter</strong>方法的object，都是iterable object，可以通过iter()方法产生iterator object。<br>具体示例<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">from collections import Iterator</span><br><span class="line">from collections import Iterable</span><br><span class="line"></span><br><span class="line">class Fibs:</span><br><span class="line">    def __init__(self, a, b):</span><br><span class="line">        self.a = a</span><br><span class="line">        self.b = b</span><br><span class="line"></span><br><span class="line">    def __iter__(self):</span><br><span class="line">        a = self.a</span><br><span class="line">        b = self.b</span><br><span class="line">        while True:</span><br><span class="line">            yield a</span><br><span class="line">            a, b = b, a + b</span><br><span class="line"></span><br><span class="line">real_fibs = Fibs(0,1)</span><br><span class="line"></span><br><span class="line">print(&quot;real_fibs is iterator? &quot;, isinstance(real_fibs, Iterator))</span><br><span class="line">print(&quot;real_fibs is iterable? &quot;, isinstance(real_fibs, Iterable))</span><br><span class="line">print(&quot;iter(real_fibs) is iterator? &quot;, isinstance(iter(real_fibs), Iterator))</span><br><span class="line">print(&quot;iter(real_fibs) is iterable? &quot;, isinstance(iter(real_fibs), Iterable))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">for idx, i in enumerate(real_fibs):</span><br><span class="line">    print(i)</span><br><span class="line">    if idx &gt; 10:</span><br><span class="line">        break</span><br></pre></td></tr></table></figure></p>
 <p>其中出现了yield关键字。yield关键字的作用是每次迭代执行到该行代码时，就返回一个值，并且记住相应的位置，在下次迭代时继续从该行位置开始执行。</p>
-<h2 id="next和-next">next和__next__</h2>
-<p>代码示例</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Iterator</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, max_v=<span class="number">5</span>)</span>:</span></span><br><span class="line">        self.max_v = max_v</span><br><span class="line">        self.v = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__next__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># if self.v &lt;= self.nax_v</span></span><br><span class="line">        self.v += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> self.v</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    a = A()</span><br><span class="line">    <span class="keyword">for</span> idx, v <span class="keyword">in</span> enumerate(a):</span><br><span class="line">        print(idx, v)</span><br><span class="line">        <span class="keyword">if</span> (idx &gt;= <span class="number">10</span>):</span><br><span class="line">            <span class="keyword">break</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/9884132/what-exactly-are-iterator-iterable-and-iteration" target="_blank" rel="noopener">https://stackoverflow.com/questions/9884132/what-exactly-are-iterator-iterable-and-iteration</a><br>
-2.<a href="https://stackoverflow.com/a/46411740/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/46411740/8939281</a><br>
-3.<a href="https://www.jianshu.com/p/f9b547874a14" target="_blank" rel="noopener">https://www.jianshu.com/p/f9b547874a14</a><br>
-4.<a href="https://www.jianshu.com/p/1b0686bc166d" target="_blank" rel="noopener">https://www.jianshu.com/p/1b0686bc166d</a></p>
+<h2 id="next和-next"><a href="#next和-next" class="headerlink" title="next和__next__"></a>next和__next__</h2><p>代码示例<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> collections <span class="keyword">import</span> Iterator</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, max_v=<span class="number">5</span>)</span>:</span></span><br><span class="line">        self.max_v = max_v</span><br><span class="line">        self.v = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__next__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># if self.v &lt;= self.nax_v</span></span><br><span class="line">        self.v += <span class="number">1</span></span><br><span class="line">        <span class="keyword">return</span> self.v</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    a = A()</span><br><span class="line">    <span class="keyword">for</span> idx, v <span class="keyword">in</span> enumerate(a):</span><br><span class="line">        print(idx, v)</span><br><span class="line">        <span class="keyword">if</span> (idx &gt;= <span class="number">10</span>):</span><br><span class="line">            <span class="keyword">break</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://stackoverflow.com/questions/9884132/what-exactly-are-iterator-iterable-and-iteration" target="_blank" rel="noopener">https://stackoverflow.com/questions/9884132/what-exactly-are-iterator-iterable-and-iteration</a><br>2.<a href="https://stackoverflow.com/a/46411740/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/46411740/8939281</a><br>3.<a href="https://www.jianshu.com/p/f9b547874a14" target="_blank" rel="noopener">https://www.jianshu.com/p/f9b547874a14</a><br>4.<a href="https://www.jianshu.com/p/1b0686bc166d" target="_blank" rel="noopener">https://www.jianshu.com/p/1b0686bc166d</a></p>
 
           
         
@@ -1624,12 +1362,7 @@ DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小�
         
           
             <p>这一篇文章主要介绍wrappers和monitors。</p>
-<h2 id="什么是wrappers">什么是Wrappers</h2>
-<p>对已有的environments的功能进行扩展。比如保留过去的N个observation或者对输入进行cropped。Gym提供了这样的借口，叫做Wrapper class。<br>
-Wrapper继承自Env class，构造函数只接收一个参数，要被&quot;wrapped&quot;的Env实例。为了添加新的逻辑，需要重写step()或者reset()方法，但是需要调用父类的original方法。为了更细粒度的满足要求，gym还提供了三个Wrapper的subclass，ObservationWrapper，RewardWrapper和ActionWrapper分别只对observation，reward和action进行重定义。他们之间的关系如下所示：<br>
-<img src="/2019/10/09/gym-wrappers-and-monitors/gym_wrapper.png" alt="gym_wrapper"><br>
-Env是一个abstract class，具体的environments如Breakout继承了Env class，实现了step()，reset()等abstract function。Wrapper继承了env class，对step(), reset()等方法进行了重载。ActionWrapper对Wrapper进行了重载，对step和reset进行了重载。<br>
-Env</p>
+<h2 id="什么是Wrappers"><a href="#什么是Wrappers" class="headerlink" title="什么是Wrappers"></a>什么是Wrappers</h2><p>对已有的environments的功能进行扩展。比如保留过去的N个observation或者对输入进行cropped。Gym提供了这样的借口，叫做Wrapper class。<br>Wrapper继承自Env class，构造函数只接收一个参数，要被”wrapped”的Env实例。为了添加新的逻辑，需要重写step()或者reset()方法，但是需要调用父类的original方法。为了更细粒度的满足要求，gym还提供了三个Wrapper的subclass，ObservationWrapper，RewardWrapper和ActionWrapper分别只对observation，reward和action进行重定义。他们之间的关系如下所示：<br><img src="/2019/10/09/gym-wrappers-and-monitors/gym_wrapper.png" alt="gym_wrapper"><br>Env是一个abstract class，具体的environments如Breakout继承了Env class，实现了step()，reset()等abstract function。Wrapper继承了env class，对step(), reset()等方法进行了重载。ActionWrapper对Wrapper进行了重载，对step和reset进行了重载。<br>Env </p>
 <ul>
 <li>abstract step(self, action)</li>
 <li>abstract reset(self)</li>
@@ -1656,16 +1389,11 @@ Env</p>
 <ul>
 <li>overwrite action(self, action)</li>
 </ul>
-<h2 id="wrapper示例">Wrapper示例</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gym</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomActionWrapper</span><span class="params">(gym.ActionWrapper)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, environment, epsilon=<span class="number">-1.1</span>)</span>:</span></span><br><span class="line">        super(RandomActionWrapper, self).__init__(environment)</span><br><span class="line">        self.epsilon = epsilon</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">action</span><span class="params">(self, action)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> random.random() &lt; self.epsilon:</span><br><span class="line">            print(<span class="string">"Random"</span>)</span><br><span class="line">            <span class="keyword">return</span> self.env.action_space.sample()</span><br><span class="line">            <span class="comment"># return self.environment.action_space.sample()</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># print("Not random")</span></span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line">        <span class="keyword">return</span> action</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">reverse_action</span><span class="params">(self, action)</span>:</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    environment = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">    env = RandomActionWrapper(environment)</span><br><span class="line">    </span><br><span class="line">    obs = env.reset()</span><br><span class="line">    episode = <span class="number">0</span></span><br><span class="line">    total_steps = <span class="number">0</span></span><br><span class="line">    total_reward = <span class="number">0</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        action = env.action_space.sample()</span><br><span class="line">        obs, reward, done, info = env.step(action)</span><br><span class="line">        print(reward)</span><br><span class="line">        total_reward += reward</span><br><span class="line">        total_steps += <span class="number">1</span></span><br><span class="line">        env.render()</span><br><span class="line">        time.sleep(<span class="number">0.1</span>)</span><br><span class="line">        <span class="keyword">if</span> done:</span><br><span class="line">            print(<span class="string">"Episode %d done in %d steps, total reward %.1f"</span> %(episode, total_steps, total_reward))</span><br><span class="line">            time.sleep(<span class="number">0.1</span>)</span><br><span class="line">            env.reset()</span><br><span class="line">            episode += <span class="number">1</span></span><br><span class="line">            total_reward = <span class="number">0</span></span><br></pre></td></tr></table></figure>
-<p>在这个例子中，env其实是RandomActionWrapper的对象，而RandomActionWrapper继承自ActionWrapper，对ActionWrapper的action方法进行了重载。这个Wrapper对象拥有CartPole environment的对象，调用wrapper对象的step方法时，其实调用的是ActionWrapper的step方法，而ActionWrapper调用的是self.env.env(self.action(action))。<br>
-最终其实就是将env.step(action)改成了env.step(action(action))。</p>
-<h2 id="什么是monitors">什么是Monitors</h2>
-<p>使用gym.wrapper.Monior记录当前agent的执行动作。它的使用方法很简单，如下所示：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">env = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">env = gym.wrappers.Monitor(env, <span class="string">"path"</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="Wrapper示例"><a href="#Wrapper示例" class="headerlink" title="Wrapper示例"></a>Wrapper示例</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gym</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomActionWrapper</span><span class="params">(gym.ActionWrapper)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, environment, epsilon=<span class="number">-1.1</span>)</span>:</span></span><br><span class="line">        super(RandomActionWrapper, self).__init__(environment)</span><br><span class="line">        self.epsilon = epsilon</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">action</span><span class="params">(self, action)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> random.random() &lt; self.epsilon:</span><br><span class="line">            print(<span class="string">"Random"</span>)</span><br><span class="line">            <span class="keyword">return</span> self.env.action_space.sample()</span><br><span class="line">            <span class="comment"># return self.environment.action_space.sample()</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># print("Not random")</span></span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line">        <span class="keyword">return</span> action</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">reverse_action</span><span class="params">(self, action)</span>:</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    environment = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">    env = RandomActionWrapper(environment)</span><br><span class="line">    </span><br><span class="line">    obs = env.reset()</span><br><span class="line">    episode = <span class="number">0</span></span><br><span class="line">    total_steps = <span class="number">0</span></span><br><span class="line">    total_reward = <span class="number">0</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        action = env.action_space.sample()</span><br><span class="line">        obs, reward, done, info = env.step(action)</span><br><span class="line">        print(reward)</span><br><span class="line">        total_reward += reward</span><br><span class="line">        total_steps += <span class="number">1</span></span><br><span class="line">        env.render()</span><br><span class="line">        time.sleep(<span class="number">0.1</span>)</span><br><span class="line">        <span class="keyword">if</span> done:</span><br><span class="line">            print(<span class="string">"Episode %d done in %d steps, total reward %.1f"</span> %(episode, total_steps, total_reward))</span><br><span class="line">            time.sleep(<span class="number">0.1</span>)</span><br><span class="line">            env.reset()</span><br><span class="line">            episode += <span class="number">1</span></span><br><span class="line">            total_reward = <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>在这个例子中，env其实是RandomActionWrapper的对象，而RandomActionWrapper继承自ActionWrapper，对ActionWrapper的action方法进行了重载。这个Wrapper对象拥有CartPole environment的对象，调用wrapper对象的step方法时，其实调用的是ActionWrapper的step方法，而ActionWrapper调用的是self.env.env(self.action(action))。<br>最终其实就是将env.step(action)改成了env.step(action(action))。</p>
+<h2 id="什么是Monitors"><a href="#什么是Monitors" class="headerlink" title="什么是Monitors"></a>什么是Monitors</h2><p>使用gym.wrapper.Monior记录当前agent的执行动作。它的使用方法很简单，如下所示：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">env = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">env = gym.wrappers.Monitor(env, <span class="string">"path"</span>)</span><br></pre></td></tr></table></figure></p>
 <p>只需要在env的外面套上一个Monitor即可，它会自动记录玩游戏的过程。</p>
-<h2 id="wrapper-in-baselines">Wrapper in baselines</h2>
-<p>Openai baselines中实现了许多wrappers。它们包括：</p>
+<h2 id="Wrapper-in-baselines"><a href="#Wrapper-in-baselines" class="headerlink" title="Wrapper in baselines"></a>Wrapper in baselines</h2><p>Openai baselines中实现了许多wrappers。它们包括：</p>
 <ul>
 <li>将一个大的episode切分成更小的episode，一个游戏可能有好几条命，原来的实现中是这几条命都是一个episode，现在把它改成一条命一个episode</li>
 <li>执行至多$30$个no-op。</li>
@@ -1676,12 +1404,8 @@ Env</p>
 <li>Clipped reward 到$-1, 0, 1$，或者$[-1, 1]$</li>
 <li>将$0-255$之间的值转换成$[0.0, 1.0]$</li>
 </ul>
-<h2 id="monitors示例">Monitors示例</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gym</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    env = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">    env = gym.wrappers.Monitor(env, <span class="string">"recording"</span>)</span><br><span class="line"></span><br><span class="line">    total_reward = <span class="number">0.0</span></span><br><span class="line">    total_steps = <span class="number">0</span></span><br><span class="line">    obs = env.reset()</span><br><span class="line">    episode = <span class="number">1</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        action = env.action_space.sample()</span><br><span class="line">        obs, reward, done, _ = env.step(action)</span><br><span class="line">        total_reward += reward</span><br><span class="line">        total_steps += <span class="number">1</span></span><br><span class="line">        env.render()</span><br><span class="line">        <span class="keyword">if</span> done:</span><br><span class="line">            print(<span class="string">"Episode %d done in %d steps, total reward %.2f"</span> %(episode, total_steps, total_reward))</span><br><span class="line">            time.sleep(<span class="number">1</span>)</span><br><span class="line">            env.reset()</span><br><span class="line">            <span class="keyword">if</span> episode &gt; <span class="number">5</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            episode += <span class="number">1</span></span><br><span class="line">            total_reward = <span class="number">0</span></span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://hub.packtpub.com/openai-gym-environments-wrappers-and-monitors-tutorial/" target="_blank" rel="noopener">https://hub.packtpub.com/openai-gym-environments-wrappers-and-monitors-tutorial/</a><br>
-2.<a href="https://www.packtpub.com/big-data-and-business-intelligence/deep-reinforcement-learning-hands" target="_blank" rel="noopener">https://www.packtpub.com/big-data-and-business-intelligence/deep-reinforcement-learning-hands</a><br>
-3.<a href="https://discuss.pytorch.org/t/in-the-official-q-learning-example-what-does-the-env-unwrapped-do-exactly/28695/2" target="_blank" rel="noopener">https://discuss.pytorch.org/t/in-the-official-q-learning-example-what-does-the-env-unwrapped-do-exactly/28695/2</a></p>
+<h2 id="Monitors示例"><a href="#Monitors示例" class="headerlink" title="Monitors示例"></a>Monitors示例</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gym</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    env = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">    env = gym.wrappers.Monitor(env, <span class="string">"recording"</span>)</span><br><span class="line"></span><br><span class="line">    total_reward = <span class="number">0.0</span></span><br><span class="line">    total_steps = <span class="number">0</span></span><br><span class="line">    obs = env.reset()</span><br><span class="line">    episode = <span class="number">1</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        action = env.action_space.sample()</span><br><span class="line">        obs, reward, done, _ = env.step(action)</span><br><span class="line">        total_reward += reward</span><br><span class="line">        total_steps += <span class="number">1</span></span><br><span class="line">        env.render()</span><br><span class="line">        <span class="keyword">if</span> done:</span><br><span class="line">            print(<span class="string">"Episode %d done in %d steps, total reward %.2f"</span> %(episode, total_steps, total_reward))</span><br><span class="line">            time.sleep(<span class="number">1</span>)</span><br><span class="line">            env.reset()</span><br><span class="line">            <span class="keyword">if</span> episode &gt; <span class="number">5</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            episode += <span class="number">1</span></span><br><span class="line">            total_reward = <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://hub.packtpub.com/openai-gym-environments-wrappers-and-monitors-tutorial/" target="_blank" rel="noopener">https://hub.packtpub.com/openai-gym-environments-wrappers-and-monitors-tutorial/</a><br>2.<a href="https://www.packtpub.com/big-data-and-business-intelligence/deep-reinforcement-learning-hands" target="_blank" rel="noopener">https://www.packtpub.com/big-data-and-business-intelligence/deep-reinforcement-learning-hands</a><br>3.<a href="https://discuss.pytorch.org/t/in-the-official-q-learning-example-what-does-the-env-unwrapped-do-exactly/28695/2" target="_blank" rel="noopener">https://discuss.pytorch.org/t/in-the-official-q-learning-example-what-does-the-env-unwrapped-do-exactly/28695/2</a></p>
 
           
         
@@ -1853,39 +1577,20 @@ Env</p>
       
         
           
-            <h2 id="简介">简介</h2>
-<p>pickle是一个序列化模块，它能将python对象序列化转换成二进制串再反序列化成python对象。</p>
-<h2 id="常用函数">常用函数</h2>
-<h3 id="pickle-dump">pickle.dump()</h3>
-<h4 id="api">API</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.dump(obj, file, [,protocol])</span><br></pre></td></tr></table></figure>
-<h4 id="作用">作用</h4>
-<p>将python对象obj以二进制字符串形式保存到文件file中，使用protocol。</p>
-<h4 id="示例">示例</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"test.txt"</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    pickle.dump(dictionary, f)</span><br></pre></td></tr></table></figure>
-<h3 id="pickle-load">pickle.load()</h3>
-<h4 id="api-v2">API</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.load(file)</span><br></pre></td></tr></table></figure>
-<h4 id="作用-v2">作用</h4>
-<p>从文件file中读取二进制字符串，将其反序列成python对象。</p>
-<h4 id="示例-v2">示例</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"test.txt"</span>, <span class="string">'rb'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    b = pickle.load(f)</span><br><span class="line"></span><br><span class="line">print(b)</span><br><span class="line">print(type(b))</span><br></pre></td></tr></table></figure>
-<h3 id="pickle-dumps">pickle.dumps()</h3>
-<h4 id="api-v3">API</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.dumps(obj, [,protocol])</span><br></pre></td></tr></table></figure>
-<h4 id="作用-v3">作用</h4>
-<p>将python对象obj转化成二进制字符串，返回一个字符串</p>
-<h4 id="示例-v3">示例</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line">s = pickle.dumps(dictionary)</span><br><span class="line">print(s)</span><br><span class="line">print(type(s))</span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line"><span class="comment"># b'\x80\x03&#125;q\x00(X\x04\x00\x00\x00nameq\x01X\x03\x00\x00\x00mxxq\x02X\x03\x00\x00\x00ageq\x03K\x17u.'</span></span><br><span class="line"><span class="comment"># &lt;class 'bytes'&gt;</span></span><br></pre></td></tr></table></figure>
-<h3 id="pickle-loads">pickle.loads()</h3>
-<h4 id="api-v4">API</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.loads(string)</span><br></pre></td></tr></table></figure>
-<h4 id="作用-v4">作用</h4>
-<p>从二进制字符串中返回序列化前的python obj对象。</p>
-<h4 id="示例-v4">示例</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line">s = pickle.dumps(dictionary)</span><br><span class="line">b = pickle.loads(s)</span><br><span class="line">print(b)</span><br><span class="line">print(type(b))</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.jianshu.com/p/cf91849064e3" target="_blank" rel="noopener">https://www.jianshu.com/p/cf91849064e3</a></p>
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>pickle是一个序列化模块，它能将python对象序列化转换成二进制串再反序列化成python对象。</p>
+<h2 id="常用函数"><a href="#常用函数" class="headerlink" title="常用函数"></a>常用函数</h2><h3 id="pickle-dump"><a href="#pickle-dump" class="headerlink" title="pickle.dump()"></a>pickle.dump()</h3><h4 id="API"><a href="#API" class="headerlink" title="API"></a>API</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.dump(obj, file, [,protocol])</span><br></pre></td></tr></table></figure>
+<h4 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h4><p>将python对象obj以二进制字符串形式保存到文件file中，使用protocol。</p>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"test.txt"</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    pickle.dump(dictionary, f)</span><br></pre></td></tr></table></figure>
+<h3 id="pickle-load"><a href="#pickle-load" class="headerlink" title="pickle.load()"></a>pickle.load()</h3><h4 id="API-1"><a href="#API-1" class="headerlink" title="API"></a>API</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.load(file)</span><br></pre></td></tr></table></figure>
+<h4 id="作用-1"><a href="#作用-1" class="headerlink" title="作用"></a>作用</h4><p>从文件file中读取二进制字符串，将其反序列成python对象。</p>
+<h4 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"test.txt"</span>, <span class="string">'rb'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    b = pickle.load(f)</span><br><span class="line"></span><br><span class="line">print(b)</span><br><span class="line">print(type(b))</span><br></pre></td></tr></table></figure>
+<h3 id="pickle-dumps"><a href="#pickle-dumps" class="headerlink" title="pickle.dumps()"></a>pickle.dumps()</h3><h4 id="API-2"><a href="#API-2" class="headerlink" title="API"></a>API</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.dumps(obj, [,protocol])</span><br></pre></td></tr></table></figure>
+<h4 id="作用-2"><a href="#作用-2" class="headerlink" title="作用"></a>作用</h4><p>将python对象obj转化成二进制字符串，返回一个字符串</p>
+<h4 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line">s = pickle.dumps(dictionary)</span><br><span class="line">print(s)</span><br><span class="line">print(type(s))</span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line"><span class="comment"># b'\x80\x03&#125;q\x00(X\x04\x00\x00\x00nameq\x01X\x03\x00\x00\x00mxxq\x02X\x03\x00\x00\x00ageq\x03K\x17u.'</span></span><br><span class="line"><span class="comment"># &lt;class 'bytes'&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="pickle-loads"><a href="#pickle-loads" class="headerlink" title="pickle.loads()"></a>pickle.loads()</h3><h4 id="API-3"><a href="#API-3" class="headerlink" title="API"></a>API</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.loads(string)</span><br></pre></td></tr></table></figure>
+<h4 id="作用-3"><a href="#作用-3" class="headerlink" title="作用"></a>作用</h4><p>从二进制字符串中返回序列化前的python obj对象。</p>
+<h4 id="示例-3"><a href="#示例-3" class="headerlink" title="示例"></a>示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line">s = pickle.dumps(dictionary)</span><br><span class="line">b = pickle.loads(s)</span><br><span class="line">print(b)</span><br><span class="line">print(type(b))</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.jianshu.com/p/cf91849064e3" target="_blank" rel="noopener">https://www.jianshu.com/p/cf91849064e3</a></p>
 
           
         
@@ -2057,13 +1762,8 @@ Env</p>
       
         
           
-            <h2 id="mpi">MPI</h2>
-<p>MPI全名是Message Passing Interface，它是一个标准，而不是一个实现，专门为进程间通信实现的。它的工作原理很简单，启动一组进程，在同一个通信域中的不同进程有不同的编号，可以给不同编号的进程分配不同的任务，最终实现整个任务。<br>
-MPI4PY就是python中MPI的实现。在python中有很多种方法实现多进程以及进程间通信，比如multiprocessing，但是multiprocessing进程间通信不够方便，mpi4py的效率更高一些。<br>
-mpi4py提供了点对点通信，点对面，面对点通信。点对点通信又包含阻塞和非阻塞等等，通信的内容包含python内置对象，也包含numpy数组等。</p>
-<h2 id="mpi4py简单对象和方法介绍">mpi4py简单对象和方法介绍</h2>
-<p>MPI.COMM_WORLD是一个通信域，在这个通信域中有不同的进程，每个进程的编号以及进程的数量都可以通过这个通信域获得。具体看以下comm_world.py代码：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获得多进程通信域</span></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"><span class="comment"># 获得当前进程通信域中进程数量</span></span><br><span class="line">size = comm.Get_size()</span><br><span class="line"><span class="comment"># 获得当前进程在通信域中的编号</span></span><br><span class="line">rank = comm.Get_rank()</span><br></pre></td></tr></table></figure>
+            <h2 id="MPI"><a href="#MPI" class="headerlink" title="MPI"></a>MPI</h2><p>MPI全名是Message Passing Interface，它是一个标准，而不是一个实现，专门为进程间通信实现的。它的工作原理很简单，启动一组进程，在同一个通信域中的不同进程有不同的编号，可以给不同编号的进程分配不同的任务，最终实现整个任务。<br>MPI4PY就是python中MPI的实现。在python中有很多种方法实现多进程以及进程间通信，比如multiprocessing，但是multiprocessing进程间通信不够方便，mpi4py的效率更高一些。<br>mpi4py提供了点对点通信，点对面，面对点通信。点对点通信又包含阻塞和非阻塞等等，通信的内容包含python内置对象，也包含numpy数组等。</p>
+<h2 id="mpi4py简单对象和方法介绍"><a href="#mpi4py简单对象和方法介绍" class="headerlink" title="mpi4py简单对象和方法介绍"></a>mpi4py简单对象和方法介绍</h2><p>MPI.COMM_WORLD是一个通信域，在这个通信域中有不同的进程，每个进程的编号以及进程的数量都可以通过这个通信域获得。具体看以下comm_world.py代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获得多进程通信域</span></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"><span class="comment"># 获得当前进程通信域中进程数量</span></span><br><span class="line">size = comm.Get_size()</span><br><span class="line"><span class="comment"># 获得当前进程在通信域中的编号</span></span><br><span class="line">rank = comm.Get_rank()</span><br></pre></td></tr></table></figure></p>
 <blockquote>
 <blockquote>
 <blockquote>
@@ -2071,51 +1771,19 @@ mpi4py提供了点对点通信，点对面，面对点通信。点对点通信�
 </blockquote>
 </blockquote>
 </blockquote>
-<h2 id="点对点通信">点对点通信</h2>
-<h3 id="阻塞通信">阻塞通信</h3>
-<h4 id="python对象">python对象</h4>
-<h5 id="简介">简介</h5>
-<p>comm.send(data, dest, tag)<br>
-comm.recv(source, tag)<br>
-send和recv都是阻塞方法，即调用这个方法之后，等到该函数调用结束之后再返回。dest是目的process编号，source是发送的process编号。data是要发送的数据，需要是python的内置对象，即可以pickle的对象。</p>
-<h5 id="代码示例">代码示例</h5>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = &#123;<span class="string">'name'</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    comm.send(data, dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = comm.recv(source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
-<h4 id="numpy数组">numpy数组</h4>
-<h5 id="简介-v2">简介</h5>
-<p>comm.Send(data, dest, tag)<br>
-comm.Recv(source, tag)<br>
-Send和Recv都是阻塞方法，即调用这个方法之后，等到该函数调用结束之后再返回。dest是目的process编号，source是发送的process编号。data是要发送的数据，需要是numpy对象，和c语言的效率差不多。</p>
-<h5 id="代码示例-v2">代码示例</h5>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"></span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = &#123;<span class="string">'name'</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    comm.isend(data, dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = comm.irecv(source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="非阻塞通信">非阻塞通信</h3>
-<h4 id="简介-v3">简介</h4>
-<p>comm.isend(data, dest, tag)<br>
-comm.irecv(source, tag)<br>
-isend和irecv都是非阻塞方法，即调用这个方法之后，调用该函数之后立即返回，无需等待它执行结束。dest是目的process编号，source是发送的process编号。data要是python对象，可以被pickle处理的。</p>
-<h4 id="代码示例-v3">代码示例</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"></span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = np.ones((<span class="number">3</span>, <span class="number">4</span>), dtype=<span class="string">'i'</span>)</span><br><span class="line">    comm.Send([data, MPI.INT], dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = np.empty((<span class="number">3</span>, <span class="number">4</span>), dtype=<span class="string">'i'</span>)</span><br><span class="line">    data = comm.Recv([data, MPI.INT], source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="组通信">组通信</h2>
-<h3 id="bcast">bcast</h3>
-<h4 id="简介-v4">简介</h4>
-<p>将一个process中的数据发送给所有在通信池中的process。<br>
-comm.bcast(data, dest, tag)</p>
-<h4 id="代码示例-v4">代码示例</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">1</span>:</span><br><span class="line">    data = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    print(<span class="string">"data bcast to others"</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">data = comm.bcast(data, root=<span class="number">1</span>)</span><br><span class="line">print(<span class="string">"process &#123;&#125; has received data"</span>.format(rank))</span><br></pre></td></tr></table></figure>
-<h3 id="scatter">scatter</h3>
-<h4 id="简介-v5">简介</h4>
-<p>将一个process的数据拆分成n份，发送给所有在通信池中的process每个一份，和bcast的区别在于，bcast发送的数据对于每一个process都是一样的，而scatter是将一份数据拆分成n份分别发送给每个process。<br>
-comm.scatter(data, dest, tag)</p>
-<h4 id="代码示例-v5">代码示例</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line">recv_data = <span class="literal">None</span></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">1</span>:</span><br><span class="line">    send_data = range(size) </span><br><span class="line">    print(<span class="string">"data bcast to others"</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    send_data = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">recv_data = comm.scatter(send_data, root=<span class="number">1</span>)</span><br><span class="line">print(<span class="string">"process &#123;&#125; has received data &#123;&#125;"</span>.format(rank, recv_data))</span><br></pre></td></tr></table></figure>
-<h3 id="gather">gather</h3>
-<h4 id="简介-v6">简介</h4>
-<p>和comm.bcast相反，将每个process中的数据收集到一个process中。<br>
-comm.gather(data, dest, tag)</p>
-<h4 id="代码示例-v6">代码示例</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line">send_data = rank</span><br><span class="line">print(<span class="string">"process &#123;&#125; send data &#123;&#125; to root."</span>.format(rank, send_data))</span><br><span class="line"></span><br><span class="line">recv_data = comm.gather(send_data, root=<span class="number">9</span>)</span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">9</span>:</span><br><span class="line">    print(<span class="string">"process &#123;&#125; gather all data &#123;&#125; to others."</span>.format(rank, recv_data))</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://zhuanlan.zhihu.com/p/25332041" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/25332041</a><br>
-2.<a href="https://www.jianshu.com/p/f497f3a5855f" target="_blank" rel="noopener">https://www.jianshu.com/p/f497f3a5855f</a></p>
+<h2 id="点对点通信"><a href="#点对点通信" class="headerlink" title="点对点通信"></a>点对点通信</h2><h3 id="阻塞通信"><a href="#阻塞通信" class="headerlink" title="阻塞通信"></a>阻塞通信</h3><h4 id="python对象"><a href="#python对象" class="headerlink" title="python对象"></a>python对象</h4><h5 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h5><p>comm.send(data, dest, tag)<br>comm.recv(source, tag)<br>send和recv都是阻塞方法，即调用这个方法之后，等到该函数调用结束之后再返回。dest是目的process编号，source是发送的process编号。data是要发送的数据，需要是python的内置对象，即可以pickle的对象。</p>
+<h5 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = &#123;<span class="string">'name'</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    comm.send(data, dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = comm.recv(source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="numpy数组"><a href="#numpy数组" class="headerlink" title="numpy数组"></a>numpy数组</h4><h5 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h5><p>comm.Send(data, dest, tag)<br>comm.Recv(source, tag)<br>Send和Recv都是阻塞方法，即调用这个方法之后，等到该函数调用结束之后再返回。dest是目的process编号，source是发送的process编号。data是要发送的数据，需要是numpy对象，和c语言的效率差不多。</p>
+<h5 id="代码示例-1"><a href="#代码示例-1" class="headerlink" title="代码示例"></a>代码示例</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"></span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = &#123;<span class="string">'name'</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    comm.isend(data, dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = comm.irecv(source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="非阻塞通信"><a href="#非阻塞通信" class="headerlink" title="非阻塞通信"></a>非阻塞通信</h3><h4 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h4><p>comm.isend(data, dest, tag)<br>comm.irecv(source, tag)<br>isend和irecv都是非阻塞方法，即调用这个方法之后，调用该函数之后立即返回，无需等待它执行结束。dest是目的process编号，source是发送的process编号。data要是python对象，可以被pickle处理的。</p>
+<h4 id="代码示例-2"><a href="#代码示例-2" class="headerlink" title="代码示例"></a>代码示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"></span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = np.ones((<span class="number">3</span>, <span class="number">4</span>), dtype=<span class="string">'i'</span>)</span><br><span class="line">    comm.Send([data, MPI.INT], dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = np.empty((<span class="number">3</span>, <span class="number">4</span>), dtype=<span class="string">'i'</span>)</span><br><span class="line">    data = comm.Recv([data, MPI.INT], source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="组通信"><a href="#组通信" class="headerlink" title="组通信"></a>组通信</h2><h3 id="bcast"><a href="#bcast" class="headerlink" title="bcast"></a>bcast</h3><h4 id="简介-3"><a href="#简介-3" class="headerlink" title="简介"></a>简介</h4><p>将一个process中的数据发送给所有在通信池中的process。<br>comm.bcast(data, dest, tag)</p>
+<h4 id="代码示例-3"><a href="#代码示例-3" class="headerlink" title="代码示例"></a>代码示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">1</span>:</span><br><span class="line">    data = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    print(<span class="string">"data bcast to others"</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">data = comm.bcast(data, root=<span class="number">1</span>)</span><br><span class="line">print(<span class="string">"process &#123;&#125; has received data"</span>.format(rank))</span><br></pre></td></tr></table></figure>
+<h3 id="scatter"><a href="#scatter" class="headerlink" title="scatter"></a>scatter</h3><h4 id="简介-4"><a href="#简介-4" class="headerlink" title="简介"></a>简介</h4><p>将一个process的数据拆分成n份，发送给所有在通信池中的process每个一份，和bcast的区别在于，bcast发送的数据对于每一个process都是一样的，而scatter是将一份数据拆分成n份分别发送给每个process。<br>comm.scatter(data, dest, tag)</p>
+<h4 id="代码示例-4"><a href="#代码示例-4" class="headerlink" title="代码示例"></a>代码示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line">recv_data = <span class="literal">None</span></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">1</span>:</span><br><span class="line">    send_data = range(size) </span><br><span class="line">    print(<span class="string">"data bcast to others"</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    send_data = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">recv_data = comm.scatter(send_data, root=<span class="number">1</span>)</span><br><span class="line">print(<span class="string">"process &#123;&#125; has received data &#123;&#125;"</span>.format(rank, recv_data))</span><br></pre></td></tr></table></figure>
+<h3 id="gather"><a href="#gather" class="headerlink" title="gather"></a>gather</h3><h4 id="简介-5"><a href="#简介-5" class="headerlink" title="简介"></a>简介</h4><p>和comm.bcast相反，将每个process中的数据收集到一个process中。<br>comm.gather(data, dest, tag)</p>
+<h4 id="代码示例-5"><a href="#代码示例-5" class="headerlink" title="代码示例"></a>代码示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line">send_data = rank</span><br><span class="line">print(<span class="string">"process &#123;&#125; send data &#123;&#125; to root."</span>.format(rank, send_data))</span><br><span class="line"></span><br><span class="line">recv_data = comm.gather(send_data, root=<span class="number">9</span>)</span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">9</span>:</span><br><span class="line">    print(<span class="string">"process &#123;&#125; gather all data &#123;&#125; to others."</span>.format(rank, recv_data))</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://zhuanlan.zhihu.com/p/25332041" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/25332041</a><br>2.<a href="https://www.jianshu.com/p/f497f3a5855f" target="_blank" rel="noopener">https://www.jianshu.com/p/f497f3a5855f</a></p>
 
           
         
@@ -2275,69 +1943,163 @@ comm.gather(data, dest, tag)</p>
       
         
           
-            <h2 id="ddpg">ddpg</h2>
-<p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>
-论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
-<h3 id="摘要">摘要</h3>
-<p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
-<h3 id="简介">简介</h3>
-<p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>
-简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。<br>
-$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}$$<br>
-（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>
-许多rl方法使用bellman方程递归的更新Q:<br>
-$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}$$<br>
-如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：<br>
-$$Q{\mu}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}$$<br>
-而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>
-在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
-<h3 id="ddpg-v2">DDPG</h3>
-<p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>
-DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>
-\begin{align*}<br>
-\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|_{s=s_t}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\ \tag{4}<br>
-\end{align*}<br>
-中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
-<h4 id="contributions">Contributions</h4>
-<p>本文的几个改进：</p>
+            <h2 id="ddpg"><a href="#ddpg" class="headerlink" title="ddpg"></a>ddpg</h2><p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h3 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h3><p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。</p>
+<script type="math/tex; mode=display">Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}</script><p>（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>许多rl方法使用bellman方程递归的更新Q:</p>
+<script type="math/tex; mode=display">Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}\_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}</script><p>如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：</p>
+<script type="math/tex; mode=display">Q{\mu}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}</script><p>而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
+<h3 id="DDPG"><a href="#DDPG" class="headerlink" title="DDPG"></a>DDPG</h3><p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>\begin{align*}<br>\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|_{s=s_t}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\\ \tag{4}<br>\end{align*}<br>中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
+<h4 id="Contributions"><a href="#Contributions" class="headerlink" title="Contributions"></a>Contributions</h4><p>本文的几个改进：</p>
 <ol>
 <li>使用replay buffer，</li>
 <li>使用target network解决不稳定的问题。</li>
 <li>使用了batch-normalization。</li>
-<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<br>
-$$\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}$$</li>
+<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<script type="math/tex; mode=display">\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}</script></li>
 </ol>
-<h4 id="算法">算法</h4>
-<p>算法1 DDPG<br>
-随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $<br>
-初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q ,\theta^{\mu’} \leftarrow \theta^{\mu} $<br>
-初始化replay buffer $R$<br>
-<strong>for</strong> episode = 1, M <strong>do</strong><br>
-初始化一个随机process $N$用于exploration<br>
-receive initial observation state $s_1$<br>
-for $t=1, T$ do<br>
-根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>
-执行action $a_t$，得到$r_t$和$s_{t+1}$<br>
-将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>
-从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>
-设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’} )$<br>
-使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic<br>
-使用sampled policy gradient 更新acotr:<br>
-$$\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|_{s=s_i, a=\mu(s_i)}\nabla_{\theta^{\mu} }\mu(s|\theta^{\mu} )|_{s_i}$$<br>
-更新target networks:<br>
-$$\theta’\leftarrow \tau \theta + (1-\tau) \theta’$$<br>
-end for<br>
-end for</p>
-<h3 id="实验">实验</h3>
-<p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>
-在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>
-作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h4 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h4><p>算法1 DDPG<br>随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $<br>初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q ,\theta^{\mu’} \leftarrow \theta^{\mu} $<br>初始化replay buffer $R$<br><strong>for</strong> episode = 1, M <strong>do</strong><br>初始化一个随机process $N$用于exploration<br>receive initial observation state $s_1$<br>for $t=1, T$ do<br>根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>执行action $a_t$，得到$r_t$和$s_{t+1}$<br>将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’} )$<br>使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic<br>使用sampled policy gradient 更新acotr:</p>
+<script type="math/tex; mode=display">\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|\_{s=s_i, a=\mu(s_i)}\nabla\_{\theta^{\mu} }\mu(s|\theta^{\mu} )|\_{s_i}</script><p>更新target networks:</p>
+<script type="math/tex; mode=display">\theta'\leftarrow \tau \theta + (1-\tau) \theta'</script><p>end for<br>end for</p>
+<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
 
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/04/reinforcement-learning-why-use-baseline/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/04/reinforcement-learning-why-use-baseline/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">reinforcement learning why use baseline ?</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-04 15:46:00" itemprop="dateCreated datePublished" datetime="2019-10-04T15:46:00+08:00">2019-10-04</time>
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
           
         
       
@@ -3322,9 +3084,9 @@ end for</p>
   
     
       
-    
-      
         
+      
+    
       
     
       
