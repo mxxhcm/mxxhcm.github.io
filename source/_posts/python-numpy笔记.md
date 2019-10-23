@@ -10,47 +10,53 @@ mathjax: true
 
 ## numpy.ndarray
 ### np.ndarray的属性
-ndarray.shape        #array的shape
-ndarray.ndim            #array的维度
-ndarray.size            #the number of ndarray in array
-ndarray.dtype        #type of the number in array，dtype可以是'S',int等
-ndarray.itemsize        #size of the element in array
+- ndarray.shape        # shape
+- ndarray.ndim            # 维度
+- ndarray.size            # 元素个数
+- ndarray.itemsize        # size of the element in array
+- ndarray.dtype        # type of the number in array，dtype可以是'S',int等
+- ndarray.T   # 转置
+
 ``` python
 array[array>0].size    #统计一个数组有多少个非零元素，不论array的维度是多少
 ```
 
-### 改变数组数据类型
-将整形数组改为字符型
-``` python
-a = numpy.zeros((3,4),dtype='i')
-a.astype('S')
-```
+### 常用方法
+- ndarray.transpose(axes) # 矩阵转置
+- ndarray.all()
+- ndarray.any()
+- ndarray.reshape(shape[, order]) # reshape 
+- ndarray.resize(new_shape[, refcheck]) # resize
+- ndarray.tolist()  # 转换为list
+- ndarray.squeeze([axis])  # 去掉为1的维度
+- ndarray.repeat(repeats, axis=None) # 重复数组元素，默认进行flatten返回一个一维数组
+- ndarray.flatten([order])  # flatten
+- ndarray.nonzero() # 返回非零元素的索引
+- ndarray.astype('S') # 将整形数组改为字符型
+- ndarray.mean(axis=None, dtype=None, out=None) # 返回数组元素均值
+- ndarray.argmin(axis=None, out=None) # 返回最小元素的索引。
+- ndarray.argmax(axis=None, out=None) # 返回最大元素索引值
+- ndarray.min(axis=None, out=None) # 返回最小值
+- ndarray.round(decimals=0, out=None) # 将数组中的元素按指定的精度进行四舍五入
 
-### 将numpy转为list
-``` python
-a = np.zeros((3,4,5))
-b = a.tolist()
-print(b)
-print(len(b))
-print(len(b[0]))
-# [[[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]], [[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]], [[0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0, 0.0]]]
-# 3
-# 4
-```
-
-### reshape
-``` python
-import numpy as np
-a = np.zeros((3,4,5))
-a.reshape(-1, 1)
-```
-
-### flatten
-``` python
-import numpy as np
-a = np.zeros((3,4,5))
-a.flatten()
-```
+### 其他方法
+- ndarray.ptp()
+- ndarray.clip()
+- ndarray.swapaxes(axis1, axis2)
+- ndarray.var(axis=None, dtype=None, out=None, ddof=0) # 返回数组的方差
+- ndarray.std(axis=None, dtype=None, out=None, ddof=0) # 返回数则的标准差
+- ndarray.swapaxes(axis1, axis2) : 交换两个轴的元素后的矩阵.
+- ndarray.ravel([order]) :返回为展平后的一维数组.
+- ndarray.take(indices, axis=None, out=None, mode=’raise’):获得数组的指定索引的数据，如：
+- numpy.put(a, ind, v, mode=’raise’)：用v的值替换数组a中的ind（索引）的值。Mode可以为raise/wrap/clip。Clip：如果给定的ind超过了数组的大小，那么替换最后一个元素。
+- numpy.tile(A, reps)：根据给定的reps重复数组A，和repeat不同，repeat是重复元素，该方法是重复数组。
+- ndarray.prod(axis=None, dtype=None, out=None)：返回指定轴的所有元素乘机
+- ndarray.cumprod(axis=None, dtype=None, out=None)：返回指定轴的累积，如下：
+- ndarray.cumsum(axis=None, dtype=None, out=None)：返回指定轴的元素累计和。
+- ndarray.sum(axis=None, dtype=None, out=None)：返回指定轴所有元素的和
+- ndarray.trace(offset=0, axis1=0, axis2=1, dtype=None, out=None)：返回沿对角线的数组元素之和
+- ndarray.diagonal(offset=0, axis1=0, axis2=1)：返回对角线的所有元素。
+- ndarray.compress(condition, axis=None, out=None)：返回指定轴上条件下的切片。
 
 ## numpy数组初始化
 - numpy.array()
@@ -308,3 +314,4 @@ axis:对哪个axis进行排序，默认是-1
 2.https://stackoverflow.com/questions/21174961/how-to-create-a-numpy-array-of-all-true-or-all-false
 3.https://docs.scipy.org/doc/numpy/reference/generated/numpy.random.choice.html
 4.https://docs.scipy.org/doc/numpy/reference/generated/numpy.random.permutation.html
+5.https://www.cnblogs.com/bonelee/p/7253966.html
