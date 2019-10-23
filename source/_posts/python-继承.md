@@ -1,6 +1,6 @@
 ---
 title: python 继承
-date: 2019-10-23 21:27:43
+date: 2018-10-23 21:27:43
 tags:
  - python
  - 面向对象
