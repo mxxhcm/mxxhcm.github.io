@@ -137,8 +137,8 @@ Nature-DNQ的框架如下所示
 输入:[batch_size, 84, 84, 4]
 三个卷积层，两个全连接层（包含输出层）
 第一个隐藏层：$32$个步长为$4$的$8\times 8$filters，以及一个relu
-第二个隐藏层：$64$个步长为$2$的$8\times 8$filters，以及一个relu
-第三个隐藏层：$64$个步长为$1$的$8\times 8$filters，以及一个relu
+第二个隐藏层：$64$个步长为$2$的$4\times 4$filters，以及一个relu
+第三个隐藏层：$64$个步长为$1$的$3\times 3$filters，以及一个relu
 第四个隐藏层：$512$个units
 输出层：softmax，输出每个action对应的$Q$值
 
@@ -166,16 +166,16 @@ end for
 #### Settings
 - batch-size: 32
 - replacy memory size: 1000000 frames
-- history length: 4
 - target network update frequency: 10000
 - discount factor: 0.99
-- action repeat: 4
-- paramteter update frequency: 4
+- action repeat: 4 # 就是frame skip
+- history length: 4 # 使用最近的几帧重叠，实际上是16帧
+- paramteter update frequency: 4 # 执行sgd train的frequency
 - learning rate: 0.00025
 - gradient momentum: 0.95
 - squared gradient momentum: 0.95
 - min squared gradient: 0.01
-- initial exploration: 0.1
+- initial exploration: 1
 - final exploration 0.1
 - final exploration frame: 1000000
 - replay start size: 50000
