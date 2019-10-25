@@ -211,3 +211,4 @@ markdown:
 3.https://guides.github.com/features/mastering-markdown/
 4.https://github.com/mxxhcm/use_vim_as_ide#8.4
 5.https://chaxiaoniu.oschina.io/2017/07/10/HexoAddEmoji/
+6.https://www.markdownguide.org/basic-syntax/

@@ -285,11 +285,15 @@ class ExperienceSource
 
     # 2.
     def __iter__(self):
-        states, agent_states, histories, cur_rewards, cur_steps = [], [], [], [], []
         # states记录所有env的所有obs
+        # agent_states记录
+        # histories记录当前的steps_count个experience
+        # cur_rewards记录当前episode的rewards
+        # cur_steps记录当前episode的steps
+        states, agent_states, histories, cur_rewards, cur_steps = [], [], [], [], []
 
-        env_lens = [] 
         # env个数， 记录每个env observation的shape，如果向量化，[>=1, >=1, ...]，如果不向量化[1, 1, 1,...]，不管是否向量化，长度都等于envs个数的list，
+        env_lens = [] 
 
         # 对每一个env进行操作，生成需要记录变量的维度
         for env in self.pool:
@@ -364,6 +368,7 @@ class ExperienceSource
                     if state is not None:
                         # 记录state, action, reward, done，没有记录next_state，使用完之后，更新state[idx] = next_state
                         history.append(Experience(state=state, action=action, reward=r, done=is_done))
+                    # 每一个env在enumerate时都会算一次
                     if len(history) == self.steps_count and iter_idx % self.steps_delta == 0:
                         yield tuple(history)
                     # 更新下一步，states[idx] = next_state
@@ -389,10 +394,36 @@ class ExperienceSource
     """
     重写for循环的iter方法
     """
-    # 3.
+    # 3. 重置total_rewards
     def pop_total_rewards(self)
-    # 4.
+    # 4. 重置total rewards和total steps
     def pop_rewards_steps(self)
+```
+
+### ExperienceSourceFirstLast
+``` 
+class ExperienceSourceFirstLast(ExperienceSource):
+        """
+    def __init__(self, env, agent, gamma, steps_count=1, steps_delta=1, vectorized=False):
+        assert isinstance(gamma, float)
+        super(ExperienceSourceFirstLast, self).__init__(env, agent, steps_count+1, steps_delta, vectorized=vectorized)
+        self.gamma = gamma
+        self.steps = steps_count
+
+    def __iter__(self):
+        for exp in super(ExperienceSourceFirstLast, self).__iter__():
+            if exp[-1].done and len(exp) <= self.steps:
+                last_state = None
+                elems = exp
+            else:
+                last_state = exp[-1].state
+                elems = exp[:-1]
+            total_reward = 0.0
+            for e in reversed(elems):
+                total_reward *= self.gamma
+                total_reward += e.reward
+            yield ExperienceFirstLast(state=exp[0].state, action=exp[0].action,
+                                      reward=total_reward, last_state=last_state)
 ```
 
 ### ExperienceReplayBuffer
