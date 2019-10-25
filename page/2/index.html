@@ -1212,7 +1212,7 @@ DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小�
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-21 19:49:41" itemprop="dateModified" datetime="2019-10-21T19:49:41+08:00">2019-10-21</time>
+                <time title="修改时间：2019-10-25 13:05:23" itemprop="dateModified" datetime="2019-10-25T13:05:23+08:00">2019-10-25</time>
               
             
           </span>
@@ -1266,11 +1266,105 @@ DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小�
         
           
             <h2 id="pytorch-agent-net-library">PyTorch Agent Net library</h2>
-<h2 id="none"></h2>
-<h2 id="参考文献">参考文献</h2>
+<p>Ptan是一个简化RL的库，它主要目标是实现两个问题的平衡：</p>
 <ol>
-<li></li>
+<li>导入库函数，只需要一行命令，就像OpenAI的baselines一样</li>
+<li>从头开始实现</li>
 </ol>
+<p>我们既不想一行命令直接调包，也不想从头开始实现一切。</p>
+<h2 id="内容">内容</h2>
+<ul>
+<li>Agent：</li>
+<li>ActionSelector</li>
+<li>ExperienceSource</li>
+<li>ExperienceSourceBuffer</li>
+<li>others</li>
+</ul>
+<h2 id="action-selector">Action Selector</h2>
+<p>将network的输出转换成具体的action。常用的有</p>
+<ul>
+<li>Argmax：用于使用Q网络的方法，生成离散action。</li>
+<li>Policy-based：网络输出logits或者normalizaed distribution，从这个distribution中采样。</li>
+</ul>
+<p>Action Selector被Agent使用，常用的有：</p>
+<ul>
+<li>ArgmaxActionSelector</li>
+<li>EpsilonGreedyActionSector</li>
+<li>ProbabilityActionSelector</li>
+</ul>
+<h3 id="基类">基类</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">class ActionSelector:</span><br><span class="line">    def __call__(self, scores)</span><br></pre></td></tr></table></figure>
+<h3 id="子类">子类</h3>
+<h4 id="argmaxactionselector">ArgmaxActionSelector</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">class ArgmaxActionSelector(ActionSelector):</span><br><span class="line">    def __call__(self, scores)</span><br></pre></td></tr></table></figure>
+<h4 id="epsilongreedyactionsector">EpsilonGreedyActionSector</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">class EpsilonGreedyActionSector(ActionSelector):</span><br><span class="line">    def __init__(self, epsilon=0.05, selector=None)</span><br><span class="line">    def __call(self, scores)</span><br></pre></td></tr></table></figure>
+<h4 id="probabilityactionselector">ProbabilityActionSelector</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">class ProbabilityActionSelector(ActionSelector):</span><br><span class="line">    def __call__(self, probs)</span><br></pre></td></tr></table></figure>
+<h4 id="对比三个actionselector">对比三个ActionSelector</h4>
+<p>两个GreedySelector：Argmax和EpsilonGreedy，输入都需要是q值，输出是action。<br>
+而Probability需要的输入是概率，输出是动作。</p>
+<h3 id="其他">其他</h3>
+<p>EpsilonTraker，用来记录epsilon的变化。</p>
+<h2 id="agent">Agent</h2>
+<p>将observation转换为actions，常见的三种方法如下：</p>
+<ul>
+<li>Q-function：预测当前observation下所有可能采取的action的$Q$值，选择$\arg \max Q(s)$作为action。</li>
+<li>Policy-based：预测$\pi(s)$的概率分布，从分布中采样。</li>
+<li>Continuous Contrl：预测连续控制参数$\mu(s)$，直接输出action。</li>
+</ul>
+<h3 id="基类-v2">基类</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">class BaseAgent:</span><br><span class="line">    def __initial_state(self)</span><br><span class="line">    def __call__(self, states, agent_states)</span><br><span class="line">        &quot;&quot;&quot;</span><br><span class="line">        :param states: env states list </span><br><span class="line">        :param agent_states: agent state list</span><br><span class="line">        :return: actions tuple, agent_states</span><br><span class="line">        &quot;&quot;&quot;</span><br></pre></td></tr></table></figure>
+<h3 id="子类-v2">子类</h3>
+<h4 id="dqnagent">DQNAgent</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">class DQNAgent(BaseAgent):</span><br><span class="line">    def __init__(self, dqn_model, action_selector, device=&quot;cpu&quot;, preprocessor=default_states_preprocessor)</span><br><span class="line">    def __call__(self, states, agent_states=None)</span><br></pre></td></tr></table></figure>
+<h4 id="policyagent">PolicyAgent</h4>
+<p>输入的model产生离散动作的policy distribution，Policy distribution可以是logtis或者normalized distribution。<br>
+PolicyAgent调用probability对这个distribution进行采样 。PolicyAgent其实就是将model和action selector组装在了一起。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">class PolicyAgent(BaseAgent):</span><br><span class="line">    def __init__(self, model, action_selector=actions.ProbabilityActionSelector(), device=&quot;cpu&quot;, apply_softmax=False, preprocessor=default_states_preprocessor)</span><br><span class="line">    @torch.no_grad()</span><br><span class="line">    def __call__(self, states, agent_states=None)</span><br></pre></td></tr></table></figure>
+<h4 id="actorcriticagent">ActorCriticAgent</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">class ActorCriticAgent</span><br><span class="line">    def __init__(self, model, action_selector=actions.ProbabilityActionSelector(), device=&quot;cpu&quot;, apply_softmax=False, preprocessor=default_states_preprocessor)</span><br><span class="line">    def __call__(self, states, agent_states=None)</span><br></pre></td></tr></table></figure>
+<h3 id="其他-v2">其他</h3>
+<h4 id="default-states-preprocessor">default_states_preprocessor</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">def default_states_preprocessor(states):</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    Convert list of states into the form suitable for model. By default we assume Variable</span><br><span class="line">    :param states: list of numpy arrays with states</span><br><span class="line">    :return: Variable</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    if len(states) == 1:</span><br><span class="line">        np_states = np.expand_dims(states[0], 0)</span><br><span class="line">    else:</span><br><span class="line">        np_states = np.array([np.array(s, copy=False) for s in states], copy=False)</span><br><span class="line">    return torch.tensor(np_states)</span><br></pre></td></tr></table></figure>
+<h4 id="targetnet">TargetNet</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">class TargetNet</span><br><span class="line">    def __init__(self, model)</span><br><span class="line">    def sync(self)</span><br><span class="line">    def alpha_sync(self, alpha)</span><br></pre></td></tr></table></figure>
+<h2 id="experience-source">Experience Source</h2>
+<p>Agent不断的和env进行交互产生一系列的trajectories，Experience可以将这些交互存储起来，重复利用。Experience的主要作用有：</p>
+<ol>
+<li>支持batch，利用GPU的并行计算提高训练效率</li>
+<li>可以对transitions或者trajectory进行预处理。比如n-step DQN。</li>
+<li>???</li>
+</ol>
+<p>常见的ExperienceSource有：</p>
+<ul>
+<li>ExperienceSource</li>
+<li>ExperienceSourceFirstLast</li>
+<li>ExperienceSourceRollouts</li>
+</ul>
+<h3 id="基类-v3">基类</h3>
+<h4 id="experiencesource">ExperienceSource</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">class ExperienceSource </span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    简单的n-step source for single or multiple envs</span><br><span class="line">    每一个experience都有n个Experience entries的list</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    #</span><br><span class="line">    def __init__(self, env, agent, steps_count=2, stepd_delta=1, vectorized=False)</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    #</span><br><span class="line">    def __iter__(self):</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    重写for循环的iter方法</span><br><span class="line">    &quot;&quot;&quot;</span><br><span class="line">    #</span><br><span class="line">    def pop_total_rewards(self)</span><br><span class="line">    #</span><br><span class="line">    def pop_rewards_steps(self)</span><br></pre></td></tr></table></figure>
+<h4 id="experiencereplaybuffer">ExperienceReplayBuffer</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">class ExperienceReplayBuffer</span><br></pre></td></tr></table></figure>
+<h4 id="batchpreprocessor">BatchPreprocessor</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">class BatchPreprocessor</span><br></pre></td></tr></table></figure>
+<h3 id="子类-v3">子类</h3>
+<h4 id="experiencesourcefirstlast">ExperienceSourceFirstLast</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">class ExperienceSourceFirstLast(ExperienceSource):</span><br><span class="line">    #</span><br><span class="line">    def __init__(self, env, agent, gamma, steps_count=1, steps_delta=1, vectorized=False)</span><br><span class="line">    #</span><br><span class="line">    def __iter(self)</span><br></pre></td></tr></table></figure>
+<h4 id="prioritizedreplaybuffer">PrioritizedReplayBuffer</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class PrioritizedReplayBuffer(ExperienceReplayBuffer)</span><br><span class="line">    # 1.</span><br><span class="line">    def __init__(self, experience_source, buffer_size, alpha)</span><br><span class="line">    # 2.</span><br><span class="line">    def _add(self, *args, **kwargs)</span><br><span class="line">    # 3.</span><br><span class="line">    def _sample_proprotional(self, batch_size)</span><br><span class="line">    # 4.</span><br><span class="line">    def sample(self, batch_size, beta)</span><br><span class="line">    # 5.</span><br><span class="line">    def update_priorities(self, idxes, priorities)</span><br></pre></td></tr></table></figure>
+<h4 id="qlearningpreprocessor">QLearningPreprocessor</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">class QLearningPreprocessor(BatchPreprocessor)</span><br></pre></td></tr></table></figure>
+<h3 id="其他-v3">其他</h3>
+<h4 id="experiencesourcerollouts">ExperienceSourceRollouts</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">class ExperienceSourceRollouts:</span><br><span class="line">    #</span><br><span class="line">    def __init__(self, env, agent, gamma, setps_count=5)</span><br><span class="line">    # </span><br><span class="line">    def __iter__(self)</span><br><span class="line">    #</span><br><span class="line">    def pop_total_rewards(self)</span><br><span class="line">    # </span><br><span class="line">    def pop_rewards_steps(self)</span><br></pre></td></tr></table></figure>
+<h4 id="experiencesourcebuffer">ExperienceSourceBuffer</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">class ExperienceSourceBuffer</span><br></pre></td></tr></table></figure>
+<h4 id="experiencereplaynaive">ExperienceReplayNaive</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">class ExperienceReplayNaive</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://github.com/Shmuma/ptan/blob/master/docs/intro.ipynb" target="_blank" rel="noopener">https://github.com/Shmuma/ptan/blob/master/docs/intro.ipynb</a></p>
 
           
         
