@@ -8,19 +8,19 @@ categories: python
 ---
 
 ## PyTorch Agent Net library
+### 简介
 Ptan是一个简化RL的库，它主要目标是实现两个问题的平衡：
 1. 导入库函数，只需要一行命令，就像OpenAI的baselines一样
 2. 从头开始实现
 
 我们既不想一行命令直接调包，也不想从头开始实现一切。
 
-## 内容
+### 模块
 - Agent：
 - ActionSelector
 - ExperienceSource
 - ExperienceSourceBuffer
 - others
-
 
 ## Action Selector
 将network的输出转换成具体的action。常用的有
