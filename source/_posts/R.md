@@ -13,45 +13,62 @@ x <- c(1, 3, 2,5)
 # 也可以用等号
 x = c(1, 6, 2)
 ```
+
 ### 长度
 ```R
 x = c(1, 6, 2)
 length(x)
 ```
-### 查看
+
+### 删除varaibles
 ``` R
 rm(x)   # 删除x
 rm(list=ls())   # 
 ```
-### 删除
+
+### 查看variables
 ``` R
 ls()
 ```
+
 ### 矩阵
 ``` R
 #matrix()    # 创建一个矩阵
 matrix(data=c(1,2,3,4), nrow=2, ncol=2,byrow=TRUE) # byrow=TRUE表示先行后列
 ```
+
 ### 转置
 ``` R
 a = matrix(c(1,2,3,4), 4, 4)
 at = t(a)
 ```
+
 ### 幂和开方
 ``` R
 x^3
+poly(x, 4)
 sqrt(x)
 ```
+
 ### 正态分布
 ``` R
+# 默认的均值和方差是0,1
 x = rnorm(n=10, mean=50, std=0.1)
 y = x + rnorm(50)
 cor(x,y) # 相关系数
 ```
+
+### 均匀分布
+``` R
+x = runif(100, -100, 100)
+```
+
 ### 随机数种子
 ``` R
 set.seed(1303)
+# 设置完随机数之后，产生的随机数都是可以复现的
 ```
+
 ### 均值和方差，标准差
 ``` R
 set.seed(3)
@@ -60,6 +77,7 @@ mean(y)
 var(y)
 sd(y)
 ```
+
 ### seq创建序列
 ```
 # seq(a,b)
@@ -169,8 +187,80 @@ install.packages("ISLR")
 library(ISLR)
 ```
 
+## 分支
 
+### for循环
+``` 
+for (val in sequence)
+{
+statement
+}
+
+# 示例
+x <- c(2,5,3,9,8,11,6)
+count <- 0
+for (val in x) {
+if(val %% 2 == 0)  count = count+1
+}
+print(count)
+
+```
+
+### while 循环
+```
+while (TRUE)
+{
+    print("hello")
+}
+```
+
+## if 语句
+```
+if (3 > 2 && 2 < 3):
+    print(
+```
+
+## 函数
+```
+rand_interval = function(min, max, number)
+{
+  sd = (max.numeric()-min.numeric())/3
+  count = 0
+  res = 1:number
+  while(TRUE)
+  {
+    x = rnorm(1, mean=0,sd=sd)
+    if(x >= min && x <= max)
+    {
+      count = count+1
+      res[count] = x
+    }
+  }
+  return (res)
+}
+
+min = -100
+max = 100
+number = 20
+x1 = rand_interval(min, max, number)
+
+```
+
+
+## 类型转换
+### 字符转数值
+```
+as.numeric(str(3))
+```
+
+## 写入文件
+```
+library("xlsx")
+data = matrix = c()
+write.xlsx(data, file = "myworkbook.xlsx", append = FALSE)
+```
+## 回归
 
 
 ## 参考文献
-
+1.https://www.datamentor.io/r-programming/for-loop/
