@@ -1,11 +1,12 @@
 ---
-title: Asymptotically Efficient 渐进有效性
+title: asymptotically efficient 渐进有效性
 date: 2019-09-18 14:55:50
 tags:
  - 渐进有效性
  - asymptotically efficient
  - cramer-rao bound
-categories: 概率论
+ - 概率论与统计
+categories: 概率论与统计
 mathjax: true
 ---
 

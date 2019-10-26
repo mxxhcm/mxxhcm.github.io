@@ -6,7 +6,8 @@ tags:
  - fisher information
  - 概率论
  - 最大似然估计
-categories: 概率论
+ - 概率论与统计
+categories: 概率论与统计
 mathjax: true
 ---
 

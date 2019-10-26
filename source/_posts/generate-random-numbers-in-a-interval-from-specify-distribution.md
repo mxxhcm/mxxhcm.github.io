@@ -2,8 +2,8 @@
 title: generate random numbers in a interval from specify distribution
 date: 2019-10-26 10:28:22
 tags:
- - 概率论
-categories: 概率论
+ - 概率论与统计
+categories: 概率论与统计
 ---
 
 ## 问题

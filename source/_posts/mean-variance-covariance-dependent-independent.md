@@ -1,15 +1,16 @@
 ---
-title: 均值、方差、矩、协方差、独立和相关
+title: mean, variance, covarance, dependent and independent
 date: 2019-08-08 19:01:15
 tags:
- - 概率论
+ - 概率论与统计
  - 均值
  - 方差
  - 样本均值
  - 样本方差
-categories: 概率论
+categories: 概率论与统计
 mathjax: true
 ---
+
 ## 均值（期望）
 ### 简单介绍
 在概率论和统计学中，一个离散型随机变量的期望值是试验中每次可能的结果乘以相应概率的加和。

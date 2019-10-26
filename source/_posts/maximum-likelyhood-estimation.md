@@ -5,9 +5,9 @@ tags:
  - 参数估计
  - 点估计
  - 最大似然估计
- - 概率论
+ - 概率论与统计 
  - 机器学习
-categories: 概率论
+categories: 概率论与统计
 mathjax: true
 ---
 

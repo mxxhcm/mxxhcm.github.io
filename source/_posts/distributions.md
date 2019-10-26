@@ -1,5 +1,5 @@
 ---
-title: 各类分布
+title: distributions
 date: 2019-07-31 11:25:10
 tags:
  - 概率论
@@ -8,7 +8,8 @@ tags:
  - 伯努利分布
  - 泊松分布
  - beta分布
-categories: 概率论
+ - 概率论与统计
+categories: 概率论与统计
 mathjax: true
 ---
 
