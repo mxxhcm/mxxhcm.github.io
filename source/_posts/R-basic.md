@@ -1,9 +1,25 @@
 ---
-title: R
+title: R basic
 date: 2018-10-21 19:50:55
 tags:
-categories:
+ - R
+categories: R
 ---
+
+
+## 矩阵索引
+``` R
+# 下标都是从0开始
+A=matrix(1:16, 4, 4)
+A
+# 矩阵下标
+A[2,3]
+# 不包含
+A[-c(1,3)] # 不包含第一行和第三行
+A[,-c(2)] # 不包含第二行
+# 矩阵维度
+dim(A)
+```
 
 ## 常用命令
 ### 赋值
@@ -108,20 +124,6 @@ fa = (f - t(f)) /2
 contour(x, y, fa)
 image(x, y, fa)
 persp(x, y, fa)
-```
-
-## 矩阵索引
-``` R
-# 下标都是从0开始
-A=matrix(1:16, 4, 4)
-A
-# 矩阵下标
-A[2,3]
-# 不包含
-A[-c(1,3)] # 不包含第一行和第三行
-A[,-c(2)] # 不包含第二行
-# 矩阵维度
-dim(A)
 ```
 
 ## 加载数据 
@@ -246,7 +248,6 @@ x1 = rand_interval(min, max, number)
 
 ```
 
-
 ## 类型转换
 ### 字符转数值
 ```
@@ -259,8 +260,6 @@ library("xlsx")
 data = matrix = c()
 write.xlsx(data, file = "myworkbook.xlsx", append = FALSE)
 ```
-## 回归
-
 
 ## 参考文献
 1.https://www.datamentor.io/r-programming/for-loop/
