@@ -327,6 +327,338 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/04/linux-shadowsocks服务端以及客户端配置/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/04/linux-shadowsocks服务端以及客户端配置/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">shadowsocks服务端以及客户端配置</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-04 13:03:57" itemprop="dateCreated datePublished" datetime="2019-03-04T13:03:57+08:00">2019-03-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-19 11:39:56" itemprop="dateModified" datetime="2019-06-19T11:39:56+08:00">2019-06-19</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="服务器端配置">服务器端配置</h2>
+<p>首先需要有一个VPS账号，vultr,digitalocean,搬瓦工等等都行。<br>
+首先到下面两个网站检测22端口是否开启，如果关闭的话，vps换个ip把。。<br>
+<a href="http://tool.chinaz.com/port" target="_blank" rel="noopener">http://tool.chinaz.com/port</a><br>
+<a href="https://www.yougetsignal.com/tools/open-ports/" target="_blank" rel="noopener">https://www.yougetsignal.com/tools/open-ports/</a></p>
+<h3 id="启用bbr加速">启用BBR加速</h3>
+<p>~#:apt update<br>
+~#:apt upgrade<br>
+~#:echo “net.core.default_qdisc=fq” &gt;&gt; /etc/sysctl.conf<br>
+~#:echo “net.ipv4.tcp_congestion_control=bbr” &gt;&gt; /etc/sysctl.conf<br>
+~#:sysctl -p<br>
+上述命令就完成了BBR加速，执行以下命令验证：<br>
+~#:lsmod |grep bbr<br>
+看到输出包含tcp_bbr就说明已经成功了。</p>
+<h3 id="搭建shadowsocks-server">搭建shadowsocks server</h3>
+<h4 id="安装shadowsocks-server">安装shadowsocks server</h4>
+<p>~#:apt install python-pip<br>
+~#:pip install shadowsocks<br>
+需要说一下的是，shadowsocks目前还不支持python3.5及以上版本，上次我把/usr/bin/python指向了python3.6，就是系统默认的python指向了python3.6，然后就gg了。一定要使用Python 2.6,2.7,3.3,3.4中的一个版本才能使用。。</p>
+<h4 id="创建shadowsocks配置文件">创建shadowsocks配置文件</h4>
+<p>如果你的VPS支持ipv6的话，那么可以开多进程分别运行ipv4和ipv6的shadowsocks server。本地只有ipv4的话，可以用本地ipv4访问ipv6，从而访问byr等网站，但是六维空间对此做了屏蔽。如果本地有ipv6的话，还可以用本地的ipv6访问ipv6实现校园网不走ipv4流量。</p>
+<h5 id="ipv4配置">ipv4配置</h5>
+<p>~#:vim /etc/shadowsocks_v4.json<br>
+配置文件如下</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"><span class="attr">"server"</span>:<span class="string">"0.0.0.0"</span>,</span><br><span class="line"><span class="attr">"server_port"</span>:<span class="string">"你的端口号"</span>,</span><br><span class="line"><span class="attr">"local_address"</span>:<span class="string">"127.0.0.1"</span>,</span><br><span class="line"><span class="attr">"local_port"</span>:<span class="number">1080</span>,</span><br><span class="line"><span class="attr">"password"</span>:<span class="string">"你的密码"</span>,</span><br><span class="line"><span class="attr">"timeout"</span>:<span class="number">600</span>,</span><br><span class="line"><span class="attr">"method"</span>:<span class="string">"aes-256-cfb"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h5 id="ipv6配置">ipv6配置</h5>
+<p>~#:vim /etc/shadowsocks_v6.json<br>
+配置文件如下</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"><span class="attr">"server"</span>:<span class="string">"::"</span>,</span><br><span class="line"><span class="attr">"server_port"</span>:<span class="string">"你的端口号"</span>,</span><br><span class="line"><span class="attr">"local_address"</span>:<span class="string">"127.0.0.1"</span>,</span><br><span class="line"><span class="attr">"local_port"</span>:<span class="number">1080</span>,</span><br><span class="line"><span class="attr">"password"</span>:<span class="string">"你的密码"</span>,</span><br><span class="line"><span class="attr">"timeout"</span>:<span class="number">600</span>,</span><br><span class="line"><span class="attr">"method"</span>:<span class="string">"aes-256-cfb"</span></span><br><span class="line">&#125;</span><br><span class="line">``` </span><br><span class="line">注意这两个文件的server_port一定要不同，以及双引号必须是英文引号。</span><br><span class="line">##### 1.2.2.3.手动运行shadowsocks server</span><br><span class="line">~#:ssserver -c /etc/shadowsock_v4.json -d start --pid-file ss1.pid</span><br><span class="line">~#:ssserver -c /etc/shadowsock_v6.json -d start --pid-file ss2.pid</span><br><span class="line">注意这里要给两条命令分配不同的进程号。</span><br><span class="line"></span><br><span class="line">### 设置shadowsocks server开机自启</span><br><span class="line">如果重启服务器的话，就需要重新手动执行上述命令，这里我们可以把它写成开机自启脚本。</span><br><span class="line">~#:vim /etc/init.d/shadowsocks_v4</span><br><span class="line">内容如下：</span><br><span class="line">``` shell</span><br><span class="line">#!/bin/sh</span><br><span class="line">### BEGIN INIT INFO</span><br><span class="line"># Provides:          apache2</span><br><span class="line"># Required-Start:    $local_fs $remote_fs $network $syslog</span><br><span class="line"># Required-Stop:     $local_fs $remote_fs $network $syslog</span><br><span class="line"># Default-Start:     2 3 4 5</span><br><span class="line"># Default-Stop:      0 1 6</span><br><span class="line"># Short-Description: apache2 service</span><br><span class="line"># Description:       apache2 service daemon</span><br><span class="line">### END INIT INFO</span><br><span class="line">start()&#123;</span><br><span class="line">  ssserver -c /etc/shadowsocks_v4.json -d start --pid-file ss2.pid</span><br><span class="line">&#125;</span><br><span class="line">stop()&#123;</span><br><span class="line">  ssserver -c /etc/shadowsocks_v4.json -d stop --pid-file ss2.pid</span><br><span class="line">&#125;</span><br><span class="line">case "$1" in</span><br><span class="line">start)</span><br><span class="line">  start</span><br><span class="line">  ;;</span><br><span class="line">stop)</span><br><span class="line">  stop</span><br><span class="line">  ;;</span><br><span class="line">restart)</span><br><span class="line">  stop</span><br><span class="line">  start</span><br><span class="line">  ;;</span><br><span class="line">*)</span><br><span class="line">  echo "Uasage: $0 &#123;start|reload|stop&#125;$"</span><br><span class="line">  exit 1</span><br><span class="line">  ;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+<p>~#:vim /etc/init.d/shadowsocks_v6<br>
+内容如下：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line"><span class="meta">#</span>## BEGIN INIT INFO</span><br><span class="line"><span class="meta">#</span> Provides:          apache2</span><br><span class="line"><span class="meta">#</span> Required-Start:    $local_fs $remote_fs $network $syslog</span><br><span class="line"><span class="meta">#</span> Required-Stop:     $local_fs $remote_fs $network $syslog</span><br><span class="line"><span class="meta">#</span> Default-Start:     2 3 4 5</span><br><span class="line"><span class="meta">#</span> Default-Stop:      0 1 6</span><br><span class="line"><span class="meta">#</span> Short-Description: apache2 service</span><br><span class="line"><span class="meta">#</span> Description:       apache2 service daemon</span><br><span class="line"><span class="meta">#</span>## END INIT INFO</span><br><span class="line">start()&#123;</span><br><span class="line">  ssserver -c /etc/shadowsocks_v6.json -d start --pid-file ss1.pid</span><br><span class="line">&#125;</span><br><span class="line">stop()&#123;</span><br><span class="line">  ssserver -c /etc/shadowsocks_v6.json -d stop --pid-file ss1.pid</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">case "$1" in</span><br><span class="line">start)</span><br><span class="line">  start</span><br><span class="line">  ;;</span><br><span class="line">stop)</span><br><span class="line">  stop</span><br><span class="line">  ;;</span><br><span class="line">restart)</span><br><span class="line">  stop</span><br><span class="line">  start</span><br><span class="line">  ;;</span><br><span class="line">*)</span><br><span class="line">  echo "Uasage: $0 &#123;start|reload|stop&#125;$"</span><br><span class="line">  exit 1</span><br><span class="line">  ;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+<p>然后执行下列命令即可：<br>
+~#:chmod a+x /etc/init.d/shadowsocks_v4<br>
+~#:chmod a+x /etc/init.d/shadowsocks_v6<br>
+~#:update-rc.d shadowsocks_v4 defaults<br>
+~#:update-rc.d shadowsocks_v6 defaults</p>
+<p>至此，服务器端配置完成。</p>
+<h2 id="服务端自动配置脚本">服务端自动配置脚本</h2>
+<p><a href="https://github.com/mxxhcm/code/tree/master/shell/ss" target="_blank" rel="noopener">地址</a><br>
+首先将该文件中所有文件复制到vps上，然后执行<br>
+~#:sh install_ss_server.sh<br>
+即可</p>
+<h3 id="补充说明">补充说明</h3>
+<p>该文件夹共包含五个文件<br>
+shadowsocks_v4.json为ipv4 ss配置文件，可根据自己的需要修改端口号和密码<br>
+shadowsocks_v6.json为ipv6 ss配置文件，可根据自己的需要修改端口号和密码<br>
+shadowsocks_v4为ipv4 ss自启动文件，无需修改<br>
+shadowsocks_v6为ipv6 ss自启动文件，无需修改<br>
+install_ss_server.sh为安装脚本，该脚本同时配置ipv4和ipv6 ss server。可根据自己需要自行选择。</p>
+<h2 id="客户端配置">客户端配置</h2>
+<h3 id="windows客户端配置">Windows客户端配置</h3>
+<h4 id="安装shadowsock客户端">安装shadowsock客户端</h4>
+<p>到该网址 <a href="https://github.com/shadowsocks/shadowsocks-windows/releases" target="_blank" rel="noopener">https://github.com/shadowsocks/shadowsocks-windows/releases</a> 下载相应的windows客户端程序。<br>
+然后配置服务器即可～</p>
+<h3 id="linux客户端配置">Linux客户端配置</h3>
+<h4 id="安装shadowsocks程序">安装shadowsocks程序</h4>
+<p>~$:sudo pip install shadowsocks</p>
+<h4 id="运行shadowsocks客户端程序">运行shadowsocks客户端程序</h4>
+<p>~$:sudo vim /etc/shadowsocks.json<br>
+填入以下配置文件<br>
+{<br>
+“server”:“填上自己的shadowsocks server ip地址”,<br>
+“server_port”:“8888”,//填上自己的shadowsocks server 端口&quot;<br>
+“local_port”:1080,<br>
+“password”:“mxxhcm150929”,<br>
+“timeout”:600,<br>
+“method”:“aes-256-cfb”<br>
+}</p>
+<p>接下来可以执行以下命令运行shadowsocks客户端：<br>
+~$:sudo sslocal -c /etc/shadowsocks.json<br>
+然后报错：</p>
+<blockquote>
+<p>INFO: loading config from /etc/shadowsocks.json<br>
+2019-03-04 14:37:49 INFO     loading libcrypto from libcrypto.so.1.1<br>
+Traceback (most recent call last):<br>
+File “/usr/local/bin/sslocal”, line 11, in <module><br>
+load_entry_point(‘shadowsocks==2.8.2’, ‘console_scripts’, ‘sslocal’)()<br>
+File “/usr/local/lib/python2.7/dist-packages/shadowsocks/local.py”, line 39, in main<br>
+config = shell.get_config(True)<br>
+File “/usr/local/lib/python2.7/dist-packages/shadowsocks/shell.py”, line 262, in get_config<br>
+check_config(config, is_local)<br>
+File “/usr/local/lib/python2.7/dist-packages/shadowsocks/shell.py”, line 124, in check_config<br>
+encrypt.try_cipher(config[‘password’], config[‘method’])<br>
+File “/usr/local/lib/python2.7/dist-packages/shadowsocks/encrypt.py”, line 44, in try_cipher<br>
+Encryptor(key, method)<br>
+File “/usr/local/lib/python2.7/dist-packages/shadowsocks/encrypt.py”, line 83, in <strong>init</strong><br>
+random_string(self._method_info[1]))<br>
+File “/usr/local/lib/python2.7/dist-packages/shadowsocks/encrypt.py”, line 109, in get_cipher<br>
+return m[2](method, key, iv, op)<br>
+File “/usr/local/lib/python2.7/dist-packages/shadowsocks/crypto/openssl.py”, line 76, in <strong>init</strong><br>
+load_openssl()<br>
+File “/usr/local/lib/python2.7/dist-packages/shadowsocks/crypto/openssl.py”, line 52, in load_openssl<br>
+libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)<br>
+File “/usr/lib/python2.7/ctypes/<strong>init</strong>.py”, line 379, in <strong>getattr</strong><br>
+func = self.<strong>getitem</strong>(name)<br>
+File “/usr/lib/python2.7/ctypes/<strong>init</strong>.py”, line 384, in <strong>getitem</strong><br>
+func = self._FuncPtr((name_or_ordinal, self))<br>
+AttributeError: /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1: undefined symbol: EVP_CIPHER_CTX_cleanup</module></p>
+</blockquote>
+<p>按照参考文献4的做法，是在openssl 1.1.0版本中放弃了EVP_CIPHER_CTX_cleanup函数</p>
+<blockquote>
+<p>EVP_CIPHER_CTX was made opaque in OpenSSL 1.1.0. As a result, EVP_CIPHER_CTX_reset() appeared and EVP_CIPHER_CTX_cleanup() disappeared.<br>
+EVP_CIPHER_CTX_init() remains as an alias for EVP_CIPHER_CTX_reset().</p>
+</blockquote>
+<p>将openssl库中的EVP_CIPHER_CTX_cleanup改为EVP_CIPHER_CTX_reset即可。<br>
+再次执行以下命令，查看shadowsocks安装位置<br>
+~#:pip install shadowsocks<br>
+Requirement already satisfied: shadowsocks in /usr/local/lib/python2.7/dist-packages<br>
+~#:cd /usr/local/lib/python2.7/dist-packages/shadowsocks<br>
+~#:vim crypto/openssl.py<br>
+搜索cleanup，将其替换为reset<br>
+具体位置在第52行libcrypto.EVP_CIPHER_CTX_cleanup.argtypes = (c_void_p,)和第111行libcrypto.EVP_CIPHER_CTX_cleanup(self._ctx)</p>
+<h4 id="手动运行后台挂起">手动运行后台挂起</h4>
+<p>将所有的log重定向到~/.log/sslocal.log文件中<br>
+~$:mkdir ~/.log<br>
+~$:touch ~/.log/ss-local.log<br>
+~$:nohup sslocal -c /etc/shadowsocks_v6.json &lt;/dev/null &amp;&gt;&gt;~/.log/ss-local.log &amp;</p>
+<h4 id="开机自启shadowsocks-client">开机自启shadowsocks client</h4>
+<p>但是这样子的话，每次开机都要重新运行上述命令，太麻烦了。可以写个开机自启脚本。执行以下命令：<br>
+~$:sudo vim /etc/init.d/shadowsocks<br>
+内容为以下shell脚本</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>!/bin/sh</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span>## BEGIN INIT INFO</span><br><span class="line"><span class="meta">#</span> Provides:          shadowsocks local</span><br><span class="line"><span class="meta">#</span> Required-Start:    $local_fs $remote_fs $network $syslog</span><br><span class="line"><span class="meta">#</span> Required-Stop:     $local_fs $remote_fs $network $syslog</span><br><span class="line"><span class="meta">#</span> Default-Start:     2 3 4 5</span><br><span class="line"><span class="meta">#</span> Default-Stop:      0 1 6</span><br><span class="line"><span class="meta">#</span> Short-Description: shadowsocks service</span><br><span class="line"><span class="meta">#</span> Description:       shadowsocks service daemon</span><br><span class="line"><span class="meta">#</span>## END INIT INFO</span><br><span class="line">start()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d start</span><br><span class="line">&#125;</span><br><span class="line">stop()&#123;</span><br><span class="line">　　  sslocal -c /etc/shadowsocks.json -d stop</span><br><span class="line">&#125;</span><br><span class="line">case “$1” in</span><br><span class="line">start)</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">stop)</span><br><span class="line">　　　stop</span><br><span class="line">　　　;;</span><br><span class="line">reload)</span><br><span class="line">　　　stop</span><br><span class="line">　　　start</span><br><span class="line">　　　;;</span><br><span class="line">\*)</span><br><span class="line">　　　echo “Usage: $0 &#123;start|reload|stop&#125;”</span><br><span class="line">　　　exit 1</span><br><span class="line">　　　;;</span><br><span class="line">esac</span><br></pre></td></tr></table></figure>
+<p>然后执行以下命令即可：<br>
+~$:sudo chomod a+x /etc/init.d/shadowsocks<br>
+~$:sudo update_rc.d shadowsocks defaults<br>
+上述命令执行完成以后，进行测试<br>
+~$:sudo service shadosowcks start</p>
+<h4 id="配置代理">配置代理</h4>
+<p>上一步的目的是建立了shadowsocks服务的本地客户端，socks5流量会走该通道，但是浏览器的网页的流量是https的，我们需要配置相应的代理，将https流量转换为socks5流量，走ss客户端到达ss服务端。当然，也可以把其他各种流量，如tcp,udp等各种流量都转换为socks5流量，这个可以通过全局代理实现，也可以通过添加特定的代理规则实现。</p>
+<h5 id="配置全局代理">配置全局代理</h5>
+<p>如下图所示，添加ubuntu socks5系统代理：</p>
+<p>然后就可以成功上网了。</p>
+<h5 id="使用switchyomega配置chrome代理">使用SwitchyOmega配置chrome代理</h5>
+<p>首先到 <a href="https://github.com/FelisCatus/SwitchyOmega/releases" target="_blank" rel="noopener">https://github.com/FelisCatus/SwitchyOmega/releases</a> 下载SyitchyOmega.crx。然后在chrome的地址栏输入chrome://extensions，将刚才下载的插件拖进去。<br>
+然后在浏览器右上角就有了这个插件，接下来配置插件。如下图：<br>
+<img src="https:" alt="mxx"><br>
+直接配置proxy，添加如图所示的规则，这样chrome打开的所有网站都是走代理的。</p>
+<h4 id="使用privoxy让terminal走socks5">使用privoxy让terminal走socks5</h4>
+<p>~$:sudo apt install privoxy<br>
+~$:sudo vim /etc/privoxy/config<br>
+取消下列行的注释，或者添加相应条目<br>
+forward-socks5 / 127.0.0.1:1080 . # SOCKS5代理地址<br>
+listen-address 127.0.0.1:8118     # HTTP代理地址<br>
+forward 10.*.*.*/ .               # 内网地址不走代理<br>
+forward .abc.com/ .             # 指定域名不走代理<br>
+重启privoxy服务<br>
+~$:sudo service privoxy restart<br>
+在bashrc中添加如下环境变量<br>
+export http_proxy=&quot;<a href="http://127.0.0.1:8118" target="_blank" rel="noopener">http://127.0.0.1:8118</a>&quot;<br>
+export https_proxy=“<a href="http://127.0.0.1:8118" target="_blank" rel="noopener">http://127.0.0.1:8118</a>”</p>
+<p>~$:source ~/.bashrc<br>
+~$:curl.gs</p>
+<h2 id="参考文献">参考文献</h2>
+<ol>
+<li><a href="http://godjose.com/2017/06/14/new-article/" target="_blank" rel="noopener">http://godjose.com/2017/06/14/new-article/</a></li>
+<li><a href="https://www.polarxiong.com/archives/%E6%90%AD%E5%BB%BAipv6-VPN-%E8%AE%A9ipv4%E4%B8%8Aipv6-%E4%B8%8B%E8%BD%BD%E9%80%9F%E5%BA%A6%E6%8F%90%E5%8D%87%E5%88%B0100M.html" target="_blank" rel="noopener">https://www.polarxiong.com/archives/搭建ipv6-VPN-让ipv4上ipv6-下载速度提升到100M.html</a></li>
+<li><a href="https://blog.csdn.net/li1914309758/article/details/86510127" target="_blank" rel="noopener">https://blog.csdn.net/li1914309758/article/details/86510127</a></li>
+<li><a href="https://blog.csdn.net/blackfrog_unique/article/details/60320737" target="_blank" rel="noopener">https://blog.csdn.net/blackfrog_unique/article/details/60320737</a></li>
+<li><a href="https://blog.csdn.net/qq_31851531/article/details/78410146" target="_blank" rel="noopener">https://blog.csdn.net/qq_31851531/article/details/78410146</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/02/dqn/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1867,7 +2199,7 @@ L(q,\theta_A) &amp;= \sum_{i=1}^5 \sum_zp(z|x_i, \theta_A, \theta_B)log p(x_i|\t
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-26 16:38:31" itemprop="dateModified" datetime="2019-10-26T16:38:31+08:00">2019-10-26</time>
+                <time title="修改时间：2019-10-27 20:31:53" itemprop="dateModified" datetime="2019-10-27T20:31:53+08:00">2019-10-27</time>
               
             
           </span>
@@ -2010,7 +2342,7 @@ $$ \sigma^2 = t = \frac{\sum_{i=1}^N (x_i) -\mu)^2 }{N} $$</p>
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/06/bayesian-networks/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/06/bayesian-classifier-bayesian-networks/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -2030,7 +2362,7 @@ $$ \sigma^2 = t = \frac{\sum_{i=1}^N (x_i) -\mu)^2 }{N} $$</p>
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/01/06/bayesian-networks/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">AI chapter 14 Probabilistic reasoning</a>
+                <a href="/2019/01/06/bayesian-classifier-bayesian-networks/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">bayesian classifier bayesian networks</a>
               
             
           </h1>
@@ -2072,7 +2404,7 @@ $$ \sigma^2 = t = \frac{\sum_{i=1}^N (x_i) -\mu)^2 }{N} $$</p>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-10-27 19:49:46" itemprop="dateModified" datetime="2019-10-27T19:49:46+08:00">2019-10-27</time>
+                <time title="修改时间：2019-10-27 21:59:00" itemprop="dateModified" datetime="2019-10-27T21:59:00+08:00">2019-10-27</time>
               
             
           </span>
@@ -2125,38 +2457,36 @@ $$ \sigma^2 = t = \frac{\sum_{i=1}^N (x_i) -\mu)^2 }{N} $$</p>
       
         
           
-            <p>在这里加一些自己的总结，这一章主要讲的是贝叶斯网络，首先介绍了贝叶斯网络的定义，是一个有向无环图，节点代表随机变量，边代表因果关系。这里给出了贝叶斯公式的两个意义，一个是数值意义，用贝叶斯网络表示全概率分布，另一个是拓扑意义，给定某个节点的父节点，这个节点条件独立于所有它的非后裔节点，或者给定某个节点的马尔科夫毯，这个节点条件独立于所有其他节点。接下来讲了条件独立的高效表示，噪音或模型表示离散型父节点和离散型子节点之间的关系，用参数化模型表示连续型父节点和连续型子节点之间的关系，用probit模型或者logit模型表示连续型父节点和离散型子节点之间的关系。接下来就介绍了贝叶斯精确推理计算后验分布的集中方法，一种是枚举推理，一种是消元法。因为精确推理的复杂度太高了，没有实际应用价值，所以就给出了一些估计推理的方法，直接采样，拒绝采样，以及可能性加权，还有另一类采样方法，蒙特卡洛算法，主要介绍了吉布森采样，大概就是这些。后面的两个小节没有看。<br>
-贝叶斯网络的一个基本任务就是求后验概率。<br>
-在AI这本书中，贝叶斯网络中的变量被分为了证据变量(evidence variable)，隐变量(hidden variable)和查询变量(query variable)。</p>
-<p>第$13$章讲的是概率论的基础知识并且强调了在概率表示中独立(independence)和条件独立(conditional independence)之间的关系。本章引入了一个系统的方式–贝叶斯网络去表现独立和条件独立之间的关系。概括的来说，本章的内容可以分为以下五部分：</p>
+            <h2 id="概述">概述</h2>
+<p>朴素贝叶斯分类假设属性之间是条件独立的，而在实际中，属性与属性之间难免会有一定的相关性，而不是完全独立，这时就不能用朴素贝叶斯分类器了。<br>
+贝叶斯网络不要求给定类的所有属性都条件独立，而是允许一些属性条件独立，一些属性不条件独立，它可以表现独立和条件独立之间的关系，然后根据这些关系计算后验概率。<br>
+概括的来说，本文的内容可以分为以下几个部分：</p>
 <ol>
-<li>首先定义了贝叶斯网络的语法(syntax)和语义(semantics)，并且展示了如何用贝叶斯网络表示不确定知识。</li>
-<li>接下来介绍了概率推理在最坏的情况下是很难计算的(computionally intratable)，但是在很多情况下可以高效的完成。</li>
-<li>介绍了一系列在精确推理(exact inference)不可行时可以采用的估计推理算法(approximate inference algorithms)。</li>
-<li>介绍了一些在概率论中可以被应用到带对象和关系的世界的方法，即与命题，表示相对的一阶模型。</li>
-<li>最后，介绍了一些其它不确定性推理的方法。</li>
+<li>首先定义了贝叶斯网络的语法(syntax)和语义(semantics)，并且展示了如何用贝叶斯网络表示不确定知识。贝叶斯网络是一个有向无环图，节点代表随机变量，边代表因果关系。贝叶斯公式的两个意义，一个是数值意义，用贝叶斯网络表示全概率分布，另一个是拓扑意义，给定某个节点的父节点，这个节点条件独立于所有它的非后裔节点，或者给定某个节点的马尔科夫毯，这个节点条件独立于所有其他节点。</li>
+<li>条件独立的有效表示，噪音或模型表示离散型父节点和离散型子节点之间的关系，用参数化模型表示连续型父节点和连续型子节点之间的关系，用probit模型或者logit模型表示连续型父节点和离散型子节点之间的关系。</li>
+<li>贝叶斯精确推理计算后验分布的两种方法，一种是枚举推理，一种是消元法。</li>
+<li>因为精确推理的复杂度太高了，没有实际应用价值，给出了估计推理的方法，直接采样，拒绝采样，以及可能性加权，还有另一类采样方法，蒙特卡洛算法，主要介绍了吉布森采样，大概就是这些。</li>
 </ol>
-<h2 id="不确定域的知识表示-representing-knowledge-in-an-uncertain-domain">不确定域的知识表示(Representing knowledge in an uncertain domain)</h2>
-<p>我们可以根据联合概率分布(full joint probability distribution)算出任何想要的概率值，但是随着随机变量个数的增加，联合概率分布可能会变得特别大。此外，一个一个的指定可能世界中的概率是不可行的。</p>
-<h3 id="贝叶斯网络的定义">贝叶斯网络的定义</h3>
-<p>如果在联合概率中引入独立和条件独立，将会显著的减少定义联合概率分布所需要的概率。所以这节就介绍了贝叶斯网络来表示变量之间的依赖关系。本质上贝叶斯网络可以表示任何联合概率分布，而且在很多情况下是非常精确地表示。一个贝叶斯网络是一个有向图，图中的节点包含量化后的概率信息。具体的说明如下：</p>
+<h2 id="贝叶斯网络的定义">贝叶斯网络的定义</h2>
+<p>我们可以根据联合概率分布(full joint probability distribution)算出任何想要的概率值（边缘分布什么的），但是随着随机变量个数的增加，联合概率分布可能会变得特别大。此外，一个一个的指定可能世界中的概率是不可行的。<br>
+如果在联合概率中引入独立和条件独立，会显著的减少定义联合概率分布所需要的概率。所以这节就介绍了贝叶斯网络来表示变量之间的依赖关系。本质上贝叶斯网络可以表示任何联合概率分布，而且在很多情况下是非常精确地表示。一个贝叶斯网络是一个有向图，图中的节点包含量化后的概率信息。具体的说明如下：</p>
 <ol>
 <li>每一个节点对应一个随机变量，这个随机变量可以是离散的也可以是连续的。</li>
 <li>有向边或者箭头连接一对节点。如果箭头是从节点$X$到节点$Y$，那么节点$X$称为节点$Y$的父节点。图中不能有环，因此贝叶斯网络是一个有向无环图(directed acyclic graph,DAG)。</li>
 <li>每一个节点$X_i$有一个条件概率分布$P(x_i|Parents(X_i))$量化(quantifiy)父节点对其影响。</li>
 </ol>
 <p>网络的拓扑，即节点和边的集合，指定了条件概率分布之间的关系。箭头的直观意义是节点$X$对节点$Y$有直接的影响，$Y$发生的原因是其父节点的影响。通常对于一个领域(domain)的专家来说，指出该域受哪些因素的直接影响要比直接给出它的概率值简单的多。一旦贝叶斯网络的拓扑结构定了，给出一个变量的父节点，我们仅仅需要给出每个节点的条件概率分布。我们能看出，拓扑和条件概率的组合能计算出所有变量的联合概率分布。</p>
-<h3 id="贝叶斯网络的示例">贝叶斯网络的示例</h3>
-<h4 id="牙疼和天气">牙疼和天气</h4>
+<h2 id="贝叶斯网络的示例">贝叶斯网络的示例</h2>
+<h3 id="牙疼和天气">牙疼和天气</h3>
 <p>给定一组随机变量牙疼(Toothache)，蛀牙(Cavity)，拔牙(Catch)和天气(Weather)。Weather是独立于另外三个随机变量的，此外，给定Cavity，Catch和Toothache是条件独立的，即给定Cavity，Catch和Toothache是相互不受影响的，如下图所示。正式的：给定Cavity，Toochache和Catch是条件独立的，图中Toothache和Catch之间缺失的边体现出了条件独立。直观上，网络表现出Cavity是Toothache和Catch发生的直接原因，然而在Toothache和Catch之间没有直接的因果关系。<br>
-<img src="/2019/01/06/bayesian-networks/" alt="figure 14.1"></p>
-<h4 id="警报和打电话">警报和打电话</h4>
+<img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.1"></p>
+<h3 id="警报和打电话">警报和打电话</h3>
 <p>我家里有一个新安装的防盗警报(burglar alarm)，这个警报对于小偷的检测是相当可靠的，但是也会对偶然发生的微小的地震响应。我有两个邻居(Mary和John)，他们听到警报后会打电话给我。John有时会把电话铃和警报弄混了，也会打电话。Mary听音乐很大声，经常会错过警报。现在给出John或者Mary谁是否打电话，估计警报响了的概率。<br>
-<img src="/2019/01/06/bayesian-networks/" alt="figure 14.2"><br>
+<img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.2"><br>
 该例子的贝叶斯网络如上图所示。该网络体现了小偷和地震两个因素会直接影响警报响的概率，但是John和Mary会不会打电话只取决于警报有没有响。贝叶斯网络展示出了我们的假设，即John和Mary不直接观察小偷有没有来，也不直接观察小的地震是否，也不受之前是否打过电话的影响。上图中的条件概率分布以一个条件概率分布表(conditional probability table,CPT)的形式展现了出来。这个表适合离散型的随机变量，但是不适合连续性随机变量。没有父节点的节点只有一行，用来表示随机变量的可能取值的先验概率(prior probabilities)。<br>
 注意到这个网络中没有节点对应Mary听音乐很大时，也没有节点对应John把电话铃声当成了警报。事实上这些因素都被包含在和边Alarm到JohnCalls和MaryCall相关的不确定性中了，概率包含了无数种情况可能让警报失灵（停电，老鼠咬坏了，等等）或者John和Mary没有打电话的原因（吃饭去了，午睡了，休假了等等），这些不确定性都包含在了概率中了。</p>
-<h2 id="贝叶斯网络的意义-the-semantics-of-bayesian-networks">贝叶斯网络的意义(the semantics of bayesian networks)</h2>
-<p>上一节主要讲的是什么是贝叶斯网络，但是没有讲它的意义。本节主要给出两种方式可以理解贝叶斯网络的意义。第一个是一种数值化的意义，即&quot;numerical semantics&quot;，把它当成联合概率分布的一种表示形式。第二个是一种拓扑的意义，即&quot;topological semantics&quot;，将它看成条件独立的一种编码方式。事实上，这两种方式是等价的，但是第一种方式更有助于理解如何构建贝叶斯网络，第二种方式更有助于设计推理过程。</p>
+<h2 id="贝叶斯网络的意义">贝叶斯网络的意义</h2>
+<p>有两种方式可以理解贝叶斯网络的意义。第一个是一种数值化的意义(numerical semantics)，把它当成联合概率分布的一种表示形式。第二个是一种拓扑的意义(topological semantics)，将它看成条件独立的一种编码方式。事实上，这两种方式是等价的，只不过第一种方式有助于理解如何构建贝叶斯网络，而第二种方式更有助于设计推理过程。</p>
 <h3 id="贝叶斯网络表示联合分布-representing-the-full-joint-distribution">贝叶斯网络表示联合分布(Representing the full joint distribution)</h3>
 <h4 id="定义">定义</h4>
 <p>一个贝叶斯网络是一个有向无环图，并且每个节点都有一个数值参数。数值方式给出这个网络的意义是，它代表了所有变量的联合概率分布。之前说过节点上的值代表的是条件概率分布$P(X_i|Parents(X_i)$，这是对的，但是当赋予整个网络意义以后，这里我们认为它们只是一些数字$\theta(X_i|Parents(X_i)$。<br>
@@ -2168,8 +2498,8 @@ $$P(x_1,\cdots,x_n) = \prod_{i=1}^n P(x_i|parents(X_i)),$$<br>
 <h4 id="示例">示例</h4>
 <p>我们可以计算出警报响了，但是没有小偷或者地震发生，John和Mary都打电话了的概率。即计算联合分布$P(j,m,a,\neg b, \neg e)$（使用小写字母表示变量的值）：<br>
 \begin{align*}<br>
-P(j,m,a,\neg b, \neg e) &amp;=P(j|a)P(m|a)P(a|\neg b \wedge \neg e)P(\neg b)P(\neg e)\<br>
-&amp;=0.90\times 0.70\times 0.001 \times 0.999 \times 0.998\<br>
+P(j,m,a,\neg b, \neg e) &amp;=P(j|a)P(m|a)P(a|\neg b \wedge \neg e)P(\neg b)P(\neg e)\\<br>
+&amp;=0.90\times 0.70\times 0.001 \times 0.999 \times 0.998\\<br>
 &amp;=0.000628<br>
 \end{align*}</p>
 <h4 id="构建贝叶斯网络-constructing-bayesian-networks">构建贝叶斯网络(Constructing Bayesian networks)</h4>
@@ -2177,7 +2507,7 @@ P(j,m,a,\neg b, \neg e) &amp;=P(j|a)P(m|a)P(a|\neg b \wedge \neg e)P(\neg b)P(\n
 $$P(x_1,\cdots,x_n) = P(x_n|x_{n-1},\cdots,x_1)P(x_{n-1},\cdots,x_1)$$<br>
 接下来重复这个过程，将联合概率(conjunctive probability)分解成一个条件概率和一个更小的联合概率。最后得到下式：<br>
 \begin{align*}<br>
-P(x_1,\cdots,x_n) &amp;= P(x_n|x_{n-1},\cdots,x_1)P(x_{n-1}|,x_{n-2}\cdots,x_1)\cdots P(x_2|x_1)P(x_1)\<br>
+P(x_1,\cdots,x_n) &amp;= P(x_n|x_{n-1},\cdots,x_1)P(x_{n-1}|,x_{n-2}\cdots,x_1)\cdots P(x_2|x_1)P(x_1)\\<br>
 &amp;= \prod_{i=1}^nP(x_i|x_{i-1},\cdots,x_1)<br>
 \end{align*}<br>
 这个公式被称为链式法则，它对于任意的随机变量集都成立。对于贝叶斯网络中的每一个变量$X_i$，如果给定$Parents(X_i) \subset {X_{i-1},\cdots,X_1}$（每一个节点的序号应该和图结构的偏序结构一致），那么有：<br>
@@ -2201,13 +2531,13 @@ $$P(X_i|X_{i-1},\cdots,X_1) = P(X_i|Parents(X_i).$$<br>
 但是在某些领域，可能每一个节点都会被所有其他节点直接影响，这时候网络就成了全连接的网络(fully connected)，它和联合概率分布需要同样多的信息。有时候，增加一条边，也就是一个依赖关系，可能会对结果产生影响，但是如果这个依赖很弱(tenuous)，添加这条边的花费比获得的收益还要大，那么就没有必要加这条边了。比如，警报的那个例子，如果John和Mary感受到了地震，他们认为警报是地震引起的，所以就不打电话了。是否添加Earthquake到JohnCalls和MaryCalls这两条边取决于额外的花费和得到更高的警报率之间的关系。</p>
 <h5 id="节点顺序-node-ordering">节点顺序(node ordering)</h5>
 <p>即使在一个局部结构化的领域，只有当我们选择好的节点顺序的时候，我们才能得到一个紧凑的贝叶斯网络。考虑警报的例子，我们给出下图：<br>
-<img src="/2019/01/06/bayesian-networks/" alt="figure 14.3"><br>
+<img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.3"><br>
 Figure 14.2和Figure 14.3两张图中的三个贝叶斯网络表达的都是同一个联合分布，但是Figure 14.3中的两张图没有表现出来条件独立，尤其是Figure 14.3(b)中的贝叶斯网络，它需要用和联合分布差不多相同个数的值才能表现出来。可以看出来，节点的顺序会影响紧凑性。</p>
-<h3 id="贝叶斯网络中的条件独立-conditional-independence-relations-in-bayesion-networks">贝叶斯网络中的条件独立(Conditional independence relations in Bayesion networks)</h3>
+<h3 id="贝叶斯网络中的条件独立-conditional-independence-relations-in-bayesion-networks">贝叶斯网络中的条件独立 (Conditional independence relations in Bayesion networks)</h3>
 <p>贝叶斯网络的一个数值意义(“numerical” semantics)是用来表示联合概率分布。根据这个意义，给定每个节点的父节点，使得每一个节点条件独立于它的父节点之外的节点，我们能构建一个贝叶斯网络。此外我们也可以从用图结构编码整个条件独立关系的拓扑意义出发，然后推导出贝叶斯网络的数值意义。拓扑语义说的是给定每个节点的父节点，则该节点条件独立于所有它的非后裔(non-descendants)节点。举例来说，Figure 14.2的警报例子中，给定alarm后，JohnCalls独立于Burglary,Eqrthquake和MaryCalls。如图Figuree 14.4(a)中所示。从条件独立断言(assertions)和网络参数$\theta(x_i|parents(X_i))$就是条件概率$P(x_i|parents(X_i))$的解释中，联合概率可以计算出来。在这种情况下，数值意义和拓扑语义是相同的。<br>
 另一个拓扑意义的重要属性是：给定某个节点的马尔科夫毯(Markov blanket)，即节点的父节点，子节点，子节点的父节点，这个节点条件独立于所有其他的节点。如图Figure 14.4(b)所示。</p>
 <h2 id="条件分布的高效表示-efficient-representation-of-conditional-distributions">条件分布的高效表示(Efficient representation of conditional distributions)</h2>
-<p>即使每个节点有$k$个父节点，一个节点的CPT还需要$O(2^k)$，最坏的情况下父节点和子节点是任意连接的。一般情况下，这种关系可以用符合一些标准模式(standard pattern)的规范分布(canonical distribution)表示，这样子就可以仅仅提供分布的一些参数就能生成整个CPT。<br>
+<p>即使每个节点有$k$个父节点，一个节点的CPT还需要$O(2^k )$，最坏的情况下父节点和子节点是任意连接的。一般情况下，这种关系可以用符合一些标准模式(standard pattern)的规范分布(canonical distribution)表示，这样子就可以仅仅提供分布的一些参数就能生成整个CPT。<br>
 最简单的例子是确定性节点(deterministic node)。一个确定性节点的值被它的父节点的值精确确定。这个确定性关系可以是逻辑关系：父节点是加拿大，美国和墨西哥，子节点是北美洲，它们之间的关系是子节点是父节点所在的洲。这个关系也可以是数值型的，一条河的流量是流入它的流量减去流出它的流量。<br>
 不确定关系通常称为噪音逻辑关系(noisy logical relationships)。一个例子是噪音或(noisy-OR)，它是逻辑或的推广。在命题逻辑中，当且仅当感冒(Cold)，流感(Flu)或者疟疾(Malaria)是真的时候，发烧(Fever)才是真的。噪音或模型允许不确定性，即每一个父节点都有可能让子节点为真，可能父节点和子节点之间的关系被抑制了(inhibited)，可能一个人感冒了，但是没有表现出发烧。这个模型做了两个假设。第一个，它假设所有的原因都被列了出来，有时候会加一个节点(leak node)包含所有的其他原因(miscellaneous causes)。第二个，抑制每一个父节点和子节点之间的原因是独立的，比如抑制疟疾产生发烧和抑制感冒产生发烧的原因是独立的。所以，当且仅当所有的父节点都是假的时候，发烧才一定不会发生。给出以下的假设：<br>
 $q_{cold} = P(\neg fever| cold,\neg flu, \neg malaria) = 0.6$<br>
@@ -2286,18 +2616,18 @@ $P(x_i|parents(X_i)) = 1 - \prod_{j:X_j=ture} q_j.$<br>
 </tbody>
 </table>
 <p>对于这个表，感觉自己一直有点转不过来圈。就是有症状不一定发烧，也可能不发烧，没有症状一定不发烧。什么时候不发烧呢，只有某个症状表现出来不发烧，如果多个症状的话，直接把有症状表现但不发烧的概率相乘。<br>
-一般情况下，噪声逻辑模型中，有$k$个父节点的变量可以用$O(k)$个参数表示而不是$O(2^k)$去表示整个CPT。这让访问(assessment)和学习(learning)更容易了。</p>
+一般情况下，噪声逻辑模型中，有$k$个父节点的变量可以用$O(k)$个参数表示而不是$O(2^k )$去表示整个CPT。这让访问(assessment)和学习(learning)更容易了。</p>
 <h3 id="连续性随机变量的贝叶斯网络-bayesian-nets-with-continuous-variables">连续性随机变量的贝叶斯网络(Bayesian nets with continuous variables)</h3>
 <h4 id="常用方法">常用方法</h4>
 <p>现实中很多问题都是连续型的随机变量，它们有无数可能的取值，所以显式的指定每一个条件概率行不通。常用的总共有三种方法，第一个可能的方法是离散(discretization)连续型随机变量，将随机变量的可能取值划分成固定的区间。比如，温度可以分成，小于$0$度的，$0$度到$100$度之间的，大于$100$度的。离散有时候是可行的，但是通常会造成精度的缺失和非常大的CPT。第二个方法也是最常用的方法是通过指定标准概率密度函数的参数，比如指定高斯分布的均值和方差。第三种方法是非参数化(nonparametric)表示，用隐式的距离去定义条件分布。</p>
 <h4 id="示例-v2">示例</h4>
 <p>一个同时拥有离散型和随机性变量的网络被称为混合贝叶斯网络(hybrid Bayesian network)。为了创建这样一个网络，我们需要两种新的分布。一种是给定离散或者连续的父节点，子节点是连续型随机变量的条件概率，另一种是给定连续的父节点，子节点是离散型随机变量的条件概率。</p>
 <h5 id="连续型子节点">连续型子节点</h5>
-<p><img src="/2019/01/06/bayesian-networks/" alt="figure 14.5"><br>
+<p><img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.5"><br>
 考虑Figure 14.5的例子，一个顾客买了一些水果，买水果的量取决取水果的价格(Cost)，水果的价格取决于收成(Harvest)和政府是否有补助(Subsidy)。其中，Cost是连续型随机变量，他有连续的父节点Harvest和离散的父节点Subsidy，Buys是离散的，有一个连续型的父节点Cost。<br>
 对于变量Cost，我们需要指定条件概率$P(Cost|Subsidy,Harvest)$。离散的父节点通过枚举(enumeration)来表示，指定$P(Cost|subsidy,Harvest)$和$P(Cost|\neg subsidy,Harvest)$。为了表示Harvest，可以指定一个分布来表示变量Cost的值$c$取决于连续性随机变量Harvest的值$h$。换句话说，将$c$看做一个$h$的函数，然后给出这个函数的参数即可，最常用的是线性高斯分布。比如这里，我们可以用两个不同参数的高斯分布来表示有补贴和没补贴时Harvest对Cost的影响：<br>
-$$P(c|h, subsidy) = N(a_th+b_t,\sigma_t^2)© = \frac{1}{\sigma_t \sqrt{2\pi} }e^{- \frac{1}{2}(\frac{c-(a_th+b_t)}{\sigma_t})^2}$$<br>
-$$P(c|h,\neg subsidy) = N(a_fh+b_t,\sigma_f^2)© = \frac{1}{\sigma_f \sqrt{2\pi} }e^{- \frac{1}{2}(\frac{c-(a_fh+b_f)}{\sigma_f})^2}$$<br>
+$$P(c|h, subsidy) = N(a_th+b_t,\sigma_t^2 )© = \frac{1}{\sigma_t \sqrt{2\pi} }e^{- \frac{1}{2}(\frac{c-(a_th+b_t)}{\sigma_t})^2 } $$<br>
+$$P(c|h,\neg subsidy) = N(a_fh+b_t,\sigma_f^2 )© = \frac{1}{\sigma_f \sqrt{2\pi} }e^{- \frac{1}{2}(\frac{c-(a_fh+b_f)}{\sigma_f})^2 } $$<br>
 所以，只需要给出$a_t,b_t,\sigma_t,a_f,b_f,\sigma_f$这几个参数就行了，Figure 14.6(a)和(b)就是一个示例图。注意到坡度(slope)是负的，因为随着供应的增加，cost在下降，当然，这个线性模型只有在harvest在很小的一个区间内才成立，而且cost有可能为负。假设有补贴和没补贴的两种可能性相等，是$0.5$，那么就有了Figure 14.6©的图$P(c|h)$。</p>
 <h5 id="连续型父节点">连续型父节点</h5>
 <p>当离散型随机变量有连续型父节点时，如Figure 14.5中的Buys节点。我们有一个合理的假设是：当cost高的时候，不买，cost底的时候，买，在中间区域买不买是一个变化很平滑的概率。我们可以把条件分布当成一个软阈值函数(soft-threshold)，一种方式是用标准正态分布的积分(intergral)。<br>
@@ -2305,7 +2635,7 @@ $$\Phi(x) = \int_{-\infty}^{x} N(0,1)(x)dx$$<br>
 给定Cost买的概率可能是:<br>
 $$P(buys|Cost = c) = \Phi((-x+\nu)/ \sigma))$$<br>
 其中cost的阈值在$\nu$附近，阈值的区域和正比于$\sigma$，当价格升高的时候，买的概率会下降。这个probit distribution模型如Figure 14.7(a)所示。<br>
-另一个可选择的模型是logit distribution，使用logistic function $1/(1+e^{-x})$来生成一个软阈值：<br>
+另一个可选择的模型是logit distribution，使用logistic function $1/(1+e^{-x} )$来生成一个软阈值：<br>
 $$P(buys|Cost = c) = \frac{1}{1+exp(-2\frac{-c+u}{\sigma})}.$$<br>
 如Figure 14.7(b)所示，这两个分布很像，但是logit有更长的尾巴。probit更符合实际情况，但是logit数学上更好算。它们都可以通过对父节点进行线性组合推广到多个连续性父节点的情况。</p>
 <h2 id="贝叶斯网络的精确推理-exact-inference-in-bayesian-networks">贝叶斯网络的精确推理(Exact inference in bayesian networks)</h2>
@@ -2318,29 +2648,29 @@ $$P(X|\mathbf{e}) = \alpha P(X,\mathbf{e}) = \alpha \sum_{\mathbf{y}}P(X,\mathbf
 $$P(B|j,m) = \alpha P(B,j,m) = \alpha \sum_{e}\sum_{a}P(B,j,m,e,a).$$<br>
 贝叶斯网络已经给出了所有CPT项的表达式，比如当Burglary = true时：<br>
 $$P(b|j,m) = \alpha \sum_e\sum_aP(b,j,m,e,a) = \alpha \sum_e\sum_aP(b)P(e)P(a|b,e)P(j|a)P(m|a).$$<br>
-为了计算这个表达式，我们得计算一个四项的加法，分别是e为true和false,a为true和false对应的$P(b,j,m)$的值，每一项都是五个数的乘法。最坏的情况下，所有的变量都用到了，那么拥有$n$个布尔变量的贝叶斯网络的时间复杂度是$O(n2^n)$。我们可以做一些简化，将一些重复的计算保存下来，比如将上面的式子变成：<br>
+为了计算这个表达式，我们得计算一个四项的加法，分别是e为true和false,a为true和false对应的$P(b,j,m)$的值，每一项都是五个数的乘法。最坏的情况下，所有的变量都用到了，那么拥有$n$个布尔变量的贝叶斯网络的时间复杂度是$O(n2^n )$。我们可以做一些简化，将一些重复的计算保存下来，比如将上面的式子变成：<br>
 $$P(b|j,m) = \alpha \sum_e\sum_aP(b,j,m,e,a) = \alpha P(b) \sum_eP(e)\sum_aP(a|b,e)P(j|a)P(m|a).$$<br>
-这样子可以按照顺序进行计算，具体的计算过程如Figure 14.8所示。这种算法叫做ENUMERATION-ASK，它的空间复杂度是线性的，但是它的事件复杂度是$O(2<sup>n)$比$O(n2</sup>n)$要好，却仍然是实际上不可行的。（这里我理解的是$O(2<sup>n)$而不是$O(n2</sup>n)$的原因是，总共有$n$个布尔变量，所以总共有$2^n$个可能的取值，每次算一个，存一个，而原来的是算完之后不存。）<br>
-事实上，Figure 14.8中的计算过程还有很多重复计算，比如$P(j|a)P(m|a)$和$P(j|\neg a)P(m|\neg a)$这两项被计算了两次。我原来在想这里是不是和上面一段说的冲突了，事实上是没有的，这$2^n$个值，其中可能会有$P(b,j,m,e,a)$和$P(b,j,m,e,\neg a)$，这两个概率中都用到了$P(j|a)P(m|a)$，但是这里就会计算两次，事实上有很多值都会被重复计算很多次。下面就介绍一个避免这种运算的方法。</p>
+这样子可以按照顺序进行计算，具体的计算过程如Figure 14.8所示。这种算法叫做ENUMERATION-ASK，它的空间复杂度是线性的，但是它的事件复杂度是$O(2^n )$比$O(n2^n )$要好，却仍然是实际上不可行的。（这里我理解的是$O(2^n )$而不是$O(n2^n )$的原因是，总共有$n$个布尔变量，所以总共有$2^n $个可能的取值，每次算一个，存一个，而原来的是算完之后不存。）<br>
+事实上，Figure 14.8中的计算过程还有很多重复计算，比如$P(j|a)P(m|a)$和$P(j|\neg a)P(m|\neg a)$这两项被计算了两次。我原来在想这里是不是和上面一段说的冲突了，事实上是没有的，这$2^n $个值，其中可能会有$P(b,j,m,e,a)$和$P(b,j,m,e,\neg a)$，这两个概率中都用到了$P(j|a)P(m|a)$，但是这里就会计算两次，事实上有很多值都会被重复计算很多次。下面就介绍一个避免这种运算的方法。</p>
 <h3 id="消元法-the-variable-elimination-algorithm">消元法(The variable elimination algorithm)</h3>
 <p>上面问题的解决思路就是保存已经计算过的值，实际上这是一种动态规划。还有很多其他方法可以解决这个问题，这里介绍了最简单的消元算法。消元法对表达式进行从右至左的计算，而枚举法是自底向上的。所有的中间值被报存起来，最对和每个变量有关的表达式进行求和。例如对于下列表达式：<br>
-$$P(B|j,m) = \alpha \underbrace{P(B)}<em>{f_1(B)} \sum_e\underbrace{P(e)}</em>{f_2(E)} \sum_a\underbrace{P(a|B,e)}<em>{f_3(A,B,E)} \underbrace{P(j|a)}</em>{f_4(A)} \underbrace{P(m|a)}_{f_5(A)}.$$<br>
+$$P(B|j,m) = \alpha \underbrace{P(B)}_{f_1(B)} \sum_e\underbrace{P(e)}_{f_2(E)} \sum_a\underbrace{P(a|B,e)}_{f_3(A,B,E)} \underbrace{P(j|a)}_{f_4(A)} \underbrace{P(m|a)}_{f_5(A)}.$$<br>
 表达式的每一部分都是一个新的因子，每一个因子都是由它的参数变量(argument variables)决定的矩阵，参数变量指定的取值是没有固定的变量。比如因子$f_4(A)$和$f_5(A)$对应$P(j|a)$和$P(m|a)$的表达式只取决于$A$的值因为$J$和$M$在这个查询中都是固定的。它们都是两个元素的向量：<br>
-$$f_4(A) = \begin{pmatrix}P(j|a)\P(j|\neg a)\end{pmatrix} = \begin{pmatrix}0.90\0.05\end{pmatrix}$$<br>
-$$f_5(A) = \begin{pmatrix}P(m|a)\P(m|\neg a)\end{pmatrix} = \begin{pmatrix}0.70\0.01\end{pmatrix}$$<br>
+$$f_4(A) = \begin{pmatrix}P(j|a)\\P(j|\neg a)\end{pmatrix} = \begin{pmatrix}0.90\\0.05\end{pmatrix}$$<br>
+$$f_5(A) = \begin{pmatrix}P(m|a)\\P(m|\neg a)\end{pmatrix} = \begin{pmatrix}0.70\\0.01\end{pmatrix}$$<br>
 $f_3(A,B,E)$是一个$2\times 2\times 2$的矩阵。用因子表达的话，查询的表达式变成了：<br>
 $$P(B|j,m) = \alpha f_1(B)\times \sum_ef_2(E)\times \sum_af_3(A,B,E)\times f_4(A)\times f_5(A)$$<br>
 其中$\times$不是普通的矩阵乘法，而是对应元素相乘(pointwise product)。整个表达式的计算过程可以看成从右到左变量相加的过程，将现有的因子消去产生新的因子，最后只剩下一个因子的过程。具体的步骤如下：<br>
 首先先利用$f_3,f_4,f_5$把变量$A$消掉，产生一个新的$2\times 2$的只含有变量$B$和$E$的新因子$f_6(B,E)$：<br>
 \begin{align*}<br>
-f_6(B,E) &amp;= \sum_af_3(A,B,E)\times f_4(A) \times f_5(A)\<br>
+f_6(B,E) &amp;= \sum_af_3(A,B,E)\times f_4(A) \times f_5(A)\\<br>
 &amp;= (f_3(a,B,E)\times f_4(a) \times f_5(a)) + (f_3(\neg a,B,E)\times f_4(\neg a)\times f_5(\neg a)<br>
 \end{align*}<br>
 这样目标变成了：<br>
 $$P(B|j,m) = \alpha f_1(B)\times \sum_ef_2(E)\times \sum_af_6(B,E)$$<br>
 利用$f_2,f_6$消去$E$：<br>
 \begin{align*}<br>
-f_7(B) &amp;= \sum_ef_2(E)\times \sum_af_6(B,E)\<br>
+f_7(B) &amp;= \sum_ef_2(E)\times \sum_af_6(B,E)\\<br>
 &amp; = f_2(e)\times f_6(B,e) + f_2(\neg e)\times f_6(B,\neg e)<br>
 \end{align*}<br>
 将表达式化成：<br>
@@ -2349,17 +2679,17 @@ $$P(B|j,m) = \alpha f_1(B)\times f_7(B)$$<br>
 <h4 id="因子运算-operations-on-factors">因子运算(Operations on factors)</h4>
 <p>两个因子$f_1$和$f_2$进行point-wise乘法运算产生新的因子(factor)$f$的变量是$f_1$和$f_2$变量的并，新的因子中的元素的值是$f_1$和$f_2$中对应项的积。假设两个因子有公共变量$Y_1,\cdots,Y_k$，那么就有：<br>
 $$f(X_1,\cdots,X_j,Y_1,\cdots,Y_k,Z_1,\cdots,Z_l)=f_1(X_1,\cdots,X_j,Y_1,\cdots,Y_k)f_2(Y_1,\cdots,Y_k,Z_1,\cdots,Z_l).$$<br>
-如果所有的变量都是二值化的，那么$f_1$和$f_2$各有$2<sup>{j+l}$和$2</sup>{l+k}$项，$f$有$2^{j+l+k}$项。比如，$f_1(A,B),f_2(B,C)$，那么point-wise乘法产生的$f_3(A,B,C)=f_1\times f_2$有$8$项，如Figure 14.10所示。<br>
-<img src="/2019/01/06/bayesian-networks/" alt="figure 14.10"><br>
+如果所有的变量都是二值化的，那么$f_1$和$f_2$各有$2^{j+l} $和$2^{l+k} $项，$f$有$2^{j+l+k} $项。比如，$f_1(A,B),f_2(B,C)$，那么point-wise乘法产生的$f_3(A,B,C)=f_1\times f_2$有$8$项，如Figure 14.10所示。<br>
+<img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.10"><br>
 根据图中给出的值，消去$f_3(A,B,C)$中的$A$：<br>
 \begin{align*}<br>
-f(B,C) &amp;= \sum_af_3(A,B,C)\<br>
-&amp;= f_3(a,B,C) + f_3(\neg a,B,C)\<br>
-&amp;= \begin{pmatrix} 0.06&amp;0.24\0.42&amp;0.28\end{pmatrix} + \begin{pmatrix}0.18&amp;0.72\0.06&amp;0.04\end{pmatrix}\<br>
-&amp;= \begin{pmatrix}0.24&amp;0.96\048&amp;0.32\end{pmatrix}<br>
+f(B,C) &amp;= \sum_af_3(A,B,C)\\<br>
+&amp;= f_3(a,B,C) + f_3(\neg a,B,C)\\<br>
+&amp;= \begin{pmatrix} 0.06&amp;0.24\\0.42&amp;0.28\end{pmatrix} + \begin{pmatrix}0.18&amp;0.72\\0.06&amp;0.04\end{pmatrix}\\<br>
+&amp;= \begin{pmatrix}0.24&amp;0.96\\048&amp;0.32\end{pmatrix}<br>
 \end{align*}<br>
 产生新的因子用的是pointwise乘法，消元用的是累乘。给定pointwise乘法和消元函数，消元算法就变得很简单，一个消元算法如Figure 14.11所示。<br>
-<img src="/2019/01/06/bayesian-networks/" alt="figure 14.11"></p>
+<img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.11"></p>
 <h4 id="变量顺序和变量相关性-variable-ordering-and-variable-relevance">变量顺序和变量相关性(Variable ordering and variable relevance)</h4>
 <p>Figure 14.11中的算法包含一个没有给出具体实现的排序函数Order()对要消去的变量进行排序，每一种排序选择都会产生一组有效的算法，但是不同的消元顺序会产生不同的中间因子。一般情况下，消元法的时间和空间复杂度是由算法产生的最大因子决定的，这个最大因子是由消元的顺序和贝叶斯网络的结构决定的，选取最优的消元顺序是很困难的，但是有一些小的技巧：总是消去让新产生的因子最小的变量。<br>
 另一个属性是：每一个不是查询变量或者证据变量的祖先变量都和这次查询无关，在实现消元算法的时候可以把这些变量都去掉。（具体的示例可以看第十四章，在$528$页）。</p>
@@ -2367,9 +2697,9 @@ f(B,C) &amp;= \sum_af_3(A,B,C)\<br>
 <p>贝叶斯网络的精确推理跟网络的结构有很大的关系。<br>
 Figure 14.2中警报贝叶斯网络中的复杂度是线性的。该网络中任意两个节点只有一条路径，这种网络称为单连接的(singly-connected)或者多树(polytrees)，这种结构有一个很好的属性就是：多树结构中精确推理的时间，空间复杂度对于网络大小来说都是线性关系，这里网络大小指的是CPT项的个数。如果每一个节点的父节点都是一个有界的常数，那么复杂度和节点数之间也是线性关系。<br>
 对于多连接(multiply connected)的网络，如Figure 14.12(a)所示，最坏情况下，即使每一个节点的父节点个数都是有界常数，消元法的时间和空间复杂度也都是指数级别的。因为贝叶斯网络的推理也是NP难问题。<br>
-<img src="/2019/01/06/bayesian-networks/" alt="figure 14.12"></p>
+<img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.12"></p>
 <h3 id="聚类算法-clustering-algorithms">聚类算法(clustering algorithms)</h3>
-<p>用消元法来计算单个的后验概率是简单而高效的，但是如果要计算网络中所有变量的后验概率是很低效的。例如：在单连接的网络中，每一个查询都是$O(n)$，总共有$O(n)$个查询，所以总共的代价是$O(n^2)$。使用聚类算法(clustering algorithms)，代价可以降到$O(n)$，因此贝叶斯网络中的聚类算法已经被广泛商用。（这里不明白为什么？）。<br>
+<p>用消元法来计算单个的后验概率是简单而高效的，但是如果要计算网络中所有变量的后验概率是很低效的。例如：在单连接的网络中，每一个查询都是$O(n)$，总共有$O(n)$个查询，所以总共的代价是$O(n^2 )$。使用聚类算法(clustering algorithms)，代价可以降到$O(n)$，因此贝叶斯网络中的聚类算法已经被广泛商用。（这里不明白为什么？）。<br>
 聚类算法的基本思想是将网络中的一些节点连接成聚点(cluster nodes)，最后形成一个多树(polytree)结构。例如Figure 14.12(a)中的多连接网络可以转换成Figure 14.12(b)所示的多树，Sprinkler和Rain节点形成了SPrinkler+Rain聚点，这两个布尔变量被一个大节点(meganode)取代，这个大节点有四个可能的取值：$tt,tf,ft,ff$。一旦一个多树形式的网络生成了以后，就需要特殊的推理算法进行推理了，因为普通的推理算法不能处理共享变量的大节点，有了这样一个特殊的算法，后验概率的时间复杂度就是线性于聚类网络的大小。但是，NP问题并没有消失，如果消元需要指数级别的时间和空间复杂度，聚类网络中的CPT也是指数级别大小。</p>
 <h2 id="贝叶斯网络的估计推理-approximate-inference-in-bayesian-networks">贝叶斯网络的估计推理(Approximate inference in bayesian networks)</h2>
 <p>因为多连接网络中的推理是不可行的，所以用估计推理取代精确推理是很有用的。这一节会介绍随机采样算法，也叫蒙特卡洛算法(Monte Carlo)，它的精确度取决于生成的样本数量。我们的目的是采样用于计算后验概率。这里给出了两类算法，直接采样(direct sampling)和马尔科夫链采样(Markov chain sampling)。变分法(variational methods)和循环传播(loopy propagation)将会在本章的最后进行介绍。</p>
@@ -2383,11 +2713,11 @@ Figure 14.2中警报贝叶斯网络中的复杂度是线性的。该网络中任
 <li>从$P(WetGrass|Sprinkler=false,Rain=true)=&lt;0.9,0.1&gt;$中采样，采样值是true；</li>
 </ol>
 <p>这个例子中，PRIOR-SAMPLE算法返回事件[true,false,true,true]。可以看出来，PRIOR-SAMPLE算法根据贝叶斯网络指定的先验联合分布生成样本。假设$S_{PS}(x_1,\cdot,x_n)$是PRIOR-SAMPLE算法生成的一个样本事件，从采样过程中我们可以得出：<br>
-$$S_{PS}(x_1,\cdots,x_n) = \prod_{i=1}^nP(x_i|parents(X_i))$$<br>
+$$S_{PS}(x_1,\cdots,x_n) = \prod_{i=1}^n P(x_i|parents(X_i))$$<br>
 即每一步采样都只取决于父节点的值。这个式子和贝叶斯网络的联合概率分布是一样的，所以，我们可以得到：<br>
 $$S_{PS} = P(x_1,\cdots,x_n).$$<br>
 通过采样让这个联合分布的求解很简单。<br>
-<img src="/2019/01/06/bayesian-networks/" alt="figure 14.13"><br>
+<img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.13"><br>
 事实上在任何采样算法中，结果都是通过对产生的样本进行计数得到的。假设生成了$N$个样本，$N_{PS}(x_1,\cdots,x_n)$是样本集中的一个具体事件$(x_1,\cdots,x_n)$发生的次数。我们希望这个值比上样本总数取极限和采样概率$S_{PS}$是一样的，即：<br>
 $$ lim_{N\rightarrow \infty}\frac{N_{PS}(x_1,\cdots,x_n)}{N} = S_{PS}(x_1,\cdots,x_n) = P(x_1,\cdots,x_n).$$<br>
 例如之前利用PRIOR-SAMPLE算法产生的事件[true,false,true,true]，这个事件的采样概率是：<br>
@@ -2398,7 +2728,7 @@ $$P(x_1,\cdots,x_m)\approx N_{PS}(x_1,\cdots,x_m)/N.$$<br>
 这个事件的概率可以看成所有满足观测变量条件的样本事件（隐变量所有值都可以取）比上所有样本事件的比值。比如在Spinkler网络中，生成$1000$个样本，其中有$511$个样本的Rain=true，那么rain的估计概率就是$\hat{P}(Rain=true) = 0.511.$</p>
 <h4 id="贝叶斯网络的拒绝采样-rejection-sampling-in-bayesian-networks">贝叶斯网络的拒绝采样(Rejection sampling in Bayesian networks)</h4>
 <h5 id="算法">算法</h5>
-<p><img src="/2019/01/06/bayesian-networks/" alt="figure 14.14"><br>
+<p><img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.14"><br>
 拒绝采样(rejection sampling)利用容易采样的分布来生成难采样分布的样本，计算后验概率$P(X|\mathbf{e})$，算法流程如Figure 14.14所示，首先根据贝叶斯网络的先验分布生成样本，接下来拒绝(reject)那些和证据变量不匹配的结果，最后在剩下的样本中统计每个$X=x$出现的概率，估计$\hat{P}(X|\mathbf{e}).$<br>
 用$\hat{P}(X|\mathbf{e})$表示估计概率分布，利用拒绝采样算法的定义计算：<br>
 $$\hat{P}(X|\mathbf{e}) = \alpha N_{PS}(X,\mathbf{e}) = \frac{N_{PS}(X,\mathbf{e})}{N_{PS}(\mathbf{e})}.$$<br>
@@ -2428,20 +2758,20 @@ $$w\leftarrow w\times P(WetGrass=true|Sprinkler=false,Rain=true) = 0.45.$$</li>
 <p>所以WEIGHTED-SAMPLE算法生成事件[true,false,true,true]，相应的权重是$0.45$。</p>
 <h5 id="原理">原理</h5>
 <p>用$S_{WS}$表示WEIGHTED-SAMPLE算法中事件的采样概率，证据变量$\mathbf{E}$的取值$\mathbf{e}$是固定的，用$\mathbf{Z}$表示非证据变量，包括隐变量$\mathbf{Y}$和查询变量$\mathbf{X}$。给定变量$\mathbf{Z}$的父节点，算法对变量$\mathbf{Z}$进行采样：<br>
-$$S_{WS}(\mathbf{z},\mathbf{e}) = \prod_{i=1}^lP(z_i|parents(Z_i)).$$<br>
+$$S_{WS}(\mathbf{z},\mathbf{e}) = \prod_{i=1}^l P(z_i|parents(Z_i)).$$<br>
 其中$Parents(Z_i)$可能同时包含证据变量和非证据变量。<br>
 和先验分布$P(\mathbf{z})$不同的是，每一个变量$Z_i$的取值会受到$Z_i$的祖先(ancestor)变量的影响。比如，对Sprinkler进行采样的时候，算法会受到它的父节点中的证据变量Cloudy=true的影响，而先验分布不会。另一方面，$S_{WS}$比后验分布$P(\mathbf{z}|\mathbf{e})$受证据的影响更小，因为对$Z_i$的采样忽略了$Z_i$的非祖先(non-ancestor)变量中的证据。比如，对Sprinkler和Rain进行采样的时候，算法忽略了子节点中的证据变量WetGrass=true，事实上这个证据已经排除了(rule out)Sprinkler=false和Rain=false的情况，但是WEIGHTED-SAMPLE还会产生很多这样的样本事件。<br>
 理想情况下，我们想要一个采样分布和真实的后验概率$P(\mathbf{z}|\mathbf{e})$相等，不幸的是不存在这样的多项式时间的算法。如果有这样的算法的话，我们可以用多项式数量的样本以任意精度逼近想要求的概率值。<br>
 可能性权重$w$弥补了实际的分布和我们想要的分布之间的差距。一个由$\mathbf{z}$和$\mathbf{e}$组成的样本$\mathbf{x}$的权重是给定了父节点的证据变量的可能性乘积：<br>
-$$w(\mathbf{z},\mathbf{e}) = \prod_{i=1}^mP(e_i|parents(E_i)).$$<br>
+$$w(\mathbf{z},\mathbf{e}) = \prod_{i=1}^m P(e_i|parents(E_i)).$$<br>
 将上面的两个式子乘起来，可以得到一个样本的加权概率(weighted probability)是：<br>
-$$S_{WS}(\mathbf{z},\mathbf{e})w(\mathbf{z},\mathbf{e}) = \prod_{i=1}<sup>lP(z_i|parents(Z_i))\prod_{i=1}</sup>mP(e_i|parents(E_i)) = P(\mathbf{z},\mathbf{e}).$$<br>
+$$S_{WS}(\mathbf{z},\mathbf{e})w(\mathbf{z},\mathbf{e}) = \prod_{i=1}^l P(z_i|parents(Z_i))\prod_{i=1}^m P(e_i|parents(E_i)) = P(\mathbf{z},\mathbf{e}).$$<br>
 可能性加权估计是一致估计。对于任意的$x$，估计的后验概率按下式计算：<br>
 \begin{align*}<br>
-\hat{P}(x|\mathbf{e}) &amp;= \alpha \sum_{\mathbf{y}} N_{WS}(x,\mathbf{y},\mathbf{e})w(x,\mathbf{y},\mathbf{e})\<br>
-&amp;\approx \alpha’\sum_{\mathbf{y}}S_{WS}(x,\mathbf{y},\mathbf{e})w(x,\mathbf{y},\mathbf{e})\<br>
-&amp;=\alpha’\sum_{\mathbf{y}}P(x,\mathbf{y},\mathbf{e})\<br>
-&amp;=\alpha’\sum_{\mathbf{y}}P(x,\mathbf{y},\mathbf{e})\<br>
+\hat{P}(x|\mathbf{e}) &amp;= \alpha \sum_{\mathbf{y}} N_{WS}(x,\mathbf{y},\mathbf{e})w(x,\mathbf{y},\mathbf{e})\\<br>
+&amp;\approx \alpha’\sum_{\mathbf{y}}S_{WS}(x,\mathbf{y},\mathbf{e})w(x,\mathbf{y},\mathbf{e})\\<br>
+&amp;=\alpha’\sum_{\mathbf{y}}P(x,\mathbf{y},\mathbf{e})\\<br>
+&amp;=\alpha’\sum_{\mathbf{y}}P(x,\mathbf{y},\mathbf{e})\\<br>
 &amp;=P(x|\mathbf{e})<br>
 \end{align*}<br>
 算法中真实实现的是第一行，即统计出用WEIGHTED-SAMPLE产生的样本$(x,\mathbf{y},\mathbf{e})$数量$N_{WS}$，以及对应的权重$w(x,\mathbf{y},\mathbf{e})$，后面的都是理论推导，当$N$取极限的时候$lim_{N\rightarrow \infty}\frac{N_{WS}(x_1,\cdots,x_n)}{N} = S_{WS}(x_1,\cdots,x_n)$，后面的都是为了证明算法是一致估计。</p>
@@ -2452,16 +2782,15 @@ $$S_{WS}(\mathbf{z},\mathbf{e})w(\mathbf{z},\mathbf{e}) = \prod_{i=1}<sup>lP(z_i
 <h4 id="贝叶斯网络中的吉布森采样-gibbs-sampling-in-bayesian-networks">贝叶斯网络中的吉布森采样(Gibbs sampling in Bayesian networks)</h4>
 <h5 id="算法-v3">算法</h5>
 <p>贝叶斯网络中的吉布森采样从任意一个状态开始，其中证据变量的取值固定为观测值，通过随机选取非证据变量$X_i$的值生成下一个状态。变量$X_i$的采样取决于变量$X_i$的马尔科夫毯的当前值。算法在状态空间（所有非证据变量的全部可能取值空间）中随机采样，每次采样都保持证据变量不变，一次改变一个非证据变量的值。完整的算法如Figure 14.16所示。<br>
-<img src="/2019/01/06/bayesian-networks/" alt="figure 14.16"></p>
+<img src="/2019/01/06/bayesian-classifier-bayesian-networks/" alt="figure 14.16"></p>
 <h5 id="示例-v5">示例</h5>
 <p>Figure 14.12(a)中的查询(query)$P(Rain|Sprinkler=true, WetGrass=true)$，证据变量Spinkler和WetGrass取它们的观测值不变，非证据变量Cloudy和Rain随机初始化，假设取的是true和false。那么初始状态就是[true,true,false,true]，接下来对非证据变量进行重复的随机采样。<br>
 比如第一次对Cloudy采样（也可以对Rain采样），给定它的马尔科夫毯变量，然后从$P(Cloudy|Sprinkler=true,Rain=false)$中进行采样，假设采样结果是false，新的状态就是[false,true,false,true]。接下来随机可以对Rain采样（也可以对Cloudy采样），给定Rain的马尔科夫毯变量的取值，从$P(Rain|Cloudy=false,Sprinkler=true,WetGrass=true)$中进行采样，假设采样值是true,那么新的状态是[true,true,false,false]。接下来可以一直进行采样。。最终利用生成的样本计算出相应的概率。</p>
 <h4 id="为什么吉布森采样有用-why-gibbs-sampling-works">为什么吉布森采样有用(Why Gibbs sampling works)</h4>
 <p>接下来给出为什么吉布森采样计算后验概率是一致估计。基本的解释是直截了当的：采样过程建立了一个动态平衡，每个状态花费的时间长期来说和它的后验概率是成比例的。<br>
 具体的，不想看了。。。就随缘吧</p>
-<h2 id="关系和一阶概率模型-relational-and-first-order-probability-models">关系和一阶概率模型(Relational and first-order probability models)</h2>
-<h2 id="其他不确定性推理的方法-other-approaches-to-uncertain-reasoning">其他不确定性推理的方法(Other approaches to uncertain reasoning)</h2>
 <h2 id="参考文献">参考文献</h2>
+<p>1.《Aritifical Intergence》</p>
 
           
         
@@ -3133,256 +3462,6 @@ $$p(y=1|x_1,\cdots,x_M) = \sigma\left(w_0+\sum</em>{i=1}<sup>Mw_ix_i\right)=\sig
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/03/linear-algebra-singular-value-decomposition/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/03/linear-algebra-singular-value-decomposition/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">singular value decomposition（奇异值分解）</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-03 15:19:54" itemprop="dateCreated datePublished" datetime="2019-01-03T15:19:54+08:00">2019-01-03</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-09-09 16:53:25" itemprop="dateModified" datetime="2019-09-09T16:53:25+08:00">2019-09-09</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="特征值分解-eigen-value-decomposition">特征值分解(eigen value decomposition)</h2>
-<p>要谈奇异值分解，首先要从特征值分解(eigen value decomposition, EVD)谈起。<br>
-矩阵的作用有三个：一个是旋转，一个是拉伸，一个是平移，都是线性操作。如果一个$n\times n$方阵$A$对某个向量$x$只产生拉伸变换，而不产生旋转和平移变换，那么这个向量就称为方阵$A$的特征向量(eigenvector)，对应的伸缩比例叫做特征值(eigenvalue)，即满足等式$Ax = \lambda x$。其中$A$是方阵，$x$是方阵$A$的一个特征向量，$\lambda$是方阵$A$对应特征向量$x$的特征值。<br>
-假设$S$是由方阵$A$的$n$个线性无关的特征向量构成的方阵，$\Lambda$是方阵$A$的$n$个特征值构成的对角矩阵，则$A=S\Lambda S^{-1}$，这个过程叫做对角化过程。<br>
-证明：<br>
-因为$Ax_1 = \lambda_1 x_1,\cdots,Ax_n = \lambda_n x_n$,<br>
-所以<br>
-\begin{align*}AS &amp;= A\begin{bmatrix}x_1&amp; \cdots&amp;x_n\end{bmatrix}\\<br>
-&amp;=\begin{bmatrix} \lambda_1x_1&amp;\cdots&amp;\lambda x_n\end{bmatrix}\\<br>
-&amp;= \begin{bmatrix}x_1&amp; \cdots&amp;x_n\end{bmatrix} \begin{bmatrix}\lambda_1&amp; &amp; &amp;\\&amp;\lambda_2&amp;&amp;\\&amp;&amp;\cdots&amp;\\&amp;&amp;&amp;\lambda_n\end{bmatrix}\<br>
-&amp;= S\Lambda<br>
-\end{align*}<br>
-所以$AS=S\Lambda, A=S\Lambda S^{-1}, S^{-1}AS=\Lambda$。<br>
-若方阵$A$为对称矩阵，矩阵$A$的特征向量是正交的，将其单位化为$Q$，则$A=Q\Lambda Q^T$，这个过程就叫做特征值分解。</p>
-<h2 id="奇异值分解-singular-value-decomposition">奇异值分解(singular value decomposition)</h2>
-<p>特征值分解是一个非常好的分解，因为它能把一个方阵分解称两类非常好的矩阵，一个是正交阵，一个是对角阵，这些矩阵都便于进行各种计算，但是它对于原始矩阵的要求太严格了，必须要求矩阵是对称正定矩阵，这是一个很苛刻的条件。所以就产生了奇异值分解，奇异值分解可以看作特征值分解在$m\times n$维矩阵上的推广。对于对称正定矩阵来说，有特征值，对于其他一般矩阵，有奇异值。</p>
-<p>奇异值分解可以看作将一组正交基映射到另一组正交基的变换。普通矩阵$A$不是对称正定矩阵，但是$AA^T $和$A^TA $一定是对称矩阵，且至少是半正定的。从对$A^TA $进行特征值分解开始，$A^T A=V\Sigma_1V^T $，$V$是一组正交的单位化特征向量${v_1,\cdots,v_n}$，则$Av_1,\cdots,Av_n$也是正交的。<br>
-证明：<br>
-\begin{align*}Av_1\cdot Av_2 &amp;=(Av_1)^T Av_2\\<br>
-&amp;=v_1^T A^T Av_2\\<br>
-&amp;=v_1^T \lambda v_2\\<br>
-&amp;=\lambda v_1^T v_2\\<br>
-&amp;=0<br>
-\end{align*}<br>
-所以$Av_1,Av_2$是正交的，同理可得$Av_1,\cdots,Av_n$都是正交的。<br>
-而：<br>
-\begin{align*}<br>
-Av_i\cdot Av_i &amp;= v_i^T A^T Av_i\\<br>
-&amp;=v_i \lambda v_i\\<br>
-&amp;=\lambda v_i^2\\<br>
-&amp;=\lambda<br>
-\end{align*}<br>
-将$Av_i$单位化为$u_i$，得$u_i = \frac{Av_i}{|Av_i|} = \frac{Av_i}{\sqrt{\lambda_i}}$，所以$Av_i = \sqrt{\lambda_i}u_i$。<br>
-将向量组${v_1,\cdots,v_r}$扩充到$R^n $中的标准正交基${v_1,\cdots,v_n}$，将向量组${u_1,\cdots,u_r}$扩充到$R^n $中的标准正交基${u_1,\cdots,u_n}$，则$AV = U\Sigma$，$A=U\sigma V^T $。</p>
-<p>事实上，奇异值分解可以看作将行空间的一组正交基加上零空间的一组基映射到列空间的一组正交基加上左零空间的一组基的变换。对一矩阵$A,A\in \mathbb{R}^{m\times n} $，若$r(A)=r$，取行空间的一组特殊正交基${v_1,\cdots,v_r}$，当矩阵$A$作用到这组基上，会得到另一组正交基${u_1,\cdots,u_r}$，即$Av_i = \sigma_iu_i$。<br>
-矩阵表示是：<br>
-\begin{align*}<br>
-AV &amp;= A\begin{bmatrix}v_1&amp;\cdots&amp;v_r\end{bmatrix}\\<br>
-&amp;= \begin{bmatrix}\sigma_1u_1 &amp; \cdots &amp; \sigma_ru_r\end{bmatrix}\\<br>
-&amp;= \begin{bmatrix}u_1&amp;u_2&amp;\cdots&amp;u_r\end{bmatrix}\begin{bmatrix}\sigma_1&amp;&amp;&amp;\\&amp;\sigma_2&amp;&amp;\\&amp;&amp;\cdots&amp;\\&amp;&amp;&amp;\sigma_n\end{bmatrix}\\<br>
-&amp;=U\Sigma<br>
-\end{align*}<br>
-其中$A\in \mathbb{R}^{m\times n}, V\in \mathbb{R}^{n\times r},U\in \mathbb{R}^{m\times r}, \Sigma \in \mathbb{R}^{r\times n}$。<br>
-当有零空间的时候，行空间的一组基是$r$维，加上零空间的$n-r$维，构成$R^n $空间中的一组标准正交基。列空间的一组基也是$r$维的，加上左零空间的$m-r$维，构成$R^m $空间的一组标准正交基。零空间中的向量在对角矩阵$\Sigma$中体现为$0$，<br>
-则$A=U\Sigma V^{-1} $，$V$是正交的，所以$A=U\Sigma V^T $，其中$V\in \mathbb{R}^{n\times n}, U\in \mathbb{R}^{m\times m}, \Sigma \in \mathbb{R}^{m\times n}$。</p>
-<p>$A=U\Sigma V^T $,<br>
-$A^T = V\Sigma^T U^T $,<br>
-$AA^T = U\Sigma V^T V\Sigma^T U^T $,<br>
-$A^T A = V\Sigma^T U^T U\Sigma V^T $<br>
-对$A A^T $和$A^T A$作特征值分解，则$A A^T = U\Sigma_1U^T $,$A^T A=V\Sigma_2V^T $，所以对$AA^T $作特征值分解求出来的$U$和对$A^T A$作特征值分解求出来的$V$就是对$A$作奇异值分解求出来的$U$和$V$，$AA^T $和$A^T A$作特征值分解求出来的$\Sigma$的非零值是相等的，都是对$A$作奇异值分解的$\Sigma$的平方。</p>
-<h3 id="a-t-a-和-aa-t-的非零特征值是相等的">$A^T A$和$AA^T $的非零特征值是相等的</h3>
-<p>证明：对于任意的$m\times n$矩阵$A$，$A^T A$和$AA^T $的非零特征值相同的。 设$A^T A$的特征值为$\lambda_i$，对应的特征向量为$v_i$，即$A^T Av_i = \lambda_i v_i$。<br>
-则$AA^T Av_i = A\lambda_iv_i = \lambda_i Av_i$。<br>
-所以$AA^T $的特征值为$\lambda_i$，对应的特征向量为$Av_i$。<br>
-因此$A^T A$和$AA^T $的非零特征值相等。</p>
-<h3 id="几何意义">几何意义</h3>
-<p>对于任意一个矩阵，找到其行空间(加上零空间)的一组正交向量，使得该矩阵作用在该向量序列上得到的新的向量序列保持两两正交。奇异值的几何意义就是这组变化后的新的向量序列的长度。</p>
-<h3 id="物理意义">物理意义</h3>
-<p>奇异值往往对应着矩阵隐含的重要信息，且重要性和奇异值大小正相关。每个矩阵都可以表示为一系列秩为$1$的“小矩阵”的和，而奇异值则衡量了这些秩一矩阵对$A$的权重。<br>
-奇异值分解的物理意义可以通过图像压缩表现出来。给定一张$m\times n$像素的照片$A$，用奇异值分解将矩阵分解为若干个秩一矩阵之和，即：<br>
-\begin{align*}<br>
-A&amp;=\sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T +\cdots+\sigma_r u_rv_r^T\\<br>
-&amp;= \begin{bmatrix}u_1&amp;u_2&amp;\cdots&amp;u_r\end{bmatrix}\begin{bmatrix}\sigma_1&amp;&amp;&amp;\&amp;\sigma_2&amp;&amp;\&amp;&amp;\cdots&amp;\&amp;&amp;&amp;\sigma_n\end{bmatrix}\begin{bmatrix}v_1<sup>T\v_2</sup>T\ \vdots\v_r^T\end{bmatrix}\\<br>
-&amp;=U\Sigma V^T<br>
-\end{align*}</p>
-<p>这个也叫部分奇异值分解。其中$V\in R^{r\times n}, U\in R^{m\times r}, \Sigma \in R^{r\times r}$。因为不含有零空间和左零空间的基，如果加上零空间的$n-r$维和左零空间的$m-r$维，就是奇异值分解。<br>
-较大的奇异值保存了图片的主要信息，特别小的奇异值有时可能是噪声，或者对于图片的整体信息不是特别重要。做图像压缩的时候，可以只取一部分较大的奇异值，比如取前八个奇异值作为压缩后的图片：<br>
-$$A = \sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T + \cdots + \sigma_8 u_8v_8^T$$<br>
-现实中常用的做法有两个：</p>
-<ol>
-<li>保留矩阵中$90%$的信息：将奇异值平方和累加到总值的%90%为止。</li>
-<li>当矩阵有上万个奇异值的时候，取前面的$2000$或者$3000$个奇异值。。</li>
-</ol>
-<h2 id="参考文献-references">参考文献(references)</h2>
-<p>1.Gilbert Strang, MIT Open course：Linear Algebra<br>
-2.<a href="https://www.cnblogs.com/pinard/p/6251584.html" target="_blank" rel="noopener">https://www.cnblogs.com/pinard/p/6251584.html</a><br>
-3.<a href="http://www.ams.org/publicoutreach/feature-column/fcarc-svd" target="_blank" rel="noopener">http://www.ams.org/publicoutreach/feature-column/fcarc-svd</a><br>
-4.<a href="https://www.zhihu.com/question/22237507/answer/53804902" target="_blank" rel="noopener">https://www.zhihu.com/question/22237507/answer/53804902</a><br>
-5.<a href="http://charleshm.github.io/2016/03/Singularly-Valuable-Decomposition/" target="_blank" rel="noopener">http://charleshm.github.io/2016/03/Singularly-Valuable-Decomposition/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3432,7 +3511,7 @@ $$A = \sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T + \cdots + \sigma_8 u_8v_8^T$$<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">226</span>
+                    <span class="site-state-item-count">227</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -4116,9 +4195,7 @@ $$A = \sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T + \cdots + \sigma_8 u_8v_8^T$$<br>
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">306</span>
+                    <span class="site-state-item-count">307</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -4369,9 +4446,9 @@ $$A = \sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T + \cdots + \sigma_8 u_8v_8^T$$<br>
   
     
       
-        
-      
     
+      
+        
       
     
       
