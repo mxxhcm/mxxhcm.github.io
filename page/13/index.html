@@ -327,6 +327,587 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-Function/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/08/pytorch-Function/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">pytorch Function(torch.autograd.Function)</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-08 21:54:22" itemprop="dateCreated datePublished" datetime="2019-05-08T21:54:22+08:00">2019-05-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-09 13:37:26" itemprop="dateModified" datetime="2019-05-09T13:37:26+08:00">2019-05-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="function-class-torch-autograd-funtion">Function(class torch.autograd.Funtion)</h3>
+<h4 id="用法">用法</h4>
+<p>Function一般只定义一个操作，并且它无法保存参数，一般适用于激活函数，pooling等，它需要定义三个方法，<strong>init</strong>(),forward(),backward()（这个需要自己定义怎么求导）<br>
+Model保存了参数，适合定义一层，如线性层(Linear layer),卷积层(conv layer),也适合定义一个网络。<br>
+和Model的区别，model只需要定义__init()__,foward()方法，backward()不需要我们定义，它可以由自动求导机制计算。</p>
+<p>Function定义只是一个函数，forward和backward都只与这个Function的输入和输出有关</p>
+<h4 id="functions">functions</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> torch.autograd <span class="keyword">import</span> Variable</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyReLU</span><span class="params">(torch.autograd.Function)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    We can implement our own custom autograd Functions by subclassing</span></span><br><span class="line"><span class="string">    torch.autograd.Function and implementing the forward and backward passes</span></span><br><span class="line"><span class="string">    which operate on Tensors.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, input)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        In the forward pass we receive a Tensor containing the input and return a</span></span><br><span class="line"><span class="string">        Tensor containing the output. You can cache arbitrary Tensors for use in the</span></span><br><span class="line"><span class="string">        backward pass using the save_for_backward method.</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        self.save_for_backward(input)</span><br><span class="line">        <span class="keyword">return</span> input.clamp(min=<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">backward</span><span class="params">(self, grad_output)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        In the backward pass we receive a Tensor containing the gradient of the loss</span></span><br><span class="line"><span class="string">        with respect to the output, and we need to compute the gradient of the loss</span></span><br><span class="line"><span class="string">        with respect to the input.</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        input, = self.saved_tensors</span><br><span class="line">        grad_input = grad_output.clone()</span><br><span class="line">        grad_input[input &lt; <span class="number">0</span>] = <span class="number">0</span></span><br><span class="line">        <span class="keyword">return</span> grad_input</span><br><span class="line"></span><br><span class="line">dtype = torch.FloatTensor</span><br><span class="line"><span class="comment"># dtype = torch.cuda.FloatTensor # Uncomment this to run on GPU</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># N is batch size; D_in is input dimension;</span></span><br><span class="line"><span class="comment"># H is hidden dimension; D_out is output dimension.</span></span><br><span class="line">N, D_in, H, D_out = <span class="number">64</span>, <span class="number">1000</span>, <span class="number">100</span>, <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Create random Tensors to hold input and outputs, and wrap them in Variables.</span></span><br><span class="line">x = Variable(torch.randn(N, D_in).type(dtype), requires_grad=<span class="literal">False</span>)</span><br><span class="line">y = Variable(torch.randn(N, D_out).type(dtype), requires_grad=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Create random Tensors for weights, and wrap them in Variables.</span></span><br><span class="line">w1 = Variable(torch.randn(D_in, H).type(dtype), requires_grad=<span class="literal">True</span>)</span><br><span class="line">w2 = Variable(torch.randn(H, D_out).type(dtype), requires_grad=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">learning_rate = <span class="number">1e-6</span></span><br><span class="line"><span class="keyword">for</span> t <span class="keyword">in</span> range(<span class="number">500</span>):</span><br><span class="line">    <span class="comment"># Construct an instance of our MyReLU class to use in our network</span></span><br><span class="line">    relu = MyReLU()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Forward pass: compute predicted y using operations on Variables; we compute</span></span><br><span class="line">    <span class="comment"># ReLU using our custom autograd operation.</span></span><br><span class="line">    y_pred = relu(x.mm(w1)).mm(w2)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Compute and print loss</span></span><br><span class="line">    loss = (y_pred - y).pow(<span class="number">2</span>).sum()</span><br><span class="line">    print(t, loss.data[<span class="number">0</span>])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Use autograd to compute the backward pass.</span></span><br><span class="line">    loss.backward()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Update weights using gradient descent</span></span><br><span class="line">    w1.data -= learning_rate * w1.grad.data</span><br><span class="line">    w2.data -= learning_rate * w2.grad.data</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Manually zero the gradients after updating weights</span></span><br><span class="line">    w1.grad.data.zero_()</span><br><span class="line">    w2.grad.data.zero_()</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-distributions/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/08/pytorch-distributions/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">pytorch distributions</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-08 21:53:46" itemprop="dateCreated datePublished" datetime="2019-05-08T21:53:46+08:00">2019-05-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-17 16:15:22" itemprop="dateModified" datetime="2019-05-17T16:15:22+08:00">2019-05-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="torch-distributions">torch.distributions</h2>
+<p>这个库和gym.space库很相似，都是提供一些分布，然后从中采样。<br>
+常见的有ExponentialFamily,Bernoulli,Binomial,Categorical,Exponential,Gamma,Independent,Laplace,Multinomial,MultivariateNormal。这里不做过程陈述，可以看<a href="http://localhost:4000/2019/04/12/gym%E4%BB%8B%E7%BB%8D/" target="_blank" rel="noopener">gym</a>中。</p>
+<h3 id="categorical">Categorical</h3>
+<p>对应tensorflow中的<a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py" target="_blank" rel="noopener">tf.multinomial</a>。<br>
+类原型：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLASS torch.distributions.categorical.Categorical(probs=<span class="literal">None</span>, logits=<span class="literal">None</span>, validate_args=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
+<p>参数probs只能是$1$维或者$2$维，而且必须是非负，有限非零和的，然后将其归一化到和为$1$。<br>
+这个类和torch.multinormal是一样的，从${0,\cdots, K-1}$中按照probs的概率进行采样，$K$是probs.size(-1)，即是size()矩阵的最后一列，$2$维时把第$1$维当成了batch。</p>
+<p>举一个简单的例子，<a href="https://github.com/mxxhcm/code/blob/master/pytorch/pytorch_test/torch_distribution.py" target="_blank" rel="noopener">代码</a>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.distributions <span class="keyword">as</span> diss</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"></span><br><span class="line">torch.manual_seed(<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">m = diss.Categorical(torch.tensor([<span class="number">0.25</span>, <span class="number">0.25</span>, <span class="number">0.25</span>, <span class="number">0.25</span> ]))</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    print(m.sample())</span><br><span class="line"></span><br><span class="line">m = diss.Categorical(torch.tensor([[<span class="number">0.5</span>, <span class="number">0.25</span>, <span class="number">0.25</span>], [<span class="number">0.25</span>, <span class="number">0.25</span>, <span class="number">0.5</span>]]))</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    print(m.sample())</span><br></pre></td></tr></table></figure>
+<p>输出结果如下：</p>
+<blockquote>
+<p>tensor(2)<br>
+tensor(1)<br>
+tensor(1)<br>
+tensor(1)<br>
+tensor(1)<br>
+tensor([2, 2])<br>
+tensor([1, 2])<br>
+tensor([0, 1])<br>
+tensor([0, 2])<br>
+tensor([0, 0])</p>
+</blockquote>
+<p>作为对比，gym.spaces.Discrete示例如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> gym <span class="keyword">import</span> spaces</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.Discrete</span></span><br><span class="line"><span class="comment"># 取值是&#123;0, 1, ..., n - 1&#125;</span></span><br><span class="line">dis = spaces.Discrete(<span class="number">5</span>)</span><br><span class="line">dis.seed(<span class="number">5</span>)</span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">    print(dis.sample())</span><br></pre></td></tr></table></figure>
+<p>输出结果是：</p>
+<blockquote>
+<p>3<br>
+0<br>
+1<br>
+0<br>
+4</p>
+</blockquote>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://pytorch.org/docs/stable/distributions.html" target="_blank" rel="noopener">https://pytorch.org/docs/stable/distributions.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-multiprocessing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/08/pytorch-multiprocessing/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">pytorch multiprocessing</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-08 21:52:42" itemprop="dateCreated datePublished" datetime="2019-05-08T21:52:42+08:00">2019-05-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-17 16:21:22" itemprop="dateModified" datetime="2019-05-17T16:21:22+08:00">2019-05-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="torch-multiprocessing">torch.multiprocessing</h2>
+<h3 id="join">join</h3>
+<p>等待调用join()方法的线程执行完毕，然后继续执行。<br>
+可参见github<a href="https://github.com/mxxhcm/myown_code/tree/master/pytorch/tutorials/multiprocess_torch/mnist_hogwild" target="_blank" rel="noopener">官方demo</a>。</p>
+<h3 id="share-memory">share_memory_()</h3>
+<p>在多个线程之间共享参数，如下<a href="https://github.com/mxxhcm/myown_code/blob/master/pytorch/tutorials/multiprocess_torch/share_memory.py" target="_blank" rel="noopener">代码</a>所示。可以用来实现A3C。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch.multiprocessing <span class="keyword">as</span> mp</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">proc</span><span class="params">(sec, x)</span>:</span></span><br><span class="line">   print(os.getpid(),<span class="string">"  "</span>, x)</span><br><span class="line">   time.sleep(sec)</span><br><span class="line">   print(os.getpid(), <span class="string">"  "</span>, x)</span><br><span class="line">   x += sec</span><br><span class="line">   print(str(os.getpid()) + <span class="string">"  over.  "</span>, x)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">   num_processes = <span class="number">3</span></span><br><span class="line">   processes = []</span><br><span class="line">   x = torch.ones([<span class="number">3</span>,])</span><br><span class="line">   x.share_memory_()</span><br><span class="line">   <span class="keyword">for</span> rank <span class="keyword">in</span> range(num_processes):</span><br><span class="line">     p = mp.Process(target=proc, args=(rank + <span class="number">1</span>, x))</span><br><span class="line">     p.start() </span><br><span class="line">     processes.append(p)</span><br><span class="line">   <span class="keyword">for</span> p <span class="keyword">in</span> processes:</span><br><span class="line">     p.join()</span><br><span class="line">   print(x)</span><br></pre></td></tr></table></figure>
+<p>输出结果如下所示：</p>
+<blockquote>
+<p>python share_memory.py<br>
+7739    tensor([1., 1., 1.])<br>
+7738    tensor([1., 1., 1.])<br>
+7737    tensor([1., 1., 1.])<br>
+7737    tensor([1., 1., 1.])<br>
+7737  over.   tensor([2., 2., 2.])<br>
+7738    tensor([2., 2., 2.])<br>
+7738  over.   tensor([4., 4., 4.])<br>
+7739    tensor([4., 4., 4.])<br>
+7739  over.   tensor([7., 7., 7.])<br>
+tensor([7., 7., 7.])</p>
+</blockquote>
+<p>我们可以发现$7739$这个线程中，传入的$x$还是和最开始的一样，但是在$7738$线程更新完$x$之后，$7739$使用的$x$就已经变成了更新后的$x$。所以，我猜测这里面应该是有一个对$x$的锁，保证$x$在同一时刻只能被一个线程访问。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://pytorch.org/docs/stable/multiprocessing.html" target="_blank" rel="noopener">https://pytorch.org/docs/stable/multiprocessing.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-problems/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1804,574 +2385,6 @@ offset中横轴是bin的取值，纵轴是时间步，所有的直方图按照�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/tensorflow-math/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/08/tensorflow-math/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">tensorflow math</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-08 17:38:46" itemprop="dateCreated datePublished" datetime="2019-05-08T17:38:46+08:00">2019-05-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-10 19:37:24" itemprop="dateModified" datetime="2019-05-10T19:37:24+08:00">2019-05-10</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="tf-math">tf.math</h2>
-<ul>
-<li>tf.add(x, y, name=None) # 求和</li>
-<li>tf.sub(x, y, name=None) # 减法</li>
-<li>tf.mul(x, y, name=None) # 乘法</li>
-<li>tf.div(x, y, name=None) # 除法</li>
-<li>tf.mod(x, y, name=None) # 取模</li>
-<li>tf.maximumd(x, y, name=None) # x &gt; y?x:y</li>
-<li>tf.minimum(x, y, name=None) # x &lt; y?x:y</li>
-<li>tf.abs(x, name=None) # 求绝对值</li>
-<li>tf.neg(x, name=None) # 取负</li>
-<li>tf.sign(x, name=None) # 返回符号</li>
-<li>tf.inv(x, name=None) # 取反</li>
-<li>tf.square(x, name=None) # 平方</li>
-<li>tf.round(x, name=None) # 四舍五入</li>
-<li>tf.sqrt(x, name=None) # 开根号</li>
-<li>tf.pow(x, name=None) #</li>
-<li>tf.exp(x, name=None) #</li>
-<li>tf.log(x, name=None) #</li>
-<li>tf.sin(x, name=None) #</li>
-<li>tf.cos(x, name=None) #</li>
-<li>tf.tan(x, name=None) #</li>
-<li>tf.atan(x, name=None) #</li>
-</ul>
-<h2 id="代码示例">代码示例</h2>
-<h3 id="tf-maximum">tf.maximum</h3>
-<p>比较两个tensor，返回element-wise两个tensor的最大值。<br>
-<a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_maximum.py" target="_blank" rel="noopener">代码地址示例</a>：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">a = tf.Variable([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line">b = tf.Variable([<span class="number">2</span>, <span class="number">1</span>, <span class="number">4</span>])</span><br><span class="line"></span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">print(<span class="string">"a: "</span>, sess.run(a))</span><br><span class="line">print(<span class="string">"b: "</span>, sess.run(b))</span><br><span class="line">c = tf.maximum(a, b)</span><br><span class="line"></span><br><span class="line">print(<span class="string">"tf.maximum(a, b):\n  "</span>, sess.run(c))</span><br></pre></td></tr></table></figure>
-<p>输出如下：</p>
-<blockquote>
-<p>a:  [1 2 3]<br>
-b:  [2 1 4]<br>
-tf.maximum(a, b):<br>
-[2 2 4]</p>
-</blockquote>
-<h2 id="参考文献">参考文献</h2>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/tensorflow-multinomial/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/08/tensorflow-multinomial/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">tensorflow multinomial</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-08 17:37:45" itemprop="dateCreated datePublished" datetime="2019-05-08T17:37:45+08:00">2019-05-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-12 17:12:06" itemprop="dateModified" datetime="2019-05-12T17:12:06+08:00">2019-05-12</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="tf-multinomial-1-tf-random-categorical-2">tf.multinomial[1] (tf.random.categorical[2])</h2>
-<p>多项分布，采样。</p>
-<h3 id="更新">更新</h3>
-<p>在tensorflow 13.1版本中，提示这个API在未来会被弃用，需要使用tf.random.categorical替代。</p>
-<h3 id="api">API</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">tf.multinomial(</span><br><span class="line">    logits, <span class="comment"># 指定样本概率的tf.Tensor</span></span><br><span class="line">    num_samples, <span class="comment"># 样本个数</span></span><br><span class="line">    seed=<span class="literal">None</span>, <span class="comment">#, 0-D</span></span><br><span class="line">    name=<span class="literal">None</span>,</span><br><span class="line">    output_dtype=<span class="literal">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<h3 id="代码示例">代码示例</h3>
-<p><a href="https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py" target="_blank" rel="noopener">代码地址</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="comment"># tf.multinomial(logits, num_samples, seed=None, name=None)</span></span><br><span class="line"><span class="comment"># logits 是一个二维张量，指定概率，num_samples是采样个数</span></span><br><span class="line">sess = tf.Session()</span><br><span class="line">sample = tf.multinomial([[<span class="number">5.0</span>, <span class="number">5.0</span>, <span class="number">5.0</span>], [<span class="number">5.0</span>, <span class="number">4</span>, <span class="number">3</span>]], <span class="number">10</span>) <span class="comment"># 注意logits必须是float</span></span><br><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">  print(sess.run(sample))</span><br></pre></td></tr></table></figure>
-<p>输出结果如下:</p>
-<blockquote>
-<p>[[2 1 2 1 0 2 1 1 1 0]<br>
-[1 0 0 1 0 1 0 1 0 0]]<br>
-[[2 2 0 2 2 0 2 0 1 2]<br>
-[1 0 0 2 0 1 0 1 1 0]]<br>
-[[0 0 0 2 0 0 1 2 0 1]<br>
-[0 0 0 1 0 1 0 0 0 0]]<br>
-[[2 1 0 1 1 1 0 0 2 0]<br>
-[1 0 0 2 0 0 0 0 0 1]]<br>
-[[1 0 1 0 0 1 2 2 0 0]<br>
-[1 0 0 0 0 1 1 1 2 0]]</p>
-</blockquote>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.tensorflow.org/api_docs/python/tf/random/multinomial" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/random/multinomial</a><br>
-2.<a href="https://www.tensorflow.org/api_docs/python/tf/random/categorical" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/random/categorical</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/tensorflow-app/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/08/tensorflow-app/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">tensorflow app</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-08 17:35:39 / 修改时间：22:09:23" itemprop="dateCreated datePublished" datetime="2019-05-08T17:35:39+08:00">2019-05-08</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="tf-app-flags">tf.app.flags</h2>
-<h3 id="代码示例">代码示例</h3>
-<p><a href="https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_app.py" target="_blank" rel="noopener">代码地址</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">flags.py</span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">flags = tf.app.flags</span><br><span class="line">flags.DEFINE_string(<span class="string">'model'</span>, <span class="string">'mxx'</span>, <span class="string">'Type of model'</span>)</span><br><span class="line">flags.DEFINE_boolean(<span class="string">'gpu'</span>,<span class="string">'True'</span>, <span class="string">'use gpu?'</span>)</span><br><span class="line">FLAGS = flags.FLAGS</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(_)</span>:</span></span><br><span class="line">    <span class="keyword">for</span> k,v <span class="keyword">in</span> FLAGS.flag_values_dict().items():</span><br><span class="line">        print(k, v)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    tf.app.run(main)</span><br></pre></td></tr></table></figure>
-<p>传递参数的方法有两种，一种是命令行~$:python <a href="http://flags.py" target="_blank" rel="noopener">flags.py</a> --model hhhh ，一种是pycharm中传递参数。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2421,7 +2434,7 @@ tf.maximum(a, b):<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">224</span>
+                    <span class="site-state-item-count">227</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2433,8 +2446,6 @@ tf.maximum(a, b):<br>
                 <div class="site-state-item site-state-categories">
                   <a href="/categories/index.html">
                     
-                    
-                      
                     
                       
                     
@@ -3091,7 +3102,19 @@ tf.maximum(a, b):<br>
                     
                       
                     
-                    <span class="site-state-item-count">299</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">305</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
