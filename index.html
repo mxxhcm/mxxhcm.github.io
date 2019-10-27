@@ -327,7 +327,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/27/c-file-opreation/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/27/c-input-output/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -347,7 +347,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/10/27/c-file-opreation/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">c file opreation</a>
+                <a href="/2019/10/27/c-input-output/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">c input and output</a>
               
             
           </h1>
@@ -372,7 +372,7 @@
                 
               
 
-              <time title="创建时间：2019-10-27 10:00:47 / 修改时间：10:01:06" itemprop="dateCreated datePublished" datetime="2019-10-27T10:00:47+08:00">2019-10-27</time>
+              <time title="创建时间：2019-10-27 10:00:47 / 修改时间：12:02:44" itemprop="dateCreated datePublished" datetime="2019-10-27T10:00:47+08:00">2019-10-27</time>
             
 
             
@@ -430,7 +430,82 @@
       
         
           
-            
+            <h2 id="缓冲区">缓冲区</h2>
+<p>我们在使用输入输出函数的时候，不管是从文件还是控制台中读取数据，数据都会先存放在缓冲区里面，在需要使用的时候会在缓冲区里面提取。<br>
+例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a, b;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在控制台输入：<br>
+12 23 34 45 56 67 78 89<br>
+控制台输出结果：<br>
+12 23<br>
+34 45<br>
+56 67</p>
+<p>由于输入在控制台的数据已经到了缓冲区，所以除了第一次调用scanf()的时候控制台会弹出，另两次则不会弹出，缓冲区不为空，直接从缓冲区里面拿取数据。<br>
+如果不想这样做可以选择清空缓冲区，我们可以使用fclose()函数清空缓冲区并关闭流，这样我们就无法继续使用流了。因此我们可以选择使用fflush()函数，在不关闭流的情况下清空缓冲区。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fflush</span> <span class="params">( FILE * stream )</span></span>;</span><br></pre></td></tr></table></figure>
+<p>如果给出的文件流是一个输出流,那么fflush()把输出到缓冲区的内容写入文件；<br>
+如果给出的文件流是输入类型的,结果未定义；<br>
+fflush(NULL)刷新所有的输出流；<br>
+fflush(stdin)刷新标准输入缓冲区，把输入缓冲区里的东西丢弃；<br>
+fflush(stdout)刷新标准输出缓冲区，把输出缓冲区里的东西打印到标准输出设备上。<br>
+例如</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a, b;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line">    fflush(<span class="built_in">stdin</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line">    fflush(<span class="built_in">stdin</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在控制台输入：<br>
+12 23 34 45 56 67 78 89<br>
+控制台输出<br>
+12 23<br>
+然后会等待控制台输入，这就是C语言的输入输出的大致运行模式</p>
+<h2 id="文件输入-输出">文件输入/输出</h2>
+<h3 id="打开文件fopen和关闭文件close">打开文件<code>fopen</code>和关闭文件<code>close</code></h3>
+<h4 id="函数原型">函数原型</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//打开文件，打开成功返回一个FILE类型的指针，打开失败返回NULL</span></span><br><span class="line"><span class="comment">// filename是待打开文件的名称</span></span><br><span class="line"><span class="comment">// type是文件操作方法，包括'w', 'a', 'rb', 'wb', 'ab', 'r+', 'w+', 'a+', 'rb+', 'wb+', 'ab+'</span></span><br><span class="line"><span class="function">FILE* <span class="title">fopen</span><span class="params">(<span class="keyword">char</span>*filename, <span class="keyword">char</span>* type)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//关闭FILE类型指针</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fclose</span><span class="params">(FILE* stream)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="示例">示例</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt; </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">	<span class="keyword">char</span> filename[<span class="number">20</span>] = <span class="string">"data.txt"</span>;</span><br><span class="line">	FILE *fp = fopen(filename, <span class="string">"r"</span>); </span><br><span class="line">    <span class="keyword">if</span> (fp == <span class="literal">NULL</span>) </span><br><span class="line">	&#123; </span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">"Cannot open file \n"</span>); </span><br><span class="line">		<span class="built_in">exit</span>(<span class="number">0</span>); </span><br><span class="line">	&#125;</span><br><span class="line">    fclose(fp)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="从文件流中读写字符">从文件流中读写字符</h3>
+<h4 id="读字符">读字符</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//读取字符</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fgetc</span><span class="params">(FILE* stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//getc和fget()功能功能一样，而getc是宏实现，进行了优化，getc可以被当做宏调用。而fgetc只能当做函数被调用。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getc</span><span class="params">(File* stream)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="写字符">写字符</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fputc</span><span class="params">(<span class="keyword">int</span> ch, FILE* stream)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">putc</span><span class="params">(<span class="keyword">int</span> ch, FILE* stream)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="从文件流中直接读取">从文件流中直接读取</h3>
+<h4 id="读取多个字节">读取多个字节</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">size_t</span> fread(<span class="keyword">void</span>* ptr,<span class="keyword">size_t</span> size,<span class="keyword">size_t</span> nobj,FILE* stream);</span><br></pre></td></tr></table></figure>
+<h4 id="写入多个字节">写入多个字节</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">size_t</span> fwrite(<span class="keyword">const</span> <span class="keyword">void</span>* ptr,<span class="keyword">size_t</span> size,<span class="keyword">size_t</span> nobj,FILE* stream);</span><br></pre></td></tr></table></figure>
+<h3 id="从文件流中读写字符串">从文件流中读写字符串</h3>
+<h4 id="读字符串">读字符串</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">char</span>* <span class="title">fgets</span><span class="params">(<span class="keyword">char</span>* str, <span class="keyword">int</span> n, FILE* stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fscanf</span><span class="params">(FILE* stream, <span class="keyword">char</span>* format, variable-<span class="built_in">list</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="写字符串">写字符串</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fputs</span><span class="params">(<span class="keyword">char</span>* str, FILE* stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fprintf</span><span class="params">(FILE* stream, <span class="keyword">char</span>* format, variable-<span class="built_in">list</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="标准输入-输出">标准输入/输出</h2>
+<h3 id="读写字符">读写字符</h3>
+<h4 id="读字符-v2">读字符</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">scanf</span>()加%c</span><br><span class="line"><span class="comment">//缓冲区是一个先进先出的队列，即取走数据的时候，遵循先输入的数据先取走的原则。scanf函数的格式说明符有几个就要取几次数据，只要碰到格式说明符就必须把数据取走，至于是不是要把取走的数据存放起来，就得看数据列表中的数据个数。没取完的数据继续留在缓冲区中。</span></span><br><span class="line"></span><br><span class="line">getchar()</span><br><span class="line"><span class="comment">//将用户输入的字符输出到标准输出设备，也是从缓冲区读取。</span></span><br><span class="line"></span><br><span class="line">getche()</span><br><span class="line"><span class="comment">//不读取缓冲区的字符，只要用户输入字符，getche()函数会立刻读取，而不需等待按回车键，并在屏幕上显示读入的字符。</span></span><br><span class="line"></span><br><span class="line">getch()</span><br><span class="line"><span class="comment">//它与getche()的区别是，getch()不需将所输入的字符显示到屏幕上</span></span><br></pre></td></tr></table></figure>
+<h4 id="写字符-v2">写字符</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>(); </span><br><span class="line"><span class="comment">// 加%c</span></span><br><span class="line"><span class="built_in">putchar</span>()</span><br></pre></td></tr></table></figure>
+<h3 id="读写字符串">读写字符串</h3>
+<h4 id="读字符串-v2">读字符串</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.gets</span></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">gets</span><span class="params">(<span class="keyword">char</span> *s)</span></span>;</span><br><span class="line"><span class="comment">//Never use gets(). 别用gets()，因为get()没有指定可以使用的缓冲区大小，它会在遇到换行符或者EOF才能停止，把所有的字符都存在缓冲区中，然而因为不知道要读多少个字符，所以可能会发生溢出。fgets()指定了缓冲区大小，所以很安全。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.scanf</span></span><br><span class="line"><span class="built_in">scanf</span>();</span><br><span class="line"><span class="comment">//scanf()加%s，但是%s会在遇到空白符（空格，tab）时自动结束，而gets和fgets()都是以换行或者EOF为结束。</span></span><br><span class="line"><span class="comment">//Avoid using scanf. 如果用的不仔细，会和gets发生一样的溢出。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 3.fgets</span></span><br><span class="line">fgets();</span><br><span class="line"><span class="comment">//建议使用fgets()。这个是文件读写。</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 4.getline</span></span><br><span class="line">getline();</span><br></pre></td></tr></table></figure>
+<h4 id="写字符串-v2">写字符串</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span>() 加%s</span><br><span class="line"></span><br><span class="line"><span class="built_in">puts</span>();</span><br><span class="line"><span class="comment">//以"\0"作为字符串的结束。</span></span><br></pre></td></tr></table></figure>
+<h3 id="其他">其他</h3>
+<p>可以定义文件指针，指向<code>stdin</code>和<code>stdout</code>，文件的读写函数就也可以使用到标准输入输出了。<br>
+如下示例：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ch;</span><br><span class="line"></span><br><span class="line">    FILE *pfin = <span class="built_in">stdin</span>; <span class="comment">//定义一个文件指针，并指向标准输入设备(键盘)</span></span><br><span class="line">    FILE *pfout = <span class="built_in">stdout</span>; <span class="comment">//定义一个文件指针，并指向标准输出设备(屏幕)</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Enter a string: "</span>);</span><br><span class="line">    </span><br><span class="line">    ch = getc(pfin); <span class="comment">//使用getc()函数获取缓冲区中的第一个字符</span></span><br><span class="line"></span><br><span class="line">    putc(ch, pfout); <span class="comment">//使用putc()函数输出该字符</span></span><br><span class="line">    putc(<span class="string">'\n'</span>, pfout); <span class="comment">//使用putc()函数输出换行字符</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="文件输入示例">文件输入示例</h2>
+<h3 id="从文件中一行一行的读取数字">从文件中一行一行的读取数字</h3>
+<p>有data.txt如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">13</span><br><span class="line">38</span><br><span class="line">28</span><br></pre></td></tr></table></figure>
+<p>读取程序如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt; </span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">#define N 510</span><br><span class="line"></span><br><span class="line">int main() </span><br><span class="line">&#123; </span><br><span class="line">	char filename[20] = &quot;data.txt&quot;;</span><br><span class="line">	FILE *fp = fopen(filename, &quot;r&quot;); </span><br><span class="line">	if (fp == NULL) </span><br><span class="line">	&#123; </span><br><span class="line">		printf(&quot;Cannot open file \n&quot;); </span><br><span class="line">		exit(0); </span><br><span class="line">	&#125; </span><br><span class="line"></span><br><span class="line">    char chunk[128];</span><br><span class="line">    int array[N] = &#123;0&#125;;</span><br><span class="line">    int count = 0;</span><br><span class="line">	while (fgets(chunk, sizeof(chunk), fp)!=NULL) </span><br><span class="line">	&#123; </span><br><span class="line">        array[count] = atoi(chunk);</span><br><span class="line">        count += 1;</span><br><span class="line">	&#125; </span><br><span class="line">	fclose(fp); </span><br><span class="line">	return 0; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://blog.csdn.net/strongwangjiawei/article/details/7786085" target="_blank" rel="noopener">https://blog.csdn.net/strongwangjiawei/article/details/7786085</a><br>
+2.<a href="https://solarianprogrammer.com/2019/04/03/c-programming-read-file-lines-fgets-getline-implement-portable-getline/" target="_blank" rel="noopener">https://solarianprogrammer.com/2019/04/03/c-programming-read-file-lines-fgets-getline-implement-portable-getline/</a><br>
+3.<a href="https://stackoverflow.com/questions/20378430/reading-numbers-from-a-text-file-into-an-array-in-c" target="_blank" rel="noopener">https://stackoverflow.com/questions/20378430/reading-numbers-from-a-text-file-into-an-array-in-c</a><br>
+4.<a href="http://manpages.ubuntu.com/manpages/bionic/man3/fgetc.3.html" target="_blank" rel="noopener">http://manpages.ubuntu.com/manpages/bionic/man3/fgetc.3.html</a><br>
+5.<a href="https://www.cnblogs.com/JCSU/articles/1306308.html" target="_blank" rel="noopener">https://www.cnblogs.com/JCSU/articles/1306308.html</a><br>
+6.<a href="https://www.cnblogs.com/JCSU/articles/1306308.html" target="_blank" rel="noopener">https://www.cnblogs.com/JCSU/articles/1306308.html</a><br>
+7.<a href="https://blog.csdn.net/baidu_27435045/article/details/53313699" target="_blank" rel="noopener">https://blog.csdn.net/baidu_27435045/article/details/53313699</a></p>
+
           
         
       
@@ -1182,6 +1257,212 @@ $$sd = \sqrt{\frac{R^2}{n-k} }$$<br>
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/26/bayesian-classfier/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/26/bayesian-classfier/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">bayesian classfier</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-26 10:02:39" itemprop="dateCreated datePublished" datetime="2019-10-26T10:02:39+08:00">2019-10-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-27 10:02:24" itemprop="dateModified" datetime="2019-10-27T10:02:24+08:00">2019-10-27</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="关键字">关键字</h2>
+<p>贝叶斯分类器，贝叶斯定理，朴素贝叶斯，贝叶斯错误率</p>
+<h2 id="贝叶斯分类器">贝叶斯分类器</h2>
+<p>贝叶斯分类器是一类分类算法的总称，这类算法均以贝叶斯定理为基础，故统称为贝叶斯分类器。常见的贝叶斯分类器有朴素贝叶斯和贝叶斯信念网络。</p>
+<h2 id="贝叶斯定理">贝叶斯定理</h2>
+<p>假设X,Y是一对随机变量，它们的联合概率$P(X=x, Y=y)$是指$X$取值$x$且$Y$取值为$y$的概率，条件概率是指一个随机变量在另一个随机变量取值已知的情况下取某一个特定值的概率。比如$P(Y=y|X=y)$是指在变量$X取值$x$的情况下，变量$Y$取值$y$的概率。$X$和$Y$的联合概率和条件概率满足如下关系：<br>
+$$P(X,Y) = P(Y|X)\cdot P(X) = P(X|Y)\cdot P(Y)$$<br>
+由上面的公式可以得到下面公式，称为贝叶斯定理：<br>
+$$P(Y|X) = \frac{P(X|Y)P(Y)}{P(X)}$$</p>
+<h2 id="朴素贝叶斯分类器">朴素贝叶斯分类器</h2>
+<p>朴素贝叶斯有一个假设：条件独立假设，拿公式举个例子就是<br>
+$$P(X|Y=y_k)=\prod_{i=1}^m P(x_i|Y=y_k)$$<br>
+其中$X=[x_1, x_2,\cdots, x_m]$即$m$个属性。<br>
+贝叶斯分类器的流程如下所示：</p>
+<ol>
+<li>给出训练样本集，属性集合$X=[x_1, x_2,\cdots, x_m]$，标签集合$Y=[y_1, y_2,\cdots, y_n]$，计算每个类别$y_j$中出现属性$x_i$的条件概率，即<br>
+$$P(x_i|y_j), 1 \le i \le m, 1 \le j \le n$$</li>
+<li>给出一个新的样本$X$，根据贝叶斯定理以及条件独立假设，计算：<br>
+$$P(y_k|X) = \frac{P(X|y_k)P(y_k)}{P(X)} = \frac{\prod_{i=1}^m P(x_i|y_k) P(y_k)}{P(X)}$$</li>
+<li>从$P(y_k|X)$中选出最大的$P$对应的$y_k$当做label。</li>
+</ol>
+<p>可以看出，朴素贝叶斯分类器的关键就是计算条件概率：</p>
+<ul>
+<li>当属性$X$是离散值时，可以统计样本中各个$P(x_i|y_j)$的频率近似计算概率</li>
+<li>当属性$X$是连续值时，可以假设变量服从某种分布，使用训练数据估计分布的参数。 如高斯分布的均值和方差。</li>
+</ul>
+<h2 id="贝叶斯错误率">贝叶斯错误率</h2>
+<h2 id="贝叶斯决策边界">贝叶斯决策边界</h2>
+<p>贝叶斯分类器产生最低的错误率，叫做贝叶斯错误率。因为贝叶斯分类器总是选择使式子$(1)$最大化的类，在$X=x_0$处的错误率是$1-\max_j Pr(Y=j|X=x_0)$。<br>
+整个贝叶斯分类器的错误率是：<br>
+$$1-\mathbb{E}\left(\max_j Pr(Y=j|X=x_0)\right)$$<br>
+其中期望表示计算所有$X$的可能取值上的平均错误率。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.cnblogs.com/phoenixzq/p/3539619.html" target="_blank" rel="noopener">https://www.cnblogs.com/phoenixzq/p/3539619.html</a><br>
+2.<a href="http://funhacks.net/2015/05/18/Bayesian-classifier/" target="_blank" rel="noopener">http://funhacks.net/2015/05/18/Bayesian-classifier/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/25/c-struct-vs-c-struct/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1782,212 +2063,6 @@ FNR（假反例率），type-2 error<br>
 $$\frac{FN}{FN+TP}$$</p>
 <h2 id="参考文献">参考文献</h2>
 <p>1.西瓜书</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/21/bayesian-classfier/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/21/bayesian-classfier/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">bayesian classfier</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-21 20:55:39" itemprop="dateCreated datePublished" datetime="2019-10-21T20:55:39+08:00">2019-10-21</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-26 21:04:27" itemprop="dateModified" datetime="2019-10-26T21:04:27+08:00">2019-10-26</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="关键字">关键字</h2>
-<p>贝叶斯分类器，贝叶斯定理，朴素贝叶斯，贝叶斯错误率</p>
-<h2 id="贝叶斯分类器">贝叶斯分类器</h2>
-<p>贝叶斯分类器是一类分类算法的总称，这类算法均以贝叶斯定理为基础，故统称为贝叶斯分类器。常见的贝叶斯分类器有朴素贝叶斯和贝叶斯信念网络。</p>
-<h2 id="贝叶斯定理">贝叶斯定理</h2>
-<p>假设X,Y是一对随机变量，它们的联合概率$P(X=x, Y=y)$是指$X$取值$x$且$Y$取值为$y$的概率，条件概率是指一个随机变量在另一个随机变量取值已知的情况下取某一个特定值的概率。比如$P(Y=y|X=y)$是指在变量$X取值$x$的情况下，变量$Y$取值$y$的概率。$X$和$Y$的联合概率和条件概率满足如下关系：<br>
-$$P(X,Y) = P(Y|X)\cdot P(X) = P(X|Y)\cdot P(Y)$$<br>
-由上面的公式可以得到下面公式，称为贝叶斯定理：<br>
-$$P(Y|X) = \frac{P(X|Y)P(Y)}{P(X)}$$</p>
-<h2 id="朴素贝叶斯分类器">朴素贝叶斯分类器</h2>
-<p>朴素贝叶斯有一个假设：条件独立假设，拿公式举个例子就是<br>
-$$P(X|Y=y_k)=\prod_{i=1}^m P(x_i|Y=y_k)$$<br>
-其中$X=[x_1, x_2,\cdots, x_m]$即$m$个属性。<br>
-贝叶斯分类器的流程如下所示：</p>
-<ol>
-<li>给出训练样本集，属性集合$X=[x_1, x_2,\cdots, x_m]$，标签集合$Y=[y_1, y_2,\cdots, y_n]$，计算每个类别$y_j$中出现属性$x_i$的条件概率，即<br>
-$$P(x_i|y_j), 1 \le i \le m, 1 \le j \le n$$</li>
-<li>给出一个新的样本$X$，根据贝叶斯定理以及条件独立假设，计算：<br>
-$$P(y_k|X) = \frac{P(X|y_k)P(y_k)}{P(X)} = \frac{\prod_{i=1}^m P(x_i|y_k) P(y_k)}{P(X)}$$</li>
-<li>从$P(y_k|X)$中选出最大的$P$对应的$y_k$当做label。</li>
-</ol>
-<p>可以看出，朴素贝叶斯分类器的关键就是计算条件概率：</p>
-<ul>
-<li>当属性$X$是离散值时，可以统计样本中各个$P(x_i|y_j)$的频率近似计算概率</li>
-<li>当属性$X$是连续值时，可以假设变量服从某种分布，使用训练数据估计分布的参数。 如高斯分布的均值和方差。</li>
-</ul>
-<h2 id="贝叶斯错误率">贝叶斯错误率</h2>
-<h2 id="贝叶斯决策边界">贝叶斯决策边界</h2>
-<p>贝叶斯分类器产生最低的错误率，叫做贝叶斯错误率。因为贝叶斯分类器总是选择使式子$(1)$最大化的类，在$X=x_0$处的错误率是$1-\max_j Pr(Y=j|X=x_0)$。<br>
-整个贝叶斯分类器的错误率是：<br>
-$$1-\mathbb{E}\left(\max_j Pr(Y=j|X=x_0)\right)$$<br>
-其中期望表示计算所有$X$的可能取值上的平均错误率。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.cnblogs.com/phoenixzq/p/3539619.html" target="_blank" rel="noopener">https://www.cnblogs.com/phoenixzq/p/3539619.html</a><br>
-2.<a href="http://funhacks.net/2015/05/18/Bayesian-classifier/" target="_blank" rel="noopener">http://funhacks.net/2015/05/18/Bayesian-classifier/</a></p>
 
           
         
@@ -2906,7 +2981,13 @@ qsort是C的快排实现。</p>
                     
                       
                     
-                    <span class="site-state-item-count">305</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">307</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
