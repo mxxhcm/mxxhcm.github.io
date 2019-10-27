@@ -110,6 +110,7 @@ int main()
     print("%f", (double)(end-start)/CLOCK_PER_SEC);
 }
 ```
+
 ## 参考文献
 1.https://stackoverflow.com/questions/822323/how-to-generate-a-random-int-in-c
 2.https://blog.csdn.net/zhangwei_zone/article/details/11219757

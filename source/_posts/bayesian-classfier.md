@@ -1,6 +1,6 @@
 ---
 title: bayesian classfier
-date: 2019-10-21 20:55:39
+date: 2019-10-26 10:02:39
 tags:
  - 机器学习
  - 贝叶斯分类器
