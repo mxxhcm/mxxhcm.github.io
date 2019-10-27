@@ -50,6 +50,5 @@ $$ \sum_{i=1}^N\left( -\frac{1}{2t} + \frac{(x-\mu)^2 }{2t^2 }\right) = 0 $$
 解得：
 $$ \sigma^2 = t = \frac{\sum_{i=1}^N (x_i) -\mu)^2 }{N} $$
 
-
-
 ## 参考文献
+
