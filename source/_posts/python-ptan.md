@@ -35,26 +35,26 @@ Action Selector被Agent使用，常用的有：
 
 ### 基类
 #### ActionSelector
-```
+``` python
 class ActionSelector:
     def __call__(self, scores)
 ```
 ### 子类
 #### ArgmaxActionSelector
-```
+``` python
 class ArgmaxActionSelector(ActionSelector):
     def __call__(self, scores)
 ```
 
 #### EpsilonGreedyActionSector
-``` 
+``` python 
 class EpsilonGreedyActionSector(ActionSelector):
     def __init__(self, epsilon=0.05, selector=None)
     def __call(self, scores)
 ```
 
 #### ProbabilityActionSelector
-```
+``` python
 class ProbabilityActionSelector(ActionSelector):
     def __call__(self, probs)
 ```
@@ -75,7 +75,7 @@ class ProbabilityActionSelector(ActionSelector):
 
 ### 基类
 #### BaseAgent
-``` 
+``` python 
 class BaseAgent:
     # 1.
     def __initial_state(self)
@@ -90,7 +90,7 @@ class BaseAgent:
 
 ### 子类
 #### DQNAgent
-```
+``` python
 class DQNAgent(BaseAgent):
     # 1.
     def __init__(self, dqn_model, action_selector, device="cpu", preprocessor=default_states_preprocessor)
@@ -100,7 +100,7 @@ class DQNAgent(BaseAgent):
 #### PolicyAgent
 输入的model产生离散动作的policy distribution，Policy distribution可以是logtis或者normalized distribution。
 PolicyAgent调用probability action selector对这个distribution进行采样 。PolicyAgent其实就是将model和action selector组装在了一起。
-```
+``` python
 class PolicyAgent(BaseAgent):
     # 1.
     def __init__(self, model, action_selector=actions.ProbabilityActionSelector(), device="cpu", apply_softmax=False, preprocessor=default_states_preprocessor)
@@ -110,7 +110,7 @@ class PolicyAgent(BaseAgent):
 ```
 
 #### ActorCriticAgent
-```
+``` python
 class ActorCriticAgent
     # 1.
     def __init__(self, model, action_selector=actions.ProbabilityActionSelector(), device="cpu", apply_softmax=False, preprocessor=default_states_preprocessor)
@@ -121,7 +121,7 @@ class ActorCriticAgent
 
 ### 其他
 #### default_states_preprocessor
-```
+``` python
 def default_states_preprocessor(states):
     """
     Convert list of states into the form suitable for model. By default we assume Variable
@@ -136,7 +136,7 @@ def default_states_preprocessor(states):
 ```
 
 #### TargetNet
-``` 
+``` python
 class TargetNet
     # 1.
     def __init__(self, model)
@@ -156,10 +156,13 @@ Agent不断的和env进行交互产生一系列的trajectories，Experience可�
 - ExperienceSource
 - ExperienceSourceFirstLast
 - ExperienceSourceRollouts
+- ExperienceReplayBuffer: ：DQN中几乎不会使用刚刚获得的experience samples，因为他们是高度相关的，让训练很不稳定。Buffer用来存放experience pieces，从buffer中采样进行训练，因为buffer容量有限，老样本会被从replay buffer中删掉
+- PrioReplayBufferNaive: Complexity of sampling is O(n)
+- PrioritizedReplayBuffer: O(log(n)) sampling complexity.
 
 ### 基类
 #### ExperienceSource
-``` 
+```  python
 class ExperienceSource 
     """
     简单的n-step source for single or multiple envs
@@ -179,25 +182,43 @@ class ExperienceSource
     """
     重写for循环的iter方法
     """
-    # 3.
+    # 3.返回rewards，然后重置
     def pop_total_rewards(self)
-    # 4.
+    # 4.返回rewards和steps，然后重置
     def pop_rewards_steps(self)
 ```
 
 #### ExperienceReplayBuffer
-```
+``` python
 class ExperienceReplayBuffer
+    #
+    def __init__(self, experience_source, buffer_size)
+
+    #
+    def __len__(self)
+
+    #
+    def __iter__(self)
+
+    # 从experience中随机采样一个batch_size大小的样本
+    def sample(self, batch_size)
+
+    # 添加一个sample，类内函数
+    def _add(self, sample)
+
+    # 从experience_source中获得samples_numbers个样本，将其添加到buffer
+    def populate(self, samples_numbers)
 ```
 
 #### BatchPreprocessor
-```
+``` python
 class BatchPreprocessor
 ```
 
 ### 子类
 #### ExperienceSourceFirstLast
-``` 
+``` python
+# Q(st, at) = rt+1 + \gamma r_t+2 + ... \gamma^t+n-1 r_t+n + Q(s t+n, s t+n)
 class ExperienceSourceFirstLast(ExperienceSource):
     #
     def __init__(self, env, agent, gamma, steps_count=1, steps_delta=1, vectorized=False)
@@ -206,7 +227,7 @@ class ExperienceSourceFirstLast(ExperienceSource):
 ```
 
 #### PrioritizedReplayBuffer
-```
+``` python
 class PrioritizedReplayBuffer(ExperienceReplayBuffer)
     # 1.
     def __init__(self, experience_source, buffer_size, alpha)
@@ -221,13 +242,13 @@ class PrioritizedReplayBuffer(ExperienceReplayBuffer)
 ```
 
 #### QLearningPreprocessor
-```
+``` python
 class QLearningPreprocessor(BatchPreprocessor)
 ```
 
 ### 其他
 #### ExperienceSourceRollouts
-``` 
+```  python
 class ExperienceSourceRollouts:
     #
     def __init__(self, env, agent, gamma, setps_count=5)
@@ -245,13 +266,13 @@ class ExperienceSourceBuffer
 ```
 
 #### ExperienceReplayNaive
-```
+``` python
 class ExperienceReplayNaive
 ```
 
 ## 代码解析
 ### ExperienceSource
-``` 
+```  python
 class ExperienceSource 
     """
     简单的n-step source for single or multiple envs
@@ -401,7 +422,7 @@ class ExperienceSource
 ```
 
 ### ExperienceSourceFirstLast
-``` 
+```  python
 class ExperienceSourceFirstLast(ExperienceSource):
         """
     def __init__(self, env, agent, gamma, steps_count=1, steps_delta=1, vectorized=False):
@@ -411,6 +432,7 @@ class ExperienceSourceFirstLast(ExperienceSource):
         self.steps = steps_count
 
     def __iter__(self):
+        # 并不保留中间n步的experience，因为没必要，只留第一步和最后一步，中间计算rewards就行了
         for exp in super(ExperienceSourceFirstLast, self).__iter__():
             if exp[-1].done and len(exp) <= self.steps:
                 last_state = None
@@ -419,6 +441,7 @@ class ExperienceSourceFirstLast(ExperienceSource):
                 last_state = exp[-1].state
                 elems = exp[:-1]
             total_reward = 0.0
+            # 计算中间的rewards
             for e in reversed(elems):
                 total_reward *= self.gamma
                 total_reward += e.reward
@@ -427,7 +450,7 @@ class ExperienceSourceFirstLast(ExperienceSource):
 ```
 
 ### ExperienceReplayBuffer
-```
+``` python
 class ExperienceReplayBuffer
 ```
 
