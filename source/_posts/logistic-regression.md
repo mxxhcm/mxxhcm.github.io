@@ -49,16 +49,16 @@ $$l(w,b) =\prod\_{i=1}^m p(y_i|x_i; w,b) = \prod\_{i=1}^m \left[\pi(x)\right]^{y
 \begin{align\*}
 L &= \log l(w,b) \\\\
 & = \log \prod\_{i=1}^m \left[\pi(x)\right]^{y_i} \left[1-pi(x)\right]^{1-y_i}\\\\
-& = \sum\_{i=1}^m \left[y_i\log\pi(x)+(1-y_i)\log(1-\pi(x_i)) \right]\\\\
-& = \sum\_{i=1}^m \left[y_i\log\frac{\pi(x)}{1-\pi(x_i)} + \log(1-\pi(x_i)) \right]\\\\
-& = \sum\_{i=1}^m \left[y_i (w^T x+b) - \log(1+e\^{w^T x+b} ) \right]\\\\
+& = \sum\_{i=1}^m \left[y_i\log\pi(x)+(1-y_i)\log(1-\pi(x_i)) \right] \tag{13}\\\\
+& = \sum\_{i=1}^m \left[y_i\log\frac{\pi(x)}{1-\pi(x_i)} + \log(1-\pi(x_i)) \right] \tag{14}\\\\
+& = \sum\_{i=1}^m \left[y_i (w^T x+b) - \log(1+e\^{w^T x+b} ) \right]\\\\ \tag{15}
 \end{align\*}
 然后求得$w$和$b$即可。
 
 ## 多项logistic regression
 假设离散型随机变量的取值集合是${1, 2,\cdots, K}$，多项logistic regression的公式是：
-$$P(Y=k|x) = \frac{e\^{w^T x+b} }{ 1+ \sum\_{k=1}^{K-1} e\^{w^T x+b} }, k = 1, 2, \cdots, K-1$$
-$$P(Y=K|x) = \frac{1}{1+ \sum\_{k=1}^{K-1} e\^{w^T x+b} }$$
+$$P(Y=k|x) = \frac{e\^{w^T x+b} }{ 1+ \sum\_{k=1}^{K-1} e\^{w^T x+b} }, k = 1, 2, \cdots, K-1 \tag{16}$$
+$$P(Y=K|x) = \frac{1}{1+ \sum\_{k=1}^{K-1} e\^{w^T x+b} } \tag{17}$$
 
 ## 参考文献
 1.周志华《西瓜书》
