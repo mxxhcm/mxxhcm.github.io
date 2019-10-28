@@ -12,13 +12,13 @@ categories: 机器学习
 朴素贝叶斯法将实例分到后验概率最大的类中，相当于期望风险最小化。
 
 朴素贝叶斯有一个假设：条件独立假设，拿公式举个例子就是
-$$P(X|Y=y_k)=\prod\_{i=1}^m P(x_i|Y=y_k) \tag{3}$$
+$$P(X|Y=y_k)=\prod\_{i=1}^m P(x_i|Y=y_k) \tag{1}$$
 其中$X=[x_1, x_2,\cdots, x_m]$即$m$个属性。
 贝叶斯分类器的流程如下所示：
 1. 给出训练样本集，属性集合$X=[x_1, x_2,\cdots, x_m]$，标签集合$Y=[y_1, y_2,\cdots, y_n]$，计算每个类别$y_j$中出现属性$x_i$的条件概率，即
-$$P(x_i|y_j), 1 \le i \le m, 1 \le j \le n \tag{4}$$
+$$P(x_i|y_j), 1 \le i \le m, 1 \le j \le n \tag{2}$$
 2. 给出一个新的样本$X$，根据贝叶斯定理以及条件独立假设，计算：
-$$P(y_k|X) = \frac{P(y_k)P(X|y_k)}{P(X)} = \frac{P(y_k) \prod\_{i=1}^m P(x_i|y_k) }{P(X)} \tag{5}$$
+$$P(y_k|X) = \frac{P(y_k)P(X|y_k)}{P(X)} = \frac{P(y_k) \prod\_{i=1}^m P(x_i|y_k) }{P(X)} \tag{3}$$
 3. 从$P(y_k|X)$中选出最大的$P$对应的$y_k$当做label。
 
 可以看出，朴素贝叶斯分类器的关键就是计算条件概率：

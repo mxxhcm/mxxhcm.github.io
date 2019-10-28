@@ -7,7 +7,7 @@ tags:
  - 最大似然估计
  - 概率论与统计 
  - 机器学习
-categories: 概率论与统计
+categories: 机器学习
 mathjax: true
 ---
 
