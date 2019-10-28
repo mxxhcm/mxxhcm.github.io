@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://mxxhcm.github.io/"/>
-  <updated>2019-10-28T07:55:00.395Z</updated>
+  <updated>2019-10-28T13:12:54.483Z</updated>
   <id>http://mxxhcm.github.io/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>logistic regression</title>
+    <link href="http://mxxhcm.github.io/2019/10/28/logistic-regression/"/>
+    <id>http://mxxhcm.github.io/2019/10/28/logistic-regression/</id>
+    <published>2019-10-28T11:40:06.000Z</published>
+    <updated>2019-10-28T13:12:54.483Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="logistic-regression">logistic regression</h2><p>逻辑回归是使用线性模型进行分类的模型，它是一个对数线性模型。<br>在使用线性模型进行回归时，产生的预测值是实数值。而对于分类任务，函数的输出需要是离散值。对于二分类任务，类别分别记为$0$和$1$，如果将回归模型的值限制在$[0, 1]$之间，那么接下来我们要做的就是将$[0,1]$之间的值转换为$0$和$1$。比如单位跃阶函数：<br>$$y=\begin{cases}0, x \lt 0;\\0.5, x=0;\\1, x\gt 0\end{cases} \tag{1}$$<br>但是它是离散的，需要找一个连续的函数。这就是接下来介绍的logistic function。</p><h2 id="logistic-distribution">logistic distribution</h2><p>连续随机变量$X$服从logistic distribution指的是$X$具有以下分布函数和密度函数：<br>$$F(x) = P(X\le x) = \frac{1}{1 + e^{-(x-\mu)/\gamma} } \tag{2}$$<br>$$f(x) = F’(x) = \frac{e^{-(x-\mu)/\gamma} }{\gamma(1 + e^{-(x-\mu)/\gamma} )^2 } \tag{3}$$<br>其中$\mu$为位置参数，$\gamma \gt 0$是形状参数。分布函数属于logistic function，相应的图如下所示，它的取值在$[0,1]$之间，是一条sigmod曲线，以点$(\mu, \frac{1}{2})$为中心对称，即满足：<br>$$F(-x+\mu) - \frac{1}{2} = -F(x-\mu) +\frac{1}{2} \tag{4}$$<br><img src="/2019/10/28/logistic-regression/logistic_function.png" alt="logistic_func"><br>曲线在中心附近增长的速度很快，在两端增加的速度很慢。$\gamma$越小，曲线在中心附近增长的越快。当$\mu=0, \gamma=1$时，得到一个特殊的函数：<br>$$ f(x) = \frac{1}{1+e^{-x} } \tag{5}$$<br>用$w^T x+b$代替$f(x)$中的$x$，就得到了：<br>$$h(x) = \frac{1}{1+ e^{-(w^T x +b)} } \tag{6}$$<br>其中$x$是输入，$\theta$是要求的参数。</p><h2 id="二项logistic-regression">二项logistic regression</h2><p>上面给出的$y=h(x)$其实是一个二项的logistic regression分类函数。式子$(6)$可以进行变形，得到<br>$$ \log\frac{y}{1-y} = \log\frac{\frac{1}{1+ e^{-(w^T x +b)} } }{1-\frac{1}{1+ e^{-(w^T x +b)} } }= \log\frac{\frac{1}{1+ e^{-(w^T x +b)} } }{\frac{e^{-(w^T x +b)} }{1+ e^{-(w^T x +b)} } } = \log\frac{1}{e^{-(w^T x +b) } } = w^T x +b  \tag{7}$$<br>这里的$y$是一个函数值，给定一个$x$就会有一个$y$。将$y$看做给定$x$，事件发生的概率，$1-y$是该事件不发生的概率，两者的比值$\frac{y}{1-y}$被称为几率，反映了$x$发生的相对可能性。对几率取对数得到对数几率logit：<br>$$\log \frac{y}{1-y}$$<br>可以看出，公式$6$实际上是在近似真实标记的对数几率。所以这个模型叫作对数几率回归。如果将式子$(6)$中的$y$看成类后验概率估计$p(y=1|x)$，公式$(7)$可以写成：<br>$$\log \frac{p(y=1|x)}{p(y=0|x)} = w^T x+b \tag{8}$$<br>则有：<br>$$ p(y=1|x) = \frac{e^{w^T x+ b} }{1+e^{w^T x+ b} } \tag{9} $$<br>$$ p(y=0|x) = \frac{1}{1+e^{w^T x+ b} } \tag{10} $$<br>其实就是分子分母同时乘了$e^{w^T x+ b}$。线性模型$w^T x+b$的值域是实数域，然而logistic模型将线性函数$w^T x+b$转换成了如公式$(8),(9)$的概率。当$w^T x+b$的值越接近于$1$，$p(y=1|x)$的概率越接近于$1$。</p><h2 id="最大似然估计进行参数估计">最大似然估计进行参数估计</h2><p>给定训练集样本$(x_1, y_1), \cdots, (x_N,y_N)$，可以使用最大似然估计求解给定的$w$和$b$：<br>$$l(w,b) =\prod_{i=1}^m p(y_i|x_i; w,b) \tag{11}$$<br>即让所有样本属于其真实标记的概率越大越好。设$p(y=1|x) = \pi(x), p(y=0|x) = 1-\pi(x)$，重写式子$(11)$，得到的似然函数为：<br>$$L = \log l(w,b) =\sum_{i=1}^m \log p(y_i|x_i; w,b) \tag{11}$$</p><h2 id="多项logistic-regression">多项logistic regression</h2><p>假设离散型随机变量的取值集合是${1, 2,\cdots, K}$，多项logistic regression的公式是：<br>$$P(Y=k|x) = \frac{e^{w^T x+b} }{ 1+ \sum_{k=1}^{K-1} e^{w^T x+b} }, k = 1, 2, \cdots, K-1$$<br>$$P(Y=K|x) = \frac{1}{1+ \sum_{k=1}^{K-1} e^{w^T x+b} }$$</p><h2 id="参考文献">参考文献</h2>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;logistic-regression&quot;&gt;logistic regression&lt;/h2&gt;
+&lt;p&gt;逻辑回归是使用线性模型进行分类的模型，它是一个对数线性模型。&lt;br&gt;
+在使用线性模型进行回归时，产生的预测值是实数值。而对于分类任务，函数的输出需要是离散值。对于二分
+      
+    
+    </summary>
+    
+      <category term="机器学习" scheme="http://mxxhcm.github.io/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+      <category term="机器学习" scheme="http://mxxhcm.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
+    
+      <category term="逻辑回归" scheme="http://mxxhcm.github.io/tags/%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92/"/>
+    
+  </entry>
   
   <entry>
     <title>beyesian classifier naive baye classifier</title>
@@ -39,9 +68,9 @@
       <category term="机器学习" scheme="http://mxxhcm.github.io/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
     
-      <category term="概率论与统计" scheme="http://mxxhcm.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E7%BB%9F%E8%AE%A1/"/>
-    
       <category term="朴素贝叶斯分类器" scheme="http://mxxhcm.github.io/tags/%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%88%86%E7%B1%BB%E5%99%A8/"/>
+    
+      <category term="概率论与统计" scheme="http://mxxhcm.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E7%BB%9F%E8%AE%A1/"/>
     
       <category term="贝叶斯分类器" scheme="http://mxxhcm.github.io/tags/%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%88%86%E7%B1%BB%E5%99%A8/"/>
     
@@ -1043,13 +1072,13 @@ qsort是C的快排实现。&lt;/p&gt;
       <category term="概率论与统计" scheme="http://mxxhcm.github.io/categories/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E7%BB%9F%E8%AE%A1/"/>
     
     
+      <category term="概率论与统计" scheme="http://mxxhcm.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E7%BB%9F%E8%AE%A1/"/>
+    
       <category term="渐进有效性" scheme="http://mxxhcm.github.io/tags/%E6%B8%90%E8%BF%9B%E6%9C%89%E6%95%88%E6%80%A7/"/>
     
       <category term="asymptotically efficient" scheme="http://mxxhcm.github.io/tags/asymptotically-efficient/"/>
     
       <category term="cramer-rao bound" scheme="http://mxxhcm.github.io/tags/cramer-rao-bound/"/>
-    
-      <category term="概率论与统计" scheme="http://mxxhcm.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E7%BB%9F%E8%AE%A1/"/>
     
   </entry>
   
@@ -1108,11 +1137,11 @@ $$l = \log p(
     
       <category term="概率论与统计" scheme="http://mxxhcm.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA%E4%B8%8E%E7%BB%9F%E8%AE%A1/"/>
     
-      <category term="最大似然估计" scheme="http://mxxhcm.github.io/tags/%E6%9C%80%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1/"/>
-    
       <category term="费雪信息" scheme="http://mxxhcm.github.io/tags/%E8%B4%B9%E9%9B%AA%E4%BF%A1%E6%81%AF/"/>
     
       <category term="fisher information" scheme="http://mxxhcm.github.io/tags/fisher-information/"/>
+    
+      <category term="最大似然估计" scheme="http://mxxhcm.github.io/tags/%E6%9C%80%E5%A4%A7%E4%BC%BC%E7%84%B6%E4%BC%B0%E8%AE%A1/"/>
     
   </entry>
   
@@ -1141,9 +1170,9 @@ $$l = \log p(
     
       <category term="强化学习" scheme="http://mxxhcm.github.io/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/"/>
     
-      <category term="gym-retro" scheme="http://mxxhcm.github.io/tags/gym-retro/"/>
-    
       <category term="gym" scheme="http://mxxhcm.github.io/tags/gym/"/>
+    
+      <category term="gym-retro" scheme="http://mxxhcm.github.io/tags/gym-retro/"/>
     
   </entry>
   
@@ -2422,11 +2451,11 @@ trivial是无足轻重的，不重要的，所以non-trivial是有一定规模�
     
       <category term="linux" scheme="http://mxxhcm.github.io/tags/linux/"/>
     
-      <category term="SystemD" scheme="http://mxxhcm.github.io/tags/SystemD/"/>
-    
       <category term="init" scheme="http://mxxhcm.github.io/tags/init/"/>
     
       <category term="Upstart" scheme="http://mxxhcm.github.io/tags/Upstart/"/>
+    
+      <category term="SystemD" scheme="http://mxxhcm.github.io/tags/SystemD/"/>
     
       <category term="SysVInit" scheme="http://mxxhcm.github.io/tags/SysVInit/"/>
     
@@ -2616,9 +2645,9 @@ scrot需要安装，这个工具
       <category term="windows" scheme="http://mxxhcm.github.io/categories/windows/"/>
     
     
-      <category term="windows" scheme="http://mxxhcm.github.io/tags/windows/"/>
-    
       <category term="ftp" scheme="http://mxxhcm.github.io/tags/ftp/"/>
+    
+      <category term="windows" scheme="http://mxxhcm.github.io/tags/windows/"/>
     
   </entry>
   
@@ -4511,13 +4540,13 @@ daemon：实现service的程序叫做daemon&lt;/p&gt;
     
       <category term="linux" scheme="http://mxxhcm.github.io/tags/linux/"/>
     
+      <category term="SystemD" scheme="http://mxxhcm.github.io/tags/SystemD/"/>
+    
       <category term="serveice" scheme="http://mxxhcm.github.io/tags/serveice/"/>
     
       <category term="daemon" scheme="http://mxxhcm.github.io/tags/daemon/"/>
     
       <category term="initd" scheme="http://mxxhcm.github.io/tags/initd/"/>
-    
-      <category term="SystemD" scheme="http://mxxhcm.github.io/tags/SystemD/"/>
     
   </entry>
   
@@ -6649,9 +6678,9 @@ $$f^{’}(x_0) = {\lim_{\Delta x \to 0}
     <link href="http://mxxhcm.github.io/2018/12/22/latex%E7%AC%94%E8%AE%B0/"/>
     <id>http://mxxhcm.github.io/2018/12/22/latex笔记/</id>
     <published>2018-12-22T02:08:26.000Z</published>
-    <updated>2019-09-28T03:56:35.279Z</updated>
+    <updated>2019-10-28T12:13:01.507Z</updated>
     
-    <content type="html"><![CDATA[<h2 id="命令重命名">命令重命名</h2><p>在写博客时也能用</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">\newcommand&#123;\mmm&#125;&#123;\mathbf&#125;</span><br><span class="line">\mmm&#123;x&#125;</span><br><span class="line">\bf&#123;x&#125;</span><br></pre></td></tr></table></figure><p>$\newcommand{\mmm}{\mathbf}$<br>$\mmm{x}$<br>$\bf{x}$</p><h2 id="常用latex符号">常用Latex符号</h2><p>$\arg$ \arg<br>$\max$ \max<br>$\lim$ \lim</p><h3 id="上标">上标</h3><p>$\bar{x}$ \bar{x}<br>$\hat{x}$ \hat{x}</p><h3 id="等号">等号</h3><p>$\sim$  \sim<br>$\simeq$    \simeq<br>$\approx$   \approx<br>$\cong$ \cong<br>$\equiv$    \equiv<br>正比于 $\propto$ \propto</p><h3 id="各种乘法">各种乘法</h3><p>$\times$ \times<br>$*$ *<br>$\cdot$ \cdot<br>$\bullet$ \bullet<br>$\otimes$ \otimes<br>$\circ$ \circ<br>$\odot$ \odot</p><h3 id="上下花括号">上下花括号</h3><p>$\overbrace{x+y}^{1+2}=\underbrace{z}_3$ \overbrace{x+y}^{1+2}=\underbrace{z}_3</p><h3 id="括号">括号</h3><p>\left(\frac{1}{2}\right)    $\left(\frac{1}{2} \right)$<br>\left[\frac{1}{2} \right]    $\left[\frac{1}{2} \right]$<br>\left\{\frac{1}{2} \right\}    $\left\{\frac{1}{2} \right\}$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;cases&#125;x=1\\\\y=x\end&#123;cases&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{cases}x=1\\y=x\end{cases}$$</p><h3 id="矩阵">矩阵</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;matrix&#125;1&amp;2\\\\3&amp;4\end&#123;matrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{matrix}1&amp;2\\3&amp;4\end{matrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;pmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;pmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;bmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;bmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{bmatrix}1&amp;2\\3&amp;4\end{bmatrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Bmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;Bmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{Bmatrix}1&amp;2\\3&amp;4\end{Bmatrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;vmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;vmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{vmatrix}1&amp;2\\3&amp;4\end{vmatrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Vmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;Vmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{Vmatrix}1&amp;2\\3&amp;4\end{Vmatrix}$$</p><h3 id="希腊字母">希腊字母</h3><p>$\alpha$ \alpha<br>$\Alpha$ \Alpha<br>$\beta$ \beta<br>$\Beta$ \Beta<br>$\Delta$ \Delta<br>$\delta$ \delta<br>$\theta$ \theta<br>$\Theta$ \Theta<br>$\gamma$ \gamma<br>$\Gamma$ \Gamma<br>$\eta$ \eta<br>$\Eta$ \Eta<br>$\lambda$ \lambda<br>$\Lambda$ \Lambda<br>$\sigma$ \sigma<br>$\Sigma$ \Sigma<br>$\pi$ \pi<br>$\Pi$ \Pi<br>$\mu$ \mu<br>$\Mu$ \Mu<br>$\psi$ \psi<br>$\Psi$ \Psi<br>$\epsilon$ \epsilon<br>$\varepsilon$ \varepsilon<br>$\phi$ \phi<br>$\varphi$ \varphi<br>$\Phi$ \Phi<br>$\nabla$ \nabla<br>$\zeta$ \zeta<br>$\xi$ \xi</p><h3 id="字体">字体</h3><p>粗体<br>$\mathbf{A}$ \mathbf{A}<br>$\boldsymbol{A}$ \boldsymbol{A}<br>$\mathit{A}$ \mathit{A}<br>$\mathrm{A}$ \mathrm{A}<br>花体<br>$\mathcal{A}$ \mathcal{A}<br>$\mathcal{S}$ \mathcal{S}</p><h3 id="数学运算">数学运算</h3><p>求积$\prod$ \prod<br>求和$\sum$ \sum<br>积分$\int$ \int<br>根号$\sqrt{x}$ \sqrt{x}<br>根号$\sqrt[4]{y}$ \sqrt[4]{y}<br>分数$(\frac{1}{2})$ (\frac{1}{2})<br>分数$\left(\frac{1}{2}\right)$ \left(\frac{1}{2}\right)<br>无穷$\infty$ \infty<br>期望$\mathbb{E}$ \mathbb{E}<br>范数$\Vert$ \Vert<br>$\mathbb{\pi}$ \mathbb{\pi} # 可以看出来，没有起作用，因为mathbb没有只支持大写字母。<br>$\pm$ \pm<br>$\mp$ \mp</p><h3 id="集合">集合</h3><p>真含于$\subset$ \subset<br>含于$\subsetneqq$ \subsetneqq<br>真包含$\supset$ \supset<br>包含$\supsetneqq$ \supsetneqq<br>交$\cap$ \cap<br>并$\cup$ \cup<br>属于$\in$ \in<br>$\succ$ \succ<br>$\succeq$ \succeq<br>$\prec$ \prec<br>$\preceq$ \preceq<br>空集$\emptyset$ \emptyset</p><h3 id="谓词逻辑">谓词逻辑</h3><p>否定$\neg$ \neg<br>任意$\forall$ \forall<br>存在$\exists$ \exists<br>合取$\wedge$ \wedge<br>析取$\vee$ \vee</p><h3 id="空格">空格</h3><p>$a\qquad b$ a\qquad b<br>$a\quad b$ a\quad b<br>$a\ b$ a\ b<br>$a;b$ a;b<br>$a,b$ a,b<br>$ab$ ab<br>$a!b$ a!b</p><h3 id="其他">其他</h3><p>长竖线$\big|$ \big|<br>长竖线$\Big|$ \Big|<br>长竖线$\bigg|$ \bigg|<br>长竖线$\Bigg|$ \Bigg|<br>双箭头$\Leftrightarrow$ \Leftrightarrow<br>左箭头$\leftarrow$ \leftarrow<br>右箭头$\rightarrow$ \rightarrow<br>上划线$\overline{A}$ \overline{A}<br>下划线$\underline{A}$ \underline{A}<br>$\backslash$ \backslash<br>$\sim$ \sim</p><h2 id="列表">列表</h2><h3 id="有序列表">有序列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;enumerate&#125;</span><br><span class="line"> \item First.</span><br><span class="line"> \item Second.</span><br><span class="line"> \item Third.</span><br><span class="line">\end&#123;enumerate&#125;</span><br></pre></td></tr></table></figure><p>效果如下：</p><ol><li>First.</li><li>Second.</li><li>Third.</li></ol><h3 id="无序列表">无序列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;itemize&#125;</span><br><span class="line"> \item &#123;First.&#125;</span><br><span class="line"> \item &#123;Second.&#125;</span><br><span class="line"> \item &#123;Third.&#125;</span><br><span class="line">\end&#123;itemize&#125;</span><br></pre></td></tr></table></figure><p>效果如下：</p><ul><li>First.</li><li>Second.</li><li>Third.</li></ul><h2 id="跨多行公式对齐">跨多行公式对齐</h2><p><strong>注意：不要忘了每行后面的两个\</strong></p><h3 id="示例1">示例1</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">f(x) &amp;= (3 + 4)\^2 + 4\\</span><br><span class="line">&amp;= 7\^2 + 4\\</span><br><span class="line">&amp;= 49 + 4\\</span><br><span class="line">&amp;= 53</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure><p>效果如下：<br>\begin{align*}<br>f(x) &amp;= (3 + 4)^2 + 4\\<br>&amp;= 7^2 + 4\\<br>&amp;= 49 + 4\\<br>&amp;= 53<br>\end{align*}</p><h3 id="示例2">示例2</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">v &amp;= R + \gamma Pv\\</span><br><span class="line">(1-\gamma P) &amp;= R\\</span><br><span class="line">v &amp;= (1 - \gamma P)\^&#123;-1&#125; R</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure><p>\begin{align*}<br>v &amp;= R + \gamma Pv\\<br>(1-\gamma P) &amp;= R\\<br>v &amp;= (1 - \gamma P)^{-1} R<br>\end{align*}</p><h2 id="参考文献">参考文献</h2><p>1.<a href="http://blog.huangyuanlove.com/2018/02/27/LaTeX%E7%AC%94%E8%AE%B0-%E5%85%AD/" target="_blank" rel="noopener">http://blog.huangyuanlove.com/2018/02/27/LaTeX笔记-六/</a><br>2.<a href="https://blog.csdn.net/xxzhangx/article/details/52778539" target="_blank" rel="noopener">https://blog.csdn.net/xxzhangx/article/details/52778539</a><br>3.<a href="https://blog.csdn.net/hunauchenym/article/details/7330828" target="_blank" rel="noopener">https://blog.csdn.net/hunauchenym/article/details/7330828</a><br>4.<a href="http://geowu.blogspot.com/2012/10/latex_25.html" target="_blank" rel="noopener">http://geowu.blogspot.com/2012/10/latex_25.html</a><br>5.<a href="https://math.stackexchange.com/questions/20412/element-wise-or-pointwise-operations-notation" target="_blank" rel="noopener">https://math.stackexchange.com/questions/20412/element-wise-or-pointwise-operations-notation</a><br>6.<a href="https://xilazimu.net/" target="_blank" rel="noopener">https://xilazimu.net/</a></p>]]></content>
+    <content type="html"><![CDATA[<h2 id="命令重命名">命令重命名</h2><p>在写博客时也能用</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">\newcommand&#123;\mmm&#125;&#123;\mathbf&#125;</span><br><span class="line">\mmm&#123;x&#125;</span><br><span class="line">\bf&#123;x&#125;</span><br></pre></td></tr></table></figure><p>$\newcommand{\mmm}{\mathbf}$<br>$\mmm{x}$<br>$\bf{x}$</p><h2 id="常用latex符号">常用Latex符号</h2><p>$\arg$ \arg<br>$\max$ \max<br>$\lim$ \lim</p><h3 id="上标">上标</h3><p>$\bar{x}$ \bar{x}<br>$\hat{x}$ \hat{x}</p><h3 id="等号">等号</h3><p>$\sim$  \sim<br>$\simeq$    \simeq<br>$\approx$   \approx<br>$\cong$ \cong<br>$\equiv$    \equiv<br>正比于 $\propto$ \propto</p><h3 id="各种乘法">各种乘法</h3><p>$\times$ \times<br>$*$ *<br>$\cdot$ \cdot<br>$\bullet$ \bullet<br>$\otimes$ \otimes<br>$\circ$ \circ<br>$\odot$ \odot</p><h3 id="上下花括号">上下花括号</h3><p>$\overbrace{x+y}^{1+2}=\underbrace{z}_3$ \overbrace{x+y}^{1+2}=\underbrace{z}_3</p><h3 id="括号">括号</h3><p>\left(\frac{1}{2}\right)    $\left(\frac{1}{2} \right)$<br>\left[\frac{1}{2} \right]    $\left[\frac{1}{2} \right]$<br>\left\{\frac{1}{2} \right\}    $\left\{\frac{1}{2} \right\}$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;cases&#125;x=1\\\\y=x\end&#123;cases&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{cases}x=0\\y=x\end{cases}$$</p><h3 id="矩阵">矩阵</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;matrix&#125;1&amp;2\\\\3&amp;4\end&#123;matrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{matrix}1&amp;2\\3&amp;4\end{matrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;pmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;pmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{pmatrix}1&amp;2\\3&amp;4\end{pmatrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;bmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;bmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{bmatrix}1&amp;2\\3&amp;4\end{bmatrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Bmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;Bmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{Bmatrix}1&amp;2\\3&amp;4\end{Bmatrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;vmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;vmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{vmatrix}1&amp;2\\3&amp;4\end{vmatrix}$$</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;Vmatrix&#125;1&amp;2\\\\3&amp;4\end&#123;Vmatrix&#125;</span><br></pre></td></tr></table></figure><p>$$\begin{Vmatrix}1&amp;2\\3&amp;4\end{Vmatrix}$$</p><h3 id="希腊字母">希腊字母</h3><p>$\alpha$ \alpha<br>$\Alpha$ \Alpha<br>$\beta$ \beta<br>$\Beta$ \Beta<br>$\Delta$ \Delta<br>$\delta$ \delta<br>$\theta$ \theta<br>$\Theta$ \Theta<br>$\gamma$ \gamma<br>$\Gamma$ \Gamma<br>$\eta$ \eta<br>$\Eta$ \Eta<br>$\lambda$ \lambda<br>$\Lambda$ \Lambda<br>$\sigma$ \sigma<br>$\Sigma$ \Sigma<br>$\pi$ \pi<br>$\Pi$ \Pi<br>$\mu$ \mu<br>$\Mu$ \Mu<br>$\psi$ \psi<br>$\Psi$ \Psi<br>$\epsilon$ \epsilon<br>$\varepsilon$ \varepsilon<br>$\phi$ \phi<br>$\varphi$ \varphi<br>$\Phi$ \Phi<br>$\nabla$ \nabla<br>$\zeta$ \zeta<br>$\xi$ \xi</p><h3 id="字体">字体</h3><p>粗体<br>$\mathbf{A}$ \mathbf{A}<br>$\boldsymbol{A}$ \boldsymbol{A}<br>$\mathit{A}$ \mathit{A}<br>$\mathrm{A}$ \mathrm{A}<br>花体<br>$\mathcal{A}$ \mathcal{A}<br>$\mathcal{S}$ \mathcal{S}</p><h3 id="数学运算">数学运算</h3><p>求积$\prod$ \prod<br>求和$\sum$ \sum<br>积分$\int$ \int<br>根号$\sqrt{x}$ \sqrt{x}<br>根号$\sqrt[4]{y}$ \sqrt[4]{y}<br>分数$(\frac{1}{2})$ (\frac{1}{2})<br>分数$\left(\frac{1}{2}\right)$ \left(\frac{1}{2}\right)<br>无穷$\infty$ \infty<br>期望$\mathbb{E}$ \mathbb{E}<br>范数$\Vert$ \Vert<br>$\mathbb{\pi}$ \mathbb{\pi} # 可以看出来，没有起作用，因为mathbb没有只支持大写字母。<br>$\pm$ \pm<br>$\mp$ \mp</p><h3 id="集合">集合</h3><p>真含于$\subset$ \subset<br>含于$\subsetneqq$ \subsetneqq<br>真包含$\supset$ \supset<br>包含$\supsetneqq$ \supsetneqq<br>交$\cap$ \cap<br>并$\cup$ \cup<br>属于$\in$ \in<br>$\succ$ \succ<br>$\succeq$ \succeq<br>$\prec$ \prec<br>$\preceq$ \preceq<br>空集$\emptyset$ \emptyset</p><h3 id="谓词逻辑">谓词逻辑</h3><p>否定$\neg$ \neg<br>任意$\forall$ \forall<br>存在$\exists$ \exists<br>合取$\wedge$ \wedge<br>析取$\vee$ \vee</p><h3 id="空格">空格</h3><p>$a\qquad b$ a\qquad b<br>$a\quad b$ a\quad b<br>$a\ b$ a\ b<br>$a;b$ a;b<br>$a,b$ a,b<br>$ab$ ab<br>$a!b$ a!b</p><h3 id="其他">其他</h3><p>长竖线$\big|$ \big|<br>长竖线$\Big|$ \Big|<br>长竖线$\bigg|$ \bigg|<br>长竖线$\Bigg|$ \Bigg|<br>双箭头$\Leftrightarrow$ \Leftrightarrow<br>左箭头$\leftarrow$ \leftarrow<br>右箭头$\rightarrow$ \rightarrow<br>上划线$\overline{A}$ \overline{A}<br>下划线$\underline{A}$ \underline{A}<br>$\backslash$ \backslash<br>$\sim$ \sim</p><h2 id="列表">列表</h2><h3 id="有序列表">有序列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;enumerate&#125;</span><br><span class="line"> \item First.</span><br><span class="line"> \item Second.</span><br><span class="line"> \item Third.</span><br><span class="line">\end&#123;enumerate&#125;</span><br></pre></td></tr></table></figure><p>效果如下：</p><ol><li>First.</li><li>Second.</li><li>Third.</li></ol><h3 id="无序列表">无序列表</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;itemize&#125;</span><br><span class="line"> \item &#123;First.&#125;</span><br><span class="line"> \item &#123;Second.&#125;</span><br><span class="line"> \item &#123;Third.&#125;</span><br><span class="line">\end&#123;itemize&#125;</span><br></pre></td></tr></table></figure><p>效果如下：</p><ul><li>First.</li><li>Second.</li><li>Third.</li></ul><h2 id="跨多行公式对齐">跨多行公式对齐</h2><p><strong>注意：不要忘了每行后面的两个\</strong></p><h3 id="示例1">示例1</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">f(x) &amp;= (3 + 4)\^2 + 4\\</span><br><span class="line">&amp;= 7\^2 + 4\\</span><br><span class="line">&amp;= 49 + 4\\</span><br><span class="line">&amp;= 53</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure><p>效果如下：<br>\begin{align*}<br>f(x) &amp;= (3 + 4)^2 + 4\\<br>&amp;= 7^2 + 4\\<br>&amp;= 49 + 4\\<br>&amp;= 53<br>\end{align*}</p><h3 id="示例2">示例2</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">\begin&#123;align*&#125;</span><br><span class="line">v &amp;= R + \gamma Pv\\</span><br><span class="line">(1-\gamma P) &amp;= R\\</span><br><span class="line">v &amp;= (1 - \gamma P)\^&#123;-1&#125; R</span><br><span class="line">\end&#123;align*&#125;</span><br></pre></td></tr></table></figure><p>\begin{align*}<br>v &amp;= R + \gamma Pv\\<br>(1-\gamma P) &amp;= R\\<br>v &amp;= (1 - \gamma P)^{-1} R<br>\end{align*}</p><h2 id="参考文献">参考文献</h2><p>1.<a href="http://blog.huangyuanlove.com/2018/02/27/LaTeX%E7%AC%94%E8%AE%B0-%E5%85%AD/" target="_blank" rel="noopener">http://blog.huangyuanlove.com/2018/02/27/LaTeX笔记-六/</a><br>2.<a href="https://blog.csdn.net/xxzhangx/article/details/52778539" target="_blank" rel="noopener">https://blog.csdn.net/xxzhangx/article/details/52778539</a><br>3.<a href="https://blog.csdn.net/hunauchenym/article/details/7330828" target="_blank" rel="noopener">https://blog.csdn.net/hunauchenym/article/details/7330828</a><br>4.<a href="http://geowu.blogspot.com/2012/10/latex_25.html" target="_blank" rel="noopener">http://geowu.blogspot.com/2012/10/latex_25.html</a><br>5.<a href="https://math.stackexchange.com/questions/20412/element-wise-or-pointwise-operations-notation" target="_blank" rel="noopener">https://math.stackexchange.com/questions/20412/element-wise-or-pointwise-operations-notation</a><br>6.<a href="https://xilazimu.net/" target="_blank" rel="noopener">https://xilazimu.net/</a></p>]]></content>
     
     <summary type="html">
     

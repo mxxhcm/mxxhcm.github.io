@@ -327,6 +327,211 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/tensorflow-boolean-mask/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/08/tensorflow-boolean-mask/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">tensorflow boolean_mask</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-08 17:46:26" itemprop="dateCreated datePublished" datetime="2019-05-08T17:46:26+08:00">2019-05-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-12 17:04:21" itemprop="dateModified" datetime="2019-05-12T17:04:21+08:00">2019-05-12</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="tf-boolean-mask">tf.boolean_mask</h2>
+<h3 id="简单解释">简单解释</h3>
+<p>用一个mask数组和输入的tensor做与操作，忽略为0的值。</p>
+<h3 id="api">api</h3>
+<p>定义在tensorflow/python/ops/array_ops.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tf.boolean_mask(</span><br><span class="line">    tensor, <span class="comment"># 要处理的tensor</span></span><br><span class="line">    mask, <span class="comment"># 掩码，也需要是一个tensor</span></span><br><span class="line">    name=<span class="string">'boolean_mask'</span>, <span class="comment"># 这个op的名字</span></span><br><span class="line">    axis=<span class="literal">None</span> <span class="comment">#</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="代码示例">代码示例</h3>
+<p><a href="https://github.com/mxxhcm/code/blob/master/tf/some_ops/tf_boolean_mask.py" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">import tensorflow as tf</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">a = tf.Variable([1, 2, 3])</span><br><span class="line">b = tf.Variable([2, 1.0, 4.0])</span><br><span class="line">c = tf.Variable([2, 1.0, 0.0])</span><br><span class="line">d = tf.Variable([2, 0.0, 4.0])</span><br><span class="line">e = tf.Variable([0, 1.0, 4.0])</span><br><span class="line">f = tf.Variable([0, 1.0, 0.0])</span><br><span class="line">g = tf.Variable([0, 0.0, 0.0])</span><br><span class="line"></span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">print(&quot;a: &quot;, sess.run(a))</span><br><span class="line">print(&quot;b: &quot;, sess.run(b))</span><br><span class="line">print(&quot;c: &quot;, sess.run(c))</span><br><span class="line">print(&quot;d: &quot;, sess.run(d))</span><br><span class="line">print(&quot;e: &quot;, sess.run(e))</span><br><span class="line">print(&quot;f: &quot;, sess.run(f))</span><br><span class="line">print(&quot;g: &quot;, sess.run(g))</span><br><span class="line"># c = tf.maximum(a, b)</span><br><span class="line">a1 = tf.boolean_mask(a, b)</span><br><span class="line">a2 = tf.boolean_mask(a, c)</span><br><span class="line">a3 = tf.boolean_mask(a, d)</span><br><span class="line">a4 = tf.boolean_mask(a, e)</span><br><span class="line">a5 = tf.boolean_mask(a, f)</span><br><span class="line">a6 = tf.boolean_mask(a, g)</span><br><span class="line"></span><br><span class="line">print(&quot;tf.boolean(a, b):\n  &quot;, sess.run(a1))</span><br><span class="line">print(&quot;tf.boolean(a, c):\n  &quot;, sess.run(a2))</span><br><span class="line">print(&quot;tf.boolean(a, d):\n  &quot;, sess.run(a3))</span><br><span class="line">print(&quot;tf.boolean(a, e):\n  &quot;, sess.run(a4))</span><br><span class="line">print(&quot;tf.boolean(a, f):\n  &quot;, sess.run(a5))</span><br><span class="line">print(&quot;tf.boolean(a, g):\n  &quot;, sess.run(a6))</span><br></pre></td></tr></table></figure>
+<p>输出如下：</p>
+<blockquote>
+<p>a:  [1 2 3]<br>
+b:  [2. 1. 4.]<br>
+c:  [2. 1. 0.]<br>
+d:  [2. 0. 4.]<br>
+e:  [0. 1. 4.]<br>
+f:  [0. 1. 0.]<br>
+g:  [0. 0. 0.]<br>
+tf.boolean(a, b):<br>
+[1 2 3]<br>
+tf.boolean(a, c):<br>
+[1 2]<br>
+tf.boolean(a, d):<br>
+[1 3]<br>
+tf.boolean(a, e):<br>
+[2 3]<br>
+tf.boolean(a, f):<br>
+[2]<br>
+tf.boolean(a, g):<br>
+[]</p>
+</blockquote>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="http://landcareweb.com/questions/27920/zai-tensorflowzhong-ru-he-cong-pythonde-zhang-liang-zhong-huo-qu-fei-ling-zhi-ji-qi-suo-yin" target="_blank" rel="noopener">http://landcareweb.com/questions/27920/zai-tensorflowzhong-ru-he-cong-pythonde-zhang-liang-zhong-huo-qu-fei-ling-zhi-ji-qi-suo-yin</a><br>
+2.<a href="https://www.tensorflow.org/api_docs/python/tf/boolean_mask" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/boolean_mask</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/tensorflow-summary/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2356,319 +2561,6 @@ superblock在0号blok ,但是superblock 只有1024b,所以为了防止空间浪�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/07/linux-compress-uncompress/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/07/linux-compress-uncompress/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/14/index.html">linux 压缩和备份</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-07 17:01:24" itemprop="dateCreated datePublished" datetime="2019-05-07T17:01:24+08:00">2019-05-07</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-16 15:46:34" itemprop="dateModified" datetime="2019-06-16T15:46:34+08:00">2019-06-16</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="压缩">压缩</h2>
-<ul>
-<li>gzip</li>
-<li>zcat</li>
-<li>bzip2</li>
-<li>bzcat</li>
-<li>gunzip</li>
-<li>bunzip2</li>
-<li>7z</li>
-<li>zip</li>
-<li>rar</li>
-</ul>
-<h3 id="gzip和bzip2">gzip和bzip2</h3>
-<p>gzip和bzip2公用参数</p>
-<h4 id="参数介绍">参数介绍</h4>
-<p>gzip(bzip2)<br>
--d 解压缩参数	<br>
--$ $取1-9　压缩等级 -1最快<br>
--v 显示压缩比<br>
--k 保留原文件<br>
--z 压缩参数<br>
--c 将压缩过程中产生的数据输出到屏幕上(压缩后的数据)可以将其输出重定向<br>
--t 检验一个压缩文件的一致性</p>
-<h3 id="zip">zip</h3>
-<h4 id="参数介绍-v2">参数介绍</h4>
-<p>zip [-dmbrfFg]<br>
--d　从zip文件中移除一个文件<br>
--m  将特定文件移入zip文件，且删除特定文件<br>
--g　将文件压缩附加到zip文件中<br>
--r  包括子目录<br>
--f  以新文件取代旧文件<br>
--F　修复已经损毁的压缩文件<br>
--b　暂存文件的路径<br>
--v　显示详细信息<br>
--u　值更新改变过的文件<br>
--T　测试zip文件是否正常<br>
--x　不需要压缩的文件</p>
-<h4 id="示例">示例</h4>
-<p>~$:zip -r myfile.zip ./*<br>
-~$:zip -d myfile.zip myfile　 //删除压缩文件内的某个文件<br>
-~$:zip -g myfile.zip myfile   //向一个压缩文件内添加新文件<br>
-~$:zip -u myzip</p>
-<h3 id="unzip">unzip</h3>
-<h4 id="参数介绍-v3">参数介绍</h4>
-<p>unzip [-dnovj]<br>
--v  查看压缩文件目录，但是不解压<br>
--d  指定解压到的目录<br>
--n　不覆盖已有文件<br>
--o　覆盖已有文件<br>
--j  不重建文档的目录结构，把所有文件解压到同一目录下</p>
-<h3 id="7z">7z</h3>
-<h4 id="安装">安装</h4>
-<p>~$:apt-get install p7zip</p>
-<h4 id="参数介绍-v4">参数介绍</h4>
-<p>7z [x|a] [-rotr]<br>
-a　代表添加文件到压缩包<br>
-x　代表解压缩文件<br>
--r 表示递归所有文件<br>
--t 制定压缩类型<br>
--o 指定解压到的目录</p>
-<h4 id="示例-v2">示例</h4>
-<p>~$:7z a -t 7z -r myfile.7z  ~/myfile<br>
-~$:7z x myfile.7z -r -o ~/</p>
-<h3 id="rar">rar</h3>
-<h4 id="安装-v2">安装</h4>
-<p>~$:apt-get install rar</p>
-<h4 id="示例-v3">示例</h4>
-<p>~$:rar x myfile.rar<br>
-~$:rar a myfile.rar myfile</p>
-<h3 id="tar">tar</h3>
-<p>打包</p>
-<h4 id="参数介绍-v5">参数介绍</h4>
-<p>tar [-cxtvfjzCpP]<br>
--c  --create<br>
--x  --extract<br>
--t  --list<br>
--v  --verbose<br>
--f  --file<br>
--j  --bzip2<br>
--z  --gzip --gunzip<br>
--C  --directory DIR<br>
-	change to directory DIR<br>
--p  --preserve-permissions, --same-permissions<br>
--P  --absolute-names</p>
-<pre><code>--exclude=file
-</code></pre>
-<h4 id="示例-v4">示例</h4>
-<p>~$:tar -cvj -f ~/my_bak/etc.newer.passwd.tar.bz2 --newer-mtime=“2016/09/23”			/etc/*<br>
-~$:tar -cvj -f ~/my_bak/etc.tar.gz   /etc<br>
-~$:tar -xvj -f ~/my_bak/etc.tar.gz -C /tmp<br>
-~$:tar -xvj -f ~/my_bak/etc.tar.gz |etc/shadow<br>
-~$:tar -tfj -f ~/my_bak/etc.tar.gz | grep ‘shadow’<br>
-~$:tar -cv -f /dev/st0 /home /root /etc     # 磁带机/dev/st0</p>
-<h2 id="备份">备份</h2>
-<ul>
-<li>dump</li>
-<li>restore</li>
-<li>mkisofs</li>
-<li>dd</li>
-</ul>
-<h3 id="dump">dump</h3>
-<h4 id="参数介绍-v6">参数介绍</h4>
-<p>dump    [-SujvWf]<br>
--S	size<br>
--u	update    recode the dump time to /var/lib/dumpdates<br>
-	-u只能对level 0 操作<br>
--j	add compress bz2(默认压缩等级为 2)<br>
--v	verbose   详细的<br>
--W	列出/etc/fstab中的具有dump设置的分区是否被备份过<br>
--f	<br>
--level	备份的等级(0-9) 对于文件系统有九个等级<br>
-			对于单个目录只有0级</p>
-<h4 id="示例-v5">示例</h4>
-<p>~$:dump -0u -f /root/etc.dump /etc</p>
-<h3 id="restore">restore</h3>
-<h4 id="参数介绍-v7">参数介绍</h4>
-<p>restore [-tCir]<br>
--t	list<br>
--C	compare<br>
--i	itera<br>
--r	r</p>
-<h4 id="示例-v6">示例</h4>
-<p>~$:restore -t -f /root/boot.dump<br>
-~$:restore -C -f /root/boot.dump<br>
-~$:mkdir test_restore<br>
-~$:cd test_restore	<br>
-~$:restore -r -f /root/boot.dump<br>
-~$:restore -i -f /root/etc.dump.bz2</p>
-<h3 id="mkisofs">mkisofs</h3>
-<p>生成iso文件</p>
-<h4 id="参数介绍-v8">参数介绍</h4>
-<p>mkisofs [-orvVm]<br>
--o +生成的镜像名<br>
--r 记录更完整的文件信息，包括UID,GID与权限等<br>
--v 显示构建iso的过程<br>
--V 新建Volume<br>
--m exclude 排除某文件<br>
--graft-point</p>
-<h4 id="示例-v7">示例</h4>
-<p>~$:mkisofs -r -v -o ~/my.iso/system.iso -m /home/lost+found -graft-point/home=/home /root=/root /etc=/etc</p>
-<h3 id="dd">dd</h3>
-<p>可以备份整块硬盘或者整块磁盘包括superblocks以及boot sector等等</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2718,7 +2610,7 @@ x　代表解压缩文件<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">227</span>
+                    <span class="site-state-item-count">228</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3402,7 +3294,9 @@ x　代表解压缩文件<br>
                     
                       
                     
-                    <span class="site-state-item-count">307</span>
+                      
+                    
+                    <span class="site-state-item-count">308</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
