@@ -53,7 +53,7 @@ $\overbrace{x+y}\^{1+2}=\underbrace{z}_3$ \overbrace{x+y}\^{1+2}=\underbrace{z}_
 ``` Latex
 \begin{cases}x=1\\\\y=x\end{cases}    
 ```
-$$\begin{cases}x=1\\\\y=x\end{cases}$$
+$$\begin{cases}x=0\\\\y=x\end{cases}$$
 
 ### 矩阵
 ``` Latex
