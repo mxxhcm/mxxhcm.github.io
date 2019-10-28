@@ -7,6 +7,7 @@ tags:
  - 后验
  - 似然
 categories: 概率论与统计
+mathajax: true
 ---
 
 ## 概率

@@ -26,7 +26,7 @@ $$P(y_k|X) = \frac{P(y_k)P(X|y_k)}{P(X)} = \frac{P(y_k) \prod\_{i=1}^m P(x_i|y_k
 - 当属性$X$是连续值时，可以假设变量服从某种分布，使用训练数据估计分布的参数。 如高斯分布的均值和方差。
 
 ## 参数估计方法
-可以使用[最大似然估计]()，[贝叶斯估计]()和[最大后验估计]()求朴素贝叶斯的参数。
+可以使用[贝叶斯估计](https://mxxhcm.github.io/2019/07/31/probability_basic/)，[最大似然估计](https://mxxhcm.github.io/2019/01/20/maximum-likelyhood-estimation/)和[最大后验估计](https://mxxhcm.github.io/2019/07/31/probability_basic/)求朴素贝叶斯的参数。
 
 ## 参考文献
 1.https://www.cnblogs.com/phoenixzq/p/3539619.html
