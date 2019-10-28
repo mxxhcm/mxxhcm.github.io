@@ -1,11 +1,12 @@
 ---
-title: bayesian decision theorem and bayesian classifier
+title: bayesian classifier and bayesian decision theorem
 date: 2019-10-26 20:02:39
 tags:
  - 机器学习
  - 贝叶斯分类器
  - 朴素贝叶斯
  - 概率论与统计
+ - 贝叶斯决策理论
 categories: 机器学习
 mathjax: true
 ---
@@ -37,7 +38,6 @@ $$ P(Y|X) = \frac{P(X|Y)P(Y)}{P(X)} \tag{2}$$
 整个贝叶斯分类器的错误率是：
 $$1-\mathbb{E}\left(\max_j Pr(Y=j|X=x_0)\right) \tag{6}$$
 其中期望表示计算所有$X$的可能取值上的平均错误率。
-
 
 ## 参考文献
 1.https://www.cnblogs.com/phoenixzq/p/3539619.html
