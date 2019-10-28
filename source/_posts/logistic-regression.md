@@ -42,8 +42,18 @@ $$ p(y=0|x) = \frac{1}{1+e\^{w^T x+ b} } \tag{10} $$
 ## 最大似然估计进行参数估计
 给定训练集样本$(x_1, y_1), \cdots, (x_N,y_N)$，可以使用最大似然估计求解给定的$w$和$b$：
 $$l(w,b) =\prod\_{i=1}^m p(y_i|x_i; w,b) \tag{11}$$
-即让所有样本属于其真实标记的概率越大越好。设$p(y=1|x) = \pi(x), p(y=0|x) = 1-\pi(x)$，重写式子$(11)$，得到的似然函数为：
-$$L = \log l(w,b) =\sum\_{i=1}^m \log p(y_i|x_i; w,b) \tag{11}$$
+即让所有样本属于其真实标记的概率越大越好。设$p(y=1|x) = \pi(x), p(y=0|x) = 1-\pi(x)$，这两个式子可以用一个式子表示$\pi(x)^y (1-\pi(x))^{1-y} $，重写式子$(11)$，得到的似然函数为：
+$$l(w,b) =\prod\_{i=1}^m p(y_i|x_i; w,b) = \prod\_{i=1}^m \left[\pi(x)\right]^{y_i} \left[1-pi(x)\right]^{1-y_i} \tag{12}$$
+
+取对数得到对数似然：
+\begin{align\*}
+L &= \log l(w,b) \\\\
+& = \log \prod\_{i=1}^m \left[\pi(x)\right]^{y_i} \left[1-pi(x)\right]^{1-y_i}\\\\
+& = \sum\_{i=1}^m \left[y_i\log\pi(x)+(1-y_i)\log(1-\pi(x_i)) \right]\\\\
+& = \sum\_{i=1}^m \left[y_i\log\frac{\pi(x)}{1-\pi(x_i)} + \log(1-\pi(x_i)) \right]\\\\
+& = \sum\_{i=1}^m \left[y_i (w^T x+b) - \log(1+e\^{w^T x+b} ) \right]\\\\
+\end{align\*}
+然后求得$w$和$b$即可。
 
 ## 多项logistic regression
 假设离散型随机变量的取值集合是${1, 2,\cdots, K}$，多项logistic regression的公式是：
@@ -51,3 +61,6 @@ $$P(Y=k|x) = \frac{e\^{w^T x+b} }{ 1+ \sum\_{k=1}^{K-1} e\^{w^T x+b} }, k = 1, 2
 $$P(Y=K|x) = \frac{1}{1+ \sum\_{k=1}^{K-1} e\^{w^T x+b} }$$
 
 ## 参考文献
+1.周志华《西瓜书》
+2.李航《统计机器学习》
+
