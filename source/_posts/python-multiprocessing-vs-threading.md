@@ -381,7 +381,7 @@ r2 = pool.apply_async(bar)
 ### 简介
 用来阻塞当前进程，直到该进程执行完毕，再继续执行后续代码。
 ### 代码示例
-[代码地址](https://github.com/mxxhcm/myown_code/blob/master/tools/py_process_thread/mp/mp_join.py)
+[代码地址](https://github.com/mxxhcm/myown_code/blob/master/tools/py_process_thread/mp/join.py)
 可以看出来，调用join()函数的时候，会等子进程执行完之后再继续执行；而不使用join()函数的话，在子进程开始执行的时候，就会继续向后执行了。
 
 

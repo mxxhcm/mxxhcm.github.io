@@ -4,6 +4,7 @@ date: 2019-05-08 21:52:42
 tags:
  - pytorch
  - python
+ - multiprocessing
 categories: pytorch
 ---
 
