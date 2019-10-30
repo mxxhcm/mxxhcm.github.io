@@ -6,6 +6,7 @@ tags:
  - 雅克比矩阵
  - 海塞矩阵
 categories: 线性代数
+mathjax: true
 ---
 
 ## 雅克比矩阵和海塞矩阵对比

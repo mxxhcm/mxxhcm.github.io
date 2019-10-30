@@ -20,6 +20,10 @@ mathjax: true
 直接的policy gradient在解决大规模的MDPs时很有用，这种方法基于future reward的梯度在满足约束条件的一类polices中找一个$\pi$，但是这种方法是non covariant的，简单来说，就是左右两边的维度不一致。
 这篇文章基于policy的底层参数结构定义了一个metric，提出了一个covariant gradient方法，通过将它和policy iteration联系起来，可以证明natural gradient朝着选择greedy optimal action的方向移动。通过在简单和复杂的MDP中进行测试，结果表明这种方法中没有出现严重的plateau phenomenon。
 
+## Preliminary
+1.[fisher信息](https://mxxhcm.github.io/2019/09/16/fisher-information/)
+2.[KL散度](https://mxxhcm.github.io/2018/12/23/%E7%86%B5%E3%80%81%E4%BA%A4%E5%8F%89%E7%86%B5%E5%92%8CK-L%E6%95%A3%E5%BA%A6/)
+
 ## A Natural Gradient
 定义average reward $\eta(\pi)$为：
 $$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a) \tag{1}$$
@@ -31,7 +35,7 @@ $$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} 
 使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。本文中定义$d\theta$的平方长度$\vert d\theta\vert^2 $和一个正定矩阵$\text{G}(\theta)$有关：
 $$\vert d\theta\vert^2 = \sum_{ij} \text{G}\_{ij} (\theta)d\theta_i d\theta_j = d\theta^T \text{G}(\theta) d\theta  \tag{5}$$
 在$d\theta$的平方长度$\vert d\theta\vert^2 $ 等于一个常数时，求使得$\eta(\theta+d\theta)$下降的最快的$d\theta$方向。可以证明，最快的梯度下降方向是$\text{G}^{-1} \nabla \eta(\theta)$。标准的policy gradient假设$\text{G}=\text{I}$，所以最陡的下降方向是$\nabla\eta(\theta)$。本文作者的想法是选择一个其他的$\text{G}$，这个新的$G$对应的metric不根据坐标轴的变化而变化，而是跟着坐标参数化的mainfold变化，根据新的metric定义natural gradient。
-给出策略$\pi(a;s,\theta)$的fisher information：
+给出策略$\pi(a;s,\theta)$的fisher information（似然对数的二阶导）：
 $$\text{F}\_s(\theta) = \mathbb{E}\_{\pi(a;s,\theta)} \left[\frac{\partial \log \pi(a;s,\theta)}{\partial \theta_i} \frac{\partial \log \pi(a;s,\theta)}{\partial \theta_j}\right] \tag{6}$$
 显然$\text{F}\_s$是正定矩阵，可以证明，FIM是概率分布参数空间上的一个invariant metric。不论两个点的坐标怎么选择，它都能计算处相同的distance，所以说它是invariant。当然，$\text{F}\_s$使用了单个的$s$，而在计算average reward时，使用的是一个分布，定义$\text{F}$：
 $$\text{F}(\theta) = \mathbb{E}\_{\rho^{\pi} (s)} \left[\mathbb{F}\_s (\theta)\right] \tag{7}$$

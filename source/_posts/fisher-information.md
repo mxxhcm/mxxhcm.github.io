@@ -52,6 +52,9 @@ Fisher informaction的导数是$\theta$无偏估计值方差的下界。换句�
 
 ## Fisher information Matirx
 当$\theta$是多维变量的时候。
+### Preliminary
+1.[雅克比矩阵和海塞矩阵](https://mxxhcm.github.io/2019/09/10/Jacobian-matrix-and-Hessian-matrix/)
+
 ### 第一种意义：协方差矩阵
 $$I(\theta) = \mathbb{E}\left[s(\theta) s(\theta)^T\right]$$
 根据协方差矩阵的定义：
