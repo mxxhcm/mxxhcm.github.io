@@ -23,6 +23,60 @@ thread有一个东西，叫做GIL(Global Interpreter Lock)，阻止同一个proc
 CPython 2.7中GIL是这样一行代码：
 ``` c
 static PyThread_type_lock interpreter_lock = 0; /* This is the GIL */
+ 
+from multiprocessing import Process, Queue
+import os,random,time
+
+
+def proc1(name):
+    print("Run child process %s (%s)" % (name,os.getpid()))
+    print(time.time())
+    time.sleep(random.random())
+    print("%s end" % (name))
+    return "return A"
+
+def proc2(name):
+    print("Run child process %s (%s)" % (name,os.getpid()))
+    print(time.time())
+    time.sleep(random.random())
+    print("%s end" % (name))
+    return "return B"
+
+def proc(length, output):
+    result = "Hello! " + str(length) + "!"
+    time.sleep(random.random())
+    output.put(result)
+
+if __name__ == '__main__':
+    # 1. mp.Process
+    print("Parent process %s" % os.getpid())
+    p1 = Process(target=proc1, args=('p1',))
+    p2 = Process(target=proc2, args=('p2',))
+    print("child processes will start.")
+    p1.start()
+    p2.start()
+    # 上面两行代码意思是p1.start()有返回值时，开始执行p2.start()。p1.start()有返回值并不是说p1执行完了
+    p1.join()
+    p2.join()
+    # 上面两行代码中，p1.join()执行完之后才会执行p2.join()。所以只有p1执行完之后，p2才能尝试结束。。
+    #  The interpreter will, however, wait until P1 finishes before attempting to wait for P2 to finish.
+    print("child processes end.")
+
+
+    # 2.获得mp.Process的返回值
+    print("# 2.获得mp.Process的返回值")
+    output = Queue()
+    processes = [Process(target=proc, args=(x, output)) for x in range(4)]
+    for p in processes:
+        p.start()
+
+    for p in processes:
+        p.join()
+
+    results = [output.get() for p in processes]
+    print(results)
+
+# https://stackoverflow.com/questions/31711378/python-multiprocessing-how-to-know-to-use-pool-or-process
 ```
 在Unix类系统中，PyThread_type_lock是标准的C lock mutex_t的别名。它的初始化方式如下：
 ``` c
@@ -147,7 +201,7 @@ threading是python多线程的一个package。
 ### threading.Thread
 
 #### 代码示例
-[代码地址](thread_Thread.py)
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/py_process_thread/threading_Thread.py)
 ``` python
 import threading
 import socket
@@ -170,7 +224,7 @@ for i in range(len(websites)):
 ### threading.Lock
 
 #### 代码示例
-[代码地址](threading_Lock.py)
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/py_process_thread/threading_Lock.py)
 ``` python
 import time
 import threading
@@ -348,7 +402,63 @@ for res in results:
 ### 使用流程
 
 ### 代码示例
-[代码地址](Process.py)
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/py_process_thread/mp/Process.py)
+``` python
+ 
+from multiprocessing import Process, Queue
+import os,random,time
+
+
+def proc1(name):
+    print("Run child process %s (%s)" % (name,os.getpid()))
+    print(time.time())
+    time.sleep(random.random())
+    print("%s end" % (name))
+    return "return A"
+
+def proc2(name):
+    print("Run child process %s (%s)" % (name,os.getpid()))
+    print(time.time())
+    time.sleep(random.random())
+    print("%s end" % (name))
+    return "return B"
+
+def proc(length, output):
+    result = "Hello! " + str(length) + "!"
+    time.sleep(random.random())
+    output.put(result)
+
+if __name__ == '__main__':
+    # 1. mp.Process
+    print("Parent process %s" % os.getpid())
+    p1 = Process(target=proc1, args=('p1',))
+    p2 = Process(target=proc2, args=('p2',))
+    print("child processes will start.")
+    p1.start()
+    p2.start()
+    # 上面两行代码意思是p1.start()有返回值时，开始执行p2.start()。p1.start()有返回值并不是说p1执行完了
+    p1.join()
+    p2.join()
+    # 上面两行代码中，p1.join()执行完之后才会执行p2.join()。所以只有p1执行完之后，p2才能尝试结束。。
+    #  The interpreter will, however, wait until P1 finishes before attempting to wait for P2 to finish.
+    print("child processes end.")
+
+
+    # 2.获得mp.Process的返回值
+    print("# 2.获得mp.Process的返回值")
+    output = Queue()
+    processes = [Process(target=proc, args=(x, output)) for x in range(4)]
+    for p in processes:
+        p.start()
+
+    for p in processes:
+        p.join()
+
+    results = [output.get() for p in processes]
+    print(results)
+
+# https://stackoverflow.com/questions/31711378/python-multiprocessing-how-to-know-to-use-pool-or-process
+```
 
 
 ## mp.Pool vs mp.Process
@@ -375,13 +485,79 @@ r2 = pool.apply_async(bar)
 ```
 
 ### 代码示例
-[代码地址](Pool_Process.py)
+[代码地址](https://github.com/mxxhcm/code/blob/master/tools/py_process_thread/mp/Pool_Process.py)
+```  python
+from multiprocessing import Process,Pool
+import os,random,time
 
-## join方法
+
+def run_proc(name):
+    print("Run child process %s (%s)" % (name,os.getpid()))
+
+
+def long_time_task(name):
+    print("Run task %s (%s)" % (name, os.getpid()))
+    start = time.time()
+    time.sleep(random.random()*3)
+    end = time.time()
+    print("task %s runs %0.2f seconds." % (name,end-start))
+
+
+if __name__ == '__main__':
+    # 1.Process
+    print("Parent process %s" % os.getpid())
+    p = Process(target=run_proc, args=('test',))
+    print("child process will start.")
+    p.start()
+    p.join()
+    print("child process end.")
+
+    # 2.Pool
+    print("Paranet Process %s" % os.getpid())
+    pool = Pool(4)
+    for i in range(5):
+        pool.apply_async(long_time_task,args=(i,))
+    print("Waitting for done.")
+    pool.close()    # 回收Pool
+    pool.join()
+    print("All subprocesses done")
+```
+
+## multiprocessing join方法
 ### 简介
 用来阻塞当前进程，直到该进程执行完毕，再继续执行后续代码。
+
 ### 代码示例
 [代码地址](https://github.com/mxxhcm/myown_code/blob/master/tools/py_process_thread/mp/join.py)
+``` python
+from multiprocessing import Process,Pool
+import os,random,time
+
+
+def run_proc(name):
+    time.sleep(2)
+    print("Run child process %s (%s)" % (name,os.getpid()))
+
+
+if __name__ == '__main__':
+    print("==========1. join==========")
+    print("Parent process %s" % os.getpid())
+    p = Process(target=run_proc, args=('test',))
+    print("child process will start.")
+    p.start()
+    p.join()
+    print("child process end.")
+
+ 
+    print("==========2. no join==========")
+    print("Parent process %s" % os.getpid())
+    p = Process(target=run_proc, args=('test',))
+    print("child process will start.")
+    p.start()
+    # p.join()
+    print("child process end.")
+
+```
 可以看出来，调用join()函数的时候，会等子进程执行完之后再继续执行；而不使用join()函数的话，在子进程开始执行的时候，就会继续向后执行了。
 
 
