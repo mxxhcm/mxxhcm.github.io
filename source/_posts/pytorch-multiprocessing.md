@@ -6,6 +6,7 @@ tags:
  - python
  - multiprocessing
 categories: pytorch
+mathjax: true
 ---
 
 ## torch.multiprocessing
@@ -14,7 +15,7 @@ categories: pytorch
 可参见github[官方demo](https://github.com/mxxhcm/myown_code/tree/master/pytorch/tutorials/multiprocess_torch/mnist_hogwild)。
 
 ### share_memory\_()
-在多个线程之间共享参数，如下[代码](https://github.com/mxxhcm/myown_code/blob/master/pytorch/tutorials/multiprocess_torch/share_memory.py)所示。可以用来实现A3C。
+在多个线程之间共享参数，如下[代码](https://github.com/mxxhcm/code/blob/master/pytorch/tutorials/torch_multiprocess_torch/share_memory.py)所示。可以用来实现A3C。
 ``` python
 import torch.multiprocessing as mp
 import torch

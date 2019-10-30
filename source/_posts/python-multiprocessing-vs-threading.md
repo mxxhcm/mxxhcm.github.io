@@ -216,9 +216,18 @@ def do_connect(website):
 
 websites = ['python.org', 'baidu.com']
 
+job_list = []
 for i in range(len(websites)):
-    t = threading.Thread(target=do_connect, args=(websites[i],))
+    job_list.append(threading.Thread(target=do_connect, args=(websites[i],)))
+
+for t in job_list:
     t.start()
+
+# join表示阻塞，一直到当前任务完成为止，如果不加的话，就会立刻执行下面的print语句
+for t in job_list:
+    t.join()
+
+print("Done")
 ```
 
 ### threading.Lock
