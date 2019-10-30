@@ -30,7 +30,7 @@ $$\eta(\pi) = \sum_{s,a}\rho^{\pi} (s) \pi(a;s) R(s, a) \tag{1}$$
 其中$R(s,a) = \mathbb{E}\left[R_{t+1}\right|s_t=s, a_t = a]$，state action value和value function定义如下：
 $$Q^{\pi} (s,a) = \sum_{t=0}^{\infty} \mathbb{E}\left[R_t - \eta(\pi)|s_0=s,a_0=a,\pi\right], \forall s\in S, a\in A \tag{2}$$
 $$V^{\pi} (s) = \mathbb{E}\_{\pi(a';s)}\left[Q^{\pi}(s,a')\right] \tag{3}$$
-计算average reward的精确梯度是（可以看[policy gradient](http://mxxhcm.github.io/2019/09/22/gradient-method-policy-gradient/)的推导）：
+计算average reward的精确梯度是（可以看[policy gradient](http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/)的推导）：
 $$\nabla\eta(\theta) = \sum_{s,a} \rho^{\pi} (s) \nabla \pi(a;s,\theta) Q^{\pi} (s,a) \tag{4}$$
 使用$\eta(\theta)$代替了$\eta(\pi_{\theta})$。本文中定义$d\theta$的平方长度$\vert d\theta\vert^2 $和一个正定矩阵$\text{G}(\theta)$有关：
 $$\vert d\theta\vert^2 = \sum_{ij} \text{G}\_{ij} (\theta)d\theta_i d\theta_j = d\theta^T \text{G}(\theta) d\theta  \tag{5}$$
