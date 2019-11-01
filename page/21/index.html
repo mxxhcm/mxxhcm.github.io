@@ -327,6 +327,544 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/07/tensorflow-problems/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/07/tensorflow-problems/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">tensorflow 常见问题（不定期更新）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-07 14:51:01" itemprop="dateCreated datePublished" datetime="2019-03-07T14:51:01+08:00">2019-03-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-07-18 20:27:16" itemprop="dateModified" datetime="2019-07-18T20:27:16+08:00">2019-07-18</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题1-the-value-of-a-feed-cannot-be-a-tf-tensor-object">问题1-The value of a feed cannot be a tf.Tensor object</h2>
+<h3 id="报错">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TypeError: The value of a feed cannot be a tf.Tensor object</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因">问题原因</h3>
+<p>sess.run(op, feed_dict={})中的feed value不能是tf.Tensor类型。</p>
+<h3 id="解决方法">解决方法</h3>
+<p>sess.run(train, feed_dict={x:images, y:labels}的输入不能是tensor，可以使用sess.run(tensor)得到numpy.array形式的数据再喂给feed_dict。</p>
+<blockquote>
+<p>Once you have launched a sess, you can use your_tensor.eval(session=sess) or sess.run(your_tensor) to get you feed tensor into the format of numpy.array and then feed it to your placeholder.</p>
+</blockquote>
+<h2 id="问题2-could-not-create-cudnn-handle-cudnn-status-internal-error">问题2-Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR</h2>
+<h3 id="配置">配置</h3>
+<p>环境配置如下：</p>
+<ul>
+<li>Ubuntu 18.04</li>
+<li>CUDA 10.0</li>
+<li>CuDNN 7.4.2</li>
+<li>Python3.7.3</li>
+<li>Tensorflow 1.13.1</li>
+<li>Nvidia Drivers 430.09</li>
+<li>RTX2070</li>
+</ul>
+<h3 id="报错-v2">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">2019-05-12 14:45:59.355405: E tensorflow/stream_executor/cuda/cuda_dnn.cc:334] Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR</span><br><span class="line">2019-05-12 14:45:59.357698: E tensorflow/stream_executor/cuda/cuda_dnn.cc:334] Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因-v2">问题原因</h3>
+<p>GPU不够用了。</p>
+<h3 id="解决方法-v2">解决方法</h3>
+<p>在代码中添加下面几句：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">config = tf.ConfigProto()</span><br><span class="line">config.gpu_options.allow_growth = <span class="literal">True</span></span><br><span class="line">session = InteractiveSession(config=config)</span><br></pre></td></tr></table></figure>
+<h2 id="问题3-libcublas-so-10-0-cannot-open-shared-object-file-no-such-file-or-directory">问题3-libcublas.so.10.0: cannot open shared object file: No such file or directory</h2>
+<p>在命令行或者pycharm中import tensorflow报错</p>
+<h3 id="报错-v3">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ImportError: libcublas.so.10.0: cannot open shared object file: No such file or directory</span><br><span class="line">Failed to load the native TensorFlow runtime.</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因-v3">问题原因</h3>
+<p>没有配置CUDA环境变量</p>
+<h3 id="解决方法-v3">解决方法</h3>
+<h4 id="命令行中">命令行中</h4>
+<p>在.bashrc文件中加入下列语句：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export PATH=/usr/local/cuda/bin$&#123;PATH:+:$&#123;PATH&#125;&#125;</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$&#123;LD_LIBRARY_PATH:+:$&#123;LD_LIBRARY_PATH&#125;&#125;</span><br><span class="line">export CUDA_HOME=/usr/local/cuda</span><br></pre></td></tr></table></figure>
+<h4 id="pycharm中">pycharm中</h4>
+<h5 id="方法1-这种方法我没有实验成功-不知道为什么">方法1（这种方法我没有实验成功，不知道为什么）</h5>
+<p>在左上角选中<br>
+File&gt;&gt;Settings&gt;&gt;Build.Execution,Deployment&gt;&gt;Console&gt;&gt;Python Console<br>
+在Environment下的Environment variables中添加<br>
+LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}即可。</p>
+<h5 id="方法2">方法2</h5>
+<p>修改完.bashrc文件后从终端中运行pycharm。</p>
+<h2 id="问题4-dlerror-libcupti-so-10-0-cannot-open-shared-object-file-no-such-file-or-directory">问题4-dlerror: libcupti.so.10.0: cannot open shared object file: No such file or directory</h2>
+<p>执行mnist_with_summary代码时报错</p>
+<h3 id="报错-v4">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">I tensorflow/stream_executor/dso_loader.cc:142] Couldn&apos;t open CUDA library libcupti.so.10.0. LD_LIBRARY_PATH: /usr/local/cuda/lib64:</span><br><span class="line">2019-05-13 23:04:10.620149: F tensorflow/stream_executor/lib/statusor.cc:34] Attempting to fetch value instead of handling error Failed precondition: could not dlopen DSO: libcupti.so.10.0; dlerror: libcupti.so.10.0: cannot open shared object file: No such file or directory</span><br><span class="line">Aborted (core dumped)</span><br></pre></td></tr></table></figure>
+<h3 id="问题问题问题问题问题问题问题问题问题原因">问题问题问题问题问题问题问题问题问题原因</h3>
+<p>libcupti.so.10.0包没找到</p>
+<h3 id="解决方法-v4">解决方法</h3>
+<p>执行以下命令，找到相关的依赖包：<br>
+~$:find /usr/local/cuda/ -name libcupti.so.10.0<br>
+输出如下：</p>
+<blockquote>
+<p>/usr/local/cuda/extras/CUPTI/lib64/libcupti.so.10.0</p>
+</blockquote>
+<p>然后修改~/.bashrc文件中相应的环境变量:<br>
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/😒{LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}<br>
+重新运行即可。</p>
+<h2 id="问题5-unhashable-type-list">问题5-unhashable type: ‘list’</h2>
+<p>sess.run(op, feed_dict={})中feed的数据中包含有list的时候会报错。</p>
+<h3 id="报错-v5">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TypeError: unhashable type: &apos;list&apos;</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因-v4">问题原因</h3>
+<p>feed_dict中不能的value不能是list。</p>
+<h3 id="解决方法-v5">解决方法</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">feed_dict = &#123;</span><br><span class="line">               placeholder : value </span><br><span class="line">                  <span class="keyword">for</span> placeholder, value <span class="keyword">in</span> zip(placeholder_list, inputs_list))</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="代码示例">代码示例</h3>
+<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_placeholder_list.py" target="_blank" rel="noopener">代码地址</a></p>
+<h2 id="问题6-attempting-to-use-uninitialized-value">问题6-Attempting to use uninitialized value</h2>
+<p>tf.Session()和tf.InteractiveSession()混用问题。</p>
+<h3 id="报错-v6">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tensorflow.python.framework.errors_impl.FailedPreconditionError: Attempting to use uninitialized value prediction/l1/w</span><br><span class="line">	 [[&#123;&#123;node prediction/l1/w/read&#125;&#125;]]</span><br><span class="line">	 [[&#123;&#123;node prediction/LogSoftmax&#125;&#125;]]</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因-v5">问题原因</h3>
+<p>声明了如下session:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sess = tf.Session()</span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br></pre></td></tr></table></figure>
+<p>在接下来的代码中，因为我声明的是tf.Session()，使用了op.eval()函数，这种用法是tf.InteractiveSession的用法，所以就相当于没有初始化。<br>
+result = op.eval(feed_dict={})<br>
+然后就报了未初始化的错误。<br>
+把代码改成：<br>
+result = sess.run([op], feeed_dct={})<br>
+即可，即上下文使用的session应该一致。</p>
+<h3 id="解决方案">解决方案</h3>
+<p>使用统一的session类型</p>
+<h2 id="问题7-setting-an-array-element-with-a-sequence">问题7-setting an array element with a sequence</h2>
+<p>feed_dict键值对中中值必须是numpy.ndarray，不能是其他类型。</p>
+<h3 id="报错-v7">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">value error setting an array element with a sequence,</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因-v6">问题原因</h3>
+<p>feed_dict中key-value的value必须是numpy.ndarray，不能是其他类型，尤其不能是tf.Variable。</p>
+<h3 id="解决方法-v6">解决方法</h3>
+<p>检查sess.run(op, feed_dict={})中的feed_dict，确保他们的类型，不能是tf.Variable()类型的对象，需要是numpy.ndarray。</p>
+<h2 id="问题8-访问tf-variable-的值">问题8-访问tf.Variable()的值</h2>
+<p>如何获得tf.Variable()对象的值</p>
+<h3 id="解决方法-v7">解决方法</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line">x = tf.Varialbe([<span class="number">1.0</span>, <span class="number">2.0</span>])</span><br><span class="line">sess = tf.Session()</span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">value = sess.run(x)</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import tensorflow as tf</span><br><span class="line">x = tf.Varialbe([1.0, 2.0])</span><br><span class="line">sess = tf.InteractiveSession()</span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">x.eval()</span><br></pre></td></tr></table></figure>
+<h2 id="问题9-can-not-convert-a-ndarray-into-a-tensor-or-operation">问题9-Can not convert a ndarray into a Tensor or Operation</h2>
+<h3 id="报错-v8">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Can not convert a ndarray into a Tensor or Operation.</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因-v7">问题原因</h3>
+<p>原因是sess.run()前后参数名重了，比如outputs = sess.run(outputs)，outputs本来是自己定义的一个op，但是sess.run(outputs)之后outputs就成了一个变量，就把定义的outputs op覆盖了。</p>
+<h3 id="解决方法-v8">解决方法</h3>
+<p>换个变量名字就行</p>
+<h2 id="问题10-本地使用gpu-server的tensorboard">问题10-本地使用gpu server的tensorboard</h2>
+<h3 id="问题描述">问题描述</h3>
+<p>在gpu server跑的实验结果，然后summary的记录也在server上，但是又没办法可视化，只好在本地可视化。</p>
+<h3 id="解决方法-v9">解决方法</h3>
+<p>使用ssh进行映射好了。</p>
+<h4 id="本机设置">本机设置</h4>
+<p>~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:mxxmhh@127.0.0.1" target="_blank" rel="noopener">mxxmhh@127.0.0.1</a><br>
+将本机的12345端口映射到10.1.114.50的6006端口，中间服务器使用的是本机。<br>
+或者可以使用10.1.114.50作为中间服务器。<br>
+~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
+或者可以使用如下方法：<br>
+~$:ssh -L 12345:127.0.0.1:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
+从这个方法中，可以看出127.0.0.1这个ip是中间服务器可以访问的ip。<br>
+以上三种方法中，-L后的端口号12345可以随意设置，只要不冲突即可。</p>
+<h4 id="服务端设置">服务端设置</h4>
+<p>然后在服务端运行以下命令：<br>
+~$:tensorboard --logdir logdir -port 6006<br>
+这个端口号也是可以任意设置的，不冲突即可。</p>
+<h4 id="运行">运行</h4>
+<p>然后在本机访问<br>
+<a href="https://127.0.0.1:12345" target="_blank" rel="noopener">https://127.0.0.1:12345</a>即可。</p>
+<h2 id="问题11-每一步summary一个list的每一个元素">问题11-每一步summary一个list的每一个元素</h2>
+<h3 id="问题原因-v8">问题原因</h3>
+<p>有一个tf list的placeholder，但是每一步只能生成其中的一个元素，所以怎么样summary中其中的某一个？</p>
+<h3 id="解决方法-v10">解决方法</h3>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">import tensorflow as tf</span><br><span class="line">import numpy as np</span><br><span class="line"></span><br><span class="line">number = 3</span><br><span class="line">x_ph_list = []</span><br><span class="line">for i in range(number):</span><br><span class="line">    x_ph_list.append(tf.placeholder(tf.float32, shape=None))</span><br><span class="line"></span><br><span class="line">x_summary_list = []</span><br><span class="line">for i in range(number):</span><br><span class="line">    x_summary_list.append(tf.summary.scalar("x%s" % i, x_ph_list[i]))</span><br><span class="line"></span><br><span class="line">writer = tf.summary.FileWriter("./tf_summary/scalar_list_summary/sep")</span><br><span class="line">with tf.Session() as sess:</span><br><span class="line">    scope = 10</span><br><span class="line">    inputs = np.arange(scope*number)</span><br><span class="line">    inputs = inputs.reshape(scope, number)</span><br><span class="line">    # inputs = np.random.randn(scope, number)</span><br><span class="line">    for i in range(scope):</span><br><span class="line">        for j in range(number):</span><br><span class="line">            out, xj_s = sess.run([x_ph_list[j], x_summary_list[j]], feed_dict=&#123;x_ph_list[j]: inputs[i][j]&#125;)</span><br><span class="line">            writer.add_summary(xj_s, global_step=i)</span><br></pre></td></tr></table></figure>
+<h2 id="问题12-for-value-in-summary-value-attributeerror-list-object-has-no-attribute-value">问题12- for value in summary.value: AttributeError: ‘list’ object has no attribute ‘value’</h2>
+<h3 id="问题描述-v2">问题描述</h3>
+<p>writer.add_summary时报错</p>
+<h3 id="报错-v9">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">File &quot;/home/mxxmhh/anaconda3/lib/python3.7/site-packages/tensorflow/python/summary/writer/writer.py&quot;, line 127, in add_summary</span><br><span class="line">    for value in summary.value:</span><br><span class="line">AttributeError: &apos;list&apos; object has no attribute &apos;value&apos;</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因-v9">问题原因</h3>
+<p>执行以下代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s_ = sess.run([loss_summary], feed_dict=&#123;p_losses_ph: inputs1, q_losses_ph: inputs2&#125;)</span><br><span class="line">writer.add_summary(s_, global_step=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
+<p>因为[loss_summary]加了方括号，就把它当成了一个list。。返回值也是list，就报错了</p>
+<h3 id="解决方法-v11">解决方法</h3>
+<ul>
+<li>方法1，在等号左边加一个逗号，取出list中的值</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s_, = sess.run([loss_summary], feed_dict=&#123;p_losses_ph: inputs1, q_losses_ph: inputs2&#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>方法2，去掉loss_summary外面的中括号。</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s_ = sess.run(loss_summary, feed_dict=&#123;p_losses_ph: inputs1, q_losses_ph: inputs2&#125;)</span><br></pre></td></tr></table></figure>
+<h2 id="问题13-tf-get-default-session-always-returns-none-type">问题13- tf.get_default_session() always returns None type:</h2>
+<h3 id="问题描述-v3">问题描述</h3>
+<p>调用tf.get_default_session()时，返回的是None</p>
+<h3 id="报错-v10">报错</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">    tf.get_default_session().run(y)</span><br><span class="line">AttributeError: &apos;NoneType&apos; object has no attribute &apos;run&apos;</span><br></pre></td></tr></table></figure>
+<h3 id="问题原因-v10">问题原因</h3>
+<p>只有在设定default session之后，才能使用tf.get_default_session()获得当前的默认session，在我们写代码的时候，一般会按照下面的方式写：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    some operations</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+<p>这种情况下已经把tf.Session()生成的session当做了默认session，但是如果仅仅使用以下代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">sess =  tf.Session()</span><br><span class="line">sess.run(some operations)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>是没有把tf.Session()当成默认session的，即只有在with block内，才会将这个session当做默认session。</p>
+<h3 id="解决方案-v2">解决方案</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://github.com/tensorflow/tensorflow/issues/4842" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/4842</a><br>
+2.<a href="https://github.com/tensorflow/tensorflow/issues/24496" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/24496</a><br>
+3.<a href="https://github.com/tensorflow/tensorflow/issues/9530" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/9530</a><br>
+4.<a href="https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow" target="_blank" rel="noopener">https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow</a><br>
+5.<a href="https://github.com/tensorflow/tensorflow/issues/11897" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/11897</a><br>
+6.<a href="https://stackoverflow.com/questions/34156639/tensorflow-python-valueerror-setting-an-array-element-with-a-sequence-in-t" target="_blank" rel="noopener">https://stackoverflow.com/questions/34156639/tensorflow-python-valueerror-setting-an-array-element-with-a-sequence-in-t</a><br>
+7.<a href="https://stackoverflow.com/questions/33679382/how-do-i-get-the-current-value-of-a-variable" target="_blank" rel="noopener">https://stackoverflow.com/questions/33679382/how-do-i-get-the-current-value-of-a-variable</a><br>
+8.<a href="https://blog.csdn.net/michael__corleone/article/details/79007425" target="_blank" rel="noopener">https://blog.csdn.net/michael__corleone/article/details/79007425</a><br>
+9.<a href="https://stackoverflow.com/questions/47721792/tensorflow-tf-get-default-session-after-sess-tf-session-is-none" target="_blank" rel="noopener">https://stackoverflow.com/questions/47721792/tensorflow-tf-get-default-session-after-sess-tf-session-is-none</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/04/lychee图床搭建/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/04/lychee图床搭建/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">lychee图床搭建</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-04 21:03:55" itemprop="dateCreated datePublished" datetime="2019-03-04T21:03:55+08:00">2019-03-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/工具/" itemprop="url" rel="index"><span itemprop="name">工具</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="安装">安装</h2>
+<h3 id="基本要求">基本要求</h3>
+<ol>
+<li>web server (Apache, nginx, etc)</li>
+<li>A MySQL database (MariaDB also works)</li>
+<li>PHP 7.1 or later with the following extensions: session, exif, mbstring, gd, mysqli, json, zip, and optionally, imagick<br>
+~#:apt install nginx<br>
+~#:apt install mysql-server<br>
+~#:apt install php</li>
+</ol>
+<h3 id="配置nginx">配置nginx</h3>
+<p>重新安装nginx出现问题，见参考文献2。</p>
+<h3 id="配置mysql">配置mysql</h3>
+<p>~#:mysql -u root -p<br>
+默认密码是回车？？？<br>
+修改密码<br>
+~#:</p>
+<h3 id="配置php">配置php</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://juejin.im/post/5c1b869b6fb9a049ad770424" target="_blank" rel="noopener">https://juejin.im/post/5c1b869b6fb9a049ad770424</a><br>
+2.<a href="https://segmentfault.com/a/1190000014027697?utm_source=tag-newest" target="_blank" rel="noopener">https://segmentfault.com/a/1190000014027697?utm_source=tag-newest</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/04/linux-查看python-package的安装位置/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3009,457 +3547,6 @@ $$S_{WS}(\mathbf{z},\mathbf{e})w(\mathbf{z},\mathbf{e}) = \prod_{i=1}^l P(z_i|pa
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/06/PRML-chapter-8-Graphical-Models/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/06/PRML-chapter-8-Graphical-Models/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">PRML chapter 8 Graphical Models</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-06 14:31:09" itemprop="dateCreated datePublished" datetime="2019-01-06T14:31:09+08:00">2019-01-06</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>$\newcommand{\mmm}{\mathbf}$<br>
-<strong>概率图模型</strong><br>
-概率论在现代模式识别中有很重要的地位。第一章中介绍了概率论可以被表示成两个简单的加法和乘法公式。事实上在这本书中讨论的所有概率推理和学习的计算（无论有多复杂）都可以看成这两个公式的重复应用。我们可以只用代数计算(algebraic manipulation)来形式化并解决复杂的概率问题。但是，使用概率分布(probability distributions)的图表示(diagrammatic representations)，即概率图模型(graphical models)会更有优势。概率图模型有以下几个有用的属性：</p>
-<ol>
-<li>概率图模型提供了一个简单的方式可视化(visualize)概率模型的结构，并且能够用来设计和产生新的模型。</li>
-<li>通过观察概率图模型，可以看到模型的一些属性，包括条件独立性(conditional independence)等等。</li>
-<li>在复杂模型上进行的需要推理和学习的复杂计算，可以被表示为图计算，底层的数据表达式隐式的被执行。</li>
-</ol>
-<p>一个图由节点(nodes)，有时也叫顶点(vertices)，连接顶点的连接(links)，也叫边(edges)。在一个概率图模型中，每一个节点代表一个随机变量，或者一组随机变量，边代表着变量之间的概率关系(probabilistic relationships)。所有随机变量的联合分布可以被分解成一系列部分随机变量的乘积。<br>
-本章从有向图(directed graphical models)中的贝叶斯网络(Beyesian networks)开始介绍，有向图中的边通过箭头表示方向。另一个主要的图模型是马尔科夫随机场(Markov random fields)，它是一个无向图模型(undirected graphical models)，没有明显的方向性。有向图用来描述随机变量之间的因果关系(causal relationships)，而无向图用来描述随机变量之间的一些软约束(soft constraints)。为了解决推理问题，将无向图和有向图转化成另一种因子图(factor graph)表示是很方便的。</p>
-<h2 id="贝叶斯网络-bayesian-networks">贝叶斯网络(Bayesian Networks)</h2>
-<p>图的一个很强大的特点就是一个具体的图可以用来解释一类概率分布。给定随机变量$a,b,c$的联合概率分布$p(a,b,c)$，通过利用乘法公式，我们可以把它写成以下形式：<br>
-$$p(a,b,c) = p(c|a,b)p(b|a)p(a).$$<br>
-这个公式对于任意的联合分布都成立，我们用节点$a,b,c$表示随机变量，按照上式的右边找出每个节点对应的条件分布，在图中添加一个有向箭头从依赖变量指向该变量。如Figure 8.1所示,$a$到$b$的边表示$a$是$b$的父节点。上式中左边是$a,b,c$是对称的，但是右边不是，事实上，在做分解的时候，一个隐式的顺序$a,b,c$已经被确定了，当然也可以选其他顺序，这样会得到一个新的分解和一个新的图。<br>
-<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.1"><br>
-如果把三个变量可以扩展到$K$个变量，则对应的联合概率为$p(x_1,\cdots,x_k)$，写成如下形式：<br>
-$$p(x_1,\cdots,x_K) = p(x_K|x_{K-1},\cdots,x_1)\cdots p(x_2|x_1)p(x_1).$$<br>
-这个式子也叫链式法则，微积分中也有链式法则，这个是概率论中的链式法则。给定$K$值，我们也能生成一个含有$K$个节点的有向图，每一个节点都对应一个条件分布，每一个节点都和比它序号小的节点全部直接相连，所以这个图也叫全连接图，因为任意两个节点都直接相连，但是只有一条有向边由小号节点指向大号节点，所以没有环。<br>
-<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.2"><br>
-目前为止，所有的操作都是在完全的联合概率分布，相应的分解以及全连接网络上进行的，它们可以应用到任何分布。但是图中也可能有缺失的边，如Figure 8.2所示，它不是一个全连接的图。我们可以直接根据这个图将联合分布表示为很多条件分布的乘积。每一个条件分布的取值只跟图中对应的父节点。比如，$x_5$只取决于$x_1$和$x_3$，$7$个变量的联合概率分布可以写成：<br>
-$$p(x_1)p(x_2)p(x_3)p(x_4|x_1,x_2,x_3)p(x_5|x_1,x_3)p(x_6|x_4)p(x_7|x_4,x_5)$$<br>
-从上面我们可以看出有向图和变量的条件概率之间的关系，图中定义的联合概率分布是图中所有节点给定其父节点的条件概率的乘积，即:<br>
-$$p(\mathbf{x}) = \prod_{k=1}^Kp(x_k|pa_k).$$<br>
-其中$pa_k$是$x_k$节点的父节点的集合，$\mathbf{x} = {x_1,\cdots,x_k}$，这个式子给出了一个有向图的联合概率具有因式分解属性。<br>
-贝叶斯网络中不能存在有向的圈，即不能存在闭路，所以这种图也叫有向无环图。另一种说法是如果图中的节点有顺序的话，不能存在大号节点到小号节点的有向边。</p>
-<h3 id="示例：多项式回归-example-polynomial-regression">示例：多项式回归(Example: Polynomial regression)</h3>
-<p><img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.3"><br>
-这里给出了一个用有向图描述概率分布的例子，贝叶斯多项式回归模型。模型中的随机变量是多项式系数向量$\mathbf{w}$以及观测值$\mathbf{t}=(t_1,\cdots,t_N)<sup>T$，此外，还有一些模型中确定的参数，它们不是随机变量，如输入数据$\mathbf{x}=(x_1,\cdots,x_N)</sup>T$，噪音方差$\sigma^2$，还有$\mathbf{w}$上高斯分布精度的超参数$\alpha$。如果只关注随机变量，联合分布可以看成先验分布$p(\mathbf{w})$和$N$个条件分布$p(t_n|\mathbf{w}),n=1,\cdots,N$的乘积：<br>
-$$p(\mathbf{t},\mathbf{w}) = p(\mathbf{w})\prod_{n=1}^Np(t_n|\mathbf{w}).$$<br>
-这个模型可以用Figure 8.3表示。<br>
-<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.4"><br>
-为了方便表示，我们把$t_1,\cdots,t_N$用一个单独的节点，外面用一个盒子包着，叫做盘子(plate)，盘子上写上$N$代表有$N$个这样的节点，得到Figure 8.4中的图。如果把模型确定的参数写出来，我们可以得到下式：<br>
-$$p(\mathbf{t},\mathbf{w}|\mathbf{x},\alpha,\sigma^2) = p(\mathbf{w}|\alpha)\prod_{n=1}<sup>Np(t_n|\mathbf{w},x_n,\sigma</sup>2).$$<br>
-<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.5"><br>
-如果在图中把模型参数和随机变量都表示出来，用空心圆圈代表随机变量，用实心圆点代表确定性参数(deterministic parameters)，用图形表示如Figure 8.5。<br>
-<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.6"><br>
-当用图模型去解决机器学习或者模型时，有时候会固定一些随机变量的值，比如在多项式拟合问题中训练集的变量${t_n}$，在图模型中，将对应节点加上阴影，表示观测变量(observed variables)。如Figure 8.6所示，变量${t_n}$是观测变量。$\mathbf{w}$没有被观测到，所以是一个隐变量(latent variable)或者是(hidden variable)。<br>
-利用观测到的${t_n}$的值，我们可以估计多项式系数$\mathbf{w}$，利用贝叶斯公式：<br>
-$$p(\mathbf{w}|\mathbf{T}) \propto p(\mathbf{w}) \prod_{n=1}^Np(t_n|\mathbf{w})$$<br>
-为了整洁(uncluttered)，模型的确定性参数被略去了。<br>
-<img src="/2019/01/06/PRML-chapter-8-Graphical-Models/" alt="figure 8.7"><br>
-一般来说，我们对于如$\mathbf{w}$之类的模型参数不感兴趣，因为我们的目标是用模型对新的输入进行预测。即在给定观测数据之后，我们给出一个新的输入$\hat{x}$，要找到对应的$\hat{t}$的概率分布，如Figure 8.7所示。给定确定性参数之后，图中所有随机变量的联合分布如下所示：<br>
-$$p(\hat{t},\mathbf{t},\mathbf{w}|\hat{x},\mathbf{x},\alpha,\sigma^2) = \left[\prod_{n=1}<sup>Np(t_n|x_n,\mathbf{w},\sigma</sup>2)\right] p(\mathbf{w}|\alpha)p(\hat{t}|\hat{x},\mathbf{w},\sigma^2).$$<br>
-刚开始有一些不理解，但是实际上就是这样一个公式$p(a,b,c) = p(a)p(b|a)p(c|a)$，把$\hat{t}$和$\mathbf{t}$当成两个变量看就行了。<br>
-利用概率论的加法公式$p(X) = \sum\limits_Yp(X,Y)$，对模型的参数$\mathbf{w}$积分就得到了$\hat{t}$的预测分布：<br>
-\begin{align*}<br>
-p(\hat{t}|\hat{x},\mathbf{x},\mathbf{t},\alpha,\sigma^2) = \int p(\hat{t},\mathbf{w}|\hat{x},\mathbf{x},\mathbf{t},\alpha,\sigma^2)d\mathbf{w}<br>
-\propto \int p(\hat{t},\mathbf{t},\mathbf{w}|\hat{x},\mathbf{x},\alpha,\sigma^2)d\mathbf{w}<br>
-\end{align*}<br>
-其中随机变量$\mathbf{t}$被隐式的赋值为数据集中的观测值，即是一个$p(t)$是一个定值。这里刚开始有些不理解,实际上是当$p(b)$为定值的时候，$p(a|b) \propto p(ab)$。</p>
-<h3 id="生成模型-generative-models">生成模型(Generative models)</h3>
-<p>这里实际上介绍的是采样方法，叫祖先采样，实际上就是直接采样，AI的第十四章有讲很多采样，可以直接看那个。<br>
-很多时候我们需要从一个给定的分布中进行采样，十一章还会更详细的讲采样，这里要介绍一种采样分布叫祖先采样(ancestral sampling)，是一种和概率图模型相关的采样方法。给定$K$个变量的联合分布$p(x_1,\cdots,x_K)$对应的有向无环图，假设所有变量的父节点的序号都比它本身小。我们的目标是从联合分布中采样$\hat{x_1},\cdots,\hat{x_k}$。<br>
-首先从最小的序号根据$p(x_1)$开始采样，采样结果称为$\hat{x_1}$，接下来按顺序对第$n$个节点按照条件分布$p(x_n|pa_n)$进行采样，每个节点的父节点都取采样值，因为每个父节点都已经采完样了，所以这里不用担心。一直到第$K$个节点采样完成，就生成了一个样本。为了对某些边缘分布进行采样，对需要的节点进行采样，忽略其他节点即可，比如为了对边缘分布$p(x_2,x_4)$进行采样，从联合分布中进行采样，保留$\hat{x_2},\hat{x_4}$的值，其他的值不用管即可。<br>
-在概率图的实际应用中，通常小节点对应的是隐变量，大节点对应的图上的最终节点代表着一些观测变量。隐变量的目的是让观测变量的复杂概率分布可以表示成多个简单的条件概率分布的乘积。<br>
-我们可以把这样的模型解释为观测变量产生的过程，比如，一个模式识别任务中，每一个观测数据对应一张图片。隐变量解释为物体的位置和方向，给定一个观测图像，我们的目标是找到物体的一个后验分布，在后验分布中对所有可能的位置和方向进行积分，如Figure 8.8所示。<br>
-图模型通过观测数据的生成过程描述了一种因果关系过程，因为这个原因，这样的模型也叫做生成式模型(generative model)。相反，Figure 8.5中的模型不是生成式模型，因为多项式回归模型中的输入变量$x$没有概率分布，所以不能用来合成数据。通过引入一个合适的先验分布$p(x)$，我们可以把它变成一个生成式模型。<br>
-事实上，概率图模型中的隐变量不是必须要有显式的物理意义，它的引入只是为了方便从简单的条件概率生成复杂的联合分布。在任何一种情况下，应用到生成式模型的祖先采样模拟了观测数据的生成过程，因此产生了和观测数据分布相同（如果模型完美的表现了现实）的美好(fantasy)数据。实际应用中国，利用生成模型产生合成的观测数据，对于理解模型表达的概率分布很有帮助。</p>
-<h3 id="离散型随机变量-discrete-variables">离散型随机变量(Discrete variables)</h3>
-<p>指数分布是很重要的一类分布，它们虽然很简单，但是可以形成更复杂的概率分布，概率图的框架对于表达这些概率分布是如何连接的很有用。<br>
-如果我们有向图中亲本和子节点对之间的关系选择为conjugate，会发现这些模型有很好的属性。这里主要探讨两种情况，父节点和子节点都是离散的以及父节点和子节点都对应高斯变量，因为这两种关系可以分层扩展(extended hierarchically)构建任何复杂的有向无环图。首先从离散变量开始：<br>
-有$K$个可能状态的单个离散变量$\mathbf{x}$的概率分布是：<br>
-$$p(\mathbf{x}|\nu) = \prod_{k=1}<sup>k\nu_k</sup>{x_k}$$<br>
-由参数$\nu = (\nu_1,\cdots,\nu_K)^T$控制，由于有约束条件$\sum_k\nu_k=1$，为了定义分布有$K-1$个$\nu_k$的值需要指定。<br>
-假设有两个离散型随机变量$\mathbf{x}<em>1,\mathbf{x}<em>2$，每个变量都有$K$个可能的取值。用$\nu</em>{kl}$表示同时观测到$x</em>{1k}=1$和$x_{2l}=1$，其中$x_{1k}$表示$\mathbf{x}<em>1$的第$k$个分量，$x</em>{2l}$类似。联合分布可以写成：<br>
-$$p(\mathbf{x}<em>1,\mathbf{x}<em>2|\nu) = \prod</em>{k=1}<sup>K\prod_{l=1}</sup>K\nu</em>{kl}^{x_{1k}x_{2l}}.$$<br>
-$\nu_{kl}$满足约束条件$\sum_k\sum_l\nu_{kl} =1$，被$K<sup>2-1$个参数控制，任意$M$个具有$K$个取值的随机变量的联合分布需要$K</sup>M-1$个参数，随着随机变量$M$个数的增加，参数的个数以指数速度增加。<br>
-使用乘法公式，联合分布$p(\mathbf{x}_1,\mathbf{x}_2)$可以分解成$p(\mathbf{x}_2|\mathbf{x}_1)p(\mathbf{x}_1)$，对应的图如Figure 8.9(a)所示，边缘分布$p(\mathbf{x}_1)$的分布需要$K-1$个参数，$p(\mathbf{x}_2|\mathbf{x}_1)$对于$K$个可能的$\mathbf{x}_1$，每个都需要$K-1$个参数。所以，和联合分布一样，总共需要的参数为$K-1+K(K-1) = K^2-1$个。<br>
-假设$\mmm{x}_1$和$\mmm{x}_2$是独立的，如Figure 8.9(b)所示，每一个变量可以用分开的多峰分布(multinomial distribution)表示，所需的参数量为$2(K-1)$个。类似的，$M$个独立变量需要$M(K-1)$个参数，和变量个数之间是线性关系。从概率图的角度来看，通过在图中去掉边减少了参数的数量，同时代价是这个图只能代表有限类别的分布。<br>
-更普通的是，如果我们有$M$个离散型随机变量$\mmm{x}_1,\cdots,\mmm{x}_M$，我们可以用一个节点代表一个随机变量，建立一个有向图表示联合概率分布。每个节点处的条件概率由一组非负参数给出，并且需要满足归一化条件。如果图是全连接的，那么这个分布需要$K^M-1$个参数，如果图中没有连接，那么联合分布可以分解成边缘分布的乘积，需要的所有参数是$M(K-1)$个。拥有中间水平连接性的图比分解成单个边缘分布的乘积能解释更多的分布同时比普遍的联合概率分布需要更少的参数。如Figure 8.10中的节点链，边缘分布$p(\mmm{x}_1)$需要$K-1$个参数，其余的$M-1$个条件分布$p(\mmm{x}<em>i|\mmm{x}</em>{i-1}),i = 2,\cdots,M$，需要$K(K-1)$个参数，总共需要的参数是$K-1+(M-1)K(K-1)$个，是$K$的二次函数(quadratic)，随着链的长度$M$增加，参数个数线性增加。<br>
-另一个减少模型中独立参数个数的方法是共享参数。例如，Figure 8.10中的链，我们可以用共享的$K(K-1)$个参数去控制条件概率$p(\mmm{x}<em>i|\mmm{x</em>{i-1}),i=2,\cdots,M$，用$K-1$个变量去控制$\mmm{x}_1$的概率分布，总共需要$K^2-1$个参数需要被指定去定义联合概率分布。<br>
-通过引入每个参数对应的Dirichlet先验，我们可以把一个随机变量图转换成贝叶斯模型。从概率图的角度来看，每一个节点需要一个额外的父节点代表和这个离散节点相关的Dirichlet分布，如Figure 8.11所示。将控制条件分布$p(\mmm{x}<em>i|\mmm{x}</em>{i-1}),i=2,\cdots,M$的参数共享，得到如Figure 8.12所示的图。<br>
-另一种控制模型中离散变量参数指数速度增加的方法是用参数模型而不是条件概率表来表示条件分布。如Figure 8.13中，所有的节点都是一个二值变量，用参数$\nu_i$表示每一个父节点$\mmm{x}<em>i$取值为$1$的概率$p(x_i=1)$，总共有$M$个父节点，所以总共需要$2<sup>M$个参数表示条件概率$p(y|x_1,\cdots,x_M)$的$2</sup>M$可能取值，如$p(y=1)$。所以指定这个条件分布所需要的参数随着$M$指数级增长。我们可以通过使用logistic sigmoid函数作用于父节点的线性组合上，得到一个更简洁的条件概率分布：<br>
-$$p(y=1|x_1,\cdots,x_M) = \sigma\left(w_0+\sum</em>{i=1}<sup>Mw_ix_i\right)=\sigma(\mmm{w}</sup>T\mmm{x})$$<br>
-其中$\sigma(a) = \frac{1}{1+exp(-a)}$是logistic sigmoid，$\mmm{x}=(x_0,x_1,\cdots,x_M)<sup>T$是由$M$个父节点状态和一个$x_0=1$构成的$M+1$维向量，$\mmm{w}=(w_0,w_1,\cdots,w_M)</sup>T$是$M+1$维参数项。与一般情况相比，这是一个更加严格的条件概率分布形式，但是它的参数个数随着$M$的增加线性增加。在这种情况下，类似于选择多元高斯分布的协方差矩阵的限制形式（如对角矩阵等）。</p>
-<h3 id="线性高斯模型-linear-gaussian-models">线性高斯模型(Linear-Gaussian models)</h3>
-<h2 id="条件独立性-conditional-independence">条件独立性(Conditional Independence)</h2>
-<h2 id="马尔科夫随机场-markov-random-fields">马尔科夫随机场(Markov Random Fields)</h2>
-<h2 id="概率图模型中的推理-inference-in-graphical-models">概率图模型中的推理(Inference in Graphical Models)</h2>
-<h2 id="参考文献-references">参考文献(references)</h2>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/05/ESL-chapter-1-Introduction/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/05/ESL-chapter-1-Introduction/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">ESL chapter 1 Introduction</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-05 09:46:39" itemprop="dateCreated datePublished" datetime="2019-01-05T09:46:39+08:00">2019-01-05</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="引言">引言</h2>
-<p>这本书主要介绍的是统计学习。一些典型的学习问题如下：</p>
-<ul>
-<li>基于一个心脏病患者的饮食，临床检测等等，去预测一个这个因为心脏病住院的人会不会第二次患心脏病。</li>
-<li>基于一个公司的运行状况或一些经济数据，去预测未来六个月股票的价格。</li>
-<li>从一个手写字母图像中识别出来其中的字母。</li>
-<li>从一个糖尿病(diabetic)患者血液的红外吸收频谱去预测他的血糖(glucose)含量。</li>
-<li>基于人口统计(demographic)和临床检测，分析前列腺癌的致病因素。</li>
-</ul>
-<p>在一个典型的学习场景下，我们通常有一些定量的结果(outcome measurement)，如上面例子中的股票价格或者分类问题中问题的类别，我们希望基于一系列的特征进行预测。<br>
-接下来给了几个真实的学习问题的示例。下面就简要介绍一下这几个例子。</p>
-<h3 id="邮件分类">邮件分类</h3>
-<p>给定一封邮件，邮件分类的目标就是根据邮件的特征去判断这封邮件是正常邮件还是垃圾邮件。这是监督学习中的二分类问题，因为该问题有ouputs，且只有两个类别。</p>
-<h3 id="前列腺癌-prostate-cancer">前列腺癌(prostate cancer)</h3>
-<p>该问题的目标是给定一系列临床检测，如记录癌症量(log cancer volume)，去预测前列腺特异性抗原(prstate specific antigen)的数量。该问题是监督学习中的回归问题，因为结果(outcome measurement)是定量的(quatitative)。</p>
-<h3 id="手写数字识别">手写数字识别</h3>
-<p>给定一个手写数字的图片，该问题的目标是识别出图片中的数字。</p>
-<h3 id="dna-expression-microarrays">DNA Expression Microarrays</h3>
-<p>这个问题是通过基因数组去学习基因和不同基因样本之间的关系，一些典型的问题是：</p>
-<ol>
-<li>哪些样本之间是相似的？在不同的基因之间都相似。</li>
-<li>哪些基因是相似的？在不同的样本之间都相似。</li>
-<li>一些特定的基因对于特定的癌症患者表达是达不是很明显？</li>
-</ol>
-<p>这个问题可以看成回归问题，或者更有可能是无监督问题。</p>
-<h2 id="本书结构">本书结构</h2>
-<p>第一章就是本章。第二章讲监督学习的介绍。第三章和第四章介绍线性回归和分类。第五章介绍仿样(splines)，小波(wavelets)，正则化(regularization)和惩罚(penalization)。第六章介绍核方法(kernel methods)和局部回归(local regression)。第七章将模型估计和选择(model assessment and selection)，涉及到偏置(bias)和方差(variance)，过拟合(overfitting)以及交叉验证(cross-validation)等等。第八章讲模型推理。第十章讲boosting。<br>
-第九到十三章讲监督学习的一系列结构化方法。十四章介绍非监督学习。十五和十六章分别介绍随机森林(random forests)和集成学习(ensemble learning)。第十七章介绍无向图(undirected graphical models)。第十八章介绍高维问题。<br>
-第一到四章是基础最好按顺序阅读，第七章也是。其他的可以不按顺序。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3509,7 +3596,7 @@ $$p(y=1|x_1,\cdots,x_M) = \sigma\left(w_0+\sum</em>{i=1}<sup>Mw_ix_i\right)=\sig
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">228</span>
+                    <span class="site-state-item-count">230</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -4197,7 +4284,15 @@ $$p(y=1|x_1,\cdots,x_M) = \sigma\left(w_0+\sum</em>{i=1}<sup>Mw_ix_i\right)=\sig
                     
                       
                     
-                    <span class="site-state-item-count">309</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">313</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -4452,11 +4547,11 @@ $$p(y=1|x_1,\cdots,x_M) = \sigma\left(w_0+\sum</em>{i=1}<sup>Mw_ix_i\right)=\sig
       
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
       
