@@ -240,7 +240,7 @@ Loop
 $\qquad$使用$\pi\_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$
 $\qquad$for $t=1, 2, \cdots, T$
 $\qquad\qquad$估计$G_t = \sum\_{k=t}^T \gamma^{k-t} R\_{t+1}$
-$\qquad\qquad$更新$\theta \leftarrow \theta + \alpha \gamma^t G_t \log\pi\_{\theta}(a_t|s_t)$
+$\qquad\qquad$更新$\theta \leftarrow \theta + \alpha \gamma^t G_t \nabla\_{\theta}\log\pi\_{\theta}(a_t|s_t)$
 $\qquad$end for
 
 ### REINFORCE with Baseline
@@ -553,3 +553,5 @@ $$\nabla\_{\theta}J(\theta) \approx \frac{1}{N} \sum\_{i=1}^N \left(\sum\_{t=1}^
 7.https://drive.google.com/file/d/0BxXI_RttTZAhY216RTMtanBpUnc/view
 8.https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/
 9.https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/
+10.http://www.tuananhle.co.uk/notes/reinforce.html
+11.http://kvfrans.com/simple-algoritms-for-solving-cartpole/

@@ -10,6 +10,7 @@ categories: pytorch
 ## torch.distributions
 这个库和gym.space库很相似，都是提供一些分布，然后从中采样。
 常见的有ExponentialFamily,Bernoulli,Binomial,Categorical,Exponential,Gamma,Independent,Laplace,Multinomial,MultivariateNormal。这里不做过程陈述，可以看[gym](http://localhost:4000/2019/04/12/gym%E4%BB%8B%E7%BB%8D/)中。
+
 ### Categorical
 对应tensorflow中的[tf.multinomial](https://github.com/mxxhcm/myown_code/blob/master/tf/some_ops/tf_multinominal.py)。
 类原型：
@@ -65,6 +66,7 @@ for _ in range(5):
 1
 0
 4
+
 
 ## 参考文献
 1.https://pytorch.org/docs/stable/distributions.html
