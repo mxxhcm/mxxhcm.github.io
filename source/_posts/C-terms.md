@@ -3,6 +3,7 @@ title: C++ terms
 date: 2019-11-05 17:03:42
 tags:
  - C/C++
+ - 注意事项
 categories:C/C++
 ---
 
@@ -36,7 +37,6 @@ int val =3;
 const int &cr = val; // 对常量的引用，引用的变量不能通过cr引用改变。
 
 cont int *ptr = &val;   // 指向常量的指针，指针指向的变量不能通过ptr指针改变。
-
 int *const p = &val;    //常量指针，指针的指向不能变，指针指向变量的值可以改变。
 ```
 
