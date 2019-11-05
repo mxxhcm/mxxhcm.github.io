@@ -24,5 +24,8 @@ return 0;
 3. 执行编译后的源文件
 ./hello_world
 
+## 错误与告警选项
+`-Wall`，允许发出gcc提供的所有有用的警告。
+
 ## 参考文献
 1.https://legacy.gitbook.com/download/pdf/book/lexdene/gcc-five-minutes
