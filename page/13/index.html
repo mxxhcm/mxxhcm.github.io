@@ -327,6 +327,454 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/12/tensorflow-Varaible/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/12/tensorflow-Varaible/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">tensorflow Varaible</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-12 20:41:34" itemprop="dateCreated datePublished" datetime="2019-05-12T20:41:34+08:00">2019-05-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-07-09 20:27:12" itemprop="dateModified" datetime="2019-07-09T20:27:12+08:00">2019-07-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="创建variable">创建Variable</h2>
+<p>Tensorflow有两种方式创建Variable：tf.Variable()和tf.get_variable()，这两种方式获得的都是tensorflow.python.ops.variables.Variable类型的对象，但是他们的输入参数还有些不一样。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">tf.Variable()</th>
+<th style="text-align:center">tf.get_variable()</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">name</td>
+<td style="text-align:center">不需要，已存在的变量名，会在后面加上递增的数值用来区分</td>
+<td style="text-align:center">必须，已存在的会报错</td>
+</tr>
+<tr>
+<td style="text-align:center">shape</td>
+<td style="text-align:center">不需要，或者说已经包含在初值中了</td>
+<td style="text-align:center">需要</td>
+</tr>
+<tr>
+<td style="text-align:center">初值</td>
+<td style="text-align:center">必须</td>
+<td style="text-align:center">不需要</td>
+</tr>
+<tr>
+<td style="text-align:center">复用</td>
+<td style="text-align:center">不可以</td>
+<td style="text-align:center">可以</td>
+</tr>
+</tbody>
+</table>
+<p>两种方法事实上都可以指定name和初值。而tf.Variable()的初值中已经包含了shape，所以不需要再显示传入shape了。这里的需要和不需要指的是必要不必要，如果没有传入需要的参数，就会报错，不需要的参数则不会影响。</p>
+<h2 id="tf-variable">tf.Variable()</h2>
+<h3 id="一句话介绍">一句话介绍</h3>
+<p>创建一个类操作全局变量。在TensorFlow内部，tf.Variable会存储持久性张量，允许各种op读取和修改它的值。这些修改在多个Session之间是可见的，因此对于一个tf.Variable，多个工作器可以看到相同的值。</p>
+<h3 id="和tf-tensor对比">和tf.Tensor对比</h3>
+<p>tf.Variable 表示可通过对其运行op来改变其值的张量。与 tf.Tensor对象不同，tf.Variable 存在于单个session.run调用的上下文之外。tf.Tensor的值是不可以改变的，tf.Tensor没有assign函数。</p>
+<h3 id="api">API</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tf.Variable.__init__(</span><br><span class="line">	initial_value=<span class="literal">None</span>,  <span class="comment"># 指定变量的初值</span></span><br><span class="line">	trainable=<span class="literal">True</span>,  <span class="comment"># 是否在BP时训练该参数</span></span><br><span class="line">	collections=<span class="literal">None</span>, <span class="comment"># 指定变量的collection</span></span><br><span class="line">	validate_shape=<span class="literal">True</span>, </span><br><span class="line">	caching_device=<span class="literal">None</span>, </span><br><span class="line">	name=<span class="literal">None</span>,  <span class="comment"># 指定变量的名字</span></span><br><span class="line">	...</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="代码示例">代码示例</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tensor1 = tf.Variable([[<span class="number">1</span>,<span class="number">2</span>], [<span class="number">3</span>,<span class="number">5</span>]])</span><br><span class="line">tensor2 = tf.Variable(tf.constant([[<span class="number">1</span>,<span class="number">2</span>], [<span class="number">3</span>,<span class="number">5</span>]]))</span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">sess.run(tensor1)</span><br><span class="line">sess.run(tensor2)</span><br></pre></td></tr></table></figure>
+<h3 id="初始化">初始化</h3>
+<p>tf.Variable()生成的变量必须初始化，tf.constant()可以不用初始化。</p>
+<ul>
+<li>使用全局初始化<br>
+sess.run(tf.global_variables_initializer())</li>
+<li>使用checkpoint</li>
+<li>使用tf.assign赋值</li>
+</ul>
+<h2 id="tf-get-variable">tf.get_variable()</h2>
+<h3 id="一句话介绍-v2">一句话介绍</h3>
+<p>获取一个已经存在的变量或者创建一个新的变量。主要目的，变量复用。</p>
+<h3 id="api-v2">API</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">tf.get_variable(</span><br><span class="line">    name, <span class="comment"># 指定变量的名字，必选项</span></span><br><span class="line">    shape=<span class="literal">None</span>, <span class="comment"># 指定变量的shape，可选项</span></span><br><span class="line">    dtype=<span class="literal">None</span>, <span class="comment"># 指定变量类型</span></span><br><span class="line">    initializer=<span class="literal">None</span>, <span class="comment"># 指定变量初始化器</span></span><br><span class="line">    regularizer=<span class="literal">None</span>,</span><br><span class="line">    trainable=<span class="literal">None</span>,</span><br><span class="line">    collections=<span class="literal">None</span>,</span><br><span class="line">    caching_device=<span class="literal">None</span>,</span><br><span class="line">    partitioner=<span class="literal">None</span>,</span><br><span class="line">    validate_shape=<span class="literal">True</span>,</span><br><span class="line">    use_resource=<span class="literal">None</span>,</span><br><span class="line">    custom_getter=<span class="literal">None</span>,</span><br><span class="line">    constraint=<span class="literal">None</span>,</span><br><span class="line">    synchronization=tf.VariableSynchronization.AUTO,</span><br><span class="line">    aggregation=tf.VariableAggregation.NONE</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="代码示例-v2">代码示例</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.variable_scope(<span class="string">"model"</span>) <span class="keyword">as</span> scope:</span><br><span class="line">  output1 = my_image_filter(input1)</span><br><span class="line">  scope.reuse_variables()</span><br><span class="line">  output2 = my_image_filter(input2)</span><br></pre></td></tr></table></figure>
+<h2 id="variable和collection">Variable和collection</h2>
+<p><a href="https://mxxhcm.github.io/2019/05/13/tensorflow-collection/">点击查看关于collecion的详细介绍</a><br>
+默认情况下，每个tf.Variable()都会添加到以下两个collection中：</p>
+<ul>
+<li>tf.GraphKeys.GLOBAL_VARIABLES - 可以在多台设备间共享的变量，</li>
+<li>tf.GraphKeys.TRAINABLE_VARIABLES - TensorFlow 将计算其梯度的变量。</li>
+</ul>
+<p>如果不希望变量是可训练的，可以在创建时指定其collection为 tf.GraphKeys.LOCAL_VARIABLES collection中。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">my_local = tf.get_variable(<span class="string">"my_local"</span>, shape=(), collections=[tf.GraphKeys.LOCAL_VARIABLES])</span><br></pre></td></tr></table></figure>
+<p>或者可以指定 trainable=False：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">my_non_trainable = tf.get_variable(<span class="string">"my_non_trainable"</span>,</span><br><span class="line">                                   shape=(),</span><br><span class="line">                                   trainable=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="获取collection">获取collection</h3>
+<p>要检索放在某个collection中的所有变量的列表，可以使用：</p>
+<h4 id="代码示例-v3">代码示例</h4>
+<p><a href="https://github.com/mxxhcm/code/tree/master/tf/ops/tf_Variable_collection.py" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">a = tf.Variable([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>])</span><br><span class="line">b = tf.get_variable(<span class="string">"bbb"</span>, shape=[<span class="number">2</span>,<span class="number">3</span>])</span><br><span class="line">tf.constant([<span class="number">3</span>])</span><br><span class="line">c = tf.ones([<span class="number">3</span>])</span><br><span class="line">d = tf.random_uniform([<span class="number">3</span>, <span class="number">4</span>])</span><br><span class="line">print(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES))</span><br><span class="line"><span class="comment"># [&lt;tf.Variable 'Variable:0' shape=(3,) dtype=int32_ref&gt;, &lt;tf.Variable 'bbb:0' shape=(2, 3) dtype=float32_ref&gt;]</span></span><br><span class="line"><span class="comment"># 可以看出来，只有tf.Variable()和tf.get_variable()产生的变量会加入到这个图中</span></span><br></pre></td></tr></table></figure>
+<h3 id="自定义collection">自定义collection</h3>
+<h4 id="添加自定义collection">添加自定义collection</h4>
+<p>可以使用自定义的collection。collection名称可为任何字符串，且无需显式创建。创建对象（包括Variable和其他）后调用 tf.add_to_collection将其添加到相应collection中。以下代码将 my_local 变量添加到名为 my_collection_name 的collection中：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tf.add_to_collection(<span class="string">"my_collection_name"</span>, my_local)</span><br></pre></td></tr></table></figure>
+<h2 id="初始化变量">初始化变量</h2>
+<h3 id="初始化所有变量">初始化所有变量</h3>
+<p>调用 tf.global_variables_initializer()在训练开始前一次性初始化所有可训练变量。此函数会返回一个op，负责初始化 tf.GraphKeys.GLOBAL_VARIABLES collection中的所有变量。运行此op会初始化所有变量。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sess.run(tf.global_variables_initializer())</span><br></pre></td></tr></table></figure>
+<h3 id="初始化单个变量">初始化单个变量</h3>
+<p>运行变量的初始化器op。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sess.run(my_variable.initializer)</span><br></pre></td></tr></table></figure>
+<h3 id="查询未初始化变量">查询未初始化变量</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">print(sess.run(tf.report_uninitialized_variables()))</span><br></pre></td></tr></table></figure>
+<h2 id="共享变量">共享变量</h2>
+<p>TensorFlow 支持两种共享变量的方式：</p>
+<ul>
+<li>显式传递 tf.Variable 对象。</li>
+<li>将 tf.Variable 对象隐式封装在 tf.variable_scope 对象内。</li>
+</ul>
+<h3 id="variable-scope">variable_scope</h3>
+<h4 id="代码示例1">代码示例1</h4>
+<p>使用variable_scope区分weights和biases。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">conv_relu</span><span class="params">(input, kernel_shape, bias_shape)</span>:</span></span><br><span class="line">    <span class="comment"># Create variable named "weights".</span></span><br><span class="line">    weights = tf.get_variable(<span class="string">"weights"</span>, kernel_shape,</span><br><span class="line">        initializer=tf.random_normal_initializer())</span><br><span class="line">    <span class="comment"># Create variable named "biases".</span></span><br><span class="line">    biases = tf.get_variable(<span class="string">"biases"</span>, bias_shape,</span><br><span class="line">        initializer=tf.constant_initializer(<span class="number">0.0</span>))</span><br><span class="line">    conv = tf.nn.conv2d(input, weights,</span><br><span class="line">        strides=[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>], padding=<span class="string">'SAME'</span>)</span><br><span class="line">    <span class="keyword">return</span> tf.nn.relu(conv + biases)</span><br></pre></td></tr></table></figure>
+<h4 id="代码示例2">代码示例2</h4>
+<p>使用variable_scope声明不同作用域</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">my_image_filter</span><span class="params">(input_images)</span>:</span></span><br><span class="line">    <span class="keyword">with</span> tf.variable_scope(<span class="string">"conv1"</span>):</span><br><span class="line">        <span class="comment"># Variables created here will be named "conv1/weights", "conv1/biases".</span></span><br><span class="line">        relu1 = conv_relu(input_images, [<span class="number">5</span>, <span class="number">5</span>, <span class="number">32</span>, <span class="number">32</span>], [<span class="number">32</span>])</span><br><span class="line">    <span class="keyword">with</span> tf.variable_scope(<span class="string">"conv2"</span>):</span><br><span class="line">        <span class="comment"># Variables created here will be named "conv2/weights", "conv2/biases".</span></span><br><span class="line">        <span class="keyword">return</span> conv_relu(relu1, [<span class="number">5</span>, <span class="number">5</span>, <span class="number">32</span>, <span class="number">32</span>], [<span class="number">32</span>])</span><br></pre></td></tr></table></figure>
+<h3 id="共享方式1">共享方式1</h3>
+<p>设置reuse=True</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.variable_scope(<span class="string">"model"</span>):</span><br><span class="line">  output1 = my_image_filter(input1)</span><br><span class="line"><span class="keyword">with</span> tf.variable_scope(<span class="string">"model"</span>, reuse=<span class="literal">True</span>):</span><br><span class="line">  output2 = my_image_filter(input2)</span><br></pre></td></tr></table></figure>
+<h3 id="共享方式2">共享方式2</h3>
+<p>调用scope.reuse_variables触发重用</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> tf.variable_scope(<span class="string">"model"</span>) <span class="keyword">as</span> scope:</span><br><span class="line">  output1 = my_image_filter(input1)</span><br><span class="line">  scope.reuse_variables()</span><br><span class="line">  output2 = my_image_filter(input2)</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://blog.csdn.net/MrR1ght/article/details/81228087" target="_blank" rel="noopener">https://blog.csdn.net/MrR1ght/article/details/81228087</a><br>
+2.<a href="https://www.tensorflow.org/guide/variables?hl=zh_cn" target="_blank" rel="noopener">https://www.tensorflow.org/guide/variables?hl=zh_cn</a><br>
+3.<a href="https://www.tensorflow.org/api_docs/python/tf/get_variable?hl=zh_cn" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/get_variable?hl=zh_cn</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/12/tensorflow-list-of-placeholder/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/05/12/tensorflow-list-of-placeholder/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">tensorflow list of placeholder</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-05-12 15:55:49 / 修改时间：20:31:11" itemprop="dateCreated datePublished" datetime="2019-05-12T15:55:49+08:00">2019-05-12</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="list-of-placeholder">list of placeholder</h2>
+<h3 id="目的">目的</h3>
+<p>计算图中定义了一个placeholder list，如何使用feed_dict传入值。</p>
+<h3 id="代码示例">代码示例</h3>
+<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_placeholder_list.py" target="_blank" rel="noopener">代码地址</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建一个长度为n的placeholder list</span></span><br><span class="line">n = <span class="number">4</span></span><br><span class="line">ph_list = [tf.placeholder(tf.float32, [<span class="literal">None</span>, <span class="number">10</span>]) <span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">4</span>)]</span><br><span class="line"><span class="comment"># 对这个ph list的操作</span></span><br><span class="line">result = tf.Variable(<span class="number">0.0</span>)</span><br><span class="line"><span class="keyword">for</span> x <span class="keyword">in</span> ph_list:</span><br><span class="line">    result = tf.add(result, x)</span><br><span class="line">hhhh = tf.log(result)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    sess = tf.Session()</span><br><span class="line">    sess.run(tf.global_variables_initializer())</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 生成数据</span></span><br><span class="line">    inputs = []</span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> range(n):</span><br><span class="line">        x = np.random.rand(<span class="number">16</span>, <span class="number">10</span>)</span><br><span class="line">        inputs.append(x)</span><br><span class="line">    <span class="comment"># 声明一个字典，存放placeholder和value键值对</span></span><br><span class="line">    feed_dictionary = &#123;&#125;</span><br><span class="line">    <span class="keyword">for</span> k,v <span class="keyword">in</span> zip(ph_list, inputs):</span><br><span class="line">       feed_dictionary[k] = v</span><br><span class="line">    <span class="comment"># feed 数据</span></span><br><span class="line">    print(sess.run(hhhh, feed_dict=feed_dictionary).shape)</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow" target="_blank" rel="noopener">https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/11/tensorflow-gather/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1908,395 +2356,11 @@ Linear(in_features=2, out_features=2, bias=True)</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-utils-data/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/08/pytorch-utils-data/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">pytorch utils data</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-08 21:56:15" itemprop="dateCreated datePublished" datetime="2019-05-08T21:56:15+08:00">2019-05-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-17 15:45:03" itemprop="dateModified" datetime="2019-05-17T15:45:03+08:00">2019-05-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="torch-utils-data">torch.utils.data</h2>
-<h3 id="dataloader">Dataloader</h3>
-<h4 id="原型">原型</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">torch</span>.<span class="title">utils</span>.<span class="title">data</span>.<span class="title">DataLoader</span><span class="params">(</span></span></span><br><span class="line"><span class="class"><span class="params">	dataset, 	# 从哪加载数据</span></span></span><br><span class="line"><span class="class"><span class="params">	batch_size=<span class="number">1</span>, 	# batch大小 <span class="params">(default: <span class="number">1</span>)</span>.</span></span></span><br><span class="line"><span class="class"><span class="params">	shuffle=False,	# 每个epoch的数据是否打乱 <span class="params">(default: False)</span>.</span></span></span><br><span class="line"><span class="class"><span class="params">	sampler=None, 	# 定义采样策略。如果指定这个参数, shuffle必须是False.</span></span></span><br><span class="line"><span class="class"><span class="params">	batch_sampler=None, </span></span></span><br><span class="line"><span class="class"><span class="params">	num_workers=<span class="number">0</span>,		# 多少个子进程用来进行数据加载。<span class="number">0</span>代表使用主进程加载数据 <span class="params">(default: <span class="number">0</span>)</span></span></span></span><br><span class="line"><span class="class"><span class="params">	collate_fn=&lt;function default_collate&gt;, </span></span></span><br><span class="line"><span class="class"><span class="params">	pin_memory=False, </span></span></span><br><span class="line"><span class="class"><span class="params">	drop_last=False, </span></span></span><br><span class="line"><span class="class"><span class="params">	timeout=<span class="number">0</span>, </span></span></span><br><span class="line"><span class="class"><span class="params">	worker_init_fn=None</span></span></span><br><span class="line"><span class="class"><span class="params">)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="例子">例子</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">import</span> torchvision</span><br><span class="line">dataset = torchvision.datasets.CIFAR100(root=<span class="string">'./data'</span>, train=<span class="literal">True</span>, download=<span class="literal">True</span>, transform=<span class="literal">None</span>)</span><br><span class="line">train_loader = torch.utils.data.DataLoader(dataset, bath_size=<span class="number">16</span>, shuffle=<span class="literal">False</span>, num_worker=<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
-<h4 id="如何访问dataloader返回值">如何访问DataLoader返回值</h4>
-<p>train_loader不是整数，所以不能用range，这里用enumerate()，i是</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i, data <span class="keyword">in</span> enumerate(train_loader):</span><br><span class="line">    images, labels = data</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/05/08/pytorch-torchvision/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/05/08/pytorch-torchvision/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/13/index.html">pytorch torchvision</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-05-08 21:55:57" itemprop="dateCreated datePublished" datetime="2019-05-08T21:55:57+08:00">2019-05-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-17 16:12:15" itemprop="dateModified" datetime="2019-05-17T16:12:15+08:00">2019-05-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/pytorch/" itemprop="url" rel="index"><span itemprop="name">pytorch</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="torchvision">torchvision</h2>
-<p>torchvision是pytorch提供的一些工具包，主要包含下列几个模块</p>
-<ul>
-<li>torchvision.datasets</li>
-<li>torchvision.utils</li>
-<li>torchvision.transforms</li>
-<li>torchvision.models</li>
-</ul>
-<h2 id="torchvision-datasets">torchvision.datasets</h2>
-<p>torchvision提供了很多数据集</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torchvision</span><br><span class="line">print(torchvision.datasets.__all__)</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>(‘LSUN’, ‘LSUNClass’, ‘ImageFolder’, ‘DatasetFolder’, ‘FakeData’, ‘CocoCaptions’,     ‘CocoDetection’, ‘CIFAR10’, ‘CIFAR100’, ‘EMNIST’, ‘FashionMNIST’, ‘MNIST’, ‘STL10’,     ‘SVHN’, ‘PhotoTour’, ‘SEMEION’, ‘Omniglot’)</p>
-</blockquote>
-<h3 id="cifar10">CIFAR10</h3>
-<h4 id="原型">原型</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">calss torchvision.datasets.CIFAR10(root, train=<span class="literal">True</span>, transform=<span class="literal">None</span>, target_transform=<span class="literal">None</span>, download=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
-<h4 id="参数">参数</h4>
-<p>root (string) – cifar-10-batches-py的存放目录或者download设置为True时将会存放的目录。<br>
-train (bool, optional) – 设置为True的时候, 从training set创建dataset, 否则从test set创建dataset.<br>
-transform (callable, optional) – 输入是一个 PIL image，返回一个transformed的版本。如，transforms.RandomCrop<br>
-target_transform (callable, optional) – A function/transform that takes in the target and transforms it.<br>
-download (bool, optional) – If true, downloads the dataset from the internet and puts it in root directory. If dataset is already downloaded, it is not downloaded again.</p>
-<h4 id="例子">例子</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torchvision</span><br><span class="line">trainset = torchvision.datasets.CIFAR100(root=<span class="string">"./datasets"</span>, train=<span class="literal">True</span>, transform=    <span class="literal">None</span>, download=<span class="literal">True</span>)</span><br><span class="line">testset = torchvision.datasets.CIFAR100(root=<span class="string">"./datasets"</span>, train=<span class="literal">False</span>, transform=    <span class="literal">None</span>, download=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="torchvision-models">torchvision.models</h2>
-<p>模型</p>
-<h2 id="torchvision-transforms">torchvision.transforms</h2>
-<p>transform</p>
-<h2 id="torchvision-utils">torchvision.utils</h2>
-<p>一些工具包</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://pytorch.org/docs/stable/torchvision/index.html" target="_blank" rel="noopener">https://pytorch.org/docs/stable/torchvision/index.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><span class="space">&hellip;</span><a class="page-number" href="/page/24/">24</a><a class="extend next" rel="next" href="/page/14/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/12/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/12/">12</a><span class="page-number current">13</span><a class="page-number" href="/page/14/">14</a><span class="space">&hellip;</span><a class="page-number" href="/page/25/">25</a><a class="extend next" rel="next" href="/page/14/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2341,7 +2405,7 @@ download (bool, optional) – If true, downloads the dataset from the internet a
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">239</span>
+                    <span class="site-state-item-count">241</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3312,11 +3376,11 @@ download (bool, optional) – If true, downloads the dataset from the internet a
   
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
       
