@@ -12,7 +12,7 @@ categories: C/C++
 
 
 ## string
-
+字符串字面值和`string`是不同的类型，字符串字面值是为了和C语言兼容，它不是标准库中`string`对象的内容。
 
 ## 参考文献
 1.《C++ Primer第五版》
