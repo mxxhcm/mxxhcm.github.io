@@ -4,6 +4,7 @@ date: 2019-10-24 19:16:02
 tags:
  - C
 categories: C/C++
+mathjax: true
 ---
 
 ## 小数转二进制
@@ -58,8 +59,10 @@ $15/32 = 2^{-2} + 2^{-3} + 2^{-4} + 2^{-5} $
 sign = 0 
 
 1. Single precision:
+有偏指数：
 biased exponent 127+6=133
 133 = 10000101
+规范化的尾数：
 Normalised mantisa = 010101001
 we will add 0's to complete the 23 bits
 

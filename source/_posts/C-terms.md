@@ -5,6 +5,7 @@ tags:
  - C/C++
  - 注意事项
 categories: C/C++
+mathjax: true
 ---
 
 
