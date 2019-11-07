@@ -89,5 +89,12 @@ const int sz = get_size() //sz是常量，但是不是常量表达式
 - 如果表达式的内容是解引用操作，使用`decltype`将会得到引用类型。
 - `decltype((variable))`的结果永远是引用，而`decltype(variable)`的结果只有在真的是引用的时候才会返回引用。
 
+
+## 第三章
+1. `cin`和`getline`的区别，对于空白符的处理
+2. `string`的初始化方式，默认初始化，拷贝初始化，直接初始化
+3. range for语句逐字符操作。
+4. 
+
 ## 参考文献
 1.《C++ Prime第五版》
