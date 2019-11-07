@@ -100,13 +100,13 @@
 
 
 
-  <meta name="description" content="MC Methods 这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft po">
+  <meta name="description" content="MC Methods这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft pol">
 <meta name="keywords" content="强化学习,蒙特卡洛">
 <meta property="og:type" content="article">
 <meta property="og:title" content="reinforcement learning an introduction 第5章笔记">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="MC Methods 这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft po">
+<meta property="og:description" content="MC Methods这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft pol">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
@@ -114,7 +114,7 @@
 <meta property="og:updated_time" content="2019-08-04T06:58:54.818Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="reinforcement learning an introduction 第5章笔记">
-<meta name="twitter:description" content="MC Methods 这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft po">
+<meta name="twitter:description" content="MC Methods这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft pol">
 <meta name="twitter:image" content="http://mxxhcm.github.io/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/">
 
 
@@ -453,257 +453,62 @@
       
 
       
-        <h2 id="mc-methods">MC Methods</h2>
-<p>这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft policy，即有一定概率随机选择action，其余情况下选择最好的action。这种情况下学习到的policy不是greedy的，同时也能进行一定的exploration。一种是off-policy的方法，这种方法使用两个不同的policy，一个用来采样的behaviour policy，一个用来评估的target policy。target policy是一个deterministic policy，而behaviour policy用来exploration。<br>
-MC方法通过采样估计值函数有三个优势，从真实experience中学习，从仿真环境中学习，以及每个state value的计算独立于其他state。<br>
-MC和DP不一样的是，它不需要环境的信息，只需要experience即可，不管是从真实交互还是从仿真环境中得到的state,action,reward序列都行。从真实交互中学习不需要环境的信息，从仿真环境中学习需要一个model，但是这个model只用于生成sample transition，并不需要像DP那样需要所有transition的完整概率分布。在很多情况下，生成experience sample要比显示的得到概率分布容易很多。<br>
-MC基于average sample returns估计值函数。为了保证returns是可用的，这里定义蒙特卡洛算法是episodic的，即所有的experience都有一个terminal state。只有在一个episode结束的时候，value estimate和policy才会改变。蒙塔卡洛算法可以在episode和episode实现增量式，不能在step和step之间实现增量式。(Monte Carlo methods can thus be incremental in an episode-by-episode sense, but not in a step-by-step online sense.)<br>
-在一个state采取action得到的return取决于同一个episode后续状态的action，因为所有的action都是在不断学习中采取，从早期state的角度来看，这个问题是non-stationary的。为了解决non-stationary问题，采用GPI中的idea。DP从已知的MDP中计算value function，蒙特卡洛使用MDP的sample returns学习value function。然后value function和对应的policy交互获得好的value和policy。<br>
-这一章就是把DP中的各种想法推广到了MC上，解决prediction和control问题，DP使用的是整个MDP，而MC使用的是MDP的采样。</p>
-<h2 id="mc-prediction">MC Prediction</h2>
-<p>Prediction problem就是估计value function，value function又分为state value function和action value function。这里会分别给出state value function和action value function的估计方法。</p>
-<h3 id="state-value-function">State value function</h3>
-<p>从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。</p>
-<h4 id="first-visti-mc-method">First visti MC method</h4>
-<p>这里主要介绍两个算法，一个叫做first visit MC method，另一个是every visit MC method。比如要估计策略$\pi$下的$v(s)$，使用策略$\pi$采样一系列经过$s$的episodes，$s$在每一个episode中出现一次叫做一个visit，一个$s$可能在一个episode中出现多次。First visit就是只取第一次visit估计$v(s)$，every visit就是每一次visit都用。<br>
-下面给出first visit的算法：<br>
-算法1 <strong>First visit MC preidction</strong><br>
-<strong>输入</strong> 被评估的policy $\pi$<br>
-<strong>初始化</strong>:<br>
-$\qquad V(s)\in R,\forall s \in S$<br>
-$\qquad Returns(s) \leftarrow empty list,\forall s \in S$<br>
-<strong>Loop</strong> for each episeode:<br>
-$\qquad$生成一个episode<br>
-$\qquad G\leftarrow 0$<br>
-$\qquad$<strong>Loop</strong> for each step, $t= T-1,T-2, \cdots, 1$<br>
-$\qquad\qquad G\leftarrow G + \gamma R_t$<br>
-$\qquad\qquad$ IF $S_t$没有在$S_0, \cdots , S_{t-1}$中出现过<br>
-$\qquad\qquad\qquad Returns(S_t).apppend(G)$<br>
-$\qquad\qquad\qquad V(S_t)\leftarrow average(Returns(S_t))$<br>
-$\qquad\qquad END IF$<br>
-Every visit算法的话，不用判断$S_t$是否出现。当$s$的visit趋于无穷的时候，first vist和every visit算法$v_{\pi}(s)$都能收敛。First visit中，每一个return都是$v_{\pi}(s)$的一个独立同分布估计。根据大数定律，估计平均值（$average(Returns(S_0),\cdots, average(Returns(S_t)$）的序列收敛于它的期望。每一个average都是它自己的一个无偏估计，标准差是$\frac{1}{\sqrt{n}}$。every visit的收敛更难直观的去理解，但是它二次收敛于$v_{\pi}(s)$。<br>
-补充一点：<br>
-大数定律：无论抽象分布如何，均值服从正态分布。<br>
-中心极限定理：样本大了，抽样分布近似于整体分布。</p>
+        <h2 id="MC-Methods"><a href="#MC-Methods" class="headerlink" title="MC Methods"></a>MC Methods</h2><p>这章主要介绍了MC算法，MC算法通过采样，估计state-value function或者action value function。为了找到最好的policy，需要让policy不断的进行探索，但是我们还需要找到最好的action，减少exploration。这两个要求是矛盾的，这一章主要介绍了两种方法来尽量满足这两个要求。一种是on-policy的方法，使用soft policy，即有一定概率随机选择action，其余情况下选择最好的action。这种情况下学习到的policy不是greedy的，同时也能进行一定的exploration。一种是off-policy的方法，这种方法使用两个不同的policy，一个用来采样的behaviour policy，一个用来评估的target policy。target policy是一个deterministic policy，而behaviour policy用来exploration。<br>MC方法通过采样估计值函数有三个优势，从真实experience中学习，从仿真环境中学习，以及每个state value的计算独立于其他state。<br>MC和DP不一样的是，它不需要环境的信息，只需要experience即可，不管是从真实交互还是从仿真环境中得到的state,action,reward序列都行。从真实交互中学习不需要环境的信息，从仿真环境中学习需要一个model，但是这个model只用于生成sample transition，并不需要像DP那样需要所有transition的完整概率分布。在很多情况下，生成experience sample要比显示的得到概率分布容易很多。<br>MC基于average sample returns估计值函数。为了保证returns是可用的，这里定义蒙特卡洛算法是episodic的，即所有的experience都有一个terminal state。只有在一个episode结束的时候，value estimate和policy才会改变。蒙塔卡洛算法可以在episode和episode实现增量式，不能在step和step之间实现增量式。(Monte Carlo methods can thus be incremental in an episode-by-episode sense, but not in a step-by-step online sense.)<br>在一个state采取action得到的return取决于同一个episode后续状态的action，因为所有的action都是在不断学习中采取，从早期state的角度来看，这个问题是non-stationary的。为了解决non-stationary问题，采用GPI中的idea。DP从已知的MDP中计算value function，蒙特卡洛使用MDP的sample returns学习value function。然后value function和对应的policy交互获得好的value和policy。<br>这一章就是把DP中的各种想法推广到了MC上，解决prediction和control问题，DP使用的是整个MDP，而MC使用的是MDP的采样。</p>
+<h2 id="MC-Prediction"><a href="#MC-Prediction" class="headerlink" title="MC Prediction"></a>MC Prediction</h2><p>Prediction problem就是估计value function，value function又分为state value function和action value function。这里会分别给出state value function和action value function的估计方法。</p>
+<h3 id="State-value-function"><a href="#State-value-function" class="headerlink" title="State value function"></a>State value function</h3><p>从state value function说起。最简单的想法就是使用experience估计value function，通过对每个state experience中return做个average。</p>
+<h4 id="First-visti-MC-method"><a href="#First-visti-MC-method" class="headerlink" title="First visti MC method"></a>First visti MC method</h4><p>这里主要介绍两个算法，一个叫做first visit MC method，另一个是every visit MC method。比如要估计策略$\pi$下的$v(s)$，使用策略$\pi$采样一系列经过$s$的episodes，$s$在每一个episode中出现一次叫做一个visit，一个$s$可能在一个episode中出现多次。First visit就是只取第一次visit估计$v(s)$，every visit就是每一次visit都用。<br>下面给出first visit的算法：<br>算法1 <strong>First visit MC preidction</strong><br><strong>输入</strong> 被评估的policy $\pi$<br><strong>初始化</strong>:<br>$\qquad V(s)\in R,\forall s \in S$<br>$\qquad Returns(s) \leftarrow empty list,\forall s \in S$<br><strong>Loop</strong> for each episeode:<br>$\qquad$生成一个episode<br>$\qquad G\leftarrow 0$<br>$\qquad$<strong>Loop</strong> for each step, $t= T-1,T-2, \cdots, 1$<br>$\qquad\qquad G\leftarrow G + \gamma R_t$<br>$\qquad\qquad$ IF $S_t$没有在$S_0, \cdots , S_{t-1}$中出现过<br>$\qquad\qquad\qquad Returns(S_t).apppend(G)$<br>$\qquad\qquad\qquad V(S_t)\leftarrow average(Returns(S_t))$<br>$\qquad\qquad END IF$<br>Every visit算法的话，不用判断$S_t$是否出现。当$s$的visit趋于无穷的时候，first vist和every visit算法$v_{\pi}(s)$都能收敛。First visit中，每一个return都是$v_{\pi}(s)$的一个独立同分布估计。根据大数定律，估计平均值（$average(Returns(S_0),\cdots, average(Returns(S_t)$）的序列收敛于它的期望。每一个average都是它自己的一个无偏估计，标准差是$\frac{1}{\sqrt{n}}$。every visit的收敛更难直观的去理解，但是它二次收敛于$v_{\pi}(s)$。<br>补充一点：<br>大数定律：无论抽象分布如何，均值服从正态分布。<br>中心极限定理：样本大了，抽样分布近似于整体分布。</p>
 <p>这里再次对比一下DP和MC，在扑克牌游戏中，我们知道环境的所有信息，但是我们不知道摸到下一张牌的概率，比如我们手里有很多牌了，我们知道下一张摸到什么牌会赢，但是我们不知道这件事发生的概率。使用MC可以采样获得，所以说，即使有时候知道环境信息，MC方法可能也比DP方法好。</p>
-<h4 id="mc-backup-diagram">MC backup diagram</h4>
-<p>能不能推广DP中的backup图到MC中？什么是backup图？backup图顶部是一个root节点，表示要被更新的节点，下面是所有的transitions，leaves是对于更新有用的reward或者estimated values。<br>
-MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹，以terminal state为终止节点。DP backup diagram展示了所有可能的transitions，而MC backup diagram只展示了采样的那个episode；DP backup diagram只包含一步的transitions，而MC backup diagram包含一个episode的所有序列。<br>
-<img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt="mc backup"><br>
-<img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt="dp backup page 59"></p>
-<h4 id="mc的特点">MC的特点</h4>
-<p>DP中每个state的估计都依赖于它的后继state，而MC中每个state value的计算都不依赖于任何其他state value（MC算法不进行bootstrap），所以可以单独估计某一个state或者states的一个子集。而且估计单个state的计算复杂度和states的数量无关，我们可以只取感兴趣的states子集进行评估，这是MC的第三个优势。前两个优势是从actural experience中学习和从simulated的experience中学习。</p>
-<h3 id="action-value-function">Action value function</h3>
-<p>如果没有model的话，需要估计state-action value而不是state value。有model的话，只有state value就可以确定policy，选择使reward和next_state value加起来最大的action即可。没有model的话，只有state value是不够的，因为不知道下一个state是什么。而使用action value，就可以确定policy，选择$q$值最大的那个action value，取相应的action即可。<br>
-所以这一节的目标是学习action value function。有一个问题是许多state-action可能一次也没有被访问过，如果$\pi$是deterministic的，每一个state只输出一个action，其他action的MC估计没有returns进行平均，就无法进行更新。所以，我们需要估计每一个state对应的所有action，这是exploration问题。<br>
-对于action value的policy evaluation，必须保证continual exploration。一种实现方式是指定episode开始的state-action pair，每一个pair都有大于$0$的概率被选中,这就保证了每一个action-pair在无限个episode中会被访问无限次，这叫做exploring starts。这种假设有时候有用，但是在某些时候，我们无法控制环境产生的experience，可行的方法是使用stochastic policy。</p>
-<h2 id="mc-control">MC Control</h2>
-<p>MC control使用的还是GPI的想法，估计当前policy的action value，基于action value改进policy，不断迭代。考虑经典的policy iteration，执行一次完全的iterative policy evaluation，再执行一次完全的policy improvement，不断迭代。对于policy evaluation，每次evaluation都使用多个episodes的experience，每次action value都会离true value function更近。假设我们有无限个exploring starts生成的episodes，满足这些条件时，对于任意$\pi_k$都会精确计算出$q_{\pi_k}$。进行policy improvement时，只要对于当前的action value function进行贪心即可，即：<br>
-$$\pi(s) = arg\ max_a q(s,a)\tag{1}$$<br>
-第$4$章给出了证明，即policy improvement theorem。在每一轮improvement中，对所有的$s\in S$，执行：<br>
-\begin{align*}<br>
-q_{\pi_k}(s,\pi_{k+1}(s)) &amp;=q_{\pi_k}(s, argmax_a q_{\pi_k}(s,a))\\<br>
-&amp;=max_a q_{\pi_k}(s,a)\\<br>
-&amp;\ge q_{\pi_k}(s, \pi_k(s))\\<br>
-&amp;\ge v_{\pi_k}(s)\\<br>
-\end{align*}<br>
-MC算法的收敛保证需要满足两个假设，一个是exploring start，一个是policy evaluation需要无限个episode的experience。但是现实中，这两个条件是不可能满足的，我们需要替换掉这些条件近似接近最优解。</p>
-<h3 id="mc-control-without-infinte-episodes">MC Control without infinte episodes</h3>
-<p>无限个episodes的条件比较容易去掉，在DP方法中也有这些问题。在DP和MC任务中，都有两种方法去掉无限episode的限制，第一种方法是像iterative policy evaluation一样，规定一个误差的bound，在每一次evaluation迭代，逼近$q_{\pi_k}$，通过足够多的迭代确保误差小于bound，可能需要很多个episode才能达到这个bound。第二种是进行不完全的policy evaluation，和DP一样，使用小粒度的policy evaluation，可以只执行iterative policy evaluation的一次迭代，也可以执行一次单个state的improvement和evaluation。对于MC方法来说，很自然的就想到基于一个episode进行evaluation和improvement。每经历一个episode，执行该episode内相应state的evaluation和improvement。也就是说一个是规定每次迭代的bound，一个是规定每次迭代的次数。</p>
-<h4 id="伪代码">伪代码</h4>
-<p>算法2 <strong>First visit MCES</strong><br>
-<strong>初始化</strong><br>
-$\qquad$任意初始化$\pi(s)\in A(s), \forall s\in S$<br>
-$\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$<br>
-$\qquad$Returns(s,a)$\leftarrow$ empty list, $\forall s\in S, \forall a \in A(s)$<br>
-<strong>Loop forever(for each episode)</strong><br>
-$\qquad$随机选择满足$S_0\in S, A_0\in A(S_0)$的state-action$(S_0,A_0)$，满足概率大于$0$<br>
-$\qquad$从$S_0,A_0$生成策略$\pi$下的一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$<br>
-$\qquad G\leftarrow 0$<br>
-$\qquad$<strong>Loop for each step of episode</strong>,$t=T-1,T-2,\cdots,0$<br>
-$\qquad\qquad G\leftarrow \gamma G+R_{t+1}$<br>
-$\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过<br>
-$\qquad\qquad\qquad$Returns($S_t,A_t$).append(G)<br>
-$\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$<br>
-$\qquad\qquad\qquad \pi(S_t) \leftarrow argmax_a Q(S_t,a)$<br>
-这个算法一定会收敛到全局最优解，因为如果收敛到一个suboptimal policy，value function在迭代过程中会收敛到该policy的true value function，接下来的policy improvement会改进该suboptimal policy。</p>
-<h2 id="on-policy-mc-control-without-es">On-policy MC Control without ES</h2>
-<p>上节主要是去掉了无穷个episode的限制，这节需要去掉ES的限制，解决方法是需要agents一直能够去选择所有的actions。目前有两类方法实现，一种是on-policy，一种是off-policy。</p>
-<h3 id="on-policy和off-policy">on-policy和off-policy</h3>
-<p>On-policy算法中，用于evaluation或者improvement的policy和用于决策的policy是相同的，而off-policy算法中，evaluation和improvement的policy和决策的policy是不同的。</p>
-<h3 id="varepsilon-soft和-varepsilon-greedy">$\varepsilon$ soft和$\varepsilon$ greedy</h3>
-<p>在on-policy算法中，policy一般是soft的，整个policy整体上向一个deterministic policy偏移。<br>
-在$\varepsilon$ soft算法中，只要满足$\pi(a|s)\gt 0,\forall s\in S, a\in A$即可。<br>
-在$\varepsilon$ greedy算法中，用$\frac{\varepsilon}{|A(s)|}$的概率选择non-greedy的action，使用$1 -\varepsilon + \frac{\varepsilon}{|A(s)|}$的概率选择greedy的action。<br>
-$\varepsilon$ greedy是$\varepsilon$ soft算法中的一类，可以看成一种特殊的$\varepsilon$ soft算法。<br>
-本节介绍的on policy方法使用$\varepsilon$ greedy算法。</p>
-<h3 id="on-policy-first-visit-mc">On-policy first visit MC</h3>
-<p>本节介绍的on policy MC算法整体的思路还是GPI，首先使用first visit MC估计当前policy的action value function。去掉exploring starting条件之后，为了保证exploration，不能直接对所有的action value进行贪心，使用$\varepsilon$ greedy算法保持exploration。<br>
-算法3 <strong>On policy first visit MC Control</strong><br>
-$\varepsilon \gt 0$<br>
-<strong>初始化</strong><br>
-$\qquad$用任意$\varepsilon$ soft算法初始化$\pi$<br>
-$\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$<br>
-$\qquad$Returns(s,a) $\leftarrow$ empty list, $\forall s\in S, \forall a \in A(s)$<br>
-<strong>Loop forever(for each episode)</strong><br>
-$\qquad$根据policy $\pi$生成一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$<br>
-$\qquad G\leftarrow 0$<br>
-$\qquad$<strong>Loop for each step of episode</strong>,$t=T-1,T-2,\cdots,0$<br>
-$\qquad\qquad G\leftarrow \gamma G+R_{t+1}$<br>
-$\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过<br>
-$\qquad\qquad\qquad$Returns($S_t,A_t$).append(G)<br>
-$\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$<br>
-$\qquad\qquad\qquad A^{*}\leftarrow argmax_a Q(S_t,a)$<br>
-$\qquad\qquad\qquad$<strong>For all</strong> $a \in A(S_t) : $<br>
-$\qquad\qquad\qquad\qquad\pi(a|S_t)\leftarrow \begin{cases}1-\varepsilon+\frac{\varepsilon}{|A(S_t)|}\qquad if\ a = A^{*}\\ \frac{\varepsilon}{|A(S_t)|}\qquad a\neq A^{*}\end{cases}$</p>
-<p>对于任意的$\varepsilon$ soft policy $\pi$，相对于$q_{\pi}$的$\varepsilon$ greedy算法至少和$\pi$一样好。用$\pi’$表示$\varepsilon$ greedy policy，对于$\forall s\in S$，都满足policy improvement theorem的条件：<br>
-\begin{align*}<br>
-q_{\pi}(s,\pi’(s))&amp;=\sum_a\pi’(a|s)q_{\pi}(s,a)\\<br>
-&amp;=\frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + (1- \varepsilon) max_a q_{\pi}(s,a) \tag{2}\\<br>
-&amp;\ge \frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + (1-\varepsilon) \sum_a\frac{\pi(a|s) - \frac{\varepsilon}{|A(s)|}}{1-\varepsilon}q_{\pi}(s,a) \tag{3}\\<br>
-&amp;=\frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) - \frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + \sum_a \pi(a|s)\sum_aq_{\pi}(s,a)\\<br>
-&amp;=v(s)<br>
-\end{align*}<br>
-式子2到式子3是怎么变换的，我有点没看明白！！！（不懂）。后来终于想明白了，式子3的第二项分子服从的是$\pi(a|s)$，而式子2的第二项这个$a$是新的$\pi’(a|s)$。<br>
-接下来证明，当$\pi$和$\pi’$都是optimal $\varepsilon$ policy的时候，可以取到等号。这个我看这没什么意思，就不证明了。。在p102。</p>
-<h2 id="off-policy-prediction-via-importance-sampling">Off-policy Prediction via Importance Sampling</h2>
-<p>所有的control方法都要面临一个问题：一方面需要选择optimal的action估计action value，另一方面需要exploration，不能一直选择optimal action，那么该如何控制这两个问题之间的比重。on-policy方法采样的方法是学习一个接近但不是optimal的policy保持exploriation。off-policy的方法使用两个policy，一个用于采样的behavior policy，一个用于evaluation的target policy。用于学习target policy的data不是target policy自己产生的，所以叫做off-policy learning。</p>
-<h3 id="on-policy-vs-off-policy">on-policy vs off-policy</h3>
-<p>on policy更简单，off policy使用两个不同的policy，所以variance更大，收敛的更慢，但是off-policy效果更好，更通用。On-policy可以看成off-policy的特例，target policy和behaviour policy是相同的。Off-policy可以使用非学习出来的data，比如人工生成的data。</p>
-<h3 id="off-policy-prediction-problem">off-policy prediction problem</h3>
-<p>对于prediction problem，target policy和behaviour policy都是固定的。$\pi$是target policy，$b$是behaviour policy，我们要使用$b$生成的episode去估计$q_{\pi}$或者$v_{\pi}$。为了使用$b$生成的episodes估计$\pi$，需要满足一个假设，policy $\pi$中采取的action在$b$中也要能有概率被采取，即$\pi(a|s)\gt 0$表明$b(a|s) \gt 0$，这是coverage假设。<br>
-在control问题中，target policy通常是相对于当前action value的deterministic greedy policy，最后target policy是一个deterministic optimal policy而behaviour policy通常是$\varepsilon$ greedy的探索策略。</p>
-<h3 id="importance-sampling和importance-sampling-ratio">importance sampling和importance sampling ratio</h3>
-<p>很多off policy方法使用importance sampling，利用一个distribution的samples估计另一个distribution的value function。Importance sampling通过计算trajectoried在target和behaviour policy中出现的概率比值对returns进行加权，这个相对概率称为importance sampling ratio。给定以$S_t$为初始状态的sate-action trajectory，它在任何一个policy $\pi$中发生的概率如下：<br>
-\begin{align*}<br>
-&amp;Pr\{A_t, S_{t+1},A_{t+1},\cdots,S_T|A_{t:T-1}\sim \pi,S_t\}\\<br>
-=&amp;\pi(A_t|S_t)p(S_{t+1}|S_t,A_t)\pi(A_{t+1}|S_{t+1})\cdots p(S_T|S_{T-1},A_{T-1})\\<br>
-=&amp;\prod_{k=t}^{T-1}\pi(A_k|S_k)p(S_{k+1}|S_k,A_k)<br>
-\end{align*}<br>
-其中$p$是状态转换概率，imporrance sampling计算如下：<br>
-$$\rho_{t:T-1}=\frac{\prod_{k=t}^{T-1} \pi(A_k|S_k)p(S_{k+1}|S_k,A_k)}{\prod_{k=t}^{T-1} b(A_k|S_k)p(S_{k+1}|S_k,A_k)}=\prod_{k=t}^{T-1}\frac{\pi(A_k|S_k)}{b(A_k|S_k}\tag{2}$$<br>
-因为p跟policy无关，所以可以直接消去。importance sampling ratio只和policies以及sequences有关。<br>
-根据behaviour policy的returns $G_t$，我们可以得到一个Expectation，即$\mathbb{E}[G_t|S_t=s]=v_b(s)$，显然，这是b的value function而不是$\pi$的value function，这个时候就用到了importance sampling，ratio $\rho_{t:T-1}$对b的returns进行转换，得到了另一个期望：<br>
-$$\mathbb{E}[\rho_{t:T-1}G_t|S_t=s]=v_{\pi}(s)\tag{3}$$</p>
-<h3 id="符号定义">符号定义</h3>
-<p>假设我们想要从policy b 中的一些episodes中估计$v_{\pi}(s)$，</p>
+<h4 id="MC-backup-diagram"><a href="#MC-backup-diagram" class="headerlink" title="MC backup diagram"></a>MC backup diagram</h4><p>能不能推广DP中的backup图到MC中？什么是backup图？backup图顶部是一个root节点，表示要被更新的节点，下面是所有的transitions，leaves是对于更新有用的reward或者estimated values。<br>MC中的backup图，root节点是一个state，下面是一个episode中的所有transtion轨迹，以terminal state为终止节点。DP backup diagram展示了所有可能的transitions，而MC backup diagram只展示了采样的那个episode；DP backup diagram只包含一步的transitions，而MC backup diagram包含一个episode的所有序列。<br><img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt="mc backup"><br><img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/" alt="dp backup page 59"></p>
+<h4 id="MC的特点"><a href="#MC的特点" class="headerlink" title="MC的特点"></a>MC的特点</h4><p>DP中每个state的估计都依赖于它的后继state，而MC中每个state value的计算都不依赖于任何其他state value（MC算法不进行bootstrap），所以可以单独估计某一个state或者states的一个子集。而且估计单个state的计算复杂度和states的数量无关，我们可以只取感兴趣的states子集进行评估，这是MC的第三个优势。前两个优势是从actural experience中学习和从simulated的experience中学习。</p>
+<h3 id="Action-value-function"><a href="#Action-value-function" class="headerlink" title="Action value function"></a>Action value function</h3><p>如果没有model的话，需要估计state-action value而不是state value。有model的话，只有state value就可以确定policy，选择使reward和next_state value加起来最大的action即可。没有model的话，只有state value是不够的，因为不知道下一个state是什么。而使用action value，就可以确定policy，选择$q$值最大的那个action value，取相应的action即可。<br>所以这一节的目标是学习action value function。有一个问题是许多state-action可能一次也没有被访问过，如果$\pi$是deterministic的，每一个state只输出一个action，其他action的MC估计没有returns进行平均，就无法进行更新。所以，我们需要估计每一个state对应的所有action，这是exploration问题。<br>对于action value的policy evaluation，必须保证continual exploration。一种实现方式是指定episode开始的state-action pair，每一个pair都有大于$0$的概率被选中,这就保证了每一个action-pair在无限个episode中会被访问无限次，这叫做exploring starts。这种假设有时候有用，但是在某些时候，我们无法控制环境产生的experience，可行的方法是使用stochastic policy。</p>
+<h2 id="MC-Control"><a href="#MC-Control" class="headerlink" title="MC Control"></a>MC Control</h2><p>MC control使用的还是GPI的想法，估计当前policy的action value，基于action value改进policy，不断迭代。考虑经典的policy iteration，执行一次完全的iterative policy evaluation，再执行一次完全的policy improvement，不断迭代。对于policy evaluation，每次evaluation都使用多个episodes的experience，每次action value都会离true value function更近。假设我们有无限个exploring starts生成的episodes，满足这些条件时，对于任意$\pi_k$都会精确计算出$q_{\pi_k}$。进行policy improvement时，只要对于当前的action value function进行贪心即可，即：</p>
+<script type="math/tex; mode=display">\pi(s) = arg\ max_a q(s,a)\tag{1}</script><p>第$4$章给出了证明，即policy improvement theorem。在每一轮improvement中，对所有的$s\in S$，执行：<br>\begin{align*}<br>q_{\pi_k}(s,\pi_{k+1}(s)) &amp;=q_{\pi_k}(s, argmax_a q_{\pi_k}(s,a))\\\\<br>&amp;=max_a q_{\pi_k}(s,a)\\\\<br>&amp;\ge q_{\pi_k}(s, \pi_k(s))\\\\<br>&amp;\ge v_{\pi_k}(s)\\\\<br>\end{align*}<br>MC算法的收敛保证需要满足两个假设，一个是exploring start，一个是policy evaluation需要无限个episode的experience。但是现实中，这两个条件是不可能满足的，我们需要替换掉这些条件近似接近最优解。</p>
+<h3 id="MC-Control-without-infinte-episodes"><a href="#MC-Control-without-infinte-episodes" class="headerlink" title="MC Control without infinte episodes"></a>MC Control without infinte episodes</h3><p>无限个episodes的条件比较容易去掉，在DP方法中也有这些问题。在DP和MC任务中，都有两种方法去掉无限episode的限制，第一种方法是像iterative policy evaluation一样，规定一个误差的bound，在每一次evaluation迭代，逼近$q_{\pi_k}$，通过足够多的迭代确保误差小于bound，可能需要很多个episode才能达到这个bound。第二种是进行不完全的policy evaluation，和DP一样，使用小粒度的policy evaluation，可以只执行iterative policy evaluation的一次迭代，也可以执行一次单个state的improvement和evaluation。对于MC方法来说，很自然的就想到基于一个episode进行evaluation和improvement。每经历一个episode，执行该episode内相应state的evaluation和improvement。也就是说一个是规定每次迭代的bound，一个是规定每次迭代的次数。</p>
+<h4 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h4><p>算法2 <strong>First visit MCES</strong><br><strong>初始化</strong><br>$\qquad$任意初始化$\pi(s)\in A(s), \forall s\in S$<br>$\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$<br>$\qquad$Returns(s,a)$\leftarrow$ empty list, $\forall s\in S, \forall a \in A(s)$<br><strong>Loop forever(for each episode)</strong><br>$\qquad$随机选择满足$S_0\in S, A_0\in A(S_0)$的state-action$(S_0,A_0)$，满足概率大于$0$<br>$\qquad$从$S_0,A_0$生成策略$\pi$下的一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$<br>$\qquad G\leftarrow 0$<br>$\qquad$<strong>Loop for each step of episode</strong>,$t=T-1,T-2,\cdots,0$<br>$\qquad\qquad G\leftarrow \gamma G+R_{t+1}$<br>$\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过<br>$\qquad\qquad\qquad$Returns($S_t,A_t$).append(G)<br>$\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$<br>$\qquad\qquad\qquad \pi(S_t) \leftarrow argmax_a Q(S_t,a)$<br>这个算法一定会收敛到全局最优解，因为如果收敛到一个suboptimal policy，value function在迭代过程中会收敛到该policy的true value function，接下来的policy improvement会改进该suboptimal policy。</p>
+<h2 id="On-policy-MC-Control-without-ES"><a href="#On-policy-MC-Control-without-ES" class="headerlink" title="On-policy MC Control without ES"></a>On-policy MC Control without ES</h2><p>上节主要是去掉了无穷个episode的限制，这节需要去掉ES的限制，解决方法是需要agents一直能够去选择所有的actions。目前有两类方法实现，一种是on-policy，一种是off-policy。</p>
+<h3 id="on-policy和off-policy"><a href="#on-policy和off-policy" class="headerlink" title="on-policy和off-policy"></a>on-policy和off-policy</h3><p>On-policy算法中，用于evaluation或者improvement的policy和用于决策的policy是相同的，而off-policy算法中，evaluation和improvement的policy和决策的policy是不同的。</p>
+<h3 id="varepsilon-soft和-varepsilon-greedy"><a href="#varepsilon-soft和-varepsilon-greedy" class="headerlink" title="$\varepsilon$ soft和$\varepsilon$ greedy"></a>$\varepsilon$ soft和$\varepsilon$ greedy</h3><p>在on-policy算法中，policy一般是soft的，整个policy整体上向一个deterministic policy偏移。<br>在$\varepsilon$ soft算法中，只要满足$\pi(a|s)\gt 0,\forall s\in S, a\in A$即可。<br>在$\varepsilon$ greedy算法中，用$\frac{\varepsilon}{|A(s)|}$的概率选择non-greedy的action，使用$1 -\varepsilon + \frac{\varepsilon}{|A(s)|}$的概率选择greedy的action。<br>$\varepsilon$ greedy是$\varepsilon$ soft算法中的一类，可以看成一种特殊的$\varepsilon$ soft算法。<br>本节介绍的on policy方法使用$\varepsilon$ greedy算法。</p>
+<h3 id="On-policy-first-visit-MC"><a href="#On-policy-first-visit-MC" class="headerlink" title="On-policy first visit MC"></a>On-policy first visit MC</h3><p>本节介绍的on policy MC算法整体的思路还是GPI，首先使用first visit MC估计当前policy的action value function。去掉exploring starting条件之后，为了保证exploration，不能直接对所有的action value进行贪心，使用$\varepsilon$ greedy算法保持exploration。<br>算法3 <strong>On policy first visit MC Control</strong><br>$\varepsilon \gt 0$<br><strong>初始化</strong><br>$\qquad$用任意$\varepsilon$ soft算法初始化$\pi$<br>$\qquad$任意初始化$Q(s, a)\in R, \forall s\in S, \forall a \in A(s)$<br>$\qquad$Returns(s,a) $\leftarrow$ empty list, $\forall s\in S, \forall a \in A(s)$<br><strong>Loop forever(for each episode)</strong><br>$\qquad$根据policy $\pi$生成一个episode，$S_0,A_0,R_1,\cdots,S_{T-1},A_{T-1},R_T$<br>$\qquad G\leftarrow 0$<br>$\qquad$<strong>Loop for each step of episode</strong>,$t=T-1,T-2,\cdots,0$<br>$\qquad\qquad G\leftarrow \gamma G+R_{t+1}$<br>$\qquad\qquad$如果$S_t,A_t$没有在$S_0,A_0,\cdots, S_{t-1},A_{t-1}$中出现过<br>$\qquad\qquad\qquad$Returns($S_t,A_t$).append(G)<br>$\qquad\qquad\qquad Q(S_t,A_t) \leftarrow average(Returns(S_t, A_t)$<br>$\qquad\qquad\qquad A^{*}\leftarrow argmax_a Q(S_t,a)$<br>$\qquad\qquad\qquad$<strong>For all</strong> $a \in A(S_t) \: $<br>$\qquad\qquad\qquad\qquad\pi(a|S_t)\leftarrow \begin{cases}1-\varepsilon+\frac{\varepsilon}{|A(S_t)|}\qquad if a = A^{*}\\\ \frac{\varepsilon}{|A(S_t)|}\qquad a\neq A^{*}\end{cases}$</p>
+<p>对于任意的$\varepsilon$ soft policy $\pi$，相对于$q_{\pi}$的$\varepsilon$ greedy算法至少和$\pi$一样好。用$\pi’$表示$\varepsilon$ greedy policy，对于$\forall s\in S$，都满足policy improvement theorem的条件：<br>\begin{align*}<br>q_{\pi}(s,\pi’(s))&amp;=\sum_a\pi’(a|s)q_{\pi}(s,a)\\\\<br>&amp;=\frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + (1- \varepsilon) max_a q_{\pi}(s,a) \tag{2}\\\\<br>&amp;\ge \frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + (1-\varepsilon) \sum_a\frac{\pi(a|s) - \frac{\varepsilon}{|A(s)|}}{1-\varepsilon}q_{\pi}(s,a) \tag{3}\\\\<br>&amp;=\frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) - \frac{\varepsilon}{|A(s)|} \sum_aq_{\pi}(s,a) + \sum_a \pi(a|s)\sum_aq_{\pi}(s,a)\\\\<br>&amp;=v(s)<br>\end{align*}<br>式子2到式子3是怎么变换的，我有点没看明白！！！（不懂）。后来终于想明白了，式子3的第二项分子服从的是$\pi(a|s)$，而式子2的第二项这个$a$是新的$\pi’(a|s)$。<br>接下来证明，当$\pi$和$\pi’$都是optimal $\varepsilon$ policy的时候，可以取到等号。这个我看这没什么意思，就不证明了。。在p102。</p>
+<h2 id="Off-policy-Prediction-via-Importance-Sampling"><a href="#Off-policy-Prediction-via-Importance-Sampling" class="headerlink" title="Off-policy Prediction via Importance Sampling"></a>Off-policy Prediction via Importance Sampling</h2><p>所有的control方法都要面临一个问题：一方面需要选择optimal的action估计action value，另一方面需要exploration，不能一直选择optimal action，那么该如何控制这两个问题之间的比重。on-policy方法采样的方法是学习一个接近但不是optimal的policy保持exploriation。off-policy的方法使用两个policy，一个用于采样的behavior policy，一个用于evaluation的target policy。用于学习target policy的data不是target policy自己产生的，所以叫做off-policy learning。</p>
+<h3 id="on-policy-vs-off-policy"><a href="#on-policy-vs-off-policy" class="headerlink" title="on-policy vs off-policy"></a>on-policy vs off-policy</h3><p>on policy更简单，off policy使用两个不同的policy，所以variance更大，收敛的更慢，但是off-policy效果更好，更通用。On-policy可以看成off-policy的特例，target policy和behaviour policy是相同的。Off-policy可以使用非学习出来的data，比如人工生成的data。</p>
+<h3 id="off-policy-prediction-problem"><a href="#off-policy-prediction-problem" class="headerlink" title="off-policy prediction problem"></a>off-policy prediction problem</h3><p>对于prediction problem，target policy和behaviour policy都是固定的。$\pi$是target policy，$b$是behaviour policy，我们要使用$b$生成的episode去估计$q_{\pi}$或者$v_{\pi}$。为了使用$b$生成的episodes估计$\pi$，需要满足一个假设，policy $\pi$中采取的action在$b$中也要能有概率被采取，即$\pi(a|s)\gt 0$表明$b(a|s) \gt 0$，这是coverage假设。<br>在control问题中，target policy通常是相对于当前action value的deterministic greedy policy，最后target policy是一个deterministic optimal policy而behaviour policy通常是$\varepsilon$ greedy的探索策略。</p>
+<h3 id="importance-sampling和importance-sampling-ratio"><a href="#importance-sampling和importance-sampling-ratio" class="headerlink" title="importance sampling和importance sampling ratio"></a>importance sampling和importance sampling ratio</h3><p>很多off policy方法使用importance sampling，利用一个distribution的samples估计另一个distribution的value function。Importance sampling通过计算trajectoried在target和behaviour policy中出现的概率比值对returns进行加权，这个相对概率称为importance sampling ratio。给定以$S_t$为初始状态的sate-action trajectory，它在任何一个policy $\pi$中发生的概率如下：<br>\begin{align*}<br>&amp;Pr\\{A_t, S_{t+1},A_{t+1},\cdots,S_T|A_{t:T-1}\sim \pi,S_t\\}\\\\<br>=&amp;\pi(A_t|S_t)p(S_{t+1}|S_t,A_t)\pi(A_{t+1}|S_{t+1})\cdots p(S_T|S_{T-1},A_{T-1})\\\\<br>=&amp;\prod_{k=t}^{T-1}\pi(A_k|S_k)p(S_{k+1}|S_k,A_k)<br>\end{align*}<br>其中$p$是状态转换概率，imporrance sampling计算如下：</p>
+<script type="math/tex; mode=display">\rho\_{t:T-1}=\frac{\prod\_{k=t}^{T-1} \pi(A_k|S_k)p(S\_{k+1}|S_k,A_k)}{\prod\_{k=t}^{T-1} b(A_k|S_k)p(S\_{k+1}|S_k,A_k)}=\prod\_{k=t}^{T-1}\frac{\pi(A_k|S_k)}{b(A_k|S_k}\tag{2}</script><p>因为p跟policy无关，所以可以直接消去。importance sampling ratio只和policies以及sequences有关。<br>根据behaviour policy的returns $G_t$，我们可以得到一个Expectation，即$\mathbb{E}[G_t|S_t=s]=v_b(s)$，显然，这是b的value function而不是$\pi$的value function，这个时候就用到了importance sampling，ratio $\rho_{t:T-1}$对b的returns进行转换，得到了另一个期望：</p>
+<script type="math/tex; mode=display">\mathbb{E}[\rho\_{t:T-1}G_t|S_t=s]=v\_{\pi}(s)\tag{3}</script><h3 id="符号定义"><a href="#符号定义" class="headerlink" title="符号定义"></a>符号定义</h3><p>假设我们想要从policy b 中的一些episodes中估计$v_{\pi}(s)$，</p>
 <ul>
 <li>用$t$表示episode中的每一步，有些不同的是，$t$在不同episode之间是连续的，比如第$1$个episode有$100$个timesteps，第$2$个episode的timsteps从$101$开始。</li>
 <li>用$J(s)$表示state $s$在不同episodes中第一次出现的$t$。</li>
 <li>用$T(t)$表示从$t$所在那个episode的terminal timestep。</li>
-<li>用$\left\{G_t\right\}_{t\in J(s)}$表示所有state $s$的return list。</li>
-<li>用$\left\{\rho_{t:T(t)-1}\right\}_{t\in J(s)}$表示相应的importance ratio。</li>
+<li>用$\left\\{G_t\right\\}_{t\in J(s)}$表示所有state $s$的return list。</li>
+<li>用$\left\\{\rho_{t:T(t)-1}\right\\}_{t\in J(s)}$表示相应的importance ratio。</li>
 </ul>
-<h3 id="importance-sampling">importance sampling</h3>
-<p>有两种importance sampling方法估计$v_{\pi}(s)$，一种是oridinary importance sampling，一种是weighted importance sampling。</p>
-<h4 id="oridinary-importance-sampling">oridinary importance sampling</h4>
-<p>直接对多个结果进行平均<br>
-$$V(s) = \frac{\sum_{t\in J(s)}\rho_{t:T(t)-1} G_t}{|J(s)|}\tag{4}$$</p>
-<h4 id="weighted-importance-sampling">weighted importance sampling</h4>
-<p>对多个结果进行加权平均<br>
-$$V(s) = \frac{\sum_{t\in J(s)}\rho_{t:T(t)-1} G_t}{\sum_{t\in J(s)}\rho_{t:T(t)-1}}\tag{5}$$</p>
-<h4 id="异同点">异同点</h4>
-<p>为了比较这两种importance sampling的异同，考虑state s只有一个returns的first vist MC方法，在加权平均中，ratio会约分约掉，这个returns的expectation是$v_b(s)$而不是$v_{\pi}(s)$，是一个有偏估计；而普通平均，returns的expectation还是$v_{\pi}(s)$，是一个无偏估计，但是可能会很极端，比如ratio是$10$，就说明$v_{\pi}(s)$是$v_b(s)$的$10$倍，可能与实际相差很大。<br>
-在fisrt visit算法中，就偏差和方差来说。普通平均的偏差是无偏的，而加权平均的偏差是有偏的（逐渐趋向$0$）。普通平均的方差是unbounded，因为ratio可以是unbounded，而加权平均对于每一个returns来说，权重最大是$1$。事实上，假定returns是bounded，即使ratios的方差是infinite，加权平均的方差也会趋于$0$。实践中，加权平均有更小的方差，通常更多的被采用。<br>
-在every visit算法中，普通平均和加权平均都是有偏的，随着样本的增加，偏差也趋向于$0$。在实践中，因为every visit不需要记录哪个状态是否被记录过，所以要比first visit常用。</p>
-<h3 id="无穷大方差">无穷大方差</h3>
-<p><img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/figure_5_4.png" alt="example of oridinary importance ratio"><br>
-考虑一个例子。只有一个non-terminal state s，两个ation，left和right，right action是deterministic transition到termination，left action有$0.9$的概率回到s，有$0.1$的概率到termination。left action回到termination会产生$+1$的reward，其他操作的reward是$0$。所有target policy策略下的episodes都会经过一些次回到state s然后到达terminal state，总的returns是$1(\gamma = 1)$。使用behaviour policy等概率选择left和right action。<br>
-这个例子中returns的真实期望是$1$。first visit中weighted importance sampling中return的期望是$1$，因为behaviour policy中选择right的action 在target policy中概率为$0$，不满足之前假设的条件，所以没有影响。而oridinary importance sampling的returns期望也是$1$，但是可能经过了几百万个episodes之后，也不一定收敛到$1$。<br>
-接下来我们证明oridinary importance sampling中returns的variance是infinite。<br>
-$$Var(X) = \mathbb{E}\left[(X-\bar{X})^2\right] = \mathbb{E}\left[X^2-2\bar{X}X +\bar{x}^2\right]= \mathbb{E}\left[X^2\right]-\bar{X}^2 \tag{6}$$<br>
-如果mean是finite，只有当random variable的平方的Expectation为infinte时variance是infinte。所以，我们需要证明：<br>
-$$\mathbb{E}_b\left[\left(\prod_{t=0}^{T-1}\frac{\pi(A_t|S_t)}{b(A_t|S_t)}G_0\right)^2\right] \tag{7}$$<br>
-是infinte的。<br>
-这里我们按照一个episode一个episode的进行计算。但是需要注意的是，behaviour policy可以选择right action，而target policy只有left action，当behaviour policy选择right的话，ratio是$0$。我们只需要考虑那些一直选择left action回到state s，然后通过left action到达terminal state的episodes。按照下式计算期望，注意这个和上面用oridinary important ratio估计$v_{\pi}(s)$可不一样，上面是用采样估计$v_{\pi}(s)$，这个是计算真实的$v_{\pi}(s)$的期望，不对，是它的平方的期望。<br>
-\begin{align*}<br>
-\mathbb{E}_b\left[\left( \prod_{t=0}^{T-1}\frac{\pi(A_t|S_t)}{b(A_t|S_t)}G_0\right)^2\right] = &amp; \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\right)^2\tag{长度为1的episode}\\<br>
-&amp;+\frac{1}{2}\cdot 0.9\cdot\frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为2的episode}\\<br>
-&amp;+\frac{1}{2}\cdot 0.9\cdot \frac{1}{2} \cdot 0.9 \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为3的episode}\\<br>
-&amp;+ \cdots\\<br>
-=&amp;0.1 \sum_{k=0}^{\infty}0.9^k\cdot 2^k \cdot 2\\<br>
-=&amp;0.2 \sum_{k=0}^{\infty}1.8^k\\<br>
-=&amp;\infty \tag{8}\<br>
-\end{align*}</p>
-<h3 id="incremental-implementation">Incremental Implementation</h3>
-<p>Monte Carlo prediction可以增量式实现，用episode-by-episode bias。<br>
-在on-policy算法中，$V_t$的估计通过直接对多个episode的$G_t$进行平均得到。<br>
-$$V_n(s) = \frac{G_1 + G_2 + \cdots + G_{n-1}}{n - 1} \tag{9}$$<br>
-其中$V_n(s)$表示在第$n$个epsisode估计的state $s$的value function，$n-1$表示采样得到的总共$n-$个episode，$G_1$表示每个episode中第一次遇到$s$时的Return。<br>
-在第$n+1$个episodes估计$V(s)$时：<br>
-\begin{align*}<br>
-V_{n+1}(s) &amp;= \frac{G_1 + G_2 + \cdots + G_n}{n}\\<br>
-nV_{n+1}(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1} + G_n\tag{上式两边同时乘上n}\\<br>
-(n-1)V_n(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1}\tag{用n-1代替n}\\<br>
-nV_{n+1}(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1} + G_n\tag{分解V_{n+1}(s)}\\<br>
-&amp;= (G_1 + G_2 + \cdots + G_{n - 1}) + G_n\\<br>
-&amp;= (n-1)V_n(s) + G_n\\<br>
-\frac{nV_{n+1}(s)}{n}&amp;= \frac{(n-1)V_n(s) + G_n}{n}\tag{上式两边同时除以n}\\<br>
-V_{n+1}(s)&amp;= \frac{(n-1)V_n(s) + G_n}{n}\\<br>
-&amp; = V_n(s) +\frac{G_n-V_n(s)}{n} \tag{10}<br>
-\end{align*}<br>
-这个更新规则的一般形式如下：<br>
-$$NewEstimate \leftarrow OldEstimate + StepSize \left[Target - OldEstimate\right] \tag{11}$$<br>
-表达式$\left[Target - OldEstimate\right]$是一个estimate error，通过向&quot;Target&quot;走一步减小error。这个&quot;Target&quot;给定了更新的方向，当然也有可能是noisy，在式子$10$中，target是第$n$个episode中state s的return。式子$10$的更新规则中StepSize$\frac{1}{n}$是在变的，一般我们叫它步长或者学习率，用$\alpha$表示。<br>
-在off-policy算法中，odrinary importance sampling和weighted importance sampling要分开。因为odirinary importance sampling只是对ratio缩放后的不同returns做了平均，还可以使用上面的公式。而对于weighted imporatance sampling，假设一系列episodes的returns是$G_1,G_2,\cdots, G_{n-1}$，对应的权重为$W_i$（比如$W_i=\rho_{t_i:T(t_i)-1}$），有：<br>
-$$V_n = \frac{\sum_{k=1}^{n-1}W_kG_k}{\sum_{k=1}^{n-1}W_k} \tag{11}$$<br>
-用$C_n$表示前$n$个episode returns的权重和，即$C_n=\sum_{k=1}^nW_k$，$V_n$的更新规则如下：<br>
-\begin{align*}<br>
-V_{n+1}&amp;=\frac{\sum_{k=1}^{n}W_kG_k}{\sum_{k=1}^{n}W_k}\\<br>
-&amp;=\frac{\sum_{k=1}^{n-1}W_kG_k + W_nG_n}{\sum_{k=1}^{n}W_k}\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(\sum_{k=1}^{n-1}W_kG_k + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(\frac{\sum_{k=1}^{n-1}W_kG_k}{\sum_{k=1}^{n-1}W_k}(\sum_{k=1}^{n-1}W_k) + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}^{n-1}W_k) + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}^{n-1}W_k + W_n - W_n) + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}^{n}W_k - W_n) + W_nG_n\right)\\<br>
-&amp;=\frac{1}{\sum_{k=1}^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}^{n}W_k) + W_nG_n - W_nV_n\right)\\<br>
-&amp;=\frac{V_n\cdot(\sum_{k=1}^{n}W_k)}{\sum_{k=1}^{n}W_k} + \frac{W_nG_n-W_nV_n}{\sum_{k=1}^{n}W_k}\\<br>
-&amp;=V_n + \frac{W_n}{C_n}(G_n-V_n)\\<br>
-\end{align*}<br>
-其中$C_0=0, C_{n+1} = C_n + W_{n+1}$，事实上，在$W_k=1$的情况下，即$\pi=b$时，上面的公式就变成了on-policy的公式。接下来给出一个episode-by-episode的MC  policy evaluation incremental algorithm，使用的是weighted importance sampling。</p>
-<h3 id="off-policy-mc-prediction-算法">Off-policy MC Prediction 算法</h3>
-<p>算法 4 Off-policy MC prediction(policy evaluation)<br>
-输入: 一个任意的target policy $\pi$<br>
-初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s)$<br>
-<strong>Loop</strong> forever (for each episode)<br>
-$\qquad$$b\leftarrow$ 任意覆盖target policy $\pi$的behaviour policy<br>
-$\qquad$用behaviour policy $b$生成一个episode，$S_0,A_0,R_1,\cdots, S_{T-1},A_{T-1},R_T$<br>
-$\qquad$$G\leftarrow 0$<br>
-$\qquad$$W\leftarrow 1$<br>
-$\qquad$<strong>FOR</strong> $t \in T-1,T-2,\cdots, 0$并且$W\neq 0$<br>
-$\qquad\qquad$$G\leftarrow G+\gamma R_{t+1}$<br>
-$\qquad\qquad$$W\leftarrow = W\cdot \frac{\pi(A_t|S_t)}{b(A_t|S_t)}$！！！原书中这个是放在最后一行的，我怎么觉得应该放在这里。。<br>
-$\qquad\qquad$$C(S_t, A_t)\leftarrow C(S_t, A_t)+W$<br>
-$\qquad\qquad$$Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_t-Q(S_t,A_t))$<br>
-$\qquad$<strong>END FOR</strong><br>
-<strong>思考：这里怎么把它转换为first-visit的算法</strong></p>
-<h2 id="off-policy-mc-control">Off-policy MC Control</h2>
-<p>这一节给出一个off-policy的MC control算法，target policy是greedy算法，而behaviour policy是soft算法，在不同的episode中可以采用不同的behaviour policy。<br>
-算法 5 Off-policy MC control<br>
-初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s), \pi(s)\leftarrow arg max_aQ(s, a)$<br>
-<strong>Loop</strong> forever (for each episode)<br>
-$\qquad$$b\leftarrow$ 任意覆盖target policy $\pi$的behaviour policy<br>
-$\qquad$用behaviour policy $b$生成一个episode，$S_0,A_0,R_1,\cdots, S_{T-1},A_{T-1},R_T$<br>
-$\qquad$$G\leftarrow 0$<br>
-$\qquad$$W\leftarrow 1$<br>
-$\qquad$<strong>for</strong> $t \in T-1,T-2,\cdots, 0$并且$W\neq 0$<br>
-$\qquad\qquad$$G\leftarrow G+\gamma R_{t+1}$<br>
-$\qquad\qquad$$C(S_t, A_t)\leftarrow C(S_t, A_t)+W$<br>
-$\qquad\qquad$$Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_t-Q(S_t, A_t)$<br>
-$\qquad\qquad\pi(s)\leftarrow arg max_aQ(S_t,a)$<br>
-$\qquad\qquad$<strong>if</strong> $A_t\neq\pi(S_t)$ then<br>
-$\qquad\qquad\qquad$break for循环<br>
-$\qquad\qquad$<strong>end if</strong><br>
-$\qquad\qquad$$W\leftarrow = W\cdot \frac{1}{b(A_t|S_t)}$这个为什么放最后一行，我能理解要进行一下if判断，但是放在这里importance ratio不就不对了吗。。<br>
-$\qquad$<strong>end for</strong></p>
-<h2 id="discounting-aware-importance-sampling">Discounting-aware Importance Sampling</h2>
-<p>这一节介绍了discounting的importance sampling，假设有$100$个steps的一个episode，$\gamma=0$，其实它的returns在第一步以后就确定了，后面的$99$步已经没有影响了，因为$\gamma=0$，这里就介绍了discount importance sampling。<br>
-…</p>
-<h2 id="per-decision-importance-sampling">Per-decision Importance Sampling</h2>
-<p>根据每一个Reward确定进行importance sampling，而不是根据每一个returns。<br>
-…</p>
-<h2 id="summary">Summary</h2>
-<p>MC相对于DP的好处</p>
+<h3 id="importance-sampling"><a href="#importance-sampling" class="headerlink" title="importance sampling"></a>importance sampling</h3><p>有两种importance sampling方法估计$v_{\pi}(s)$，一种是oridinary importance sampling，一种是weighted importance sampling。</p>
+<h4 id="oridinary-importance-sampling"><a href="#oridinary-importance-sampling" class="headerlink" title="oridinary importance sampling"></a>oridinary importance sampling</h4><p>直接对多个结果进行平均</p>
+<script type="math/tex; mode=display">V(s) = \frac{\sum\_{t\in J(s)}\rho\_{t:T(t)-1} G_t}{|J(s)|}\tag{4}</script><h4 id="weighted-importance-sampling"><a href="#weighted-importance-sampling" class="headerlink" title="weighted importance sampling"></a>weighted importance sampling</h4><p>对多个结果进行加权平均</p>
+<script type="math/tex; mode=display">V(s) = \frac{\sum\_{t\in J(s)}\rho\_{t:T(t)-1} G_t}{\sum\_{t\in J(s)}\rho\_{t:T(t)-1}}\tag{5}</script><h4 id="异同点"><a href="#异同点" class="headerlink" title="异同点"></a>异同点</h4><p>为了比较这两种importance sampling的异同，考虑state s只有一个returns的first vist MC方法，在加权平均中，ratio会约分约掉，这个returns的expectation是$v_b(s)$而不是$v_{\pi}(s)$，是一个有偏估计；而普通平均，returns的expectation还是$v_{\pi}(s)$，是一个无偏估计，但是可能会很极端，比如ratio是$10$，就说明$v_{\pi}(s)$是$v_b(s)$的$10$倍，可能与实际相差很大。<br>在fisrt visit算法中，就偏差和方差来说。普通平均的偏差是无偏的，而加权平均的偏差是有偏的（逐渐趋向$0$）。普通平均的方差是unbounded，因为ratio可以是unbounded，而加权平均对于每一个returns来说，权重最大是$1$。事实上，假定returns是bounded，即使ratios的方差是infinite，加权平均的方差也会趋于$0$。实践中，加权平均有更小的方差，通常更多的被采用。<br>在every visit算法中，普通平均和加权平均都是有偏的，随着样本的增加，偏差也趋向于$0$。在实践中，因为every visit不需要记录哪个状态是否被记录过，所以要比first visit常用。</p>
+<h3 id="无穷大方差"><a href="#无穷大方差" class="headerlink" title="无穷大方差"></a>无穷大方差</h3><p><img src="/2019/04/29/reinforcement-learning-an-introduction-第5章笔记/figure_5_4.png" alt="example of oridinary importance ratio"><br>考虑一个例子。只有一个non-terminal state s，两个ation，left和right，right action是deterministic transition到termination，left action有$0.9$的概率回到s，有$0.1$的概率到termination。left action回到termination会产生$+1$的reward，其他操作的reward是$0$。所有target policy策略下的episodes都会经过一些次回到state s然后到达terminal state，总的returns是$1(\gamma = 1)$。使用behaviour policy等概率选择left和right action。<br>这个例子中returns的真实期望是$1$。first visit中weighted importance sampling中return的期望是$1$，因为behaviour policy中选择right的action 在target policy中概率为$0$，不满足之前假设的条件，所以没有影响。而oridinary importance sampling的returns期望也是$1$，但是可能经过了几百万个episodes之后，也不一定收敛到$1$。<br>接下来我们证明oridinary importance sampling中returns的variance是infinite。</p>
+<script type="math/tex; mode=display">Var(X) = \mathbb{E}\left[(X-\bar{X})^2\right] = \mathbb{E}\left[X\^2-2\bar{X}X +\bar{x}\^2\right]= \mathbb{E}\left[X\^2\right]-\bar{X}\^2 \tag{6}</script><p>如果mean是finite，只有当random variable的平方的Expectation为infinte时variance是infinte。所以，我们需要证明：</p>
+<script type="math/tex; mode=display">\mathbb{E}\_b\left[\left(\prod\_{t=0}\^{T-1}\frac{\pi(A_t|S_t)}{b(A_t|S_t)}G_0\right)\^2\right] \tag{7}</script><p>是infinte的。<br>这里我们按照一个episode一个episode的进行计算。但是需要注意的是，behaviour policy可以选择right action，而target policy只有left action，当behaviour policy选择right的话，ratio是$0$。我们只需要考虑那些一直选择left action回到state s，然后通过left action到达terminal state的episodes。按照下式计算期望，注意这个和上面用oridinary important ratio估计$v_{\pi}(s)$可不一样，上面是用采样估计$v_{\pi}(s)$，这个是计算真实的$v_{\pi}(s)$的期望，不对，是它的平方的期望。<br>\begin{align*}<br>\mathbb{E}_b\left[\left( \prod_{t=0}\^{T-1}\frac{\pi(A_t|S_t)}{b(A_t|S_t)}G_0\right)\^2\right] = &amp; \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\right)^2\tag{长度为1的episode}\\\\<br>&amp;+\frac{1}{2}\cdot 0.9\cdot\frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为2的episode}\\\\<br>&amp;+\frac{1}{2}\cdot 0.9\cdot \frac{1}{2} \cdot 0.9 \frac{1}{2}\cdot 0.1 \left(\frac{1}{0.5}\frac{1}{0.5}\frac{1}{0.5}\right)^2\tag{长度为3的episode}\\\\<br>&amp;+ \cdots\\\\<br>=&amp;0.1 \sum_{k=0}\^{\infty}0.9^k\cdot 2\^k \cdot 2\\\\<br>=&amp;0.2 \sum_{k=0}\^{\infty}1.8^k\\\\<br>=&amp;\infty \tag{8}\\\<br>\end{align*}</p>
+<h3 id="Incremental-Implementation"><a href="#Incremental-Implementation" class="headerlink" title="Incremental Implementation"></a>Incremental Implementation</h3><p>Monte Carlo prediction可以增量式实现，用episode-by-episode bias。<br>在on-policy算法中，$V_t$的估计通过直接对多个episode的$G_t$进行平均得到。</p>
+<script type="math/tex; mode=display">V_n(s) = \frac{G_1 + G_2 + \cdots + G\_{n-1}}{n - 1} \tag{9}</script><p>其中$V_n(s)$表示在第$n$个epsisode估计的state $s$的value function，$n-1$表示采样得到的总共$n-$个episode，$G_1$表示每个episode中第一次遇到$s$时的Return。<br>在第$n+1$个episodes估计$V(s)$时：<br>\begin{align*}<br>V_{n+1}(s) &amp;= \frac{G_1 + G_2 + \cdots + G_n}{n}\\\\<br>nV_{n+1}(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1} + G_n\tag{上式两边同时乘上n}\\\\<br>(n-1)V_n(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1}\tag{用n-1代替n}\\\\<br>nV_{n+1}(s)&amp;= G_1 + G_2 + \cdots + G_{n - 1} + G_n\tag{分解V_{n+1}(s)}\\\\<br>&amp;= (G_1 + G_2 + \cdots + G_{n - 1}) + G_n\\\\<br>&amp;= (n-1)V_n(s) + G_n\\\\<br>\frac{nV_{n+1}(s)}{n}&amp;= \frac{(n-1)V_n(s) + G_n}{n}\tag{上式两边同时除以n}\\\\<br>V_{n+1}(s)&amp;= \frac{(n-1)V_n(s) + G_n}{n}\\\\<br>&amp; = V_n(s) +\frac{G_n-V_n(s)}{n} \tag{10}<br>\end{align*}<br>这个更新规则的一般形式如下：</p>
+<script type="math/tex; mode=display">NewEstimate \leftarrow OldEstimate + StepSize \left[Target - OldEstimate\right] \tag{11}</script><p>表达式$\left[Target - OldEstimate\right]$是一个estimate error，通过向”Target”走一步减小error。这个”Target”给定了更新的方向，当然也有可能是noisy，在式子$10$中，target是第$n$个episode中state s的return。式子$10$的更新规则中StepSize$\frac{1}{n}$是在变的，一般我们叫它步长或者学习率，用$\alpha$表示。<br>在off-policy算法中，odrinary importance sampling和weighted importance sampling要分开。因为odirinary importance sampling只是对ratio缩放后的不同returns做了平均，还可以使用上面的公式。而对于weighted imporatance sampling，假设一系列episodes的returns是$G_1,G_2,\cdots, G_{n-1}$，对应的权重为$W_i$（比如$W_i=\rho_{t_i:T(t_i)-1}$），有：</p>
+<script type="math/tex; mode=display">V_n = \frac{\sum\_{k=1}\^{n-1}W_kG_k}{\sum\_{k=1}\^{n-1}W_k} \tag{11}</script><p>用$C_n$表示前$n$个episode returns的权重和，即$C_n=\sum_{k=1}\^nW_k$，$V_n$的更新规则如下：<br>\begin{align*}<br>V_{n+1}&amp;=\frac{\sum_{k=1}\^{n}W_kG_k}{\sum_{k=1}\^{n}W_k}\\\ <br>&amp;=\frac{\sum_{k=1}\^{n-1}W_kG_k + W_nG_n}{\sum_{k=1}\^{n}W_k}\\\ <br>&amp;=\frac{1}{\sum_{k=1}\^{n}W_k} \cdot \left(\sum_{k=1}\^{n-1}W_kG_k + W_nG_n\right)\\\ <br>&amp;=\frac{1}{\sum_{k=1}\^{n}W_k} \cdot \left(\frac{\sum_{k=1}\^{n-1}W_kG_k}{\sum_{k=1}\^{n-1}W_k}(\sum_{k=1}\^{n-1}W_k) + W_nG_n\right)\\\ <br>&amp;=\frac{1}{\sum_{k=1}\^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}\^{n-1}W_k) + W_nG_n\right)\\\ <br>&amp;=\frac{1}{\sum_{k=1}\^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}\^{n-1}W_k + W_n - W_n) + W_nG_n\right)\\\ <br>&amp;=\frac{1}{\sum_{k=1}\^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}\^{n}W_k - W_n) + W_nG_n\right)\\\ <br>&amp;=\frac{1}{\sum_{k=1}\^{n}W_k} \cdot \left(V_n\cdot(\sum_{k=1}\^{n}W_k) + W_nG_n - W_nV_n\right)\\\ <br>&amp;=\frac{V_n\cdot(\sum_{k=1}\^{n}W_k)}{\sum_{k=1}\^{n}W_k} + \frac{W_nG_n-W_nV_n}{\sum_{k=1}\^{n}W_k}\\\ <br>&amp;=V_n + \frac{W_n}{C_n}(G_n-V_n)\\\ <br>\end{align*}<br>其中$C_0=0, C_{n+1} = C_n + W_{n+1}$，事实上，在$W_k=1$的情况下，即$\pi=b$时，上面的公式就变成了on-policy的公式。接下来给出一个episode-by-episode的MC  policy evaluation incremental algorithm，使用的是weighted importance sampling。</p>
+<h3 id="Off-policy-MC-Prediction-算法"><a href="#Off-policy-MC-Prediction-算法" class="headerlink" title="Off-policy MC Prediction 算法"></a>Off-policy MC Prediction 算法</h3><p>算法 4 Off-policy MC prediction(policy evaluation)<br>输入: 一个任意的target policy $\pi$<br>初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s)$<br><strong>Loop</strong> forever (for each episode)<br>$\qquad<script type="math/tex">b\leftarrow$ 任意覆盖target policy $\pi$的behaviour policy
+$\qquad$用behaviour policy $b$生成一个episode，$S_0,A_0,R_1,\cdots, S\_{T-1},A\_{T-1},R_T$
+$\qquad</script>G\leftarrow 0$<br>$\qquad<script type="math/tex">W\leftarrow 1$
+$\qquad$**FOR** $t \in T-1,T-2,\cdots, 0$并且$W\neq 0$
+$\qquad\qquad</script>G\leftarrow G+\gamma R_{t+1}$<br>$\qquad\qquad<script type="math/tex">W\leftarrow = W\cdot \frac{\pi(A_t|S_t)}{b(A_t|S_t)}$！！！原书中这个是放在最后一行的，我怎么觉得应该放在这里。。
+$\qquad\qquad</script>C(S_t, A_t)\leftarrow C(S_t, A_t)+W$<br>$\qquad\qquad$$Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_t-Q(S_t,A_t))$<br>$\qquad$<strong>END FOR</strong><br><strong>思考：这里怎么把它转换为first-visit的算法</strong></p>
+<h2 id="Off-policy-MC-Control"><a href="#Off-policy-MC-Control" class="headerlink" title="Off-policy MC Control"></a>Off-policy MC Control</h2><p>这一节给出一个off-policy的MC control算法，target policy是greedy算法，而behaviour policy是soft算法，在不同的episode中可以采用不同的behaviour policy。<br>算法 5 Off-policy MC control<br>初始化，$Q(s,a)\in \mathbb{R}, C(s,a) = 0, \forall s\in S, a\in A(s), \pi(s)\leftarrow arg max_aQ(s, a)$<br><strong>Loop</strong> forever (for each episode)<br>$\qquad<script type="math/tex">b\leftarrow$ 任意覆盖target policy $\pi$的behaviour policy
+$\qquad$用behaviour policy $b$生成一个episode，$S_0,A_0,R_1,\cdots, S\_{T-1},A\_{T-1},R_T$
+$\qquad</script>G\leftarrow 0$<br>$\qquad<script type="math/tex">W\leftarrow 1$
+$\qquad$**for** $t \in T-1,T-2,\cdots, 0$并且$W\neq 0$
+$\qquad\qquad</script>G\leftarrow G+\gamma R_{t+1}$<br>$\qquad\qquad<script type="math/tex">C(S_t, A_t)\leftarrow C(S_t, A_t)+W$
+$\qquad\qquad</script>Q(S_t, A_t)\leftarrow Q(S_t, A_t)+ \frac{W}{C(S_t,A_t)}(G_t-Q(S_t, A_t)$<br>$\qquad\qquad\pi(s)\leftarrow arg max_aQ(S_t,a)$<br>$\qquad\qquad$<strong>if</strong> $A_t\neq\pi(S_t)$ then<br>$\qquad\qquad\qquad$break for循环<br>$\qquad\qquad$<strong>end if</strong><br>$\qquad\qquad$$W\leftarrow = W\cdot \frac{1}{b(A_t|S_t)}$这个为什么放最后一行，我能理解要进行一下if判断，但是放在这里importance ratio不就不对了吗。。<br>$\qquad$<strong>end for</strong></p>
+<h2 id="Discounting-aware-Importance-Sampling"><a href="#Discounting-aware-Importance-Sampling" class="headerlink" title="Discounting-aware Importance Sampling"></a>Discounting-aware Importance Sampling</h2><p>这一节介绍了discounting的importance sampling，假设有$100$个steps的一个episode，$\gamma=0$，其实它的returns在第一步以后就确定了，后面的$99$步已经没有影响了，因为$\gamma=0$，这里就介绍了discount importance sampling。<br>…</p>
+<h2 id="Per-decision-Importance-Sampling"><a href="#Per-decision-Importance-Sampling" class="headerlink" title="Per-decision Importance Sampling"></a>Per-decision Importance Sampling</h2><p>根据每一个Reward确定进行importance sampling，而不是根据每一个returns。<br>…</p>
+<h2 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h2><p>MC相对于DP的好处</p>
 <ol>
 <li>model-free</li>
 <li>sample比较容易</li>
@@ -840,7 +645,7 @@ $\qquad$<strong>end for</strong></p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">242</span>
+                    <span class="site-state-item-count">244</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1562,7 +1367,9 @@ $\qquad$<strong>end for</strong></p>
                     
                       
                     
-                    <span class="site-state-item-count">326</span>
+                      
+                    
+                    <span class="site-state-item-count">327</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1630,7 +1437,7 @@ $\qquad$<strong>end for</strong></p>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mc-methods"><span class="nav-number">1.</span> <span class="nav-text">MC Methods</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mc-prediction"><span class="nav-number">2.</span> <span class="nav-text">MC Prediction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#state-value-function"><span class="nav-number">2.1.</span> <span class="nav-text">State value function</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#first-visti-mc-method"><span class="nav-number">2.1.1.</span> <span class="nav-text">First visti MC method</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mc-backup-diagram"><span class="nav-number">2.1.2.</span> <span class="nav-text">MC backup diagram</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mc的特点"><span class="nav-number">2.1.3.</span> <span class="nav-text">MC的特点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#action-value-function"><span class="nav-number">2.2.</span> <span class="nav-text">Action value function</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mc-control"><span class="nav-number">3.</span> <span class="nav-text">MC Control</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mc-control-without-infinte-episodes"><span class="nav-number">3.1.</span> <span class="nav-text">MC Control without infinte episodes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#伪代码"><span class="nav-number">3.1.1.</span> <span class="nav-text">伪代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#on-policy-mc-control-without-es"><span class="nav-number">4.</span> <span class="nav-text">On-policy MC Control without ES</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#on-policy和off-policy"><span class="nav-number">4.1.</span> <span class="nav-text">on-policy和off-policy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#varepsilon-soft和-varepsilon-greedy"><span class="nav-number">4.2.</span> <span class="nav-text">$\varepsilon$ soft和$\varepsilon$ greedy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#on-policy-first-visit-mc"><span class="nav-number">4.3.</span> <span class="nav-text">On-policy first visit MC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off-policy-prediction-via-importance-sampling"><span class="nav-number">5.</span> <span class="nav-text">Off-policy Prediction via Importance Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#on-policy-vs-off-policy"><span class="nav-number">5.1.</span> <span class="nav-text">on-policy vs off-policy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#off-policy-prediction-problem"><span class="nav-number">5.2.</span> <span class="nav-text">off-policy prediction problem</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#importance-sampling和importance-sampling-ratio"><span class="nav-number">5.3.</span> <span class="nav-text">importance sampling和importance sampling ratio</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#符号定义"><span class="nav-number">5.4.</span> <span class="nav-text">符号定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#importance-sampling"><span class="nav-number">5.5.</span> <span class="nav-text">importance sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#oridinary-importance-sampling"><span class="nav-number">5.5.1.</span> <span class="nav-text">oridinary importance sampling</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#weighted-importance-sampling"><span class="nav-number">5.5.2.</span> <span class="nav-text">weighted importance sampling</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#异同点"><span class="nav-number">5.5.3.</span> <span class="nav-text">异同点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#无穷大方差"><span class="nav-number">5.6.</span> <span class="nav-text">无穷大方差</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#incremental-implementation"><span class="nav-number">5.7.</span> <span class="nav-text">Incremental Implementation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#off-policy-mc-prediction-算法"><span class="nav-number">5.8.</span> <span class="nav-text">Off-policy MC Prediction 算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off-policy-mc-control"><span class="nav-number">6.</span> <span class="nav-text">Off-policy MC Control</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#discounting-aware-importance-sampling"><span class="nav-number">7.</span> <span class="nav-text">Discounting-aware Importance Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#per-decision-importance-sampling"><span class="nav-number">8.</span> <span class="nav-text">Per-decision Importance Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#summary"><span class="nav-number">9.</span> <span class="nav-text">Summary</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MC-Methods"><span class="nav-number">1.</span> <span class="nav-text">MC Methods</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MC-Prediction"><span class="nav-number">2.</span> <span class="nav-text">MC Prediction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#State-value-function"><span class="nav-number">2.1.</span> <span class="nav-text">State value function</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#First-visti-MC-method"><span class="nav-number">2.1.1.</span> <span class="nav-text">First visti MC method</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MC-backup-diagram"><span class="nav-number">2.1.2.</span> <span class="nav-text">MC backup diagram</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MC的特点"><span class="nav-number">2.1.3.</span> <span class="nav-text">MC的特点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Action-value-function"><span class="nav-number">2.2.</span> <span class="nav-text">Action value function</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MC-Control"><span class="nav-number">3.</span> <span class="nav-text">MC Control</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#MC-Control-without-infinte-episodes"><span class="nav-number">3.1.</span> <span class="nav-text">MC Control without infinte episodes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#伪代码"><span class="nav-number">3.1.1.</span> <span class="nav-text">伪代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#On-policy-MC-Control-without-ES"><span class="nav-number">4.</span> <span class="nav-text">On-policy MC Control without ES</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#on-policy和off-policy"><span class="nav-number">4.1.</span> <span class="nav-text">on-policy和off-policy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#varepsilon-soft和-varepsilon-greedy"><span class="nav-number">4.2.</span> <span class="nav-text">$\varepsilon$ soft和$\varepsilon$ greedy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#On-policy-first-visit-MC"><span class="nav-number">4.3.</span> <span class="nav-text">On-policy first visit MC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Off-policy-Prediction-via-Importance-Sampling"><span class="nav-number">5.</span> <span class="nav-text">Off-policy Prediction via Importance Sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#on-policy-vs-off-policy"><span class="nav-number">5.1.</span> <span class="nav-text">on-policy vs off-policy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#off-policy-prediction-problem"><span class="nav-number">5.2.</span> <span class="nav-text">off-policy prediction problem</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#importance-sampling和importance-sampling-ratio"><span class="nav-number">5.3.</span> <span class="nav-text">importance sampling和importance sampling ratio</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#符号定义"><span class="nav-number">5.4.</span> <span class="nav-text">符号定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#importance-sampling"><span class="nav-number">5.5.</span> <span class="nav-text">importance sampling</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#oridinary-importance-sampling"><span class="nav-number">5.5.1.</span> <span class="nav-text">oridinary importance sampling</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#weighted-importance-sampling"><span class="nav-number">5.5.2.</span> <span class="nav-text">weighted importance sampling</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#异同点"><span class="nav-number">5.5.3.</span> <span class="nav-text">异同点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#无穷大方差"><span class="nav-number">5.6.</span> <span class="nav-text">无穷大方差</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Incremental-Implementation"><span class="nav-number">5.7.</span> <span class="nav-text">Incremental Implementation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Off-policy-MC-Prediction-算法"><span class="nav-number">5.8.</span> <span class="nav-text">Off-policy MC Prediction 算法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Off-policy-MC-Control"><span class="nav-number">6.</span> <span class="nav-text">Off-policy MC Control</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Discounting-aware-Importance-Sampling"><span class="nav-number">7.</span> <span class="nav-text">Discounting-aware Importance Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Per-decision-Importance-Sampling"><span class="nav-number">8.</span> <span class="nav-text">Per-decision Importance Sampling</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Summary"><span class="nav-number">9.</span> <span class="nav-text">Summary</span></a></li></ol></div>
             
 
           </div>

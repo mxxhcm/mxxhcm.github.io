@@ -327,6 +327,349 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-Coordinator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/13/tensorflow-Coordinator/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">tensosrflow Coordinator</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-13 20:17:13 / 修改时间：20:29:31" itemprop="dateCreated datePublished" datetime="2019-07-13T20:17:13+08:00">2019-07-13</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="Coordinator"><a href="#Coordinator" class="headerlink" title="Coordinator"></a>Coordinator</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>这个类用来协调多个thread同时工作，同时停止。常用的方法有：</p>
+<ul>
+<li>should_stop()：如果满足thread停止条件的话，返回True</li>
+<li>request_stop()：请求thread停止，调用该方法后，should_stop()返回True</li>
+<li>join(<list of threads>)：等待所有的threads停止。</list></li>
+</ul>
+<h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><p>其实我觉得这个类的作用好像没有那么大，或者我没有用到这种场景。反正就是满足thread的终止条件时，调用request_stop()函数，让should_stop()返回True。</p>
+<h2 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h2><p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_train_Coordinator.py" target="_blank" rel="noopener">代码地址</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line">n = <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(index)</span>:</span></span><br><span class="line">    <span class="keyword">global</span> n</span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">not</span> coord.should_stop():</span><br><span class="line">    <span class="comment">#while True:</span></span><br><span class="line">        <span class="keyword">if</span> n &gt; <span class="number">10</span>:</span><br><span class="line">            print(index, <span class="string">" done"</span>)</span><br><span class="line">            coord.request_stop()</span><br><span class="line">            <span class="comment">#break</span></span><br><span class="line">        print(<span class="string">"before A, thread "</span>, index, n)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        print(<span class="string">"after A, thread "</span>, index, n)</span><br><span class="line">        time.sleep(random.random())</span><br><span class="line">        print(<span class="string">"before B, thread "</span>, index, n)</span><br><span class="line">        n += <span class="number">1</span></span><br><span class="line">        print(<span class="string">"after B, thread "</span>, index, n)</span><br><span class="line">    </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">        coord = tf.train.Coordinator()</span><br><span class="line"></span><br><span class="line">        jobs = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>):</span><br><span class="line">            jobs.append(threading.Thread(target=add, args=(i,)))</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> j <span class="keyword">in</span> jobs:</span><br><span class="line">            j.start()</span><br><span class="line"></span><br><span class="line">        coord.join(jobs)</span><br><span class="line">        print(<span class="string">"Hello World!"</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://wiki.jikexueyuan.com/project/tensorflow-zh/how_tos/threading_and_queues.html" target="_blank" rel="noopener">https://wiki.jikexueyuan.com/project/tensorflow-zh/how_tos/threading_and_queues.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-one-hot/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/13/tensorflow-one-hot/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">tensorflow one_hot</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-13 12:08:55" itemprop="dateCreated datePublished" datetime="2019-07-13T12:08:55+08:00">2019-07-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-11 13:30:51" itemprop="dateModified" datetime="2019-10-11T13:30:51+08:00">2019-10-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="tf-one-hot"><a href="#tf-one-hot" class="headerlink" title="tf.one_hot"></a>tf.one_hot</h2><h3 id="一句话介绍"><a href="#一句话介绍" class="headerlink" title="一句话介绍"></a>一句话介绍</h3><p>返回一个one-hot tensor</p>
+<h3 id="API"><a href="#API" class="headerlink" title="API"></a>API</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tf.one_hot(</span><br><span class="line">    indices,    <span class="comment"># 每一个one-hot向量不为0的维度</span></span><br><span class="line">    depth,  <span class="comment"># 指定每一个one-hot向量的维度</span></span><br><span class="line">    on_value=<span class="literal">None</span>,  <span class="comment"># indices上取该值</span></span><br><span class="line">    off_value=<span class="literal">None</span>,     <span class="comment">#其他地方取该值</span></span><br><span class="line">    axis=<span class="literal">None</span>,</span><br><span class="line">    dtype=<span class="literal">None</span>,</span><br><span class="line">    name=<span class="literal">None</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">indices = [<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>]</span><br><span class="line">depth = <span class="number">5</span></span><br><span class="line"></span><br><span class="line">result = tf.one_hot(indices, depth)</span><br><span class="line"></span><br><span class="line">sess = tf.Session()</span><br><span class="line">print(sess.run(result))</span><br><span class="line"><span class="comment"># [[0. 1. 0. 0. 0.]</span></span><br><span class="line"><span class="comment">#  [0. 1. 0. 0. 0.]</span></span><br><span class="line"><span class="comment">#  [0. 1. 0. 0. 0.]]</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.tensorflow.org/api_docs/python/tf/one_hot" target="_blank" rel="noopener">https://www.tensorflow.org/api_docs/python/tf/one_hot</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/python-slice/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -430,24 +773,13 @@
       
         
           
-            <h2 id="python-slice-index">python slice index</h2>
-<p>±–±--±–±--±–±--+<br>
-| P | y | t | h | o | n |<br>
-±–±--±–±--±–±--+<br>
-0   1   2   3   4   5   6<br>
--6  -5  -4  -3  -2  -1</p>
-<h2 id="start和stop">start和stop</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a[start:stop]   # 从start到stop-1的所有items</span><br><span class="line">a[start:]   # 从start到array结尾的所有items</span><br><span class="line">a[:stop]   # 从开始到stop-1的所有items</span><br><span class="line">a[:]   # 整个array的copy</span><br></pre></td></tr></table></figure>
-<h2 id="step">step</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a[start:stop:step]   # 从start，每次加上step，不超过stop，step默认为1</span><br></pre></td></tr></table></figure>
-<h2 id="负的start和stop">负的start和stop</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a[-1]   # array的最后一个item</span><br><span class="line">a[-2:]   # array的最后两个items</span><br><span class="line">a[:-2]   # 从开始到倒数第三个的所有items</span><br></pre></td></tr></table></figure>
-<h2 id="负的step">负的step</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a[::-1]   # 所有元素，逆序</span><br><span class="line">a[1::-1]    # 前两个元素，逆序</span><br><span class="line">a[:-3:-1]   # 后两个元素，逆序</span><br><span class="line">a[-3::-1]   # 除了最后两个元素，逆序</span><br></pre></td></tr></table></figure>
+            <h2 id="python-slice-index"><a href="#python-slice-index" class="headerlink" title="python slice index"></a>python slice index</h2><p> +—-+—-+—-+—-+—-+—-+<br> | P | y | t | h | o | n |<br> +—-+—-+—-+—-+—-+—-+<br> 0   1   2   3   4   5   6<br>-6  -5  -4  -3  -2  -1</p>
+<h2 id="start和stop"><a href="#start和stop" class="headerlink" title="start和stop"></a>start和stop</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a[start:stop]   # 从start到stop-1的所有items</span><br><span class="line">a[start:]   # 从start到array结尾的所有items</span><br><span class="line">a[:stop]   # 从开始到stop-1的所有items</span><br><span class="line">a[:]   # 整个array的copy</span><br></pre></td></tr></table></figure>
+<h2 id="step"><a href="#step" class="headerlink" title="step"></a>step</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">a[start:stop:step]   # 从start，每次加上step，不超过stop，step默认为1</span><br></pre></td></tr></table></figure>
+<h2 id="负的start和stop"><a href="#负的start和stop" class="headerlink" title="负的start和stop"></a>负的start和stop</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a[-1]   # array的最后一个item</span><br><span class="line">a[-2:]   # array的最后两个items</span><br><span class="line">a[:-2]   # 从开始到倒数第三个的所有items</span><br></pre></td></tr></table></figure>
+<h2 id="负的step"><a href="#负的step" class="headerlink" title="负的step"></a>负的step</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a[::-1]   # 所有元素，逆序</span><br><span class="line">a[1::-1]    # 前两个元素，逆序</span><br><span class="line">a[:-3:-1]   # 后两个元素，逆序</span><br><span class="line">a[-3::-1]   # 除了最后两个元素，逆序</span><br></pre></td></tr></table></figure>
 <p>这里加一些自己的理解，其实就是倒着数而已，包含第一个:前面的，不包含两个:之间的。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/a/509297/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/509297/8939281</a><br>
-2.<a href="https://stackoverflow.com/a/509295/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/509295/8939281</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://stackoverflow.com/a/509297/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/509297/8939281</a><br>2.<a href="https://stackoverflow.com/a/509295/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/509295/8939281</a></p>
 
           
         
@@ -607,22 +939,12 @@
       
         
           
-            <h2 id="expand-dims">expand_dims</h2>
-<p>在数组的某个维度增加一个为1的维度。</p>
-<h3 id="代码示例">代码示例</h3>
-<p><a href>代码地址</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a = np.ones([<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>])</span><br><span class="line">print(a.shape)</span><br><span class="line"></span><br><span class="line">a1 = np.expand_dims(a, <span class="number">0</span>)</span><br><span class="line">print(a1.shape)</span><br><span class="line"></span><br><span class="line">a2 = np.expand_dims(a, <span class="number">1</span>)</span><br><span class="line">print(a2.shape)</span><br><span class="line"></span><br><span class="line">a3 = np.expand_dims(a, <span class="number">2</span>)</span><br><span class="line">print(a3.shape)</span><br><span class="line"></span><br><span class="line">a4 = np.expand_dims(a, <span class="number">3</span>)</span><br><span class="line">print(a4.shape)</span><br></pre></td></tr></table></figure>
-<h2 id="newaxis">newaxis</h2>
-<h3 id="简介">简介</h3>
-<p>newaxis就是None的一个alias</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>np.newaxis <span class="keyword">is</span> <span class="literal">None</span></span><br><span class="line"><span class="literal">True</span></span><br></pre></td></tr></table></figure>
-<h3 id="用途">用途</h3>
-<p>常用于slicing。用于给数组增加一个维度。</p>
-<h3 id="代码示例-v2">代码示例</h3>
-<p><a href>代码地址</a></p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">a = np.ones((<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>))</span><br><span class="line">print(a.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a1 = a[np.newaxis]</span><br><span class="line">print(a1.shape)</span><br><span class="line">(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a2 = a[:, np.newaxis]</span><br><span class="line">print(a2.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a3 = a[:, :, np.newaxis]</span><br><span class="line">print(a3.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a4 = a[:, :, :, np.newaxis]</span><br><span class="line">print(a4.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">a5 = a[:, :, np.newaxis, np.newaxis, :]</span><br><span class="line">print(a5.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/29241056/how-does-numpy-newaxis-work-and-when-to-use-it" target="_blank" rel="noopener">https://stackoverflow.com/questions/29241056/how-does-numpy-newaxis-work-and-when-to-use-it</a></p>
+            <h2 id="expand-dims"><a href="#expand-dims" class="headerlink" title="expand_dims"></a>expand_dims</h2><p>在数组的某个维度增加一个为1的维度。</p>
+<h3 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h3><p><a href>代码地址</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">a = np.ones([<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>])</span><br><span class="line">print(a.shape)</span><br><span class="line"></span><br><span class="line">a1 = np.expand_dims(a, <span class="number">0</span>)</span><br><span class="line">print(a1.shape)</span><br><span class="line"></span><br><span class="line">a2 = np.expand_dims(a, <span class="number">1</span>)</span><br><span class="line">print(a2.shape)</span><br><span class="line"></span><br><span class="line">a3 = np.expand_dims(a, <span class="number">2</span>)</span><br><span class="line">print(a3.shape)</span><br><span class="line"></span><br><span class="line">a4 = np.expand_dims(a, <span class="number">3</span>)</span><br><span class="line">print(a4.shape)</span><br></pre></td></tr></table></figure></p>
+<h2 id="newaxis"><a href="#newaxis" class="headerlink" title="newaxis"></a>newaxis</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>newaxis就是None的一个alias<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>np.newaxis <span class="keyword">is</span> <span class="literal">None</span></span><br><span class="line"><span class="literal">True</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="用途"><a href="#用途" class="headerlink" title="用途"></a>用途</h3><p>常用于slicing。用于给数组增加一个维度。</p>
+<h3 id="代码示例-1"><a href="#代码示例-1" class="headerlink" title="代码示例"></a>代码示例</h3><p><a href>代码地址</a><br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">a = np.ones((<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>))</span><br><span class="line">print(a.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a1 = a[np.newaxis]</span><br><span class="line">print(a1.shape)</span><br><span class="line">(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a2 = a[:, np.newaxis]</span><br><span class="line">print(a2.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a3 = a[:, :, np.newaxis]</span><br><span class="line">print(a3.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line">a4 = a[:, :, :, np.newaxis]</span><br><span class="line">print(a4.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">a5 = a[:, :, np.newaxis, np.newaxis, :]</span><br><span class="line">print(a5.shape)</span><br><span class="line">(<span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://stackoverflow.com/questions/29241056/how-does-numpy-newaxis-work-and-when-to-use-it" target="_blank" rel="noopener">https://stackoverflow.com/questions/29241056/how-does-numpy-newaxis-work-and-when-to-use-it</a></p>
 
           
         
@@ -782,24 +1104,16 @@
       
         
           
-            <h2 id="文件和文件夹查看">文件和文件夹查看</h2>
-<ol>
-<li>查看文件和文件夹<br>
-dir</li>
-<li>只查看文件夹<br>
-dir /ad<br>
-dir /a:d</li>
+            <h2 id="文件和文件夹查看"><a href="#文件和文件夹查看" class="headerlink" title="文件和文件夹查看"></a>文件和文件夹查看</h2><ol>
+<li>查看文件和文件夹<br>dir</li>
+<li>只查看文件夹<br>dir /ad<br>dir /a:d</li>
 <li>只查看文件</li>
 </ol>
-<h2 id="文件和文件夹删除">文件和文件夹删除</h2>
-<ol>
-<li>删除文件<br>
-del file_name</li>
-<li>删除目录<br>
-rd dir_name</li>
+<h2 id="文件和文件夹删除"><a href="#文件和文件夹删除" class="headerlink" title="文件和文件夹删除"></a>文件和文件夹删除</h2><ol>
+<li>删除文件<br>del file_name</li>
+<li>删除目录<br>rd dir_name</li>
 </ol>
-<h2 id="参考文献">参考文献</h2>
-
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
           
         
       
@@ -952,15 +1266,10 @@ rd dir_name</li>
       
         
           
-            <h2 id="non-trivial">non-trivial</h2>
-<p>在数学上有专门的翻译，非平凡的。<br>
-trivial是无足轻重的，不重要的，所以non-trivial是有一定规模的，复杂的。</p>
-<h2 id="whitened">whitened</h2>
-<p>图片变化，指的是将输入经过线性变换成均值为0和单位方差的数据。。我是在batch_normalization论文中遇到的。</p>
-<h2 id="saturating-and-non-saturating">saturating and non-saturating</h2>
-<p>出现在ReLU论文中，用来形容激活函数，saturating指的是输出挤压在一个区间内。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/20681622" target="_blank" rel="noopener">https://www.zhihu.com/question/20681622</a></p>
+            <h2 id="non-trivial"><a href="#non-trivial" class="headerlink" title="non-trivial"></a>non-trivial</h2><p>在数学上有专门的翻译，非平凡的。<br>trivial是无足轻重的，不重要的，所以non-trivial是有一定规模的，复杂的。</p>
+<h2 id="whitened"><a href="#whitened" class="headerlink" title="whitened"></a>whitened</h2><p>图片变化，指的是将输入经过线性变换成均值为0和单位方差的数据。。我是在batch_normalization论文中遇到的。</p>
+<h2 id="saturating-and-non-saturating"><a href="#saturating-and-non-saturating" class="headerlink" title="saturating and non-saturating"></a>saturating and non-saturating</h2><p>出现在ReLU论文中，用来形容激活函数，saturating指的是输出挤压在一个区间内。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.zhihu.com/question/20681622" target="_blank" rel="noopener">https://www.zhihu.com/question/20681622</a></p>
 
           
         
@@ -1120,22 +1429,16 @@ trivial是无足轻重的，不重要的，所以non-trivial是有一定规模�
       
         
           
-            <h2 id="linux-init系统">Linux init系统</h2>
-<p>这里会介绍下面三种init系统</p>
+            <h2 id="Linux-init系统"><a href="#Linux-init系统" class="headerlink" title="Linux init系统"></a>Linux init系统</h2><p>这里会介绍下面三种init系统   </p>
 <ul>
 <li>SysVInit(initd)</li>
 <li>Upstart</li>
 <li>SystemD</li>
 </ul>
-<p>Linux的启动从BIOS开始，bootloader载入内核，进行内核初始化。内核初始化的最后一步是启动pid为$1$的init进程。这个进程是系统的第一个进程，它负责产生其他所有用户进程。<br>
-Init系统能够定义、管理和控制init进程的行为。它负责组织和运行许多独立的或相关的始化job(因此被称为init系统)，从而让计算机系统进入某种用户规定的run level。<br>
-大多数Linux发行版的init 系统是和 System V 相兼容的，称为 SysVInit。Ubuntu和RHEL采用upstart替代了SysVInit。而 Fedora 从版本15开始使用SystemD的新init系统。ubuntu-16.10之后开始不再使用SysVInt管理系统，改用SystemD。</p>
-<h2 id="sysvinit-initd">SysVInit(initd)</h2>
-<p>SysVInit的最大缺点是主要依赖于 Shell 脚本，启动太慢。</p>
-<h3 id="runlevel">runlevel</h3>
-<p>SysVInit检查/etc/inittab文件中是否含有’initdefault’ 项，然后进入默认run level。如果没有默认的run level，用户手动决定进入哪个run level。SysVInit通常会有8种run-level，0到6和S或者s。但 0，1，6 run level的操作是公认的： 0代表关机, 1代表单用户模式, 6代表重启，其他run level跟发行版有关。/etc/inittab 文件中还定义了各种run level需要执行的初始化工作。</p>
-<h3 id="sysvinit初始化顺序">SysVInit初始化顺序</h3>
-<p>SysVInit用脚本，文件命名规则和软链接来实现不同的runlevel。首先，SysVInit 需要读取/etc/inittab 文件，获得以下配置信息：</p>
+<p>Linux的启动从BIOS开始，bootloader载入内核，进行内核初始化。内核初始化的最后一步是启动pid为$1$的init进程。这个进程是系统的第一个进程，它负责产生其他所有用户进程。<br>Init系统能够定义、管理和控制init进程的行为。它负责组织和运行许多独立的或相关的始化job(因此被称为init系统)，从而让计算机系统进入某种用户规定的run level。<br>大多数Linux发行版的init 系统是和 System V 相兼容的，称为 SysVInit。Ubuntu和RHEL采用upstart替代了SysVInit。而 Fedora 从版本15开始使用SystemD的新init系统。ubuntu-16.10之后开始不再使用SysVInt管理系统，改用SystemD。</p>
+<h2 id="SysVInit-initd"><a href="#SysVInit-initd" class="headerlink" title="SysVInit(initd)"></a>SysVInit(initd)</h2><p>SysVInit的最大缺点是主要依赖于 Shell 脚本，启动太慢。</p>
+<h3 id="runlevel"><a href="#runlevel" class="headerlink" title="runlevel"></a>runlevel</h3><p>SysVInit检查/etc/inittab文件中是否含有’initdefault’ 项，然后进入默认run level。如果没有默认的run level，用户手动决定进入哪个run level。SysVInit通常会有8种run-level，0到6和S或者s。但 0，1，6 run level的操作是公认的： 0代表关机, 1代表单用户模式, 6代表重启，其他run level跟发行版有关。/etc/inittab 文件中还定义了各种run level需要执行的初始化工作。</p>
+<h3 id="SysVInit初始化顺序"><a href="#SysVInit初始化顺序" class="headerlink" title="SysVInit初始化顺序"></a>SysVInit初始化顺序</h3><p>SysVInit用脚本，文件命名规则和软链接来实现不同的runlevel。首先，SysVInit 需要读取/etc/inittab 文件，获得以下配置信息：</p>
 <ul>
 <li>系统需要进入的 runlevel</li>
 <li>捕获组合键的定义</li>
@@ -1149,8 +1452,7 @@ Init系统能够定义、管理和控制init进程的行为。它负责组织和
 <li>/etc/rc.d/rc.local</li>
 <li>X Display Manager（如果需要的话）</li>
 </ul>
-<h4 id="rc-sysinit初始化">rc.sysinit初始化</h4>
-<p>首先运行rc.sysinit完成以下任务。</p>
+<h4 id="rc-sysinit初始化"><a href="#rc-sysinit初始化" class="headerlink" title="rc.sysinit初始化"></a>rc.sysinit初始化</h4><p>首先运行rc.sysinit完成以下任务。</p>
 <ul>
 <li>激活 udev 和 selinux</li>
 <li>设置定义在/etc/sysctl.conf 中的内核参数</li>
@@ -1164,14 +1466,10 @@ Init系统能够定义、管理和控制init进程的行为。它负责组织和
 <li>检查并挂载所有文件系统</li>
 <li>清除过期的 locks 和 PID 文件</li>
 </ul>
-<h4 id="etc-rd-c-rc初始化">/etc/rd.c/rc初始化</h4>
-<p>接下来运行/etc/rc.d/rc脚本。根据不同的runlevel，rc脚本打开对应该runlevel的rcX.d目录，以S开头的脚本是启动时运行的脚本，S后面的数字定义了这些脚本的执行顺序。</p>
-<h4 id="etc-rc-d-rc-local初始化">/etc/rc.d/rc.local初始化</h4>
-<p>rc.local是自定义脚本存放目录。</p>
-<h3 id="sysvinit关闭系统">SysVInit关闭系统</h3>
-<p>关闭顺序的控制也是依靠/etc/rc.d/rcX.d/目录下所有脚本的命名规则来控制的，所有以K开头的脚本都将在关闭系统时调用，K后的数字规定了执行顺序。这些脚本负责安全地停止service或者其他的关闭job。</p>
-<h3 id="sysvinit工具">SysVInit工具</h3>
-<p>SysVInit包含了一系列启动，运行和关闭所有其他程序的工具和命令。</p>
+<h4 id="etc-rd-c-rc初始化"><a href="#etc-rd-c-rc初始化" class="headerlink" title="/etc/rd.c/rc初始化"></a>/etc/rd.c/rc初始化</h4><p>接下来运行/etc/rc.d/rc脚本。根据不同的runlevel，rc脚本打开对应该runlevel的rcX.d目录，以S开头的脚本是启动时运行的脚本，S后面的数字定义了这些脚本的执行顺序。</p>
+<h4 id="etc-rc-d-rc-local初始化"><a href="#etc-rc-d-rc-local初始化" class="headerlink" title="/etc/rc.d/rc.local初始化"></a>/etc/rc.d/rc.local初始化</h4><p>rc.local是自定义脚本存放目录。</p>
+<h3 id="SysVInit关闭系统"><a href="#SysVInit关闭系统" class="headerlink" title="SysVInit关闭系统"></a>SysVInit关闭系统</h3><p>关闭顺序的控制也是依靠/etc/rc.d/rcX.d/目录下所有脚本的命名规则来控制的，所有以K开头的脚本都将在关闭系统时调用，K后的数字规定了执行顺序。这些脚本负责安全地停止service或者其他的关闭job。</p>
+<h3 id="SysVInit工具"><a href="#SysVInit工具" class="headerlink" title="SysVInit工具"></a>SysVInit工具</h3><p>SysVInit包含了一系列启动，运行和关闭所有其他程序的工具和命令。</p>
 <ul>
 <li>halt  停止系统。</li>
 <li>init  SysVInit本身的init进程，pid=1，是所有用户进程的父进程。最主要的作用是在启动过程中使用/etc/inittab文件创建所有其他初始化进程。</li>
@@ -1189,89 +1487,30 @@ Init系统能够定义、管理和控制init进程的行为。它负责组织和
 <li>utmpdump  以一种用户友好的格式向标准输出设备显示/var/run/utmp 文件的内容。</li>
 <li>wall  向所有有信息权限的登录用户发送消息。</li>
 </ul>
-<h2 id="upstart">Upstart</h2>
-<p>Ubuntu使用upstart init系统，没有/etc/inittab文件。Upstart解决了热插拔以及网络共享盘的挂载问题。在/etc/fstab 中，可以指定系统自动挂载一个网络盘，比如 NFS等，SysVInit 分析/etc/fstab 挂载文件系统这个步骤是在网络启动之前。可是如果网络没有启动，NFS或者iSCSI服务都不可访问，当然也无法进行挂载操作。SysVInit采用netdev的方式来解决这个问题，即/etc/fstab发现netdev属性挂载点的时候，不尝试挂载它，在网络初始化之后，有专门的netfs service来挂载所有这些网络盘。<br>
-UpStart 解决了之前提到的 SysVInit 的缺点。采用event驱动模型，UpStart 可以：</p>
+<h2 id="Upstart"><a href="#Upstart" class="headerlink" title="Upstart"></a>Upstart</h2><p>Ubuntu使用upstart init系统，没有/etc/inittab文件。Upstart解决了热插拔以及网络共享盘的挂载问题。在/etc/fstab 中，可以指定系统自动挂载一个网络盘，比如 NFS等，SysVInit 分析/etc/fstab 挂载文件系统这个步骤是在网络启动之前。可是如果网络没有启动，NFS或者iSCSI服务都不可访问，当然也无法进行挂载操作。SysVInit采用netdev的方式来解决这个问题，即/etc/fstab发现netdev属性挂载点的时候，不尝试挂载它，在网络初始化之后，有专门的netfs service来挂载所有这些网络盘。<br>UpStart 解决了之前提到的 SysVInit 的缺点。采用event驱动模型，UpStart 可以：</p>
 <ul>
 <li>更快地启动系统。采用event驱动机制加快了系统启动时间。SysVInit 运行时是同步阻塞的。一个脚本运行的时候，后续脚本必须等待。这意味着所有的初始化步骤都是串行执行的，而实际上很多service彼此并不相关，完全可以并行启动，从而减小系统的启动时间。</li>
 <li>当新硬件被发现时动态启动相应的service，Ubuntu 开发了基于event机制的UpStart，比如 U 盘插入 USB 接口后，udev得到内核通知，发现该设备，这是一个新的event。UpStart感知到该event之后触发相应的等待任务，比如处理/etc/fstab中新的挂载点。采用这种event驱动的模式，upstart 完美地解决了即插即用设备带来的新问题。</li>
 <li>硬件被拔除时动态停止相应的service</li>
 </ul>
-<h3 id="upstart-job和event">Upstart job和event</h3>
-<p>Job是一个job unit，用来完成一件工作，比如启动一个后台service，或者运行一个配置命令。每个 Job 都等待一个或多个event，一旦event发生，upstart 就触发该job完成相应的工作。</p>
-<h4 id="job">Job</h4>
-<p>Job是一个job的unit，一个task或者一个service。可以理解为SysVInit中的一个service脚本。有三种类型的job：</p>
+<h3 id="Upstart-job和event"><a href="#Upstart-job和event" class="headerlink" title="Upstart job和event"></a>Upstart job和event</h3><p>Job是一个job unit，用来完成一件工作，比如启动一个后台service，或者运行一个配置命令。每个 Job 都等待一个或多个event，一旦event发生，upstart 就触发该job完成相应的工作。</p>
+<h4 id="Job"><a href="#Job" class="headerlink" title="Job"></a>Job</h4><p>Job是一个job的unit，一个task或者一个service。可以理解为SysVInit中的一个service脚本。有三种类型的job：</p>
 <ul>
 <li>task job，task job 代表在一定时间内会执行完毕的任务，比如删除一个文件；</li>
 <li>service job，service job 代表后台service进程，比如 apache httpd。这里进程一般不会退出，一旦开始运行就成为一个后台deamon，由 init 进程管理，如果这类进程退出，由 init 进程重新启动，它们只能由 init 进程发送信号停止。它们的停止一般也是由于所依赖的停止event而触发的，不过 upstart 也提供命令行工具，让管理人员手动停止某个service；</li>
 <li>abstract job，abstract job 仅由 upstart 内部使用，仅对理解 upstart 内部机理有所帮助。我们不用关心它。</li>
 </ul>
-<h5 id="system-job-and-session-job">system job and session job</h5>
-<p>还可以根据Upstart初始化的范围对job进行分类。系统的初始化任务叫做system job，比如挂载文件系统的任务就是一个system job；用户会话的初始化service就叫做 session job。</p>
-<h5 id="job-生命周期">Job 生命周期</h5>
-<p>Upstart为每个job都维护一个生命周期。一般来说，job有开始，运行和结束。以及其他更精细的状态，比如开始有开始之前(pre-start)，即将开始(starting)和已经开始了(started)几种不同的状态，这样可以更加精确地描述job的当前状态。详细的状态如下表所示：</p>
-<table>
-<thead>
-<tr>
-<th>状态名</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Waiting</td>
-<td>初始状态</td>
-</tr>
-<tr>
-<td>Starting</td>
-<td>Job 即将开始</td>
-</tr>
-<tr>
-<td>pre-start</td>
-<td>执行 pre-start 段，即任务开始前应该完成的job</td>
-</tr>
-<tr>
-<td>Spawned</td>
-<td>准备执行 script 或者 exec 段</td>
-</tr>
-<tr>
-<td>post-start</td>
-<td>执行 post-start 动作</td>
-</tr>
-<tr>
-<td>Running</td>
-<td>interim state set after post-start section processed denoting job is running (But it may have no associated PID!)</td>
-</tr>
-<tr>
-<td>pre-stop</td>
-<td>执行 pre-stop 段</td>
-</tr>
-<tr>
-<td>Stopping</td>
-<td>interim state set after pre-stop section processed</td>
-</tr>
-<tr>
-<td>Killed</td>
-<td>任务即将被停止</td>
-</tr>
-<tr>
-<td>post-stop</td>
-<td>执行 post-stop 段</td>
-</tr>
-</tbody>
-</table>
-<p>当job的状态即将发生变化的时候，init 进程会发出相应的event（event），如下图是job的状态机。其中只有四个状态Starting，Started，Stopping，Stopped会引起init进程发送相应的event，而其它的状态变化不会发出event。<br>
-<img src="/2019/06/23/linux-init系统/" alt></p>
-<h4 id="event">Event</h4>
-<p>Event在upstart中以通知消息的形式具体存在。一旦某个event发生了，Upstart 就向整个系统发送一个消息。Event 可以分为三类: signal，methods 或者 hooks。</p>
+<h5 id="system-job-and-session-job"><a href="#system-job-and-session-job" class="headerlink" title="system job and session job"></a>system job and session job</h5><p>还可以根据Upstart初始化的范围对job进行分类。系统的初始化任务叫做system job，比如挂载文件系统的任务就是一个system job；用户会话的初始化service就叫做 session job。</p>
+<h5 id="Job-生命周期"><a href="#Job-生命周期" class="headerlink" title="Job 生命周期"></a>Job 生命周期</h5><p>Upstart为每个job都维护一个生命周期。一般来说，job有开始，运行和结束。以及其他更精细的状态，比如开始有开始之前(pre-start)，即将开始(starting)和已经开始了(started)几种不同的状态，这样可以更加精确地描述job的当前状态。详细的状态如下表所示：<br>状态名|    含义<br>—-|—-<br>Waiting|初始状态<br>Starting|Job 即将开始<br>pre-start|执行 pre-start 段，即任务开始前应该完成的job<br>Spawned|准备执行 script 或者 exec 段<br>post-start|执行 post-start 动作<br>Running|interim state set after post-start section processed denoting job is running (But it may have no associated PID!)<br>pre-stop|执行 pre-stop 段<br>Stopping|interim state set after pre-stop section processed<br>Killed|任务即将被停止<br>post-stop|执行 post-stop 段</p>
+<p>当job的状态即将发生变化的时候，init 进程会发出相应的event（event），如下图是job的状态机。其中只有四个状态Starting，Started，Stopping，Stopped会引起init进程发送相应的event，而其它的状态变化不会发出event。<br><img src="/2019/06/23/linux-init系统/" alt></p>
+<h4 id="Event"><a href="#Event" class="headerlink" title="Event"></a>Event</h4><p>Event在upstart中以通知消息的形式具体存在。一旦某个event发生了，Upstart 就向整个系统发送一个消息。Event 可以分为三类: signal，methods 或者 hooks。</p>
 <ul>
 <li>Signals，Signal event是非阻塞的，异步的。发送一个信号之后控制权立即返回。</li>
 <li>Methods，Methods event是阻塞的，同步的。</li>
 <li>Hooks，Hooks event是阻塞的，同步的。它介于 Signals 和 Methods 之间，调用发出 Hooks event的进程必须等待event完成才可以得到控制权，但不检查event是否成功。</li>
 </ul>
-<h5 id="event示例">Event示例</h5>
-<ol>
-<li>系统上电启动，init 进程会发送&quot;start&quot;event</li>
+<h5 id="Event示例"><a href="#Event示例" class="headerlink" title="Event示例"></a>Event示例</h5><ol>
+<li>系统上电启动，init 进程会发送”start”event</li>
 <li>根文件系统可写时，相应 job 会发送文件系统就绪的event</li>
 <li>一个块设备被发现并初始化完成，发送相应的event</li>
 <li>某个文件系统被挂载，发送相应的event</li>
@@ -1282,90 +1521,49 @@ UpStart 解决了之前提到的 SysVInit 的缺点。采用event驱动模型，
 <li>缺省路由被添加或删除时，可以发出相应的event</li>
 </ol>
 <p>不同的 Linux 发行版对 upstart 有不同的定制和实现，实现和支持的event也有所不同，可以用man 7 upstart-events来查看event列表。</p>
-<h4 id="job-和-event-的相互协作">Job 和 Event 的相互协作</h4>
-<p>Upstart是由event触发job运行的一个系统，每一个程序的运行都由其依赖的event发生而触发的。系统初始化时，init进程开始运行，init进程自身会发出不同的event，这些event会触发一些job运行。每个job运行过程中会释放不同的event，这些event又将触发新的job运行。如此反复，直到整个系统正常运行起来。</p>
-<h4 id="job配置文件">job配置文件</h4>
-<p>每一个Job都是由一个job配置文件（Job Configuration File）定义的。job配置文件存放在/etc/init下面，是以.conf 作为文件后缀的文件。</p>
-<h5 id="示例">示例</h5>
-<p>~$:cat /etc/init/anacron.conf</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># anacron - anac(h)ronistic cron</span><br><span class="line">#</span><br><span class="line"># anacron executes commands at specific periods, but does not assume that</span><br><span class="line"># the machine is running continuously</span><br><span class="line"></span><br><span class="line">description	&quot;anac(h)ronistic cron&quot;</span><br><span class="line"></span><br><span class="line">start on runlevel [2345]</span><br><span class="line">stop on runlevel [!2345]</span><br><span class="line"></span><br><span class="line">expect fork</span><br><span class="line">normal exit 0</span><br><span class="line"></span><br><span class="line">exec anacron -s</span><br></pre></td></tr></table></figure>
-<h5 id="常见的sec">常见的sec</h5>
-<p><strong>“expect” Stanza</strong><br>
-为了启动，停止，重启和查询某个系统service。Upstart 需要跟踪该service所对应的进程。部分service为了将自己变成daemon，会采用fork调用， UpStart必须采用fork出来的进程号作为service的 PID。但是，UpStart 本身无法判断service进程是否fork了，所以需要指定expect告诉 UpStart 进程是否fork了。&quot;expect fork&quot;表示进程只会 fork 一次；&quot;expect daemonize&quot;表示进程会 fork 两次。</p>
-<p><strong>“exec” Stanza 和&quot;script&quot; Stanza</strong><br>
-&quot;exec&quot;关键字配置job需要运行的命令，&quot;script&quot;关键字定义需要运行的脚本。</p>
-<h5 id="示例-v2">示例</h5>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># mountall.conf</span><br><span class="line">description “Mount filesystems on boot”</span><br><span class="line">start on startup</span><br><span class="line">stop on starting rcS</span><br><span class="line">...</span><br><span class="line">script</span><br><span class="line">  . /etc/default/rcS</span><br><span class="line">  [ -f /forcefsck ] &amp;&amp; force_fsck=”--force-fsck”</span><br><span class="line">  [ “$FSCKFIX”=”yes” ] &amp;&amp; fsck_fix=”--fsck-fix”</span><br><span class="line">    </span><br><span class="line">  ...</span><br><span class="line">   </span><br><span class="line">  exec mountall –daemon $force_fsck $fsck_fix</span><br><span class="line">end script</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>该job在系统启动时运行，负责挂载所有的文件系统。该job需要执行复杂的脚本，由&quot;script&quot;关键字定义；在脚本中，使用了 exec 来执行 mountall 命令。</p>
-<p><strong>“start on” Stanza 和&quot;stop on&quot; Stanza</strong><br>
-&quot;start on&quot;定义了触发job的所有event。&quot;start on&quot;的语法很简单，如下所示：</p>
-<p>start on EVENT [[KEY=]VALUE]… [and|or…]<br>
-EVENT 表示event的名字，可以在 start on 中指定多个event，表示该job的开始需要依赖多个event发生。多个event之间可以用 and 或者 or 组合，&quot;表示全部都必须发生&quot;或者&quot;其中之一发生即可&quot;等不同的依赖条件。除了event发生之外，job的启动还可以依赖特定的条件，因此在 start on 的 EVENT 之后，可以用 KEY=VALUE 来表示额外的条件，一般是某个环境变量(KEY)和特定值(VALUE)进行比较。如果只有一个变量，或者变量的顺序已知，则 KEY 可以省略。<br>
-&quot;stop on&quot;定义job在什么情况下需要停止。</p>
-<h5 id="示例-v3">示例</h5>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#dbus.conf</span><br><span class="line">description     “D-Bus system message bus”</span><br><span class="line"> </span><br><span class="line">start on local-filesystems</span><br><span class="line">stop on deconfiguring-networking</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h4 id="Job-和-Event-的相互协作"><a href="#Job-和-Event-的相互协作" class="headerlink" title="Job 和 Event 的相互协作"></a>Job 和 Event 的相互协作</h4><p>Upstart是由event触发job运行的一个系统，每一个程序的运行都由其依赖的event发生而触发的。系统初始化时，init进程开始运行，init进程自身会发出不同的event，这些event会触发一些job运行。每个job运行过程中会释放不同的event，这些event又将触发新的job运行。如此反复，直到整个系统正常运行起来。</p>
+<h4 id="job配置文件"><a href="#job配置文件" class="headerlink" title="job配置文件"></a>job配置文件</h4><p>每一个Job都是由一个job配置文件（Job Configuration File）定义的。job配置文件存放在/etc/init下面，是以.conf 作为文件后缀的文件。</p>
+<h5 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h5><p>~$:cat /etc/init/anacron.conf<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># anacron - anac(h)ronistic cron</span><br><span class="line">#</span><br><span class="line"># anacron executes commands at specific periods, but does not assume that</span><br><span class="line"># the machine is running continuously</span><br><span class="line"></span><br><span class="line">description	&quot;anac(h)ronistic cron&quot;</span><br><span class="line"></span><br><span class="line">start on runlevel [2345]</span><br><span class="line">stop on runlevel [!2345]</span><br><span class="line"></span><br><span class="line">expect fork</span><br><span class="line">normal exit 0</span><br><span class="line"></span><br><span class="line">exec anacron -s</span><br></pre></td></tr></table></figure></p>
+<h5 id="常见的sec"><a href="#常见的sec" class="headerlink" title="常见的sec"></a>常见的sec</h5><p><strong>“expect” Stanza</strong><br>为了启动，停止，重启和查询某个系统service。Upstart 需要跟踪该service所对应的进程。部分service为了将自己变成daemon，会采用fork调用， UpStart必须采用fork出来的进程号作为service的 PID。但是，UpStart 本身无法判断service进程是否fork了，所以需要指定expect告诉 UpStart 进程是否fork了。”expect fork”表示进程只会 fork 一次；”expect daemonize”表示进程会 fork 两次。</p>
+<p><strong>“exec” Stanza 和”script” Stanza</strong><br>“exec”关键字配置job需要运行的命令，”script”关键字定义需要运行的脚本。</p>
+<h5 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># mountall.conf</span><br><span class="line">description “Mount filesystems on boot”</span><br><span class="line">start on startup</span><br><span class="line">stop on starting rcS</span><br><span class="line">...</span><br><span class="line">script</span><br><span class="line">  . /etc/default/rcS</span><br><span class="line">  [ -f /forcefsck ] &amp;&amp; force_fsck=”--force-fsck”</span><br><span class="line">  [ “$FSCKFIX”=”yes” ] &amp;&amp; fsck_fix=”--fsck-fix”</span><br><span class="line">    </span><br><span class="line">  ...</span><br><span class="line">   </span><br><span class="line">  exec mountall –daemon $force_fsck $fsck_fix</span><br><span class="line">end script</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>该job在系统启动时运行，负责挂载所有的文件系统。该job需要执行复杂的脚本，由”script”关键字定义；在脚本中，使用了 exec 来执行 mountall 命令。</p>
+<p><strong>“start on” Stanza 和”stop on” Stanza</strong><br>“start on”定义了触发job的所有event。”start on”的语法很简单，如下所示：</p>
+<p>start on EVENT [[KEY=]VALUE]… [and|or…]<br>EVENT 表示event的名字，可以在 start on 中指定多个event，表示该job的开始需要依赖多个event发生。多个event之间可以用 and 或者 or 组合，”表示全部都必须发生”或者”其中之一发生即可”等不同的依赖条件。除了event发生之外，job的启动还可以依赖特定的条件，因此在 start on 的 EVENT 之后，可以用 KEY=VALUE 来表示额外的条件，一般是某个环境变量(KEY)和特定值(VALUE)进行比较。如果只有一个变量，或者变量的顺序已知，则 KEY 可以省略。<br>“stop on”定义job在什么情况下需要停止。</p>
+<h5 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#dbus.conf</span><br><span class="line">description     “D-Bus system message bus”</span><br><span class="line"> </span><br><span class="line">start on local-filesystems</span><br><span class="line">stop on deconfiguring-networking</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
 <p>D-Bus 是一个系统消息service，上面的配置文件表明当系统发出 local-filesystems event时启动 D-Bus；当系统发出 deconfiguring-networking event时，停止 D-Bus service。</p>
-<h3 id="session初始化">Session初始化</h3>
-<p>Session 就是一个用户会话，即用户从远程或者本地登入系统开始job，直到用户退出，整个过程构成一个会话。用户往往会为自己的会话做一个定制，如添加特定的命令别名等等。这些job都属于对特定会话的初始化操作，被称为 Session Init。在字符模式下，会话初始化相对简单。用户登录后只能启动一个 Shell，通过 shell 命令使用系统。各种 shell 程序都支持一个自动运行的启动脚本，比如~/.bashrc。用户在这些脚本中加入需要运行的定制化命令。在图形界面下，用户登录后看到的并不是一个 shell 提示符，而是一个桌面。一个完整的桌面环境包括 window manager，panel以及其它一些定义在/usr/share/gnome-session/sessions/下面的基本组件，此外还有一些辅助的应用程序，，比如 system monitors，panel applets，NetworkManager，Bluetooth，printers 等。当用户登录之后，这些组件都需要被初始化。目前启动各种图形组件和应用的job由 gnome-session 完成。过程如下：<br>
-以 Ubuntu 为例，当用户登录 Ubuntu 图形界面后，显示管理器(Display Manager)lightDM 启动 Xsession。Xsession 接着启动 gnome-session，gnome-session 负责其它的初始化job，然后就开始了一个 desktop session。如下所示，是传统的desktop session 启动过程：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">init</span><br><span class="line"> |- lightdm</span><br><span class="line"> |   |- Xorg</span><br><span class="line"> |   |- lightdm ---session-child</span><br><span class="line"> |        |- gnome-session --session=ubuntu</span><br><span class="line"> |             |- compiz</span><br><span class="line"> |             |- gwibber</span><br><span class="line"> |             |- nautilus</span><br><span class="line"> |             |- nm-applet</span><br><span class="line"> |             :</span><br><span class="line"> |             :</span><br><span class="line"> |</span><br><span class="line"> |- dbus-daemon --session</span><br><span class="line"> |</span><br><span class="line"> :</span><br><span class="line"> :</span><br></pre></td></tr></table></figure>
-<p>但是事实上一些应用和组件并不需要在会话初始化过程中启动，而是需要在需要它们的时候才启动。比如 Network Manager，一天之内用户很少切换网络设备，所以大部分时间 Network Manager service仅仅是在浪费系统资源。UpStart的基于event的按需启动的模式就可以很好地解决这些问题。下面给出了采用UpStart之后的会话初始化过程：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">init</span><br><span class="line"> |- lightdm</span><br><span class="line"> |   |- Xorg</span><br><span class="line"> |   |- lightdm ---session-child</span><br><span class="line"> |        |- session-init # &lt;-- upstart running as normal user</span><br><span class="line"> |             |- dbus-daemon --session</span><br><span class="line"> |             |- gnome-session --session=ubuntu</span><br><span class="line"> |             |- compiz</span><br><span class="line"> |             |- gwibber</span><br><span class="line"> |             |- nautilus</span><br><span class="line"> |             |- nm-applet</span><br><span class="line"> |             :</span><br><span class="line"> |             :</span><br><span class="line"> :</span><br><span class="line"> :</span><br></pre></td></tr></table></figure>
-<h3 id="upstart-v2">UpStart</h3>
-<h4 id="upstart系统中的run-level">Upstart系统中的run level</h4>
-<p>Upstart 的运作完全是基于job和event的。Job的状态变化和运行会引起event，进而触发其它job和event。而SysVInit是基于运行级别的，因为历史的原因，Linux 上的多数软件还是采用传统的 SysVInit 脚本启动方式，所以UpStart还是必须模拟老的SysVInit的run level，以便和多数现有软件兼容。</p>
-<h4 id="系统启动过程">系统启动过程</h4>
-<p>下图描述了 UpStart 的启动过程。<br>
-<img src="/2019/06/23/linux-init系统/startup.png" alt="upstart startup"><br>
-系统上电后运行GRUB载入内核。内核执行硬件初始化和内核自身初始化。在内核初始化的最后，内核将启动pid为1的Upstart init 进程。Upstart 进程执行一些自身的初始化job后，立即发出&quot;startup&quot; event。上图中用红色方框加红色箭头表示event，可以在左上方看到&quot;startup&quot;event。<br>
-所有依赖于&quot;startup&quot;event的job被触发，其中最重要的是mountall。mountall jog负责挂载系统中需要使用的文件系统，完成相应job后，mountall任务会发出以下event：local-filesystem，virtual-filesystem，all-swaps，<br>
-其中 virtual-filesystem event触发 udev 任务开始job。任务 udev 触发 upstart-udev-bridge 的job。Upstart-udev-bridge 会发出 net-device-up IFACE=lo event，表示本地回环 IP 网络已经准备就绪。同时，任务 mountall 继续执行，最终会发出 filesystem event。此时，任务 rc-sysinit 会被触发，因为 rc-sysinit 的 start on条件如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">start on filesystem and net-device-up IFACE=lo</span><br></pre></td></tr></table></figure>
+<h3 id="Session初始化"><a href="#Session初始化" class="headerlink" title="Session初始化"></a>Session初始化</h3><p>Session 就是一个用户会话，即用户从远程或者本地登入系统开始job，直到用户退出，整个过程构成一个会话。用户往往会为自己的会话做一个定制，如添加特定的命令别名等等。这些job都属于对特定会话的初始化操作，被称为 Session Init。在字符模式下，会话初始化相对简单。用户登录后只能启动一个 Shell，通过 shell 命令使用系统。各种 shell 程序都支持一个自动运行的启动脚本，比如~/.bashrc。用户在这些脚本中加入需要运行的定制化命令。在图形界面下，用户登录后看到的并不是一个 shell 提示符，而是一个桌面。一个完整的桌面环境包括 window manager，panel以及其它一些定义在/usr/share/gnome-session/sessions/下面的基本组件，此外还有一些辅助的应用程序，，比如 system monitors，panel applets，NetworkManager，Bluetooth，printers 等。当用户登录之后，这些组件都需要被初始化。目前启动各种图形组件和应用的job由 gnome-session 完成。过程如下：<br>以 Ubuntu 为例，当用户登录 Ubuntu 图形界面后，显示管理器(Display Manager)lightDM 启动 Xsession。Xsession 接着启动 gnome-session，gnome-session 负责其它的初始化job，然后就开始了一个 desktop session。如下所示，是传统的desktop session 启动过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">init</span><br><span class="line"> |- lightdm</span><br><span class="line"> |   |- Xorg</span><br><span class="line"> |   |- lightdm ---session-child</span><br><span class="line"> |        |- gnome-session --session=ubuntu</span><br><span class="line"> |             |- compiz</span><br><span class="line"> |             |- gwibber</span><br><span class="line"> |             |- nautilus</span><br><span class="line"> |             |- nm-applet</span><br><span class="line"> |             :</span><br><span class="line"> |             :</span><br><span class="line"> |</span><br><span class="line"> |- dbus-daemon --session</span><br><span class="line"> |</span><br><span class="line"> :</span><br><span class="line"> :</span><br></pre></td></tr></table></figure></p>
+<p>但是事实上一些应用和组件并不需要在会话初始化过程中启动，而是需要在需要它们的时候才启动。比如 Network Manager，一天之内用户很少切换网络设备，所以大部分时间 Network Manager service仅仅是在浪费系统资源。UpStart的基于event的按需启动的模式就可以很好地解决这些问题。下面给出了采用UpStart之后的会话初始化过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">init</span><br><span class="line"> |- lightdm</span><br><span class="line"> |   |- Xorg</span><br><span class="line"> |   |- lightdm ---session-child</span><br><span class="line"> |        |- session-init # &lt;-- upstart running as normal user</span><br><span class="line"> |             |- dbus-daemon --session</span><br><span class="line"> |             |- gnome-session --session=ubuntu</span><br><span class="line"> |             |- compiz</span><br><span class="line"> |             |- gwibber</span><br><span class="line"> |             |- nautilus</span><br><span class="line"> |             |- nm-applet</span><br><span class="line"> |             :</span><br><span class="line"> |             :</span><br><span class="line"> :</span><br><span class="line"> :</span><br></pre></td></tr></table></figure></p>
+<h3 id="UpStart"><a href="#UpStart" class="headerlink" title="UpStart"></a>UpStart</h3><h4 id="Upstart系统中的run-level"><a href="#Upstart系统中的run-level" class="headerlink" title="Upstart系统中的run level"></a>Upstart系统中的run level</h4><p>Upstart 的运作完全是基于job和event的。Job的状态变化和运行会引起event，进而触发其它job和event。而SysVInit是基于运行级别的，因为历史的原因，Linux 上的多数软件还是采用传统的 SysVInit 脚本启动方式，所以UpStart还是必须模拟老的SysVInit的run level，以便和多数现有软件兼容。</p>
+<h4 id="系统启动过程"><a href="#系统启动过程" class="headerlink" title="系统启动过程"></a>系统启动过程</h4><p>下图描述了 UpStart 的启动过程。<br><img src="/2019/06/23/linux-init系统/startup.png" alt="upstart startup"><br>系统上电后运行GRUB载入内核。内核执行硬件初始化和内核自身初始化。在内核初始化的最后，内核将启动pid为1的Upstart init 进程。Upstart 进程执行一些自身的初始化job后，立即发出”startup” event。上图中用红色方框加红色箭头表示event，可以在左上方看到”startup”event。<br>所有依赖于”startup”event的job被触发，其中最重要的是mountall。mountall jog负责挂载系统中需要使用的文件系统，完成相应job后，mountall任务会发出以下event：local-filesystem，virtual-filesystem，all-swaps，<br>其中 virtual-filesystem event触发 udev 任务开始job。任务 udev 触发 upstart-udev-bridge 的job。Upstart-udev-bridge 会发出 net-device-up IFACE=lo event，表示本地回环 IP 网络已经准备就绪。同时，任务 mountall 继续执行，最终会发出 filesystem event。此时，任务 rc-sysinit 会被触发，因为 rc-sysinit 的 start on条件如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">start on filesystem and net-device-up IFACE=lo</span><br></pre></td></tr></table></figure></p>
 <p>任务rc-sysinit调用telinit。Telinit任务会发出 runlevel event，触发执行/etc/init/rc.conf。rc.conf 执行/etc/rc$.d/目录下的所有脚本，和 SysVInit 非常类似。</p>
-<h3 id="upstart注意的事项">Upstart注意的事项</h3>
-<ol>
+<h3 id="Upstart注意的事项"><a href="#Upstart注意的事项" class="headerlink" title="Upstart注意的事项"></a>Upstart注意的事项</h3><ol>
 <li>fork次数，都通过fork 两次的技巧将自己变成后台service程序需要指定expect stanza。</li>
 <li>fork后即可用，后台程序在完成第二次fork的时候，必须保证service已经可用。因为UpStart通过派生计数来决定service是否处于就绪状态。</li>
 <li>遵守 SIGHUP 的要求，UpStart 会给daemon发送SIGHUP信号，此时，UpStart 希望该deamon做以下这些响应job：</li>
 </ol>
 <ul>
-<li>完成所有必要的重新初始化job，比如重新读取配置文件。这是因为 UpStart 的命令&quot;initctl reload&quot;被设计为可以让service在不重启的情况下更新配置。</li>
+<li>完成所有必要的重新初始化job，比如重新读取配置文件。这是因为 UpStart 的命令”initctl reload”被设计为可以让service在不重启的情况下更新配置。</li>
 <li>deamon必须继续使用现有的 PID，即收到 SIGHUP 时不能调用 fork。如果service必须在这里调用 fork，则等同于派生两次，参考上面的规则一的处理。这个规则保证了 UpStart 可以继续使用 PID 管理本service。</li>
 </ul>
-<ol start="4">
+<ol>
 <li>收到 SIGTEM 即 shutdown。</li>
 </ol>
 <ul>
 <li>当收到 SIGTERM 信号后，UpStart 希望deamon进程立即干净地退出，释放所有资源。如果一个进程在收到 SIGTERM 信号后不退出，Upstart 将对其发送 SIGKILL 信号。</li>
 </ul>
-<ol start="5">
-<li>initctl list 来查看所有job的概况，用 initctl stop 停止一个正在运行的job；用 initctl start 开始一个job；还可以用 initctl status 来查看一个job的状态；initctl restart 重启一个job；initctl reload 可以让一个正在运行的service重新载入配置文件。这些命令和传统的 service 命令十分相似。<br>
-~$:initctl list</li>
+<ol>
+<li>initctl list 来查看所有job的概况，用 initctl stop 停止一个正在运行的job；用 initctl start 开始一个job；还可以用 initctl status 来查看一个job的状态；initctl restart 重启一个job；initctl reload 可以让一个正在运行的service重新载入配置文件。这些命令和传统的 service 命令十分相似。<br>~$:initctl list<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">alsa-mixer-save stop/waiting</span><br><span class="line">avahi-daemon start/running, process 690</span><br><span class="line">mountall-net stop/waiting</span><br><span class="line">rc stop/waiting</span><br><span class="line">rsyslog start/running, process 482</span><br><span class="line">screen-cleanup stop/waiting</span><br><span class="line">tty4 start/running, process 859</span><br><span class="line">udev start/running, process 334</span><br><span class="line">upstart-udev-bridge start/running, process 304</span><br><span class="line">ureadahead-other stop/waiting</span><br></pre></td></tr></table></figure>
+</li>
 </ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">alsa-mixer-save stop/waiting</span><br><span class="line">avahi-daemon start/running, process 690</span><br><span class="line">mountall-net stop/waiting</span><br><span class="line">rc stop/waiting</span><br><span class="line">rsyslog start/running, process 482</span><br><span class="line">screen-cleanup stop/waiting</span><br><span class="line">tty4 start/running, process 859</span><br><span class="line">udev start/running, process 334</span><br><span class="line">upstart-udev-bridge start/running, process 304</span><br><span class="line">ureadahead-other stop/waiting</span><br></pre></td></tr></table></figure>
-<p>第一列是job名，比如 rsyslog。第二列是job的目标；第三列是job的状态。<br>
-UpStart 还提供了一些快捷命令来简化 initctl。比如 reload，restart，start，stop 等等。启动一个service可以简单地调用<br>
-~$:start job<br>
-这和执行 initctl start job是一样的效果。<br>
-一些命令是为了兼容其它系统(主要是 SysVInit)，比如显示 runlevel 用/sbin/runlevel 命令：<br>
-~$:runlevel<br>
-&gt; N 2</p>
+<p>第一列是job名，比如 rsyslog。第二列是job的目标；第三列是job的状态。<br>UpStart 还提供了一些快捷命令来简化 initctl。比如 reload，restart，start，stop 等等。启动一个service可以简单地调用<br>~$:start job<br>这和执行 initctl start job是一样的效果。<br>一些命令是为了兼容其它系统(主要是 SysVInit)，比如显示 runlevel 用/sbin/runlevel 命令：<br>~$:runlevel<br>> N 2</p>
 <p>在 Upstart 系统中，需要修改/etc/init/rc-sysinti.conf 中的 DEFAULT_RUNLEVEL 这个参数，以便修改默认启动运行级别。这一点和 SysVInit 的习惯有所不同，大家需要格外留意。</p>
-<h2 id="systemd">SystemD</h2>
-<p>SystemD和SysVInit 和 LSB init scripts 兼容，以及更快的启动速度，SystemD 提供了比 UpStart 更激进的并行启动能力。<br>
-为了减少系统启动时间，SystemD 的目标是尽可能启动更少的进程和尽可能将更多进程并行启动，同样地，UpStart 也试图实现这两个目标。UpStart 采用event驱动机制，当service需要的时候才通过event触发启动；不相干的service可以并行启动。下面的图形演示了 UpStart 相对于 SysVInit 在并发启动这个方面的改进：<br>
-<img src="/2019/06/23/linux-init系统/SystemD.png" alt="systemd"><br>
-假设有 7 个不同的启动项目， 比如 JobA、Job B 等等。在 SysVInit 中，每一个启动项目都由一个独立的脚本负责，它们由 SysVInit 顺序地，串行地调用。因此总的启动时间为 T1+T2+T3+T4+T5+T6+T7。其中一些任务有依赖关系，比如 A,B,C,D。而Job E和F却和A,B,C,D无关。这种情况下，UpStart 能够并发地运行任务{E，F，(A,B,C,D)}，使得总的启动时间减少为 T1+T2+T3。但是在 UpStart 中，有依赖关系的service还是必须先后启动。<br>
-让我们例举一些例子， Avahi service需要 D-Bus 提供的功能，因此 Avahi 的启动依赖于 D-Bus，UpStart 中，Avahi 必须等到 D-Bus 启动就绪之后才开始启动。类似的，livirtd 和 X11 都需要 HAL service先启动，而所有这些service都需要 syslog service记录日志，因此它们都必须等待 syslog service先启动起来。然而 httpd 和他们都没有关系，因此 httpd 可以和 Avahi 等service并发启动。<br>
-SystemD 能够更进一步提高并发性，即便对于那些 UpStart 认为存在相互依赖而必须串行的service，比如 Avahi 和 D-Bus 也可以并发启动。从而实现如下图所示的并发启动过程：<br>
-<img src="/2019/06/23/linux-init系统/SystemD_para.jpg" alt="systemD_para"><br>
-所有的任务都同时并发执行，总的启动时间被进一步降低为 T1。</p>
+<h2 id="SystemD"><a href="#SystemD" class="headerlink" title="SystemD"></a>SystemD</h2><p>SystemD和SysVInit 和 LSB init scripts 兼容，以及更快的启动速度，SystemD 提供了比 UpStart 更激进的并行启动能力。<br>为了减少系统启动时间，SystemD 的目标是尽可能启动更少的进程和尽可能将更多进程并行启动，同样地，UpStart 也试图实现这两个目标。UpStart 采用event驱动机制，当service需要的时候才通过event触发启动；不相干的service可以并行启动。下面的图形演示了 UpStart 相对于 SysVInit 在并发启动这个方面的改进：<br><img src="/2019/06/23/linux-init系统/SystemD.png" alt="systemd"><br>假设有 7 个不同的启动项目， 比如 JobA、Job B 等等。在 SysVInit 中，每一个启动项目都由一个独立的脚本负责，它们由 SysVInit 顺序地，串行地调用。因此总的启动时间为 T1+T2+T3+T4+T5+T6+T7。其中一些任务有依赖关系，比如 A,B,C,D。而Job E和F却和A,B,C,D无关。这种情况下，UpStart 能够并发地运行任务{E，F，(A,B,C,D)}，使得总的启动时间减少为 T1+T2+T3。但是在 UpStart 中，有依赖关系的service还是必须先后启动。<br>让我们例举一些例子， Avahi service需要 D-Bus 提供的功能，因此 Avahi 的启动依赖于 D-Bus，UpStart 中，Avahi 必须等到 D-Bus 启动就绪之后才开始启动。类似的，livirtd 和 X11 都需要 HAL service先启动，而所有这些service都需要 syslog service记录日志，因此它们都必须等待 syslog service先启动起来。然而 httpd 和他们都没有关系，因此 httpd 可以和 Avahi 等service并发启动。<br>SystemD 能够更进一步提高并发性，即便对于那些 UpStart 认为存在相互依赖而必须串行的service，比如 Avahi 和 D-Bus 也可以并发启动。从而实现如下图所示的并发启动过程：<br><img src="/2019/06/23/linux-init系统/SystemD_para.jpg" alt="systemD_para"><br>所有的任务都同时并发执行，总的启动时间被进一步降低为 T1。</p>
 <ul>
 <li>SystemD 提供按需启动能力。</li>
 <li>SystemD采用Cgroup 特性跟踪和管理进程的生命周期。</li>
 </ul>
-<p><img src="/2019/06/23/linux-init系统/find_pid.jpg" alt="find_pid"><br>
-如果 UpStart 找错了，将 p1作为service进程的 Pid，那么停止service的时候，UpStart 会试图杀死 p1进程，而真正的 p1进程则继续执行。换句话说该service就失去控制了。还有更加特殊的情况。比如，一个 CGI 程序会fork两次，从而脱离了和 Apache 的父子关系。当 Apache 进程被停止后，该 CGI 程序还在继续运行。而我们希望service停止后，所有由它所启动的相关进程也被停止。为了处理这类问题，UpStart 通过 strace 来跟踪 fork、exit 等系统调用，但是这种方法很笨拙，且缺乏可扩展性。SystemD 则利用了 Linux 内核的特性即 CGroup 来完成跟踪的任务。当停止service时，通过查询 CGroup，SystemD 可以确保找到所有的相关进程，从而干净地停止service。CGroup 已经出现了很久，它主要用来实现系统资源配额管理。CGroup 提供了类似文件系统的接口，使用方便。当进程创建子进程时，子进程会继承父进程的 CGroup。因此无论service如何启动新的子进程，所有的这些相关进程都会属于同一个 CGroup，SystemD 只需要简单地遍历指定的 CGroup 即可正确地找到所有的相关进程，将它们一一停止即可。</p>
+<p><img src="/2019/06/23/linux-init系统/find_pid.jpg" alt="find_pid"><br>如果 UpStart 找错了，将 p1作为service进程的 Pid，那么停止service的时候，UpStart 会试图杀死 p1进程，而真正的 p1进程则继续执行。换句话说该service就失去控制了。还有更加特殊的情况。比如，一个 CGI 程序会fork两次，从而脱离了和 Apache 的父子关系。当 Apache 进程被停止后，该 CGI 程序还在继续运行。而我们希望service停止后，所有由它所启动的相关进程也被停止。为了处理这类问题，UpStart 通过 strace 来跟踪 fork、exit 等系统调用，但是这种方法很笨拙，且缺乏可扩展性。SystemD 则利用了 Linux 内核的特性即 CGroup 来完成跟踪的任务。当停止service时，通过查询 CGroup，SystemD 可以确保找到所有的相关进程，从而干净地停止service。CGroup 已经出现了很久，它主要用来实现系统资源配额管理。CGroup 提供了类似文件系统的接口，使用方便。当进程创建子进程时，子进程会继承父进程的 CGroup。因此无论service如何启动新的子进程，所有的这些相关进程都会属于同一个 CGroup，SystemD 只需要简单地遍历指定的 CGroup 即可正确地找到所有的相关进程，将它们一一停止即可。</p>
 <ul>
 <li>启动挂载点和自动挂载的管理。</li>
 <li>实现事务性依赖关系管理。</li>
@@ -1382,8 +1580,7 @@ SystemD 能够更进一步提高并发性，即便对于那些 UpStart 认为存
 <li>扩展性：日志的适用范围很广，从嵌入式设备到超级计算机集群都可以满足需求。</li>
 <li>安全性：日志 文件是可以验证的，让无法检测的修改不再可能。</li>
 </ol>
-<h3 id="unit">Unit</h3>
-<p>一个service可以认为是一个unit；一个挂载点是一个unit；一个交换分区的配置是一个unit；等等，总共有12种unit</p>
+<h3 id="Unit"><a href="#Unit" class="headerlink" title="Unit"></a>Unit</h3><p>一个service可以认为是一个unit；一个挂载点是一个unit；一个交换分区的配置是一个unit；等等，总共有12种unit</p>
 <ul>
 <li>service ：系统服务</li>
 <li>socket ：进程间通信的socket</li>
@@ -1395,30 +1592,11 @@ SystemD 能够更进一步提高并发性，即便对于那些 UpStart 认为存
 <li>timer：定时器</li>
 <li>snapshot ：快照，它保存了系统当前的运行状态。</li>
 </ul>
-<h3 id="依赖关系">依赖关系</h3>
-<p>虽然 SystemD 将大量的启动job解除了依赖，使得它们可以并发启动。但还是存在有些任务，它们之间存在天生的依赖，不能用&quot;套接字激活&quot;(socket activation)、D-Bus activation 和 autofs 三大方法来解除依赖（三大方法详情见后续描述）。比如：挂载必须等待挂载点在文件系统中被创建；挂载也必须等待相应的物理设备就绪。为了解决这类依赖问题，SystemD 的配置单元之间可以彼此定义依赖关系。<br>
-SystemD 用配置单元定义文件中的关键字来描述配置单元之间的依赖关系。比如：unit A 依赖 unit B，可以在 unit B 的定义中用&quot;require A&quot;来表示。这样 SystemD 就会保证先启动 A 再启动 B。</p>
-<h3 id="systemd-事务">SystemD 事务</h3>
-<p>SystemD 能保证事务完整性。SystemD 的事务概念和数据库中的有所不同，主要是为了保证多个依赖的配置单元之间没有环形引用。比如 unit A、B、C，假如它们的依赖关系为:<br>
-<img src="/2019/06/23/linux-init系统/recurrent_dependency.jpg" alt="dependency"><br>
-存在循环依赖，那么 SystemD 将无法启动任意一个service。此时 SystemD 将会尝试解决这个问题，因为配置单元之间的依赖关系有两种：required 是强依赖；want 则是弱依赖，SystemD 将去掉 wants 关键字指定的依赖看看是否能打破循环。如果无法修复，SystemD 会报错。<br>
-SystemD 能够自动检测和修复这类配置错误，极大地减轻了管理员的排错负担。</p>
-<h3 id="target-和运行级别">Target 和运行级别</h3>
-<p>SystemD 用目标（target）替代了运行级别的概念，提供了更大的灵活性，如您可以继承一个已有的目标，并添加其它service，来创建自己的目标。下表列举了 SystemD 下的目标和常见 runlevel 的对应关系：<br>
-SysVInit 运行级别|SystemD 目标|备注<br>
-0|runlevel0.target, poweroff.target|关闭系统。<br>
-1, s, single|runlevel1.target, rescue.target|单用户模式。<br>
-2, 4|runlevel2.target, runlevel4.target, multi-user.target|用户定义/域特定运行级别。默认等同于 3。<br>
-3|runlevel3.target, multi-user.target|多用户，非图形化。用户可以通过多个控制台或网络登录。<br>
-5|runlevel5.target, graphical.target|多用户，图形化。通常为所有运行级别 3 的service外加图形化登录。<br>
-6|runlevel6.target, reboot.target|重启<br>
-emergency|emergency.target|紧急Shell</p>
-<h3 id="systemd-的并发启动原理">SystemD 的并发启动原理</h3>
-<p>并发启动原理之一：解决 socket 依赖<br>
-并发启动原理之二：解决 D-Bus 依赖<br>
-并发启动原理之三：解决文件系统依赖</p>
-<h3 id="systemd-的使用">SystemD 的使用</h3>
-<ul>
+<h3 id="依赖关系"><a href="#依赖关系" class="headerlink" title="依赖关系"></a>依赖关系</h3><p>虽然 SystemD 将大量的启动job解除了依赖，使得它们可以并发启动。但还是存在有些任务，它们之间存在天生的依赖，不能用”套接字激活”(socket activation)、D-Bus activation 和 autofs 三大方法来解除依赖（三大方法详情见后续描述）。比如：挂载必须等待挂载点在文件系统中被创建；挂载也必须等待相应的物理设备就绪。为了解决这类依赖问题，SystemD 的配置单元之间可以彼此定义依赖关系。<br>SystemD 用配置单元定义文件中的关键字来描述配置单元之间的依赖关系。比如：unit A 依赖 unit B，可以在 unit B 的定义中用”require A”来表示。这样 SystemD 就会保证先启动 A 再启动 B。</p>
+<h3 id="SystemD-事务"><a href="#SystemD-事务" class="headerlink" title="SystemD 事务"></a>SystemD 事务</h3><p>SystemD 能保证事务完整性。SystemD 的事务概念和数据库中的有所不同，主要是为了保证多个依赖的配置单元之间没有环形引用。比如 unit A、B、C，假如它们的依赖关系为:<br><img src="/2019/06/23/linux-init系统/recurrent_dependency.jpg" alt="dependency"><br>存在循环依赖，那么 SystemD 将无法启动任意一个service。此时 SystemD 将会尝试解决这个问题，因为配置单元之间的依赖关系有两种：required 是强依赖；want 则是弱依赖，SystemD 将去掉 wants 关键字指定的依赖看看是否能打破循环。如果无法修复，SystemD 会报错。<br>SystemD 能够自动检测和修复这类配置错误，极大地减轻了管理员的排错负担。</p>
+<h3 id="Target-和运行级别"><a href="#Target-和运行级别" class="headerlink" title="Target 和运行级别"></a>Target 和运行级别</h3><p>SystemD 用目标（target）替代了运行级别的概念，提供了更大的灵活性，如您可以继承一个已有的目标，并添加其它service，来创建自己的目标。下表列举了 SystemD 下的目标和常见 runlevel 的对应关系：<br>SysVInit 运行级别|SystemD 目标|备注<br>0|runlevel0.target, poweroff.target|关闭系统。<br>1, s, single|runlevel1.target, rescue.target|单用户模式。<br>2, 4|runlevel2.target, runlevel4.target, multi-user.target|用户定义/域特定运行级别。默认等同于 3。<br>3|runlevel3.target, multi-user.target|多用户，非图形化。用户可以通过多个控制台或网络登录。<br>5|runlevel5.target, graphical.target|多用户，图形化。通常为所有运行级别 3 的service外加图形化登录。<br>6|runlevel6.target, reboot.target|重启<br>emergency|emergency.target|紧急Shell</p>
+<h3 id="SystemD-的并发启动原理"><a href="#SystemD-的并发启动原理" class="headerlink" title="SystemD 的并发启动原理"></a>SystemD 的并发启动原理</h3><p>并发启动原理之一：解决 socket 依赖<br>并发启动原理之二：解决 D-Bus 依赖<br>并发启动原理之三：解决文件系统依赖</p>
+<h3 id="SystemD-的使用"><a href="#SystemD-的使用" class="headerlink" title="SystemD 的使用"></a>SystemD 的使用</h3><ul>
 <li>后台service进程代码不需要执行两次fork来实现后台deamon，只需要实现service本身的主循环即可。</li>
 <li>不要调用 setsid()，交给 SystemD 处理</li>
 <li>不再需要维护 pid 文件。</li>
@@ -1429,34 +1607,7 @@ emergency|emergency.target|紧急Shell</p>
 <li>使用 sd_notify()函数通知 SystemD service自己的状态改变。一般地，当service初始化结束，进入service就绪状态时，可以调用它。</li>
 <li>Unit 文件的编写，详细可点击查看<a href></a>。</li>
 </ul>
-<h3 id="systemctl-工具">systemctl 工具</h3>
-<h3 id="systemctl-工具-v2">systemctl 工具</h3>
-<p>~$:systemctl list-units     # 列出正在运行的 Unit<br>
-~$:systemctl list-units --all   # 列出所有Unit，包括没有找到配置文件的或者启动失败的<br>
-~$:systemctl list-units --all --state=inactive      # 列出所有没有运行的 Unit<br>
-~$:systemctl list-units --failed    # 列出所有加载失败的 Unit<br>
-~$:systemctl list-units --type=service  # 列出所有正在运行的、类型为 service 的 Unit<br>
-~$:systemctl list-unit-files    # 列出所有配置文件<br>
-~$:systemctl list-unit-files --type=service    # 列出指定类型的配置文件<br>
-~$:systemctl start foo.service	# 用来启动一个service (并不会重启现有的)<br>
-~$:systemctl stop foo.service	# 用来停止一个service (并不会重启现有的)。<br>
-~$:systemctl restart foo.service	# 用来停止并启动一个service。<br>
-~$:systemctl reload foo.service	    # 当支持时，重新装载配置文件而不中断等待操作。<br>
-~$:systemctl condrestart foo.service    # 如果service正在运行那么重启它。<br>
-~$:systemctl status foo.service	    # 汇报service是否正在运行。<br>
-~$:systemctl list-unit-files --type=service     # 用来列出可以启动或停止的service列表。<br>
-~$:systemctl enable foo.service     # 在下次启动时或满足其他触发条件时设置service为启用<br>
-~$:systemctl disable foo.service	# 在下次启动时或满足其他触发条件时设置service为禁用<br>
-~$:systemctl is-enabled foo.service     # 用来检查一个service在当前环境下被配置为启用还是禁用。<br>
-~$:systemctl list-unit-files --type=service     # 输出在各个运行级别下service的启用和禁用情况<br>
-~$:systemctl daemon-reload	    # 创建新service文件或者变更设置时使用。<br>
-~$:systemctl isolate multi-user.target (OR systemctl isolate runlevel3.target OR telinit 3)	    # 改变至多用户运行级别<br>
-~$:ls /etc/SystemD/system/*.wants/foo.service      # 用来列出该service在哪些运行级别下启用和禁用。<br>
-~$:systemctl reboot     # 重启机器<br>
-~$:systemctl poweroff   # 关机<br>
-~$:systemctl suspend    # 待机<br>
-~$:systemctl hibernate  # 休眠<br>
-~$:systemctl hybrid-sleep   # 混合休眠模式（同时休眠到硬盘并待机）</p>
+<h3 id="systemctl-工具"><a href="#systemctl-工具" class="headerlink" title="systemctl 工具"></a>systemctl 工具</h3><h3 id="systemctl-工具-1"><a href="#systemctl-工具-1" class="headerlink" title="systemctl 工具"></a>systemctl 工具</h3><p>~$:systemctl list-units     # 列出正在运行的 Unit<br>~$:systemctl list-units —all   # 列出所有Unit，包括没有找到配置文件的或者启动失败的<br>~$:systemctl list-units —all —state=inactive      # 列出所有没有运行的 Unit<br>~$:systemctl list-units —failed    # 列出所有加载失败的 Unit<br>~$:systemctl list-units —type=service  # 列出所有正在运行的、类型为 service 的 Unit<br>~$:systemctl list-unit-files    # 列出所有配置文件<br>~$:systemctl list-unit-files —type=service    # 列出指定类型的配置文件<br>~$:systemctl start foo.service    # 用来启动一个service (并不会重启现有的)<br>~$:systemctl stop foo.service    # 用来停止一个service (并不会重启现有的)。<br>~$:systemctl restart foo.service    # 用来停止并启动一个service。<br>~$:systemctl reload foo.service        # 当支持时，重新装载配置文件而不中断等待操作。<br>~$:systemctl condrestart foo.service    # 如果service正在运行那么重启它。<br>~$:systemctl status foo.service        # 汇报service是否正在运行。<br>~$:systemctl list-unit-files —type=service     # 用来列出可以启动或停止的service列表。<br>~$:systemctl enable foo.service     # 在下次启动时或满足其他触发条件时设置service为启用<br>~$:systemctl disable foo.service    # 在下次启动时或满足其他触发条件时设置service为禁用<br>~$:systemctl is-enabled foo.service     # 用来检查一个service在当前环境下被配置为启用还是禁用。<br>~$:systemctl list-unit-files —type=service     # 输出在各个运行级别下service的启用和禁用情况<br>~$:systemctl daemon-reload        # 创建新service文件或者变更设置时使用。<br>~$:systemctl isolate multi-user.target (OR systemctl isolate runlevel3.target OR telinit 3)        # 改变至多用户运行级别<br>~$:ls /etc/SystemD/system/*.wants/foo.service      # 用来列出该service在哪些运行级别下启用和禁用。<br>~$:systemctl reboot     # 重启机器<br>~$:systemctl poweroff   # 关机<br>~$:systemctl suspend    # 待机<br>~$:systemctl hibernate  # 休眠<br>~$:systemctl hybrid-sleep   # 混合休眠模式（同时休眠到硬盘并待机）</p>
 <p>一般只有管理员才可以关机。正常情况下系统不应该允许 SSH 远程登录的用户执行关机命令。否则其他用户正在job，一个用户把系统关了就不好了。使用logind解决这个问题。logind 不是 pid-1 的 init 进程。它的作用和 UpStart 的 session init 类似，但功能要丰富很多，它能够管理几乎所有用户会话(session)相关的事情。logind 不仅是 ConsoleKit 的替代，它可以：</p>
 <ul>
 <li>维护，跟踪会话和用户登录情况。</li>
@@ -1465,17 +1616,8 @@ emergency|emergency.target|紧急Shell</p>
 <li>负责电源管理的组合键处理，比如用户按下电源键，将系统切换至睡眠状态。</li>
 <li>多席位(multi-seat) 管理。</li>
 </ul>
-<h2 id="sysvinit-upstart-systemd比较">SysVInit，Upstart，SystemD比较</h2>
-<p>SysVInit比较简单。Service开发人员只需要编写启动和停止脚本，将 service 添加/删除到某个 runlevel 时，只需要执行一些创建/删除软连接文件的基本操作。<br>
-其次，SysVInit 的另一个优点是确定的执行顺序：脚本严格按照启动数字的大小顺序执行，一个执行完毕再执行下一个，这非常有益于错误排查。UpStart 和 SystemD 支持并发启动，导致没有人可以确定地了解具体的启动顺序，排错不易。但是串行地执行脚本导致 SysVInit 运行效率较慢。<br>
-可以看到，UpStart 的设计比 SysVInit 更加先进。<br>
-SystemD 的最大特点有两个：并发启动能力强，极大地提高了系统启动速度；用 CGroup 统计跟踪子进程，干净可靠。<br>
-此外，和其前任不同的地方在于，SystemD 已经不仅仅是一个初始化系统了。SystemD 出色地替代了 SysVInit 的所有功能，但它并未就此自满。因为 init 进程是系统所有进程的父进程这样的特殊性，SystemD 非常适合提供曾经由其他service提供的功能，比如定时任务 (以前由 crond 完成)；会话管理 (以前由 ConsoleKit/PolKit 等管理) 。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html</a><br>
-2.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-</a><br>
-3.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-</a><br>
-4.<a href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a></p>
+<h2 id="SysVInit，Upstart，SystemD比较"><a href="#SysVInit，Upstart，SystemD比较" class="headerlink" title="SysVInit，Upstart，SystemD比较"></a>SysVInit，Upstart，SystemD比较</h2><p>SysVInit比较简单。Service开发人员只需要编写启动和停止脚本，将 service 添加/删除到某个 runlevel 时，只需要执行一些创建/删除软连接文件的基本操作。<br>其次，SysVInit 的另一个优点是确定的执行顺序：脚本严格按照启动数字的大小顺序执行，一个执行完毕再执行下一个，这非常有益于错误排查。UpStart 和 SystemD 支持并发启动，导致没有人可以确定地了解具体的启动顺序，排错不易。但是串行地执行脚本导致 SysVInit 运行效率较慢。<br>可以看到，UpStart 的设计比 SysVInit 更加先进。<br>SystemD 的最大特点有两个：并发启动能力强，极大地提高了系统启动速度；用 CGroup 统计跟踪子进程，干净可靠。<br>此外，和其前任不同的地方在于，SystemD 已经不仅仅是一个初始化系统了。SystemD 出色地替代了 SysVInit 的所有功能，但它并未就此自满。因为 init 进程是系统所有进程的父进程这样的特殊性，SystemD 非常适合提供曾经由其他service提供的功能，比如定时任务 (以前由 crond 完成)；会话管理 (以前由 ConsoleKit/PolKit 等管理) 。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html</a><br>2.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-</a><br>3.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-</a><br>4.<a href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a></p>
 
           
         
@@ -1635,30 +1777,14 @@ SystemD 的最大特点有两个：并发启动能力强，极大地提高了系
       
         
           
-            <h2 id="常用的截屏工具">常用的截屏工具</h2>
-<ul>
+            <h2 id="常用的截屏工具"><a href="#常用的截屏工具" class="headerlink" title="常用的截屏工具"></a>常用的截屏工具</h2><ul>
 <li>screenshot</li>
 <li>scrot</li>
 </ul>
-<p>screentshot是系统自带的截屏工具，可以部分截取，直接按win键搜索可运行。<br>
-scrot需要安装，这个工具需要从终端运行，截图默认保存在当前目录。</p>
-<h2 id="screenshot">screenshot</h2>
-<h2 id="scrot">scrot</h2>
-<p>scrot [options] [filename]</p>
-<h3 id="参数介绍">参数介绍</h3>
-<p>scrot [-vusbcm]<br>
-不加参数，直接截取整个screen<br>
--v  查看scort版本<br>
--u  截取当前鼠标焦点所在window<br>
--s  执行命令之后，点击鼠标截取相对应的window。<br>
--b  包含当前window的边界<br>
-–delay [NUM]   延长NUM秒之后截图<br>
--c  设置delay的时候显示数字延迟<br>
-–quliaty [NUM] 指定screenshot image的质量，从$1-100$<br>
-–thumb [NUM]   缩略图，是原始大小的百分之多少。。。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.howtoforge.com/tutorial/how-to-take-screenshots-in-linux-with-scrot/" target="_blank" rel="noopener">https://www.howtoforge.com/tutorial/how-to-take-screenshots-in-linux-with-scrot/</a><br>
-2.<a href="http://awesomescreenshot.com/" target="_blank" rel="noopener">http://awesomescreenshot.com/</a></p>
+<p>screentshot是系统自带的截屏工具，可以部分截取，直接按win键搜索可运行。<br>scrot需要安装，这个工具需要从终端运行，截图默认保存在当前目录。</p>
+<h2 id="screenshot"><a href="#screenshot" class="headerlink" title="screenshot"></a>screenshot</h2><h2 id="scrot"><a href="#scrot" class="headerlink" title="scrot"></a>scrot</h2><p>scrot [options] [filename]</p>
+<h3 id="参数介绍"><a href="#参数介绍" class="headerlink" title="参数介绍"></a>参数介绍</h3><p>scrot [-vusbcm]<br>    不加参数，直接截取整个screen<br>    -v  查看scort版本<br>    -u  截取当前鼠标焦点所在window<br>    -s  执行命令之后，点击鼠标截取相对应的window。<br>    -b  包含当前window的边界<br>    —delay [NUM]   延长NUM秒之后截图<br>    -c  设置delay的时候显示数字延迟<br>    —quliaty [NUM] 指定screenshot image的质量，从$1-100$<br>    —thumb [NUM]   缩略图，是原始大小的百分之多少。。。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.howtoforge.com/tutorial/how-to-take-screenshots-in-linux-with-scrot/" target="_blank" rel="noopener">https://www.howtoforge.com/tutorial/how-to-take-screenshots-in-linux-with-scrot/</a><br>2.<a href="http://awesomescreenshot.com/" target="_blank" rel="noopener">http://awesomescreenshot.com/</a></p>
 
           
         
@@ -1818,15 +1944,10 @@ scrot需要安装，这个工具需要从终端运行，截图默认保存在当
       
         
           
-            <h2 id="指定长度list初始化">指定长度list初始化</h2>
-<p>想要找到初始化指定长度list最快的方法。<br>
-方法一：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">array = [[]] * length</span><br></pre></td></tr></table></figure>
-<p>方法二</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">array = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> range(length)]</span><br></pre></td></tr></table></figure>
+            <h2 id="指定长度list初始化"><a href="#指定长度list初始化" class="headerlink" title="指定长度list初始化"></a>指定长度list初始化</h2><p>想要找到初始化指定长度list最快的方法。<br>方法一：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">array = [[]] * length</span><br></pre></td></tr></table></figure></p>
+<p>方法二<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">array = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> range(length)]</span><br></pre></td></tr></table></figure></p>
 <p>事实上，只有第二种方法是对的。第一种方法中，arrary中的10个[]都指向了同一个对象。。</p>
-<h2 id="示例">示例</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">v1 = [[]]*length</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(length):</span><br><span class="line">    v1[i].append(i)</span><br><span class="line">print(v1)</span><br><span class="line"><span class="comment"># [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]]</span></span><br><span class="line"></span><br><span class="line">v2 = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> range(length)]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(length):</span><br><span class="line">    v2[i].append(i)</span><br><span class="line"></span><br><span class="line">print(v2)</span><br><span class="line"><span class="comment"># [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]</span></span><br></pre></td></tr></table></figure>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">v1 = [[]]*length</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(length):</span><br><span class="line">    v1[i].append(i)</span><br><span class="line">print(v1)</span><br><span class="line"><span class="comment"># [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]]</span></span><br><span class="line"></span><br><span class="line">v2 = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> range(length)]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(length):</span><br><span class="line">    v2[i].append(i)</span><br><span class="line"></span><br><span class="line">print(v2)</span><br><span class="line"><span class="comment"># [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]</span></span><br></pre></td></tr></table></figure>
 
           
         
@@ -1998,547 +2119,47 @@ scrot需要安装，这个工具需要从终端运行，截图默认保存在当
       
         
           
-            <h2 id="pipe">PIPE</h2>
-<p>管道命令仅会处理stdout并不会处理stderrout，管道命令必须要能接受前一个命令传回来的数据成为stdinput</p>
-<h2 id="head-tail">head tail</h2>
-<h2 id="cut">cut</h2>
-<h3 id="参数说明">参数说明</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cut -d &apos;分隔字符&apos; -f (fields)fields为数字</span><br><span class="line">cut -c 字符范围</span><br></pre></td></tr></table></figure>
-<h3 id="示例">示例</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cut -d &apos;:&apos; -f 2,3</span><br><span class="line">echo $PATH | cut -d &apos;:&apos; -f 2,4</span><br><span class="line">cut -c 20-30</span><br><span class="line">export | cut -c 12-</span><br><span class="line">不过cut 对于多个空格当做分隔字符的处理做的不够好</span><br></pre></td></tr></table></figure>
-<h2 id="grep">grep</h2>
-<h3 id="参数说明-v2">参数说明</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">grep [-aincv] [--color=auto] &apos;关键字&apos; filename</span><br><span class="line">	-a 将binary文件以text的方式查找数据</span><br><span class="line">	-i 忽略大小写</span><br><span class="line">	-c 计算查找到的字符串的个数</span><br><span class="line">	-n 顺便输出行号</span><br><span class="line">	-v 反向选择</span><br><span class="line">grep -n  &apos;^$&apos; regular_express</span><br></pre></td></tr></table></figure>
-<h3 id="示例-v2">示例</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">grep &apos;^the&apos; file</span><br><span class="line">grep &apos;[^[:lower:]]&apos; file</span><br><span class="line">grep &apos;\.$&apos; file</span><br><span class="line">grep &apos;^[^a-zA-Z]&apos; file</span><br><span class="line">grep &apos;go\&#123;2,3\&#125;g&apos; file</span><br><span class="line">对比</span><br><span class="line">ls -l /etc/a*</span><br><span class="line">grep -n &apos;^a.*/&apos;</span><br></pre></td></tr></table></figure>
-<h2 id="dmesg">dmesg</h2>
-<p>dmesg 查看内核信息<br>
-dmesg | grep -n A3 B2 ‘eth’<br>
-	A --after  B --before</p>
-<h2 id="last">last</h2>
-<p>last | grep ‘mxx’ | cut -d ‘’ -f 1</p>
-<h2 id="sort-wc-uniq">sort,wc,uniq</h2>
-<h3 id="参数说明-v3">参数说明</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sort 	排序</span><br><span class="line">	[-fbMnrutk] [file]</span><br><span class="line">		-f 不区分大小写</span><br><span class="line">		-u uniq</span><br><span class="line">		-t 分隔符</span><br><span class="line">		-k 以第几个字段进行排序</span><br><span class="line">		-n 以数字进行排序(默认是以字母)</span><br><span class="line">		-m 反向排序</span><br></pre></td></tr></table></figure>
-<h3 id="示例-v3">示例</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sort -t &apos;:&apos; -k 3 -n /etc/passwd	</span><br><span class="line">cat /etc/passwd | sort -t &apos;:&apos; -k 3 -n</span><br></pre></td></tr></table></figure>
-<h2 id="uniq">uniq</h2>
-<p>uniq 去重<br>
-	[-il] [file]<br>
-	-i 不区分大小写<br>
-	-c 进行计数</p>
-<pre><code>last | cut -d ' ' -f 1 | sort | uniq
-首先需要排序　才能去重	
-</code></pre>
-<p>last | cut -d ’ ’ -f 1 | sort | uniq -c</p>
-<h2 id="tee">tee</h2>
-<p>tee双重重定向将一份数据可以同时传到文件内以及屏幕中<br>
-	last | tee last.list | sort</p>
-<h2 id="tr">tr</h2>
-<p>tr 删除一段文字或者对文字内容进行替换(如删除dos中的换行符^M)<br>
-	[-ds]<br>
-	-d 删除信息中的某个字串<br>
-	-s 替换重复字符</p>
-<pre><code>last | tr '[a-z]'  '[A-Z]'
-echo $PATH -d ':/'
-cat /root/passwd | tr -d '\r' &gt; passwd.linux
-</code></pre>
-<h2 id="col">col</h2>
-<p>col 简单处理<br>
-	[-xb]<br>
-	-x 将tab键换成空格键</p>
+            <h2 id="PIPE"><a href="#PIPE" class="headerlink" title="PIPE"></a>PIPE</h2><p>管道命令仅会处理stdout并不会处理stderrout，管道命令必须要能接受前一个命令传回来的数据成为stdinput</p>
+<h2 id="head-tail"><a href="#head-tail" class="headerlink" title="head tail"></a>head tail</h2><h2 id="cut"><a href="#cut" class="headerlink" title="cut"></a>cut</h2><h3 id="参数说明"><a href="#参数说明" class="headerlink" title="参数说明"></a>参数说明</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cut -d &apos;分隔字符&apos; -f (fields)fields为数字</span><br><span class="line">cut -c 字符范围</span><br></pre></td></tr></table></figure>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cut -d &apos;:&apos; -f 2,3</span><br><span class="line">echo $PATH | cut -d &apos;:&apos; -f 2,4</span><br><span class="line">cut -c 20-30</span><br><span class="line">export | cut -c 12-</span><br><span class="line">不过cut 对于多个空格当做分隔字符的处理做的不够好</span><br></pre></td></tr></table></figure>
+<h2 id="grep"><a href="#grep" class="headerlink" title="grep"></a>grep</h2><h3 id="参数说明-1"><a href="#参数说明-1" class="headerlink" title="参数说明"></a>参数说明</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">grep [-aincv] [--color=auto] &apos;关键字&apos; filename</span><br><span class="line">	-a 将binary文件以text的方式查找数据</span><br><span class="line">	-i 忽略大小写</span><br><span class="line">	-c 计算查找到的字符串的个数</span><br><span class="line">	-n 顺便输出行号</span><br><span class="line">	-v 反向选择</span><br><span class="line">grep -n  &apos;^$&apos; regular_express</span><br></pre></td></tr></table></figure>
+<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">grep &apos;^the&apos; file</span><br><span class="line">grep &apos;[^[:lower:]]&apos; file</span><br><span class="line">grep &apos;\.$&apos; file</span><br><span class="line">grep &apos;^[^a-zA-Z]&apos; file</span><br><span class="line">grep &apos;go\&#123;2,3\&#125;g&apos; file</span><br><span class="line">对比</span><br><span class="line">ls -l /etc/a*</span><br><span class="line">grep -n &apos;^a.*/&apos;</span><br></pre></td></tr></table></figure>
+<h2 id="dmesg"><a href="#dmesg" class="headerlink" title="dmesg"></a>dmesg</h2><p>dmesg 查看内核信息<br>dmesg | grep -n A3 B2 ‘eth’<br>    A —after  B —before</p>
+<h2 id="last"><a href="#last" class="headerlink" title="last"></a>last</h2><p>last | grep ‘mxx’ | cut -d ‘’ -f 1</p>
+<h2 id="sort-wc-uniq"><a href="#sort-wc-uniq" class="headerlink" title="sort,wc,uniq"></a>sort,wc,uniq</h2><h3 id="参数说明-2"><a href="#参数说明-2" class="headerlink" title="参数说明"></a>参数说明</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sort 	排序</span><br><span class="line">	[-fbMnrutk] [file]</span><br><span class="line">		-f 不区分大小写</span><br><span class="line">		-u uniq</span><br><span class="line">		-t 分隔符</span><br><span class="line">		-k 以第几个字段进行排序</span><br><span class="line">		-n 以数字进行排序(默认是以字母)</span><br><span class="line">		-m 反向排序</span><br></pre></td></tr></table></figure>
+<h3 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sort -t &apos;:&apos; -k 3 -n /etc/passwd	</span><br><span class="line">cat /etc/passwd | sort -t &apos;:&apos; -k 3 -n</span><br></pre></td></tr></table></figure>
+<h2 id="uniq"><a href="#uniq" class="headerlink" title="uniq"></a>uniq</h2><p>uniq 去重<br>    [-il] [file]<br>    -i 不区分大小写<br>    -c 进行计数    </p>
+<pre><code>last | cut -d &#39; &#39; -f 1 | sort | uniq
+首先需要排序　才能去重    
+</code></pre><p>last | cut -d ‘ ‘ -f 1 | sort | uniq -c</p>
+<h2 id="tee"><a href="#tee" class="headerlink" title="tee"></a>tee</h2><p>tee双重重定向将一份数据可以同时传到文件内以及屏幕中<br>    last | tee last.list | sort </p>
+<h2 id="tr"><a href="#tr" class="headerlink" title="tr"></a>tr</h2><p>tr 删除一段文字或者对文字内容进行替换(如删除dos中的换行符^M)<br>    [-ds]<br>    -d 删除信息中的某个字串<br>    -s 替换重复字符</p>
+<pre><code>last | tr &#39;[a-z]&#39;  &#39;[A-Z]&#39;
+echo $PATH -d &#39;:/&#39;
+cat /root/passwd | tr -d &#39;\r&#39; &gt; passwd.linux
+</code></pre><h2 id="col"><a href="#col" class="headerlink" title="col"></a>col</h2><p>col 简单处理<br>    [-xb]<br>    -x 将tab键换成空格键</p>
 <pre><code>cat  manpath.config | col -x | cat -A | more
-</code></pre>
-<h2 id="join">join</h2>
-<p>join 将两个文件中具有相同数据的一行相加<br>
-	join [-ti12] file1 file2<br>
-	-i 大小写忽视<br>
-	join -t ‘:’ passwd shadow<br>
-	join -t ‘:’ -1 4 passwd -2 3 group</p>
-<h2 id="paste">paste</h2>
-<p>paste直接将两行粘在一起，默认并以tab键分开<br>
-	-d后面可以加分隔字符默认以tab分隔<br>
-	-表示来自standard input的数据的意思<br>
-	paste shadow passwd<br>
-	cat shadow | paste passwd - | head -n 3</p>
-<h2 id="expand">expand</h2>
-<p>expand将tab键换成空格默认是8个空格<br>
-	-t 参数可以自行设定空格数<br>
-	nl file | expand -t 6 - | cat -A</p>
-<h2 id="split">split</h2>
-<p>split [-bl] file PREFIX<br>
-	-b后面加文件欲切割成的文件大小<br>
-	-l以行数来切割<br>
-	split -b 1M /etc/termcap termcap<br>
-	ls -l termcap*</p>
+</code></pre><h2 id="join"><a href="#join" class="headerlink" title="join"></a>join</h2><p>join 将两个文件中具有相同数据的一行相加<br>    join [-ti12] file1 file2<br>    -i 大小写忽视<br>    join -t ‘:’ passwd shadow<br>    join -t ‘:’ -1 4 passwd -2 3 group</p>
+<h2 id="paste"><a href="#paste" class="headerlink" title="paste"></a>paste</h2><p>paste直接将两行粘在一起，默认并以tab键分开<br>    -d后面可以加分隔字符默认以tab分隔<br>    -表示来自standard input的数据的意思<br>    paste shadow passwd<br>    cat shadow | paste passwd - | head -n 3</p>
+<h2 id="expand"><a href="#expand" class="headerlink" title="expand"></a>expand</h2><p>expand将tab键换成空格默认是8个空格<br>    -t 参数可以自行设定空格数<br>    nl file | expand -t 6 - | cat -A</p>
+<h2 id="split"><a href="#split" class="headerlink" title="split"></a>split</h2><p>split [-bl] file PREFIX<br>    -b后面加文件欲切割成的文件大小<br>    -l以行数来切割<br>    split -b 1M /etc/termcap termcap<br>    ls -l termcap*</p>
 <pre><code>cat termcap* &gt;&gt; termcapback
 
 ls -l / | spilt -l 10 -lsroot
 wc -l lsroot
-</code></pre>
-<h2 id="xargs">xargs</h2>
-<p>xargs产生某个命令的参数<br>
-	[-pne0]<br>
-	-p 执行每个命令询问用户<br>
-	-e 是EOF的意思，后面可接一个字符，当xargs遇到这个字符，便会停止				操作	<br>
-	-n 后面接次数，每次command命令执行时，要使用几个参数<br>
--用来代替stdout以及stdin<br>
-tar -cvf - /home | tar xvf -</p>
-<h2 id="sed-工具">sed 工具</h2>
-<p>[-in]<br>
--i	直接修改文件内容<br>
--n	静默<br>
--e 直接在shell下编辑<br>
--c replace<br>
--a append<br>
--p print</p>
-<p>nl file | sed '2,3d’<br>
-nl file | sed '$a add a test’<br>
-nl file | sed -n '5,7p’<br>
-nl file | sed '2,5c jkadfk<br>
-&gt;fdasf<br>
-&gt;asfddf '<br>
-nl file | sed ‘s/s_place/s_replace/g’	<br>
-nl file | sed ‘/^$/d’</p>
-<h2 id="egrep-扩展正则表达式">egrep 扩展正则表达式</h2>
-<p>egrep -n ‘<sup>$|</sup>#’ file<br>
-egrep -n ‘go?d’ file　0个或者一个?之前的字符<br>
-egrep -n ‘go+d’ file　一个及以上+之前的字符<br>
-grep -n 'go<em>d’ file　0个或者0个以上</em>之前的字符</p>
-<h2 id="printf-格式化打印">printf 格式化打印</h2>
-<p>printf ‘%s\t %s\t %s\t \n’ $(cat file)<br>
-printf ‘%10s %5i %5i \n’ $(cat file)</p>
-<h2 id="awk">awk</h2>
-<p>last | awk '{print $1 “\t” S3 “\t” $4 NF NR}'<br>
-cat /etc/passwd | awk ‘BEGIN {FS=&quot;:&quot;} $3 &lt; 10 {print $1 “\t” $3 }’</p>
-<p>cat /etc/passwd | awk ‘NR==1{printf &quot;%10s %10s %10s %10s “,$1,$2,$3,“tot		al”}<br>
-	NR&gt;=2{total=$2+$3;<br>
-		printf “%10s %10d %10d %## f”,$1,$2,$3,total”}’</p>
-<h2 id="参考文献">参考文献</h2>
-<ol>
+</code></pre><h2 id="xargs"><a href="#xargs" class="headerlink" title="xargs"></a>xargs</h2><p>xargs产生某个命令的参数<br>    [-pne0]<br>    -p 执行每个命令询问用户<br>    -e 是EOF的意思，后面可接一个字符，当xargs遇到这个字符，便会停止                操作<br>    -n 后面接次数，每次command命令执行时，要使用几个参数<br>-用来代替stdout以及stdin<br>tar -cvf - /home | tar xvf -    </p>
+<h2 id="sed-工具"><a href="#sed-工具" class="headerlink" title="sed 工具"></a>sed 工具</h2><p>[-in]<br>-i    直接修改文件内容<br>-n    静默<br>-e 直接在shell下编辑<br>-c replace<br>-a append<br>-p print</p>
+<p>nl file | sed ‘2,3d’<br>nl file | sed ‘$a add a test’<br>nl file | sed -n ‘5,7p’<br>nl file | sed ‘2,5c jkadfk\</p>
+<pre><code>        &gt;fdasf\
+        &gt;asfddf &#39;
+</code></pre><p>nl file | sed ‘s/s_place/s_replace/g’<br>nl file | sed ‘/^$/d’</p>
+<h2 id="egrep-扩展正则表达式"><a href="#egrep-扩展正则表达式" class="headerlink" title="egrep 扩展正则表达式"></a>egrep 扩展正则表达式</h2><p>egrep -n ‘^$|^#’ file<br>egrep -n ‘go?d’ file　0个或者一个?之前的字符<br>egrep -n ‘go+d’ file　一个及以上+之前的字符<br>grep -n ‘go<em>d’ file　0个或者0个以上</em>之前的字符</p>
+<h2 id="printf-格式化打印"><a href="#printf-格式化打印" class="headerlink" title="printf 格式化打印"></a>printf 格式化打印</h2><p>printf ‘%s\t %s\t %s\t \n’ $(cat file)<br>printf ‘%10s %5i %5i \n’ $(cat file)</p>
+<h2 id="awk"><a href="#awk" class="headerlink" title="awk"></a>awk</h2><p>last | awk ‘{print $1 “\t” S3 “\t” $4 NF NR}’<br>cat /etc/passwd | awk ‘BEGIN {FS=”:”} $3 &lt; 10 {print $1 “\t” $3 }’</p>
+<p>cat /etc/passwd | awk ‘NR==1{printf “%10s %10s %10s %10s “,$1,$2,$3,”tot        al”}<br>    NR&gt;=2{total=$2+$3;<br>        printf “%10s %10d %10d %## f”,$1,$2,$3,total”}’</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
 <li>《鸟哥的LINUX私房菜》</li>
 </ol>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/16/linux-cp-scp-vs-rsync/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/16/linux-cp-scp-vs-rsync/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">linux cp, scp vs rsync</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-16 16:29:17" itemprop="dateCreated datePublished" datetime="2019-06-16T16:29:17+08:00">2019-06-16</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-24 19:26:25" itemprop="dateModified" datetime="2019-08-24T19:26:25+08:00">2019-08-24</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="cp">cp</h2>
-<h3 id="参数介绍">参数介绍</h3>
-<h3 id="示例">示例</h3>
-<h2 id="scp">scp</h2>
-<h3 id="参数介绍-v2">参数介绍</h3>
-<h3 id="示例-v2">示例</h3>
-<h2 id="rsync">rsync</h2>
-<p>rsync相对于scp有以下优点：<br>
-1.支持断点续传<br>
-2.支持ssh<br>
-3.可分块传输<br>
-~$:rsync options source destination</p>
-<h3 id="参数介绍-v3">参数介绍</h3>
-<p>rsync [-zvra] source destination<br>
--z  传输前进行压缩<br>
--v  显示详细信息<br>
--r  递归拷贝<br>
--a  保留时间戳，owner,group<br>
--e ssh  使用ssh<br>
-–partial    单个文件的断点续传<br>
-–progress  显示同步进度<br>
--P等于–paritial和–progress一同使用<br>
-–include   只同步某些目录<br>
-–exclude   不同步某些目录</p>
-<h3 id="示例-v3">示例</h3>
-<p>~$:rsync -avc --exclude=**<strong>pycache</strong>  --exclude=**data --exclude=**tmp --exclude=**result_pictures experimental/ ~/<br>
-~$:rsync -rP source_dir target_dir</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/4585929/how-to-use-cp-command-to-exclude-a-specific-directory" target="_blank" rel="noopener">https://stackoverflow.com/questions/4585929/how-to-use-cp-command-to-exclude-a-specific-directory</a><br>
-2.<a href="https://www.cnblogs.com/bangerlee/archive/2013/04/07/3003243.html" target="_blank" rel="noopener">https://www.cnblogs.com/bangerlee/archive/2013/04/07/3003243.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/10/linux-ssh-tunnel内网穿透/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/10/linux-ssh-tunnel内网穿透/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">linux ssh tunnel内网穿透</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-10 21:33:16" itemprop="dateCreated datePublished" datetime="2019-06-10T21:33:16+08:00">2019-06-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-06-30 21:12:34" itemprop="dateModified" datetime="2019-06-30T21:12:34+08:00">2019-06-30</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="ssh-命令介绍">ssh 命令介绍</h2>
-<p>ssh是一种安全传输协议，此外还有tunnel转发功能，可以用来内网渗透。</p>
-<h3 id="参数介绍">参数介绍</h3>
-<p>-L port:host:hostport，访问本机的port端口就相当于访问host的hostport端口。<br>
-将本机的某个端口转发到远端指定机器的指定端口。本机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发出去。<br>
--R port:host:hostport，将远程主机的某个端口转发到指定的本地机器的指定端口。远程主机上分了一个socket监听port端口，一旦该端口有了连接，就通过一个ssh转发到指定的本地机器的指定端口。<br>
--N 不指定脚本或者命令<br>
--f 后台认证，需要和-N连用</p>
-<p>-L和-R的区别，-L是ssh隧道，-R是ssh反向隧道。</p>
-<h2 id="示例">示例</h2>
-<h3 id="翻墙ssh-l">翻墙ssh -L</h3>
-<p>执行以下命令的本机(localhost)通过中间服务器(45.32.22.289)访问被屏蔽的网站(google)。<br>
-~$:ssh -L 1234:google_ip:80 root@45.32.22.289<br>
-拿这个举个例子，可能不是很恰当，但是有助于理解。我自己的机器(A)是不能访问google©的，但是我有一台vps(B)，地址为45.32.22.289是可以访问google的，可以通过ssh隧道将A的端口(1234)通过B映射到C的端口(80)。</p>
-<h3 id="本机访问局域网的tensorboard-server">本机访问局域网的tensorboard server</h3>
-<h4 id="本机设置">本机设置</h4>
-<p>~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:mxxmhh@127.0.0.1" target="_blank" rel="noopener">mxxmhh@127.0.0.1</a><br>
-将本机的12345端口映射到10.1.114.50的6006端口，中间服务器使用的是本机。<br>
-或者可以使用10.1.114.50作为中间服务器。<br>
-~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
-或者可以使用如下方法：<br>
-~$:ssh -L 12345:127.0.0.1:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
-从这个方法中，可以看出127.0.0.1这个ip是中间服务器可以访问的ip。<br>
-以上三种方法中，-L后的端口号12345可以随意设置，只要不冲突即可。</p>
-<h4 id="服务端设置">服务端设置</h4>
-<p>然后在服务端运行以下命令：<br>
-~$:tensorboard --logdir logdir -port 6006<br>
-这个端口号也是可以任意设置的，不冲突即可。</p>
-<h4 id="运行">运行</h4>
-<p>然后在本机访问<br>
-<a href="https://127.0.0.1:12345" target="_blank" rel="noopener">https://127.0.0.1:12345</a>即可。</p>
-<h3 id="内网穿透ssh-r">内网穿透ssh -R</h3>
-<p>外网A(123.123.123.123)访问处于内网B的(127.0.0.1)的机器。<br>
-~$:ssh -N -f -R 2222:127.0.0.1:22 <a href="mailto:root@123.123.123.123" target="_blank" rel="noopener">root@123.123.123.123</a></p>
-<p>可以在外网机器A(123.123.123.123)上通过如下命令访问(-R)指定的内网机器B：<br>
-~$:ssh -p 2222 userB@localhost</p>
-<h3 id="报错">报错</h3>
-<p>Host key verification failed<br>
-直接把/home/username/.ssh/known_hosts中相应的给删了。</p>
-<h3 id="内网访问内网-挖洞">内网访问内网（挖洞）</h3>
-<p>A是家里的内网（无公网IP）上机器(196.)，B是VPS（有公网IP）(45.32.)，C是公司内网（无公网IP）机器(10.)。<br>
-要在家里的内网访问公司的内网，即A访问C。在C上建立ssh反向隧道：<br>
-~$:ssh -N -f -R 2222:127.0.0.1:22 userB@B.ip<br>
-在A上访问：<br>
-~$:ssh -p  2222 userC@B.ip</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html" target="_blank" rel="noopener">https://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html</a><br>
-2.<a href="https://blog.creke.net/722.html" target="_blank" rel="noopener">https://blog.creke.net/722.html</a><br>
-3.<a href="http://arondight.me/2016/02/17/%E4%BD%BF%E7%94%A8SSH%E5%8F%8D%E5%90%91%E9%9A%A7%E9%81%93%E8%BF%9B%E8%A1%8C%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F/" target="_blank" rel="noopener">http://arondight.me/2016/02/17/使用SSH反向隧道进行内网穿透/</a></p>
 
           
         
@@ -2629,7 +2250,7 @@ cat /etc/passwd | awk ‘BEGIN {FS=&quot;:&quot;} $3 &lt; 10 {print $1 “\t” 
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">242</span>
+                    <span class="site-state-item-count">244</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3351,7 +2972,9 @@ cat /etc/passwd | awk ‘BEGIN {FS=&quot;:&quot;} $3 &lt; 10 {print $1 “\t” 
                     
                       
                     
-                    <span class="site-state-item-count">326</span>
+                      
+                    
+                    <span class="site-state-item-count">327</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
