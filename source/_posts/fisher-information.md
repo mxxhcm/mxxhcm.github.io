@@ -11,17 +11,19 @@ categories: 概率论与统计
 mathjax: true
 ---
 
-## Fisher information
-当$\theta$是标量的时候。
-
+## score function
 ### 最大似然估计
 根据最大似然估计，有似然对数：
 $$l = \log p(x|\theta)$$
 
-## score function
+### score function
 根据似然对数，定义一个score function：
 $$s(\theta) = \nabla_{\theta} \log p(x|\theta) $$
 即score是似然对数的一阶导（梯度），似然对数是标量，score function是似然对数对$\theta$的导数。
+
+
+## Fisher information
+当$\theta$是标量的时候。
 
 ### score function的期望
 **定理** score function的期望是$0$
