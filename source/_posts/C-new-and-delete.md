@@ -1,7 +1,10 @@
 ---
-title: C++ new and delete
+title: C/C++ malloc(alloc) free new and delete
 date: 2019-11-05 10:37:48
 tags:
+ - malloc
+ - alloc
+ - free
  - new
  - delete
  - C/C++
@@ -14,8 +17,6 @@ categories: C/C++
 int *pi = new int; //pi指向一个动态分配的内存，没有初始化
 ```
 - 对于自定义类型而言，只要一调用new，无论后面有没有加()，那么编译器不仅仅给它分配内存，还调用它的默认构造函数初始化。
-
-
 
 
 ## 参考文献

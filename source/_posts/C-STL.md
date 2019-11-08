@@ -1,8 +1,8 @@
 ---
-title: c++ STL
+title: C++ STL
 date: 2019-08-31 11:31:32
 tags:
- - C++
+ - C/C++
  - STL
 categories: C/C++ 
 mathjax: true

@@ -1,13 +1,15 @@
 ---
-title: c program in memory
+title: C/C++ program in memory
 date: 2019-10-19 20:41:02
 tags:
-categories:
+ - C/C++
+ - memeory
+categories: C/C++
 ---
 
 ## C语言程序在内存中的组成部分
 C语言程序在内存中的构成如下所示：
-![c_program_in_memory](c_in_memory.png)
+![c_program_in_memory](c_in_memory.jpg)
 即一个C语言程序在内存中由text segment, data segment，heap和stack组成
 
 ## Text segment （代码段）

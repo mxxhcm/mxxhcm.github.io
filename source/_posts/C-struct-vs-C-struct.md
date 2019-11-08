@@ -1,5 +1,5 @@
 ---
-title: c struct vs c++ struct
+title: C struct vs C++ struct
 date: 2019-10-25 19:32:07
 tags:
  - C/C++
