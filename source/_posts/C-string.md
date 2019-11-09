@@ -7,7 +7,6 @@ tags:
 categories: C/C++
 ---
 
-
 ## `string`标准库
 `string`是标准库的一部分，提供了可变长的字符串，使用时需要包含`string头文件。``` c
 #include <string>
