@@ -327,6 +327,194 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/27/DQN-replay-buffer-tensorflow-实现与解析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/27/DQN-replay-buffer-tensorflow-实现与解析/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">DQN replay buffer tensorflow 实现与解析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-27 20:21:40" itemprop="dateCreated datePublished" datetime="2019-03-27T20:21:40+08:00">2019-03-27</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="代码">代码</h2>
+<p>这个DQN的Replay Buffer实现只用到了numpy库，可以很容易的进行扩展。主要有五个函数。接下来分函数进行解析。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReplayBuffer</span>:</span></span><br><span class="line">    <span class="comment"># config : memory_size, batch_size, history_length, state_format, screen_height, screen_width,</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, config)</span>:</span></span><br><span class="line">        self.memory_size = config.memory_size</span><br><span class="line">        self.batch_size = config.batch_size</span><br><span class="line"></span><br><span class="line">        self.screens = np.empty((self.memory_size, config.screen_height, config.screen_width), dtype=np.float16)</span><br><span class="line">        self.actions = np.empty(self.memory_size, dtype=np.uint8)</span><br><span class="line">        self.rewards = np.empty(self.memory_size, dtype=np.int8)</span><br><span class="line">        self.terminals = np.empty(self.memory_size, dtype=np.bool)</span><br><span class="line">        self.history_length = config.history_length <span class="comment"># state使用多少张screens拼接在一起，论文中是4张</span></span><br><span class="line">        self.state_format = config.state_format</span><br><span class="line">        self.dims = (config.screen_height, config.screen_width)</span><br><span class="line">        <span class="comment"># state and next_state</span></span><br><span class="line">        self.states = np.empty((self.batch_size, self.history_length)+self.dims, dtype=np.float16)</span><br><span class="line">        self.next_states = np.empty((self.batch_size, self.history_length)+self.dims, dtype=np.float16)</span><br><span class="line"></span><br><span class="line">        self.count = <span class="number">0</span>  <span class="comment"># 记录总共有多少条记录</span></span><br><span class="line">        self.current = <span class="number">0</span> <span class="comment"># 获取当前是第几条</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">add</span><span class="params">(self, screen, action, reward, terminal)</span>:</span></span><br><span class="line">        self.screens[self.current] = screen</span><br><span class="line">        self.actions[self.current] = action</span><br><span class="line">        self.rewards[self.current] = reward</span><br><span class="line">        self.terminals[self.current] = terminal</span><br><span class="line">        self.count = max(self.current + <span class="number">1</span>, self.count)</span><br><span class="line">        self.current = (self.current + <span class="number">1</span>) % self.memory_size</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__len__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self.count</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">clear</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.current = <span class="number">0</span></span><br><span class="line">        self.count = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">getState</span><span class="params">(self, index)</span>:</span></span><br><span class="line">        <span class="keyword">assert</span> self.count &gt; <span class="number">0</span></span><br><span class="line">        <span class="comment"># 每一个样本都要取self.history_length那么长。</span></span><br><span class="line">        <span class="keyword">if</span> index &gt;= self.history_length - <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span> self.screens[index-(self.history_length - <span class="number">1</span>):index+<span class="number">1</span>, ...]</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># 如果当前下标比self.history_length还要小，那么就要从buffer的结尾处取了。</span></span><br><span class="line">            indexes = [(index - i )% self.count <span class="keyword">for</span> i <span class="keyword">in</span> reversed(range(self.history_length))]</span><br><span class="line">            <span class="keyword">return</span> self.screens[indexes, ...]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">sample</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">assert</span> self.count &gt; self.history_length</span><br><span class="line">        indexes = []</span><br><span class="line">        <span class="keyword">while</span> len(indexes) &lt; self.batch_size:</span><br><span class="line">            <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">                index = random.randint(self.history_length, self.count + <span class="number">1</span>)    <span class="comment"># 相当于从self.histor_length之后进行采样</span></span><br><span class="line">                <span class="comment"># 如果包含current，就重新采样。（current是刚生成的样本）</span></span><br><span class="line">                <span class="keyword">if</span> index &gt; self.current <span class="keyword">and</span> self.current - self.history_length &lt;= index:</span><br><span class="line">                    <span class="keyword">continue</span></span><br><span class="line">                <span class="comment"># 如果包含一个episode的结束状态，重新采样</span></span><br><span class="line">                <span class="keyword">if</span> self.terminals[(index - self.history_length):self.history_length].any():</span><br><span class="line">                    <span class="keyword">continue</span></span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">            self.states[len(indexes),...] = self.getState(index - <span class="number">1</span>)</span><br><span class="line">            self.next_states[len(indexes),...] = self.getState(index)</span><br><span class="line">            indexes.append(index)</span><br><span class="line"></span><br><span class="line">        actions = self.actions[indexes]</span><br><span class="line">        rewards = self.rewards[indexes]</span><br><span class="line">        terminals = self.terminals[indexes]</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> self.state_format == <span class="string">'NHWC'</span>:</span><br><span class="line">            <span class="keyword">return</span> np.transpose(self.states, (<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>)), actions, rewards, np.transpose(self.next_states, (<span class="number">0</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">1</span>)),terminals</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> self.states, actions, rewards, self.next_states, terminals</span><br></pre></td></tr></table></figure>
+<h2 id="init函数">init函数</h2>
+<p>ReplayBuffer的init的输入参数为一个config文件，包含了创建ReplayBuffer的参数，memory_size是Buffer大小，batch_size为训练和测试的batch大小，screens, actions, rewards, terminals分别存放的是每次采样得到的screen, action, reward和terminal(当前episode是否结束)。history_length是原文中提到的连续处理四张图片的四，而不仅仅是一张。state_format指的是’NHWC’还是’NCHW’，即depth通道在第$1$维还是第$3$维，states存放的是一个tensor，shape为$(batch_size, screen_height, screen_width, history_length)$，count记录当前Buffer的大小，current记录当前experience插入的地方。</p>
+<h2 id="add方法">add方法</h2>
+<p>该方法实现了向ReplayBuffer中添加experience。</p>
+<h2 id="len-方法">__len__方法</h2>
+<p>放回Buffer当前的大小</p>
+<h2 id="clear方法">clear方法</h2>
+<p>清空Buffer</p>
+<h2 id="sample方法">sample方法</h2>
+<p>从buffer中进行采样，返回一个元组，(states, actions, rewards, next_states, terminals)</p>
+<h2 id="getstate方法">getState方法</h2>
+<p>给定一个index，寻找它的前history_length - 1 个screens。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://github.com/devsisters/DQN-tensorflow" target="_blank" rel="noopener">https://github.com/devsisters/DQN-tensorflow</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/23/dropout/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2785,234 +2973,6 @@ There is a intervening between find and update,so maybe you find and update is n
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/14/activation/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/14/activation/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/21/index.html">神经网络-激活函数</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-14 11:45:46" itemprop="dateCreated datePublished" datetime="2019-03-14T11:45:46+08:00">2019-03-14</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="激活函数的一些问题">激活函数的一些问题</h2>
-<h3 id="为什么要使用non-linear激活函数不使用linear激活函数？">为什么要使用non-linear激活函数不使用linear激活函数？</h3>
-<p><img src="/2019/03/14/activation/fnn.png" alt="fnn"><br>
-给定一个如图所示的前馈神经网络。有一个输入层，一个隐藏层，一个输出层。输入是$2$维的，有$4$个隐藏单元，输出是$2$维的。<br>
-则：$ \hat{f}(x) = \sigma(w_1x+b_1)w_2 + b_2$<br>
-这里$\sigma$是一个线性的激活函数，不妨设$\sigma(x) = x$。<br>
-那么就有：<br>
-\begin{align*}<br>
-\hat{f}(x) &amp;= \sigma(w_1x+b_1)w_2 + b_2\<br>
-&amp;= (w_1x+b_1)w_2 + b_2\<br>
-&amp;= w_1w_2x + w_2b1 + b_2\<br>
-&amp;= (w_1w_2) x + (w_2b1 + b_2)\<br>
-&amp;= w’ x + b’<br>
-\end{align*}<br>
-因此，当使用线性激活函数的时候，我们可以把一个多层感知机模型化简成一个线性模型。当使用线性激活函数时，增加网络的深度没有用，使用线性激活函数的十层感知机和一层感知机没有区别，并不能增加网络的表达能力。因为任意两个仿射函数的组合还是仿射函数。</p>
-<h3 id="为什么relu激活函数是non-linear的？">为什么ReLU激活函数是non-linear的？</h3>
-<p>ReLU的数学表达形式如下：<br>
-$$g(x) = max(0, x)$$<br>
-首先考虑一下什么是linear function,什么是non-linear function。在微积分上，平面内的任意一条直线是线性函数，否则就是非线性函数。<br>
-考虑这样一个例子，输入数据的维度为$1$，输出数据的维度也为$1$，用$g(ax+b)$表示ReLU激活函数。如果我们使用两个隐藏单元，那么$h_1(x) = g(x)+g(-x)$可以用来表示$f(x)=|x|$，而函数$|x|$是一个非线性函数，函数图像如下所示。<br>
-<img src="/2019/03/14/activation/absolute.png" alt="f(x)=|x|"><br>
-我们还可以用ReLU逼近二次函数$f(x) = x^2$，如使用函数$h_2(x) = g(x) + g(-x) + g(2x-2) + g(2x+2)$逼近二次函数，对应的图像如下。<br>
-<img src="/2019/03/14/activation/quadratic.png" alt="h_2(x)"><br>
-使用的项越多，最后近似出来的图像也就和我们要逼近的二次函数越像。<br>
-同理，可以使用ReLU激活函数去逼近任意非线性函数。</p>
-<h3 id="为什么relu比sigmod还有tanh激活函数要好？">为什么ReLU比sigmod还有tanh激活函数要好？</h3>
-<p>ReLU收敛的更快，因为梯度更大。<br>
-当CNN的层数越来越深的时候，实验表明，使用ReLU的CNN要比使用sigmod或者tanh的CNN训练的更容易，更快收敛。<br>
-为什么会这样，目前有两种理论，见参考文献[4]。<br>
-第一个，$tanh(x)$有梯度消散问题(vanishing gradient)。当$x$趋向于$\pm\infty$时，$tanh(x)$的导数趋向于$0$。如下图所示。</p>
-<blockquote>
-<p>Vanishing gradients occur when lower layers of a DNN have gradients of nearly 0 because higher layer units are nearly saturated at -1 or 1, the asymptotes of the tanh function. Such vanishing gradients cause slow optimization convergence, and in some cases the final trained network converges to a poor local minimum.</p>
-</blockquote>
-<blockquote>
-<p>One way ReLUs improve neural networks is by speeding up training. The gradient computation is very simple (either 0 or 1 depending on the sign of x). Also, the computational step of a ReLU is easy: any negative elements are set to 0.0 – no exponentials, no multiplication or division operations.</p>
-</blockquote>
-<p><img src="/2019/03/14/activation/tanh.png" alt="tanh(x)"><br>
-ReLU是non-saturating nonlinearity的激活函数，sigmod和tanh是saturating nonlinearity激活函数，会将输出挤压到一个区间内。</p>
-<blockquote>
-<p>f是non-saturating 当且仅当$|lim_{z\rightarrow -\infty} f(z)| \rightarrow + \infty$或者$|lim_{z\rightarrow +\infty} f(z)| \rightarrow + \infty$</p>
-</blockquote>
-<p>tanh和sigmod将输入都挤压在某一个很小的区间内，比如(0,1)，输入发生很大的变化，经过激活函数以后变化很小，经过好几层之后，基本上就没有差别了。而当网络很深的时候，反向传播主要集中在后几层，而输入层附近的权值没办法好好学习。而对于ReLU来说，任意深度的神经网络，都不存在梯度消失。</p>
-<p>第二种理论是说有一些定理能够证明，在某些假设条件下，局部最小就是全局最小。如果使用sigmod或者tanh激活函数的时候，这些假设不能成立，而使用ReLU的话，这些条件就会成立。</p>
-<h3 id="为什么发生了梯度消失以后训练结构很差？">为什么发生了梯度消失以后训练结构很差？</h3>
-<p>我的想法是，</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stats.stackexchange.com/a/391971" target="_blank" rel="noopener">https://stats.stackexchange.com/a/391971</a><br>
-2.<a href="https://stats.stackexchange.com/a/299933" target="_blank" rel="noopener">https://stats.stackexchange.com/a/299933</a><br>
-3.<a href="https://stats.stackexchange.com/a/141978" target="_blank" rel="noopener">https://stats.stackexchange.com/a/141978</a><br>
-4.<a href="https://stats.stackexchange.com/a/335972" target="_blank" rel="noopener">https://stats.stackexchange.com/a/335972</a><br>
-5.<a href="https://stats.stackexchange.com/a/174438" target="_blank" rel="noopener">https://stats.stackexchange.com/a/174438</a><br>
-6.<a href="https://stats.stackexchange.com/questions/391968/relu-vs-a-linear-activation-function" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/391968/relu-vs-a-linear-activation-function</a><br>
-7.<a href="https://stats.stackexchange.com/questions/141960/why-are-rectified-linear-units-considered-non-linear" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/141960/why-are-rectified-linear-units-considered-non-linear</a><br>
-8.<a href="https://stats.stackexchange.com/questions/299915/how-does-the-rectified-linear-unit-relu-activation-function-produce-non-linear" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/299915/how-does-the-rectified-linear-unit-relu-activation-function-produce-non-linear</a><br>
-9.<a href="https://stats.stackexchange.com/questions/226923/why-do-we-use-relu-in-neural-networks-and-how-do-we-use-it/226927#226927" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/226923/why-do-we-use-relu-in-neural-networks-and-how-do-we-use-it/226927#226927</a><br>
-10.<a href="https://www.zhihu.com/question/264163033" target="_blank" rel="noopener">https://www.zhihu.com/question/264163033</a><br>
-11.<a href="http://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf" target="_blank" rel="noopener">http://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3062,7 +3022,7 @@ ReLU是non-saturating nonlinearity的激活函数，sigmod和tanh是saturating n
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">243</span>
+                    <span class="site-state-item-count">244</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -4047,9 +4007,9 @@ ReLU是non-saturating nonlinearity的激活函数，sigmod和tanh是saturating n
   
     
       
-        
-      
     
+      
+        
       
     
       
