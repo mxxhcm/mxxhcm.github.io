@@ -1,8 +1,9 @@
 ---
 title: C++ compound type
-date: 2019-11-09 22:24:47
+date: 2019-11-05 17:24:47
 tags:
-categories:
+ - C/C++
+categories: C/C++
 ---
 
 ## 复合类型
