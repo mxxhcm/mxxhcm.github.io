@@ -327,6 +327,863 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/18/梯度下降和反向传播/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/18/梯度下降和反向传播/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/23/index.html">梯度下降和反向传播</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 15:19:07" itemprop="dateCreated datePublished" datetime="2019-03-18T15:19:07+08:00">2019-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-09 10:48:43" itemprop="dateModified" datetime="2019-06-09T10:48:43+08:00">2019-06-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>梯度下降和反向传播，他们两个之间的关系？</p>
+<h2 id="导数-偏导数-梯度-方向倒数">导数，偏导数，梯度，方向倒数</h2>
+<h3 id="导数">导数</h3>
+<p>定义：<br>
+$$f^{’}(x_0) = {\lim_{\Delta x \to 0}}\frac{\Delta y}{\Delta x} = \lim_{\Delta x \to 0}\frac{f(x_0+\Delta x)-f(x_0)}{\Delta x}$$<br>
+反映的是函数y=f(x)在某一点处沿x轴正方向的变化率。也能表示在x点处的斜率</p>
+<h3 id="偏导数">偏导数</h3>
+<p>定义：<br>
+$$\frac{\partial }{\partial x}f(x,y,z) = \lim_{\Delta x \to 0}\frac{f(x + \Delta x,y,z) - f(x,y,z)}{\Delta x}$$<br>
+导数与偏导数本质都是一样的，当自变量的变化量趋于0时，函数值的变化量与自变量变化量比值的极限，偏导数就是函数在某一点上沿坐标轴正方向上的变化率。比如函数f(x,y,z)，f(x,y,z)在某一点处可以分别求对于x，y，z轴正方向的偏导数。</p>
+<h3 id="方向导数">方向导数</h3>
+<p>方向导数是某一点在某一趋近方向上的导数值，是函数在这个方向上的变化率。<br>
+定义：三元函数u=f(x,y,z)在点P(x,y,z)沿着l方向(方向角为$\alpha,\beta,\gamma$)的方向导数定义为<br>
+$$\frac{\partial f}{\partial l} = \lim_{\rho \to 0}\frac{f(x+\Delta x,y+\Delta y,z+\Delta z)-f(x,y,z)}{\rho}$$</p>
+<h3 id="梯度">梯度</h3>
+<p>梯度是方向导数中最大的那个向量，这个向量我们就称他为梯度，因为梯度是向量，所以才有梯度上升和下降的说法。梯度方向是函数增长最快的方向，梯度反方向是函数下降最快的方向。</p>
+<h2 id="梯度下降">梯度下降</h2>
+<p>神经网络的训练一般是通过定义一个loss函数，然后通过优化这个loss函数，实现神经网络的训练，一般的loss函数主要是定义了训练样本的预测结果和真实结果之间的差异，比如说定义交叉熵等。<br>
+至于优化loss函数的方法，就是通过梯度下降法来实现，该算法从任一点开始，沿该点梯度的反方向运动一段距离，再沿新位置的梯度反方向运行一段距离 … 如此迭代。解一直朝下坡最陡的方向运动，希望能运动到函数的全局最小点，梯度下降法是寻找函数局部最优解的有效方法（这里说的是局部最优解，而不是全局最优解，但是一般我们遇到的问题都是凸问题，局部最优解就是全局最优解），至于我们为什么不直接进行求解呢，因为计算量太大，如果有几百个参数的话，是不可行的（感觉这里说的不清楚，应该更具体的描述一下）。</p>
+<h2 id="反向传播算法">反向传播算法</h2>
+<p>使用梯度下降算法的时候，我们需要计算函数的梯度，反向传播算法解释计算神经网络中误差函数梯度的一种方法。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://zhuanlan.zhihu.com/p/25355758" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/25355758</a><br>
+2.<a href="https://www.zhihu.com/question/36301367/answer/142096153" target="_blank" rel="noopener">https://www.zhihu.com/question/36301367/answer/142096153</a><br>
+3.<a href="http://neuralnetworksanddeeplearning.com/" target="_blank" rel="noopener">http://neuralnetworksanddeeplearning.com/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/18/python-pandas笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/18/python-pandas笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/23/index.html">pandas笔记</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 15:15:54" itemprop="dateCreated datePublished" datetime="2019-03-18T15:15:54+08:00">2019-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-16 16:59:53" itemprop="dateModified" datetime="2019-08-16T16:59:53+08:00">2019-08-16</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="pd-read">pd.read_***()</h2>
+<h3 id="pd-read-csv">pd.read_csv()</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas</span><br><span class="line">pandas.read_csv(filepath_or_buffer, sep=<span class="string">', '</span>, delimiter=<span class="literal">None</span>, header=<span class="string">'infer'</span>, names=<span class="literal">None</span>, index_col=<span class="literal">None</span>, usecols=<span class="literal">None</span>, squeeze=<span class="literal">False</span>, prefix=<span class="literal">None</span>, mangle_dupe_cols=<span class="literal">True</span>, dtype=<span class="literal">None</span>, engine=<span class="literal">None</span>, converters=<span class="literal">None</span>, true_values=<span class="literal">None</span>, false_values=<span class="literal">None</span>, skipinitialspace=<span class="literal">False</span>, skiprows=<span class="literal">None</span>, nrows=<span class="literal">None</span>, na_values=<span class="literal">None</span>, keep_default_na=<span class="literal">True</span>, na_filter=<span class="literal">True</span>, verbose=<span class="literal">False</span>, skip_blank_lines=<span class="literal">True</span>, parse_dates=<span class="literal">False</span>, infer_datetime_format=<span class="literal">False</span>, keep_date_col=<span class="literal">False</span>, date_parser=<span class="literal">None</span>, dayfirst=<span class="literal">False</span>, iterator=<span class="literal">False</span>, chunksize=<span class="literal">None</span>, compression=<span class="string">'infer'</span>, thousands=<span class="literal">None</span>, decimal=<span class="string">b'.'</span>, lineterminator=<span class="literal">None</span>, quotechar=<span class="string">'"'</span>, quoting=<span class="number">0</span>, escapechar=<span class="literal">None</span>, comment=<span class="literal">None</span>, encoding=<span class="literal">None</span>, dialect=<span class="literal">None</span>, tupleize_cols=<span class="literal">None</span>, error_bad_lines=<span class="literal">True</span>, warn_bad_lines=<span class="literal">True</span>, skipfooter=<span class="number">0</span>, skip_footer=<span class="number">0</span>, doublequote=<span class="literal">True</span>, delim_whitespace=<span class="literal">False</span>, as_recarray=<span class="literal">None</span>, compact_ints=<span class="literal">None</span>, use_unsigned=<span class="literal">None</span>, low_memory=<span class="literal">True</span>, buffer_lines=<span class="literal">None</span>, memory_map=<span class="literal">False</span>, float_precision=<span class="literal">None</span>)</span><br></pre></td></tr></table></figure>
+<p>filepath_or_buffer: 文件路径，或者一个字符串，url等等<br>
+sep: str,分隔符，默认是’,'<br>
+delimiter: str,定界符，如果指定该参数，sep参数失效<br>
+delimiter_whitespace: boolean,指定是否吧空格作为分界符如果指定该参数，则delimiter失效<br>
+header: int or list of ints,指定列名字，默认是header=0,表示把第一行当做列名，如果header=[0,3,4],表示吧第0,3,4行都当做列名，真正的数据从第二行开始，如果没有列名，指定header=None<br>
+index_col: int or sequence or False,指定哪几列作为index，index_col=[0,1],表示用前两列的值作为一个index，去访问后面几列的值。<br>
+prefix: str,如果header为None的话，可以指定列名。<br>
+parse_dates: boolean or list of ints or names,or list of lists, or dict 如果是True，解析index，如果是list of ints，把每一个int代表的列都分别当做一个日期解析，如果是list of lists，将list中的list作为一个日期解析，如果是字典的话，将dict中key作为一个新的列名，value为这个新的列的值。<br>
+keep_date_col: boolean,如果parser_dates中是将多个列合并为一个日期的话，是否保留原始列<br>
+date_parser: function,用来解析parse_dates中给出的日期列，是自己写的函数，函数参数个数和一个日期的列数相同。</p>
+<p>chunksize: 如果文件太大的话，分块读入</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">data = pd.read_csv(<span class="string">"input.csv"</span>,chunksize=<span class="number">1000</span>)</span><br><span class="line"><span class="keyword">for</span>  i  <span class="keyword">in</span>  data:</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+<h2 id="dataframe">DataFrame</h2>
+<h3 id="声明一个dataframe">声明一个DataFrame</h3>
+<p>data = pandas.DataFrame(numpy.arange(16).reshape(4,4),index=list(‘abcd’),columns=(‘wxyz’)<br>
+w  x  y  z<br>
+a  0  1  2  3<br>
+b  4  5  6  7<br>
+c  8  9  10  11<br>
+d  12  13  14  15<br>
+index 是index列的值<br>
+columns 是列名</p>
+<h3 id="访问某一列">访问某一列</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">data = pandas.DataFrame(numpy.arange(<span class="number">16</span>).reshape(<span class="number">4</span>,<span class="number">4</span>),index=list(<span class="string">'abcd'</span>),columns=(<span class="string">'wxyz'</span>)</span><br><span class="line">data[<span class="string">'w'</span>]</span><br><span class="line">data.w</span><br></pre></td></tr></table></figure>
+<h3 id="写入某一列">写入某一列</h3>
+<p>只能先访问列 再访问行<br>
+data[‘w’] = []   # =左右两边shape必须一样<br>
+data[‘w’][0]  #某一列的第0行</p>
+<h3 id="groupby">groupby</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">data = pandas.DataFrame(np.arange(<span class="number">16</span>).reshape(<span class="number">4</span>,<span class="number">4</span>),index=list(<span class="string">'abcd'</span>),columns=(<span class="string">'wxyz'</span>))</span><br><span class="line"><span class="keyword">for</span> key,value <span class="keyword">in</span> data.groupby(<span class="string">"w"</span>):  <span class="comment"># group by 列名什么的，就是说某一列的值一样分一组</span></span><br><span class="line">  value = value.values  <span class="comment"># value是一个numpy数组</span></span><br><span class="line">  value_list = value.tolist()  <span class="comment">#将numpy数组转换为一个list</span></span><br><span class="line">  <span class="keyword">for</span> single_list <span class="keyword">in</span> value_list:</span><br><span class="line">     single_list = str(single_list)</span><br><span class="line">     ...</span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/18/python-argparse笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/18/python-argparse笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/23/index.html">argparse笔记</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 15:15:41" itemprop="dateCreated datePublished" datetime="2019-03-18T15:15:41+08:00">2019-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-26 11:27:59" itemprop="dateModified" datetime="2019-06-26T11:27:59+08:00">2019-06-26</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简单的例子">简单的例子</h2>
+<h3 id="创建一个parser">创建一个parser</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parser = argparse.ArgumentParser(description=<span class="string">'Process Intergers'</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="添加参数">添加参数</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">parser.add_argument(,,)</span><br></pre></td></tr></table></figure>
+<h3 id="解析参数">解析参数</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arglist = parser.parse_args()</span><br></pre></td></tr></table></figure>
+<h3 id="代码示例">代码示例</h3>
+<p>完整代码如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_args</span><span class="params">()</span>:</span></span><br><span class="line">    parser = argparse.ArgumentParser(<span class="string">"input parameters"</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--batch_size"</span>, type=int, default=<span class="number">32</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--episodes"</span>, type=int, default=<span class="number">1</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--lr"</span>, type=float, default=<span class="number">0.01</span>)</span><br><span class="line">    parser.add_argument(<span class="string">"--momentum"</span>, type=float, default=<span class="number">0.9</span>)</span><br><span class="line">    args_list = parser.parse_args()</span><br><span class="line">    <span class="keyword">return</span> args_list</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">(args_list)</span>:</span></span><br><span class="line">	print(args_list.batch_size)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    args_list = parse_args()</span><br><span class="line">    main(args_list)</span><br></pre></td></tr></table></figure>
+<h2 id="argumentparser-objects">ArgumentParser objects</h2>
+<blockquote>
+<p>The ArgumentParser object will hold all the information necessary to parse the command line into python data types</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">argparse</span>.<span class="title">ArgumentParser</span><span class="params">(</span></span></span><br><span class="line"><span class="class"><span class="params">	prog=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	usage=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	description=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	epilog=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	parents=[],</span></span></span><br><span class="line"><span class="class"><span class="params">	formatter_class=argparse.HelpFormatter,</span></span></span><br><span class="line"><span class="class"><span class="params">	prefix_chars=<span class="string">'-'</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">	fromfile_prefix_chars=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	argument_default=None,</span></span></span><br><span class="line"><span class="class"><span class="params">	conflict_handler=<span class="string">'error'</span>,</span></span></span><br><span class="line"><span class="class"><span class="params">	add_help=True</span></span></span><br><span class="line"><span class="class"><span class="params">)</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="创建一个名为test-py的程序如下">创建一个名为test.py的程序如下</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">args = parser.parse_args()</span><br></pre></td></tr></table></figure>
+<p>~#:python <a href="http://test.py" target="_blank" rel="noopener">test.py</a> -h</p>
+<blockquote>
+<p>usage: <a href="http://test.py" target="_blank" rel="noopener">test.py</a> [-h]<br>
+optional arguments:<br>
+-h, --help  show this help message and exit</p>
+</blockquote>
+<h3 id="prog参数">prog参数</h3>
+<p>设置显示程序的名称</p>
+<h4 id="直接使用默认显示的程序名">直接使用默认显示的程序名</h4>
+<p>~#:python <a href="http://test.py" target="_blank" rel="noopener">test.py</a> -h</p>
+<blockquote>
+<p>usage: <a href="http://test.py" target="_blank" rel="noopener">test.py</a> [-h]<br>
+optional arguments:<br>
+-h, --help  show this help message and exit</p>
+</blockquote>
+<h4 id="使用prog参数进行设置">使用prog参数进行设置</h4>
+<p>修改test.py的程序如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser(prog=<span class="string">"mytest"</span>)</span><br><span class="line">args = parser.parse_args()</span><br></pre></td></tr></table></figure>
+<p>~#:python <a href="http://test.py" target="_blank" rel="noopener">test.py</a> -h</p>
+<blockquote>
+<p>usage: mytest [-h]<br>
+optional arguments:<br>
+-h, --help  show this help message and exit</p>
+</blockquote>
+<p>usage后的名称变为我们prog参数指定的名称</p>
+<h3 id="usage">usage</h3>
+<h4 id="使用默认的usage">使用默认的usage</h4>
+<h4 id="使用指定的usage">使用指定的usage</h4>
+<h3 id="description">description</h3>
+<h4 id="使用默认的description">使用默认的description</h4>
+<h4 id="使用指定的description">使用指定的description</h4>
+<h3 id="epilog">epilog</h3>
+<h4 id="使用默认的epilog">使用默认的epilog</h4>
+<h4 id="使用指定的epilog">使用指定的epilog</h4>
+<h3 id="parents">parents</h3>
+<h3 id="formatter-class">formatter_class</h3>
+<h3 id="prefix-chars">prefix_chars</h3>
+<p>指定其他的prefix，默认的是-，比如可以指定可选参数的前缀为+</p>
+<h3 id="fromfile-prefix-chars">fromfile_prefix_chars</h3>
+<h3 id="argument-default">argument_default</h3>
+<h3 id="conflict-handler">conflict_handler</h3>
+<p>将conflict_handler设置为resolve就可以防止override原来older arguments</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser(conflict_handler=<span class="string">'resolve'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,<span class="string">'-f'</span>,help=<span class="string">"old help"</span>)</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>,help=<span class="string">"new_help"</span>)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
+<h3 id="add-help">add_help</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser(add_help=<span class="literal">False</span>)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>usage: [-h]<br>
+optional arguments:<br>
+-h, --help  show this help message and exit<br>
+将add_help设置为false</p>
+</blockquote>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser(add_help=<span class="literal">False</span>)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>usage:</p>
+</blockquote>
+<h2 id="the-add-argument-method">The add_argument() method</h2>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ArgumentParser.add_argument(</span><br><span class="line">	name <span class="keyword">or</span> flags...</span><br><span class="line">	[,action],</span><br><span class="line">	[,nargs],</span><br><span class="line">	[,const],</span><br><span class="line">	[,default],</span><br><span class="line">	[,type],</span><br><span class="line">	[,choices],</span><br><span class="line">	[,required],</span><br><span class="line">	[,help],</span><br><span class="line">	[,metavar],</span><br><span class="line">	[,dest]</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="例子">例子</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>,<span class="string">'-foo'</span>,<span class="string">'-a'</span>, defaults=, type=, help=)</span><br><span class="line">parser.add_argument(<span class="string">'hello'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'hi'</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'Hello'</span>,<span class="string">'-f'</span>,<span class="string">'123'</span>,<span class="string">'Hi'</span>])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<h3 id="name-or-flags">name or flags</h3>
+<h4 id="添加可选参数">添加可选参数</h4>
+<p>parser.add_argument(’-f’, ‘–foo’, ‘-fooo’)</p>
+<h4 id="添加必选参数">添加必选参数</h4>
+<p>parser.add_argument(‘bar’)</p>
+<h4 id="调用parse-args">调用parse_args()</h4>
+<p>当parse_args()函数被调用的时候，可选参数会被-prefix所识别，剩下的参数会被分配给必选参数的位置。如下代码中，'3’对应的就是’hello’的参数，‘this is hi’对应的就是’hi’的参数，而’123’是’-f’的参数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>,<span class="string">'-foo'</span>,<span class="string">'-a'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'hello'</span>, type=int)</span><br><span class="line">parser.add_argument(<span class="string">'hi'</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'3'</span>,<span class="string">'-f'</span>,<span class="string">'123'</span>,<span class="string">'this is hi'</span>])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(f=‘123’, hello=‘Hello’, hi=‘Hi’)</p>
+</blockquote>
+<h3 id="action">action</h3>
+<h4 id="store-the-default-action">store,the default action</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'--foo'</span>,<span class="string">'1'</span>])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(foo=‘1’)</p>
+</blockquote>
+<h4 id="store-const">store_const</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>, action=<span class="string">'store_const'</span>, const=<span class="number">42</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'--foo'</span>)</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(foo=42)</p>
+</blockquote>
+<h4 id="store-true-and-store-false">store_true and store_false</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>, action=<span class="string">'store_true'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--bar'</span>, action=<span class="string">'store_false'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'--baz'</span>, action=<span class="string">'store_false'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo --bar'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(bar=False, baz=True, foo=True)</p>
+</blockquote>
+<p>这里为什么是这样呢，因为默认存储的都是True，当你调用–bar,–foo参数时，会执行action操作，会把action指定的动作执行</p>
+<h4 id="d-append">d.append</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>, action=<span class="string">'append'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 1 --foo 2 --foo 3'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(foo=[‘1’, ‘2’, ‘3’])</p>
+</blockquote>
+<h4 id="append-const">append_const</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--str'</span>, action=<span class="string">'append_const'</span>,const=str)</span><br><span class="line">parser.add_argument(<span class="string">'--int'</span>, action=<span class="string">'append_const'</span>,const=int)</span><br><span class="line">args = parser.parse_args(<span class="string">'--str --int'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(int=[&lt;class ‘int’&gt;], str=[&lt;class ‘str’&gt;])</p>
+</blockquote>
+<h4 id="count">count</h4>
+<p>统计一个keyword argument出现了多少次</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--co'</span>, <span class="string">'-c'</span>,action=<span class="string">'count'</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'-ccc'</span>])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(co=3)</p>
+</blockquote>
+<h4 id="help">help</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">args = parser.parse_args(<span class="string">'--help'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出，如果是交互式环境的话，会退出python</p>
+<blockquote>
+<p>usage: [-h]</p>
+</blockquote>
+<blockquote>
+<p>optional arguments:<br>
+-h, --help  show this help message and exit</p>
+</blockquote>
+<h4 id="version">version</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--version'</span>, action=<span class="string">'version'</span>,version=<span class="string">'version 3'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'--version'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出,如果是交互式环境的话，会退出python</p>
+<blockquote>
+<p>version 3</p>
+</blockquote>
+<h3 id="nargs-指定参数个数">nargs 指定参数个数</h3>
+<h4 id="n">N</h4>
+<p>如果是可选参数的话，或者不指定这个参数，或者必须指定N个参数<br>
+如果是必选参数的话，必须指定N个参数，不能多也不能少，也不能为0个</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="number">3</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="number">4</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'bar 3 4 5'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(bar=[‘bar’, ‘3’, ‘4’, ‘5’], foo=None)</p>
+</blockquote>
+<h4 id="none">?</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="string">'?'</span>,const=<span class="string">'c'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'?'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'3'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'3 --foo'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(bar=‘3’, foo=‘d’)<br>
+Namespace(bar=‘3’, foo=‘c’)</p>
+</blockquote>
+<p>如果显式指定可选参数，但是不给它参数，那么如果有const的话，就会显示const的值，否则就会显示None</p>
+<h4 id="none-v2">*</h4>
+<p>nargs设置为*的话，不能直接用const=’'来设置const参数，需要使用其他方式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="string">'*'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'*'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'3 --foo 3 4'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(bar=[‘3’], foo=[‘3’, ‘4’])</p>
+</blockquote>
+<h4 id="none-v3">+</h4>
+<p>nargs设置为+，参数个数必须大于等于1</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="string">'+'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'+'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'3 3'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 3'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(bar=[‘3’], foo=‘d’)<br>
+Namespace(bar=[‘3’], foo=[‘3’])</p>
+</blockquote>
+<h3 id="const">const</h3>
+<h4 id="action-store-const-or-action-append-const">action=’'store_const&quot; or action=“append_const”</h4>
+<p>the examples are in the action</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>, action=<span class="string">'store_const'</span>, const=<span class="number">42</span>)</span><br><span class="line">args = parser.parse_args([<span class="string">'--foo'</span>)</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(foo=42)</p>
+</blockquote>
+<h4 id="like-f-or-foo-and-nargs">like -f or --foo and nargs=’?’</h4>
+<p>the examples are the same as examples in the nargs=’?’</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,nargs=<span class="string">'?'</span>,const=<span class="string">'c'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'?'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'3'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'3 --foo'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(bar=‘3’, foo=‘d’)<br>
+Namespace(bar=‘3’, foo=‘c’)<br>
+如果显式指定可选参数，但是不给它参数，那么如果有const的话，就会显示const的值，否则就会显示None</p>
+</blockquote>
+<h3 id="default">default</h3>
+<p>default对于可选参数来说，是有用的，当可选参数没有在command line中显示出来时被使用，但是对于必选参数来说，只有nargs=?或者*才能起作用。</p>
+<h4 id="对于可选参数">对于可选参数</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--foo'</span>,default=<span class="number">43</span>)</span><br><span class="line">args = parser.parse_args([])</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 3'</span>.split())</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(foo=‘43’)<br>
+Namespace(foo=‘3’)</p>
+</blockquote>
+<h4 id="对于必选参数">对于必选参数</h4>
+<p>对于nargs=‘+’是会出错</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(&apos;bar&apos;,nargs=&apos;+&apos;,default=&apos;d&apos;)</span><br><span class="line">args = parser.parse_args([])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>usage: [-h] bar [bar …]<br>
+: error: the following arguments are required: bar</p>
+</blockquote>
+<p>对于nargs=‘*’或者nargs=’?'就行了</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'bar'</span>,nargs=<span class="string">'?'</span>,default=<span class="string">'d'</span>)</span><br><span class="line">args = parser.parse_args([])</span><br><span class="line">print(args)</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(bar=‘d’)</p>
+</blockquote>
+<h3 id="type">type</h3>
+<p>将输入的字符串参数转换为你想要的参数类型<br>
+对于文件类型来说，这个文件必须在当前目录存在。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'--door'</span>,type=int)</span><br><span class="line">parser.add_argument(<span class="string">'filename'</span>,type=file)</span><br><span class="line">parser.parse_args([<span class="string">'--door'</span>,<span class="string">'3'</span>,<span class="string">'hello.txt'</span>])</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(door=3)<br>
+这里的door就是int类型的</p>
+</blockquote>
+<h3 id="choices">choices</h3>
+<p>输入的参数必须在choices这个范围中，否则就会报错</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParse()</span><br><span class="line">parser.add_argument(<span class="string">'--door'</span>,type=int,choices=range(<span class="number">1</span>,<span class="number">9</span>))</span><br><span class="line">parser.parse_args([<span class="string">'--door'</span>,<span class="string">'3'</span>])</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(door=3)</p>
+</blockquote>
+<h3 id="required">required</h3>
+<p>如果将required设置为True的话，那么这个可选参数必须要设置的</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>, <span class="string">'--foo-bar'</span>, <span class="string">'--foo'</span>,required=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="help-v2">help</h3>
+<p>help可以设置某个参数的简要介绍。<br>
+使用help=argparse.SUPRESS可以在help界面中不显示这个参数的介绍</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>, <span class="string">'--foo-bar'</span>, <span class="string">'--foo'</span>,help=<span class="string">'fool you '</span>)</span><br><span class="line">parser.add_argument(<span class="string">'-xs'</span>, <span class="string">'--y'</span>,help=argparse.SUPPRESS)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>usage: [-h] [-f FOO_BAR]</p>
+</blockquote>
+<blockquote>
+<p>optional arguments:<br>
+-h, --help            show this help message and exit<br>
+-f FOO_BAR, --foo-bar FOO_BAR, --foo FOO_BAR<br>
+fool you</p>
+</blockquote>
+<h3 id="dest">dest</h3>
+<p>dest就是在help输出时显示的optional和positional参数后跟的名字（没有指定metavar时）<br>
+如下,dest就是FOO<br>
+-foo FOO</p>
+<h4 id="positional-argument">positional argument</h4>
+<p>dest is normally supplied as the first argument to add_argument()</p>
+<h4 id="可选参数">可选参数</h4>
+<p>对于optional argument选择，–参数最长的一个作为dest，如果没有最长的，选择第一个出现的，如果没有–参数名，选择-参数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>, <span class="string">'--foo-bar'</span>, <span class="string">'--foo'</span>)</span><br><span class="line">parser.add_argument(<span class="string">'-xs'</span>, <span class="string">'--y'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'-f 1 -xs 2'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 1 --y 2'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(foo_bar=‘1’, y=‘2’)<br>
+Namespace(foo_bar=‘1’, y=‘2’)<br>
+usage: [-h] [-f FOO_BAR] [-xs Y]</p>
+</blockquote>
+<blockquote>
+<p>optional arguments:<br>
+-h, --help            show this help message and exit<br>
+-f FOO_BAR, --foo-bar FOO_BAR, --foo FOO_BAR<br>
+-xs Y, --y Y</p>
+</blockquote>
+<h3 id="metavar">metavar</h3>
+<p>如果指定metavar变量名的话，那么help输出的postional和positional参数后跟的名字就是metavar的名字而不是dest的名字</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> argparse</span><br><span class="line">parser = argparse.ArgumentParser()</span><br><span class="line">parser.add_argument(<span class="string">'-f'</span>, <span class="string">'--foo-bar'</span>, <span class="string">'--foo'</span>,metavar=<span class="string">"FOO"</span>)</span><br><span class="line">parser.add_argument(<span class="string">'-xs'</span>, <span class="string">'--y'</span>,metavar=<span class="string">'XY'</span>)</span><br><span class="line">args = parser.parse_args(<span class="string">'-f 1 -xs 2'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">args = parser.parse_args(<span class="string">'--foo 1 --y 2'</span>.split())</span><br><span class="line">print(args)</span><br><span class="line">parser.print_help()</span><br></pre></td></tr></table></figure>
+<p>输出</p>
+<blockquote>
+<p>Namespace(foo_bar=‘1’, y=‘2’)<br>
+Namespace(foo_bar=‘1’, y=‘2’)<br>
+usage: [-h] [-f FOO] [-xs XY]</p>
+</blockquote>
+<blockquote>
+<p>optional arguments:<br>
+-h, --help            show this help message and exit<br>
+-f FOO, --foo-bar FOO, --foo FOO<br>
+-xs XY, --y XY</p>
+</blockquote>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/18/python-numpy笔记/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2659,910 +3516,11 @@ type ‘list’<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/09/markdown帮助/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/09/markdown帮助/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/23/index.html">markdown帮助</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-09 19:53:32" itemprop="dateCreated datePublished" datetime="2019-03-09T19:53:32+08:00">2019-03-09</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-25 19:42:39" itemprop="dateModified" datetime="2019-10-25T19:42:39+08:00">2019-10-25</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/工具/" itemprop="url" rel="index"><span itemprop="name">工具</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="引用">引用</h2>
-<h3 id="代码引用">代码引用</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br></pre></td></tr></table></figure>
-<h3 id="文字引用">文字引用</h3>
-<blockquote>
-<p>实际是人类进步的阶梯。　－－高尔基</p>
-</blockquote>
-<h2 id="表格">表格</h2>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">name</th>
-<th style="text-align:center">age</th>
-<th style="text-align:center">gender</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">Alice</td>
-<td style="text-align:center">11</td>
-<td style="text-align:center">female</td>
-</tr>
-<tr>
-<td style="text-align:center">Bob</td>
-<td style="text-align:center">82</td>
-<td style="text-align:center">male</td>
-</tr>
-</tbody>
-</table>
-<h2 id="表情">表情</h2>
-<h3 id="安装过程">安装过程</h3>
-<p>第一步，卸载hexo默认的hexo-renderer-marked markdown渲染器<br>
-~$:npm un hexo-renderer-marked --save<br>
-第二步，安装支持emoji的markdown渲染器<br>
-~$:npm i hexo-renderer-markdown-it --save<br>
-第三步，修改博客根目录下的_config.yml文件，添加下列内容：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"># Markdown-it config</span><br><span class="line">## Docs: https://github.com/celsomiranda/hexo-renderer-markdown-it/wiki</span><br><span class="line">markdown:</span><br><span class="line">  render:</span><br><span class="line">    html: true</span><br><span class="line">    xhtmlOut: false</span><br><span class="line">    breaks: true</span><br><span class="line">    linkify: true</span><br><span class="line">    typographer: true</span><br><span class="line">    quotes: &apos;“”‘’&apos;</span><br><span class="line">  plugins:</span><br><span class="line">    - markdown-it-abbr</span><br><span class="line">    - markdown-it-footnote</span><br><span class="line">    - markdown-it-ins</span><br><span class="line">    - markdown-it-sub</span><br><span class="line">    - markdown-it-sup</span><br><span class="line">    - markdown-it-emoji  ## add emoji</span><br><span class="line">  anchors:</span><br><span class="line">    level: 2</span><br><span class="line">    collisionSuffix: &apos;v&apos;</span><br><span class="line">    # If `true`, creates an anchor tag with a permalink besides the heading.</span><br><span class="line">    permalink: false  </span><br><span class="line">    permalinkClass: header-anchor</span><br><span class="line">    # The symbol used to make the permalink</span><br><span class="line">    permalinkSymbol: ¶</span><br></pre></td></tr></table></figure>
-<p>然后重新生成部署即可。<br>
-测试：<br>
-😄<br>
-😆<br>
-👃</p>
-<h2 id="测试">测试</h2>
-<table>
-   <tr>
-      <td></td>
-   </tr>
-   <tr>
-      <td>Coding</td>
-   </tr>
-   <tr>
-      <td>Content</td>
-   </tr>
-   <tr>
-      <td>描述性提炼性质的研究</td>
-   </tr>
-   <tr>
-      <td>第一部分：</td>
-   </tr>
-   <tr>
-      <td>文献综述</td>
-   </tr>
-   <tr>
-      <td>（对话）</td>
-   </tr>
-   <tr>
-      <td>SPL</td>
-   </tr>
-   <tr>
-      <td>本文的文献综述贯穿在行文的过程中</td>
-   </tr>
-   <tr>
-      <td>（1）关于分家的原因：</td>
-   </tr>
-   <tr>
-      <td>敌军：①弗里德曼兄弟之间的利害冲突②许烺光夫妻纽带强于父子之间的纽带→概括为家庭内摩擦</td>
-   </tr>
-   <tr>
-      <td>作者（部分认同敌军基础上提出自己的观点）：分家逐渐演化成一种“文化现象”</td>
-   </tr>
-   <tr>
-      <td>（2）分家中的“继”与“合”</td>
-   </tr>
-   <tr>
-      <td>敌军：①孔迈隆以家产正式分才算分家的定义②分灶</td>
-   </tr>
-   <tr>
-      <td>评论：①经济上的考虑多于社会上的考虑②认为分家是家庭的破裂以及兄弟没有继承一个完整的家庭</td>
-   </tr>
-   <tr>
-      <td>作者：分家中也有垂直关系的“继承”、横纵一体的“合”</td>
-   </tr>
-   <tr>
-      <td></td>
-   </tr>
-   <tr>
-      <td>CPL</td>
-   </tr>
-   <tr>
-      <td>①对现有文献的理解和看法②作者在哪个细分领域展开研究</td>
-   </tr>
-   <tr>
-      <td>理论基础</td>
-   </tr>
-   <tr>
-      <td>RAT</td>
-   </tr>
-   <tr>
-      <td>上面两个部分的完善是为这个部分做准备</td>
-   </tr>
-   <tr>
-      <td>第二部分：</td>
-   </tr>
-   <tr>
-      <td>机制和结构</td>
-   </tr>
-   <tr>
-      <td>F（x）</td>
-   </tr>
-   <tr>
-      <td>结构： </td>
-   </tr>
-   <tr>
-      <td>（1）概念界定：分家的基本内容</td>
-   </tr>
-   <tr>
-      <td>什么是分家？分家时财产按照“股”分割；分家的原因</td>
-   </tr>
-   <tr>
-      <td>（2）分家带来的影响（案例分析）：分家带来了社会流动</td>
-   </tr>
-   <tr>
-      <td>  借用说“分家三年显高低”、“富不过三代”、“父子一条心，黄土变成金”三句俚语来说明分家对社会变化的影响</td>
-   </tr>
-   <tr>
-      <td>（3）分家的中“继”与“合”</td>
-   </tr>
-   <tr>
-      <td>  继：赡养老人、继宗祧（tiao 1声），对应儒的孝、父子一体观念</td>
-   </tr>
-   <tr>
-      <td>  合：生产生活上的合作</td>
-   </tr>
-   <tr>
-      <td>（4）结语</td>
-   </tr>
-   <tr>
-      <td>机制：对应儒的孝、父子一体观念；生产生活上的合作</td>
-   </tr>
-   <tr>
-      <td>Argument</td>
-   </tr>
-   <tr>
-      <td>CA</td>
-   </tr>
-   <tr>
-      <td>分中有继也有合</td>
-   </tr>
-   <tr>
-      <td>第三部分：</td>
-   </tr>
-   <tr>
-      <td>问题和发展</td>
-   </tr>
-   <tr>
-      <td>    （1） 文献综述找敌军可以借鉴，以及文献评述</td>
-   </tr>
-   <tr>
-      <td>    （2） 文献综述可以加一些友军</td>
-   </tr>
-   <tr>
-      <td>    （3） 文章可能写的太早了，不太符合现在的文章写作规范。不太理解第二部分“分家对社会发展的影响”对整篇文章有什么关系？？是不是没有必要占这么大篇幅</td>
-   </tr>
-   <tr>
-      <td>    （4） 内容方面：</td>
-   </tr>
-   <tr>
-      <td>随着时间的演变，他们的合越来越局限于小，男女双方的直系亲属，直系的兄弟关系和姻亲关系，大家族的联系越来越少；大家族即使祖坟放在一起，也难以通过祭祀的手段联系起来，慢慢农村也形成原子化的家庭单位，对于同村的人来说，地缘关系、邻里关系是比血缘关系更重要的存在</td>
-   </tr>
-   <tr>
-      <td></td>
-   </tr>
-</table>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://daringfireball.net/projects/markdown/syntax" target="_blank" rel="noopener">https://daringfireball.net/projects/markdown/syntax</a><br>
-2.<a href="https://www.webfx.com/tools/emoji-cheat-sheet/" target="_blank" rel="noopener">https://www.webfx.com/tools/emoji-cheat-sheet/</a><br>
-3.<a href="https://guides.github.com/features/mastering-markdown/" target="_blank" rel="noopener">https://guides.github.com/features/mastering-markdown/</a><br>
-4.<a href="https://github.com/mxxhcm/use_vim_as_ide#8.4" target="_blank" rel="noopener">https://github.com/mxxhcm/use_vim_as_ide#8.4</a><br>
-5.<a href="https://chaxiaoniu.oschina.io/2017/07/10/HexoAddEmoji/" target="_blank" rel="noopener">https://chaxiaoniu.oschina.io/2017/07/10/HexoAddEmoji/</a><br>
-6.<a href="https://www.markdownguide.org/basic-syntax/" target="_blank" rel="noopener">https://www.markdownguide.org/basic-syntax/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/07/tensorflow-problems/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/07/tensorflow-problems/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/23/index.html">tensorflow 常见问题（不定期更新）</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-07 14:51:01" itemprop="dateCreated datePublished" datetime="2019-03-07T14:51:01+08:00">2019-03-07</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-07-18 20:27:16" itemprop="dateModified" datetime="2019-07-18T20:27:16+08:00">2019-07-18</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tensorflow/" itemprop="url" rel="index"><span itemprop="name">tensorflow</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题1-the-value-of-a-feed-cannot-be-a-tf-tensor-object">问题1-The value of a feed cannot be a tf.Tensor object</h2>
-<h3 id="报错">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TypeError: The value of a feed cannot be a tf.Tensor object</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因">问题原因</h3>
-<p>sess.run(op, feed_dict={})中的feed value不能是tf.Tensor类型。</p>
-<h3 id="解决方法">解决方法</h3>
-<p>sess.run(train, feed_dict={x:images, y:labels}的输入不能是tensor，可以使用sess.run(tensor)得到numpy.array形式的数据再喂给feed_dict。</p>
-<blockquote>
-<p>Once you have launched a sess, you can use your_tensor.eval(session=sess) or sess.run(your_tensor) to get you feed tensor into the format of numpy.array and then feed it to your placeholder.</p>
-</blockquote>
-<h2 id="问题2-could-not-create-cudnn-handle-cudnn-status-internal-error">问题2-Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR</h2>
-<h3 id="配置">配置</h3>
-<p>环境配置如下：</p>
-<ul>
-<li>Ubuntu 18.04</li>
-<li>CUDA 10.0</li>
-<li>CuDNN 7.4.2</li>
-<li>Python3.7.3</li>
-<li>Tensorflow 1.13.1</li>
-<li>Nvidia Drivers 430.09</li>
-<li>RTX2070</li>
-</ul>
-<h3 id="报错-v2">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">2019-05-12 14:45:59.355405: E tensorflow/stream_executor/cuda/cuda_dnn.cc:334] Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR</span><br><span class="line">2019-05-12 14:45:59.357698: E tensorflow/stream_executor/cuda/cuda_dnn.cc:334] Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因-v2">问题原因</h3>
-<p>GPU不够用了。</p>
-<h3 id="解决方法-v2">解决方法</h3>
-<p>在代码中添加下面几句：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">config = tf.ConfigProto()</span><br><span class="line">config.gpu_options.allow_growth = <span class="literal">True</span></span><br><span class="line">session = InteractiveSession(config=config)</span><br></pre></td></tr></table></figure>
-<h2 id="问题3-libcublas-so-10-0-cannot-open-shared-object-file-no-such-file-or-directory">问题3-libcublas.so.10.0: cannot open shared object file: No such file or directory</h2>
-<p>在命令行或者pycharm中import tensorflow报错</p>
-<h3 id="报错-v3">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ImportError: libcublas.so.10.0: cannot open shared object file: No such file or directory</span><br><span class="line">Failed to load the native TensorFlow runtime.</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因-v3">问题原因</h3>
-<p>没有配置CUDA环境变量</p>
-<h3 id="解决方法-v3">解决方法</h3>
-<h4 id="命令行中">命令行中</h4>
-<p>在.bashrc文件中加入下列语句：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export PATH=/usr/local/cuda/bin$&#123;PATH:+:$&#123;PATH&#125;&#125;</span><br><span class="line">export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$&#123;LD_LIBRARY_PATH:+:$&#123;LD_LIBRARY_PATH&#125;&#125;</span><br><span class="line">export CUDA_HOME=/usr/local/cuda</span><br></pre></td></tr></table></figure>
-<h4 id="pycharm中">pycharm中</h4>
-<h5 id="方法1-这种方法我没有实验成功-不知道为什么">方法1（这种方法我没有实验成功，不知道为什么）</h5>
-<p>在左上角选中<br>
-File&gt;&gt;Settings&gt;&gt;Build.Execution,Deployment&gt;&gt;Console&gt;&gt;Python Console<br>
-在Environment下的Environment variables中添加<br>
-LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}即可。</p>
-<h5 id="方法2">方法2</h5>
-<p>修改完.bashrc文件后从终端中运行pycharm。</p>
-<h2 id="问题4-dlerror-libcupti-so-10-0-cannot-open-shared-object-file-no-such-file-or-directory">问题4-dlerror: libcupti.so.10.0: cannot open shared object file: No such file or directory</h2>
-<p>执行mnist_with_summary代码时报错</p>
-<h3 id="报错-v4">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">I tensorflow/stream_executor/dso_loader.cc:142] Couldn&apos;t open CUDA library libcupti.so.10.0. LD_LIBRARY_PATH: /usr/local/cuda/lib64:</span><br><span class="line">2019-05-13 23:04:10.620149: F tensorflow/stream_executor/lib/statusor.cc:34] Attempting to fetch value instead of handling error Failed precondition: could not dlopen DSO: libcupti.so.10.0; dlerror: libcupti.so.10.0: cannot open shared object file: No such file or directory</span><br><span class="line">Aborted (core dumped)</span><br></pre></td></tr></table></figure>
-<h3 id="问题问题问题问题问题问题问题问题问题原因">问题问题问题问题问题问题问题问题问题原因</h3>
-<p>libcupti.so.10.0包没找到</p>
-<h3 id="解决方法-v4">解决方法</h3>
-<p>执行以下命令，找到相关的依赖包：<br>
-~$:find /usr/local/cuda/ -name libcupti.so.10.0<br>
-输出如下：</p>
-<blockquote>
-<p>/usr/local/cuda/extras/CUPTI/lib64/libcupti.so.10.0</p>
-</blockquote>
-<p>然后修改~/.bashrc文件中相应的环境变量:<br>
-export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64/😒{LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}<br>
-重新运行即可。</p>
-<h2 id="问题5-unhashable-type-list">问题5-unhashable type: ‘list’</h2>
-<p>sess.run(op, feed_dict={})中feed的数据中包含有list的时候会报错。</p>
-<h3 id="报错-v5">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TypeError: unhashable type: &apos;list&apos;</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因-v4">问题原因</h3>
-<p>feed_dict中不能的value不能是list。</p>
-<h3 id="解决方法-v5">解决方法</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">feed_dict = &#123;</span><br><span class="line">               placeholder : value </span><br><span class="line">                  <span class="keyword">for</span> placeholder, value <span class="keyword">in</span> zip(placeholder_list, inputs_list))</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
-<h3 id="代码示例">代码示例</h3>
-<p><a href="https://github.com/mxxhcm/code/blob/master/tf/ops/tf_placeholder_list.py" target="_blank" rel="noopener">代码地址</a></p>
-<h2 id="问题6-attempting-to-use-uninitialized-value">问题6-Attempting to use uninitialized value</h2>
-<p>tf.Session()和tf.InteractiveSession()混用问题。</p>
-<h3 id="报错-v6">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">tensorflow.python.framework.errors_impl.FailedPreconditionError: Attempting to use uninitialized value prediction/l1/w</span><br><span class="line">	 [[&#123;&#123;node prediction/l1/w/read&#125;&#125;]]</span><br><span class="line">	 [[&#123;&#123;node prediction/LogSoftmax&#125;&#125;]]</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因-v5">问题原因</h3>
-<p>声明了如下session:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sess = tf.Session()</span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br></pre></td></tr></table></figure>
-<p>在接下来的代码中，因为我声明的是tf.Session()，使用了op.eval()函数，这种用法是tf.InteractiveSession的用法，所以就相当于没有初始化。<br>
-result = op.eval(feed_dict={})<br>
-然后就报了未初始化的错误。<br>
-把代码改成：<br>
-result = sess.run([op], feeed_dct={})<br>
-即可，即上下文使用的session应该一致。</p>
-<h3 id="解决方案">解决方案</h3>
-<p>使用统一的session类型</p>
-<h2 id="问题7-setting-an-array-element-with-a-sequence">问题7-setting an array element with a sequence</h2>
-<p>feed_dict键值对中中值必须是numpy.ndarray，不能是其他类型。</p>
-<h3 id="报错-v7">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">value error setting an array element with a sequence,</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因-v6">问题原因</h3>
-<p>feed_dict中key-value的value必须是numpy.ndarray，不能是其他类型，尤其不能是tf.Variable。</p>
-<h3 id="解决方法-v6">解决方法</h3>
-<p>检查sess.run(op, feed_dict={})中的feed_dict，确保他们的类型，不能是tf.Variable()类型的对象，需要是numpy.ndarray。</p>
-<h2 id="问题8-访问tf-variable-的值">问题8-访问tf.Variable()的值</h2>
-<p>如何获得tf.Variable()对象的值</p>
-<h3 id="解决方法-v7">解决方法</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line">x = tf.Varialbe([<span class="number">1.0</span>, <span class="number">2.0</span>])</span><br><span class="line">sess = tf.Session()</span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">value = sess.run(x)</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">import tensorflow as tf</span><br><span class="line">x = tf.Varialbe([1.0, 2.0])</span><br><span class="line">sess = tf.InteractiveSession()</span><br><span class="line">sess.run(tf.global_variables_initializer())</span><br><span class="line">x.eval()</span><br></pre></td></tr></table></figure>
-<h2 id="问题9-can-not-convert-a-ndarray-into-a-tensor-or-operation">问题9-Can not convert a ndarray into a Tensor or Operation</h2>
-<h3 id="报错-v8">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Can not convert a ndarray into a Tensor or Operation.</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因-v7">问题原因</h3>
-<p>原因是sess.run()前后参数名重了，比如outputs = sess.run(outputs)，outputs本来是自己定义的一个op，但是sess.run(outputs)之后outputs就成了一个变量，就把定义的outputs op覆盖了。</p>
-<h3 id="解决方法-v8">解决方法</h3>
-<p>换个变量名字就行</p>
-<h2 id="问题10-本地使用gpu-server的tensorboard">问题10-本地使用gpu server的tensorboard</h2>
-<h3 id="问题描述">问题描述</h3>
-<p>在gpu server跑的实验结果，然后summary的记录也在server上，但是又没办法可视化，只好在本地可视化。</p>
-<h3 id="解决方法-v9">解决方法</h3>
-<p>使用ssh进行映射好了。</p>
-<h4 id="本机设置">本机设置</h4>
-<p>~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:mxxmhh@127.0.0.1" target="_blank" rel="noopener">mxxmhh@127.0.0.1</a><br>
-将本机的12345端口映射到10.1.114.50的6006端口，中间服务器使用的是本机。<br>
-或者可以使用10.1.114.50作为中间服务器。<br>
-~$:ssh -L 12345:10.1.114.50:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
-或者可以使用如下方法：<br>
-~$:ssh -L 12345:127.0.0.1:6006 <a href="mailto:liuchi@10.1.114.50" target="_blank" rel="noopener">liuchi@10.1.114.50</a><br>
-从这个方法中，可以看出127.0.0.1这个ip是中间服务器可以访问的ip。<br>
-以上三种方法中，-L后的端口号12345可以随意设置，只要不冲突即可。</p>
-<h4 id="服务端设置">服务端设置</h4>
-<p>然后在服务端运行以下命令：<br>
-~$:tensorboard --logdir logdir -port 6006<br>
-这个端口号也是可以任意设置的，不冲突即可。</p>
-<h4 id="运行">运行</h4>
-<p>然后在本机访问<br>
-<a href="https://127.0.0.1:12345" target="_blank" rel="noopener">https://127.0.0.1:12345</a>即可。</p>
-<h2 id="问题11-每一步summary一个list的每一个元素">问题11-每一步summary一个list的每一个元素</h2>
-<h3 id="问题原因-v8">问题原因</h3>
-<p>有一个tf list的placeholder，但是每一步只能生成其中的一个元素，所以怎么样summary中其中的某一个？</p>
-<h3 id="解决方法-v10">解决方法</h3>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">import tensorflow as tf</span><br><span class="line">import numpy as np</span><br><span class="line"></span><br><span class="line">number = 3</span><br><span class="line">x_ph_list = []</span><br><span class="line">for i in range(number):</span><br><span class="line">    x_ph_list.append(tf.placeholder(tf.float32, shape=None))</span><br><span class="line"></span><br><span class="line">x_summary_list = []</span><br><span class="line">for i in range(number):</span><br><span class="line">    x_summary_list.append(tf.summary.scalar("x%s" % i, x_ph_list[i]))</span><br><span class="line"></span><br><span class="line">writer = tf.summary.FileWriter("./tf_summary/scalar_list_summary/sep")</span><br><span class="line">with tf.Session() as sess:</span><br><span class="line">    scope = 10</span><br><span class="line">    inputs = np.arange(scope*number)</span><br><span class="line">    inputs = inputs.reshape(scope, number)</span><br><span class="line">    # inputs = np.random.randn(scope, number)</span><br><span class="line">    for i in range(scope):</span><br><span class="line">        for j in range(number):</span><br><span class="line">            out, xj_s = sess.run([x_ph_list[j], x_summary_list[j]], feed_dict=&#123;x_ph_list[j]: inputs[i][j]&#125;)</span><br><span class="line">            writer.add_summary(xj_s, global_step=i)</span><br></pre></td></tr></table></figure>
-<h2 id="问题12-for-value-in-summary-value-attributeerror-list-object-has-no-attribute-value">问题12- for value in summary.value: AttributeError: ‘list’ object has no attribute ‘value’</h2>
-<h3 id="问题描述-v2">问题描述</h3>
-<p>writer.add_summary时报错</p>
-<h3 id="报错-v9">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">File &quot;/home/mxxmhh/anaconda3/lib/python3.7/site-packages/tensorflow/python/summary/writer/writer.py&quot;, line 127, in add_summary</span><br><span class="line">    for value in summary.value:</span><br><span class="line">AttributeError: &apos;list&apos; object has no attribute &apos;value&apos;</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因-v9">问题原因</h3>
-<p>执行以下代码</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">s_ = sess.run([loss_summary], feed_dict=&#123;p_losses_ph: inputs1, q_losses_ph: inputs2&#125;)</span><br><span class="line">writer.add_summary(s_, global_step=<span class="number">1</span>)</span><br></pre></td></tr></table></figure>
-<p>因为[loss_summary]加了方括号，就把它当成了一个list。。返回值也是list，就报错了</p>
-<h3 id="解决方法-v11">解决方法</h3>
-<ul>
-<li>方法1，在等号左边加一个逗号，取出list中的值</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s_, = sess.run([loss_summary], feed_dict=&#123;p_losses_ph: inputs1, q_losses_ph: inputs2&#125;)</span><br></pre></td></tr></table></figure>
-<ul>
-<li>方法2，去掉loss_summary外面的中括号。</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s_ = sess.run(loss_summary, feed_dict=&#123;p_losses_ph: inputs1, q_losses_ph: inputs2&#125;)</span><br></pre></td></tr></table></figure>
-<h2 id="问题13-tf-get-default-session-always-returns-none-type">问题13- tf.get_default_session() always returns None type:</h2>
-<h3 id="问题描述-v3">问题描述</h3>
-<p>调用tf.get_default_session()时，返回的是None</p>
-<h3 id="报错-v10">报错</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">    tf.get_default_session().run(y)</span><br><span class="line">AttributeError: &apos;NoneType&apos; object has no attribute &apos;run&apos;</span><br></pre></td></tr></table></figure>
-<h3 id="问题原因-v10">问题原因</h3>
-<p>只有在设定default session之后，才能使用tf.get_default_session()获得当前的默认session，在我们写代码的时候，一般会按照下面的方式写：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    some operations</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
-<p>这种情况下已经把tf.Session()生成的session当做了默认session，但是如果仅仅使用以下代码：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line">sess =  tf.Session()</span><br><span class="line">sess.run(some operations)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>是没有把tf.Session()当成默认session的，即只有在with block内，才会将这个session当做默认session。</p>
-<h3 id="解决方案-v2">解决方案</h3>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://github.com/tensorflow/tensorflow/issues/4842" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/4842</a><br>
-2.<a href="https://github.com/tensorflow/tensorflow/issues/24496" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/24496</a><br>
-3.<a href="https://github.com/tensorflow/tensorflow/issues/9530" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/9530</a><br>
-4.<a href="https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow" target="_blank" rel="noopener">https://stackoverflow.com/questions/51128427/how-to-feed-list-of-values-to-a-placeholder-list-in-tensorflow</a><br>
-5.<a href="https://github.com/tensorflow/tensorflow/issues/11897" target="_blank" rel="noopener">https://github.com/tensorflow/tensorflow/issues/11897</a><br>
-6.<a href="https://stackoverflow.com/questions/34156639/tensorflow-python-valueerror-setting-an-array-element-with-a-sequence-in-t" target="_blank" rel="noopener">https://stackoverflow.com/questions/34156639/tensorflow-python-valueerror-setting-an-array-element-with-a-sequence-in-t</a><br>
-7.<a href="https://stackoverflow.com/questions/33679382/how-do-i-get-the-current-value-of-a-variable" target="_blank" rel="noopener">https://stackoverflow.com/questions/33679382/how-do-i-get-the-current-value-of-a-variable</a><br>
-8.<a href="https://blog.csdn.net/michael__corleone/article/details/79007425" target="_blank" rel="noopener">https://blog.csdn.net/michael__corleone/article/details/79007425</a><br>
-9.<a href="https://stackoverflow.com/questions/47721792/tensorflow-tf-get-default-session-after-sess-tf-session-is-none" target="_blank" rel="noopener">https://stackoverflow.com/questions/47721792/tensorflow-tf-get-default-session-after-sess-tf-session-is-none</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/04/lychee图床搭建/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/03/04/lychee图床搭建/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/23/index.html">lychee图床搭建</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-04 21:03:55" itemprop="dateCreated datePublished" datetime="2019-03-04T21:03:55+08:00">2019-03-04</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/工具/" itemprop="url" rel="index"><span itemprop="name">工具</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="安装">安装</h2>
-<h3 id="基本要求">基本要求</h3>
-<ol>
-<li>web server (Apache, nginx, etc)</li>
-<li>A MySQL database (MariaDB also works)</li>
-<li>PHP 7.1 or later with the following extensions: session, exif, mbstring, gd, mysqli, json, zip, and optionally, imagick<br>
-~#:apt install nginx<br>
-~#:apt install mysql-server<br>
-~#:apt install php</li>
-</ol>
-<h3 id="配置nginx">配置nginx</h3>
-<p>重新安装nginx出现问题，见参考文献2。</p>
-<h3 id="配置mysql">配置mysql</h3>
-<p>~#:mysql -u root -p<br>
-默认密码是回车？？？<br>
-修改密码<br>
-~#:</p>
-<h3 id="配置php">配置php</h3>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://juejin.im/post/5c1b869b6fb9a049ad770424" target="_blank" rel="noopener">https://juejin.im/post/5c1b869b6fb9a049ad770424</a><br>
-2.<a href="https://segmentfault.com/a/1190000014027697?utm_source=tag-newest" target="_blank" rel="noopener">https://segmentfault.com/a/1190000014027697?utm_source=tag-newest</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/22/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/22/">22</a><span class="page-number current">23</span><a class="page-number" href="/page/24/">24</a><span class="space">&hellip;</span><a class="page-number" href="/page/26/">26</a><a class="extend next" rel="next" href="/page/24/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/22/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/22/">22</a><span class="page-number current">23</span><a class="page-number" href="/page/24/">24</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/24/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -3607,7 +3565,7 @@ result = sess.run([op], feeed_dct={})<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">258</span>
+                    <span class="site-state-item-count">261</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -4419,7 +4377,29 @@ result = sess.run([op], feeed_dct={})<br>
                     
                       
                     
-                    <span class="site-state-item-count">370</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">381</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>

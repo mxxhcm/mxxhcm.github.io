@@ -327,6 +327,588 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/06/gradient-method-deep-deterministic-policy-gradient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/06/gradient-method-deep-deterministic-policy-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/7/index.html">gradient method deep deterministic policy gradient</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-06 10:17:25 / 修改时间：20:17:08" itemprop="dateCreated datePublished" datetime="2019-10-06T10:17:25+08:00">2019-10-06</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="ddpg">ddpg</h2>
+<p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>
+论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
+<h3 id="简介">简介</h3>
+<p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>
+简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。<br>
+$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}$$<br>
+（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>
+许多rl方法使用bellman方程递归的更新Q:<br>
+$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}$$<br>
+如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：<br>
+$$Q{\mu}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}$$<br>
+而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>
+在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
+<h3 id="ddpg-v2">DDPG</h3>
+<p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>
+DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>
+\begin{align*}<br>
+\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|_{s=s_t}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\ \tag{4}<br>
+\end{align*}<br>
+中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
+<h4 id="contributions">Contributions</h4>
+<p>本文的几个改进：</p>
+<ol>
+<li>使用replay buffer，</li>
+<li>使用target network解决不稳定的问题。</li>
+<li>使用了batch-normalization。</li>
+<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<br>
+$$\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}$$</li>
+</ol>
+<h4 id="算法">算法</h4>
+<p>算法1 DDPG<br>
+随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $<br>
+初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q ,\theta^{\mu’} \leftarrow \theta^{\mu} $<br>
+初始化replay buffer $R$<br>
+<strong>for</strong> episode = 1, M <strong>do</strong><br>
+初始化一个随机process $N$用于exploration<br>
+receive initial observation state $s_1$<br>
+for $t=1, T$ do<br>
+根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>
+执行action $a_t$，得到$r_t$和$s_{t+1}$<br>
+将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>
+从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>
+设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’} )$<br>
+使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic<br>
+使用sampled policy gradient 更新acotr:<br>
+$$\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|_{s=s_i, a=\mu(s_i)}\nabla_{\theta^{\mu} }\mu(s|\theta^{\mu} )|_{s_i}$$<br>
+更新target networks:<br>
+$$\theta’\leftarrow \tau \theta + (1-\tau) \theta’$$<br>
+end for<br>
+end for</p>
+<h3 id="实验">实验</h3>
+<p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>
+在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>
+作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/04/reinforcement-learning-why-use-baseline/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/04/reinforcement-learning-why-use-baseline/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/7/index.html">reinforcement learning why use baseline ?</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-04 15:46:00" itemprop="dateCreated datePublished" datetime="2019-10-04T15:46:00+08:00">2019-10-04</time>
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/27/reinforcement-learning-importance-sampling/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/09/27/reinforcement-learning-importance-sampling/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/7/index.html">reinforcement learning importance sampling</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-27 23:41:36" itemprop="dateCreated datePublished" datetime="2019-09-27T23:41:36+08:00">2019-09-27</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-30 12:27:02" itemprop="dateModified" datetime="2019-09-30T12:27:02+08:00">2019-09-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="importance-sampling">Importance Sampling</h2>
+<p>Importance sampling是使用一个分布近似估计另一个分布期望的方法，即通过分布$q$计算分布$p$下$f(x)$的期望。通过从$q$中采样而不是从$p$中采样近似：<br>
+$$\mathbb{E}_p\left[f(x)\right] = \mathbb{E}_q\left[ \frac{p(x)f(x)}{q(x)}\right] \tag{1}$$<br>
+使用采样分布$q$估计分布$p$下的期望：<br>
+$$\mathbb{E}_p\left[f(x)\right] \approx \frac{1}{n} \sum_{i=1}^n \frac{p(x_i)f(x_i)}{q(x_i)} x_i\sim q\tag{2}$$<br>
+上面的公式需要满足$p(x_i)$不为$0$时，$q(x_i)$也不为$0$。直接计算$\mathbb{E}_p\left[f(x)\right]$和$\mathbb{E}_q\left[f(x)\right]$，一般来说是不同的，通过importance ratio调整权重，就可以使用$q$分布估计$p$分布的期望了。举个例子：<br>
+$$f(1) = 2, f(2) = 3, f(3) = 4, otherwise 0 \tag{3}$$<br>
+概率分布$p$为：$p(x=1) = 0, p(x=2) = \frac{1}{3},p(x=3) = \frac{2}{3}$，概率分布$q$为：$q(x=1) = \frac{1}{3}, q(x=2) = \frac{1}{3}, q(x=3) = \frac{1}{3}$。计算期望，$\mathbb{E}_p\left[f(x)\right] = \frac{11}{3}$，$\mathbb{E}_q\left[f(x)\right] = 3$<br>
+使用importance ratio进行权重调整：<br>
+\begin{align*}<br>
+\mathbb{E}_p\left[f(x)\right] &amp; = \mathbb{E}_q\left[\frac{q(x)}{p(x)}f(x)\right] \\<br>
+&amp; = \mathbb{E}_q\left[\frac{p(x=1)}{q(x=1)}f(x=1) \right] + \mathbb{E}_q\left[\frac{p(x=2)}{q(x=2)}f(x=2) \right] + \mathbb{E}_q\left[\frac{p(x=3)}{q(x=3)}f(x=3) \right] \\<br>
+&amp; = \frac{1}{3}*0 + \frac{1}{3}\frac{\frac{1}{3}}{\frac{1}{3}}*3 + \frac{1}{3}\frac{\frac{2}{3}}{\frac{1}{3}}*4\\<br>
+&amp; =\frac{11}{3}\\<br>
+\end{align*}<br>
+可以看出来，我们使用分布$q$估计除了分布$p$的期望。通过使用一个简单分布$q$进行采样，可以计算出$p$的期望。在RL中，通常通过复用old policy的sample trajectory学习current policy。</p>
+<h2 id="optimal-importance-sampling">Optimal Importance Sampling</h2>
+<p>Importance sampling使用采样近似估计$\mathbb{E}_p\left[f(x)\right]\approx \frac{1}{N}\sum_i \frac{p(x_i)}{q(x_i)}f(x_i)$近似计算$\mathbb{E}_p\left[f(x)\right]$。随着样本数量$N$的增加，期望值越准确。但是这种方法的方差很大，为了减少方差，样本分布$q$应该满足：<br>
+$$q(x) \propto p(x)\vert f(x)\vert \tag{4}$$<br>
+简单来说，为了减少方差，我们需要采样return更大的点。</p>
+<h2 id="normalized-importanct-sampling">Normalized importanct sampling</h2>
+<p>上面介绍的方法叫做unnormalized importance sampling。可以使用下里面的公式将unnormalized importance sampling转换为normalized importance sampling。<br>
+$$p(x) = \frac{\hat{p}(x)}{Z}\tag{5}$$<br>
+许多ML方法属于贝叶斯网络或者马尔科夫随机场，对于贝叶斯网络中，$p$很容易计算。但是当$p$是马尔科夫随机场时，$\sum\hat{p}(x)$是很难计算的。<br>
+\begin{align*}<br>
+\mathbb{E}_p\left[f(x)\right] &amp; = \int f(x) p(x) dx\\<br>
+&amp; = \int f(x) \frac{\hat{p}(x)}{Z} \frac{q(x)}{q(x)} dx\\<br>
+&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}dx}{Z}\\<br>
+&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x) dx}\\<br>
+&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\<br>
+&amp; = \frac{\int f(x) q(x)\frac{\hat{p}(x)}{q(x)} dx}{\int q(x)\frac{\hat{p}(x)}{q(x)} dx}\\<br>
+&amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\<br>
+\end{align*}<br>
+接下来用采样样本的求和近似积分求期望：<br>
+\begin{align*}<br>
+\mathbb{E}_p\left[f(x)\right] &amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\<br>
+&amp; \approx \frac{\sum_i f(x^i) r^i }{\sum r^i}\qquad\qquad 其中 r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\<br>
+&amp; = \sum_i f(x^i) r^i  \frac{r^i}{\sum_i r^i}\\<br>
+\end{align*}<br>
+通过计算<br>
+这就避免了计算$Z$，这种方法叫做normalized importance sampling。但是需要付出一定代价，unnormalized importance sampling是无偏的，而normalized importance是有偏的但是方差更小。</p>
+<h2 id="importance-sampling-in-rl">Importance sampling in RL</h2>
+<p>我们可以使用importance sampling方法从old policy $\pi’$采样估计new policy $\pi$的值函数。计算一个action的returns的代价很高，但是如果新的action和老的action很接近，importance sampling可以帮助我们利用old calculation计算新的returns。举个例子，在MC方法中，无论何时更新$\theta$，都需要根据新的trajectories计算returns。<br>
+$$\nabla_{\theta}J(\theta) = \frac{1}{N}\sum_{i=1}^T \left(\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_{i,t}|s_{i,t})\right)\left(\prod_{t=1}^T R(s_{i,t},a_{i,t})\right) \tag{6}$$<br>
+一个trajectory可以有几百个steps，单个的更新是非常低效的。有了importance sampling之后，我们可以基于old samples计算新的return。然而，如果两个policy差的太远，accuracy会降低。因此周期性的同步policy是非常必要的。<br>
+使用importance sampling，重写policy gradient的等式：<br>
+$$\nabla_{\theta}J(\theta) = \mathbb{E}_{\tau\sim\bar{\pi}(\tau)}\left[\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_t|s_t)\left(\prod_{t’=1}^T \frac{\pi_{\theta}(a_{t’}|s_{t’})}{\hat{\pi}_{\theta}(a_{t’}|s_{t’})}\right)\left(\prod_{t’=t}^T R(s_{t’},a_{t’})\right)\right]\tag{7}$$<br>
+为了约束policy的变化，可以加入trust region约束条件，在这个region内，我们认为使用importance sampling得到的结果是可信的：<br>
+$$\max_{\theta} \hat{\mathbb{E}}_t\left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t}\hat{A}_t\right]\tag{8}$$<br>
+$$s.t. \hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{\theta_{old}}(\cdot|s_t),\pi_{\theta}(\cdot|s_t)\right]\right]\tag{9}$$</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://medium.com/@jonathan_hui/rl-importance-sampling-ebfb28b4a8c6" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-importance-sampling-ebfb28b4a8c6</a><br>
+2.<a href="http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf" target="_blank" rel="noopener">http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/25/mm/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1554,855 +2136,11 @@ cramer-rao bound<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/17/C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/17/C/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/7/index.html">C</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-17 17:12:35" itemprop="dateCreated datePublished" datetime="2019-09-17T17:12:35+08:00">2019-09-17</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-11-10 12:14:43" itemprop="dateModified" datetime="2019-11-10T12:14:43+08:00">2019-11-10</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="获得数组长度">获得数组长度</h2>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a[] = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>&#125;;</span><br><span class="line">l = <span class="keyword">sizeof</span>(a)/<span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br></pre></td></tr></table></figure>
-<h2 id="printf输出格式">printf输出格式</h2>
-<p>%d  有符号十进制整数(int)<br>
-%ld, %Ld    长整形数据(long)<br>
-%i  有符号十进制数，和%d一样<br>
-%u  无符号十进制整数(unsigned int)<br>
-%lu, %Lu    无符号十进制长整形数据(unsigned long)<br>
-%f  单精度浮点数(float)<br>
-%c  单字符(char)<br>
-%o  无符号八进制整数<br>
-%x(%X) 十六进制无符号整数</p>
-<h2 id="c类型字符串数组">c类型字符串数组</h2>
-<ol>
-<li>导包</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br></pre></td></tr></table></figure>
-<ol start="2">
-<li>完整字符串复制</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">strcpy</span>(des, src);</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>部分字符串复制</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">strncpy</span>(des, src+n, len);</span><br></pre></td></tr></table></figure>
-<ol start="4">
-<li>结束符</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sub[len] = <span class="string">'\0'</span>;</span><br></pre></td></tr></table></figure>
-<ol start="5">
-<li>new字符串数组</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *str = <span class="keyword">new</span> <span class="keyword">char</span>[<span class="number">100</span>];</span><br></pre></td></tr></table></figure>
-<ol start="6">
-<li>delete字符串数组</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> []str;</span><br></pre></td></tr></table></figure>
-<h2 id="生成随机数">生成随机数</h2>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">srand(time(<span class="literal">NULL</span>));   <span class="comment">// Initialization, should only be called once.</span></span><br><span class="line"><span class="keyword">int</span> r = rand();      <span class="comment">// Returns a pseudo-random integer between 0 and RAND_MAX.</span></span><br></pre></td></tr></table></figure>
-<h2 id="计算函数运行时间">计算函数运行时间</h2>
-<h3 id="计算实际运行时间">计算实际运行时间</h3>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstdlib&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;ctime&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//struct timeval</span></span><br><span class="line"><span class="comment">//&#123;</span></span><br><span class="line"><span class="comment">//     long tv_sec;//秒域</span></span><br><span class="line"><span class="comment">//     long tv_usec;//微秒域</span></span><br><span class="line"><span class="comment">//&#125;</span></span><br><span class="line"><span class="comment">//int getimeofday(struct timeval* tv,NULL);</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span>  <span class="title">tv1</span>, <span class="title">tv2</span>;</span></span><br><span class="line">    gettimeofday(&amp;tv1, <span class="literal">NULL</span>);</span><br><span class="line">    sleep(<span class="number">2</span>);</span><br><span class="line">    gettimeofday(&amp;tv2, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span> (<span class="string">"Total time = %f seconds\n"</span>,</span><br><span class="line">         (<span class="keyword">double</span>) (tv2.tv_usec - tv1.tv_usec) / <span class="number">1000000</span> +</span><br><span class="line">         (<span class="keyword">double</span>) (tv2.tv_sec - tv1.tv_sec));</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="计算cpu运行时间">计算cpu运行时间</h3>
-<p>clock()返回的是OS花了多少时间运行当前的进程。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;ctime&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">clock_t</span> start, end;</span><br><span class="line">    start = clock();</span><br><span class="line">    time.sleep(<span class="number">10</span>);</span><br><span class="line">    end = clock()</span><br><span class="line">    print(<span class="string">"%f"</span>, (<span class="keyword">double</span>)(end-start)/CLOCK_PER_SEC);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/822323/how-to-generate-a-random-int-in-c" target="_blank" rel="noopener">https://stackoverflow.com/questions/822323/how-to-generate-a-random-int-in-c</a><br>
-2.<a href="https://blog.csdn.net/zhangwei_zone/article/details/11219757" target="_blank" rel="noopener">https://blog.csdn.net/zhangwei_zone/article/details/11219757</a><br>
-3.<a href="https://stackoverflow.com/questions/5248915/execution-time-of-c-program" target="_blank" rel="noopener">https://stackoverflow.com/questions/5248915/execution-time-of-c-program</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/16/fisher-information/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/16/fisher-information/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/7/index.html">fisher information</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-16 10:24:34" itemprop="dateCreated datePublished" datetime="2019-09-16T10:24:34+08:00">2019-09-16</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-11-08 16:31:59" itemprop="dateModified" datetime="2019-11-08T16:31:59+08:00">2019-11-08</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论与统计/" itemprop="url" rel="index"><span itemprop="name">概率论与统计</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="score-function">score function</h2>
-<h3 id="最大似然估计">最大似然估计</h3>
-<p>根据最大似然估计，有似然对数：<br>
-$$l = \log p(x|\theta)$$</p>
-<h3 id="score-function-v2">score function</h3>
-<p>根据似然对数，定义一个score function：<br>
-$$s(\theta) = \nabla_{\theta} \log p(x|\theta) $$<br>
-即score是似然对数的一阶导（梯度），似然对数是标量，score function是似然对数对$\theta$的导数。</p>
-<h2 id="fisher-information">Fisher information</h2>
-<p>当$\theta$是标量的时候。</p>
-<h3 id="score-function的期望">score function的期望</h3>
-<p><strong>定理</strong> score function的期望是$0$<br>
-证明：<br>
-\begin{align*}<br>
-\mathbb{E}_{p(x|\theta)}\left[s(\theta)\right] &amp; = \mathbb{E}_{p(x|\theta)}\left[\nabla \log p(x|\theta)\right]\\<br>
-&amp;=\int \nabla \log p(x|\theta) p(x|\theta) dx\\<br>
-&amp;=\int \frac{\nabla p(x|\theta)}{p(x|\theta)} p(x|\theta) dx\\<br>
-&amp;=\int \nabla p(x|\theta) dx\\<br>
-&amp;=\nabla \int p(x|\theta) dx\\<br>
-&amp;=\nabla 1\\<br>
-&amp;= 0<br>
-\end{align*}<br>
-即似然对数梯度向量的期望为是$0$。</p>
-<h3 id="第一种意义：score-function的方差">第一种意义：score function的方差</h3>
-<p>用$I(\theta)$表示fisher information，它的定义就是score function（似然对数的一阶导）的方差：<br>
-$$I(\theta) = \mathbb{E} \left[ \left(\frac{\partial}{\partial \theta} \log f(\mathbf{X}; \theta) \right)^2 |\theta \right] = \int \left( \frac{\partial}{\partial \theta} \log f(\mathbf{X}; \theta) \right)^2 f(x;\theta)dx$$</p>
-<p>随机变量的Fisher information总是大于等于$0$的，Fisher information不是某一个observation的函数。</p>
-<h3 id="第二种意义：参数真实值处似然对数二阶导期望的相反数">第二种意义：参数真实值处似然对数二阶导期望的相反数</h3>
-<p>$$I(\theta) =  - \mathbb{E}\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$<br>
-Fisher informaction可以看成似然对数对参数估计的能力，在最大似然的估计值附近，fisher信息大代表着图像陡而尖，参数估计能力好；fisher信息小代表着图像宽而平，参数估计能力差。</p>
-<h3 id="第三种意义：cramer-rao-bound的不正式推导">第三种意义：Cramer-Rao bound的不正式推导</h3>
-<p>Fisher informaction的导数是$\theta$无偏估计值方差的下界。换句话说，$\theta$的精确度被似然对数的fisher information限制了。</p>
-<h2 id="fisher-information-matirx">Fisher information Matirx</h2>
-<p>当$\theta$是多维变量的时候。</p>
-<h3 id="preliminary">Preliminary</h3>
-<p>1.<a href="https://mxxhcm.github.io/2019/09/10/Jacobian-matrix-and-Hessian-matrix/">雅克比矩阵和海塞矩阵</a></p>
-<h3 id="第一种意义：协方差矩阵">第一种意义：协方差矩阵</h3>
-<p>$$I(\theta) = \mathbb{E}\left[s(\theta) s(\theta)^T\right]$$<br>
-根据协方差矩阵的定义：<br>
-$$\Sigma = \mathbb{E}\left[(X-\mathbb{E}(X))(X-\mathbb{E}(X))^T \right]$$<br>
-所以$s(\theta)$的协方差矩阵为：<br>
-$$\Sigma = \mathbb{E}_{p(x|\theta)} \left[(s(\theta)-0)(s(\theta) - 0)^T \right] = \mathbb{E}_{p(x|\theta)} \left[(s(\theta)s(\theta)^T \right] $$</p>
-<h3 id="第二种意义：fisher-information-matrix和hessian-matrix">第二种意义：Fisher information matrix和Hessian matrix</h3>
-<p>Fisher information matrix $F$等于似然对数的二阶导数（海塞矩阵），也是score function的一阶导，期望的负数。<br>
-$$I(\theta) =  - \mathbb{E}\left[ \frac{\partial^2 }{\partial \theta^2 } \log f(\mathbf{X}; \theta) |\theta \right] $$</p>
-<p>证明：<br>
-\begin{align*}<br>
-\text{H}_{\log p(x \vert \theta)} &amp;= \text{J} \left( \nabla \log p(x \vert \theta) \right) \\<br>
-&amp;= \text{J} \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \tag{log-derivative-trick}\\<br>
-&amp;= \frac{ \text{H}_{p(x \vert \theta)} , p(x \vert \theta) - \nabla p(x \vert \theta) , \nabla p(x \vert \theta)^{\text{T}}}{p(x \vert \theta) , p(x \vert \theta)} \tag{分数求导}\\<br>
-&amp;= \frac{\text{H}_{p(x \vert \theta)} , p(x \vert \theta)}{p(x \vert \theta) , p(x \vert \theta)} - \frac{\nabla p(x \vert \theta) , \nabla p(x \vert \theta)^{\text{T}}}{p(x \vert \theta) , p(x \vert \theta)} \\<br>
-&amp;= \frac{\text{H}_{p(x \vert \theta)}}{p(x \vert \theta)} - \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)}\right)^{\text{T}} \\<br>
-\end{align*}<br>
-第一个等号是$\log p$的海塞矩阵（二阶导）等于$\nabla \log p$（一阶导）的雅克比矩阵。<br>
-对上式取期望，得到：<br>
-\begin{align*}<br>
-\mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \text{H}_{\log p(x \vert \theta)} \right] &amp;= \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \frac{\text{H}_{p(x \vert \theta)}}{p(x \vert \theta)} - \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right)^{\text{T}} \right] \\<br>
-&amp;= \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \frac{\text{H}_{p(x \vert \theta)}}{p(x \vert \theta)} \right] - \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)} \right) \left( \frac{\nabla p(x \vert \theta)}{p(x \vert \theta)}\right)^{\text{T}} \right] \\<br>
-&amp;= \int \frac{\text{H}_{p(x \vert \theta)}}{p(x \vert \theta)} p(x \vert \theta) , \text{d}x , - \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \nabla \log p(x \vert \theta) , \nabla \log p(x \vert \theta)^{\text{T}} \right] \\<br>
-&amp;= \text{H}_{\int p(x \vert \theta) , \text{d}x} , - \text{F} \\<br>
-&amp;= \text{H}_{1} - \text{F} \\<br>
-&amp;= -\text{F} \\<br>
-\end{align*}<br>
-最后得到：$\mathbf{F} = - \mathop{\mathbb{E}}_{p(x \vert \theta)} \left[ \mathbf{H}_{\log p(x|\theta)}\right] $</p>
-<h2 id="fisher-information-matrix和kl散度">Fisher information matrix和KL散度</h2>
-<p>两个分布$p(x|\theta)$和$p(x|\theta’)$在$\theta’=\theta$处，KL散度的海塞矩阵等于fisher information matrix。<br>
-证明：<br>
-$$\text{KL}\left[p(x|\theta)||p(x|\theta’)\right] = \int_x p(x|\theta)\log p(x|\theta)dx - \int_x p(x|\theta)\log p(x|\theta’)dx$$<br>
-关于$\theta’$的一阶导为：<br>
-\begin{align*}<br>
-\nabla_{\theta’} \text{KL}\left[p(x|\theta)||p(x|\theta’)\right] &amp; = \nabla_{\theta’}\int_x p(x|\theta)\log p(x|\theta)dx - \nabla_{\theta’}\int_x p(x|\theta)\log p(x|\theta’)dx\\<br>
-&amp; = - \int_x p(x|\theta) \nabla_{\theta’} \log p(x|\theta’)dx\\<br>
-\end{align*}<br>
-关于$\theta’$的二阶导为：<br>
-\begin{align*}<br>
-\nabla_{\theta’}^2 \text{KL}\left[p(x|\theta)||p(x|\theta’)\right] &amp;=- \int_x p(x|\theta) \nabla_{\theta’} \log p(x|\theta’)dx \\<br>
-&amp;= - \int \nabla_{\theta’} p(x|\theta)\nabla_{\theta’} \log p(x|\theta’) - \int p(x|\theta)\nabla_{\theta’}^2 \log p(x|\theta’)  dx\\<br>
-&amp;= - \int p(x|\theta)\nabla_{\theta’}^2 \log p(x|\theta’) dx\\<br>
-\end{align*}<br>
-当$\theta’ = \theta$时：<br>
-\begin{align*}<br>
-\text{H}_{KL\left[ p(x|\theta)||p(x|\theta’)\right]} &amp; = - \int p(x|\theta)\nabla_{\theta’}^2 \log p(x|\theta’)|_{\theta’=\theta} dx\\<br>
-&amp; = - \int p(x|\theta) H_{\log p(x|\theta)} dx\\<br>
-&amp; = - \mathbb{E}_{p(x|\theta)}\left[H_{\log p(x|\theta)} \right]\\<br>
-&amp; = \text{F}\\<br>
-\end{align*}</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://en.wikipedia.org/wiki/Fisher_information" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Fisher_information</a><br>
-2.<a href="https://math.stackexchange.com/a/265933" target="_blank" rel="noopener">https://math.stackexchange.com/a/265933</a><br>
-3.<a href="https://www.zhihu.com/question/26561604/answer/33275982" target="_blank" rel="noopener">https://www.zhihu.com/question/26561604/answer/33275982</a><br>
-4.<a href="https://wiseodd.github.io/techblog/2018/03/11/fisher-information/" target="_blank" rel="noopener">https://wiseodd.github.io/techblog/2018/03/11/fisher-information/</a><br>
-5.<a href="https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/" target="_blank" rel="noopener">https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/</a><br>
-6.<a href="https://math.stackexchange.com/questions/2239040/show-that-fisher-information-matrix-is-the-second-order-gradient-of-kl-divergenc" target="_blank" rel="noopener">https://math.stackexchange.com/questions/2239040/show-that-fisher-information-matrix-is-the-second-order-gradient-of-kl-divergenc</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/15/gym-retro/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/15/gym-retro/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/7/index.html">gym retro</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-15 20:28:55" itemprop="dateCreated datePublished" datetime="2019-09-15T20:28:55+08:00">2019-09-15</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-21 23:32:24" itemprop="dateModified" datetime="2019-10-21T23:32:24+08:00">2019-10-21</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/gym/" itemprop="url" rel="index"><span itemprop="name">gym</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="gym-retro">Gym Retro</h2>
-<h3 id="什么是gym-retro？">什么是Gym Retro？</h3>
-<p>将不同平台的video games都转换成gym environments。Gym-retro包括了RLE和ALE两个环境，可以使用统一的gym接口进行管理，更灵活，更容易扩展。</p>
-<h3 id="创建gym-retro的目的">创建gym retro的目的</h3>
-<p>此前transfer learning in RL，有两种通用的evaluation：</p>
-<ul>
-<li>在人工合成的task上进行evaluation</li>
-<li>在ALE环境上进行evaluation<br>
-这两种方式都有缺陷：前者的话不同的算法之间很难比较，后者的话，效果很差，因为不同的游戏之间差异可能很大。<br>
-本文的提出的gym-retro可以：</li>
-</ul>
-<ol>
-<li>作为few-shot RL的benchmark，从一个single task distribution中sampling许多simlar tasks。</li>
-<li>作为transfer learning的benchmark，提供cross-task的dataset。划分train/test让agent学会在some levels进行explore，迁移到其他levels。</li>
-</ol>
-<h3 id="包含哪些平台">包含哪些平台</h3>
-<ul>
-<li>Atari</li>
-<li>NEC</li>
-<li>Nintndo</li>
-<li>Sega</li>
-</ul>
-<h3 id="包含哪些roms">包含哪些ROMs</h3>
-<ul>
-<li>the 128 sine-dot by Anthrox</li>
-<li>Sega Tween by Ben Ryves</li>
-<li>Happy 10! by Blind IO</li>
-<li>512-Colour Test Demo by Chris Covell</li>
-<li>Dekadrive by Dekadence</li>
-<li>Automaton by Derek Ledbetter</li>
-<li>Fire by dox</li>
-<li>FamiCON intro by dr88</li>
-<li>Airstriker by Electrokinesis</li>
-<li>Lost Marbles by Vantage</li>
-</ul>
-<h2 id="sonic-benchmark">Sonic benchmark</h2>
-<h3 id="gym-retro-v2">Gym Retro</h3>
-<p>Sonich benchmark的底层实现是Gym Retro，它可以提供接口给诸如RLE game将其封装成gym environment。<br>
-每个game由ROM, 一个或者多个save states，一个或者多个scenarios，还有一个data file。</p>
-<ul>
-<li>ROM：组成game的代码和数据。</li>
-<li>Save state：console’s state的截图。</li>
-<li>Data file：描述各种各样的information在console memory的哪个地方存着。</li>
-<li>Scenario：描述done conditions和reward functions。</li>
-</ul>
-<h3 id="sonic-game">Sonic game</h3>
-<p>Sonic benchmark中有三个相似的游戏：$Sonic The Hedgehog^{TM} $, $Sonic The Hedgehog^{T} 2$, $Sonic 3 Knuckles$，这些游戏具有相似的规则，可能有一些差别，但是不大。<br>
-每个Sonic game都有zones，每个zone又被划分成acts。每个zone有独特的纹理和物体；每个zone中的act有相同的问题，但是布局不同。一个(ROM, zone, act)被称为一个level。</p>
-<h3 id="games-and-levels">Games and Levels</h3>
-<p>Sonic benchmark中所有的games总共有$58$个save states，每一个save state对应一个不同的level。<br>
-选取test set的时候随机选取超过$1$个act的zones，然后从中随机选取一个act。这样子，test set中巨大部分的纹理和物体都在training set中出现过，只不过layouts不同。所有的test levels如下：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">ROM</th>
-<th style="text-align:center">Zone</th>
-<th style="text-align:center">Act</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog</td>
-<td style="text-align:center">SpringYardZone</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog</td>
-<td style="text-align:center">GreenHillZone</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog</td>
-<td style="text-align:center">StarLightZone</td>
-<td style="text-align:center">3</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog</td>
-<td style="text-align:center">ScrapBrainZone</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog 2</td>
-<td style="text-align:center">MetropolisZone</td>
-<td style="text-align:center">3</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog 2</td>
-<td style="text-align:center">HillTopZone</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog 2</td>
-<td style="text-align:center">CasinoNightZone</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
-<td style="text-align:center">LavaReefZone</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
-<td style="text-align:center">FlyingBatteryZone</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
-<td style="text-align:center">HydrocityZone</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
-<td style="text-align:center">AngelIslandZone</td>
-<td style="text-align:center">2</td>
-</tr>
-</tbody>
-</table>
-<h3 id="frame-skip">Frame skip</h3>
-<p>step()方法的调用频率是$60$hz，dqn中经常使用的frames skip为$4$，Sonic benchmark也用了，用timestep表示使用了frame skip之后一步的时长，也就是$\frac{4}{60}$。<br>
-Sonic benmeark对frame skip做了一些改变，叫做stick frame skip。对于agent的action加了一些随机性：每隔$n$帧之后的那一帧，有$0.25$的概率继续应用之前的那个action。</p>
-<h3 id="episode-boundaries">Episode boundaries</h3>
-<p>游戏中的experience划分为episodes，大概对应有几条命。每一个episode结束，重置到相应的save state。每个episodes结束的条件有以下几种：</p>
-<ul>
-<li>通关，去掉了boss，通过水平方向上一个特定的偏移量就算通关。</li>
-<li>少了一条命</li>
-<li>当前episode累计玩了$4500$个timesteps，大概是$5$分钟。</li>
-</ul>
-<h3 id="observations">Observations</h3>
-<p>24位RBG图像，Sonic是$320 \times 224 $</p>
-<h3 id="actions">Actions</h3>
-<p>所有的Sega Genesis游戏的action space包含：<br>
-B, A, MODE, START, UP, DOWN, LEFT, RIGHT, C, Y, X, Z<br>
-Sonic game中有八个很重要的buttion combinations:<br>
-{ {}, {LEFT},  {RIGHT}, {LEFT, DOWN}, {RIGHT, DOWN}, {DOWN}, {DOWN, B}, {B} }</p>
-<h3 id="rewards">Rewards</h3>
-<p>在一个episode中，cumulative reward和玩家的初始位置到当前位置的偏移是成正比的。也就是说往右走产生正的reward，往左走产生负的reward。<br>
-Reward由horimontal offset和completion bonus构成。Completion bonus是$1000$，在$4500$个timesteps内线性降为$0$。<br>
-但是imediate reward可能是有欺骗性的，有时候为了获得更大的reward往回走是必须的。</p>
-<h3 id="evaluation">Evaluation</h3>
-<p>使用test set中所有levels的mean score作为metric。步骤入如下：</p>
-<ol>
-<li>训练时候，使用任意数量的训练集（你喜欢多少就用多少）训练</li>
-<li>测试的时候，每一个test levels执行$100$万个timesteps。在test每一个level的时候都是分开的。</li>
-<li>对每个level的$100$万个timesteps中所有episode的total rewards进行平均。</li>
-<li>对所有test level的scores进行平均。</li>
-</ol>
-<p>这个$100$万是怎么选出来的？在无限个timestep的场景下，没有证明meta-learning或者transfer-learning是必要的，但是在有限个timestep的场景下，transfer learning对于得到好的performance是很必要的。</p>
-<h2 id="baselines">Baselines</h2>
-<ul>
-<li>Humans：四个玩家，每个玩家在training levels上训练两个小时。然后在每个test level玩一个小时。</li>
-<li>RainBow：设置$V_{max} = 200$，replay buffer从$1M$改成了$0.5$M，直接使用Rainbow的初值。Action space：{ {LEFT}, {RIGHT}, {LEFT, DOWN}, {RIGHT, DOWN}, {DOWN}, {DOWN, B}, {B} }。Agent的reward是基于agent到过的最大$x$，这样子不会惩罚它往回走。</li>
-<li>JERK：并没有使用depp learning，叫JERK(Just Enough Retained Knowledge)。使用一个简单的算法进行explore，然后回放训练过程中的best action。因为环境是stochasitc，不知道哪个action是最好的，因此次他仅仅是一个mean。</li>
-<li>PPO：在每个test levels上，单独的调用PPO。和Rainbow的action，observation spaces一样，CNN架构和ppo论文中一样。超参数：<br>
-Hyper-parameter|Value<br>
-:-😐:-:<br>
-Workers|1<br>
-Horizon|8192<br>
-Epochs|4<br>
-Minibatch size|8192<br>
-Discount ($\gamma$) | 0.99<br>
-GAE parameter ($\lambda$) | 0.95<br>
-Clipping parameter ($\epsilon$)|0.2<br>
-Entropy coeff.|0.001<br>
-Reward scale|0.005</li>
-<li>Joint PPO：从training levels迁移到test levels，在training levels上训练一个policy，然后用它作为test levels的初始化。<br>
-在meta-learning过程中，训练一个single-policy玩training set中的每一个level。具体的，运行$188$个parallel works，每个worker运行training set中的一个level。在每一个gradient step，对所有workers的gradients进行平均，确保policy在整个training set上的训练是平稳的。整个过程需要几百个millions timesteps才会收敛。参数设置和PPO一样。<br>
-在所有training sets上完成训练以后，使用这个网络在作为test set中网络的初始化，除了使用meta-learning的结果进行初始化，所有的其他过程和PPO一样。</li>
-<li>Joint Rainbow：和Joint PPO的训练过程一样。<br>
-没有joint training的Rainbow超过了PPO，但是joint Rainbow没有超过joint PPO。在整个训练集上训练单个Rainbow的时候，使用了$32$个GPUs。每一个GPU对应一个单个的worker，每一个worker有自己的replay buffer和$8$个环境。环境也是joint environments，在每一个episode开始的时候采样一个新的tranining level。<br>
-除了batch size和distributed worker，其他的超参数和常规的Rainbow一样。</li>
-</ul>
-<h2 id="示例">示例</h2>
-<h3 id="安装gym-retro">安装gym retro</h3>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install gym-retro</span><br></pre></td></tr></table></figure>
-<h3 id="创建gym-env">创建Gym Env</h3>
-<p>下面代码创建一个gym环境</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> retro</span><br><span class="line">env = retro.make(game=<span class="string">'Airstriker-Genesis'</span>)</span><br></pre></td></tr></table></figure>
-<p>retro中的environment是从gym.Env类继承而来的。</p>
-<h3 id="默认rom">默认ROM</h3>
-<p>Airstriker-Genesis的ROM是默认包含在gym-retro之中的，其他的一些ROMs需要手动添加。</p>
-<h3 id="所有的games">所有的games</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> retro</span><br><span class="line">retro.data.list_games()</span><br></pre></td></tr></table></figure>
-<p>上述代码会列出所有的游戏，包含那些默认没有集成的ROMS中的。</p>
-<h3 id="手动添加roms">手动添加ROMs</h3>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 -m retor.import /path/to/your/ROMs/directory</span><br></pre></td></tr></table></figure>
-<p>上述代码将存放在某个路径下的ROMs拷贝到Gym Retro的集成目录中去。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://retro.readthedocs.io/en/latest/" target="_blank" rel="noopener">https://retro.readthedocs.io/en/latest/</a><br>
-2.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/26/">26</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/6/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><span class="page-number current">7</span><a class="page-number" href="/page/8/">8</a><span class="space">&hellip;</span><a class="page-number" href="/page/27/">27</a><a class="extend next" rel="next" href="/page/8/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2447,7 +2185,7 @@ Reward scale|0.005</li>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">258</span>
+                    <span class="site-state-item-count">261</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3259,7 +2997,29 @@ Reward scale|0.005</li>
                     
                       
                     
-                    <span class="site-state-item-count">370</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">381</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3510,11 +3270,11 @@ Reward scale|0.005</li>
   
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
       
