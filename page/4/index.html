@@ -327,6 +327,214 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/28/logistic-regression/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/28/logistic-regression/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">logistic regression</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-28 19:40:06 / 修改时间：22:23:22" itemprop="dateCreated datePublished" datetime="2019-10-28T19:40:06+08:00">2019-10-28</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="logistic-regression">logistic regression</h2>
+<p>逻辑回归是使用线性模型进行分类的模型，它是一个对数线性模型。<br>
+在使用线性模型进行回归时，产生的预测值是实数值。而对于分类任务，函数的输出需要是离散值。对于二分类任务，类别分别记为$0$和$1$，如果将回归模型的值限制在$[0, 1]$之间，那么接下来我们要做的就是将$[0,1]$之间的值转换为$0$和$1$。比如单位跃阶函数：<br>
+$$y=\begin{cases}0, x \lt 0;\\0.5, x=0;\\1, x\gt 0\end{cases} \tag{1}$$<br>
+但是它是离散的，需要找一个连续的函数。这就是接下来介绍的logistic function。</p>
+<h2 id="logistic-distribution">logistic distribution</h2>
+<p>连续随机变量$X$服从logistic distribution指的是$X$具有以下分布函数和密度函数：<br>
+$$F(x) = P(X\le x) = \frac{1}{1 + e^{-(x-\mu)/\gamma} } \tag{2}$$<br>
+$$f(x) = F’(x) = \frac{e^{-(x-\mu)/\gamma} }{\gamma(1 + e^{-(x-\mu)/\gamma} )^2 } \tag{3}$$<br>
+其中$\mu$为位置参数，$\gamma \gt 0$是形状参数。分布函数属于logistic function，相应的图如下所示，它的取值在$[0,1]$之间，是一条sigmod曲线，以点$(\mu, \frac{1}{2})$为中心对称，即满足：<br>
+$$F(-x+\mu) - \frac{1}{2} = -F(x-\mu) +\frac{1}{2} \tag{4}$$<br>
+<img src="/2019/10/28/logistic-regression/logistic_function.png" alt="logistic_func"><br>
+曲线在中心附近增长的速度很快，在两端增加的速度很慢。$\gamma$越小，曲线在中心附近增长的越快。当$\mu=0, \gamma=1$时，得到一个特殊的函数：<br>
+$$ f(x) = \frac{1}{1+e^{-x} } \tag{5}$$<br>
+用$w^T x+b$代替$f(x)$中的$x$，就得到了：<br>
+$$h(x) = \frac{1}{1+ e^{-(w^T x +b)} } \tag{6}$$<br>
+其中$x$是输入，$\theta$是要求的参数。</p>
+<h2 id="二项logistic-regression">二项logistic regression</h2>
+<p>上面给出的$y=h(x)$其实是一个二项的logistic regression分类函数。式子$(6)$可以进行变形，得到<br>
+$$ \log\frac{y}{1-y} = \log\frac{\frac{1}{1+ e^{-(w^T x +b)} } }{1-\frac{1}{1+ e^{-(w^T x +b)} } }= \log\frac{\frac{1}{1+ e^{-(w^T x +b)} } }{\frac{e^{-(w^T x +b)} }{1+ e^{-(w^T x +b)} } } = \log\frac{1}{e^{-(w^T x +b) } } = w^T x +b  \tag{7}$$<br>
+这里的$y$是一个函数值，给定一个$x$就会有一个$y$。将$y$看做给定$x$，事件发生的概率，$1-y$是该事件不发生的概率，两者的比值$\frac{y}{1-y}$被称为几率，反映了$x$发生的相对可能性。对几率取对数得到对数几率logit：<br>
+$$\log \frac{y}{1-y}$$<br>
+可以看出，公式$6$实际上是在近似真实标记的对数几率。所以这个模型叫作对数几率回归。如果将式子$(6)$中的$y$看成类后验概率估计$p(y=1|x)$，公式$(7)$可以写成：<br>
+$$\log \frac{p(y=1|x)}{p(y=0|x)} = w^T x+b \tag{8}$$<br>
+则有：<br>
+$$ p(y=1|x) = \frac{e^{w^T x+ b} }{1+e^{w^T x+ b} } \tag{9} $$<br>
+$$ p(y=0|x) = \frac{1}{1+e^{w^T x+ b} } \tag{10} $$<br>
+其实就是分子分母同时乘了$e^{w^T x+ b}$。线性模型$w^T x+b$的值域是实数域，然而logistic模型将线性函数$w^T x+b$转换成了如公式$(8),(9)$的概率。当$w^T x+b$的值越接近于$1$，$p(y=1|x)$的概率越接近于$1$。</p>
+<h2 id="最大似然估计进行参数估计">最大似然估计进行参数估计</h2>
+<p>给定训练集样本$(x_1, y_1), \cdots, (x_N,y_N)$，可以使用最大似然估计求解给定的$w$和$b$：<br>
+$$l(w,b) =\prod_{i=1}^m p(y_i|x_i; w,b) \tag{11}$$<br>
+即让所有样本属于其真实标记的概率越大越好。设$p(y=1|x) = \pi(x), p(y=0|x) = 1-\pi(x)$，这两个式子可以用一个式子表示$\pi(x)^y (1-\pi(x))^{1-y} $，重写式子$(11)$，得到的似然函数为：<br>
+$$l(w,b) =\prod_{i=1}^m p(y_i|x_i; w,b) = \prod_{i=1}^m \left[\pi(x)\right]^{y_i} \left[1-pi(x)\right]^{1-y_i} \tag{12}$$</p>
+<p>取对数得到对数似然：<br>
+\begin{align*}<br>
+L &amp;= \log l(w,b) \\<br>
+&amp; = \log \prod_{i=1}^m \left[\pi(x)\right]^{y_i} \left[1-pi(x)\right]^{1-y_i}\\<br>
+&amp; = \sum_{i=1}^m \left[y_i\log\pi(x)+(1-y_i)\log(1-\pi(x_i)) \right] \tag{13}\\<br>
+&amp; = \sum_{i=1}^m \left[y_i\log\frac{\pi(x)}{1-\pi(x_i)} + \log(1-\pi(x_i)) \right] \tag{14}\\<br>
+&amp; = \sum_{i=1}^m \left[y_i (w^T x+b) - \log(1+e^{w^T x+b} ) \right]\\ \tag{15}<br>
+\end{align*}<br>
+然后求得$w$和$b$即可。</p>
+<h2 id="多项logistic-regression">多项logistic regression</h2>
+<p>假设离散型随机变量的取值集合是${1, 2,\cdots, K}$，多项logistic regression的公式是：<br>
+$$P(Y=k|x) = \frac{e^{w^T x+b} }{ 1+ \sum_{k=1}^{K-1} e^{w^T x+b} }, k = 1, 2, \cdots, K-1 \tag{16}$$<br>
+$$P(Y=K|x) = \frac{1}{1+ \sum_{k=1}^{K-1} e^{w^T x+b} } \tag{17}$$</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.周志华《西瓜书》<br>
+2.李航《统计机器学习》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/27/bayesian-classifier-naive-baye-classifier/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2086,260 +2294,6 @@ $15/32 = 2^{-2} + 2^{-3} + 2^{-4} + 2^{-5} $<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/22/model-evaluation-and-selection/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/22/model-evaluation-and-selection/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/4/index.html">model evaluation and selection</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-22 15:53:48" itemprop="dateCreated datePublished" datetime="2019-10-22T15:53:48+08:00">2019-10-22</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-23 14:21:14" itemprop="dateModified" datetime="2019-10-23T14:21:14+08:00">2019-10-23</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="经验误差和过拟合">经验误差和过拟合</h2>
-<p>错误率：分类错误的样本数占总样本数的百分比。<br>
-精度：1-错误率<br>
-误差：样本的真实输出和实际预测输出之间的差异称为误差(error)。<br>
-训练误差(training error)：在training set上的误差称为training error。<br>
-泛化误差（generalizatoin error)：在新样本上的误差称为泛化误差。<br>
-过拟合：把训练样本的特点当成了所有潜在样本的特点。<br>
-欠拟合：没有充分学习样本的通用属性。</p>
-<p>模型选择是从不同的学习算法，不同的参数中，选择一个合适的模型。</p>
-<h2 id="model-evaluation">Model evaluation</h2>
-<p>通过对模型的泛化误差进行评估，选择处一个好的模型。通过使用testing set测试算法对于新样本的判别能力，以测试集上的testing error当做泛化误差的近似。</p>
-<h3 id="留出法-hold-out">留出法(hold-out)</h3>
-<p>将数据集分为两个互斥的集合，一个用作训练集，一个用作测试集。通常使用$\frac{2}{3}$到$\frac{4}{5}$的样本用于训练，其余样本用于测试。</p>
-<h3 id="交叉验证法-cross-validation">交叉验证法(cross validation)</h3>
-<p>将数据集划分为$k$个相同的子互斥子集。每次用$k-1$个子集进行训练，剩下的$1$个子集用于测试。进行$k$次训练和测试，返回这$k$个测试结果的均值。一般情况下最常用的$k$是$10$，称为$10$折交叉验证。</p>
-<h4 id="留一法-leave-one-out">留一法(leave-one-out)</h4>
-<p>假设$m$是数据集样本的个数，令$k=m$，那么就是交叉验证的一个特例，留一法。它不容易受随机样本划分方式的影响，不论哪种方式，最后都只有一种划分。这种方法获得模型和数据集比较吻合，但是数据集太大时，不可取。</p>
-<h3 id="自助法-bootstrapping">自助法(bootstrapping)</h3>
-<p>在留出法和交叉验证的中，训练模型使用的数据要比训练集小。<br>
-自助法解决了这个问题，他通过自助采样(bootstrap sampling)进行。给定$m$个样本的数据集$D$，对他进行采样得到数据集$D’$:每次随机从$D$中挑选一个样本，将其拷贝到$D’$，重复$m$次，得到了大小为$m$的$D’$，但是$D$中的元素可能在$D’$中重复出现，也可能不出现。<br>
-通过计算，大约有$36.8\%$的样本没有出现在$D’$中。用$D’$训练，$D-D’$做测试。<br>
-自助法适用于数据集小，难以划分训练集和测试集时很有用。能够产生多个不同的数据集，对集成学习等很有用。</p>
-<h4 id="估计标准差">估计标准差</h4>
-<p>自助法可以用来衡量一个指定的估计量或者统计学习方法中的不稳定因素。比如计算标准差。<br>
-自助法估计标准差流程：<br>
-用原始数据集重复$B$次产生$B$个数据集，计算出$B$个相应的$\alpha$估计。然后使用自助法据估计标准误差公式：<br>
-$$\text{SE}_{B}(\hat{\alpha}) = \sqrt{\frac{1}{B-1}\sum_{r=1}^B(\hat{\alpha} - \frac{1}{B}\sum_{r=1}^B \hat{\alpha})^2 }$$</p>
-<h3 id="调参">调参</h3>
-<p>实际中遇到的数据称为<strong>测试数据</strong>。<br>
-模型评估和选择中用到的评估数据集称为<strong>验证集</strong>。</p>
-<h2 id="性能度量">性能度量</h2>
-<h3 id="错误率和精度">错误率和精度</h3>
-<p>错误率：分类正确的样本占样本总数的百分比。<br>
-精度：1-错误率。</p>
-<h3 id="查准率和查全率">查准率和查全率</h3>
-<p>真正例(TP)：真的预测成真的<br>
-假正例(FP)：假的预测成真的<br>
-真反例(TN)：假的预测成假的<br>
-假反例(FN)：真的预测成假的<br>
-混淆矩阵：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">真实情况</th>
-<th style="text-align:center">预测结果</th>
-<th style="text-align:center"></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center"></td>
-<td style="text-align:center">正例</td>
-<td style="text-align:center">反例</td>
-</tr>
-<tr>
-<td style="text-align:center">正例</td>
-<td style="text-align:center">TP</td>
-<td style="text-align:center">FN</td>
-</tr>
-<tr>
-<td style="text-align:center">反例</td>
-<td style="text-align:center">FP</td>
-<td style="text-align:center">TN</td>
-</tr>
-</tbody>
-</table>
-<p>查准率(precision)：所有预测为正例的样本中真是正例的比例。<br>
-$$P = \frac{TP}{TP+FP}$$<br>
-查全率(recall)：所有预测为正例的样本中真正例占真正例和假负例的和的比例。<br>
-$$R = \frac{TP}{TP+FN}$$<br>
-查准率和查全率是矛盾的。<br>
-混淆矩阵</p>
-<h3 id="roc和auc">ROC和AUC</h3>
-<p>TPR（真正例率），sensitive<br>
-$$\frac{TP}{TP+FN}$$<br>
-FPR（假正例率），type-1 error，反例中有多少被预测为正例<br>
-$$\frac{FP}{TN+FP}$$<br>
-TNR（真反例率），specify<br>
-$$\frac{TN}{TN+FP}$$<br>
-FNR（假反例率），type-2 error<br>
-$$\frac{FN}{FN+TP}$$</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.西瓜书</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2389,7 +2343,7 @@ $$\frac{FN}{FN+TP}$$</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">257</span>
+                    <span class="site-state-item-count">258</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2446,7 +2400,9 @@ $$\frac{FN}{FN+TP}$$</p>
                     
                       
                     
-                    <span class="site-state-item-count">22</span>
+                      
+                    
+                    <span class="site-state-item-count">23</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3195,7 +3151,11 @@ $$\frac{FN}{FN+TP}$$</p>
                     
                       
                     
-                    <span class="site-state-item-count">368</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">370</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3446,13 +3406,13 @@ $$\frac{FN}{FN+TP}$$</p>
   
     
       
-    
-      
-    
-      
-    
-      
         
+      
+    
+      
+    
+      
+    
       
     
       
