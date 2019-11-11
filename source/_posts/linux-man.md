@@ -7,7 +7,7 @@ categories: linux
 ---
 
 ## man的简介
-man是linux下的一个文档查看命令，它把所有的命令分为10类。
+man是linux下的一个文档查看命令，它把所有的命令分为9个部分。
 1. user command
 2. system calls，系统调用，内核提供的函数
 3. library functions，库函数
