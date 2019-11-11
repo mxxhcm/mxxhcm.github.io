@@ -5,6 +5,8 @@ tags:
  - pytorch
  - python
  - multiprocessing
+ - 进程
+ - 线程
 categories: pytorch
 mathjax: true
 ---

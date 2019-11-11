@@ -7,6 +7,8 @@ tags:
 - Process
 - multiprocessing
 - threading
+- 进程
+- 线程
 categories: python
 ---
 
