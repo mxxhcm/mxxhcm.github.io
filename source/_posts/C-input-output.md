@@ -8,6 +8,10 @@ tags:
 categories: C/C++
 ---
 
+## 特殊符号的ASCII
+'\n'是10。
+EOF是-1。
+
 ## 输入输出
 C/C++语言中输入输出主要分为两种，一种是文件的输入输出，另一种是标准输入输出即`stdin`和`stdout`，从控制台进行输入输出。其实标准输入输出是一种特殊的文件流，这样子文件的输入输出也可以用在标准输入输出。
 
@@ -16,6 +20,7 @@ C/C++语言中输入输出主要分为两种，一种是文件的输入输出，
 //字符
 fgetc() and fputc()
 getc() and putc()
+// getc()和fgetc()功能功能一样，只不过getc()是宏实现，进行了优化，getc()可以被当做宏调用。而fgetc()只能当做函数被调用，getc()也能读取'\n'字符。
 
 //n个项
 fread() and fwrite()
@@ -31,8 +36,7 @@ fscanf() and fprintf()
 //字符
 getchar() and putchar()
 scanf() and printf()
-getche()
-getch()
+getche()和getch() //不经过缓冲区
 
 //字符串
 scanf() and printf()
@@ -317,11 +321,6 @@ int main()
     return 0; 
 }
 ```
-
-## 特殊符号的ASCII
-'\n'是10。
-EOF是-1。
-
 
 ## 参考文献
 1.https://blog.csdn.net/strongwangjiawei/article/details/7786085

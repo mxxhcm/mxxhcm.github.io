@@ -1,5 +1,5 @@
 ---
-title: os process vs thread
+title: OS process vs thread
 date: 2019-11-12 00:09:16
 tags:
  - 操作系统
