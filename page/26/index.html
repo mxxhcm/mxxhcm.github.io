@@ -327,6 +327,597 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/02/pca/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/02/pca/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/26/index.html">主成分分析(Principal Component Analysis)</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-02 20:51:19" itemprop="dateCreated datePublished" datetime="2019-01-02T20:51:19+08:00">2019-01-02</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-30 17:54:46" itemprop="dateModified" datetime="2019-08-30T17:54:46+08:00">2019-08-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="降维">降维</h2>
+<h3 id="降维的目标">降维的目标</h3>
+<p>降维可以看做将$p$维的数据映射到$m$维，其中$p\gt m$。或者可以说将$n$个$p$维空间中的点映射成$n$个$m$维空间中的点。</p>
+<h3 id="降维的目的">降维的目的</h3>
+<ol>
+<li>维度灾难(curse of dimensionity)</li>
+<li>随着维度增加，精确度和效率的退化。</li>
+<li>可视化数据</li>
+<li>数据压缩</li>
+<li>去噪声<br>
+…</li>
+</ol>
+<h3 id="降维的方法">降维的方法</h3>
+<h4 id="无监督的降维">无监督的降维</h4>
+<ol>
+<li>线性的:PCA</li>
+<li>非线性的: GPCA, Kernel PCA, ISOMAP, LLE</li>
+</ol>
+<h4 id="有监督的降维">有监督的降维</h4>
+<ol>
+<li>线性的: LDA</li>
+<li>非线性的: Kernel LDA</li>
+</ol>
+<h2 id="主成分分析-pca">主成分分析(PCA)</h2>
+<p>主成分分析(principal component analysis,PCA)是一个降维工具。PCA使用正交变换(orthogonal transformation)将可能相关的变量的一系列观测值(observation)转换成一系列不相关的变量，这些转换后不相关的变量叫做主成分(principal component)。第一个主成分有着最大的方差，后来的主成分必须和前面的主成分正交，然后最大化方差。或者PCA也可以看成根据数据拟合一个$m$维的椭球体(ellipsoid)，椭球体的每一个轴代表着一个主成分。<br>
+上课的时候，老师给出了五种角度来看待PCA，分别是信息保存，投影，拟合，嵌入(embedding)，mainfold learning。本文首先从保存信息的角度来给出PCA的推理过程，其他的几种方法就随缘了吧。。。</p>
+<h3 id="信息保存-preserve-information">信息保存(preserve information)</h3>
+<h4 id="目标">目标</h4>
+<p>从信息保存的角度来看PCA的目标是用尽可能小的空间去存储尽可能多的信息。一般情况下，信息用信息熵$-\int p lnp$来表示，如果这里使用信息熵的话，不知道信息的概率表示，一般不知道概率分布的情况下就采用高斯分布，带入高斯分布之后得到$\frac{1}{2}log(2\pi e\sigma^2)$，其中$2\pi e$都是常量，只剩下方差。给出一堆数据，直接计算信息熵是行不通的，但是计算方差是可行的，而方差和信息熵是有联系的，所以可以考虑用方差来表示信息。考虑一下降维前的$p$维数据$x$和降维后的$m$维数据$z$方差之间的关系，$var(z)?var(x)$，这里$z$和$x$的方差维度是不同的，所以不能相等，这里我们的目标就是最大化$z$的方差。方差能解释变化，方差越大，数据的变化就越大，越能包含信息。PCA的目标就是让降维后的数据方差最大。</p>
+<h4 id="线性pca过程">线性PCA过程</h4>
+<h5 id="目标函数">目标函数</h5>
+<p>给定$n$个观测数据$x_1,x_2,\cdots,x_n \in \mathbb{R}^p$，形成一个观测矩阵$X,X\in \mathbb{R}^{p\times n}$，即$X = \begin{bmatrix}x_{11}&amp;\cdots &amp;x_{1n}\\ &amp;\cdots&amp;\\ x_{p1}&amp;\cdots &amp;x_{pn}\end{bmatrix}$。我们的目标是将这样一组$p$维的数据转换成$m$维的数据。线性PCA是通过线性变换(matrix)来实现的，也就是我们要求一个$p\times m$的矩阵$V$，将原始的$X$矩阵转换成$Z$矩阵，使得<br>
+$$Z_{m\times n}= V_{p\times m}^{T}X_{p\times n},$$<br>
+其中$V\in \mathbb{R}^{p\times m}$, $v_i=\begin{bmatrix}v_{1i}\\v_{2i}\\ \vdots\\v_{pi}\end{bmatrix}$, $V = \begin{bmatrix}v_{11}&amp;v_{12}&amp;\cdots&amp;v_{1m}\\v_{21}&amp;v_{22}&amp;\cdots&amp;v_{2m}\\ \vdots&amp;\vdots&amp;\cdots&amp;\vdots\\v_{p1}&amp;v_{p2}&amp;\cdots&amp;v_{pm}\end{bmatrix}=\begin{bmatrix}v_1&amp;v_2&amp;\cdots&amp;v_m\end{bmatrix}$, $V^T = \begin{bmatrix}v_{11}&amp;v_{21}&amp;\cdots&amp;v_{p1}\\v_{12}&amp;v_{22}&amp;\cdots&amp;v_{p2}\\ \vdots&amp;\vdots&amp;\cdots&amp;\vdots\\v_{1m}&amp;v_{2m}&amp;\cdots&amp;v_{pm}\end{bmatrix}=\begin{bmatrix}v_1^T \\v_2^T \\ \vdots\\v_m^T \end{bmatrix}$。<br>
+所以就有：<br>
+\begin{align*}<br>
+z_1 &amp;= v_1^Tx_j\\<br>
+&amp;\cdots\\<br>
+z_k &amp;= v_k^Tx_j\\<br>
+&amp;\cdots\\<br>
+z_m &amp;= v_m^Tx_j<br>
+\end{align*}<br>
+其中$z_1,\cdots,z_m$是标量，$v_1^T,\cdots, v_m^T $是$1\times p$的向量，$x_j$是一个$p\times 1$维的观测向量，而我们有$n$个观测向量，所以随机变量$z_k$共有$n$个可能取值：<br>
+$$z_{k} = v_k^Tx_i= \sum_{i=1}^{p}v_{ik}x_{ij}, j = 1,2,\cdots,n$$<br>
+其中$x_i$是观测矩阵$X$的第$i$列，$X\in \mathbb{R}^{p\times n}$。</p>
+<h5 id="协方差矩阵">协方差矩阵</h5>
+<p>离散型随机变量$X$($X$的取值等可能性)方差的计算公式是：<br>
+$$var(X) = E[(X-\mu)^2] = \frac{1}{n}\sum_{i=1}^n (x_i-\mu)^2,$$<br>
+其中$\mu$是X的平均数，即$\mu = \frac{1}{n}\sum_{i=1}^nx_i$。</p>
+<p>让$z_k$的方差最大即最大化：<br>
+\begin{align*}<br>
+var(z_1) &amp;=E(z_1,\bar{z_1})^2 \\<br>
+&amp;=\frac{1}{n}\sum_{i=1}^n (v_1^T x_i - v_1^T \bar{x_i})^2\\<br>
+&amp;=\frac{1}{n}\sum_{i=1}^n (v_1^T x_i - v_1^T \bar{x_i})(v_1^T x_i - v_1^T \bar{x_i})^T\\<br>
+&amp;=\frac{1}{n}\sum_{i=1}^n v_1^T (x_i - \bar{x_i})(x_i - \bar{x_i})^T v_1\\<br>
+\end{align*}<br>
+其中$x_i=\begin{bmatrix}x_{1i}\\x_{2i}\\ \vdots\\x_{pi}\end{bmatrix}$,$\bar{x_i}=\begin{bmatrix}\bar{x_{1i}}\\\bar{x_{2i}}\\ \vdots\\\bar{x_{pi}}\end{bmatrix}$,$x_i$是$p$维的，$x_i^p$也是$p$维的，$(x_i-\bar{x_i})$是$p\times 1$维的，$(x_i -\bar{x_i})^T$是$1\times p$维的。<br>
+令$S=\frac{1}{n}\sum_{i=1}^n(x_i -\bar{x_i})(x_i-\bar{x_i})^T$，$S$是一个$p\times p$的对称矩阵，其实$S$是一个协方差矩阵。这个协方差矩阵可以使用矩阵$X$直接求出来，也可以通过对$X$进行奇异值分解求出来。<br>
+如果使用奇异值分解的话，首先对矩阵$X$进行去中心化，即$\bar{x_i}=0$，则：<br>
+\begin{align*}<br>
+S &amp;= \frac{1}{n}\sum_{i=1}^T x_ix_i^T \\<br>
+&amp;=\frac{1}{n}X_{p\times n}X_{n\times p}^T<br>
+\end{align*}<br>
+$X=U\Sigma V^T $<br>
+$X X^T =U\Sigma V^T V\Sigma U^T = U\Sigma_1^2 U^T $<br>
+$X^T X =V\Sigma U^T U\Sigma V^T = V\Sigma_2^2 V^T $<br>
+$S=\frac{1}{n}XX^T =\frac{1}{n}U\Sigma^2 U^T $</p>
+<h5 id="拉格朗日乘子法">拉格朗日乘子法</h5>
+<p>将$S$代入得：<br>
+$$var(z_1) = v_1^TSv_1,$$<br>
+接下来的目标是最大化$var(z_1)$，这里要给出一个限制条件，就是$v_1^Tv_1 = 1$，否则的话$v_1$无限大，$var(z_1)$就没有最大值了。<br>
+使用拉格朗日乘子法，得到目标函数：<br>
+$$L=v_1^TSv_1 - \lambda (v_1^Tv_1 -1)$$<br>
+求偏导，令偏导数等于零得：<br>
+\begin{align*}<br>
+\frac{\partial{L}}{\partial{v_1}}&amp;=2Sv_1 - 2\lambda v_1\\<br>
+&amp;=2(S-\lambda) v_1\\<br>
+&amp;=0<br>
+\end{align*}<br>
+即$Sv_1 = \lambda v_1$，所以$v_1$是矩阵$S$的一个特征向量(eigenvector)。所以：<br>
+$$var(z_1) = v_1^TSv_1 = v_1^T\lambda v_1 = \lambda v_1^Tv_1 = \lambda,$$<br>
+第一个主成分$v_1$对应矩阵$S$的最大特征值。</p>
+<h5 id="其他主成分">其他主成分</h5>
+<p>对于$z_2$,同理可得：<br>
+$var(z_2) = v_2^TSv_2$，<br>
+但是这里要加一些限制条件$v_2<sup>Tv_2=1$，除此以外，第2个主成分还有和之前的主成分不相关，即$cov[z_1,z_2]=0$,或者说是$v_1</sup>Tv_2=0$，证明如下。<br>
+\begin{align*}<br>
+cov[z_1,z_2] &amp;=\mathbb{E}[(z_1-\bar{z_1})(z_2-\bar{z_2})]\\<br>
+&amp;=\frac{1}{n}(v_1^T x_i - v_1^T \bar{x_i})(v_2^T x_i-v_2^T \bar{x_i})\\<br>
+&amp;=\frac{1}{n}v_1^T (x_i-\bar{x_i})(x_i-\bar{x_i})v_2\\<br>
+&amp;=\frac{1}{n}v_1^T SV_2\\<br>
+&amp;=\frac{1}{n}\lambda v_1^T v_2\\<br>
+&amp;=0<br>
+\end{align*}</p>
+<p>维基百科上是通过将数据减去第一个主成分之后再最大化方差，这两种理解方法都行。<br>
+所以拉格朗日目标函数就成了：<br>
+$$L=v_1^TSv_1 - \lambda (v_1^Tv_1 -1) -\beta v_2^Tv_1$$<br>
+求导，令导数等于零得：<br>
+$$\frac{\partial{L}}{\partial{v_1}}=2Sv_2 - 2\lambda v_2 - \beta v_1 = 0$$<br>
+而$v_1$和$v_2$不相关，所以$\beta=0$，所以$Sv_2 = \lambda v_2$，即$v_2$也是矩阵$S$的特征向量，但是最大的特征值对应的特征向量已经被$v_1$用了，所以$v_2$是第二大的特征值对应的特征向量。<br>
+同理可得第$k$个主成分是$S$的第$k$大特征值对应的特征向量。</p>
+<p>但是这种理解方法没有办法推广到非线性PCA。接下来的集中理解方式可以由线性PCA开始，并且可以推广到非线性PCA。</p>
+<h3 id="函数拟合">函数拟合</h3>
+<h4 id="线性pca过程-v2">线性PCA过程</h4>
+<h4 id="非线性pca过程">非线性PCA过程</h4>
+<h5 id="广义主成分分析-generalized-pca-gpca">广义主成分分析(Generalized PCA,GPCA)</h5>
+<p>刚才讲的PCA是线性PCA，是拟合一个超平面(hyperplane)的过程，但是如果数据不是线性的，比如说是一个曲面$x^2 +y^2 +z=0$，这样子线性PCA就不适用了，可以稍加变化让其依然是可以用的。比如$x+y+1=0$可以看成$\begin{bmatrix}a&amp;b&amp;c\end{bmatrix}\begin{bmatrix}x\\y\\1\end{bmatrix}$，而$x^2 +y^2 +z=0$可以看成$\begin{bmatrix}a&amp;b&amp;c\end{bmatrix}\begin{bmatrix}x^2 \\y^2 \\z\end{bmatrix}$。</p>
+<p>如果原始数据是非线性的，我们可以通过多个特征映射函数$\Phi$从原始数据提取非线性特征（也可看成升维，变成高维空间中数据，在高维中可以看成是线性的），然后利用线性PCA对非线性特征进行降维。例如：<br>
+假设$x=[x_1,x_2,x_3]^T \in \mathbb{R}^3$，按照转换函数$v(x) = [x_1^2 , x_1x_2,x_1x_3,x_2^2 ,x_2x_3,x_3^2 $将其转换成$\mathbb{R}^6$中的特征，接下来使用线性PCA对这些非线性特征进行降维。</p>
+<p>给定一个函数$\Phi$将$p$维数据映射到特征空间$F$中，即$\Phi:\mathbb{R}^p\rightarrow F,\mathbf{x}\rightarrow X$。我们可以通过计算协方差矩阵$C_F = \frac{\Phi\Phi^T }{n}$,即$C_F = \frac{1}{n}\sum_{i=1}<sup>{n}\phi(x_i)\phi(x_i)</sup>T $，然后对协方差矩阵$C_F$进行特征值分解$C_Fx=\lambda x$就可以求解，这里我们假设空间$F$中的数据均值为$0$，即$E[\Phi(x)] = 0$。</p>
+<h3 id="嵌入-embedding-保距离">嵌入(embedding)，保距离</h3>
+<h4 id="核函数技巧-kernel-trick">核函数技巧(Kernel trick)</h4>
+<p>在GPCA中，如果不知道$\Phi$的话，或者$\Phi$将数据映射到了无限维空间中，就没有办法求解了。这里就给出了一个假设，假设低维空间中$x_i,x_j$的点积(dot product)可以通过一个函数计算，将$x_i,x_j$的点积记为$K_{ij}$，则：<br>
+$$K_{ij} = &lt; \phi(x_i),\phi(x_j) &gt; = k(x_i,x_j)$$<br>
+其中$k()$是一个函数，比如可以取高斯函数，$k(x,y) = e^{\frac{(\Vert x-y\Vert)^2 }{2\sigma^2 }}$，我们叫它核函数(kernel function)。<br>
+这样即使我们不知道$\Phi$，也可以计算点积，直接使用核函数计算。</p>
+<h4 id="dot-pca">dot PCA</h4>
+<p>给定原始数据$X_D = [x_1,\cdots,x_n],x_i\in \mathbb{R}^p$，假定$\hat{x}=0$，那么$X_D$的协方差矩阵：<br>
+\begin{align*}<br>
+S&amp;= \frac{\sum_{i=1}^n (x_i-\bar{x})(x_i-\bar{x})^T }{n}\\<br>
+&amp;= \frac{\sum_{i=1}^n (x_i-0)(x_i-0)^T }{n}\\<br>
+&amp;= \frac{\sum_{i=1}^n (x_i)(x_i)^T }{n}\\<br>
+&amp;= \frac{\begin{bmatrix}x_1&amp;\cdots&amp;x_n\end{bmatrix}\begin{bmatrix}x_1\\\vdots\\x_n\end{bmatrix}}{n}\\<br>
+&amp;= \frac{X_DX_D^T}{n}\\<br>
+&amp;= Cov(X_D, X_D)<br>
+\end{align*}<br>
+即$S=\frac{X_DX_D^T}{n}$，而对$X_D$做奇异值分解，有$X_D = V\Sigma U^T$，所以$S = \frac{V\Sigma^2 V^T}{n}$，其中$U$是$S$的特征值矩阵，则：$Z’ = V^T X’$，其中$V\in \mathbb{R}^{p\times m}$，$X’$是新的样本数据。</p>
+<p>这里我们推导一下点积和PCA的关系，即假设我们有$K = Dot(X_D,X_D) = X_D^T X_D$，则$K=U^T \sigma^2U$，而我们根据奇异值分解$X_D = V\Sigma U^T $可以得到$U$和$V$的关系，即$V=X_DU\Sigma^{-1} $，对$K$进行特征值分解，可以求得$U$和$\Sigma$，所以来了一个新的样本$X’$，<br>
+$$Z’ = V^TX’ = D^{-1} U^T X_D^T X’ = D^{-1} U^T &lt; X_D,X’ &gt;.$$<br>
+事实上，这里$X’$是已知的，可以直接计算协方差，但是这里是为了给Kernel PCA做引子，所以，推导的过程中是没有用到$X$的，只用到了$X$的点积，在测试的时候会用到$X’$。</p>
+<h5 id="kernel-pca">Kernel PCA</h5>
+<p>Kernel PCA就是将Kernel trick应用到了dot PCA中，由Kernel trick得$K = \Phi^T \Phi$，$K=U\Sigma^2 U^T $，则<br>
+$$V = \Phi U\Sigma^{-1} = \Phi U diag(1/sqrt(\lambda_1),1/sqrt(\lambda_2),\cdots)$$<br>
+但是我们求不出来$V$，因为$\Phi$不知道，但是可以让$V$中的$\Phi$和样本$X’$中的$\Phi$在一起，就可以计算了，即<br>
+$$Z’ = V^T\phi(X’) = \Sigma^{-1}U\Phi\phi(X’) = \Sigma^{-1}UK(X,X’)$$</p>
+<h3 id="流形学习-manifold">流形学习(manifold)</h3>
+<h4 id="线性">线性</h4>
+<h5 id="pca">PCA</h5>
+<h5 id="mds">MDS</h5>
+<h4 id="非线性">非线性</h4>
+<h5 id="lle">LLE</h5>
+<h5 id="isomap">ISOMAP</h5>
+<h2 id="线性判断分析-fisher-linear-discrimiant-analysis-lda">线性判断分析(Fisher linear discrimiant analysis,LDA)</h2>
+<h3 id="线性lda">线性LDA</h3>
+<h4 id="两类">两类</h4>
+<h5 id="示例">示例</h5>
+<h4 id="c类-c-gt-2">C类(C$\gt 2$)</h4>
+<p>两维的问题是通过将原始数据投影到一维空间进行分类，而$C$维的问题则是将原始数据投影到$C-1$空间进行分类，通过一个投影矩阵$W=\begin{bmatrix}w_1&amp;\cdots&amp;w_{C-1}\end{bmatrix}$将$C$维的$x$投影到$C-1$维，得到$y=\begin{bmatrix}y_1&amp;\cdots&amp;y_{C-1}\end{bmatrix}$，即$y_i = w_i^Tx\Rightarrow y = W^Tx$。</p>
+<h5 id="示例-v2">示例</h5>
+<h3 id="不足">不足</h3>
+<ul>
+<li>最多投影到$C-1$维特征空间。</li>
+<li>LDA是参数化的方法，它假设数据服从单高斯分布，并且所有类的协方差都是等价的。对于多个高斯分布，线性的LDA是无法分开的。</li>
+<li>当数据之间的差异主要通过方差而不是均值体现的话，LDA就会失败(fail)。如下图<br>
+<img src="/2019/01/02/pca/" alt="figure"></li>
+</ul>
+<h3 id="kernel-lda">Kernel LDA</h3>
+<h2 id="pca和lda区别和联系">PCA和LDA区别和联系</h2>
+<p>PCA是一个无监督的降维方法，通过最大化降维后数据的方差实现；LDA是一个有监督的降维方法，通过最大化类可分性实现(class discrimnatory)。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://en.wikipedia.org/wiki/Principal_component_analysis" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Principal_component_analysis</a><br>
+2.<a href="https://en.wikipedia.org/wiki/Variance" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Variance</a><br>
+3.<a href="https://sebastianraschka.com/faq/docs/lda-vs-pca.html" target="_blank" rel="noopener">https://sebastianraschka.com/faq/docs/lda-vs-pca.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/28/内积空间、赋范空间和希尔伯特空间/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/28/内积空间、赋范空间和希尔伯特空间/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/26/index.html">内积空间、赋范空间和希尔伯特空间</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-28 15:15:37" itemprop="dateCreated datePublished" datetime="2018-12-28T15:15:37+08:00">2018-12-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="引言">引言</h2>
+<p>数学的空间是研究工作的对象和遵循的规则。<br>
+线性空间：加法和数乘<br>
+拓扑空间：距离，范数和内积。</p>
+<h2 id="距离">距离</h2>
+<p>距离是用来衡量两个点有多“近”的。</p>
+<h3 id="距离定义">距离定义</h3>
+<p>$X$是一非空集合，任给一对这一集合中的元素$x,y$，都会给定一个实数$d(x,y)$与它们对应，并且这个实数满足以下条件：</p>
+<ol>
+<li>$d(x,y)\ge 0, d(x,y) = 0 \Leftrightarrow x=y$；</li>
+<li>$d(x,y) = d(y,x)$；</li>
+<li>$d(x,y) \le d(x,z) + d(z,y)$。</li>
+</ol>
+<p>则$d(x,y)$为这两点$x$和$y$之间的距离。</p>
+<h3 id="示例">示例</h3>
+<h4 id="向量的距离">向量的距离</h4>
+<p>$d_1(x,y) = \sqrt{(x_1-y_1)<sup>2+\cdots,(x_n-y_n)</sup>n}$<br>
+$d_2(x,y) = max{|x_1-y_1|,\cdots,|x_n,y_n|}$<br>
+$d_3(x,y) = |x_1-y_1|+\cdots+|x_n,y_n|$</p>
+<h4 id="曲线的距离">曲线的距离</h4>
+<p>$d_1(f,g) = \int_a<sup>b(f(x)-g(x))</sup>2 dx$<br>
+$d_2(f,g) = max_{a\le x\le b}|f(x)-f(y)|$<br>
+$d_3(f,g) = \int_a<sup>b(f(x)-g(x))</sup>k dx$</p>
+<h3 id="线性空间">线性空间</h3>
+<p>向量的加法和数乘</p>
+<h3 id="线性空间的八个性质">线性空间的八个性质</h3>
+<p>加法的交换律和结合律，零元，负元，数乘的交换律，单位一，数乘与加法的结合律。</p>
+<h2 id="范数-向量到零点的距离-定义">范数（向量到零点的距离）定义</h2>
+<p>如果$\Vert x\Vert $是$R^n$上的范数（$x$是向量），那么它需要满足以下条件：</p>
+<ol>
+<li>$\Vert x\Vert \ge 0, \forall x\in R, \Vert x\Vert  = 0  \Leftrightarrow x = 0$；</li>
+<li>$\Vert \alpha x\Vert  = |\alpha|\Vert x\Vert, \forall \alpha \in R, x\in R^n$</li>
+<li>$\Vert x+y\Vert  \le \Vert x\Vert  + \Vert y\Vert , \forall x,y\in R$</li>
+</ol>
+<p>可以看成是点到零点距离多了条件2。</p>
+<h3 id="示例-v2">示例</h3>
+<p>$\Vert x\Vert_2  = \sqrt{x_1<sup>2+\cdots,x_n</sup>n}$<br>
+$\Vert x\Vert_{\infty}  = max{|x_1|,\cdots,|x_n|}$<br>
+$\Vert x\Vert_1  = |x_1|+\cdots+|x_n|$</p>
+<h3 id="距离和范数的关系">距离和范数的关系</h3>
+<p>由范数可以定义距离。$d(x,y) = \Vert  x-y\Vert$。<br>
+但是由距离不一定可以定义范数。如$\Vert x\Vert  = d(0,x)$,但是$\Vert \alpha x\Vert  = d(0, \alpha x) \ne |\alpha|\Vert x\Vert $。</p>
+<h3 id="赋范空间和度量空间">赋范空间和度量空间</h3>
+<p>赋予范数的集合称为赋范空间。<br>
+距离的集合称为度量空间。</p>
+<h3 id="线性赋范空间和线性度量空间">线性赋范空间和线性度量空间</h3>
+<p>赋予范数加上线性空间称为线性赋范空间。<br>
+距离加上线性空间称为线性度量空间。</p>
+<h2 id="内积">内积</h2>
+<h3 id="引言-v2">引言</h3>
+<p>赋范空间有向量的模长，即范数。但是范数只有大小，没有夹角，所以就引入了内积。</p>
+<h3 id="定义">定义</h3>
+<p>给定$(x,y)\in R$,如果它满足：</p>
+<ol>
+<li>对称性；</li>
+<li>对第一变元的线性性；</li>
+<li>正定性。</li>
+</ol>
+<p>那么就称$(x,y)$为内积。</p>
+<h3 id="示例-v3">示例</h3>
+<ol>
+<li>$(x,y) = \sum_{n=1}^nx_ny_n$。</li>
+<li>$(f,g) = \int_{-\infty}^{\infty}f(x)g(x)dx$。</li>
+</ol>
+<h3 id="内积和范数的关系">内积和范数的关系</h3>
+<ul>
+<li>内积可以导出范数</li>
+<li>范数不能导出距离</li>
+</ul>
+<h3 id="内积空间">内积空间</h3>
+<p>在线性空间上定义内积，这个空间称为内积空间。<br>
+常见的欧几里得空间就是一个内积空间，内积空间是一个抽象的空间，而欧几里得空间是一个具象化了的内积空间。<br>
+希尔伯特引入了无穷维空间并定义了内积，其空间称为内积空间，再加上完备性，称为希尔伯特空间。完备性是取极限之后还在这个空间内。<br>
+完备的赋范空间称为巴拿赫空间。</p>
+<h2 id="拓扑空间">拓扑空间</h2>
+<p>欧几里得几何学需要定义内积，连续的概念不需要内积，甚至不需要距离。</p>
+<h3 id="定义-v2">定义</h3>
+<p>给定一个集合$X$,$\tau$是$X$的一系列子集，如果$\tau$满足以下条件：</p>
+<ol>
+<li>空集(empty set)和全集X都是$\tau$的元素;</li>
+<li>$\tau$中任意元素的并集(union)仍然是$\tau$的元素;</li>
+<li>$\tau$中任意有限多个元素的交集(intersection)仍然是$\tau$中的元素。<br>
+则称$\tau$是$X$上的一个拓扑。</li>
+</ol>
+<h2 id="距离-范数和内积之间的关系">距离，范数和内积之间的关系</h2>
+<p>距离$\gt$范数$\gt$内积</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/24/convex-optimization-chapter-2-Convex-sets/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2809,435 +3400,6 @@ Compile with:</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/10/23/python-继承/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/23/python-继承/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/26/index.html">python 继承</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-23 21:27:43" itemprop="dateCreated datePublished" datetime="2018-10-23T21:27:43+08:00">2018-10-23</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-23 22:05:03" itemprop="dateModified" datetime="2019-10-23T22:05:03+08:00">2019-10-23</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="继承">继承</h2>
-<p>和C++一样，python也是面向对象的变成语言，也支持封装继承和多态。python同时支持单继承和多继承。<br>
-继承是指这样一种能力：它可以使用现有类的所有功能，并在无需重新编写原来的类的情况下对这些功能进行扩展。<br>
-通过继承创建的新类称为“子类”或“派生类”，被继承的类称为“基类”、“父类”或“超类”，继承的过程，就是从一般到特殊的过程。在某些语言中，一个子类可以继承多个基类。但是一般情况下，一个子类只能有一个基类，要实现多重继承，可以通过多级继承来实现。<br>
-继承概念的实现方式主要有2类：实现继承、接口继承。</p>
-<ul>
-<li>实现继承是指使用基类的属性和方法而无需额外编码的能力。</li>
-<li>接口继承是指仅使用属性和方法的名称、但是子类必须提供实现的能力(子类重构爹类方法)</li>
-</ul>
-<h2 id="python继承定义">python继承定义</h2>
-<p>父类定义</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gender</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Unknown"</span></span><br></pre></td></tr></table></figure>
-<p>子类定义</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Man</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gender</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"male"</span></span><br></pre></td></tr></table></figure>
-<h2 id="python构造函数继承">python构造函数继承</h2>
-<p>父类构造函数</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        self.name = name</span><br></pre></td></tr></table></figure>
-<p>子类构造函数</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Woman</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        super(Person, self).__init__(name)</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Woman</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        Person.__init__(self, name)</span><br></pre></td></tr></table></figure>
-<h2 id="python接口继承">python接口继承</h2>
-<p>父类</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        self.name = name</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gender</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> NotImplentedError</span><br></pre></td></tr></table></figure>
-<p>子类</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Man</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        super(Man, self).__init__(name)</span><br><span class="line">        self.name = name</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gender</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"male"</span></span><br></pre></td></tr></table></figure>
-<h2 id="代码示例">代码示例</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        self.name = name</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">work</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> NotImplementedError</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Chief</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, salary)</span>:</span></span><br><span class="line">        super(Chief, self).__init__(name)</span><br><span class="line">        self.salary = salary</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">work</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"cook..."</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, grades, person)</span>:</span></span><br><span class="line">        super(Student, self).__init__(name)</span><br><span class="line">        self.grades = grades</span><br><span class="line">        self.person = person</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">work</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"study..."</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span><span class="params">(Student)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, grades, person)</span>:</span></span><br><span class="line">        super(A, self).__init__(name, grades, person)</span><br><span class="line">        self.type = <span class="string">"A"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span><span class="params">(A)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, grades, person)</span>:</span></span><br><span class="line">        super(B, self).__init__(name, grades, person)</span><br><span class="line">        self.type = <span class="string">"B"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    chief = Chief(<span class="string">"chief_a"</span>, <span class="number">100</span>)</span><br><span class="line">    student = Student(<span class="string">"student"</span>, <span class="number">200</span>, chief)</span><br><span class="line">    a = A(<span class="string">"student_a"</span>, <span class="number">300</span>, student)</span><br><span class="line">    b = B(<span class="string">"student_b"</span>, <span class="number">400</span>, a)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    print(b.person.name)</span><br><span class="line">    print(b.person.person.name)</span><br><span class="line">    print(b.person.person.person.name)</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.cnblogs.com/bigberg/p/7182741.html" target="_blank" rel="noopener">https://www.cnblogs.com/bigberg/p/7182741.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/10/21/R-basic/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/21/R-basic/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/26/index.html">R basic</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-21 19:50:55" itemprop="dateCreated datePublished" datetime="2018-10-21T19:50:55+08:00">2018-10-21</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-26 16:18:50" itemprop="dateModified" datetime="2019-10-26T16:18:50+08:00">2019-10-26</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/R/" itemprop="url" rel="index"><span itemprop="name">R</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="矩阵索引">矩阵索引</h2>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下标都是从0开始</span></span><br><span class="line">A=matrix(<span class="number">1</span>:<span class="number">16</span>, <span class="number">4</span>, <span class="number">4</span>)</span><br><span class="line">A</span><br><span class="line"><span class="comment"># 矩阵下标</span></span><br><span class="line">A[<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line"><span class="comment"># 不包含</span></span><br><span class="line">A[-c(<span class="number">1</span>,<span class="number">3</span>)] <span class="comment"># 不包含第一行和第三行</span></span><br><span class="line">A[,-c(<span class="number">2</span>)] <span class="comment"># 不包含第二行</span></span><br><span class="line"><span class="comment"># 矩阵维度</span></span><br><span class="line">dim(A)</span><br></pre></td></tr></table></figure>
-<h2 id="常用命令">常用命令</h2>
-<h3 id="赋值">赋值</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">x &lt;- c(<span class="number">1</span>, <span class="number">3</span>, <span class="number">2</span>,<span class="number">5</span>)</span><br><span class="line"><span class="comment"># c是连接的意思，括号中的数被连在一起</span></span><br><span class="line"><span class="comment"># 也可以用等号</span></span><br><span class="line">x = c(<span class="number">1</span>, <span class="number">6</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="长度">长度</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = c(<span class="number">1</span>, <span class="number">6</span>, <span class="number">2</span>)</span><br><span class="line">length(x)</span><br></pre></td></tr></table></figure>
-<h3 id="删除varaibles">删除varaibles</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rm(x)   <span class="comment"># 删除x</span></span><br><span class="line">rm(list=ls())   <span class="comment">#</span></span><br></pre></td></tr></table></figure>
-<h3 id="查看variables">查看variables</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls()</span><br></pre></td></tr></table></figure>
-<h3 id="矩阵">矩阵</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#matrix()    # 创建一个矩阵</span></span><br><span class="line">matrix(data=c(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>), nrow=<span class="number">2</span>, ncol=<span class="number">2</span>,byrow=<span class="literal">TRUE</span>) <span class="comment"># byrow=TRUE表示先行后列</span></span><br></pre></td></tr></table></figure>
-<h3 id="转置">转置</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = matrix(c(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>), <span class="number">4</span>, <span class="number">4</span>)</span><br><span class="line">at = t(a)</span><br></pre></td></tr></table></figure>
-<h3 id="幂和开方">幂和开方</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x^<span class="number">3</span></span><br><span class="line">poly(x, <span class="number">4</span>)</span><br><span class="line">sqrt(x)</span><br></pre></td></tr></table></figure>
-<h3 id="正态分布">正态分布</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 默认的均值和方差是0,1</span></span><br><span class="line">x = rnorm(n=<span class="number">10</span>, mean=<span class="number">50</span>, std=<span class="number">0.1</span>)</span><br><span class="line">y = x + rnorm(<span class="number">50</span>)</span><br><span class="line">cor(x,y) <span class="comment"># 相关系数</span></span><br></pre></td></tr></table></figure>
-<h3 id="均匀分布">均匀分布</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = runif(<span class="number">100</span>, -<span class="number">100</span>, <span class="number">100</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="随机数种子">随机数种子</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set.seed(<span class="number">1303</span>)</span><br><span class="line"><span class="comment"># 设置完随机数之后，产生的随机数都是可以复现的</span></span><br></pre></td></tr></table></figure>
-<h3 id="均值和方差-标准差">均值和方差，标准差</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">set.seed(<span class="number">3</span>)</span><br><span class="line">y=rnorm(<span class="number">100</span>)</span><br><span class="line">mean(y)</span><br><span class="line">var(y)</span><br><span class="line">sd(y)</span><br></pre></td></tr></table></figure>
-<h3 id="seq创建序列">seq创建序列</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># seq(a,b)</span><br><span class="line">a= seq(1, 3, 1)</span><br><span class="line">3:11 = seq(3, 11)</span><br></pre></td></tr></table></figure>
-<h2 id="绘图">绘图</h2>
-<h3 id="plot二维">plot二维</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">x = rnorm(<span class="number">100</span>)</span><br><span class="line">y = rnorm(<span class="number">100</span>)</span><br><span class="line">plot(x, y)</span><br><span class="line">plot(x, y, xlab=<span class="string">"x-axis"</span>, ylab=<span class="string">"y-axis"</span>, main=<span class="string">"x-y"</span>)</span><br><span class="line"><span class="comment"># 保存在主目录下</span></span><br><span class="line">pdf(<span class="string">"Figure.pdf"</span>)</span><br><span class="line">plot(x,y, col=<span class="string">"green"</span>)</span><br><span class="line">dev.off()</span><br></pre></td></tr></table></figure>
-<h3 id="contour等高线和image-heatmap-persp-三维图">contour等高线和image heatmap，persp()三维图</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">x = seq(-pi,pi)</span><br><span class="line">y = x</span><br><span class="line">f = outer(x, y, <span class="keyword">function</span>(x,y)cos(y)/(<span class="number">1</span>+x^<span class="number">2</span>))</span><br><span class="line">contour(x, y, f)</span><br><span class="line">fa = (f - t(f)) /<span class="number">2</span></span><br><span class="line">contour(x, y, fa)</span><br><span class="line">image(x, y, fa)</span><br><span class="line">persp(x, y, fa)</span><br></pre></td></tr></table></figure>
-<h2 id="加载数据">加载数据</h2>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1.header=TRUE 表示第一行是变量名</span></span><br><span class="line"><span class="comment"># na.string表示缺失符号</span></span><br><span class="line">auto_data = read.table(<span class="string">"Auto.data"</span>, header = <span class="literal">T</span>, na.strings = <span class="string">"?"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.使用fix查看数据</span></span><br><span class="line">fix(auto_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 查看数据维度</span></span><br><span class="line">dim(auto_data)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4.忽略不规则数据</span></span><br><span class="line">na.omit(auto_data)</span><br><span class="line">dim(auto_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5.查看变量名字</span></span><br><span class="line">names(auto_data)</span><br></pre></td></tr></table></figure>
-<h2 id="其他操作">其他操作</h2>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">auto_data = read.table(<span class="string">"Auto.data"</span>, header = <span class="literal">T</span>, na.strings = <span class="string">"?"</span>)</span><br><span class="line">auto_data = na.omit(auto_data)</span><br><span class="line">names(auto_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 访问dataset中的变量</span></span><br><span class="line">plot(auto_data$cylinders, auto_data$mpg)</span><br><span class="line"><span class="comment"># or</span></span><br><span class="line"><span class="keyword">attach</span>(auto_data)</span><br><span class="line">plot(cylinders, mpg)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. as.factor() and boxplot</span></span><br><span class="line">cylinders = as.factor(cylinders)</span><br><span class="line">plot(cylinders, mpg)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3.绘制直方图</span></span><br><span class="line">hist(mpg)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. pairs()绘制任意两个变量之间的散点图矩阵</span></span><br><span class="line">pairs(auto_data)</span><br><span class="line">pairs(~mpg+weight, auto_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 识别图中鼠标点击的点的坐标</span></span><br><span class="line">plot(horsepower, mpg)</span><br><span class="line">identify(horsepower, mpg, name)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6.summary()给出指定变量的描述信息</span></span><br><span class="line">summary(auto_data)</span><br></pre></td></tr></table></figure>
-<h2 id="库">库</h2>
-<h3 id="安装package">安装package</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">install.packages(<span class="string">"ISLR"</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="加载package">加载package</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">library(ISLR)</span><br></pre></td></tr></table></figure>
-<h2 id="分支">分支</h2>
-<h3 id="for循环">for循环</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">for (val in sequence)</span><br><span class="line">&#123;</span><br><span class="line">statement</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 示例</span><br><span class="line">x &lt;- c(2,5,3,9,8,11,6)</span><br><span class="line">count &lt;- 0</span><br><span class="line">for (val in x) &#123;</span><br><span class="line">if(val %% 2 == 0)  count = count+1</span><br><span class="line">&#125;</span><br><span class="line">print(count)</span><br></pre></td></tr></table></figure>
-<h3 id="while-循环">while 循环</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">while (TRUE)</span><br><span class="line">&#123;</span><br><span class="line">    print(&quot;hello&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="if-语句">if 语句</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if (3 &gt; 2 &amp;&amp; 2 &lt; 3):</span><br><span class="line">    print(</span><br></pre></td></tr></table></figure>
-<h2 id="函数">函数</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">rand_interval = function(min, max, number)</span><br><span class="line">&#123;</span><br><span class="line">  sd = (max.numeric()-min.numeric())/3</span><br><span class="line">  count = 0</span><br><span class="line">  res = 1:number</span><br><span class="line">  while(TRUE)</span><br><span class="line">  &#123;</span><br><span class="line">    x = rnorm(1, mean=0,sd=sd)</span><br><span class="line">    if(x &gt;= min &amp;&amp; x &lt;= max)</span><br><span class="line">    &#123;</span><br><span class="line">      count = count+1</span><br><span class="line">      res[count] = x</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return (res)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">min = -100</span><br><span class="line">max = 100</span><br><span class="line">number = 20</span><br><span class="line">x1 = rand_interval(min, max, number)</span><br></pre></td></tr></table></figure>
-<h2 id="类型转换">类型转换</h2>
-<h3 id="字符转数值">字符转数值</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">as.numeric(str(3))</span><br></pre></td></tr></table></figure>
-<h2 id="写入文件">写入文件</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">library(&quot;xlsx&quot;)</span><br><span class="line">data = matrix = c()</span><br><span class="line">write.xlsx(data, file = &quot;myworkbook.xlsx&quot;, append = FALSE)</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.datamentor.io/r-programming/for-loop/" target="_blank" rel="noopener">https://www.datamentor.io/r-programming/for-loop/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3287,7 +3449,7 @@ Compile with:</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">264</span>
+                    <span class="site-state-item-count">266</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -4145,7 +4307,21 @@ Compile with:</p>
                     
                       
                     
-                    <span class="site-state-item-count">392</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">399</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
