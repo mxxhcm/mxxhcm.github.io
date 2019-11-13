@@ -1,10 +1,9 @@
 ---
 title: C++ compound type class
-date: 2019-11-13 14:15:43
+date: 2019-11-10 12:31:11
 tags:
- - class
- - C++
  - C/C++
+ - 类
 categories: C/C++
 ---
 
@@ -19,6 +18,18 @@ categories: C/C++
 #define SALES_DATA_H
 #endif
 ```
+
+## 类的定义
+
+## 访问控制和封装
+
+## 类的特性
+
+## 类的作用域
+
+## 构造函数
+
+## 类的静态成员
 
 ## 参考文献
 1.《C++ Primer第五版》
