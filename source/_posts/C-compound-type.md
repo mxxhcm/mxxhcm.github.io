@@ -3,7 +3,7 @@ title: C++ compound type
 date: 2019-11-05 17:24:47
 tags:
  - C/C++
- - 复合类型
+ - C++复合类型
 categories: C/C++
 ---
 
