@@ -11,7 +11,7 @@ mathjax: true
 ## C++类型
 C++中，对象的类型通常有两种：
 1. 内置类型，整形和浮点型。整形又包括整数，布尔型，字符串，浮点型又包括单精度浮点型和双精度浮点型。
-2. 复合类型，包括[数组]()，[指针]()，[引用]()，[类]()，[结构]()，[联合]()类型。
+2. 复合类型，包括[指针](https://mxxhcm.github.io/2019/11/13/C-compound-type-pointer/)，[数组](https://mxxhcm.github.io/2019/11/13/C-compound-type-array/)，[引用](https://mxxhcm.github.io/2019/11/13/C-compound-type-reference/)，[类](https://mxxhcm.github.io/2019/11/13/C-compound-type-class/)，结构，联合类型。
 
 这一节主要介绍基本类型，复合类型可以查看[C++ compound type](https://mxxhcm.github.io/2019/11/09/C-compound-type/)。
 
