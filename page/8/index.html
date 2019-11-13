@@ -430,25 +430,68 @@
       
         
           
-            <h2 id="ddpg"><a href="#ddpg" class="headerlink" title="ddpg"></a>ddpg</h2><p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
-<h3 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h3><p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。</p>
-<script type="math/tex; mode=display">Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}</script><p>（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>许多rl方法使用bellman方程递归的更新Q:</p>
-<script type="math/tex; mode=display">Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}\_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}</script><p>如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：</p>
-<script type="math/tex; mode=display">Q{\mu}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}</script><p>而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
-<h3 id="DDPG"><a href="#DDPG" class="headerlink" title="DDPG"></a>DDPG</h3><p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>\begin{align*}<br>\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|_{s=s_t}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\\ \tag{4}<br>\end{align*}<br>中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
-<h4 id="Contributions"><a href="#Contributions" class="headerlink" title="Contributions"></a>Contributions</h4><p>本文的几个改进：</p>
+            <h2 id="ddpg">ddpg</h2>
+<p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>
+论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
+<h3 id="简介">简介</h3>
+<p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>
+简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。<br>
+$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}$$<br>
+（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>
+许多rl方法使用bellman方程递归的更新Q:<br>
+$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}$$<br>
+如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：<br>
+$$Q{\mu}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}$$<br>
+而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>
+在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
+<h3 id="ddpg-v2">DDPG</h3>
+<p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>
+DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>
+\begin{align*}<br>
+\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|_{s=s_t}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\ \tag{4}<br>
+\end{align*}<br>
+中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
+<h4 id="contributions">Contributions</h4>
+<p>本文的几个改进：</p>
 <ol>
 <li>使用replay buffer，</li>
 <li>使用target network解决不稳定的问题。</li>
 <li>使用了batch-normalization。</li>
-<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<script type="math/tex; mode=display">\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}</script></li>
+<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<br>
+$$\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}$$</li>
 </ol>
-<h4 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h4><p>算法1 DDPG<br>随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $<br>初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q ,\theta^{\mu’} \leftarrow \theta^{\mu} $<br>初始化replay buffer $R$<br><strong>for</strong> episode = 1, M <strong>do</strong><br>初始化一个随机process $N$用于exploration<br>receive initial observation state $s_1$<br>for $t=1, T$ do<br>根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>执行action $a_t$，得到$r_t$和$s_{t+1}$<br>将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’} )$<br>使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic<br>使用sampled policy gradient 更新acotr:</p>
-<script type="math/tex; mode=display">\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|\_{s=s_i, a=\mu(s_i)}\nabla\_{\theta^{\mu} }\mu(s|\theta^{\mu} )|\_{s_i}</script><p>更新target networks:</p>
-<script type="math/tex; mode=display">\theta'\leftarrow \tau \theta + (1-\tau) \theta'</script><p>end for<br>end for</p>
-<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h4 id="算法">算法</h4>
+<p>算法1 DDPG<br>
+随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $<br>
+初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q ,\theta^{\mu’} \leftarrow \theta^{\mu} $<br>
+初始化replay buffer $R$<br>
+<strong>for</strong> episode = 1, M <strong>do</strong><br>
+初始化一个随机process $N$用于exploration<br>
+receive initial observation state $s_1$<br>
+for $t=1, T$ do<br>
+根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>
+执行action $a_t$，得到$r_t$和$s_{t+1}$<br>
+将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>
+从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>
+设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’} )$<br>
+使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic<br>
+使用sampled policy gradient 更新acotr:<br>
+$$\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|_{s=s_i, a=\mu(s_i)}\nabla_{\theta^{\mu} }\mu(s|\theta^{\mu} )|_{s_i}$$<br>
+更新target networks:<br>
+$$\theta’\leftarrow \tau \theta + (1-\tau) \theta’$$<br>
+end for<br>
+end for</p>
+<h3 id="实验">实验</h3>
+<p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>
+在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>
+作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
 
           
         
@@ -757,18 +800,59 @@
       
         
           
-            <h2 id="Importance-Sampling"><a href="#Importance-Sampling" class="headerlink" title="Importance Sampling"></a>Importance Sampling</h2><p>Importance sampling是使用一个分布近似估计另一个分布期望的方法，即通过分布$q$计算分布$p$下$f(x)$的期望。通过从$q$中采样而不是从$p$中采样近似：</p>
-<script type="math/tex; mode=display">\mathbb{E}\_p\left[f(x)\right] = \mathbb{E}\_q\left[ \frac{p(x)f(x)}{q(x)}\right] \tag{1}</script><p>使用采样分布$q$估计分布$p$下的期望：</p>
-<script type="math/tex; mode=display">\mathbb{E}\_p\left[f(x)\right] \approx \frac{1}{n} \sum\_{i=1}^n \frac{p(x\_i)f(x\_i)}{q(x\_i)} x\_i\sim q\tag{2}</script><p>上面的公式需要满足$p(x_i)$不为$0$时，$q(x_i)$也不为$0$。直接计算$\mathbb{E}_p\left[f(x)\right]$和$\mathbb{E}_q\left[f(x)\right]$，一般来说是不同的，通过importance ratio调整权重，就可以使用$q$分布估计$p$分布的期望了。举个例子：</p>
-<script type="math/tex; mode=display">f(1) = 2, f(2) = 3, f(3) = 4, otherwise 0 \tag{3}</script><p>概率分布$p$为：$p(x=1) = 0, p(x=2) = \frac{1}{3},p(x=3) = \frac{2}{3}$，概率分布$q$为：$q(x=1) = \frac{1}{3}, q(x=2) = \frac{1}{3}, q(x=3) = \frac{1}{3}$。计算期望，$\mathbb{E}_p\left[f(x)\right] = \frac{11}{3}$，$\mathbb{E}_q\left[f(x)\right] = 3$<br>使用importance ratio进行权重调整：<br>\begin{align*}<br>\mathbb{E}_p\left[f(x)\right] &amp; = \mathbb{E}_q\left[\frac{q(x)}{p(x)}f(x)\right] \\\\<br>&amp; = \mathbb{E}_q\left[\frac{p(x=1)}{q(x=1)}f(x=1) \right] + \mathbb{E}_q\left[\frac{p(x=2)}{q(x=2)}f(x=2) \right] + \mathbb{E}_q\left[\frac{p(x=3)}{q(x=3)}f(x=3) \right] \\\\<br>&amp; = \frac{1}{3}<em>0 + \frac{1}{3}\frac{\frac{1}{3}}{\frac{1}{3}}</em>3 + \frac{1}{3}\frac{\frac{2}{3}}{\frac{1}{3}}<em>4\\\\<br>&amp; =\frac{11}{3}\\\\<br>\end{align\</em>}<br>可以看出来，我们使用分布$q$估计除了分布$p$的期望。通过使用一个简单分布$q$进行采样，可以计算出$p$的期望。在RL中，通常通过复用old policy的sample trajectory学习current policy。</p>
-<h2 id="Optimal-Importance-Sampling"><a href="#Optimal-Importance-Sampling" class="headerlink" title="Optimal Importance Sampling"></a>Optimal Importance Sampling</h2><p>Importance sampling使用采样近似估计$\mathbb{E}_p\left[f(x)\right]\approx \frac{1}{N}\sum_i \frac{p(x_i)}{q(x_i)}f(x_i)$近似计算$\mathbb{E}_p\left[f(x)\right]$。随着样本数量$N$的增加，期望值越准确。但是这种方法的方差很大，为了减少方差，样本分布$q$应该满足：</p>
-<script type="math/tex; mode=display">q(x) \propto p(x)\vert f(x)\vert \tag{4}</script><p>简单来说，为了减少方差，我们需要采样return更大的点。</p>
-<h2 id="Normalized-importanct-sampling"><a href="#Normalized-importanct-sampling" class="headerlink" title="Normalized importanct sampling"></a>Normalized importanct sampling</h2><p>上面介绍的方法叫做unnormalized importance sampling。可以使用下里面的公式将unnormalized importance sampling转换为normalized importance sampling。</p>
-<script type="math/tex; mode=display">p(x) = \frac{\hat{p}(x)}{Z}\tag{5}</script><p>许多ML方法属于贝叶斯网络或者马尔科夫随机场，对于贝叶斯网络中，$p$很容易计算。但是当$p$是马尔科夫随机场时，$\sum\hat{p}(x)$是很难计算的。<br>\begin{align*}<br>\mathbb{E}_p\left[f(x)\right] &amp; = \int f(x) p(x) dx\\\\<br>&amp; = \int f(x) \frac{\hat{p}(x)}{Z} \frac{q(x)}{q(x)} dx\\\\<br>&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}dx}{Z}\\\\<br>&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x) dx}\\\\<br>&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\<br>&amp; = \frac{\int f(x) q(x)\frac{\hat{p}(x)}{q(x)} dx}{\int q(x)\frac{\hat{p}(x)}{q(x)} dx}\\\\<br>&amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\\\<br>\end{align*}<br>接下来用采样样本的求和近似积分求期望：<br>\begin{align*}<br>\mathbb{E}_p\left[f(x)\right] &amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\\\<br>&amp; \approx \frac{\sum_i f(x^i) r^i }{\sum r^i}\qquad\qquad 其中 r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\\\<br>&amp; = \sum_i f(x^i) r^i  \frac{r^i}{\sum_i r^i}\\\\<br>\end{align*}<br>通过计算<br>这就避免了计算$Z$，这种方法叫做normalized importance sampling。但是需要付出一定代价，unnormalized importance sampling是无偏的，而normalized importance是有偏的但是方差更小。</p>
-<h2 id="Importance-sampling-in-RL"><a href="#Importance-sampling-in-RL" class="headerlink" title="Importance sampling in RL"></a>Importance sampling in RL</h2><p>我们可以使用importance sampling方法从old policy $\pi’$采样估计new policy $\pi$的值函数。计算一个action的returns的代价很高，但是如果新的action和老的action很接近，importance sampling可以帮助我们利用old calculation计算新的returns。举个例子，在MC方法中，无论何时更新$\theta$，都需要根据新的trajectories计算returns。</p>
-<script type="math/tex; mode=display">\nabla_{\theta}J(\theta) = \frac{1}{N}\sum_{i=1}^T \left(\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_{i,t}|s_{i,t})\right)\left(\prod_{t=1}^T R(s_{i,t},a_{i,t})\right) \tag{6}</script><p>一个trajectory可以有几百个steps，单个的更新是非常低效的。有了importance sampling之后，我们可以基于old samples计算新的return。然而，如果两个policy差的太远，accuracy会降低。因此周期性的同步policy是非常必要的。<br>使用importance sampling，重写policy gradient的等式：</p>
-<script type="math/tex; mode=display">\nabla_{\theta}J(\theta) = \mathbb{E}\_{\tau\sim\bar{\pi}(\tau)}\left[\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_t|s_t)\left(\prod_{t'=1}^T \frac{\pi_{\theta}(a_{t'}|s_{t'})}{\hat{\pi}\_{\theta}(a_{t'}|s_{t'})}\right)\left(\prod_{t'=t}^T R(s_{t'},a_{t'})\right)\right]\tag{7}</script><p>为了约束policy的变化，可以加入trust region约束条件，在这个region内，我们认为使用importance sampling得到的结果是可信的：</p>
-<script type="math/tex; mode=display">\max_{\theta} \hat{\mathbb{E}}\_t\left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t}\hat{A}\_t\right]\tag{8}</script><script type="math/tex; mode=display">s.t. \hat{\mathbb{E}}\_t\left[\text{KL}\left[\pi_{\theta_{old}}(\cdot|s_t),\pi_{\theta}(\cdot|s_t)\right]\right]\tag{9}</script><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://medium.com/@jonathan\_hui/rl-importance-sampling-ebfb28b4a8c6" target="_blank" rel="noopener">https://medium.com/@jonathan\_hui/rl-importance-sampling-ebfb28b4a8c6</a><br>2.<a href="http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf" target="_blank" rel="noopener">http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf</a></p>
+            <h2 id="importance-sampling">Importance Sampling</h2>
+<p>Importance sampling是使用一个分布近似估计另一个分布期望的方法，即通过分布$q$计算分布$p$下$f(x)$的期望。通过从$q$中采样而不是从$p$中采样近似：<br>
+$$\mathbb{E}_p\left[f(x)\right] = \mathbb{E}_q\left[ \frac{p(x)f(x)}{q(x)}\right] \tag{1}$$<br>
+使用采样分布$q$估计分布$p$下的期望：<br>
+$$\mathbb{E}_p\left[f(x)\right] \approx \frac{1}{n} \sum_{i=1}^n \frac{p(x_i)f(x_i)}{q(x_i)} x_i\sim q\tag{2}$$<br>
+上面的公式需要满足$p(x_i)$不为$0$时，$q(x_i)$也不为$0$。直接计算$\mathbb{E}_p\left[f(x)\right]$和$\mathbb{E}_q\left[f(x)\right]$，一般来说是不同的，通过importance ratio调整权重，就可以使用$q$分布估计$p$分布的期望了。举个例子：<br>
+$$f(1) = 2, f(2) = 3, f(3) = 4, otherwise 0 \tag{3}$$<br>
+概率分布$p$为：$p(x=1) = 0, p(x=2) = \frac{1}{3},p(x=3) = \frac{2}{3}$，概率分布$q$为：$q(x=1) = \frac{1}{3}, q(x=2) = \frac{1}{3}, q(x=3) = \frac{1}{3}$。计算期望，$\mathbb{E}_p\left[f(x)\right] = \frac{11}{3}$，$\mathbb{E}_q\left[f(x)\right] = 3$<br>
+使用importance ratio进行权重调整：<br>
+\begin{align*}<br>
+\mathbb{E}_p\left[f(x)\right] &amp; = \mathbb{E}_q\left[\frac{q(x)}{p(x)}f(x)\right] \\<br>
+&amp; = \mathbb{E}_q\left[\frac{p(x=1)}{q(x=1)}f(x=1) \right] + \mathbb{E}_q\left[\frac{p(x=2)}{q(x=2)}f(x=2) \right] + \mathbb{E}_q\left[\frac{p(x=3)}{q(x=3)}f(x=3) \right] \\<br>
+&amp; = \frac{1}{3}*0 + \frac{1}{3}\frac{\frac{1}{3}}{\frac{1}{3}}*3 + \frac{1}{3}\frac{\frac{2}{3}}{\frac{1}{3}}*4\\<br>
+&amp; =\frac{11}{3}\\<br>
+\end{align*}<br>
+可以看出来，我们使用分布$q$估计除了分布$p$的期望。通过使用一个简单分布$q$进行采样，可以计算出$p$的期望。在RL中，通常通过复用old policy的sample trajectory学习current policy。</p>
+<h2 id="optimal-importance-sampling">Optimal Importance Sampling</h2>
+<p>Importance sampling使用采样近似估计$\mathbb{E}_p\left[f(x)\right]\approx \frac{1}{N}\sum_i \frac{p(x_i)}{q(x_i)}f(x_i)$近似计算$\mathbb{E}_p\left[f(x)\right]$。随着样本数量$N$的增加，期望值越准确。但是这种方法的方差很大，为了减少方差，样本分布$q$应该满足：<br>
+$$q(x) \propto p(x)\vert f(x)\vert \tag{4}$$<br>
+简单来说，为了减少方差，我们需要采样return更大的点。</p>
+<h2 id="normalized-importanct-sampling">Normalized importanct sampling</h2>
+<p>上面介绍的方法叫做unnormalized importance sampling。可以使用下里面的公式将unnormalized importance sampling转换为normalized importance sampling。<br>
+$$p(x) = \frac{\hat{p}(x)}{Z}\tag{5}$$<br>
+许多ML方法属于贝叶斯网络或者马尔科夫随机场，对于贝叶斯网络中，$p$很容易计算。但是当$p$是马尔科夫随机场时，$\sum\hat{p}(x)$是很难计算的。<br>
+\begin{align*}<br>
+\mathbb{E}_p\left[f(x)\right] &amp; = \int f(x) p(x) dx\\<br>
+&amp; = \int f(x) \frac{\hat{p}(x)}{Z} \frac{q(x)}{q(x)} dx\\<br>
+&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}dx}{Z}\\<br>
+&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x) dx}\\<br>
+&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\<br>
+&amp; = \frac{\int f(x) q(x)\frac{\hat{p}(x)}{q(x)} dx}{\int q(x)\frac{\hat{p}(x)}{q(x)} dx}\\<br>
+&amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\<br>
+\end{align*}<br>
+接下来用采样样本的求和近似积分求期望：<br>
+\begin{align*}<br>
+\mathbb{E}_p\left[f(x)\right] &amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\<br>
+&amp; \approx \frac{\sum_i f(x^i) r^i }{\sum r^i}\qquad\qquad 其中 r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\<br>
+&amp; = \sum_i f(x^i) r^i  \frac{r^i}{\sum_i r^i}\\<br>
+\end{align*}<br>
+通过计算<br>
+这就避免了计算$Z$，这种方法叫做normalized importance sampling。但是需要付出一定代价，unnormalized importance sampling是无偏的，而normalized importance是有偏的但是方差更小。</p>
+<h2 id="importance-sampling-in-rl">Importance sampling in RL</h2>
+<p>我们可以使用importance sampling方法从old policy $\pi’$采样估计new policy $\pi$的值函数。计算一个action的returns的代价很高，但是如果新的action和老的action很接近，importance sampling可以帮助我们利用old calculation计算新的returns。举个例子，在MC方法中，无论何时更新$\theta$，都需要根据新的trajectories计算returns。<br>
+$$\nabla_{\theta}J(\theta) = \frac{1}{N}\sum_{i=1}^T \left(\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_{i,t}|s_{i,t})\right)\left(\prod_{t=1}^T R(s_{i,t},a_{i,t})\right) \tag{6}$$<br>
+一个trajectory可以有几百个steps，单个的更新是非常低效的。有了importance sampling之后，我们可以基于old samples计算新的return。然而，如果两个policy差的太远，accuracy会降低。因此周期性的同步policy是非常必要的。<br>
+使用importance sampling，重写policy gradient的等式：<br>
+$$\nabla_{\theta}J(\theta) = \mathbb{E}_{\tau\sim\bar{\pi}(\tau)}\left[\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_t|s_t)\left(\prod_{t’=1}^T \frac{\pi_{\theta}(a_{t’}|s_{t’})}{\hat{\pi}_{\theta}(a_{t’}|s_{t’})}\right)\left(\prod_{t’=t}^T R(s_{t’},a_{t’})\right)\right]\tag{7}$$<br>
+为了约束policy的变化，可以加入trust region约束条件，在这个region内，我们认为使用importance sampling得到的结果是可信的：<br>
+$$\max_{\theta} \hat{\mathbb{E}}_t\left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t}\hat{A}_t\right]\tag{8}$$<br>
+$$s.t. \hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{\theta_{old}}(\cdot|s_t),\pi_{\theta}(\cdot|s_t)\right]\right]\tag{9}$$</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://medium.com/@jonathan_hui/rl-importance-sampling-ebfb28b4a8c6" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-importance-sampling-ebfb28b4a8c6</a><br>
+2.<a href="http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf" target="_blank" rel="noopener">http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf</a></p>
 
           
         
@@ -928,11 +1012,23 @@
       
         
           
-            <h2 id="MM"><a href="#MM" class="headerlink" title="MM"></a>MM</h2><p>MM是一类迭代优化方法，利用函数的凸性寻找极大值或者极小值。MM是Majoriza-Minimization或者Minorize-Maximization的缩写，取决于优化目标是maximization还是minimization。MM不是一个算法，它描述了如何如构建一个优化算法。<br><a href="https://mxxhcm.github.io/2019/01/21/expectatin_maximization/">EM算法</a>可以看成MM算法的一个例子。但是EM算法使用到了条件期望，而MM算法中凸性和不等式是重点。</p>
-<h2 id="算法思路"><a href="#算法思路" class="headerlink" title="算法思路"></a>算法思路</h2><p>MM算法寻找objective function的一个替代品，然后优化新的目标函数直到一个极值点。<br>拿minorize-maximization算法举个例子，用$f(\theta)$表示需要被maximized的目标函数，它是一个concave函数。在第$m=0,1,\cdots$步中，构建新的目标函数$g(\theta|theta_m)$满足：</p>
-<script type="math/tex; mode=display">g(\theta|\theta_m) \le f(\theta), \forall \theta \tag{1}</script><script type="math/tex; mode=display">g(\theta_m|\theta_m) = f(\theta_m) \tag{2}</script><p>式子$(1)表示$g(\theta|\theta_m)$是$f(\theta)$的下界，式子$(2)$表明$f(\theta)$和$g(\theta|\theta_m)$可以取到等号。<br>如下图所示：<br><img src="/2019/09/25/mm/mm.jpg" alt="mm"><br>接下来，通过最大化$g(\theta|\theta_m)$就可以最大化$f(\theta)$：</p>
-<script type="math/tex; mode=display">\theta_{m+1} = \arg \max_{\theta} g(\theta|\theta_m) \tag{3}</script><p>当$m\rightarrow \infty$时，$f(\theta_m)$就会收敛到极小值点或者鞍点。我们能够得到以下的几个关系式：</p>
-<script type="math/tex; mode=display">f(\theta_{m+1}) \ge g(\theta_{m+1}|\theta_m) \ge g(\theta_m|\theta_m)=f(\theta_m)</script><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://en.wikipedia.org/wiki/MM_algorithm" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/MM_algorithm</a></p>
+            <h2 id="mm">MM</h2>
+<p>MM是一类迭代优化方法，利用函数的凸性寻找极大值或者极小值。MM是Majoriza-Minimization或者Minorize-Maximization的缩写，取决于优化目标是maximization还是minimization。MM不是一个算法，它描述了如何如构建一个优化算法。<br>
+<a href="https://mxxhcm.github.io/2019/01/21/expectatin_maximization/">EM算法</a>可以看成MM算法的一个例子。但是EM算法使用到了条件期望，而MM算法中凸性和不等式是重点。</p>
+<h2 id="算法思路">算法思路</h2>
+<p>MM算法寻找objective function的一个替代品，然后优化新的目标函数直到一个极值点。<br>
+拿minorize-maximization算法举个例子，用$f(\theta)$表示需要被maximized的目标函数，它是一个concave函数。在第$m=0,1,\cdots$步中，构建新的目标函数$g(\theta|theta_m)$满足：<br>
+$$g(\theta|\theta_m) \le f(\theta), \forall \theta \tag{1}$$<br>
+$$g(\theta_m|\theta_m) = f(\theta_m) \tag{2}$$<br>
+式子$(1)表示$g(\theta|\theta_m)$是$f(\theta)$的下界，式子$(2)$表明$f(\theta)$和$g(\theta|\theta_m)$可以取到等号。<br>
+如下图所示：<br>
+<img src="/2019/09/25/mm/mm.jpg" alt="mm"><br>
+接下来，通过最大化$g(\theta|\theta_m)$就可以最大化$f(\theta)$：<br>
+$$\theta_{m+1} = \arg \max_{\theta} g(\theta|\theta_m) \tag{3}$$<br>
+当$m\rightarrow \infty$时，$f(\theta_m)$就会收敛到极小值点或者鞍点。我们能够得到以下的几个关系式：<br>
+$$f(\theta_{m+1}) \ge g(\theta_{m+1}|\theta_m) \ge g(\theta_m|\theta_m)=f(\theta_m) $$</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://en.wikipedia.org/wiki/MM_algorithm" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/MM_algorithm</a></p>
 
           
         
@@ -1104,17 +1200,35 @@
       
         
           
-            <h2 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h2><p>标准的policy gradietn每一次更新需要一个样本，本文提出的PPO能够使用minibatch更新。PPO有着TRPO的优势，但是更容易实现，更普遍，更好的采样复杂度。</p>
-<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><h3 id="Policy-Gradient"><a href="#Policy-Gradient" class="headerlink" title="Policy Gradient"></a>Policy Gradient</h3><p>目标函数：</p>
-<script type="math/tex; mode=display">L^{PG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}\_t \right] \tag{1}</script><p>约束条件：</p>
-<script type="math/tex; mode=display">\vert d\theta\vert^2 \le \delta \tag{2}</script><h3 id="Natural-Policy-Gradient"><a href="#Natural-Policy-Gradient" class="headerlink" title="Natural Policy Gradient"></a>Natural Policy Gradient</h3><p>目标函数：</p>
-<script type="math/tex; mode=display">L^{NPG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}\_t  \right]\tag{3}</script><p>约束条件：</p>
-<script type="math/tex; mode=display">\hat{\mathbb{E}}\_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}</script><p>等价于</p>
-<script type="math/tex; mode=display">\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{5}</script><h3 id="Trust-Region-Policy-Optimization"><a href="#Trust-Region-Policy-Optimization" class="headerlink" title="Trust Region Policy Optimization"></a>Trust Region Policy Optimization</h3><p>目标函数：</p>
-<script type="math/tex; mode=display">L^{PG} (\theta) = \hat{\mathbb{E}}\_t \left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{old}(a_t|s_t)}\hat{A}\_t \right]\tag{6}</script><p>约束条件：</p>
-<script type="math/tex; mode=display">\hat{\mathbb{E}}\_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{7}</script><h3 id="Proximal-Policy-Optimization"><a href="#Proximal-Policy-Optimization" class="headerlink" title="Proximal Policy Optimization"></a>Proximal Policy Optimization</h3><p>目标函数：</p>
-<script type="math/tex; mode=display">L^{PPO}(\theta) =\hat{\mathbb{E}}\_t \left[L_t^{CLIP+VF+S}(\theta) - \beta\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t) \right] \right] \tag{8}</script><p>其中$S$表示entropy bonus。</p>
-<script type="math/tex; mode=display">L_t^{CLIP}(\theta) = \hat{\mathbb{E}}\_t \left[\min(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)},\ clip(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)}, 1-\epsilon, 1+\epsilon) \hat{A}\_t) \right]\tag{9}</script><script type="math/tex; mode=display">L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ} )^2 \tag{10}</script><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://arxiv.org/pdf/1707.06347.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1707.06347.pdf</a><br>2.<a href="https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12</a></p>
+            <h2 id="abstract">Abstract</h2>
+<p>标准的policy gradietn每一次更新需要一个样本，本文提出的PPO能够使用minibatch更新。PPO有着TRPO的优势，但是更容易实现，更普遍，更好的采样复杂度。</p>
+<h2 id="introduction">Introduction</h2>
+<h3 id="policy-gradient">Policy Gradient</h3>
+<p>目标函数：<br>
+$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t \right] \tag{1}$$<br>
+约束条件：<br>
+$$\vert d\theta\vert^2 \le \delta \tag{2}$$</p>
+<h3 id="natural-policy-gradient">Natural Policy Gradient</h3>
+<p>目标函数：<br>
+$$ L^{NPG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t  \right]\tag{3}$$<br>
+约束条件：<br>
+$$\hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}$$<br>
+等价于<br>
+$$\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{5}$$</p>
+<h3 id="trust-region-policy-optimization">Trust Region Policy Optimization</h3>
+<p>目标函数：<br>
+$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{old}(a_t|s_t)}\hat{A}_t \right]\tag{6}$$<br>
+约束条件：<br>
+$$\hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{7}$$</p>
+<h3 id="proximal-policy-optimization">Proximal Policy Optimization</h3>
+<p>目标函数：<br>
+$$L^{PPO}(\theta) =\hat{\mathbb{E}}_t \left[L_t^{CLIP+VF+S}(\theta) - \beta\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t) \right] \right] \tag{8}$$<br>
+其中$S$表示entropy bonus。<br>
+$$L_t^{CLIP}(\theta) = \hat{\mathbb{E}}_t \left[\min(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)},\ clip(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)}, 1-\epsilon, 1+\epsilon) \hat{A}_t) \right]\tag{9}$$<br>
+$$L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ} )^2 \tag{10}$$</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1707.06347.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1707.06347.pdf</a><br>
+2.<a href="https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12</a></p>
 
           
         
@@ -1274,7 +1388,11 @@
       
         
           
-            <h2 id><a href="#" class="headerlink" title=" "></a> </h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.</p>
+            <h2 id="none"></h2>
+<h2 id="参考文献">参考文献</h2>
+<ol>
+<li></li>
+</ol>
 
           
         
@@ -1434,7 +1552,8 @@
       
         
           
-            <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://tangxman.github.io/2015/11/19/optimize-newton/" target="_blank" rel="noopener">https://tangxman.github.io/2015/11/19/optimize-newton/</a></p>
+            <h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://tangxman.github.io/2015/11/19/optimize-newton/" target="_blank" rel="noopener">https://tangxman.github.io/2015/11/19/optimize-newton/</a></p>
 
           
         
@@ -1594,7 +1713,8 @@
       
         
           
-            <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://zhuanlan.zhihu.com/p/27644403" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/27644403</a></p>
+            <h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://zhuanlan.zhihu.com/p/27644403" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/27644403</a></p>
 
           
         
@@ -1766,11 +1886,24 @@
       
         
           
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>共轭梯度(conjugate method)方法是一种<a href="https://mxxhcm.github.io/2019/09/23/%E8%BF%AD%E4%BB%A3%E6%B3%95/">迭代法</a>。<br>共轭梯度收敛的快慢取决于系数矩阵谱分解的情况。特征集集中，系数矩阵的条件数很小，收敛的就快。</p>
-<h2 id="核心"><a href="#核心" class="headerlink" title="核心"></a>核心</h2><p>解线性对称正定方程组（$A$是对称正定矩阵）：</p>
-<script type="math/tex; mode=display">Ax=b</script><p>可以转化为</p>
-<script type="math/tex; mode=display">\min_x f(x) = \frac{1}{2} x^T Ax - b^T x</script><p>因为：</p>
-<script type="math/tex; mode=display">f'(x) = Ax-b</script><h2 id="和其他迭代法的对比"><a href="#和其他迭代法的对比" class="headerlink" title="和其他迭代法的对比"></a>和其他迭代法的对比</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://tangxman.github.io/2015/11/18/optimize-gradient/" target="_blank" rel="noopener">https://tangxman.github.io/2015/11/18/optimize-gradient/</a><br>2.<a href="https://www.zhihu.com/question/27157047" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047</a><br>3.<a href="https://www.zhihu.com/question/27157047/answer/121950241" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047/answer/121950241</a><br>4.<a href="https://www.zhihu.com/question/27157047/answer/171336970" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047/answer/171336970</a><br>5.<a href="https://blog.csdn.net/lusongno1/article/details/78550803" target="_blank" rel="noopener">https://blog.csdn.net/lusongno1/article/details/78550803</a><br>6.<a href="https://medium.com/@jonathan_hui/rl-conjugate-gradient-5a644459137a" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-conjugate-gradient-5a644459137a</a></p>
+            <h2 id="简介">简介</h2>
+<p>共轭梯度(conjugate method)方法是一种<a href="https://mxxhcm.github.io/2019/09/23/%E8%BF%AD%E4%BB%A3%E6%B3%95/">迭代法</a>。<br>
+共轭梯度收敛的快慢取决于系数矩阵谱分解的情况。特征集集中，系数矩阵的条件数很小，收敛的就快。</p>
+<h2 id="核心">核心</h2>
+<p>解线性对称正定方程组（$A$是对称正定矩阵）：<br>
+$$Ax=b$$<br>
+可以转化为<br>
+$$\min_x f(x) = \frac{1}{2} x^T Ax - b^T x$$<br>
+因为：<br>
+$$f’(x) = Ax-b$$</p>
+<h2 id="和其他迭代法的对比">和其他迭代法的对比</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://tangxman.github.io/2015/11/18/optimize-gradient/" target="_blank" rel="noopener">https://tangxman.github.io/2015/11/18/optimize-gradient/</a><br>
+2.<a href="https://www.zhihu.com/question/27157047" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047</a><br>
+3.<a href="https://www.zhihu.com/question/27157047/answer/121950241" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047/answer/121950241</a><br>
+4.<a href="https://www.zhihu.com/question/27157047/answer/171336970" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047/answer/171336970</a><br>
+5.<a href="https://blog.csdn.net/lusongno1/article/details/78550803" target="_blank" rel="noopener">https://blog.csdn.net/lusongno1/article/details/78550803</a><br>
+6.<a href="https://medium.com/@jonathan_hui/rl-conjugate-gradient-5a644459137a" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-conjugate-gradient-5a644459137a</a></p>
 
           
         
@@ -1942,12 +2075,26 @@
       
         
           
-            <h2 id="无偏估计的方差下界-cramer-rao-bound"><a href="#无偏估计的方差下界-cramer-rao-bound" class="headerlink" title="无偏估计的方差下界 cramer-rao bound"></a>无偏估计的方差下界 cramer-rao bound</h2><p>理论上可以证明，任何无偏估计的方差都有一个下界，这个下界叫做cramer-rao bound。具体的证明好复杂，这里只是简单说一下。如果证明算法无偏估计量的方差的下界是cramer-rao bound，说明这个算法的下界已经没有优化了。。。这个下界其实很多时候不知道什么时候能取到，到时能给我们一定的信息，就像期望一样。</p>
+            <h2 id="无偏估计的方差下界-cramer-rao-bound">无偏估计的方差下界 cramer-rao bound</h2>
+<p>理论上可以证明，任何无偏估计的方差都有一个下界，这个下界叫做cramer-rao bound。具体的证明好复杂，这里只是简单说一下。如果证明算法无偏估计量的方差的下界是cramer-rao bound，说明这个算法的下界已经没有优化了。。。这个下界其实很多时候不知道什么时候能取到，到时能给我们一定的信息，就像期望一样。</p>
 <p>它的最简单形式是：任何无偏估计的方差至少大于fisher information的倒数。</p>
-<h2 id="Efficient"><a href="#Efficient" class="headerlink" title="Efficient"></a>Efficient</h2><p>Efficient说的是在所有的无偏估计方法中，如果某种方法中无偏估计的方差等于cramer-rao bound，那么这个方法就是efficient。（应该是这样子吧。。。）</p>
-<h2 id="Asymptotically"><a href="#Asymptotically" class="headerlink" title="Asymptotically"></a>Asymptotically</h2><p>在样本有效的情况下，统计量的方差不好计算。但是当样本不断增大时，方差会逐渐接近一个定值。用asymptotically修饰不断增大趋向于无穷的样本数量。</p>
-<h2 id="Asymptotically-Efficient"><a href="#Asymptotically-Efficient" class="headerlink" title="Asymptotically  Efficient"></a>Asymptotically  Efficient</h2><p>Asymptotically efficient指得是某种方法在小样本时可能不是efficient的，但是随着样本数量不断增加，变成了efficient的，这种方式就是asymptotically efficient的。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>渐进有效性<br>1.<a href="https://www.zhihu.com/question/285834087/answer/446120288" target="_blank" rel="noopener">https://www.zhihu.com/question/285834087/answer/446120288</a><br>2.<a href="https://bbs.pinggu.org/thread-2139008-1-1.html" target="_blank" rel="noopener">https://bbs.pinggu.org/thread-2139008-1-1.html</a><br>3.<a href="https://www.zhihu.com/question/28908532/answer/254617423" target="_blank" rel="noopener">https://www.zhihu.com/question/28908532/answer/254617423</a><br>4.<a href="https://en.wikipedia.org/wiki/Efficiency_(statistics)#Asymptotic_efficiency" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Efficiency_(statistics)#Asymptotic_efficiency</a><br>5.<a href="https://cs.stackexchange.com/questions/69819/what-does-it-mean-by-saying-asymptotically-more-efficient" target="_blank" rel="noopener">https://cs.stackexchange.com/questions/69819/what-does-it-mean-by-saying-asymptotically-more-efficient</a><br>cramer-rao bound<br>6.<a href="https://www.zhihu.com/question/24710773/answer/117796031" target="_blank" rel="noopener">https://www.zhihu.com/question/24710773/answer/117796031</a><br>7.<a href="http://www2.math.ou.edu/~kmartin/stats/cramer-rao.pdf" target="_blank" rel="noopener">http://www2.math.ou.edu/~kmartin/stats/cramer-rao.pdf</a><br>8.<a href="https://www.zhihu.com/question/311561435/answer/607730638" target="_blank" rel="noopener">https://www.zhihu.com/question/311561435/answer/607730638</a></p>
+<h2 id="efficient">Efficient</h2>
+<p>Efficient说的是在所有的无偏估计方法中，如果某种方法中无偏估计的方差等于cramer-rao bound，那么这个方法就是efficient。（应该是这样子吧。。。）</p>
+<h2 id="asymptotically">Asymptotically</h2>
+<p>在样本有效的情况下，统计量的方差不好计算。但是当样本不断增大时，方差会逐渐接近一个定值。用asymptotically修饰不断增大趋向于无穷的样本数量。</p>
+<h2 id="asymptotically-efficient">Asymptotically  Efficient</h2>
+<p>Asymptotically efficient指得是某种方法在小样本时可能不是efficient的，但是随着样本数量不断增加，变成了efficient的，这种方式就是asymptotically efficient的。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>渐进有效性<br>
+1.<a href="https://www.zhihu.com/question/285834087/answer/446120288" target="_blank" rel="noopener">https://www.zhihu.com/question/285834087/answer/446120288</a><br>
+2.<a href="https://bbs.pinggu.org/thread-2139008-1-1.html" target="_blank" rel="noopener">https://bbs.pinggu.org/thread-2139008-1-1.html</a><br>
+3.<a href="https://www.zhihu.com/question/28908532/answer/254617423" target="_blank" rel="noopener">https://www.zhihu.com/question/28908532/answer/254617423</a><br>
+4.<a href="https://en.wikipedia.org/wiki/Efficiency_(statistics)#Asymptotic_efficiency" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Efficiency_(statistics)#Asymptotic_efficiency</a><br>
+5.<a href="https://cs.stackexchange.com/questions/69819/what-does-it-mean-by-saying-asymptotically-more-efficient" target="_blank" rel="noopener">https://cs.stackexchange.com/questions/69819/what-does-it-mean-by-saying-asymptotically-more-efficient</a><br>
+cramer-rao bound<br>
+6.<a href="https://www.zhihu.com/question/24710773/answer/117796031" target="_blank" rel="noopener">https://www.zhihu.com/question/24710773/answer/117796031</a><br>
+7.<a href="http://www2.math.ou.edu/~kmartin/stats/cramer-rao.pdf" target="_blank" rel="noopener">http://www2.math.ou.edu/~kmartin/stats/cramer-rao.pdf</a><br>
+8.<a href="https://www.zhihu.com/question/311561435/answer/607730638" target="_blank" rel="noopener">https://www.zhihu.com/question/311561435/answer/607730638</a></p>
 
           
         
@@ -2914,39 +3061,7 @@
                     
                       
                     
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">399</span>
+                    <span class="site-state-item-count">401</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
