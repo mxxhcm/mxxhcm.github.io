@@ -3,7 +3,6 @@ title: C++ compound type class
 date: 2019-11-13 14:15:43
 tags:
  - class
- - 类
  - C++
  - C/C++
 categories: C/C++
