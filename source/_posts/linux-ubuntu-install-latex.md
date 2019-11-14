@@ -1,11 +1,10 @@
 ---
-title: ubuntu install latex
+title: linux-ubuntu install latex
 date: 2018-10-15 10:42:22
 tags:
 - linux
 - latex
-- 工具
-categories: 工具
+categories: linux
 ---
 
 ## 安装latex解释器
@@ -21,7 +20,9 @@ sudo apt install textmaker
 ## latex文件编写
 编写就行了
 title和maketitle，maketitle是制作首页的意思
+``` latex
 \usepackage{gensymb} \circ
+```
 
 
 ## 参考文献

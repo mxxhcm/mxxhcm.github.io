@@ -8,7 +8,10 @@ tags:
 categories: C/C++
 ---
 
-##
+## C语言中的lvalue和rvalue
+左值就是能够出现在赋值号左边的东西，右值就是可以出现在赋值号右边的东西。
+
+## C++中的lvalue和rvalue
 
 
 ## 参考文献
