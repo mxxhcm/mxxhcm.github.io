@@ -41,8 +41,16 @@ char str3[] = {'h', 'e', 'l', 'l', 'o', '\0'};
 ```c
 int array[] = {1, 2, 3, 4,5};
 printf("array=%p, &array=%p\n", array, &array);
+
+printf("array+1=%p: &array+1=%p\n", array+1, &array+1);
+```
+程序的输出如下：
+``` text
+array=0x7ffc50c541c0: &array=0x7ffc50c541c0
+array+1=0x7ffc50c541c4: &array+1=0x7ffc50c541d4
 ```
 根据上面程序的输出，`array`和`&array`得到了一样的地址。但是它们并不是一样的！！！它们的地址相同，但是地址的类型不同。
+对指针进行算术运算，将`array`和`&array`都加一，我们却得到了不同的结果。事实上，`array`是指向数组第一个元素的指针，而`&array`是指向整个`int [5]`数组的指针。因此，根据指针运算规则，对地址`array`和`&array`进行算术运算，得到了不同的结果。
 
 
 ### 数组的指针和数组的引用
