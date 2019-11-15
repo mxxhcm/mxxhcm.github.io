@@ -36,6 +36,15 @@ char str3[] = {'h', 'e', 'l', 'l', 'o', '\0'};
 1. 不支持数组的拷贝是为了避免不必要的复制开销，数组复制将会导致连续的内存读和写。
 2. 为什么用指针代替数组，不是因为他们太像了，而是避免赋值的开销，因为c里面只有值传递，如果对数组采用pass by value，会有很大的开销。
 
+### 数组和指针
+当使用数组作为右值时，编译器会自动将数组转化成数组首元素的地址。[2]那么array和&array有什么区别呢？[3]`
+```c
+int array[] = {1, 2, 3, 4,5};
+printf("array=%p, &array=%p\n", array, &array);
+```
+根据上面程序的输出，`array`和`&array`得到了一样的地址。但是它们并不是一样的！！！它们的地址相同，但是地址的类型不同。
+
+
 ### 数组的指针和数组的引用
 对于数组来说，采用从内向外的方式，即名数组名字开始，然后向左看数组类型，向右看数组大小。```c
 int *ptrs[10]; //ptr是一个数组，数组的类型是int*的，大小是10
@@ -57,3 +66,5 @@ int (&ref_array)[10]; //ref_array是一个引用，绑定到一个大小为10的
 
 ## 参考文献
 1.《C++ Primer第五版》
+2.https://stackoverflow.com/questions/1641957/is-an-array-name-a-pointer
+3.https://www.geeksforgeeks.org/whats-difference-between-array-and-array-for-int-array5/
