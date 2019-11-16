@@ -43,6 +43,15 @@ message = "Hello world!";
 使用无效指针和使用未初始化变量是同类错误，编译器都不负责进行检查。
 
 ### 解引用指针（间接访问）操作符
+C11中解引用操作符`*`的定义：
+\begin{quote}
+The unary * operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ‘‘pointer to type’’, the result has type ‘‘type’’. If an invalid value has been assigned to the pointer, the behavior of the unary * operator is undefined.102)
+\end{quote}
+C++11中解引用操作符`*`的定义：
+``` text
+The unary * operator performs indirection: the expression to which it is applied shall be a pointer to an object type, or a pointer to a function type and the result is an lvalue referring to the object or function to which the expression points. If the type of the expression is “pointer to T,” the type of the result is “T.” [ Note: a pointer to an incomplete type (other than cv void) can be dereferenced. The lvalue thus obtained can be used in limited ways (to initialize a reference, for example); this lvalue must not be converted to a prvalue, see 4.1. — end note ]
+```
+
 如果指针指向了一个对象，允许使用，解引用操作符`*`访问对象。对指针解引用会得到指针所指的对象，给解引用的对象赋值其实就是给指针所指的对象赋值([1]2.3.2)。
 解引用操作可以得到一个指针指向对象的左值表达式，如果不解引用，指针变量中存放的内容就只是地址。
 **对象（变量）和指针变量中存放的内容（即地址）的区别，对象可以直接进行赋值。指针变量中存放的是一个地址，地址本身就是一个数字，是一个右值，不能对其进行赋值，对这个地址进行解引用，得到指针指向的对象。**
@@ -131,9 +140,8 @@ char *cp = &ch;
 4. 解引用前置自增操作`*cp++`，这个式子其实是对表达式`cp++`的解引用操作，是对`cp`加一前的拷贝的解引用操作，而不是对`cp`的操作。
 
 ### 指针表达式和左值右值
-关于左值和右值的介绍，可以查看[C C++ lvalue and rvalue]()。
-给出下列代码
-``` c
+关于左值和右值的介绍，可以查看[C C++ lvalue and rvalue](http://localhost:4000/2019/11/14/C-CPP-lvalue-and-rvalue/)。
+给出下列代码``` c
 char ch[] = "abc";
 char *cp = ch;
 
@@ -167,3 +175,5 @@ char *cp = ch;
 ## 参考文献
 1.《C++ Primer第五版》
 2.《C和指针》
+3.https://stackoverflow.com/questions/54621080/lvalues-in-the-iso-c11-standard
+4.http://www.open-std.org/jtc1/sc22/WG14/www/docs/n1570.pdf
