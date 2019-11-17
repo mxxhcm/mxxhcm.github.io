@@ -49,10 +49,13 @@ C11中解引用操作符`*`的定义：
 C++11中解引用操作符`*`的定义：
 > The unary * operator performs indirection: the expression to which it is applied shall be a pointer to an object type, or a pointer to a function type and the result is an lvalue referring to the object or function to which the expression points. If the type of the expression is “pointer to T,” the type of the result is “T.” [ Note: a pointer to an incomplete type (other than cv void) can be dereferenced. The lvalue thus obtained can be used in limited ways (to initialize a reference, for example); this lvalue must not be converted to a prvalue, see 4.1. — end note ]
 
-如果指针指向了一个对象，允许使用，解引用操作符`*`访问对象。对指针解引用会得到指针所指的对象，给解引用的对象赋值其实就是给指针所指的对象赋值([1]2.3.2)。
-解引用操作可以得到一个指针指向对象的左值表达式，如果不解引用，指针变量中存放的内容就只是地址。
+解引用操作符`*`应用于指向对象或者指向函数的指针表达式，得到指针指向对象的左值表达式，给解引用的结果赋值其实就是给指针所指的对象赋值([1]2.3.2)。如果不解引用，指针变量中存放的内容就只是地址。
 **对象（变量）和指针变量中存放的内容（即地址）的区别，对象可以直接进行赋值。指针变量中存放的是一个地址，地址本身就是一个数字，是一个右值，不能对其进行赋值，对这个地址进行解引用，得到指针指向的对象。**
-定义一个指针`p`：`int a=3; int *p = &a;`，`p`是`int*`类型，存放的是变量`a`的地址，`*`是间接访问，`*p`对指针进行解引用得到指针指向对象的左值表达式，是int类型，`&`表示取变量`a`的地址。
+定义一个指针`p`：``` c
+int a=3; 
+int *p = &a;
+```
+`p`是`int*`类型，存放的是变量`a`的地址，`*`是间接访问，`*p`对指针进行解引用得到指针指向对象的左值表达式，其实就是`a`，`&`表示取变量`a`的地址。
 
 ### 未初始化和非法的指针
 看一个错误的代码片段：```c

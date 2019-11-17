@@ -17,7 +17,7 @@ NOTE When referenced, an object may be interpreted as having a particular type; 
 > 3.19 value
 precise meaning of the contents of an object when interpreted as having a specific type
 
-object是内存中一块有意义的空间，它的内容可以表示值。当被使用时，一个对象可以解释为一种特定的类型。value是以具体类型解析object中的内容。
+object是一块内存空间，它的内容可以表示值。当被使用时，一个对象可以解释为一种特定的类型。value是以具体类型解析object中的内容。
 
 ### C++11标准
 C++11标准的定义如下([17]1.8)：
@@ -27,10 +27,11 @@ C++11标准的定义如下([17]1.8)：
 > An object has a type. 
 > The term object type refers to the type with which the object is created.
 
-C++中的obejct也是一个内存空间。object可以有名字，可以有类型，有一个duration。也就是C++ Primer第五版中说的对象是具有某种数据类型的内存空间，可以有名，可以没有名字。
+C++ 中的obejct也是一个内存空间。object可以有名字，可以有类型（内置类型还是复合类型都行），有一个duration。也就是C++ Primer第五版中说的对象是具有某种数据类型的内存空间，可以有名，可以没有名字。
 
 ## C语言中的lvalue和rvalue
 ### 左值和右值的定义
+首先看一下标准中的定义：
 C11中左值的定义：
 > An lvalue is an expression (with an object type other than void) that potentially designates an object;64) if an lvalue does not designate an object when it is evaluated, the behavior is undefined. When an object is said to have a particular type, the type is specified by the lvalue used to designate the object. A modifiable lvalue is an lvalue that does not have array type, does not have an incomplete type, does not have a constqualified type, and if it is a structure or union, does not have any member (including, recursively, any member or element of all contained aggregates or unions) with a constqualified type.
 
@@ -39,12 +40,13 @@ C++11中左值的定义([17]3.10)：
 
 C中早期的定义：
 左值是一个表达式，可以出现在赋值操作的左边或者右边，而右值只能出现在左边。
-给出一个更容易理解的定义：
-左值指定了一个函数或者对象（变量），它存放在内存中的某个位置，并且允许使用取值地址符`&`获取这块内存的地址。如果`E`是指针类型的表达式，那么`*E`是`E`指向的函数或者对象的左值表达式。如果一个表达式不是左值，那么它就被定义为右值。
+后来C标准和C++ 标准中定义的左值基本一样，可以总结为：
+左值指定了一个函数或者对象（变量）。它存放在内存中的某个位置，并且允许使用取值地址符`&`获取这块内存的地址。如果`E`是指针类型的表达式，那么`*E`是`E`指向的函数或者对象的左值表达式。左值分为可修改左值和不可修改左值，像常量，数组名，等属于不可修改左值，而其它的左值都是可修改左值。如果一个表达式不是左值，那么它就被定义为右值。
 怎么样判断左值，满足以下两点中任何一点就是一个左值：
 1. 是否有名字
 2. 是否能够取到它的地址
 
+C++ Primer中给出的一个方法：当一个对象被用作右值的时候，用的是对象的值。当一个对象被用作左值的时候，用的是对象在内存中的位置。
 示例
 ```c
 char ch = 'a';
@@ -52,7 +54,6 @@ char *cp = &ch; //ch可以当做左值，也可以当做右值
 &ch = 3;  //错误，因为&ch我们只能取得它的值，并不能获取它在内存中的地址，即它只是一个右值，不能当做左值。
 ```
 **对象（变量）和指针变量中存放的内容（即地址）的区别，对象可以直接进行赋值。指针变量中存放的是一个地址，地址本身就是一个数字，是一个右值，不能对其进行赋值，对这个地址进行解引用，得到指针指向对象的左值表达式。**
-
 
 ### 左值和右值的转换
 #### 左值到右值的隐式类型转换[13]
@@ -97,7 +98,7 @@ b = a;  //想要做的操作是把数组a赋值给数组b，这是错误的。
 
 
 ### 左值类型
-C语言中的左值有以下七种：
+C语言中的左值有以几种：
 1. 任意类型变量的名字
 2. 下标运算符`[]`
 3. 指针的成员访问操作`->`和`.`
@@ -105,14 +106,9 @@ C语言中的左值有以下七种：
 5. 指针的解引用操作，不能是一个函数指针
 6. 数组，`const`对象，是一个不可修改左值，比如`const int a = 0;`，`a`是一个不可修改左值
 7. 字符串字面值常量是一个不可修改左值[12]，因为C中没有字符串类型，字符串常量都是以字符数组类型存储的，而在C中，除了左值以外没有任何方式可以让数组存在于表达式中。
-8. 带括号的左值表达式
 
 
-## C++中的lvalue和rvalue
-C++11中标准的定义([17]3.10)：
-> An lvalue (so called, historically, because lvalues could appear on the left-hand side of an assignment expression) designates a function or an object. [Example: If E is an expression of pointer type, then *E is an lvalue expression referring to the object or function to which E points. As another example, the result of calling a function whose return type is an lvalue reference is an lvalue. — end example ]
-
-当一个对象被用作右值的时候，用的是对象的值。当一个对象被用作左值的时候，用的是对象在内存中的位置。
+## C++和C中lvalue的区别
 《C++ Primer》中说C++和C中的左值和右值不一样，我怎么觉得都一样呢。（好吧，自己还是道行太浅了）。
 举例来说：
 1. 比如说`++i`和`--i`操作，在C中，它是一个右值，而在C++ 中，它是左值，而`i++`和`i--`在C和C++ 中都是右值[9]。
