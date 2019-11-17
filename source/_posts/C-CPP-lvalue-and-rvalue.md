@@ -11,36 +11,31 @@ categories: C/C++
 ## 对象(object)和值(value)
 ### C11标准
 C11标准的定义如下([14]3.15, 3.19)：
-``` txt
-3.15 object
+> 3.15 object
 region of data storage in the execution environment, the contents of which can represent values
 NOTE When referenced, an object may be interpreted as having a particular type; see 6.3.2.1.
-3.19 value
+> 3.19 value
 precise meaning of the contents of an object when interpreted as having a specific type
-```
+
 object是内存中一块有意义的空间，它的内容可以表示值。当被使用时，一个对象可以解释为一种特定的类型。value是以具体类型解析object中的内容。
 
 ### C++11标准
 C++11标准的定义如下([17]1.8)：
-``` txt
-An object is a region of storage. [ Note: A function is not an object, regardless of whether or not it occupies storage in the way that objects do. — end note ] 
-An object can have a name. 
-An object has a storage duration which influences its lifetime. 
-An object has a type. 
-The term object type refers to the type with which the object is created.
-```
+> An object is a region of storage. [ Note: A function is not an object, regardless of whether or not it occupies storage in the way that objects do. — end note ] 
+> An object can have a name. 
+> An object has a storage duration which influences its lifetime. 
+> An object has a type. 
+> The term object type refers to the type with which the object is created.
+
 C++中的obejct也是一个内存空间。object可以有名字，可以有类型，有一个duration。也就是C++ Primer第五版中说的对象是具有某种数据类型的内存空间，可以有名，可以没有名字。
 
 ## C语言中的lvalue和rvalue
 ### 左值和右值的定义
 C11中左值的定义：
-```text
- An lvalue is an expression (with an object type other than void) that potentially designates an object;64) if an lvalue does not designate an object when it is evaluated, the behavior is undefined. When an object is said to have a particular type, the type is specified by the lvalue used to designate the object. A modifiable lvalue is an lvalue that does not have array type, does not have an incomplete type, does not have a constqualified type, and if it is a structure or union, does not have any member (including, recursively, any member or element of all contained aggregates or unions) with a constqualified type.
-```
+> An lvalue is an expression (with an object type other than void) that potentially designates an object;64) if an lvalue does not designate an object when it is evaluated, the behavior is undefined. When an object is said to have a particular type, the type is specified by the lvalue used to designate the object. A modifiable lvalue is an lvalue that does not have array type, does not have an incomplete type, does not have a constqualified type, and if it is a structure or union, does not have any member (including, recursively, any member or element of all contained aggregates or unions) with a constqualified type.
+
 C++11中左值的定义([17]3.10)：
-```text
-An lvalue (so called, historically, because lvalues could appear on the left-hand side of an assignment expression) designates a function or an object. [Example: If E is an expression of pointer type, then *E is an lvalue expression referring to the object or function to which E points. As another example, the result of calling a function whose return type is an lvalue reference is an lvalue. — end example ]
-```
+> An lvalue (so called, historically, because lvalues could appear on the left-hand side of an assignment expression) designates a function or an object. [Example: If E is an expression of pointer type, then *E is an lvalue expression referring to the object or function to which E points. As another example, the result of calling a function whose return type is an lvalue reference is an lvalue. — end example ]
 
 C中早期的定义：
 左值是一个表达式，可以出现在赋值操作的左边或者右边，而右值只能出现在左边。
@@ -115,9 +110,7 @@ C语言中的左值有以下七种：
 
 ## C++中的lvalue和rvalue
 C++11中标准的定义([17]3.10)：
-``` txt
-An lvalue (so called, historically, because lvalues could appear on the left-hand side of an assignment expression) designates a function or an object. [Example: If E is an expression of pointer type, then *E is an lvalue expression referring to the object or function to which E points. As another example, the result of calling a function whose return type is an lvalue reference is an lvalue. — end example ]
-```
+> An lvalue (so called, historically, because lvalues could appear on the left-hand side of an assignment expression) designates a function or an object. [Example: If E is an expression of pointer type, then *E is an lvalue expression referring to the object or function to which E points. As another example, the result of calling a function whose return type is an lvalue reference is an lvalue. — end example ]
 
 当一个对象被用作右值的时候，用的是对象的值。当一个对象被用作左值的时候，用的是对象在内存中的位置。
 《C++ Primer》中说C++和C中的左值和右值不一样，我怎么觉得都一样呢。（好吧，自己还是道行太浅了）。

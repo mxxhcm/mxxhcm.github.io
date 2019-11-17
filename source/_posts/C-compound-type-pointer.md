@@ -44,13 +44,10 @@ message = "Hello world!";
 
 ### 解引用指针（间接访问）操作符
 C11中解引用操作符`*`的定义：
-\begin{quote}
-The unary * operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ‘‘pointer to type’’, the result has type ‘‘type’’. If an invalid value has been assigned to the pointer, the behavior of the unary * operator is undefined.102)
-\end{quote}
+> The unary * operator denotes indirection. If the operand points to a function, the result is a function designator; if it points to an object, the result is an lvalue designating the object. If the operand has type ‘‘pointer to type’’, the result has type ‘‘type’’. If an invalid value has been assigned to the pointer, the behavior of the unary * operator is undefined.102)
+
 C++11中解引用操作符`*`的定义：
-``` text
-The unary * operator performs indirection: the expression to which it is applied shall be a pointer to an object type, or a pointer to a function type and the result is an lvalue referring to the object or function to which the expression points. If the type of the expression is “pointer to T,” the type of the result is “T.” [ Note: a pointer to an incomplete type (other than cv void) can be dereferenced. The lvalue thus obtained can be used in limited ways (to initialize a reference, for example); this lvalue must not be converted to a prvalue, see 4.1. — end note ]
-```
+> The unary * operator performs indirection: the expression to which it is applied shall be a pointer to an object type, or a pointer to a function type and the result is an lvalue referring to the object or function to which the expression points. If the type of the expression is “pointer to T,” the type of the result is “T.” [ Note: a pointer to an incomplete type (other than cv void) can be dereferenced. The lvalue thus obtained can be used in limited ways (to initialize a reference, for example); this lvalue must not be converted to a prvalue, see 4.1. — end note ]
 
 如果指针指向了一个对象，允许使用，解引用操作符`*`访问对象。对指针解引用会得到指针所指的对象，给解引用的对象赋值其实就是给指针所指的对象赋值([1]2.3.2)。
 解引用操作可以得到一个指针指向对象的左值表达式，如果不解引用，指针变量中存放的内容就只是地址。
