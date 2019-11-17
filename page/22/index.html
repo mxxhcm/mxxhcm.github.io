@@ -443,123 +443,32 @@
         
           
             <p>这篇文章给出了多任务学习和迁移学习的一个框架。</p>
-<h2 id="摘要">摘要</h2>
-<p>multitask learning的目的是在不同taskes之间共享网络参数，在不同的task之间迁移可以提高效率。但是这种方法有几个缺点：</p>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>multitask learning的目的是在不同taskes之间共享网络参数，在不同的task之间迁移可以提高效率。但是这种方法有几个缺点：</p>
 <ul>
 <li>不同taskes的gradient可能有负干扰，让学习变得不稳定，更低效。</li>
 <li>另一个问题是不同taskes的reward scheme不同，其中的某一个reward可能占主导地位。</li>
 </ul>
 <p>本文提出Distral方法，在不同taskes的worker之间共享一个distilled policy而不是共享参数，学习不同taskes的common behaviours。每一个worker解决它自己的task，但是需要限制每一个单独的policy离distilled policy足够近，而distilled policy需要通过所有的single policies得到，它在所有policies的质心上。通过优化一个联合目标函数，实现这两个过程。</p>
-<h2 id="introduction">Introduction</h2>
-<p>由于DRL需要的训练时间和训练数据很多，现在的DRL问题开始转向单个智能体同时或者连续的解决多个相关问题。由于巨大的计算开销，这个方向的研究需要设计出非常鲁棒的，与具体任务无关的算法。直观上来说，相似的taskes之间有共同的结构，所以我们觉得一起训练它们应该能够促进学习，然而实践表明并不是这样。<br>
-所以，multitask和transfer learning需要解决一个问题：在多个taskes上训练会对单个任务的训练产生负面影响。这个问题可能的原因有：其他任务的梯度可能会被当做噪音干扰学习，极端情况下，其中一个任务可能会主导其他的任务。<br>
-这篇论文作者提出了一种multitask和transfer RL算法，它能够高效的在多个taskes之间共享behaviour structure。除了在grid world领域的一些指导性illustration(例证)，作者还在DeepMind Lab 3D环境中详细分析了算法，并且和A3C baseline的比较。作者验证了Distral算法学习的很快，而且能够达到很好的收敛性能，而且对超参数很鲁棒，比multitask A3C baselines要稳定的多。</p>
-<h2 id="distral-distill-and-transfer-learning">Distral: Distill and Transfer Learning</h2>
-<p>作者给出了一个multi-taskes的框架Distral，如下图所示，作者给出了从四个taskes中提取shared policy的一个例子。该方法用一个shared policy去提取task-specific的polices之间的common behaviour和representation，然后又用这个shared policy和task-specific polices之间的KL散度正则化task-specific polices。KL散度的作用相当于shaping reward，鼓励exploration。最后，这些taskes之间的common knowledge都被distilled到shared policy中了，然后可以迁移到其他任务中去。<br>
-<img src="/2019/04/18/distral/figure1.png" alt="figure1"></p>
-<h3 id="数学框架">数学框架</h3>
-<p>一个multitask RL setting中有$n$个任务，折扣因子为$\gamma$，它们的state space和action space是相同的，但是每个任务$i$的状态转换概率$p_i(s’|s,a)$和奖励函数$R_i(s,a)$是不同的，用$\pi_i$表示第$i$个任务的stochastic polices。给定从一些初始状态开始的state和action联合分布的轨迹，用$\pi_i$表示dynamics和polices。<br>
-作者通过优化一个expected return和policy regularization组成的目标函数将学习不同任务的policy联系起来。用$\pi_0$表示要提取的shared policy，然后通过使用$\pi_0$和$\pi_i$的KL散度$\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^t\log\frac{\pi_i(a_t|s_t)}{\pi_0(s_t|a_t)}\right]$对$\pi_i$进行约束，使所有的策略 $\pi_i$ 接近 $\pi_0$ 。此外，作者还使用了一个带折扣因子的entropy正则化项鼓励exploration。系统越混乱，entropy越大，所以exploration越多，采取的动作越随机，entropy就越大。为什么，举个例子，系统采取两个动作的概率分别是：[0, 1], [0.5, 0.5], [0.25, 0.75]，他们对应的熵分别是$0, \log 2, \log 4- 0.75 \log 3 &lt; \log 2$，也就是系统最混乱的时候，熵最大，为了鼓励探索，也就是让其他action出现的概率变大，也就是让熵变大。<br>
-最后总的优化目标就变成了：<br>
-\begin{align*}<br>
-J(\pi_0, {\pi_i}_{i=1}^n) &amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^t \log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^t \log\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) - c_{KL}\gamma^t\log{\pi_i(a_t|s_t)} + c_{KL}\gamma^t\log{\pi_0(a_t|s_t)} - c_{Ent}\gamma^t\log\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{KL}\gamma^t\log{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{KL}\gamma^t)\log\pi_i(a_t|s_t)\right]\\<br>
-&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t \alpha}{\beta}\log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}\log\pi_i(a_t|s_t)\right], \tag{1}<br>
-\end{align*}<br>
-其中$c_{KL},c_{Ent}\ge 0$是控制KL散度正则化项和entropy正则化项大小的超参数，$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}。变换后的公式$(1)中出现的\log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action；而entropy项$-\log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，设置所有任务的正则化系数$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale不同，可以根据具体情况给相应任务设定相应系数。<br>
-让$R’_i(s,a) = R_i(s,a) + \frac{\alpha}{\beta}\log\pi_0(a|s)$，目标函数可以看成new reward $R’$的正则化约束问题。</p>
-<h3 id="soft-q-learing">Soft Q-Learing</h3>
-<p>有很多方法可以最大化上面给出的目标函数，这一节介绍表格形式下，如何使用和EM算法类似的策略优化目标函数－－固定$\pi_0$优化$\pi_i$，固定$\pi_i$然后优化$\pi_0$。<br>
-当$\pi_0$固定的时候，式子(1)可以分解成每个task的最大化问题，即优化每个任务的entropy正则化return，return使用的是正则化reward：<br>
-正则化后的return可以使用G-learning来优化（这里说的应该是原来的return和R什么都没，这里都加上了正则化）。给定$\pi_0$，根据Soft Q-Learning(G-learning)的证明，我们能得到以下的关系：<br>
-$$\pi_i(a_t|s_t) = \pi_0^{\alpha} (a_t|s_t)e^{\beta Q_i(a_t|s_t)-\beta V(s_t)} = \pi_0^{\alpha} (a_t|s_t)e^{\beta A_i(a_t|s_t)} \tag{2}$$<br>
-其中$A_i(s,a) = Q_i(s,a)-V_i(s)$是advantage function，$\pi_0$可以看成是一个policy prior，<strong>需要注意的是这里多了一个指数$\alpha \lt 1$，这是多出来的entropy项的影响，soften了$\pi_0$对$\pi_i$的影响</strong>。$V$和$Q$是新定义的一种state value和action value，使用推导的softened Bellman公式更新：<br>
-$$V_i(s_t) = \frac{1}{\beta} \log\sum_{a_t}\pi_0^{\alpha} (a_t|s_t)e^{\beta Q_i(s_t,a_t)} \tag{3}$$<br>
-$$Q_i(s_t,a_t) = R_i(s_t, a_t)+ \gamma \sum_{s_t}p_i(s_{t+1}|s_t,a_t)V_i(s_{t+1}) \tag{4}$$<br>
-这个Bellman update公式是softened的，因为state value $V_i$在actions上的max操作被温度$\beta$倒数上的soft-max操作代替了，当$\beta\rightarrow\infty$时，就变成了max 操作，这里有些不明白。为什么呢？这个我不理解有什么关系，这是这篇文章给出的解释。<strong>按照我的理解，这个和我们平常使用Bellman 期望公式或者最优等式没有什么关系，只是给了一种新的更新Q值和V值的方法。实际上，这两个公式都是根据推导给出的定义。</strong><br>
-还有一点：$\pi_0$是学出来的，而不是手动选出来的。式子(1)中和$\pi_0$相关的只有：<br>
-$$\frac{\alpha}{\beta}\sum_i\mathbb{E_{\pi_i}}\left[\sum_{t\ge 0}\gamma^t\log\pi_0(a_t|s_t) \right]\tag{5}$$<br>
-可以看出来，这是使用$\pi_0$去拟合一个混合的带折扣因子$\gamma$的state-action分布，每个$i$代表一个任务，可以使用最大似然估计来求解，如果是非表格情况的话，可以使用stochastic gradient ascent进行优化，但是需要注意的是本文中作者使用的目标函数多了一个KL散度。另一个区别是本文的distilled policy可以作为下一步要优化的task policy的反馈。<br>
-多加一个entropy正则项的意义？如果不加entropy正则化，也就是式子$(2)$中的$\alpha = 1$，考虑$n=1$时的例子，式子$(5)$在$\pi_0=\pi_1$的时候最大，KL散度为$0$，目标函数退化成了一个没有正则化项的expected return，最终策略$\pi_1$会收敛到一个局部最优值。**和TRPO的一个比较？？？未完待续。。。。**如果$\alpha\lt 1$，式(1)中有一个额外的entropy项。这样即使$\pi_0=\pi_1$，$KL(\pi_1||\pi_0)=0$，因为有entropy项，也无法通过greedy策略最大化式子$(1)$。式子$1$的entropy正则化系数变成了$\beta’=\frac{\beta}{1-\alpha} = \frac{1}{c_{Ent}}$（第一个等号是为什么？？是因为$\pi_0=\pi_1$，然后就可以将$\pi_0,\pi_i$的系数合并了），最优的策略就是$\beta’$处的Boltzmann policy。添加这个entropy项可以保证策略不是greedy的，通过调整$c_{Ent}$的大小可以调整exploration。<br>
-最开始的时候，exploration是在multitask任务上加的，如果有多个任务，一个很简单，而其他的很复杂，如果先遇到了简单任务，没有加entropy的话，最后就会收敛到最简单任务的greedy策略，这样子就无法充分探索其他任务的，导致陷入到次优解。对于single-task的RL来说，在A3C中提出用entropy取应对过早的收敛，作者在这里推广到了multitask任务上。</p>
-<h3 id="policy-gradient-and-a-better-parameterization">Policy Gradient and a Better Parameterization</h3>
-<p>上面一节讲的是表格形式的计算，给定$\pi_0$，首先求解出$\pi$对应的$V$和$Q$，然后写出$\pi_i$的解析。但是如果我们用神经网络等函数去拟合$V$和$Q$，$V$和$Q$的求解特别慢，这里使用梯度下降同时优化task polices和distilled policy。这种情况下，$\pi_i$的梯度更新通过求带有entropy正则化的return即可求出来，并且可以放在如actor-critic之类的框架中。<br>
-每一个$\pi_i$都用一个单独的网络表示，$\pi_0$也用一个单独的网络表示，用$\theta_0$表示$\pi_0$的参数，对应的policy表示为：<br>
-$$\hat{\pi_0}(a_t|s_t) = \frac{e^{(h_{\theta_0}(a_t|s_t))} }{\sum_{a’}e^{h_{\theta_0}(a’|s_t)}} \tag{6}$$<br>
-使用参数为$\theta_i$的神经网络表示$Q$值，用$f_{\theta_i}$表示第$i$个策略$\pi$的$Q$值，用$Q$表示$V$，再估计$A=Q-V$的值：<br>
-$$\hat{A}_i(a_t|s_t) = f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}\log\sum_a\hat{\pi}_0^{\alpha} (a|s_t)e^{\beta f_{\theta_i}(a|s_t)} \tag{7}$$<br>
-将式子$(7)$代入式子$(2)$得第$i$个任务的policy可以参数化为：<br>
-\begin{align*}<br>
-\hat{\pi}_i(a_t|s_t)<br>
-&amp; = \hat{\pi}_0^{\alpha} (a_t|s_t)e^{\left(\beta \hat{Q}_i(a_t|s_t)-\beta \hat{V}(s_t)\right)}\\<br>
-&amp; = \hat{\pi}_0^{\alpha} (a_t|s_t)e^{\left(\beta \hat{A}_i(a_t|s_t)\right)}\\<br>
-&amp; = \hat{\pi}_0^{\alpha} (a_t|s_t)e^{\left(\beta \left(f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}\log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)\right)}\\<br>
-&amp; = \hat{\pi}_0^{\alpha} (a_t|s_t)e^{\left(\beta f_{\theta_i}(a_t|s_t) - \log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\<br>
-&amp; = \left(\frac{e^{(h_{\theta_0}(a_t|s_t))} }{\sum_{a’}e^{h_{\theta_0}(a’|s_t)}}\right)^{\alpha}e^{\left(\beta f_{\theta_i}(a_t|s_t) - \log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}\right)}\\<br>
-&amp; = \left(\frac{e^{(h_{\theta_0}(a_t|s_t))} }{\sum_{a’}e^{h_{\theta_0}(a’|s_t)}}\right)^{\alpha}<br>
-\cdot<br>
-\frac{e^{\beta f_{\theta_i}(a_t|s_t)} }   {e^{\log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\<br>
-&amp; = \frac{\left(e^{(h_{\theta_0}(a_t|s_t))}\right)^{\alpha}}  {\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha}}<br>
-\cdot<br>
-\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}   {e^{\log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\<br>
-&amp; = \frac{e^{\alpha \cdot(h_{\theta_0}(a_t|s_t))}}   {\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha}}<br>
-\cdot<br>
-\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{e^{\log\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}}\\<br>
-&amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t))}}  {\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha}}<br>
-\cdot<br>
-\frac{e^{\beta f_{\theta_i}(a_t|s_t)}}{\sum_a\hat{\pi}_0^{\alpha}(a|s_t)e^{\beta f_{\theta_i}(a|s_t)}}\\<br>
-&amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t))} \cdot e^{\beta f_{\theta_i}(a_t|s_t) }}<br>
-{\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha} \cdot {\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}\\<br>
-&amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t)) }}<br>
-{\left(\sum_{a’}e^{h_{\theta_0}(a’|s_t)}\right)^{\alpha} \cdot {\sum_a\hat{\pi}_0^{\alpha}(a|s_t) e^{\beta f_{\theta_i}(a|s_t)}}}(Why to blow equation???)\\<br>
-&amp; = \frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}  {\sum_{a’}e^{(\alpha h_{\theta_0}(a’|s_t) + \beta f_{\theta_i}(a’|s_t))}}<br>
-\end{align*}<br>
-所以：<br>
-$$\hat{\pi}_i(a_t|s_t) = \hat{\pi}_0^{\alpha}(a_t|s_t)e^{(\beta\hat{A}_i(a_t|s_t))}=\frac{e^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}{\sum_{a’}e^{(\alpha h_{\theta_0}(a’|s_t) + \beta f_{\theta_i}(a’|s_t))}} \tag{8}$$<br>
-这可以看成policy的一个两列架构，一列是提取的shared policy，一列是将$\pi_0$应用到task $i$上需要做的一些修改。<br>
-使用参数化的$\pi_0, \pi_i$，首先推导策略相对于$\pi_i$的梯度（policy gradient的推导，这里是直接应用了)：<br>
-\begin{align*}<br>
-\nabla_{\theta_i}J&amp; = \mathbb{E}_{\hat{\pi}_i}\left[\left(\sum_{t\gt 1} \nabla_{\theta_i}\log{\hat{\pi}}_i(a_t|s_t)\right) \left(\sum_{u\ge 1}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right]\\<br>
-&amp; = \mathbb{E}_{\hat{\pi}_i}\left[\sum_{t\gt 1} \nabla_{\theta_i}\log\hat{\pi}_i(a_t|s_t)\left(\sum_{u\ge t}\gamma^u \left(R^{reg}_i(a_u,s_u)\right)\right) \right] \tag{9}\\<br>
-\end{align*}<br>
-其中$R_i^{reg}(s,a) = R_i(s,a) + \frac{\alpha}{\beta}\log\hat{\pi}_0(a|s) - \frac{1}{\beta}\log\hat{\pi}_i(a|s)$是正则化后的reward。注意，这里$\mathbb{E}_{\hat{\pi}_i}\left[\nabla_{\theta_i}\log\hat{\pi}_i(a_t|s_t)\right] = 0$，因为\log-derivative trick。如果有一个value baseline，那么为了减少梯度的方差，可以从正则化后的returns中减去它。<br>
-关于$\theta_0$的梯度如下：<br>
-\begin{align*}<br>
-\nabla_{\theta_0}J<br>
-&amp; = \mathbb{E}_{\hat{\pi}_i}<br>
-\left[<br>
-\sum_{t\gt 1} \nabla_{\theta_i}\log\hat{\pi}_i(a_t|s_t)<br>
-\left(\sum_{u\ge 1}\gamma^u<br>
-\left(<br>
-R^{reg}_i(a_u,s_u)<br>
-\right)<br>
-\right)<br>
-\right]\\<br>
-&amp; \qquad +\frac{\alpha}{\beta}\sum_i\mathbb{E}_{\hat{\pi}_i}<br>
-\left[<br>
-\sum_{t\ge 1}\gamma^t\sum_{a’_t}<br>
-\left(<br>
-\hat{\pi}_i(a’_t|s_t)-\hat{\pi}_0(a’_t|s_t)<br>
-\right)<br>
-\nabla_{\theta_0}h_{\theta_0}(a’_t|s_t)<br>
-\right] \tag{10}<br>
-\end{align*}<br>
-第一项和$\pi_i$一样，第二项是让$\hat{\pi}_i,\hat{\pi}_0$的概率尽可能接近。如果不使用KL散度的话，这里就不会有第二项了。KL正则是为了让$\pi_0$在$\pi_i$的质心上，即$\hat{\pi}_0(a’_t|s_t) = \frac{1}{n}\sum_i\hat{\pi}_i(a’_t|s_t)$，最后第二项就为$0$了，可以快速的将公共信息迁移到新任务上。<br>
-和ADMM,EASGD等在参数空间上进行优化不同的是，Distral是在策略空间上进行优化，这样子在语义上更有意义，对于稳定学习过程很重要。<br>
-本文的方法通过添加了entropy正则化和KL正则化，使得算法可以分开控制每个任务迁移的信息大小和exploration程序。</p>
-<h2 id="算法">算法</h2>
-<p>上面给出的框架可以对不同的目标函数，算法和架构进行组合，然后生成一系列算法实例。</p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>由于DRL需要的训练时间和训练数据很多，现在的DRL问题开始转向单个智能体同时或者连续的解决多个相关问题。由于巨大的计算开销，这个方向的研究需要设计出非常鲁棒的，与具体任务无关的算法。直观上来说，相似的taskes之间有共同的结构，所以我们觉得一起训练它们应该能够促进学习，然而实践表明并不是这样。<br>所以，multitask和transfer learning需要解决一个问题：在多个taskes上训练会对单个任务的训练产生负面影响。这个问题可能的原因有：其他任务的梯度可能会被当做噪音干扰学习，极端情况下，其中一个任务可能会主导其他的任务。<br>这篇论文作者提出了一种multitask和transfer RL算法，它能够高效的在多个taskes之间共享behaviour structure。除了在grid world领域的一些指导性illustration(例证)，作者还在DeepMind Lab 3D环境中详细分析了算法，并且和A3C baseline的比较。作者验证了Distral算法学习的很快，而且能够达到很好的收敛性能，而且对超参数很鲁棒，比multitask A3C baselines要稳定的多。</p>
+<h2 id="Distral-Distill-and-Transfer-Learning"><a href="#Distral-Distill-and-Transfer-Learning" class="headerlink" title="Distral: Distill and Transfer Learning"></a>Distral: Distill and Transfer Learning</h2><p>作者给出了一个multi-taskes的框架Distral，如下图所示，作者给出了从四个taskes中提取shared policy的一个例子。该方法用一个shared policy去提取task-specific的polices之间的common behaviour和representation，然后又用这个shared policy和task-specific polices之间的KL散度正则化task-specific polices。KL散度的作用相当于shaping reward，鼓励exploration。最后，这些taskes之间的common knowledge都被distilled到shared policy中了，然后可以迁移到其他任务中去。<br><img src="/2019/04/18/distral/figure1.png" alt="figure1"></p>
+<h3 id="数学框架"><a href="#数学框架" class="headerlink" title="数学框架"></a>数学框架</h3><p>一个multitask RL setting中有$n$个任务，折扣因子为$\gamma$，它们的state space和action space是相同的，但是每个任务$i$的状态转换概率$p_i(s’|s,a)$和奖励函数$R_i(s,a)$是不同的，用$\pi_i$表示第$i$个任务的stochastic polices。给定从一些初始状态开始的state和action联合分布的轨迹，用$\pi_i$表示dynamics和polices。<br>作者通过优化一个expected return和policy regularization组成的目标函数将学习不同任务的policy联系起来。用$\pi_0$表示要提取的shared policy，然后通过使用$\pi_0$和$\pi_i$的KL散度$\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^t\log\frac{\pi_i(a_t|s_t)}{\pi_0(s_t|a_t)}\right]$对$\pi_i$进行约束，使所有的策略 $\pi_i$ 接近 $\pi_0$ 。此外，作者还使用了一个带折扣因子的entropy正则化项鼓励exploration。系统越混乱，entropy越大，所以exploration越多，采取的动作越随机，entropy就越大。为什么，举个例子，系统采取两个动作的概率分别是：[0, 1], [0.5, 0.5], [0.25, 0.75]，他们对应的熵分别是$0, \log 2, \log 4- 0.75 \log 3 &lt; \log 2$，也就是系统最混乱的时候，熵最大，为了鼓励探索，也就是让其他action出现的概率变大，也就是让熵变大。<br>最后总的优化目标就变成了：<br>\begin{align*}<br>J(\pi_0, \{\pi_i\}_{i=1}^n) &amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) -c_{KL}\gamma^t \log\frac{\pi_i(a_t|s_t)}{\pi_0(a_t|s_t)}-c_{Ent}\gamma^t \log\pi_i(a_t|s_t)\right]\\\\<br>&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) - c_{KL}\gamma^t\log{\pi_i(a_t|s_t)} + c_{KL}\gamma^t\log{\pi_0(a_t|s_t)} - c_{Ent}\gamma^t\log\pi_i(a_t|s_t)\right]\\\\<br>&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) + c_{KL}\gamma^t\log{\pi_0(a_t|s_t)} - (c_{Ent}\gamma^t + c_{KL}\gamma^t)\log\pi_i(a_t|s_t)\right]\\\\<br>&amp;=\sum_i\mathbb{E}_{\pi_i}\left[\sum_{t\ge 0}\gamma^tR_i(s_t,a_t) +\frac{\gamma^t \alpha}{\beta}\log{\pi_0(a_t|s_t)}-\frac{\gamma^t}{\beta}\log\pi_i(a_t|s_t)\right], \tag{1}<br>\end{align*}<br>其中$c_{KL},c_{Ent}\ge 0$是控制KL散度正则化项和entropy正则化项大小的超参数，$\alpha = \frac{c_{KL}}{c_{KL}+c_{Ent}},\beta = \frac{1}{c_{KL}+c_{Ent}}。变换后的公式$(1)中出现的\log\pi_0(a_t|s_t)$可以看成reward shaping，鼓励大概率的action；而entropy项$-\log\pi_i(a_t|s_t)$鼓励exploration。在这个公式中，设置所有任务的正则化系数$c_{KL}$和$c_{Ent}$都是相同的，如果不同任务的reward scale不同，可以根据具体情况给相应任务设定相应系数。<br>让$R’_i(s,a) = R_i(s,a) + \frac{\alpha}{\beta}\log\pi_0(a|s)$，目标函数可以看成new reward $R’$的正则化约束问题。</p>
+<h3 id="Soft-Q-Learing"><a href="#Soft-Q-Learing" class="headerlink" title="Soft Q-Learing"></a>Soft Q-Learing</h3><p>有很多方法可以最大化上面给出的目标函数，这一节介绍表格形式下，如何使用和EM算法类似的策略优化目标函数－－固定$\pi_0$优化$\pi_i$，固定$\pi_i$然后优化$\pi_0$。<br>当$\pi_0$固定的时候，式子(1)可以分解成每个task的最大化问题，即优化每个任务的entropy正则化return，return使用的是正则化reward：<br>正则化后的return可以使用G-learning来优化（这里说的应该是原来的return和R什么都没，这里都加上了正则化）。给定$\pi_0$，根据Soft Q-Learning(G-learning)的证明，我们能得到以下的关系：</p>
+<script type="math/tex; mode=display">\pi\_i(a\_t|s\_t) = \pi\_0^{\alpha} (a\_t|s\_t)e^{\beta Q\_i(a\_t|s\_t)-\beta V(s\_t)} = \pi\_0^{\alpha} (a\_t|s\_t)e^{\beta A\_i(a\_t|s\_t)} \tag{2}</script><p>其中$A_i(s,a) = Q_i(s,a)-V_i(s)$是advantage function，$\pi_0$可以看成是一个policy prior，<strong>需要注意的是这里多了一个指数$\alpha \lt 1$，这是多出来的entropy项的影响，soften了$\pi_0$对$\pi_i$的影响</strong>。$V$和$Q$是新定义的一种state value和action value，使用推导的softened Bellman公式更新：</p>
+<script type="math/tex; mode=display">V\_i(s\_t) = \frac{1}{\beta} \log\sum\_{a\_t}\pi\_0^{\alpha} (a\_t|s\_t)e^{\beta Q\_i(s\_t,a\_t)} \tag{3}</script><script type="math/tex; mode=display">Q\_i(s\_t,a\_t) = R\_i(s\_t, a\_t)+ \gamma \sum\_{s\_t}p\_i(s\_{t+1}|s\_t,a\_t)V\_i(s\_{t+1}) \tag{4}</script><p>这个Bellman update公式是softened的，因为state value $V_i$在actions上的max操作被温度$\beta$倒数上的soft-max操作代替了，当$\beta\rightarrow\infty$时，就变成了max 操作，这里有些不明白。为什么呢？这个我不理解有什么关系，这是这篇文章给出的解释。<strong>按照我的理解，这个和我们平常使用Bellman 期望公式或者最优等式没有什么关系，只是给了一种新的更新Q值和V值的方法。实际上，这两个公式都是根据推导给出的定义。</strong><br>还有一点：$\pi_0$是学出来的，而不是手动选出来的。式子(1)中和$\pi_0$相关的只有：</p>
+<script type="math/tex; mode=display">\frac{\alpha}{\beta}\sum\_i\mathbb{E\_{\pi\_i}}\left[\sum\_{t\ge 0}\gamma^t\log\pi\_0(a\_t|s\_t) \right]\tag{5}</script><p>可以看出来，这是使用$\pi_0$去拟合一个混合的带折扣因子$\gamma$的state-action分布，每个$i$代表一个任务，可以使用最大似然估计来求解，如果是非表格情况的话，可以使用stochastic gradient ascent进行优化，但是需要注意的是本文中作者使用的目标函数多了一个KL散度。另一个区别是本文的distilled policy可以作为下一步要优化的task policy的反馈。<br>多加一个entropy正则项的意义？如果不加entropy正则化，也就是式子$(2)$中的$\alpha = 1$，考虑$n=1$时的例子，式子$(5)$在$\pi_0=\pi_1$的时候最大，KL散度为$0$，目标函数退化成了一个没有正则化项的expected return，最终策略$\pi_1$会收敛到一个局部最优值。<strong>和TRPO的一个比较？？？未完待续。。。。</strong>如果$\alpha\lt 1$，式(1)中有一个额外的entropy项。这样即使$\pi_0=\pi_1$，$KL(\pi_1||\pi_0)=0$，因为有entropy项，也无法通过greedy策略最大化式子$(1)$。式子$1$的entropy正则化系数变成了$\beta’=\frac{\beta}{1-\alpha} = \frac{1}{c_{Ent}}$（第一个等号是为什么？？是因为$\pi_0=\pi_1$，然后就可以将$\pi_0,\pi_i$的系数合并了），最优的策略就是$\beta’$处的Boltzmann policy。添加这个entropy项可以保证策略不是greedy的，通过调整$c_{Ent}$的大小可以调整exploration。<br>最开始的时候，exploration是在multitask任务上加的，如果有多个任务，一个很简单，而其他的很复杂，如果先遇到了简单任务，没有加entropy的话，最后就会收敛到最简单任务的greedy策略，这样子就无法充分探索其他任务的，导致陷入到次优解。对于single-task的RL来说，在A3C中提出用entropy取应对过早的收敛，作者在这里推广到了multitask任务上。</p>
+<h3 id="Policy-Gradient-and-a-Better-Parameterization"><a href="#Policy-Gradient-and-a-Better-Parameterization" class="headerlink" title="Policy Gradient and a Better Parameterization"></a>Policy Gradient and a Better Parameterization</h3><p>上面一节讲的是表格形式的计算，给定$\pi_0$，首先求解出$\pi$对应的$V$和$Q$，然后写出$\pi_i$的解析。但是如果我们用神经网络等函数去拟合$V$和$Q$，$V$和$Q$的求解特别慢，这里使用梯度下降同时优化task polices和distilled policy。这种情况下，$\pi_i$的梯度更新通过求带有entropy正则化的return即可求出来，并且可以放在如actor-critic之类的框架中。<br>每一个$\pi_i$都用一个单独的网络表示，$\pi_0$也用一个单独的网络表示，用$\theta_0$表示$\pi_0$的参数，对应的policy表示为：</p>
+<script type="math/tex; mode=display">\hat{\pi\_0}(a\_t|s\_t) = \frac{e^{(h\_{\theta\_0}(a\_t|s\_t))} }{\sum\_{a'}e^{h\_{\theta\_0}(a'|s\_t)}} \tag{6}</script><p>使用参数为$\theta_i$的神经网络表示$Q$值，用$f_{\theta_i}$表示第$i$个策略$\pi$的$Q$值，用$Q$表示$V$，再估计$A=Q-V$的值：</p>
+<script type="math/tex; mode=display">\hat{A}\_i(a\_t|s\_t) = f\_{\theta\_i}(a\_t|s\_t) - \frac{1}{\beta}\log\sum\_a\hat{\pi}\_0^{\alpha} (a|s\_t)e^{\beta f\_{\theta\_i}(a|s\_t)} \tag{7}</script><p>将式子$(7)$代入式子$(2)$得第$i$个任务的policy可以参数化为：<br>\begin{align*}<br>\hat{\pi}_i(a_t|s_t)<br>&amp; = \hat{\pi}_0\^{\alpha} (a_t|s_t)e\^{\left(\beta \hat{Q}_i(a_t|s_t)-\beta \hat{V}(s_t)\right)}\\\\<br>&amp; = \hat{\pi}_0\^{\alpha} (a_t|s_t)e\^{\left(\beta \hat{A}_i(a_t|s_t)\right)}\\\\<br>&amp; = \hat{\pi}_0\^{\alpha} (a_t|s_t)e\^{\left(\beta \left(f_{\theta_i}(a_t|s_t) - \frac{1}{\beta}\log\sum_a\hat{\pi}_0\^{\alpha}(a|s_t)e\^{\beta f_{\theta_i}(a|s_t)}\right)\right)}\\\\<br>&amp; = \hat{\pi}_0\^{\alpha} (a_t|s_t)e\^{\left(\beta f_{\theta_i}(a_t|s_t) - \log\sum_a\hat{\pi}_0\^{\alpha}(a|s_t)e\^{\beta f_{\theta_i}(a|s_t)}\right)}\\\ <br>&amp; = \left(\frac{e\^{(h_{\theta_0}(a_t|s_t))} }{\sum_{a’}e\^{h_{\theta_0}(a’|s_t)}}\right)\^{\alpha}e\^{\left(\beta f_{\theta_i}(a_t|s_t) - \log\sum_a\hat{\pi}_0\^{\alpha}(a|s_t)e\^{\beta f_{\theta_i}(a|s_t)}\right)}\\\ <br>&amp; = \left(\frac{e\^{(h_{\theta_0}(a_t|s_t))} }{\sum_{a’}e\^{h_{\theta_0}(a’|s_t)}}\right)\^{\alpha}<br>      \cdot<br>       \frac{e\^{\beta f_{\theta_i}(a_t|s_t)} }   {e\^{\log\sum_a\hat{\pi}_0\^{\alpha}(a|s_t)e\^{\beta f_{\theta_i}(a|s_t)}}}\\\\<br>&amp; = \frac{\left(e\^{(h_{\theta_0}(a_t|s_t))}\right)\^{\alpha}}  {\left(\sum_{a’}e\^{h_{\theta_0}(a’|s_t)}\right)\^{\alpha}}<br>      \cdot<br>         \frac{e\^{\beta f_{\theta_i}(a_t|s_t)}}   {e\^{\log\sum_a\hat{\pi}_0\^{\alpha}(a|s_t)e\^{\beta f_{\theta_i}(a|s_t)}}}\\\ <br>&amp; = \frac{e\^{\alpha \cdot(h_{\theta_0}(a_t|s_t))}}   {\left(\sum_{a’}e\^{h_{\theta_0}(a’|s_t)}\right)\^{\alpha}}<br>      \cdot<br>         \frac{e\^{\beta f_{\theta_i}(a_t|s_t)}}{e\^{\log\sum_a\hat{\pi}_0\^{\alpha}(a|s_t)e\^{\beta f_{\theta_i}(a|s_t)}}}\\\ <br>&amp; = \frac{e\^{(\alpha h_{\theta_0}(a_t|s_t))}}  {\left(\sum_{a’}e\^{h_{\theta_0}(a’|s_t)}\right)\^{\alpha}}<br>      \cdot<br>        \frac{e\^{\beta f_{\theta_i}(a_t|s_t)}}{\sum_a\hat{\pi}_0\^{\alpha}(a|s_t)e\^{\beta f_{\theta_i}(a|s_t)}}\\\\<br>&amp; = \frac{e\^{(\alpha h_{\theta_0}(a_t|s_t))} \cdot e\^{\beta f_{\theta_i}(a_t|s_t) }}<br>         {\left(\sum_{a’}e\^{h_{\theta_0}(a’|s_t)}\right)\^{\alpha} \cdot {\sum_a\hat{\pi}_0\^{\alpha}(a|s_t) e\^{\beta f_{\theta_i}(a|s_t)}}}\\\\<br>&amp; = \frac{e\^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t)) }}<br>         {\left(\sum_{a’}e\^{h_{\theta_0}(a’|s_t)}\right)\^{\alpha} \cdot {\sum_a\hat{\pi}_0\^{\alpha}(a|s_t) e\^{\beta f_{\theta_i}(a|s_t)}}}(Why to blow equation???)\\\\<br>&amp; = \frac{e\^{(\alpha h_{\theta_0}(a_t|s_t) + \beta f_{\theta_i}(a_t|s_t))}}  {\sum_{a’}e\^{(\alpha h_{\theta_0}(a’|s_t) + \beta f_{\theta_i}(a’|s_t))}}<br>\end{align*}<br>所以：</p>
+<script type="math/tex; mode=display">\hat{\pi}\_i(a\_t|s\_t) = \hat{\pi}\_0\^{\alpha}(a\_t|s\_t)e\^{(\beta\hat{A}\_i(a\_t|s\_t))}=\frac{e\^{(\alpha h\_{\theta\_0}(a\_t|s\_t) + \beta f\_{\theta\_i}(a\_t|s\_t))}}{\sum\_{a'}e\^{(\alpha h\_{\theta\_0}(a'|s\_t) + \beta f\_{\theta\_i}(a'|s\_t))}} \tag{8}</script><p>这可以看成policy的一个两列架构，一列是提取的shared policy，一列是将$\pi_0$应用到task $i$上需要做的一些修改。<br>使用参数化的$\pi_0, \pi_i$，首先推导策略相对于$\pi_i$的梯度（policy gradient的推导，这里是直接应用了)：<br>\begin{align*}<br>\nabla_{\theta_i}J&amp; = \mathbb{E}_{\hat{\pi}_i}\left[\left(\sum_{t\gt 1} \nabla_{\theta_i}\log{\hat{\pi}}_i(a_t|s_t)\right) \left(\sum_{u\ge 1}\gamma\^u \left(R\^{reg}_i(a_u,s_u)\right)\right) \right]\\\\<br>&amp; = \mathbb{E}_{\hat{\pi}_i}\left[\sum_{t\gt 1} \nabla_{\theta_i}\log\hat{\pi}_i(a_t|s_t)\left(\sum_{u\ge t}\gamma\^u \left(R\^{reg}_i(a_u,s_u)\right)\right) \right] \tag{9}\\\\<br>\end{align*}<br>其中$R_i\^{reg}(s,a) = R_i(s,a) + \frac{\alpha}{\beta}\log\hat{\pi}_0(a|s) - \frac{1}{\beta}\log\hat{\pi}_i(a|s)$是正则化后的reward。注意，这里$\mathbb{E}_{\hat{\pi}_i}\left[\nabla_{\theta_i}\log\hat{\pi}_i(a_t|s_t)\right] = 0$，因为\log-derivative trick。如果有一个value baseline，那么为了减少梯度的方差，可以从正则化后的returns中减去它。<br>关于$\theta_0$的梯度如下：<br>\begin{align*}<br>\nabla_{\theta_0}J<br>&amp; = \mathbb{E}_{\hat{\pi}_i}<br>\left[<br>    \sum_{t\gt 1} \nabla_{\theta_i}\log\hat{\pi}_i(a_t|s_t)<br>        \left(\sum_{u\ge 1}\gamma\^u<br>             \left(<br>                R\^{reg}_i(a_u,s_u)<br>             \right)<br>        \right)<br>\right]\\\\<br>&amp; \qquad +\frac{\alpha}{\beta}\sum_i\mathbb{E}_{\hat{\pi}_i}<br>\left[<br>    \sum_{t\ge 1}\gamma\^t\sum_{a’_t}<br>        \left(<br>             \hat{\pi}_i(a’_t|s_t)-\hat{\pi}_0(a’_t|s_t)<br>        \right)<br>            \nabla_{\theta_0}h_{\theta_0}(a’_t|s_t)<br>\right] \tag{10}<br>\end{align*}<br>第一项和$\pi_i$一样，第二项是让$\hat{\pi}_i,\hat{\pi}_0$的概率尽可能接近。如果不使用KL散度的话，这里就不会有第二项了。KL正则是为了让$\pi_0$在$\pi_i$的质心上，即$\hat{\pi}_0(a’_t|s_t) = \frac{1}{n}\sum_i\hat{\pi}_i(a’_t|s_t)$，最后第二项就为$0$了，可以快速的将公共信息迁移到新任务上。<br>和ADMM,EASGD等在参数空间上进行优化不同的是，Distral是在策略空间上进行优化，这样子在语义上更有意义，对于稳定学习过程很重要。<br>本文的方法通过添加了entropy正则化和KL正则化，使得算法可以分开控制每个任务迁移的信息大小和exploration程序。</p>
+<h2 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h2><p>上面给出的框架可以对不同的目标函数，算法和架构进行组合，然后生成一系列算法实例。</p>
 <ul>
 <li>KL散度和entropy：当$\alpha=0$时，只有entorpy，不同任务之间没有耦合，在不同任务中进行迁移。当$\alpha=1$时，只有KL散度，不同任务之间有耦合，在不同任务中进行迁移，但是如果$\pi_i,\pi_0$很像的话，会过早的停止探索。当$0\lt \alpha \lt 1$时，KL散度和entropy都有。</li>
 <li>迭代优化还是联合优化：可以选择同时优化$\pi_0,\pi_i$，也可以固定其中一个，优化另一个。迭代优化和actor-mimic以及policy-distilled有一些相似，但是Distral是迭代进行的，$\pi_0$会对$\pi_i$的优化提供反馈。尽管迭代优化可能会很慢，但是从actor-mimic等的结果来看，可能它会更稳定。</li>
 <li>Separate还是two-column参数化：这里的意思是$\pi_i$是否使用式子(8)中的$\pi_0$，如果用的话，$\pi_0$中提取到的信息可以立刻用到$\pi_i$上，transfer可以更快。但是如果transfer的太快的话，可能会抑制在单个任务上exploration的有效性。。</li>
 </ul>
 <p>这里作者给出了使用到的一些算法组合，如下表和下图所示。这里作者和三个A3C baseline(三种架构)做了比较，作者做实验的时候，试了两种A3C，第一个是原始的A3C，第二个是A3C的变种，最后发现这两种A3C没啥差别，在实验部分就选择了原始的A3C作比较。</p>
-<p><img src="/2019/04/18/distral/figure2.png" alt="figure2"><br>
-<img src="/2019/04/18/distral/table.png" alt="table"></p>
-<h3 id="algorithm">Algorithm</h3>
-<ul>
+<p><img src="/2019/04/18/distral/figure2.png" alt="figure2"><br><img src="/2019/04/18/distral/table.png" alt="table"></p>
+<h3 id="Algorithm"><a href="#Algorithm" class="headerlink" title="Algorithm"></a>Algorithm</h3><ul>
 <li>A3C: 在每个任务上单独使用A3C训练的policy</li>
 <li>A3C_multitask: 使用A3C同时在所有任务上训练得到的policy</li>
 <li>A3C_2col: 使用了式子(8)中的two-column架构A3C在每个任务上训练的policy</li>
@@ -568,26 +477,14 @@ R^{reg}_i(a_u,s_u)<br>
 <li>KL_2col: 和KL_1col一样，但是使用了式子(8)中的two-column架构</li>
 <li>KL+ent_2col: 和KL+ent_1col一样，只是使用了two-column架构。</li>
 </ul>
-<h2 id="实验">实验</h2>
-<p>总共有两个实验，第一个是在grid world上使用soft Q-learning和policy distilltion的迭代优化，第二个是七个算法在三个3D部分可观测环境上的评估。</p>
-<h3 id="环境">环境</h3>
-<h4 id="grid-world">Grid world</h4>
-<p>这个实验是在一些简单的grid world上进行的，每一个任务通过一个随机选择的goal location进行区分。<br>
-每一个MDP的state由map location, previous action和previous reward组成。一个Distral智能体通过KL正则化的目标函数进行训练，优化算法在Soft Q-learing和policy distilltion之间进行迭代。每次soft Q-learing 的展开长度是$10$。</p>
-<h4 id="3d环境">3D环境</h4>
-<p>这个实验使用了三个第一人称的$3D$环境。所有的智能体都是用pytorch/tensorflow实现的，每个任务有$32$个workers，使用异步的RMSProp进行学习。每个网络由CNN和LSTM组成，在不同的算法和实验中都是相同的。作者尝试了三个$\beta$和三个学习率$\epsilon$，每一组超参数跑了四次，其他超参数和单任务的A3C都一样的，对于KL+ent 1col和KL+ent 2col算法，$\alpha$被固定为$0.5$。</p>
-<h5 id="maze">Maze</h5>
-<p>八个任务，每个任务都是一个随机放置reward和goal的迷宫。作者给出了$7$个算法的学习曲线，每一个学习曲线是选出最好的$\beta,\epsilon$在$8$个任务跑$4$次的平均值。Distral学习的很快，并且超过了三个A3C baselies，而two-column算法比one-column学习的要快，不带entropy的Distral要比带entropy学得快，但是最终得分要低，这可能是没有充分explration的原因。<br>
-multitask A3C和two-column A3C学习的不稳定，有时候学的好，有时候学的不好，有时候刚开始就不好了。而Distral对于超参数也很鲁棒。</p>
-<h5 id="navigation">Navigation</h5>
-<p>四个任务，比Maze难度要大。</p>
-<h5 id="laser-tag">Laser-tag</h5>
-<p>DeepMind Lab中的八个任务，最好的baseline是单独在每个任务上训练的A3C。</p>
-<h2 id="discussion">Discussion</h2>
-<p>有两个idea这里需要强调一下。在优化过程中，使用KL散度正则化使$\pi_i$向$\pi_0$移动，使用$\pi_0$正则化$\pi_i$。<br>
-另一个就是在深度神经网络中，它们的参数没有意义，所以作者不是在参数空间进行的正则化，而是在策略空间进行正则化，这样子更有语义意义。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://papers.nips.cc/paper/7036-distral-robust-multitask-reinforcement-learning.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/7036-distral-robust-multitask-reinforcement-learning.pdf</a></p>
+<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><p>总共有两个实验，第一个是在grid world上使用soft Q-learning和policy distilltion的迭代优化，第二个是七个算法在三个3D部分可观测环境上的评估。</p>
+<h3 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h3><h4 id="Grid-world"><a href="#Grid-world" class="headerlink" title="Grid world"></a>Grid world</h4><p>这个实验是在一些简单的grid world上进行的，每一个任务通过一个随机选择的goal location进行区分。<br>每一个MDP的state由map location, previous action和previous reward组成。一个Distral智能体通过KL正则化的目标函数进行训练，优化算法在Soft Q-learing和policy distilltion之间进行迭代。每次soft Q-learing 的展开长度是$10$。</p>
+<h4 id="3D环境"><a href="#3D环境" class="headerlink" title="3D环境"></a>3D环境</h4><p>这个实验使用了三个第一人称的$3D$环境。所有的智能体都是用pytorch/tensorflow实现的，每个任务有$32$个workers，使用异步的RMSProp进行学习。每个网络由CNN和LSTM组成，在不同的算法和实验中都是相同的。作者尝试了三个$\beta$和三个学习率$\epsilon$，每一组超参数跑了四次，其他超参数和单任务的A3C都一样的，对于KL+ent 1col和KL+ent 2col算法，$\alpha$被固定为$0.5$。</p>
+<h5 id="Maze"><a href="#Maze" class="headerlink" title="Maze"></a>Maze</h5><p>八个任务，每个任务都是一个随机放置reward和goal的迷宫。作者给出了$7$个算法的学习曲线，每一个学习曲线是选出最好的$\beta,\epsilon$在$8$个任务跑$4$次的平均值。Distral学习的很快，并且超过了三个A3C baselies，而two-column算法比one-column学习的要快，不带entropy的Distral要比带entropy学得快，但是最终得分要低，这可能是没有充分explration的原因。<br>multitask A3C和two-column A3C学习的不稳定，有时候学的好，有时候学的不好，有时候刚开始就不好了。而Distral对于超参数也很鲁棒。</p>
+<h5 id="Navigation"><a href="#Navigation" class="headerlink" title="Navigation"></a>Navigation</h5><p>四个任务，比Maze难度要大。</p>
+<h5 id="Laser-tag"><a href="#Laser-tag" class="headerlink" title="Laser-tag"></a>Laser-tag</h5><p>DeepMind Lab中的八个任务，最好的baseline是单独在每个任务上训练的A3C。</p>
+<h2 id="Discussion"><a href="#Discussion" class="headerlink" title="Discussion"></a>Discussion</h2><p>有两个idea这里需要强调一下。在优化过程中，使用KL散度正则化使$\pi_i$向$\pi_0$移动，使用$\pi_0$正则化$\pi_i$。<br>另一个就是在深度神经网络中，它们的参数没有意义，所以作者不是在参数空间进行的正则化，而是在策略空间进行正则化，这样子更有语义意义。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://papers.nips.cc/paper/7036-distral-robust-multitask-reinforcement-learning.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/7036-distral-robust-multitask-reinforcement-learning.pdf</a></p>
 
           
         
@@ -759,21 +656,9 @@ multitask A3C和two-column A3C学习的不稳定，有时候学的好，有时�
       
         
           
-            <h2 id="动机">动机</h2>
-<p>在写博客的过程中，每次在终端中进入该目录，都要输好长的命令，在想着有没有什么简单的方法。后来就在网上找到了。</p>
-<h2 id="方法">方法</h2>
-<p>利用alias命令进行重命名<br>
-这里给出一个具体的例子，我的博客文件存放在/home/mxxmhh/github/blog/source/_posts下，<br>
-在/home/mxxmhh/.bashrc文件中添加如下一行即可(当然也可以在其他配置文件中添加)：<br>
-alias posts='cd /home/mxxmhh/github/blog/source/_posts’<br>
-然后执行<br>
-~\$:source /home/mxxmhh/.bashrc<br>
-即可。<br>
-接下来可在终端输入<br>
-~\$:posts<br>
-直接访问该目录。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.cnblogs.com/wlsphper/p/6782625.html" target="_blank" rel="noopener">https://www.cnblogs.com/wlsphper/p/6782625.html</a></p>
+            <h2 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h2><p>在写博客的过程中，每次在终端中进入该目录，都要输好长的命令，在想着有没有什么简单的方法。后来就在网上找到了。</p>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>利用alias命令进行重命名<br>这里给出一个具体的例子，我的博客文件存放在/home/mxxmhh/github/blog/source/_posts下，<br>在/home/mxxmhh/.bashrc文件中添加如下一行即可(当然也可以在其他配置文件中添加)：<br>alias posts=’cd /home/mxxmhh/github/blog/source/_posts’<br>然后执行<br>~\\$:source /home/mxxmhh/.bashrc<br>即可。<br>接下来可在终端输入<br>~\\$:posts<br>直接访问该目录。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.cnblogs.com/wlsphper/p/6782625.html" target="_blank" rel="noopener">https://www.cnblogs.com/wlsphper/p/6782625.html</a></p>
 
           
         
@@ -945,9 +830,7 @@ alias posts='cd /home/mxxmhh/github/blog/source/_posts’<br>
       
         
           
-            <h2 id="函数和类的默认属性">函数和类的默认属性</h2>
-<p>这里主要介绍类和函数的一些属性。<br>
-__dict__用来描述对象的属性。对于类来说，它内部的变量就是它的数量，注意，不是它的member variable，但是对于函数来说不是。对于类来说，而对于类对象来说，输出的是整个类的属性，而__dict__输出的是self.variable的内容。</p>
+            <h2 id="函数和类的默认属性"><a href="#函数和类的默认属性" class="headerlink" title="函数和类的默认属性"></a>函数和类的默认属性</h2><p>这里主要介绍类和函数的一些属性。<br><strong>dict</strong>用来描述对象的属性。对于类来说，它内部的变量就是它的数量，注意，不是它的member variable，但是对于函数来说不是。对于类来说，而对于类对象来说，输出的是整个类的属性，而<strong>dict</strong>输出的是self.variable的内容。</p>
 <p>python中的函数有很多特殊的属性（包括自定义的函数和库函数）</p>
 <ul>
 <li><strong>doc</strong>  输出用户定义的关于函数的说明</li>
@@ -955,14 +838,10 @@ __dict__用来描述对象的属性。对于类来说，它内部的变量就是
 <li><strong>module</strong> 输出函数所在模块的名字</li>
 <li><strong>dict</strong> 输出函数中的字典</li>
 </ul>
-<p>示例：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">myfunc</span><span class="params">()</span>:</span></span><br><span class="line">   <span class="string">'this func is to test the __doc__'</span></span><br><span class="line">   myfunc.func_attr = <span class="string">"attr"</span></span><br><span class="line">   print(<span class="string">"hhhh"</span>)</span><br><span class="line"> </span><br><span class="line">myfunc.func_attr1 = <span class="string">"first1"</span></span><br><span class="line">myfunc.func_attr2 = <span class="string">"first2"</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">  print(myfunc.__doc__)</span><br><span class="line">  print(myfunc.__name__)</span><br><span class="line">  print(myfunc.__module__)</span><br><span class="line">  print(myfunc.__dict__)</span><br></pre></td></tr></table></figure>
+<p>示例：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">myfunc</span><span class="params">()</span>:</span></span><br><span class="line">   <span class="string">'this func is to test the __doc__'</span></span><br><span class="line">   myfunc.func_attr = <span class="string">"attr"</span></span><br><span class="line">   print(<span class="string">"hhhh"</span>)</span><br><span class="line"> </span><br><span class="line">myfunc.func_attr1 = <span class="string">"first1"</span></span><br><span class="line">myfunc.func_attr2 = <span class="string">"first2"</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">  print(myfunc.__doc__)</span><br><span class="line">  print(myfunc.__name__)</span><br><span class="line">  print(myfunc.__module__)</span><br><span class="line">  print(myfunc.__dict__)</span><br></pre></td></tr></table></figure></p>
 <p>输出：</p>
 <blockquote>
-<p>this func is to test the <strong>doc</strong><br>
-myfunc<br>
-<strong>main</strong><br>
-{‘func_attr1’: ‘first1’, ‘func_attr2’: ‘first2’}</p>
+<p>this func is to test the <strong>doc</strong><br>myfunc<br><strong>main</strong><br>{‘func_attr1’: ‘first1’, ‘func_attr2’: ‘first2’}</p>
 </blockquote>
 <p>类也有很多特殊的属性（包括自定义的类和库中的类）</p>
 <ul>
@@ -970,13 +849,10 @@ myfunc<br>
 <li><strong>module</strong> 输出类所在模块的名字</li>
 <li><strong>dict</strong> 输出类中的字典</li>
 </ul>
-<p>示例：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>:</span></span><br><span class="line">  <span class="string">"""This is my class __doc__"""</span></span><br><span class="line">  class_name = <span class="string">"cllll"</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, test=None)</span>:</span></span><br><span class="line">     self.test = test</span><br><span class="line">  <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">  print(MyClass.__dict__)</span><br><span class="line">  print(MyClass.__doc__)</span><br><span class="line">  print(MyClass.__module__)</span><br></pre></td></tr></table></figure>
+<p>示例：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>:</span></span><br><span class="line">  <span class="string">"""This is my class __doc__"""</span></span><br><span class="line">  class_name = <span class="string">"cllll"</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, test=None)</span>:</span></span><br><span class="line">     self.test = test</span><br><span class="line">  <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">  print(MyClass.__dict__)</span><br><span class="line">  print(MyClass.__doc__)</span><br><span class="line">  print(MyClass.__module__)</span><br></pre></td></tr></table></figure></p>
 <p>输出：</p>
 <blockquote>
-<p>{‘<strong>module</strong>’: ‘<strong>main</strong>’, ‘<strong>doc</strong>’: ‘This is my class <strong>doc</strong>’, ‘class_name’: ‘cllll’, ‘<strong>init</strong>’: &lt;function MyClass.<strong>init</strong> at 0x7f1349d44510&gt;, ‘<strong>dict</strong>’: &lt;attribute ‘<strong>dict</strong>’ of ‘MyClass’ objects&gt;, ‘<strong>weakref</strong>’: &lt;attribute ‘<strong>weakref</strong>’ of ‘MyClass’ objects&gt;}<br>
-This is my class <strong>doc</strong><br>
-<strong>main</strong></p>
+<p>{‘<strong>module</strong>‘: ‘<strong>main</strong>‘, ‘<strong>doc</strong>‘: ‘This is my class <strong>doc</strong>‘, ‘class_name’: ‘cllll’, ‘<strong>init</strong>‘: \<function myclass.__init__ at 0x7f1349d44510\>, ‘<strong>dict</strong>‘: \<attribute '__dict__' of 'myclass' objects\>, ‘<strong>weakref</strong>‘: \<attribute '__weakref__' of 'myclass' objects\>}<br>This is my class <strong>doc</strong><br><strong>main</strong></attribute></attribute></function></p>
 </blockquote>
 <p>类的对象的属性</p>
 <ul>
@@ -984,13 +860,10 @@ This is my class <strong>doc</strong><br>
 <li><strong>module</strong> 输出类对象所在模块的名字</li>
 <li><strong>dict</strong> 输出类对象中的字典</li>
 </ul>
-<p>示例</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> <span class="number">1</span> <span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>:</span></span><br><span class="line"> <span class="number">2</span>   <span class="string">"""This is my class __doc__"""</span></span><br><span class="line"> <span class="number">3</span>   class_name = <span class="string">"cllll"</span></span><br><span class="line"> <span class="number">4</span>   <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, test=None)</span>:</span></span><br><span class="line"> <span class="number">5</span>      self.test = test</span><br><span class="line"> <span class="number">6</span>   <span class="keyword">pass</span></span><br><span class="line"> <span class="number">7</span> </span><br><span class="line"> <span class="number">8</span> <span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line"> <span class="number">9</span> </span><br><span class="line"><span class="number">10</span>   cl = MyClass()</span><br><span class="line"><span class="number">11</span>   print(cl.__dict__)</span><br><span class="line"><span class="number">12</span>   print(cl.__doc__)</span><br><span class="line"><span class="number">13</span>   print(cl.__module__)</span><br></pre></td></tr></table></figure>
+<p>示例<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"> <span class="number">1</span> <span class="class"><span class="keyword">class</span> <span class="title">MyClass</span>:</span></span><br><span class="line"> <span class="number">2</span>   <span class="string">"""This is my class __doc__"""</span></span><br><span class="line"> <span class="number">3</span>   class_name = <span class="string">"cllll"</span></span><br><span class="line"> <span class="number">4</span>   <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, test=None)</span>:</span></span><br><span class="line"> <span class="number">5</span>      self.test = test</span><br><span class="line"> <span class="number">6</span>   <span class="keyword">pass</span></span><br><span class="line"> <span class="number">7</span> </span><br><span class="line"> <span class="number">8</span> <span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line"> <span class="number">9</span> </span><br><span class="line"><span class="number">10</span>   cl = MyClass()</span><br><span class="line"><span class="number">11</span>   print(cl.__dict__)</span><br><span class="line"><span class="number">12</span>   print(cl.__doc__)</span><br><span class="line"><span class="number">13</span>   print(cl.__module__)</span><br></pre></td></tr></table></figure></p>
 <p>输出</p>
 <blockquote>
-<p>{‘test’: None}<br>
-This is my class <strong>doc</strong><br>
-<strong>main</strong></p>
+<p>{‘test’: None}<br>This is my class <strong>doc</strong><br><strong>main</strong></p>
 </blockquote>
 
           
@@ -1163,26 +1036,15 @@ This is my class <strong>doc</strong><br>
       
         
           
-            <h2 id="zip-function">zip function</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">a = np.zeros((<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>))</span><br><span class="line">b = np.zeros((<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>))</span><br><span class="line">c = np.zeros((<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>))</span><br><span class="line">d = zip(a,b,c)   </span><br><span class="line">print(list(d))        </span><br><span class="line">d = list(zip(a,b,c))</span><br><span class="line">e,f,g = d</span><br></pre></td></tr></table></figure>
-<p>这里d是一个什么呢，是多个tuple，数量是min(len(a),len(b),len©)，每一个element是一个tuple，这个tuple的内容为(a[0],b[0],c[0])，…<br>
-打印出list(d)是一个list，这个list的长度为min(len(a),len(b),len©)每一个element是一个tuple，tuple的形状是((2,2),(2,2),(2,2))<br>
-用zip的话，就是看一下它的len，然后在第一维上对他们进行拼接，形成多个新的元组。<br>
-例子</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a = (<span class="number">2</span>,<span class="number">3</span>)</span><br><span class="line">b = (<span class="number">3</span>,<span class="number">4</span>)</span><br><span class="line">c = (<span class="number">4</span>,<span class="number">5</span>)</span><br><span class="line">d = zip(a,b,c)</span><br><span class="line">print(list(c))</span><br></pre></td></tr></table></figure>
+            <h2 id="zip-function"><a href="#zip-function" class="headerlink" title="zip function"></a>zip function</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line">a = np.zeros((<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>))</span><br><span class="line">b = np.zeros((<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>))</span><br><span class="line">c = np.zeros((<span class="number">2</span>,<span class="number">2</span>,<span class="number">2</span>))</span><br><span class="line">d = zip(a,b,c)   </span><br><span class="line">print(list(d))        </span><br><span class="line">d = list(zip(a,b,c))</span><br><span class="line">e,f,g = d</span><br></pre></td></tr></table></figure>
+<p>这里d是一个什么呢，是多个tuple，数量是min(len(a),len(b),len(c))，每一个element是一个tuple，这个tuple的内容为(a[0],b[0],c[0])，….<br>打印出list(d)是一个list，这个list的长度为min(len(a),len(b),len(c))每一个element是一个tuple，tuple的形状是((2,2),(2,2),(2,2))<br>用zip的话，就是看一下它的len，然后在第一维上对他们进行拼接，形成多个新的元组。<br>例子<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a = (<span class="number">2</span>,<span class="number">3</span>)</span><br><span class="line">b = (<span class="number">3</span>,<span class="number">4</span>)</span><br><span class="line">c = (<span class="number">4</span>,<span class="number">5</span>)</span><br><span class="line">d = zip(a,b,c)</span><br><span class="line">print(list(c))</span><br></pre></td></tr></table></figure></p>
 <blockquote>
-<p>[(2,3),(3,4),(4,5)]</p>
+<p>[(2,3),(3,4),(4,5)]    </p>
 </blockquote>
 <p>相当于吧tuple a和tuple b分别当做一个list的一个元组，然后结合成一个新的tuple的list，</p>
-<h2 id="enumerate-iterable-start-0">enumerate(iterable, start=0)</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">seasons = [<span class="string">'Spring'</span>, <span class="string">'Summer'</span>, <span class="string">'Fall'</span>, <span class="string">'Winter'</span>]</span><br><span class="line">print(list(enumerate(seasons)))</span><br><span class="line">print(list(enumerate(seasons, start=<span class="number">1</span>)))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> enumerate(seansons):</span><br><span class="line">   print(i)</span><br></pre></td></tr></table></figure>
+<h2 id="enumerate-iterable-start-0"><a href="#enumerate-iterable-start-0" class="headerlink" title="enumerate(iterable, start=0)"></a>enumerate(iterable, start=0)</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">seasons = [<span class="string">'Spring'</span>, <span class="string">'Summer'</span>, <span class="string">'Fall'</span>, <span class="string">'Winter'</span>]</span><br><span class="line">print(list(enumerate(seasons)))</span><br><span class="line">print(list(enumerate(seasons, start=<span class="number">1</span>)))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> enumerate(seansons):</span><br><span class="line">   print(i)</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>[(0, ‘Spring’), (1, ‘Summer’), (2, ‘Fall’), (3, ‘Winter’)]<br>
-[(1, ‘Spring’), (2, ‘Summer’), (3, ‘Fall’), (4, ‘Winter’)]<br>
-(0, ‘Spring’)<br>
-(1, ‘Summer’)<br>
-(2, ‘Fall’)<br>
-(3, ‘Winter’)</p>
+<p>[(0, ‘Spring’), (1, ‘Summer’), (2, ‘Fall’), (3, ‘Winter’)]<br>[(1, ‘Spring’), (2, ‘Summer’), (3, ‘Fall’), (4, ‘Winter’)]<br>(0, ‘Spring’)<br>(1, ‘Summer’)<br>(2, ‘Fall’)<br>(3, ‘Winter’)</p>
 </blockquote>
 
           
@@ -1355,25 +1217,18 @@ This is my class <strong>doc</strong><br>
       
         
           
-            <h2 id="time-time-library-datetime-library-panda-timestamp">time（time library,datetime library,panda.Timestamp()）</h2>
-<p>import time</p>
-<h3 id="获得当前时间">获得当前时间</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time.time()        <span class="comment">#获得当前timestamp</span></span><br></pre></td></tr></table></figure>
-<h3 id="time-localtime-timestamp">time.localtime(timestamp)</h3>
-<p>得到一个struct_time<br>
-time.struct_time(tm_year=2018…)</p>
-<h3 id="将struct-time转换成string">将struct time转换成string</h3>
-<blockquote>
+            <h2 id="time（time-library-datetime-library-panda-Timestamp-）"><a href="#time（time-library-datetime-library-panda-Timestamp-）" class="headerlink" title="time（time library,datetime library,panda.Timestamp()）"></a>time（time library,datetime library,panda.Timestamp()）</h2><p>import time</p>
+<h3 id="获得当前时间"><a href="#获得当前时间" class="headerlink" title="获得当前时间"></a>获得当前时间</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">time.time()        <span class="comment">#获得当前timestamp</span></span><br></pre></td></tr></table></figure>
+<h3 id="time-localtime-timestamp"><a href="#time-localtime-timestamp" class="headerlink" title="time.localtime(timestamp)"></a>time.localtime(timestamp)</h3><p>得到一个struct_time<br>time.struct_time(tm_year=2018….)</p>
+<h3 id="将struct-time转换成string"><a href="#将struct-time转换成string" class="headerlink" title="将struct time转换成string"></a>将struct time转换成string</h3><blockquote>
 <p>Convert a tuple or struct_time representing a time as returned by gmtime() or localtime() to a string as specified by the format argument.If t is not provided,the current time as returned by localtime() is used.</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line">time.strftime(format,t)        <span class="comment">#将一个struct_time表示为一个格式化字符串</span></span><br><span class="line">time.strftime(<span class="string">"%Y-%m-%d %H:%M:%S"</span>,time.localtime())</span><br></pre></td></tr></table></figure>
-<h3 id="将一个string类型的事件转换成struct-time">将一个string类型的事件转换成struct time</h3>
-<blockquote>
+<h3 id="将一个string类型的事件转换成struct-time"><a href="#将一个string类型的事件转换成struct-time" class="headerlink" title="将一个string类型的事件转换成struct time"></a>将一个string类型的事件转换成struct time</h3><blockquote>
 <p>Parse a string representing a time accroding to a format.The return value is a struct_time as returned by gmtime() or localtime()</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line">time.strptime(<span class="string">"a string representing a time"</span>,<span class="string">"a format"</span>)    <span class="comment">#将某个format表示的time转化为一个struct_time()</span></span><br><span class="line">time.strptime(<span class="string">"2014-02-01 00:00:00"</span>,<span class="string">"%Y-%m-%d %H:%M:%S"</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="time-mktime">time.mktime()</h3>
-<p>将时间t转换成timestamp</p>
+<h3 id="time-mktime"><a href="#time-mktime" class="headerlink" title="time.mktime()"></a>time.mktime()</h3><p>将时间t转换成timestamp</p>
 
           
         
@@ -1545,75 +1400,24 @@ time.struct_time(tm_year=2018…)</p>
       
         
           
-            <h2 id="文件和目录操作-os库和shutil库">文件和目录操作（os库和shutil库）</h2>
-<p>import os</p>
-<h2 id="查看信息">查看信息</h2>
-<p>不是函数，而是属性<br>
-os.linesep   #列出当前平台的行终止符<br>
-<a href="http://os.name" target="_blank" rel="noopener">os.name</a>    #列出当前的平台信息</p>
-<h2 id="环境变量">环境变量</h2>
-<p>os.getenv(key, default=None)<br>
-如果key存在，返回key对应的值，否则返回默认值None，也可以指定默认返回值。</p>
-<h2 id="列出目录">列出目录</h2>
-<p>file_dir_list = os.listdir(parent_dir)    #列出某个目录下的文件和目录，默认的话为当前目录<br>
-parent_dir 是一个目录<br>
-file_dir_list是一个list</p>
-<p>os.path.exists(pathname)    #判断pathname是否存在<br>
-os.path.isdir(pathname)    #判断pathname是否是目录<br>
-os.path.isfile(pathname)    #判断pathname是否是文件<br>
-os.path.isabs(pathname)    #判断pathname是否是绝对路径</p>
-<p>os.path.basename(pathname)    # 列出pathname的dir<br>
-os.path.dirname(pathname)        # 列出pathname的file name<br>
-os.path.split(pathname)    #将pathname分为dir和filename<br>
-os.path.split(pathname)    #将pathname的扩展名分离出来</p>
-<p>os.path.join(“dir_name”,“file_name”)    # 拼接两个路径</p>
-<p>os.getcwd()    #获得当前路径<br>
-os.chdir(pathname)    #改变当前路径<br>
-os.path.expanduser(pathname)    #如果pathname中包含&quot;~&quot;，将其替换成/homre/user/</p>
-<h2 id="创建和删除">创建和删除</h2>
-<p>os.mkdir(pathname)    #创建新目录<br>
-os.rmdir(pathname)    #删除目录<br>
-os.makedirs(&quot;/home/mxxhcm/Documents/&quot;)    #创建多级目录<br>
-os.removedirs()    #删除多个目录<br>
-os.remove(file_pathname)    #删除文件</p>
+            <h2 id="文件和目录操作（os库和shutil库）"><a href="#文件和目录操作（os库和shutil库）" class="headerlink" title="文件和目录操作（os库和shutil库）"></a>文件和目录操作（os库和shutil库）</h2><p>import os</p>
+<h2 id="查看信息"><a href="#查看信息" class="headerlink" title="查看信息"></a>查看信息</h2><p>不是函数，而是属性<br>os.linesep   #列出当前平台的行终止符<br>os.name    #列出当前的平台信息</p>
+<h2 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h2><p>os.getenv(key, default=None)<br>如果key存在，返回key对应的值，否则返回默认值None，也可以指定默认返回值。</p>
+<h2 id="列出目录"><a href="#列出目录" class="headerlink" title="列出目录"></a>列出目录</h2><p>file_dir_list = os.listdir(parent_dir)    #列出某个目录下的文件和目录，默认的话为当前目录<br>parent_dir 是一个目录<br>file_dir_list是一个list</p>
+<p>os.path.exists(pathname)    #判断pathname是否存在<br>os.path.isdir(pathname)    #判断pathname是否是目录<br>os.path.isfile(pathname)    #判断pathname是否是文件<br>os.path.isabs(pathname)    #判断pathname是否是绝对路径</p>
+<p>os.path.basename(pathname)    # 列出pathname的dir<br>os.path.dirname(pathname)        # 列出pathname的file name<br>os.path.split(pathname)    #将pathname分为dir和filename<br>os.path.split(pathname)    #将pathname的扩展名分离出来</p>
+<p>os.path.join(“dir_name”,”file_name”)    # 拼接两个路径</p>
+<p>os.getcwd()    #获得当前路径<br>os.chdir(pathname)    #改变当前路径<br>os.path.expanduser(pathname)    #如果pathname中包含”~”，将其替换成/homre/user/</p>
+<h2 id="创建和删除"><a href="#创建和删除" class="headerlink" title="创建和删除"></a>创建和删除</h2><p>os.mkdir(pathname)    #创建新目录<br>os.rmdir(pathname)    #删除目录<br>os.makedirs(“/home/mxxhcm/Documents/“)    #创建多级目录<br>os.removedirs()    #删除多个目录<br>os.remove(file_pathname)    #删除文件</p>
 <p>os.rename(old_pathname,new_pathname)    #重命名</p>
-<h2 id="打开文件">打开文件</h2>
-<p>对于open文件来说，共有三种模式，分别为w,a,r<br>
-r的话，为只读，读取一个不存在的文件，会报错<br>
-r+的话，为可读写，读取一个不存在的文件，会报错<br>
-a的话，为追加读，读取一个不存在的文件，会创建该文件<br>
-w的话，为写入文件，读取一个不存在的文件，会创建改文件，打开一个存在的同名文件，会删除该文件，创建一个新的文件</p>
-<h2 id="读取文件">读取文件</h2>
-<p>fp = open(file_path_name,“r+”)</p>
-<h3 id="read-将文件读到一个字符串中">read()将文件读到一个字符串中</h3>
-<p>file_str = fp.read()<br>
-fp.read()会返回一个字符串，包含换行符</p>
-<h3 id="readline">readline()</h3>
-<p>for file_str in fp:<br>
-print(file_str)<br>
-这里的file_str是一个str类型变量</p>
-<h3 id="readlines-将文件读到一个列表中">readlines()将文件读到一个列表中</h3>
-<p>list(fp)<br>
-file_list = fp.readlines()<br>
-filt_list是一个list变量</p>
-<h2 id="关闭文件">关闭文件</h2>
-<p>fp.close()<br>
-或者<br>
-with open(file_pathname, “r”) as f:<br>
-file_str = fp.read()<br>
-当跳出这个语句块的时候，文件已经别关闭了。</p>
-<h2 id="复制文件">复制文件</h2>
-<p>shutil.move(‘test’,‘test_move’)    # 递归的将文件或者目录移动到另一个位置。如果目标位置是一个目录，移动到这个目录里，如果目标已经存在而且不是一个目录，可能会用os.rename()重命名<br>
-shutil.copyfile(src,dst) #复制文件内容，metadata没有复制<br>
-shutil.copymode(src,dst) #copy权限。文件内容，owner和group不变。<br>
-shutil.copystat(src,dst)    #copy权限，各种时间以及flags位。文件内容，owner，group不变<br>
-shutil.copy(src,dst)    #copy file,权限为也会被copied<br>
-shutil.copy2(src,dst)  #和先后调用shutil.copy()和shutil.copystat()函数一样<br>
-shutil.copytree(src,dst,symlinks=False,ignore=None)  #递归的将str目录结构复制到dst，dst位置必须不存在，目录的权限和时间用copystat来复制，文件的赋值用copy2()来复制<br>
-shutil.rmtree(path[,ignore_errors[,onerror]])   #删除一个完整的目录，无论目录是否为空</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/48161511/answer/445852429" target="_blank" rel="noopener">https://www.zhihu.com/question/48161511/answer/445852429</a><br>
-2.<a href="https://www.geeksforgeeks.org/python-os-getenv-method/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/python-os-getenv-method/</a></p>
+<h2 id="打开文件"><a href="#打开文件" class="headerlink" title="打开文件"></a>打开文件</h2><p>对于open文件来说，共有三种模式，分别为w,a,r<br>r的话，为只读，读取一个不存在的文件，会报错<br>r+的话，为可读写，读取一个不存在的文件，会报错<br>a的话，为追加读，读取一个不存在的文件，会创建该文件<br>w的话，为写入文件，读取一个不存在的文件，会创建改文件，打开一个存在的同名文件，会删除该文件，创建一个新的文件</p>
+<h2 id="读取文件"><a href="#读取文件" class="headerlink" title="读取文件"></a>读取文件</h2><p>fp = open(file_path_name,”r+”)</p>
+<h3 id="read-将文件读到一个字符串中"><a href="#read-将文件读到一个字符串中" class="headerlink" title="read()将文件读到一个字符串中"></a>read()将文件读到一个字符串中</h3><p>file_str = fp.read()<br>fp.read()会返回一个字符串，包含换行符</p>
+<h3 id="readline"><a href="#readline" class="headerlink" title="readline()"></a>readline()</h3><p>for file_str in fp:<br>    print(file_str)<br>这里的file_str是一个str类型变量</p>
+<h3 id="readlines-将文件读到一个列表中"><a href="#readlines-将文件读到一个列表中" class="headerlink" title="readlines()将文件读到一个列表中"></a>readlines()将文件读到一个列表中</h3><p>list(fp)<br>file_list = fp.readlines()<br>filt_list是一个list变量</p>
+<h2 id="关闭文件"><a href="#关闭文件" class="headerlink" title="关闭文件"></a>关闭文件</h2><p>fp.close()<br>或者<br>with open(file_pathname, “r”) as f:<br>    file_str = fp.read()<br>当跳出这个语句块的时候，文件已经别关闭了。</p>
+<h2 id="复制文件"><a href="#复制文件" class="headerlink" title="复制文件"></a>复制文件</h2><p>shutil.move(‘test’,’test_move’)    # 递归的将文件或者目录移动到另一个位置。如果目标位置是一个目录，移动到这个目录里，如果目标已经存在而且不是一个目录，可能会用os.rename()重命名<br>shutil.copyfile(src,dst) #复制文件内容，metadata没有复制<br>shutil.copymode(src,dst) #copy权限。文件内容，owner和group不变。<br>shutil.copystat(src,dst)    #copy权限，各种时间以及flags位。文件内容，owner，group不变<br>shutil.copy(src,dst)    #copy file,权限为也会被copied<br>shutil.copy2(src,dst)  #和先后调用shutil.copy()和shutil.copystat()函数一样<br>shutil.copytree(src,dst,symlinks=False,ignore=None)  #递归的将str目录结构复制到dst，dst位置必须不存在，目录的权限和时间用copystat来复制，文件的赋值用copy2()来复制<br>shutil.rmtree(path[,ignore_errors[,onerror]])   #删除一个完整的目录，无论目录是否为空</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.zhihu.com/question/48161511/answer/445852429" target="_blank" rel="noopener">https://www.zhihu.com/question/48161511/answer/445852429</a><br>2.<a href="https://www.geeksforgeeks.org/python-os-getenv-method/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/python-os-getenv-method/</a></p>
 
           
         
@@ -1785,34 +1589,9 @@ shutil.rmtree(path[,ignore_errors[,onerror]])   #删除一个完整的目录，�
       
         
           
-            <h2 id="regex-examples">regex examples</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># 找出每一行的数字</span></span><br><span class="line">string = <span class="string">"""a9apple1234</span></span><br><span class="line"><span class="string">2banana5678</span></span><br><span class="line"><span class="string">a3coconut9012"""</span></span><br><span class="line">pattern = <span class="string">"[0-9]+"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># search</span></span><br><span class="line">result = re.search(pattern, string)</span><br><span class="line">print(type(result))</span><br><span class="line">print(result[<span class="number">0</span>])</span><br><span class="line">print(result.group(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># match</span></span><br><span class="line"><span class="comment"># 即使设置了MULTILINE模式，也只会匹配string的开头而不是每一行的开头</span></span><br><span class="line">result = re.match(pattern, string, re.S| re.M)  </span><br><span class="line">print(type(result))</span><br><span class="line"><span class="comment"># print(result[0])</span></span><br><span class="line"><span class="comment"># print(result.group(0))</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># findall</span></span><br><span class="line">result = re.findall(pattern, string)</span><br><span class="line">print(type(result))</span><br><span class="line">print(result)</span><br></pre></td></tr></table></figure>
-<h2 id="语法">语法</h2>
-<p>.   匹配除了newline的任意character，如果要匹配newline，需要添加re.DOTALL flag<br>
-*  重复至少$0$次<br>
-+  重复至少$1$次<br>
-?   重复$0$次或者$1$次<br>
-{}  重复多少次，如a{3,5}表示重复$3-5$次<br>
-[]  匹配方括号内的内容,如[1-9]表示匹配$1-9$中任意一个<br>
-^   matching the start of the string<br>
-$   matching the end os the string<br>
-+,*.?    都是贪婪匹配，如果加一个?为非贪婪匹配<br>
-+?,*?,??    为非贪婪匹配<br>
-()  匹配括号内的正则表达式，表示一个group的开始和结束<br>
-|   或<br>
-\number<br>
-\b  匹配empty string<br>
-\B<br>
-\d  匹配数字<br>
-\D  匹配非数字<br>
-\s  匹配空白符[ \t\n\r\f\v]<br>
-\S  匹配非空白符<br>
-\w  匹配unicode<br>
-\W<br>
-\A<br>
-\Z</p>
-<h2 id="模块">模块</h2>
-<ul>
+            <h2 id="regex-examples"><a href="#regex-examples" class="headerlink" title="regex examples"></a>regex examples</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line"></span><br><span class="line"><span class="comment"># 找出每一行的数字</span></span><br><span class="line">string = <span class="string">"""a9apple1234</span></span><br><span class="line"><span class="string">2banana5678</span></span><br><span class="line"><span class="string">a3coconut9012"""</span></span><br><span class="line">pattern = <span class="string">"[0-9]+"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># search</span></span><br><span class="line">result = re.search(pattern, string)</span><br><span class="line">print(type(result))</span><br><span class="line">print(result[<span class="number">0</span>])</span><br><span class="line">print(result.group(<span class="number">0</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># match</span></span><br><span class="line"><span class="comment"># 即使设置了MULTILINE模式，也只会匹配string的开头而不是每一行的开头</span></span><br><span class="line">result = re.match(pattern, string, re.S| re.M)  </span><br><span class="line">print(type(result))</span><br><span class="line"><span class="comment"># print(result[0])</span></span><br><span class="line"><span class="comment"># print(result.group(0))</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># findall</span></span><br><span class="line">result = re.findall(pattern, string)</span><br><span class="line">print(type(result))</span><br><span class="line">print(result)</span><br></pre></td></tr></table></figure>
+<h2 id="语法"><a href="#语法" class="headerlink" title="语法"></a>语法</h2><p>.   匹配除了newline的任意character，如果要匹配newline，需要添加re.DOTALL flag<br>*  重复至少$0$次<br>+  重复至少$1$次<br>?   重复$0$次或者$1$次<br>{}  重复多少次，如a{3,5}表示重复$3-5$次<br>[]  匹配方括号内的内容,如[1-9]表示匹配$1-9$中任意一个<br>^   matching the start of the string<br>$   matching the end os the string<br>+,*.?    都是贪婪匹配，如果加一个?为非贪婪匹配<br>+?,*?,??    为非贪婪匹配<br>()  匹配括号内的正则表达式，表示一个group的开始和结束<br>|   或<br>\number<br>\b  匹配empty string<br>\B<br>\d  匹配数字<br>\D  匹配非数字<br>\s  匹配空白符[ \t\n\r\f\v]<br>\S  匹配非空白符<br>\w  匹配unicode<br>\W<br>\A<br>\Z</p>
+<h2 id="模块"><a href="#模块" class="headerlink" title="模块"></a>模块</h2><ul>
 <li>re.compile(patern, flags=0)</li>
 <li>re.match(pattern, string, flags=0)</li>
 <li>re.fullmatch(pattern,string,flags=0)</li>
@@ -1822,61 +1601,42 @@ $   matching the end os the string<br>
 <li>re.sub(pattern,repl,string,count=0,flags=0)</li>
 <li>re.subn(pattern,repl,string,count=0,flags=0)</li>
 </ul>
-<h3 id="flags">flags</h3>
-<blockquote>
+<h3 id="flags"><a href="#flags" class="headerlink" title="flags"></a>flags</h3><blockquote>
 <p>flags can be re.DEBUG, re.I, re.IGNORECASE, re.L, re.LOCALE, re.M, re.MULTILINE, re.S, re.DOTALL, re.U, re.UNICODE, re.X, re.VERBOSE</p>
 </blockquote>
 <ul>
 <li>re.I(re.IGNORECASE) 忽略大小写</li>
-<li>re.L(re.LOCALE)</li>
-<li>re.M(re.MULTILINE) 多行模式，设置以后.匹配newline。指定re.S时，’^'匹配string的开始和each line的开始(紧跟着each newline); '$'匹配string的结束和each line的结束($在newline之前，immediately preceding each newline)。如果不指定的话, '^‘只匹配string的开始,’$'只匹配string的结束和immediately before the newline (if any) at the end of the string，对应inline flag (?m).</li>
-<li>re.S(re.DOTALL)</li>
+<li>re.L(re.LOCALE) </li>
+<li>re.M(re.MULTILINE) 多行模式，设置以后.匹配newline。指定re.S时，’^’匹配string的开始和each line的开始(紧跟着each newline); ‘$’匹配string的结束和each line的结束($在newline之前，immediately preceding each newline)。如果不指定的话, ‘^’只匹配string的开始,’$’只匹配string的结束和immediately before the newline (if any) at the end of the string，对应inline flag (?m).</li>
+<li>re.S(re.DOTALL)  </li>
 <li>re.U(re.UNICODE)</li>
 <li>re.X(re.VERBOSE)</li>
 <li>re.DEBUG</li>
 </ul>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line"></span><br><span class="line">print(re.I)</span><br><span class="line">print(re.IGNORECASE)</span><br><span class="line">print(re.L)</span><br><span class="line">print(re.LOCALE)</span><br><span class="line">print(re.M)</span><br><span class="line">print(re.MULTILINE)</span><br><span class="line">print(re.S)</span><br><span class="line">print(re.DOTALL)</span><br><span class="line">print(re.U)</span><br><span class="line">print(re.UNICODE)</span><br><span class="line">print(re.X)</span><br><span class="line">print(re.VERBOSE)</span><br><span class="line">print(re.DEBUG)</span><br><span class="line"></span><br><span class="line">print(re.M <span class="keyword">is</span> re.MULTILINE)</span><br><span class="line">print(re.I <span class="keyword">is</span> re.IGNORECASE)</span><br></pre></td></tr></table></figure>
-<p>re.M例子</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">text = <span class="string">"""First line.</span></span><br><span class="line"><span class="string">Second line.</span></span><br><span class="line"><span class="string">Third line."""</span></span><br><span class="line"></span><br><span class="line">pattern = <span class="string">"^.*$"</span>  <span class="comment"># 匹配从开始到结束的任何字符</span></span><br><span class="line"><span class="comment"># 默认情况下， . 不匹配newlines，所以默认情况下不会有任何匹配结果，因为$之前有newline，而.不能匹配</span></span><br><span class="line"><span class="comment"># re.search(pattern, text) is None  # Nothing matches!</span></span><br><span class="line">print(re.search(pattern, text))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果设置MULTILINE模式, $匹配每一行的结尾，这个时候第一行就满足要求了，设置MULTILINE模式后，$匹配string的结尾和每一行的结尾（each newline之前)</span></span><br><span class="line">print(re.search(pattern, text, re.M).group())</span><br><span class="line"><span class="comment"># First line.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果同时设置MULTILINE和DOTALL模式, .能够匹配newlines，所以第一行和第二行的newline都匹配了，在贪婪模式下，就匹配了整个字符串。</span></span><br><span class="line">print(re.search(pattern, text, re.M | re.S).group())</span><br><span class="line"><span class="comment"># First line.</span></span><br><span class="line"><span class="comment"># Second line.</span></span><br><span class="line"><span class="comment"># Third line.</span></span><br></pre></td></tr></table></figure>
-<h3 id="re-compile-patern-flags-0">re.compile(patern, flags=0)</h3>
-<p>将一个正则表达式语句编译成一个正则表达式对象，可以调用正则表达式的match()和search()函数进行matching。</p>
+<p>re.M例子<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">text = <span class="string">"""First line.</span></span><br><span class="line"><span class="string">Second line.</span></span><br><span class="line"><span class="string">Third line."""</span></span><br><span class="line"></span><br><span class="line">pattern = <span class="string">"^.*$"</span>  <span class="comment"># 匹配从开始到结束的任何字符</span></span><br><span class="line"><span class="comment"># 默认情况下， . 不匹配newlines，所以默认情况下不会有任何匹配结果，因为$之前有newline，而.不能匹配</span></span><br><span class="line"><span class="comment"># re.search(pattern, text) is None  # Nothing matches!</span></span><br><span class="line">print(re.search(pattern, text))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果设置MULTILINE模式, $匹配每一行的结尾，这个时候第一行就满足要求了，设置MULTILINE模式后，$匹配string的结尾和每一行的结尾（each newline之前)</span></span><br><span class="line">print(re.search(pattern, text, re.M).group())</span><br><span class="line"><span class="comment"># First line.</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果同时设置MULTILINE和DOTALL模式, .能够匹配newlines，所以第一行和第二行的newline都匹配了，在贪婪模式下，就匹配了整个字符串。</span></span><br><span class="line">print(re.search(pattern, text, re.M | re.S).group())</span><br><span class="line"><span class="comment"># First line.</span></span><br><span class="line"><span class="comment"># Second line.</span></span><br><span class="line"><span class="comment"># Third line.</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="re-compile-patern-flags-0"><a href="#re-compile-patern-flags-0" class="headerlink" title="re.compile(patern, flags=0)"></a>re.compile(patern, flags=0)</h3><p>将一个正则表达式语句编译成一个正则表达式对象，可以调用正则表达式的match()和search()函数进行matching。</p>
 <blockquote>
 <p>complie a regular expression pattern into a regular expression object,which can be used for matching using its match() and search()</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">str = <span class="string">"https://abc https://dcdf https://httpfn https://hello"</span></span><br><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line"></span><br><span class="line">prog = re.compile(pattern)</span><br><span class="line">results = prog.match(string)</span><br><span class="line"><span class="comment"># 上面两行等价于下面一行</span></span><br><span class="line"></span><br><span class="line">results = re.match(pattern, string)</span><br></pre></td></tr></table></figure>
-<h3 id="re-match-pattern-string-flags-0-or-re-fullmatch-pattern-string-flags-0">re.match(pattern, string, flags=0) or re.fullmatch(pattern,string,flags=0)</h3>
-<p>在给定的string开始位置进行查找，返回一个match object。<strong>即使设置了MULTILINE mode, re.match()也只会在string的开始而不是each line的每一行开始匹配。</strong></p>
-<h3 id="re-search-pattern-string-flags-0">re.search(pattern, string, flags=0)</h3>
-<p>在给定的string任意位置进行查找，返回一个match object。</p>
+<h3 id="re-match-pattern-string-flags-0-or-re-fullmatch-pattern-string-flags-0"><a href="#re-match-pattern-string-flags-0-or-re-fullmatch-pattern-string-flags-0" class="headerlink" title="re.match(pattern, string, flags=0) or re.fullmatch(pattern,string,flags=0)"></a>re.match(pattern, string, flags=0) or re.fullmatch(pattern,string,flags=0)</h3><p>在给定的string开始位置进行查找，返回一个match object。<strong>即使设置了MULTILINE mode, re.match()也只会在string的开始而不是each line的每一行开始匹配。</strong></p>
+<h3 id="re-search-pattern-string-flags-0"><a href="#re-search-pattern-string-flags-0" class="headerlink" title="re.search(pattern, string, flags=0)"></a>re.search(pattern, string, flags=0)</h3><p>在给定的string任意位置进行查找，返回一个match object。</p>
 <blockquote>
 <p>locat a match anywhere in string</p>
 </blockquote>
-<h3 id="search-vs-match">search() vs. match()</h3>
-<p>re.macth()在string的开头查找，而re.search在string的任意位置查找，他们都返回match object对象。如果不匹配，返回None。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import re</span><br><span class="line"></span><br><span class="line">match1 = re.match(&quot;cd&quot;, &quot;abcdef&quot;)     # match</span><br><span class="line">match2 = re.search(&quot;cd&quot;, &quot;abcdef&quot;)    # search</span><br><span class="line">print(match1)</span><br><span class="line">print(match2)</span><br><span class="line">print(match2.group(0))</span><br><span class="line"># None</span><br><span class="line"># &lt;regex.Match object; span=(2, 4), match=&apos;cd&apos;&gt;</span><br><span class="line"># cd</span><br><span class="line"></span><br><span class="line">with open(&quot;content.txt&quot;, &quot;r&quot;) as f:</span><br><span class="line">    s = f.read()</span><br><span class="line">match3 = re.match(&quot;cd&quot;, s)     # match</span><br><span class="line">match4 = re.search(&quot;cd&quot;, s)</span><br><span class="line">print(match3)</span><br><span class="line">print(match4)</span><br><span class="line"># None</span><br><span class="line"># &lt;regex.Match object; span=(4, 6), match=&apos;cd&apos;&gt;</span><br></pre></td></tr></table></figure>
-<h3 id="re-findall-pattern-string-flags-0">re.findall(pattern,string,flags=0)</h3>
-<p>查找字符string所有匹配pattern的字符</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line">str = <span class="string">"https://abc https://dcdf https://httpfn https://hello"</span></span><br><span class="line">p2 = <span class="string">"https.+? "</span>    <span class="comment"># pay attention to space here</span></span><br><span class="line">results = re.findall(p2,str)</span><br></pre></td></tr></table></figure>
+<h3 id="search-vs-match"><a href="#search-vs-match" class="headerlink" title="search() vs. match()"></a>search() vs. match()</h3><p>re.macth()在string的开头查找，而re.search在string的任意位置查找，他们都返回match object对象。如果不匹配，返回None。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import re</span><br><span class="line"></span><br><span class="line">match1 = re.match(&quot;cd&quot;, &quot;abcdef&quot;)     # match</span><br><span class="line">match2 = re.search(&quot;cd&quot;, &quot;abcdef&quot;)    # search</span><br><span class="line">print(match1)</span><br><span class="line">print(match2)</span><br><span class="line">print(match2.group(0))</span><br><span class="line"># None</span><br><span class="line"># &lt;regex.Match object; span=(2, 4), match=&apos;cd&apos;&gt;</span><br><span class="line"># cd</span><br><span class="line"></span><br><span class="line">with open(&quot;content.txt&quot;, &quot;r&quot;) as f:</span><br><span class="line">    s = f.read()</span><br><span class="line">match3 = re.match(&quot;cd&quot;, s)     # match</span><br><span class="line">match4 = re.search(&quot;cd&quot;, s)</span><br><span class="line">print(match3)</span><br><span class="line">print(match4)</span><br><span class="line"># None</span><br><span class="line"># &lt;regex.Match object; span=(4, 6), match=&apos;cd&apos;&gt;</span><br></pre></td></tr></table></figure></p>
+<h3 id="re-findall-pattern-string-flags-0"><a href="#re-findall-pattern-string-flags-0" class="headerlink" title="re.findall(pattern,string,flags=0)"></a>re.findall(pattern,string,flags=0)</h3><p>查找字符string所有匹配pattern的字符<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line">str = <span class="string">"https://abc https://dcdf https://httpfn https://hello"</span></span><br><span class="line">p2 = <span class="string">"https.+? "</span>    <span class="comment"># pay attention to space here</span></span><br><span class="line">results = re.findall(p2,str)</span><br></pre></td></tr></table></figure></p>
 <blockquote>
-<p>['<a href="https://abc" target="_blank" rel="noopener">https://abc</a> ', '<a href="https://dcdf" target="_blank" rel="noopener">https://dcdf</a> ', '<a href="https://httpfn" target="_blank" rel="noopener">https://httpfn</a> ']    # pay attention to the last ,since the end of str is \n</p>
+<p>[‘<a href="https://abc" target="_blank" rel="noopener">https://abc</a> ‘, ‘<a href="https://dcdf" target="_blank" rel="noopener">https://dcdf</a> ‘, ‘<a href="https://httpfn" target="_blank" rel="noopener">https://httpfn</a> ‘]    # pay attention to the last ,since the end of str is \n</p>
 </blockquote>
-<h3 id="re-split-pattern-string-maxflit-0-flags-0">re.split(pattern, string, maxflit=0, flags=0)</h3>
-<p>按照patten对string进行分割</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line">str = <span class="string">"https://abc https://dcdf https://httpfn https://hello"</span></span><br><span class="line">p1 = <span class="string">" "</span></span><br><span class="line">results = re.split(p1,str)</span><br></pre></td></tr></table></figure>
+<h3 id="re-split-pattern-string-maxflit-0-flags-0"><a href="#re-split-pattern-string-maxflit-0-flags-0" class="headerlink" title="re.split(pattern, string, maxflit=0, flags=0)"></a>re.split(pattern, string, maxflit=0, flags=0)</h3><p>按照patten对string进行分割<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> regex <span class="keyword">as</span> re</span><br><span class="line">str = <span class="string">"https://abc https://dcdf https://httpfn https://hello"</span></span><br><span class="line">p1 = <span class="string">" "</span></span><br><span class="line">results = re.split(p1,str)</span><br></pre></td></tr></table></figure></p>
 <blockquote>
-<p>[‘<a href="https://abc" target="_blank" rel="noopener">https://abc</a>’, ‘<a href="https://dcdf" target="_blank" rel="noopener">https://dcdf</a>’, ‘<a href="https://httpfn" target="_blank" rel="noopener">https://httpfn</a>’, ‘<a href="https://hello" target="_blank" rel="noopener">https://hello</a>’]</p>
+<p>[‘<a href="https://abc" target="_blank" rel="noopener">https://abc</a>‘, ‘<a href="https://dcdf" target="_blank" rel="noopener">https://dcdf</a>‘, ‘<a href="https://httpfn" target="_blank" rel="noopener">https://httpfn</a>‘, ‘<a href="https://hello" target="_blank" rel="noopener">https://hello</a>‘]</p>
 </blockquote>
-<h3 id="re-sub-pattern-repl-string-count-0-flags-0">re.sub(pattern,repl,string,count=0,flags=0)</h3>
-<h3 id="re-subn-pattern-repl-string-count-0-flags-0">re.subn(pattern,repl,string,count=0,flags=0)</h3>
-<h3 id="none">…</h3>
-<h2 id="正则表达式对象-regular-express-object">正则表达式对象(regular express object)</h2>
-<p>class re.RegexObject<br>
-只有re.compile()函数会产生正则表达式对象，正则</p>
+<h3 id="re-sub-pattern-repl-string-count-0-flags-0"><a href="#re-sub-pattern-repl-string-count-0-flags-0" class="headerlink" title="re.sub(pattern,repl,string,count=0,flags=0)"></a>re.sub(pattern,repl,string,count=0,flags=0)</h3><h3 id="re-subn-pattern-repl-string-count-0-flags-0"><a href="#re-subn-pattern-repl-string-count-0-flags-0" class="headerlink" title="re.subn(pattern,repl,string,count=0,flags=0)"></a>re.subn(pattern,repl,string,count=0,flags=0)</h3><h3 id="…"><a href="#…" class="headerlink" title="…"></a>…</h3><h2 id="正则表达式对象-regular-express-object"><a href="#正则表达式对象-regular-express-object" class="headerlink" title="正则表达式对象(regular express object)"></a>正则表达式对象(regular express object)</h2><p>class re.RegexObject<br>只有re.compile()函数会产生正则表达式对象，正则</p>
 <blockquote>
-<p>only re.compile() will create a direct regular express object,<br>
-it’s a special class which design for re.compile().<br>
-正则表达式对象支持下列方法和属性</p>
-</blockquote>
+<p>only re.compile() will create a direct regular express object,<br>it’s a special class which design for re.compile().<br>正则表达式对象支持下列方法和属性</p>
 <ul>
 <li>match(string[,pos[,endpos]])</li>
 <li>search(string[,pos[,endpos]])</li>
@@ -1888,25 +1648,15 @@ it’s a special class which design for re.compile().<br>
 <li>groupindex</li>
 <li>pattern</li>
 </ul>
-<h3 id="match-string-pos-endpos">match(string[,pos[,endpos]])</h3>
-<h3 id="search-string-pos-endpos">search(string[,pos[,endpos]])</h3>
-<h3 id="findall-string-pos-endpos">findall(string[,pos[,endpos]])</h3>
-<h3 id="split-string-maxsplit-0">split(string,maxsplit=0)</h3>
-<h3 id="sub">sub()</h3>
-<h3 id="flags-v2">flags</h3>
-<h3 id="groups">groups</h3>
-<h3 id="groupindex">groupindex</h3>
-<h3 id="pattern">pattern</h3>
-<h2 id="匹配对象-match-objects">匹配对象(match objects)</h2>
-<p>class re.MatchObject<br>
-匹配是否成功</p>
+</blockquote>
+<h3 id="match-string-pos-endpos"><a href="#match-string-pos-endpos" class="headerlink" title="match(string[,pos[,endpos]])"></a>match(string[,pos[,endpos]])</h3><h3 id="search-string-pos-endpos"><a href="#search-string-pos-endpos" class="headerlink" title="search(string[,pos[,endpos]])"></a>search(string[,pos[,endpos]])</h3><h3 id="findall-string-pos-endpos"><a href="#findall-string-pos-endpos" class="headerlink" title="findall(string[,pos[,endpos]])"></a>findall(string[,pos[,endpos]])</h3><h3 id="split-string-maxsplit-0"><a href="#split-string-maxsplit-0" class="headerlink" title="split(string,maxsplit=0)"></a>split(string,maxsplit=0)</h3><h3 id="sub"><a href="#sub" class="headerlink" title="sub()"></a>sub()</h3><h3 id="flags-1"><a href="#flags-1" class="headerlink" title="flags"></a>flags</h3><h3 id="groups"><a href="#groups" class="headerlink" title="groups"></a>groups</h3><h3 id="groupindex"><a href="#groupindex" class="headerlink" title="groupindex"></a>groupindex</h3><h3 id="pattern"><a href="#pattern" class="headerlink" title="pattern"></a>pattern</h3><h2 id="匹配对象-match-objects"><a href="#匹配对象-match-objects" class="headerlink" title="匹配对象(match objects)"></a>匹配对象(match objects)</h2><p>class re.MatchObject<br>匹配是否成功</p>
 <blockquote>
 <p>match objects have a boolean value of True.</p>
 </blockquote>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">match = re.search(pattern, string)</span><br><span class="line">if match:</span><br><span class="line">   processs(match)</span><br></pre></td></tr></table></figure>
 <p>MatchObject支持以下方法和属性</p>
 <ul>
-<li>group([group1,…])</li>
+<li>group([group1,..])</li>
 <li>groups([default=None])</li>
 <li>groupdict(default=None)</li>
 <li>start([group])</li>
@@ -1919,28 +1669,21 @@ it’s a special class which design for re.compile().<br>
 <li>re</li>
 <li>string</li>
 </ul>
-<h3 id="group-group1">group([group1,…])</h3>
-<p>group的话pattern需要多个()</p>
-<h3 id="groups-default">groups([default])</h3>
-<p>返回一个元组</p>
+<h3 id="group-group1"><a href="#group-group1" class="headerlink" title="group([group1,..])"></a>group([group1,..])</h3><p>group的话pattern需要多个()</p>
+<h3 id="groups-default"><a href="#groups-default" class="headerlink" title="groups([default])"></a>groups([default])</h3><p>返回一个元组</p>
 <blockquote>
 <p>return a tuple containing all the subgroups of the match.</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">re.match(<span class="string">r"(\d+)\.(\d+)"</span>,<span class="string">"24.1632"</span>)</span><br><span class="line">m.groups()</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>(‘24’,‘1632’)</p>
+<p>(‘24’,’1632’)</p>
 </blockquote>
-<p>show default</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m = re.match(<span class="string">r"(\d+)\.?(\d+)?"</span>, <span class="string">"24"</span>)</span><br><span class="line">m.groups()      <span class="comment"># Second group defaults to None.</span></span><br></pre></td></tr></table></figure>
+<p>show default<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m = re.match(<span class="string">r"(\d+)\.?(\d+)?"</span>, <span class="string">"24"</span>)</span><br><span class="line">m.groups()      <span class="comment"># Second group defaults to None.</span></span><br></pre></td></tr></table></figure></p>
 <blockquote>
 <p>(‘24’, None)</p>
 </blockquote>
-<p>change default to 0</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m.groups(<span class="string">'0'</span>)  <span class="comment"># Now, the second group defaults to '0'.</span></span><br><span class="line">(<span class="string">'24'</span>, <span class="string">'0'</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/180986/what-is-the-difference-between-re-search-and-re-match" target="_blank" rel="noopener">https://stackoverflow.com/questions/180986/what-is-the-difference-between-re-search-and-re-match</a><br>
-2.<a href="https://devdocs.io/python~3.7/library/re" target="_blank" rel="noopener">https://devdocs.io/python~3.7/library/re</a><br>
-3.<a href="https://mail.python.org/pipermail/python-list/2014-July/674576.html" target="_blank" rel="noopener">https://mail.python.org/pipermail/python-list/2014-July/674576.html</a></p>
+<p>change default to 0<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">m.groups(<span class="string">'0'</span>)  <span class="comment"># Now, the second group defaults to '0'.</span></span><br><span class="line">(<span class="string">'24'</span>, <span class="string">'0'</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://stackoverflow.com/questions/180986/what-is-the-difference-between-re-search-and-re-match" target="_blank" rel="noopener">https://stackoverflow.com/questions/180986/what-is-the-difference-between-re-search-and-re-match</a><br>2.<a href="https://devdocs.io/python~3.7/library/re" target="_blank" rel="noopener">https://devdocs.io/python~3.7/library/re</a><br>3.<a href="https://mail.python.org/pipermail/python-list/2014-July/674576.html" target="_blank" rel="noopener">https://mail.python.org/pipermail/python-list/2014-July/674576.html</a></p>
 
           
         
@@ -2112,34 +1855,19 @@ it’s a special class which design for re.compile().<br>
       
         
           
-            <h2 id="array-initialize">array initialize</h2>
-<p>array_one_dimension =  [ 0 for i in range(cols)]<br>
-array_multi_dimension  = [[0 for i in range(cols)] for j in range(rows)]</p>
-<h2 id="numpy">numpy</h2>
-<ul>
+            <h2 id="array-initialize"><a href="#array-initialize" class="headerlink" title="array initialize"></a>array initialize</h2><p>array_one_dimension =  [ 0 for i in range(cols)]<br>array_multi_dimension  = [[0 for i in range(cols)] for j in range(rows)]</p>
+<h2 id="numpy"><a href="#numpy" class="headerlink" title="numpy"></a>numpy</h2><ul>
 <li>numpy.array()</li>
 <li>numpy.zeros()</li>
 <li>numpy.empty()</li>
 </ul>
 <p>返回np.ndarray数组</p>
-<h3 id="np-ndarray属性">np.ndarray属性</h3>
-<p>ndarray.shape        #array的shape<br>
-ndarray.ndim            #array的维度<br>
-ndarray.size            #the number of ndarray in array<br>
-ndarray.dtype        #type of the number in array<br>
-ndarray.itemsize        #size of the element in array<br>
-array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论array的维度是多少</p>
-<h3 id="numpy-array">numpy.array()</h3>
-<p>np.array(object,dtype=None,copy=True,order=False,subok=False,ndim=0)</p>
-<h3 id="numpy-zeros">numpy.zeros()</h3>
-<p>np.zeros(shape,dtype=float,order=‘C’)</p>
-<h3 id="numpy-empty">numpy.empty()</h3>
-<p>np.empty(shape,dtype=float,order=‘C’)</p>
-<h3 id="numpy-random-randn-shape">numpy.random.randn(shape)</h3>
-<p>np.random.randn(3,4)</p>
-<h3 id="numpy-arange">numpy.arange()</h3>
-<h3 id="numpy-linspace">numpy.linspace()</h3>
-
+<h3 id="np-ndarray属性"><a href="#np-ndarray属性" class="headerlink" title="np.ndarray属性"></a>np.ndarray属性</h3><p>ndarray.shape        #array的shape<br>ndarray.ndim            #array的维度<br>ndarray.size            #the number of ndarray in array<br>ndarray.dtype        #type of the number in array<br>ndarray.itemsize        #size of the element in array<br>array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论array的维度是多少</p>
+<h3 id="numpy-array"><a href="#numpy-array" class="headerlink" title="numpy.array()"></a>numpy.array()</h3><p>np.array(object,dtype=None,copy=True,order=False,subok=False,ndim=0)</p>
+<h3 id="numpy-zeros"><a href="#numpy-zeros" class="headerlink" title="numpy.zeros()"></a>numpy.zeros()</h3><p>np.zeros(shape,dtype=float,order=’C’)</p>
+<h3 id="numpy-empty"><a href="#numpy-empty" class="headerlink" title="numpy.empty()"></a>numpy.empty()</h3><p>np.empty(shape,dtype=float,order=’C’)</p>
+<h3 id="numpy-random-randn-shape"><a href="#numpy-random-randn-shape" class="headerlink" title="numpy.random.randn(shape)"></a>numpy.random.randn(shape)</h3><p>np.random.randn(3,4)</p>
+<h3 id="numpy-arange"><a href="#numpy-arange" class="headerlink" title="numpy.arange()"></a>numpy.arange()</h3><h3 id="numpy-linspace"><a href="#numpy-linspace" class="headerlink" title="numpy.linspace()"></a>numpy.linspace()</h3>
           
         
       
@@ -2310,13 +2038,9 @@ array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论
       
         
           
-            <h2 id="python2和python3的dict">python2和python3的dict</h2>
-<h3 id="将object转换为dict">将object转换为dict</h3>
-<p>vars([object]) -&gt; dictionary</p>
-<h3 id="python2-dict">python2 dict</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">m_dict = &#123;&apos;a&apos;: 10, &apos;b&apos;: 20&#125;</span><br><span class="line"></span><br><span class="line">values = m_dict.values()</span><br><span class="line">print(type(values))</span><br><span class="line">print(values)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">items = m_dict.items()</span><br><span class="line">print(type(items))</span><br><span class="line">print(items)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">keys = m_dict.keys()</span><br><span class="line">print(type(keys))</span><br><span class="line">print(keys)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">l_values = list(values)</span><br><span class="line">print(type(l_values))</span><br><span class="line">print(l_values)</span><br><span class="line"></span><br><span class="line">输出：</span><br></pre></td></tr></table></figure>
-<h3 id="python3-dict">python3 dict</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">m_dict = &#123;&apos;a&apos;: 10, &apos;b&apos;: 20&#125;</span><br><span class="line"></span><br><span class="line">values = m_dict.values()</span><br><span class="line">print(type(values))</span><br><span class="line">print(values) print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">items = m_dict.items()</span><br><span class="line">print(type(items))</span><br><span class="line">print(items)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">keys = m_dict.keys()</span><br><span class="line">print(type(keys))</span><br><span class="line">print(keys)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">l_values = list(values)</span><br><span class="line">print(type(l_values))</span><br><span class="line">print(l_values)</span><br></pre></td></tr></table></figure>
+            <h2 id="python2和python3的dict"><a href="#python2和python3的dict" class="headerlink" title="python2和python3的dict"></a>python2和python3的dict</h2><h3 id="将object转换为dict"><a href="#将object转换为dict" class="headerlink" title="将object转换为dict"></a>将object转换为dict</h3><p>vars([object]) -&gt; dictionary</p>
+<h3 id="python2-dict"><a href="#python2-dict" class="headerlink" title="python2 dict"></a>python2 dict</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">m_dict = &#123;&apos;a&apos;: 10, &apos;b&apos;: 20&#125;</span><br><span class="line"></span><br><span class="line">values = m_dict.values()</span><br><span class="line">print(type(values))</span><br><span class="line">print(values)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">items = m_dict.items()</span><br><span class="line">print(type(items))</span><br><span class="line">print(items)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">keys = m_dict.keys()</span><br><span class="line">print(type(keys))</span><br><span class="line">print(keys)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">l_values = list(values)</span><br><span class="line">print(type(l_values))</span><br><span class="line">print(l_values)</span><br><span class="line"></span><br><span class="line">输出：</span><br></pre></td></tr></table></figure>
+<h3 id="python3-dict"><a href="#python3-dict" class="headerlink" title="python3 dict"></a>python3 dict</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">m_dict = &#123;&apos;a&apos;: 10, &apos;b&apos;: 20&#125;</span><br><span class="line"></span><br><span class="line">values = m_dict.values()</span><br><span class="line">print(type(values))</span><br><span class="line">print(values) print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">items = m_dict.items()</span><br><span class="line">print(type(items))</span><br><span class="line">print(items)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">keys = m_dict.keys()</span><br><span class="line">print(type(keys))</span><br><span class="line">print(keys)</span><br><span class="line">print(&quot;\n&quot;)</span><br><span class="line"></span><br><span class="line">l_values = list(values)</span><br><span class="line">print(type(l_values))</span><br><span class="line">print(l_values)</span><br></pre></td></tr></table></figure>
 <p>输出：</p>
 
           
@@ -2489,21 +2213,16 @@ array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论
       
         
           
-            <h2 id="简单赋值-浅拷贝-深拷贝">简单赋值，浅拷贝，深拷贝</h2>
-<h3 id="简单赋值">简单赋值</h3>
-<h4 id="str">str</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">'hello'</span></span><br><span class="line">b = <span class="string">'hello'</span></span><br><span class="line">c = a</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
+            <h2 id="简单赋值，浅拷贝，深拷贝"><a href="#简单赋值，浅拷贝，深拷贝" class="headerlink" title="简单赋值，浅拷贝，深拷贝"></a>简单赋值，浅拷贝，深拷贝</h2><h3 id="简单赋值"><a href="#简单赋值" class="headerlink" title="简单赋值"></a>简单赋值</h3><h4 id="str"><a href="#str" class="headerlink" title="str"></a>str</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">'hello'</span></span><br><span class="line">b = <span class="string">'hello'</span></span><br><span class="line">c = a</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>2432356754632  2432356754632  2432356754632</p>
 </blockquote>
-<p>这里打印出a，b，c的id是一样的，因为他们全是指向’hello’这个字符串在内存中的地址</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">'world'</span></span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
+<p>这里打印出a，b，c的id是一样的，因为他们全是指向’hello’这个字符串在内存中的地址<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">'world'</span></span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure></p>
 <blockquote>
 <p>2432356757376  2432356754632  2432356754632</p>
 </blockquote>
 <p>将a指向一个新的字符串’world’,所以变量a的地址就改变了，指向字符串’world’的地址，但是b和c还是指向字符串’hello’的地址。</p>
-<h4 id="list">list</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="string">'hello'</span>]</span><br><span class="line">b = [<span class="string">'hello'</span>]</span><br><span class="line">c = a</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
+<h4 id="list"><a href="#list" class="headerlink" title="list"></a>list</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="string">'hello'</span>]</span><br><span class="line">b = [<span class="string">'hello'</span>]</span><br><span class="line">c = a</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>2432356788424 2432356797064 2432356788424</p>
 </blockquote>
@@ -2511,32 +2230,18 @@ array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论
 <blockquote>
 <p>2432356798024 2432356797064 2432356788424</p>
 </blockquote>
-<h4 id="结论">结论</h4>
-<p>简单赋值是先给一个变量分配内存，然后把变量的地址赋值给一个变量名。<br>
-对于一些不可变的类型，比如str，int等，某一个值在内存中的地址是固定的，如果用赋值操作直接指向一个值的话，那么变量名指向的就是这个值在内存中地址。<br>
-比如a=‘hello’,b=‘hello’,这样a和b的id是相同的，都指向内存中hello的地址<br>
-对于一些可变的类型，比如list，因为他是可变的，所以如果用赋值操作指向同一个值的话，那么这几个变量的地址也不一样<br>
-比如a =[‘hello’],b=[‘hello’],这样a和b的id是不同的，虽然他们指向的值是一样的，</p>
-<h3 id="浅拷贝">浅拷贝</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="string">'hello'</span> , [<span class="number">123</span>] ]</span><br><span class="line">b = a[:]</span><br><span class="line">a = [<span class="string">'hello'</span> , [<span class="number">123</span>] ]</span><br><span class="line">b = a[:]</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
+<h4 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h4><p>简单赋值是先给一个变量分配内存，然后把变量的地址赋值给一个变量名。<br>对于一些不可变的类型，比如str，int等，某一个值在内存中的地址是固定的，如果用赋值操作直接指向一个值的话，那么变量名指向的就是这个值在内存中地址。<br>比如a=’hello’,b=’hello’,这样a和b的id是相同的，都指向内存中hello的地址<br>对于一些可变的类型，比如list，因为他是可变的，所以如果用赋值操作指向同一个值的话，那么这几个变量的地址也不一样<br>比如a =[‘hello’],b=[‘hello’],这样a和b的id是不同的，虽然他们指向的值是一样的，</p>
+<h3 id="浅拷贝"><a href="#浅拷贝" class="headerlink" title="浅拷贝"></a>浅拷贝</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="string">'hello'</span> , [<span class="number">123</span>] ]</span><br><span class="line">b = a[:]</span><br><span class="line">a = [<span class="string">'hello'</span> , [<span class="number">123</span>] ]</span><br><span class="line">b = a[:]</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>[‘hello’, [123]] [‘hello’, [123]]<br>
-2432356775368 2432356775432 2432356754632 2432356774984<br>
-2432356754632 2432356774984</p>
+<p>[‘hello’, [123]] [‘hello’, [123]]<br>2432356775368 2432356775432 2432356754632 2432356774984<br>2432356754632 2432356774984</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt;a[<span class="number">0</span>] = <span class="string">'world'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(a,b)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(a),id(b))</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>[‘world’, [123]] [‘hello’, [123]]<br>
-2432356775368 2432356775432<br>
-2432356756424 2432356774984<br>
-2432356754632 2432356774984</p>
+<p>[‘world’, [123]] [‘hello’, [123]]<br>2432356775368 2432356775432<br>2432356756424 2432356774984<br>2432356754632 2432356774984</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a[<span class="number">1</span>].append(<span class="number">3</span>)</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>[‘world’, [123, 3]] [‘hello’, [123, 3]]<br>
-2432356775368 2432356775432<br>
-2432356756424 2432356774984<br>
-2432356754632 2432356774984</p>
+<p>[‘world’, [123, 3]] [‘hello’, [123, 3]]<br>2432356775368 2432356775432<br>2432356756424 2432356774984<br>2432356754632 2432356774984</p>
 </blockquote>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">a[<span class="number">1</span>] = [<span class="number">123</span>]</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br><span class="line">``` </span><br><span class="line">&gt; [<span class="string">'world'</span>, [<span class="number">123</span>]] [<span class="string">'hello'</span>, [<span class="number">123</span>, <span class="number">3</span>]]</span><br><span class="line"><span class="number">2432356775368</span> <span class="number">2432356775432</span></span><br><span class="line"><span class="number">2432356756424</span> <span class="number">2432356822984</span></span><br><span class="line"><span class="number">2432356754632</span> <span class="number">2432356774984</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### 深拷贝</span></span><br><span class="line">``` python</span><br><span class="line"><span class="keyword">from</span> copy <span class="keyword">import</span> deepcopy</span><br><span class="line">a = [<span class="string">'hello'</span>,[<span class="number">123</span>,<span class="number">234</span>]</span><br><span class="line">b = deepcopy(a)</span><br></pre></td></tr></table></figure>
 <p>a，b以及a，b中任何元素（除了str，int等类型）的地址都是不一样的</p>
@@ -2703,18 +2408,6 @@ array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论
                 <div class="site-state-item site-state-tags">
                   <a href="/tags/index.html">
                     
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
                     
                       
                     
