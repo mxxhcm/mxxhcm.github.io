@@ -62,6 +62,14 @@ char *message2 = "Hello world!";
 而第二种方式中，"Hello world"是一个字面值常量，它在内存中只能以数组的形式存在，是一个不可修改的左值表达式。而message2实际上指向了这个字符串数组的首字符。
 
 
+## 常见的指针数组
+1. `main`函数的形参`char *argv[]`就是一个指针数组
+2. `getline`的第一个参数是`char **lineptr`。
+
+怎么理解？如下图所示：
+![pointer_array](pointer_array.jpg)
+
+
 ## 参考文献
 1.《C++ Primer第五版》
 2.https://www.zhihu.com/question/307261590/answer/563448215
