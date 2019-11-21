@@ -56,30 +56,49 @@ int fstatat(int dirfd, const char *pathname, struct stat *statbuf, int flags);
 
 
 ## 文件类型
-UNIX系统的文件类型有以下几种：
-1. 普通文件，可以是二进制文件，也可以是文本文件。除了二进制可执行文件必须遵循标准化格式外，其他的文件对于UNIX内核来说基本上没有区别。
-2. 目录文件，包含了其他文件的名字，以及指向这些文件有关信息的指针。对一个目录具有读权限的任意进程都可以读目录的内容，但是只有内核才可以直接写目录文件。
-3. block special file，提供对设备带缓冲的访问，每次访问以固定的长度进行。
-4. character special file，
-5. FIFO
-6. socket
-7. sysbolic link
+文件类型信息包含在`struct stat`的`st_mode`字段中。UNIX系统的文件类型有以下几种：
+1. 普通文件，可以是二进制文件，也可以是文本文件。除了二进制可执行文件必须遵循标准化格式外，其他的文件对于UNIX内核来说基本上没有区别。使用`S_ISREG`宏进行判断。
+2. 目录文件，包含了其他文件的名字，以及指向这些文件有关信息的指针。对一个目录具有读权限的任意进程都可以读目录的内容，但是只有内核才可以直接写目录文件。使用`S_ISDIR`宏进行判断。
+3. block special file，提供对设备带缓冲的访问，每次访问以固定的长度进行。使用`S_ISBLK`宏进行判断。
+4. character special file，提供对设备不带缓冲的访问，每次访问长度可变。系统中的设备要么是block special file要是character special file。使用`S_ISCHR`宏进行判断。
+5. FIFO，用于进程间通信。使用`S_ISFIFO`宏进行判断。
+6. socket，用于进程间的网络通信。使用`S_ISSOCK`宏进行判断。
+7. sysbolic link，指向另一个文件。使用`S_ISLNK`宏进行判断。
 
-## UID和GID
+## 和进程相关的UID和GID
+每一个进程有6个或者更多和它相关的ID：
+### 实际UID和GID
+real user ID和real group ID，用来表示当前用户。
 
-## 文件访问权限
+### 有效UID和GID
+effective user ID和effective group ID，决定我们的文件访问权限。通常情况下，effective user ID以及effective group ID和real user ID以及real group ID一样。
 
-## 新文件和新目录的权限
+### Set-User-ID和Set-Group-ID
+saved set-user-ID和saved set-group-ID，在执行一个程序时，包含了有效user ID和有效group ID的副本。
+每一个文件都有一个所有者和组所有者，它们的值在`st_uid`和`st_gid`中。
+当执行一个程序文件时，进程的effective user ID通常就是real user ID，而effective group ID通常就是real group ID。但是可以在`st_mode`中设置一个特殊的flag，意思是当执行此文件时，将执行此文件的进程的effective user ID设置为文件所有者的user ID。同样，还有另一个特殊的flag，它将执行此文件的进程的effective group ID设置为文件组所有者的user ID。这两个标志位被记为set-user-ID bit和set-group-ID bit，它们都存放在`st_mode`中，可以使用`S_ISUID`和`S_ISGID`测试。
+**运行set UID程序的进程通常会获得额外的权限！！！所以要格外注意。**
 
-## `access`和`faccessat`
+## 文件和目录的访问权限
+`st_mode`中还包含了文件的访问权限。对于所有文件类型（不单单是文件和目录），都有三种访问权限：
 
-## 函数`umask`
+### r-读权限
+读权限查询文件名数据
 
-## 函数`chmod`, `fchmod`和`fchmodat`
+### w-写权限
+- 新建文件与目录 
+- 删除文件或者目录 
+- 重命名以及转移文件或者目录
+	
+### x-可执行权限
+- 进入某目录 
+- 切换到该目录（cd命令）
 
-## sticky bit
+!!!能不能进入某一目录只与该目录的x权限有关，如果不拥有某目录的x权限，即使拥有r权限，那么也无法执行该目录下的任何命令
+但是即使拥有了x权限，但是没有r权限，能进入该目录但是不能打开该目录，因为没有读取的权限。
 
-### 文件访问权限小结
+### 九个访问权限位
+将`rwx`和user, group以及other进行组合，总共有九个访问权限位：
 - S_ISUID，set user id,
 - S_ISGID, set group id,
 - S_ISVTX, stick bit,
@@ -93,10 +112,96 @@ UNIX系统的文件类型有以下几种：
 - S_IWOTH, other write,
 - S_TXOTH, other exectuble,
 
-可以对最后九项做一个简化版的表示：
+可以对最后九项做一个简洁版的表示：
 S_IRWXU = S_IRUSR|R_IWUSR|S_IXUSR
 S_IRWXG = S_IRGRP|S_IWGRP|S_IXGRP
 S_IRWXO = S_IROTH|S_IWOTH|S_IXOTH
+
+
+
+### 文件和目录的操作规则
+1. 使用名字打开任意类型的文件时，对于文件名字中包含的每一个目录，包括当前工作目录，都应该具有执行权限。
+2. 对于一个文件的读权限决定了我们能够打开先有文件进行读操作。这与`open`函数的`O_RDONLY`和`O_RDWR`有关。
+3. 对于一个文件的写权限决定了我们能够打开先有文件进行写操作。这与`open`函数的`O_WRONLY`和`O_RDWR`有关。
+4. 如果要在`open`函数中指定`O_TRUNC`标志，必须对该文件拥有写权限。
+5. 为了在一个目录中创建新文件，必须对这个目录具有写权限和执行权限。
+6. 为了删除一个现有文件，必须对包含该文件的目录拥有写权限和执行权限，而不必对文件本身拥有读权限和写权限。
+7. 如果使用7个`exec`函数中的任何一个执行某个文件，都必须拥有该文件的写权限。
+
+
+### 访问权限检测
+进程每次打开，创建或者删除一个文件时，内核就会进行文件访问权限测试，这种测试可能涉及到文件的所有者ID，文件的组所有者ID，进程的effective user ID和effective group ID。文件的所有者ID和文件的组所有者ID都是文件的属性，而effective user ID和effective group ID是进程的属性。
+内核进行访问权限测试的步骤如下：
+1. 如果进程的effective user ID是0，结束权限判断，允许各项访问。否则跳转第2步进行判断。
+2. 如果进程的effectiev user ID等于文件所有者ID，也就是`st_uid`，结束权限判断，根据访问权限位允许相应操作。否则跳转第3步。
+3. 如果进程的effective group ID等于文件的group ID，结束权限判断，根据访问权限的设置允许相应的操作，否则跳转第4步。
+4. 如果不满足前三条，就按照若其他用户的访问权限位判定操作是否合法。
+
+总结一下，就是依次判断effective user ID是不是等于root，effective user ID是不是等于`st_uid`，或者effective group ID是不是等于`st_gid`，如果都不满足，就按照其它权限判定当前进程对文件的操作是否被允许。按照顺序来判断，满足一个就不用判断后面的了。
+
+## 新文件和新目录的所有权
+新文件的user ID设置为进程的effective user ID。关于新文件的group ID，可以选择以下两种方式中的一个进行设置：
+1. 新文件的group ID可以是进程的effective group ID
+2. 新文件的group ID可以是它所在目录的group ID。
+
+不同的UNIX实现有不同的设置，这里拿linux来说，Linux 3.2.0以后，新文件的group ID取决于它所在目录的set-group ID bit是否被设置，如果被设置了，新文件的ID就是它所在目录的GID，否则就是进程的effective GID。
+
+## `access`和`faccessat`
+使用`open`函数打开文件时，内核使用进程的effective UID和effective GID检测它对文件的访问权限。
+`acess`使用进程的real UID和real GID进行权限访问测试。访问权限测试步骤和之前介绍的四步一样，只不过使用real UID和real GID代替了effective UID和effective GID。
+
+### 函数原型
+`access`和`faccessat`的原型如下：``` c
+#include <unistd.h>
+
+int access(const char *pathname, int mode);
+int faccessat(int dirfd, const char *pathname, int mode, int flags);
+```
+
+### 参数和区别
+1. `mode`可选参数有，`F_OK`，`R_OK`, `W_OK`,`X_OK`，其中`F_OK`表示测试这个文件是否存在。
+2. `faccessat`和`access`在两种情况下相同，`dirfd`设置为`AT_FDCWD`且`pathname`四相对路径和`pathname`是绝对路径。否则的话，`faccessat`就是测试相对于`dirfd`指向的打开目录下的`pathname`的权限。
+3. 如果`flags`设置为`AT_EACCESS`的话，权限访问检测使用的是effective UID和effective GID而不是real UID和real GID。
+
+## 函数`umask`
+前面介绍了和文件相关的9个访问权限位，在此基础上可以使用和每个进程相关的file mode创建mask。`umask`函数为进程设置mask，原型如下：
+
+### 函数原型
+``` c
+#include <sys/stat.h>
+
+mode_t umask(mode_t cmask);
+```
+
+### 特点
+1. 这个函数的作用是去掉`cmask`中指定的权限，返回之前的mode。
+2. **在程序中创建新文件时，如果想要确保指定的访问限权激活，必须在进程运行时修改`umask`的值。否则，`umask`可能会覆盖掉我们创建文件时指定的权限位。**
+3. shell中有内置的`umask`命令，SUS要求shell的`umask`除了支持八进制的拒绝权限外，还要支持符号格式的指定许可的权限。使用``` shell
+umask -S
+```
+查看。
+
+## 函数`chmod`, `fchmod`和`fchmodat`
+文件的访问权限可以使用`chmod`, `fchmod`和`fchmodat`进行修改，它们的原型如下：
+#### 原型
+```c
+#include <sys/stat.h>
+
+int chmod(const char *pathname, mode_t mode);
+int fchmod(int fd, mode_t mode);
+int fchmodat(int dirfd, const char *pathname, mode_t mode, int flags);
+```
+
+### 特点
+1. `chmod`在指定的文件上进行操作
+2. `fchmod`是对已经打开的文件文件描述符进行操作。
+3. `fchmodat`和`chmod`在两种情况下是相等的，当`pathname`是绝对路径时，以及`dirfd`设置为`AT_FDCWD`且`pathname`是相对路径的时候。否则，`fchmodat`操作相对于打开目录的pathname。
+4. 当flags设置了`AT_SYMLINK_NOFLOLLW`时，不会follow符号链接。
+5. 在以下两种情况下，`chmod`函数自动清除两个权限位：
+- 新创建文件的GID可能不是调用进程的effective GID。新文件的GID可能是父目录的GID。如果新文件的GID不等于进程的effective GID，而且进程没有root权限，set-group-id位会被自动关闭。
+- stick bit的设置
+
+## sticky bit
 
 ## 函数`chown`, `fchown`,`chownat`和`lchown`
 
