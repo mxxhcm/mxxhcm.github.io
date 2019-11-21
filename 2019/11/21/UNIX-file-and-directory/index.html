@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="概述 这一节主要介绍文件系统的一些特征和文件的性质。相应的属性都存在stat函数给出的struct stat结构体中，每一个小节都会介绍结构体中的一个字段。 stat, fstat, fstatat, lstat 函数原型 这一节主要介绍结构体struct stat的字段，以及如何获得某个目录的struct stat结构体。可以通过四个函数获得：123456789101112#include &amp;l">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-21T11:26:26.290Z">
+<meta property="og:updated_time" content="2019-11-21T14:34:06.267Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UNIX file and directory">
 <meta name="twitter:description" content="概述 这一节主要介绍文件系统的一些特征和文件的性质。相应的属性都存在stat函数给出的struct stat结构体中，每一个小节都会介绍结构体中的一个字段。 stat, fstat, fstatat, lstat 函数原型 这一节主要介绍结构体struct stat的字段，以及如何获得某个目录的struct stat结构体。可以通过四个函数获得：123456789101112#include &amp;l">
@@ -371,7 +371,7 @@
                 
               
 
-              <time title="创建时间：2019-11-21 10:18:13 / 修改时间：19:26:26" itemprop="dateCreated datePublished" datetime="2019-11-21T10:18:13+08:00">2019-11-21</time>
+              <time title="创建时间：2019-11-21 10:18:13 / 修改时间：22:34:06" itemprop="dateCreated datePublished" datetime="2019-11-21T10:18:13+08:00">2019-11-21</time>
             
 
             
@@ -470,24 +470,46 @@
 <li>blkcnt_t st_blocks; 分配了多少个disk blocks</li>
 </ol>
 <h2 id="文件类型">文件类型</h2>
-<p>UNIX系统的文件类型有以下几种：</p>
+<p>文件类型信息包含在<code>struct stat</code>的<code>st_mode</code>字段中。UNIX系统的文件类型有以下几种：</p>
 <ol>
-<li>普通文件，可以是二进制文件，也可以是文本文件。除了二进制可执行文件必须遵循标准化格式外，其他的文件对于UNIX内核来说基本上没有区别。</li>
-<li>目录文件，包含了其他文件的名字，以及指向这些文件有关信息的指针。对一个目录具有读权限的任意进程都可以读目录的内容，但是只有内核才可以直接写目录文件。</li>
-<li>block special file，提供对设备带缓冲的访问，每次访问以固定的长度进行。</li>
-<li>character special file，</li>
-<li>FIFO</li>
-<li>socket</li>
-<li>sysbolic link</li>
+<li>普通文件，可以是二进制文件，也可以是文本文件。除了二进制可执行文件必须遵循标准化格式外，其他的文件对于UNIX内核来说基本上没有区别。使用<code>S_ISREG</code>宏进行判断。</li>
+<li>目录文件，包含了其他文件的名字，以及指向这些文件有关信息的指针。对一个目录具有读权限的任意进程都可以读目录的内容，但是只有内核才可以直接写目录文件。使用<code>S_ISDIR</code>宏进行判断。</li>
+<li>block special file，提供对设备带缓冲的访问，每次访问以固定的长度进行。使用<code>S_ISBLK</code>宏进行判断。</li>
+<li>character special file，提供对设备不带缓冲的访问，每次访问长度可变。系统中的设备要么是block special file要是character special file。使用<code>S_ISCHR</code>宏进行判断。</li>
+<li>FIFO，用于进程间通信。使用<code>S_ISFIFO</code>宏进行判断。</li>
+<li>socket，用于进程间的网络通信。使用<code>S_ISSOCK</code>宏进行判断。</li>
+<li>sysbolic link，指向另一个文件。使用<code>S_ISLNK</code>宏进行判断。</li>
 </ol>
-<h2 id="uid和gid">UID和GID</h2>
-<h2 id="文件访问权限">文件访问权限</h2>
-<h2 id="新文件和新目录的权限">新文件和新目录的权限</h2>
-<h2 id="access和faccessat"><code>access</code>和<code>faccessat</code></h2>
-<h2 id="函数umask">函数<code>umask</code></h2>
-<h2 id="函数chmod-fchmod和fchmodat">函数<code>chmod</code>, <code>fchmod</code>和<code>fchmodat</code></h2>
-<h2 id="sticky-bit">sticky bit</h2>
-<h3 id="文件访问权限小结">文件访问权限小结</h3>
+<h2 id="和进程相关的uid和gid">和进程相关的UID和GID</h2>
+<p>每一个进程有6个或者更多和它相关的ID：</p>
+<h3 id="实际uid和gid">实际UID和GID</h3>
+<p>real user ID和real group ID，用来表示当前用户。</p>
+<h3 id="有效uid和gid">有效UID和GID</h3>
+<p>effective user ID和effective group ID，决定我们的文件访问权限。通常情况下，effective user ID以及effective group ID和real user ID以及real group ID一样。</p>
+<h3 id="set-user-id和set-group-id">Set-User-ID和Set-Group-ID</h3>
+<p>saved set-user-ID和saved set-group-ID，在执行一个程序时，包含了有效user ID和有效group ID的副本。<br>
+每一个文件都有一个所有者和组所有者，它们的值在<code>st_uid</code>和<code>st_gid</code>中。<br>
+当执行一个程序文件时，进程的effective user ID通常就是real user ID，而effective group ID通常就是real group ID。但是可以在<code>st_mode</code>中设置一个特殊的flag，意思是当执行此文件时，将执行此文件的进程的effective user ID设置为文件所有者的user ID。同样，还有另一个特殊的flag，它将执行此文件的进程的effective group ID设置为文件组所有者的user ID。这两个标志位被记为set-user-ID bit和set-group-ID bit，它们都存放在<code>st_mode</code>中，可以使用<code>S_ISUID</code>和<code>S_ISGID</code>测试。<br>
+<strong>运行set UID程序的进程通常会获得额外的权限！！！所以要格外注意。</strong></p>
+<h2 id="文件和目录的访问权限">文件和目录的访问权限</h2>
+<p><code>st_mode</code>中还包含了文件的访问权限。对于所有文件类型（不单单是文件和目录），都有三种访问权限：</p>
+<h3 id="r-读权限">r-读权限</h3>
+<p>读权限查询文件名数据</p>
+<h3 id="w-写权限">w-写权限</h3>
+<ul>
+<li>新建文件与目录</li>
+<li>删除文件或者目录</li>
+<li>重命名以及转移文件或者目录</li>
+</ul>
+<h3 id="x-可执行权限">x-可执行权限</h3>
+<ul>
+<li>进入某目录</li>
+<li>切换到该目录（cd命令）</li>
+</ul>
+<p>!!!能不能进入某一目录只与该目录的x权限有关，如果不拥有某目录的x权限，即使拥有r权限，那么也无法执行该目录下的任何命令<br>
+但是即使拥有了x权限，但是没有r权限，能进入该目录但是不能打开该目录，因为没有读取的权限。</p>
+<h3 id="九个访问权限位">九个访问权限位</h3>
+<p>将<code>rwx</code>和user, group以及other进行组合，总共有九个访问权限位：</p>
 <ul>
 <li>S_ISUID，set user id,</li>
 <li>S_ISGID, set group id,</li>
@@ -502,10 +524,76 @@
 <li>S_IWOTH, other write,</li>
 <li>S_TXOTH, other exectuble,</li>
 </ul>
-<p>可以对最后九项做一个简化版的表示：<br>
+<p>可以对最后九项做一个简洁版的表示：<br>
 S_IRWXU = S_IRUSR|R_IWUSR|S_IXUSR<br>
 S_IRWXG = S_IRGRP|S_IWGRP|S_IXGRP<br>
 S_IRWXO = S_IROTH|S_IWOTH|S_IXOTH</p>
+<h3 id="文件和目录的操作规则">文件和目录的操作规则</h3>
+<ol>
+<li>使用名字打开任意类型的文件时，对于文件名字中包含的每一个目录，包括当前工作目录，都应该具有执行权限。</li>
+<li>对于一个文件的读权限决定了我们能够打开先有文件进行读操作。这与<code>open</code>函数的<code>O_RDONLY</code>和<code>O_RDWR</code>有关。</li>
+<li>对于一个文件的写权限决定了我们能够打开先有文件进行写操作。这与<code>open</code>函数的<code>O_WRONLY</code>和<code>O_RDWR</code>有关。</li>
+<li>如果要在<code>open</code>函数中指定<code>O_TRUNC</code>标志，必须对该文件拥有写权限。</li>
+<li>为了在一个目录中创建新文件，必须对这个目录具有写权限和执行权限。</li>
+<li>为了删除一个现有文件，必须对包含该文件的目录拥有写权限和执行权限，而不必对文件本身拥有读权限和写权限。</li>
+<li>如果使用7个<code>exec</code>函数中的任何一个执行某个文件，都必须拥有该文件的写权限。</li>
+</ol>
+<h3 id="访问权限检测">访问权限检测</h3>
+<p>进程每次打开，创建或者删除一个文件时，内核就会进行文件访问权限测试，这种测试可能涉及到文件的所有者ID，文件的组所有者ID，进程的effective user ID和effective group ID。文件的所有者ID和文件的组所有者ID都是文件的属性，而effective user ID和effective group ID是进程的属性。<br>
+内核进行访问权限测试的步骤如下：</p>
+<ol>
+<li>如果进程的effective user ID是0，结束权限判断，允许各项访问。否则跳转第2步进行判断。</li>
+<li>如果进程的effectiev user ID等于文件所有者ID，也就是<code>st_uid</code>，结束权限判断，根据访问权限位允许相应操作。否则跳转第3步。</li>
+<li>如果进程的effective group ID等于文件的group ID，结束权限判断，根据访问权限的设置允许相应的操作，否则跳转第4步。</li>
+<li>如果不满足前三条，就按照若其他用户的访问权限位判定操作是否合法。</li>
+</ol>
+<p>总结一下，就是依次判断effective user ID是不是等于root，effective user ID是不是等于<code>st_uid</code>，或者effective group ID是不是等于<code>st_gid</code>，如果都不满足，就按照其它权限判定当前进程对文件的操作是否被允许。按照顺序来判断，满足一个就不用判断后面的了。</p>
+<h2 id="新文件和新目录的所有权">新文件和新目录的所有权</h2>
+<p>新文件的user ID设置为进程的effective user ID。关于新文件的group ID，可以选择以下两种方式中的一个进行设置：</p>
+<ol>
+<li>新文件的group ID可以是进程的effective group ID</li>
+<li>新文件的group ID可以是它所在目录的group ID。</li>
+</ol>
+<p>不同的UNIX实现有不同的设置，这里拿linux来说，Linux 3.2.0以后，新文件的group ID取决于它所在目录的set-group ID bit是否被设置，如果被设置了，新文件的ID就是它所在目录的GID，否则就是进程的effective GID。</p>
+<h2 id="access和faccessat"><code>access</code>和<code>faccessat</code></h2>
+<p>使用<code>open</code>函数打开文件时，内核使用进程的effective UID和effective GID检测它对文件的访问权限。<br>
+<code>acess</code>使用进程的real UID和real GID进行权限访问测试。访问权限测试步骤和之前介绍的四步一样，只不过使用real UID和real GID代替了effective UID和effective GID。</p>
+<h3 id="函数原型-v2">函数原型</h3>
+<p><code>access</code>和<code>faccessat</code>的原型如下：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">access</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> mode)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">faccessat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> mode, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h3 id="参数和区别">参数和区别</h3>
+<ol>
+<li><code>mode</code>可选参数有，<code>F_OK</code>，<code>R_OK</code>, <code>W_OK</code>,<code>X_OK</code>，其中<code>F_OK</code>表示测试这个文件是否存在。</li>
+<li><code>faccessat</code>和<code>access</code>在两种情况下相同，<code>dirfd</code>设置为<code>AT_FDCWD</code>且<code>pathname</code>四相对路径和<code>pathname</code>是绝对路径。否则的话，<code>faccessat</code>就是测试相对于<code>dirfd</code>指向的打开目录下的<code>pathname</code>的权限。</li>
+<li>如果<code>flags</code>设置为<code>AT_EACCESS</code>的话，权限访问检测使用的是effective UID和effective GID而不是real UID和real GID。</li>
+</ol>
+<h2 id="函数umask">函数<code>umask</code></h2>
+<p>前面介绍了和文件相关的9个访问权限位，在此基础上可以使用和每个进程相关的file mode创建mask。<code>umask</code>函数为进程设置mask，原型如下：</p>
+<h3 id="函数原型-v3">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">mode_t</span> umask(<span class="keyword">mode_t</span> cmask);</span><br></pre></td></tr></table></figure>
+<h3 id="特点">特点</h3>
+<ol>
+<li>这个函数的作用是去掉<code>cmask</code>中指定的权限，返回之前的mode。</li>
+<li><strong>在程序中创建新文件时，如果想要确保指定的访问限权激活，必须在进程运行时修改<code>umask</code>的值。否则，<code>umask</code>可能会覆盖掉我们创建文件时指定的权限位。</strong></li>
+<li>shell中有内置的<code>umask</code>命令，SUS要求shell的<code>umask</code>除了支持八进制的拒绝权限外，还要支持符号格式的指定许可的权限。使用<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">umask -S</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>查看。</p>
+<h2 id="函数chmod-fchmod和fchmodat">函数<code>chmod</code>, <code>fchmod</code>和<code>fchmodat</code></h2>
+<p>文件的访问权限可以使用<code>chmod</code>, <code>fchmod</code>和<code>fchmodat</code>进行修改，它们的原型如下：</p>
+<h4 id="原型">原型</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">chmod</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchmod</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchmodat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">mode_t</span> mode, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="特点-v2">特点</h3>
+<ol>
+<li><code>chmod</code>在指定的文件上进行操作</li>
+<li><code>fchmod</code>是对已经打开的文件文件描述符进行操作。</li>
+<li><code>fchmodat</code>和<code>chmod</code>在两种情况下是相等的，当<code>pathname</code>是绝对路径时，以及<code>dirfd</code>设置为<code>AT_FDCWD</code>且<code>pathname</code>是相对路径的时候。否则，<code>fchmodat</code>操作相对于打开目录的pathname。</li>
+<li>当flags设置了<code>AT_SYMLINK_NOFLOLLW</code>时，不会follow符号链接。</li>
+<li>在以下两种情况下，<code>chmod</code>函数自动清除两个权限位：</li>
+</ol>
+<ul>
+<li>新创建文件的GID可能不是调用进程的effective GID。新文件的GID可能是父目录的GID。如果新文件的GID不等于进程的effective GID，而且进程没有root权限，set-group-id位会被自动关闭。</li>
+<li>stick bit的设置</li>
+</ul>
+<h2 id="sticky-bit">sticky bit</h2>
 <h2 id="函数chown-fchown-chownat和lchown">函数<code>chown</code>, <code>fchown</code>,<code>chownat</code>和<code>lchown</code></h2>
 <h2 id="文件长度">文件长度</h2>
 <h3 id="文件中的hole">文件中的hole</h3>
@@ -1604,7 +1692,7 @@ S_IRWXO = S_IROTH|S_IWOTH|S_IXOTH</p>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stat-fstat-fstatat-lstat"><span class="nav-number">2.</span> <span class="nav-text">stat, fstat, fstatat, lstat</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数原型"><span class="nav-number">2.1.</span> <span class="nav-text">函数原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#区别"><span class="nav-number">2.2.</span> <span class="nav-text">区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#struct-stat"><span class="nav-number">2.3.</span> <span class="nav-text">struct stat</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件类型"><span class="nav-number">3.</span> <span class="nav-text">文件类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#uid和gid"><span class="nav-number">4.</span> <span class="nav-text">UID和GID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件访问权限"><span class="nav-number">5.</span> <span class="nav-text">文件访问权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#新文件和新目录的权限"><span class="nav-number">6.</span> <span class="nav-text">新文件和新目录的权限</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#access和faccessat"><span class="nav-number">7.</span> <span class="nav-text">access和faccessat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数umask"><span class="nav-number">8.</span> <span class="nav-text">函数umask</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数chmod-fchmod和fchmodat"><span class="nav-number">9.</span> <span class="nav-text">函数chmod, fchmod和fchmodat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sticky-bit"><span class="nav-number">10.</span> <span class="nav-text">sticky bit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件访问权限小结"><span class="nav-number">10.1.</span> <span class="nav-text">文件访问权限小结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数chown-fchown-chownat和lchown"><span class="nav-number">11.</span> <span class="nav-text">函数chown, fchown,chownat和lchown</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件长度"><span class="nav-number">12.</span> <span class="nav-text">文件长度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件中的hole"><span class="nav-number">12.1.</span> <span class="nav-text">文件中的hole</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件截断"><span class="nav-number">13.</span> <span class="nav-text">文件截断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件系统"><span class="nav-number">14.</span> <span class="nav-text">文件系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数link-linkat-unlink-unlinkat和remove"><span class="nav-number">15.</span> <span class="nav-text">函数link, linkat, unlink, unlinkat和remove</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数rename和renameat"><span class="nav-number">16.</span> <span class="nav-text">函数rename和renameat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#符号连接"><span class="nav-number">17.</span> <span class="nav-text">符号连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建和读取符号链接"><span class="nav-number">18.</span> <span class="nav-text">创建和读取符号链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件的时间"><span class="nav-number">19.</span> <span class="nav-text">文件的时间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数futimens-utimensat和utimes"><span class="nav-number">20.</span> <span class="nav-text">函数futimens, utimensat和utimes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数mkdir-mkdirat和rmdir"><span class="nav-number">21.</span> <span class="nav-text">函数mkdir，mkdirat和rmdir</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#读目录"><span class="nav-number">22.</span> <span class="nav-text">读目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数chdir-fchdir和getcwd"><span class="nav-number">23.</span> <span class="nav-text">函数chdir, fchdir和getcwd</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#chdir只会改变当前进程的work-dir"><span class="nav-number">23.1.</span> <span class="nav-text">chdir只会改变当前进程的work dir</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getcwd的使用场景"><span class="nav-number">23.2.</span> <span class="nav-text">getcwd的使用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设备特殊文件"><span class="nav-number">24.</span> <span class="nav-text">设备特殊文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">25.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stat-fstat-fstatat-lstat"><span class="nav-number">2.</span> <span class="nav-text">stat, fstat, fstatat, lstat</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数原型"><span class="nav-number">2.1.</span> <span class="nav-text">函数原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#区别"><span class="nav-number">2.2.</span> <span class="nav-text">区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#struct-stat"><span class="nav-number">2.3.</span> <span class="nav-text">struct stat</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件类型"><span class="nav-number">3.</span> <span class="nav-text">文件类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#和进程相关的uid和gid"><span class="nav-number">4.</span> <span class="nav-text">和进程相关的UID和GID</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实际uid和gid"><span class="nav-number">4.1.</span> <span class="nav-text">实际UID和GID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#有效uid和gid"><span class="nav-number">4.2.</span> <span class="nav-text">有效UID和GID</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#set-user-id和set-group-id"><span class="nav-number">4.3.</span> <span class="nav-text">Set-User-ID和Set-Group-ID</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件和目录的访问权限"><span class="nav-number">5.</span> <span class="nav-text">文件和目录的访问权限</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#r-读权限"><span class="nav-number">5.1.</span> <span class="nav-text">r-读权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#w-写权限"><span class="nav-number">5.2.</span> <span class="nav-text">w-写权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#x-可执行权限"><span class="nav-number">5.3.</span> <span class="nav-text">x-可执行权限</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#九个访问权限位"><span class="nav-number">5.4.</span> <span class="nav-text">九个访问权限位</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件和目录的操作规则"><span class="nav-number">5.5.</span> <span class="nav-text">文件和目录的操作规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#访问权限检测"><span class="nav-number">5.6.</span> <span class="nav-text">访问权限检测</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#新文件和新目录的所有权"><span class="nav-number">6.</span> <span class="nav-text">新文件和新目录的所有权</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#access和faccessat"><span class="nav-number">7.</span> <span class="nav-text">access和faccessat</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数原型-v2"><span class="nav-number">7.1.</span> <span class="nav-text">函数原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参数和区别"><span class="nav-number">7.2.</span> <span class="nav-text">参数和区别</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数umask"><span class="nav-number">8.</span> <span class="nav-text">函数umask</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数原型-v3"><span class="nav-number">8.1.</span> <span class="nav-text">函数原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#特点"><span class="nav-number">8.2.</span> <span class="nav-text">特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数chmod-fchmod和fchmodat"><span class="nav-number">9.</span> <span class="nav-text">函数chmod, fchmod和fchmodat</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#原型"><span class="nav-number">9.0.1.</span> <span class="nav-text">原型</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#特点-v2"><span class="nav-number">9.1.</span> <span class="nav-text">特点</span></a></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#sticky-bit"><span class="nav-number">10.</span> <span class="nav-text">sticky bit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数chown-fchown-chownat和lchown"><span class="nav-number">11.</span> <span class="nav-text">函数chown, fchown,chownat和lchown</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件长度"><span class="nav-number">12.</span> <span class="nav-text">文件长度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文件中的hole"><span class="nav-number">12.1.</span> <span class="nav-text">文件中的hole</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件截断"><span class="nav-number">13.</span> <span class="nav-text">文件截断</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件系统"><span class="nav-number">14.</span> <span class="nav-text">文件系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数link-linkat-unlink-unlinkat和remove"><span class="nav-number">15.</span> <span class="nav-text">函数link, linkat, unlink, unlinkat和remove</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数rename和renameat"><span class="nav-number">16.</span> <span class="nav-text">函数rename和renameat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#符号连接"><span class="nav-number">17.</span> <span class="nav-text">符号连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建和读取符号链接"><span class="nav-number">18.</span> <span class="nav-text">创建和读取符号链接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文件的时间"><span class="nav-number">19.</span> <span class="nav-text">文件的时间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数futimens-utimensat和utimes"><span class="nav-number">20.</span> <span class="nav-text">函数futimens, utimensat和utimes</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数mkdir-mkdirat和rmdir"><span class="nav-number">21.</span> <span class="nav-text">函数mkdir，mkdirat和rmdir</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#读目录"><span class="nav-number">22.</span> <span class="nav-text">读目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数chdir-fchdir和getcwd"><span class="nav-number">23.</span> <span class="nav-text">函数chdir, fchdir和getcwd</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#chdir只会改变当前进程的work-dir"><span class="nav-number">23.1.</span> <span class="nav-text">chdir只会改变当前进程的work dir</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#getcwd的使用场景"><span class="nav-number">23.2.</span> <span class="nav-text">getcwd的使用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#设备特殊文件"><span class="nav-number">24.</span> <span class="nav-text">设备特殊文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">25.</span> <span class="nav-text">参考文献</span></a></li></div>
             
 
           </div>
