@@ -87,7 +87,7 @@ r. u--user  g--group  o--others  a--all
 ~$:umask -S
 > u=rwx,g=rwx,o=rx
 
-第一个与特殊权限有关，后三个与一般权限有关，在创建文件或者目录时，会将um	-ask所对应的权限拿掉，即新建文件时:
+第一个与特殊权限有关，后三个与一般权限有关，在创建文件或者目录时，会将umask所对应的权限拿掉，即新建文件时:
 (-rw-rw-rw-)-(--------w-) = (-rw-rw-r--)所以创建文件的一般权限为-rw-rw-r	--
 同理可得创建目录时的权限应该为drwxrwxr-x即775。要修改umask的值，可直接在输入umask后接所要减去的权限
 即
@@ -97,6 +97,7 @@ r. u--user  g--group  o--others  a--all
 ## 修改文件时间
 ### stat filename   
 列出该文件的各种时间
+
 ### touch 
 -a 仅修改访问时间
 -t 后面接欲修改的时间而不用当前时间，格式为[YYMMNNhhmm]

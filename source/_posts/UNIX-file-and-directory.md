@@ -262,7 +262,7 @@ int ftruncate(int fd, off_t length);
 2. 当`length`长度大于原来文件的长度时，原来的文件长度到`length`之间的数据被读作0。
 
 ## 文件系统
-
+关于linux文件系统，可以查看[linux file system](https://mxxhcm.github.io/2019/05/07/linux-file-system/).
 ## 函数`link`, `linkat`, `unlink`, `unlinkat`和`remove`
 
 ## 函数`rename`和`renameat`
