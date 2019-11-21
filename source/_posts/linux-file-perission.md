@@ -3,6 +3,8 @@ title: linux file perission
 date: 2019-05-07 17:08:26
 tags:
  - linux
+ - 文件
+ - 目录
 categories: linux
 ---
 
@@ -19,7 +21,6 @@ categories: linux
 ~$:sudo mkdir -p /test/test
 选项-R 递归的将某目录下所有的文件以及目录全部修改
 ~$:sudo chown -R root:root test	
-
 
 ## 输出文件
 ### 一次性输出
@@ -128,6 +129,7 @@ lsattr 查看文件的隐藏属性
 
 ## 文件特殊权限　
 在文件或者目录中除了rwx外，还会出现s,t,S,T权限
+
 ### SUID	
 当s出现在文件所有者的x权限上时，
 
@@ -201,4 +203,6 @@ lsattr 查看文件的隐藏属性
 
 根目录最好小一些，将一些经常用到的文件目录(/home:/usr:/var:/tmp与根目录分到不同的分区。因为越大的分区，放入的数据也就越多，出错的几率也就越大，而如果根目录出现问题，系统就可能会出现问题。
 
+## 参考文献
+1.《鸟哥的LINUX私房菜》
 
