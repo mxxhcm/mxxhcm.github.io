@@ -372,7 +372,7 @@
                 
               
 
-              <time title="创建时间：2019-11-21 10:18:13 / 修改时间：22:34:06" itemprop="dateCreated datePublished" datetime="2019-11-21T10:18:13+08:00">2019-11-21</time>
+              <time title="创建时间：2019-11-21 10:18:13 / 修改时间：23:47:13" itemprop="dateCreated datePublished" datetime="2019-11-21T10:18:13+08:00">2019-11-21</time>
             
 
             
@@ -448,7 +448,7 @@
 <h3 id="struct-stat"><code>struct stat</code></h3>
 <p>这个结构体包括：</p>
 <ol>
-<li>mode_t st_mode; 文件类型和全新啊</li>
+<li>mode_t st_mode; 文件类型和文件操作权限</li>
 <li>ino_t st_ino; i-node号</li>
 <li>dev_t st_dev; 文件所在文件系统的设备号</li>
 <li>dev_t st_rdev; 特殊文件所在文件系统的设备号</li>
@@ -587,10 +587,54 @@ S_IRWXO = S_IROTH|S_IWOTH|S_IXOTH</p>
 <li>stick bit的设置</li>
 </ul>
 <h2 id="sticky-bit">sticky bit</h2>
+<p><code>S_ISVTX</code>较老版本的UNIX叫做表示stick bit，而新版UNIX叫做saved-text bit，这也是<code>S_ISVTX</code>名字的由来。这一位的作用是，当一个可执行文件的这一位被设置了，当该程序第一次被执行，在它终止时，程序正文部分的一个副本，即机器指令，仍然保存在交换区中，这使得下次执行该程序时能较快的载入内存。因为通常的UNIX文件系统中，文件的数据块都是随机存放的，相对来说，交换区被当做一个连续文件来处理。而现在的UNIX系统都使用了虚拟存储系统和快速文件系统，已经不需要这种技术了。<br>
+现在系统扩展了stick bit的使用，SUS允许对目录设置目录的stick bit，如果一个目录设置了stick bit，只有对该目录具有写权限的用户并且满足下列条件之一，才能删除或者重命名该目录下的文件：</p>
+<ol>
+<li>拥有该文件</li>
+<li>拥有此目录</li>
+<li>是root用户</li>
+</ol>
+<p>比如/tmp目录，设置了stick bit，任何用户都可以在这个目录下创建文件。任意用户,组和其它对这两个目录的权限都是读写和执行。但是用户不能删除和重命名属于其他人的文件。</p>
 <h2 id="函数chown-fchown-chownat和lchown">函数<code>chown</code>, <code>fchown</code>,<code>chownat</code>和<code>lchown</code></h2>
+<p>可以使用<code>chown</code>, <code>fchown</code>,<code>chownat</code>和<code>lchown</code>更改文件的UID和GID。它们的原型如下：</p>
+<h3 id="函数原型-v4">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">chown</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">uid_t</span> owner, <span class="keyword">gid_t</span> group)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchown</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">uid_t</span> owner, <span class="keyword">gid_t</span> group)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">lchown</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">uid_t</span> owner, <span class="keyword">gid_t</span> group)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchownat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">uid_t</span> owner, <span class="keyword">gid_t</span> group, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="特点-v3">特点</h3>
+<ol>
+<li>当文件不是符号链接时，所有的函数操作类似。</li>
+<li>当文件是符号链接时，<code>lchown</code>和设置了<code>AT_SYMLINK_NOFOLLOW</code>标志的<code>fchownat</code>都修改的是符号链接本身，而不是它链接的对象。</li>
+<li><code>fchown</code>操作的是<code>fd</code>指向的已经打开的文件，因为它在一个已经打开的文件上操作，所以它不能修改符号链接本身。</li>
+<li><code>fchownat</code>和<code>fchown</code>或者<code>lchown</code>在下面两种情况下是等价的：当pathname是决定路径或者<code>dirfd</code>设置为<code>AT_FDCWD</code>时且pathname是相对路径时。在这两种情况下，如果<code>flags</code>设置了<code>AT_SYMLINK_NOFOLLOW</code>标志，<code>fchownat</code>和<code>lchown</code>一样，否则<code>fchownat</code>和<code>fchown</code>一样。如果不是这两种情况，<code>fchowat</code>是操作相对于打开目录的pathname。</li>
+<li>根据<code>_POSIX_CHOWN_RESTRICTED</code>常量的值，可以查询是否只有超级用户才能更改文件的所有者，如果这个常量对指定的文件有效，那么
+<ul>
+<li>只有root进程才能更新该文件的UID，普通用户不能修改其他用户文件的UID</li>
+<li>如果进程拥有此文件(进程的effective UID等于文件的UID)， 可以更改这些文件的GID，但是只能更改到进程的effective GID或者继承的附属组ID之一。</li>
+</ul>
+</li>
+<li>如果这些函数由非root进程调用，在成功返回时，set UID和set GID位都会被清楚。</li>
+</ol>
 <h2 id="文件长度">文件长度</h2>
+<p><code>struct stat</code>中的<code>st_size</code>以字节为单位表示文件的长度。这个字段只对普通文件，目录文件和符号链接有意义。<br>
+对于普通文件，它的长度可以是0，在开始读这种文件时，得到EOF标志。<br>
+对于目录，文件长度通常是一个数的整数倍。<br>
+对于符号链接，文件长度是链接指向的文件名的实际字节数，不包含null字节。<br>
+对于现在的大多数UNIX系统，提供了<code>st_blksize</code>和<code>st_blocks</code>字段。<code>st_blksize</code>表示对文件I/O适合的块长度，第二个是所分配的固定大小的block数量。</p>
 <h3 id="文件中的hole">文件中的hole</h3>
+<ol>
+<li>普通文件可以有hole，hole是当前文件偏移量超过文件尾端，然后进行写入造成的。</li>
+<li>对于同样长度的有空洞和没有空洞的文件来说，它们所占用的blocks块数是不同的。这里说的同样长度指的是字节数，使用<code>ls -l</code>列出来的长度，那些空洞不占用磁盘上的存储区。</li>
+<li>使用<code>cat</code>进行复制时，会将空洞使用0字节填满。</li>
+<li>使用<code>du -s file.txt</code>可以查看文件所占用的blocks数量，这些blocks中还有一些用来存放指向实际数据块的指针。</li>
+</ol>
 <h2 id="文件截断">文件截断</h2>
+<p>函数原型是：</p>
+<h3 id="函数原型-v5">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">truncate</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *path, <span class="keyword">off_t</span> length)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ftruncate</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">off_t</span> length)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="特点-v4">特点</h3>
+<ol>
+<li>当<code>length</code>长度小于原来文件的长度时，超过<code>length</code>的进行截断。</li>
+<li>当<code>length</code>长度大于原来文件的长度时，原来的文件长度到<code>length</code>之间的数据被读作0。</li>
+</ol>
 <h2 id="文件系统">文件系统</h2>
 <h2 id="函数link-linkat-unlink-unlinkat和remove">函数<code>link</code>, <code>linkat</code>, <code>unlink</code>, <code>unlinkat</code>和<code>remove</code></h2>
 <h2 id="函数rename和renameat">函数<code>rename</code>和<code>renameat</code></h2>
