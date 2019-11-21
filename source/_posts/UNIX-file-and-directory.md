@@ -40,7 +40,7 @@ int fstatat(int dirfd, const char *pathname, struct stat *statbuf, int flags);
 
 ### `struct stat`
 这个结构体包括：
-1. mode_t st_mode; 文件类型和全新啊
+1. mode_t st_mode; 文件类型和文件操作权限
 2. ino_t st_ino; i-node号
 3. dev_t st_dev; 文件所在文件系统的设备号
 4. dev_t st_rdev; 特殊文件所在文件系统的设备号
@@ -202,14 +202,64 @@ int fchmodat(int dirfd, const char *pathname, mode_t mode, int flags);
 - stick bit的设置
 
 ## sticky bit
+`S_ISVTX`较老版本的UNIX叫做表示stick bit，而新版UNIX叫做saved-text bit，这也是`S_ISVTX`名字的由来。这一位的作用是，当一个可执行文件的这一位被设置了，当该程序第一次被执行，在它终止时，程序正文部分的一个副本，即机器指令，仍然保存在交换区中，这使得下次执行该程序时能较快的载入内存。因为通常的UNIX文件系统中，文件的数据块都是随机存放的，相对来说，交换区被当做一个连续文件来处理。而现在的UNIX系统都使用了虚拟存储系统和快速文件系统，已经不需要这种技术了。
+现在系统扩展了stick bit的使用，SUS允许对目录设置目录的stick bit，如果一个目录设置了stick bit，只有对该目录具有写权限的用户并且满足下列条件之一，才能删除或者重命名该目录下的文件：
+1. 拥有该文件
+2. 拥有此目录
+3. 是root用户
+
+比如/tmp目录，设置了stick bit，任何用户都可以在这个目录下创建文件。任意用户,组和其它对这两个目录的权限都是读写和执行。但是用户不能删除和重命名属于其他人的文件。
 
 ## 函数`chown`, `fchown`,`chownat`和`lchown`
+可以使用`chown`, `fchown`,`chownat`和`lchown`更改文件的UID和GID。它们的原型如下：
+### 函数原型
+``` c
+#include <unistd.h>
+
+int chown(const char *pathname, uid_t owner, gid_t group);
+int fchown(int fd, uid_t owner, gid_t group);
+int lchown(const char *pathname, uid_t owner, gid_t group);
+int fchownat(int dirfd, const char *pathname, uid_t owner, gid_t group, int flags);
+```
+
+### 特点
+1. 当文件不是符号链接时，所有的函数操作类似。
+2. 当文件是符号链接时，`lchown`和设置了`AT_SYMLINK_NOFOLLOW`标志的`fchownat`都修改的是符号链接本身，而不是它链接的对象。
+3. `fchown`操作的是`fd`指向的已经打开的文件，因为它在一个已经打开的文件上操作，所以它不能修改符号链接本身。
+4. `fchownat`和`fchown`或者`lchown`在下面两种情况下是等价的：当pathname是决定路径或者`dirfd`设置为`AT_FDCWD`时且pathname是相对路径时。在这两种情况下，如果`flags`设置了`AT_SYMLINK_NOFOLLOW`标志，`fchownat`和`lchown`一样，否则`fchownat`和`fchown`一样。如果不是这两种情况，`fchowat`是操作相对于打开目录的pathname。
+5. 根据`_POSIX_CHOWN_RESTRICTED`常量的值，可以查询是否只有超级用户才能更改文件的所有者，如果这个常量对指定的文件有效，那么
+    - 只有root进程才能更新该文件的UID，普通用户不能修改其他用户文件的UID
+    - 如果进程拥有此文件(进程的effective UID等于文件的UID)， 可以更改这些文件的GID，但是只能更改到进程的effective GID或者继承的附属组ID之一。
+6. 如果这些函数由非root进程调用，在成功返回时，set UID和set GID位都会被清楚。
+
 
 ## 文件长度
+`struct stat`中的`st_size`以字节为单位表示文件的长度。这个字段只对普通文件，目录文件和符号链接有意义。
+对于普通文件，它的长度可以是0，在开始读这种文件时，得到EOF标志。
+对于目录，文件长度通常是一个数的整数倍。
+对于符号链接，文件长度是链接指向的文件名的实际字节数，不包含null字节。
+对于现在的大多数UNIX系统，提供了`st_blksize`和`st_blocks`字段。`st_blksize`表示对文件I/O适合的块长度，第二个是所分配的固定大小的block数量。
 
 ### 文件中的hole
+1. 普通文件可以有hole，hole是当前文件偏移量超过文件尾端，然后进行写入造成的。
+2. 对于同样长度的有空洞和没有空洞的文件来说，它们所占用的blocks块数是不同的。这里说的同样长度指的是字节数，使用`ls -l`列出来的长度，那些空洞不占用磁盘上的存储区。
+3. 使用`cat`进行复制时，会将空洞使用0字节填满。
+4. 使用`du -s file.txt`可以查看文件所占用的blocks数量，这些blocks中还有一些用来存放指向实际数据块的指针。
 
 ## 文件截断
+函数原型是：
+### 函数原型
+``` c
+#include <unistd.h>
+#include <sys/types.h>
+
+int truncate(const char *path, off_t length);
+int ftruncate(int fd, off_t length);
+```
+
+### 特点
+1. 当`length`长度小于原来文件的长度时，超过`length`的进行截断。
+2. 当`length`长度大于原来文件的长度时，原来的文件长度到`length`之间的数据被读作0。
 
 ## 文件系统
 
@@ -222,6 +272,7 @@ int fchmodat(int dirfd, const char *pathname, mode_t mode, int flags);
 ## 创建和读取符号链接
 
 ## 文件的时间
+
 
 ## 函数`futimens`, `utimensat`和`utimes`
 
