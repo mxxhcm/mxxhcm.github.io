@@ -2,9 +2,7 @@
 title: 电脑配置
 date: 2019-05-01 12:31:18
 tags:
- - SSD
- - CPU
- - GPU
+ - 硬件
 categories: 工具
 ---
 
@@ -12,7 +10,6 @@ categories: 工具
 ### 物理接口
 常见的物理接口，就是和主板相连的接口形状有SATA和M.2(NGFF)。
 M.2接口也叫NGFF，有两种接口模式，socket2和socket3。socket2对应的接口是bkey，对应的是传输模式为SATA，对传输模式为SATA。而socket3对应的接口是mkey，走的是PCIE。
-
 
 ### 总线(bus)方式（协议通道）
 目前市面上SSD的总线有两种类型PCI-E和SATA。

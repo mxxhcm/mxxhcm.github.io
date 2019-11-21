@@ -1,9 +1,8 @@
 ---
-title: OS-系统引导和分区
+title: OS boot and partition
 date: 2019-04-03 16:15:36
 tags:
- - 引导
- - 分区
+ - 硬件
  - 操作系统
 categories: 操作系统
 mathjax: true
@@ -59,6 +58,7 @@ BIOS可以使用GPT分布表，将GPT硬盘作为资料盘，但是不能用来�
 可以将UEFI设置为legacy(传统模式)，支持MBR启动，和BIOS+MBR一样，也可以建立FAT分区，放置UEFI启动文件。
 ### UEFI + GPT
 可以把大于$2$T的硬盘当做系统盘，必须使用$64$位系统。
+
 ## 双系统
 安装双系统直接进windows，使用EasyUEFI/Easybcd(工具)添加linux启动项，或者使用windows命令，bcdedit进行编辑（文档参见msdn,推荐使用这种方法）。
 双系统直接进ubuntu，使用grub引导，执行update-grub自动修改/boot/grub/grub.cfg 文件。然后重启就会发现有了这个开机启动项，见参考文献[3]。
