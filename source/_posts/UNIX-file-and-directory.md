@@ -40,19 +40,19 @@ int fstatat(int dirfd, const char *pathname, struct stat *statbuf, int flags);
 
 ### `struct stat`
 这个结构体包括：
-1. mode_t st_mode; 文件类型和文件操作权限
-2. ino_t st_ino; i-node号
-3. dev_t st_dev; 文件所在文件系统的设备号
-4. dev_t st_rdev; 特殊文件所在文件系统的设备号
-5. nlink_t st_nlink; 链接的数量
-6. uid_t st_uid; 文件所有者的UID
-7. gid_t st_gid; 文件所有者的GID
-8. off_t st_size; 普通文件的字节数
-9. struct timespec st_atime; 最后一次access的时间
-10. struct timespec st_mtime; 最后一个modification的时间
-11. struct timespec st_ctime; 最后一次file status change的时间
-12. blksize_t st_blksize; 最合适的I/O block size
-13. blkcnt_t st_blocks; 分配了多少个disk blocks
+1. `mode_t st_mode;` 文件类型和文件操作权限
+2. `ino_t st_ino;` i-node号
+3. `dev_t st_dev;` 文件所在文件系统的设备号
+4. `dev_t st_rdev;` 特殊文件所在文件系统的设备号
+5. `nlink_t st_nlink;` 链接的数量
+6. `uid_t st_uid;` 文件所有者的UID
+7. `gid_t st_gid;` 文件所有者的GID
+8. `off_t st_size;` 普通文件的字节数
+9. `struct timespec st_atime;` 最后一次access的时间
+10. `struct timespec st_mtime;` 最后一个modification的时间
+11. `struct timespec st_ctime;` 最后一次file status change的时间
+12. `blksize_t st_blksize;` 最合适的I/O block size
+13. `blkcnt_t st_blocks;` 分配了多少个disk blocks
 
 
 ## 文件类型
@@ -83,7 +83,7 @@ saved set-user-ID和saved set-group-ID，在执行一个程序时，包含了有
 `st_mode`中还包含了文件的访问权限。对于所有文件类型（不单单是文件和目录），都有三种访问权限：
 
 ### r-读权限
-读权限查询文件名数据
+读权限查询目录名内的数据。
 
 ### w-写权限
 - 新建文件与目录 
@@ -93,9 +93,10 @@ saved set-user-ID和saved set-group-ID，在执行一个程序时，包含了有
 ### x-可执行权限
 - 进入某目录 
 - 切换到该目录（cd命令）
+- 对于只具有可执行权限的目录，可以使用`cd`进入该目录，也可以打开该目录的文件，或者进入下一级目录。但是需要我们知道它们的名字，不能使用`ls`命令查看，因为没有读目录的权限。。
 
-!!!能不能进入某一目录只与该目录的x权限有关，如果不拥有某目录的x权限，即使拥有r权限，那么也无法执行该目录下的任何命令
-但是即使拥有了x权限，但是没有r权限，能进入该目录但是不能打开该目录，因为没有读取的权限。
+!!!能不能进入某一目录只与该目录的x权限有关，如果不拥有某目录的x权限，即使拥有r权限，那么也无法执行该目录下的任何命令。
+但是即使拥有了x权限，但是没有r权限，能进入该目录但是不能打开该目录，因为没有读取的权限，但是可以进入下一级目录或者打开当前目录的文件（因为不能读目录，所以需要知道下一级目录的名字或者当前目录下要打开的文件的名字），路径上的所有目录都必须有可执行权限。。
 
 ### 九个访问权限位
 将`rwx`和user, group以及other进行组合，总共有九个访问权限位：
@@ -198,8 +199,8 @@ int fchmodat(int dirfd, const char *pathname, mode_t mode, int flags);
 3. `fchmodat`和`chmod`在两种情况下是相等的，当`pathname`是绝对路径时，以及`dirfd`设置为`AT_FDCWD`且`pathname`是相对路径的时候。否则，`fchmodat`操作相对于打开目录的pathname。
 4. 当flags设置了`AT_SYMLINK_NOFLOLLW`时，不会follow符号链接。
 5. 在以下两种情况下，`chmod`函数自动清除两个权限位：
-- 新创建文件的GID可能不是调用进程的effective GID。新文件的GID可能是父目录的GID。如果新文件的GID不等于进程的effective GID，而且进程没有root权限，set-group-id位会被自动关闭。
-- stick bit的设置
+    - 新创建文件的GID可能不是调用进程的effective GID。新文件的GID可能是父目录的GID。如果新文件的GID不等于进程的effective GID，而且进程没有root权限，set-group-id位会被自动关闭。
+    - stick bit的设置
 
 ## sticky bit
 `S_ISVTX`较老版本的UNIX叫做表示stick bit，而新版UNIX叫做saved-text bit，这也是`S_ISVTX`名字的由来。这一位的作用是，当一个可执行文件的这一位被设置了，当该程序第一次被执行，在它终止时，程序正文部分的一个副本，即机器指令，仍然保存在交换区中，这使得下次执行该程序时能较快的载入内存。因为通常的UNIX文件系统中，文件的数据块都是随机存放的，相对来说，交换区被当做一个连续文件来处理。而现在的UNIX系统都使用了虚拟存储系统和快速文件系统，已经不需要这种技术了。
@@ -262,7 +263,19 @@ int ftruncate(int fd, off_t length);
 2. 当`length`长度大于原来文件的长度时，原来的文件长度到`length`之间的数据被读作0。
 
 ## 文件系统
+UNIX文件系统有多种实现，比如基于BSD的UNIX文件系统(UFS)，linux的ext4文件系统，以及Mac OS X的HFS文件系统。本节拿UFS举例子。
+一个磁盘可以有一个或者多个partition，每个partition可以包含文件系统也可以不包含。对于UFS文件系统，它由boot blocks，super block，cylinder groups组成。每一个cylinder group由super block copy, config info, i-node图，block bitmap以及i-nodes和data blocks组成。i-node节点是固定长度的记录项，它包含有关文件的大部分信息。
+1. i-node节点包含了文件的：文件类型，文件访问权限，文件长度，和指向文件数据的指针等，`stat`绝大部分的数据都取自i-node。
+2. data blocks中存放实际的数据，包含data blocks和directory blocks。data blocks存放文件的实际数据。目录也是文件，directory blocks也是data block，只不过它是存放目录文件中所有directory entry(目录项)的data blcok，一个directory entroy包括文件名和i-node编号。i-node节点编号的数据类型是`ino_t`。
+3. hard links，在每一个i-node中，，都有一个链接计数，记录指向它的目录项个数。只有当链接数等于0时，可以删除该文件。链接计数包含在`st_nlink`中，类型是`nlink_t`。POSIX.1常量`LINK_MAX`指定了一个文件连接数的最大值。
+4. symbolic links，symbolic links文件的实际内容，即存储在data blocks中的内容，是该符号链接指向的文件的名字。它的文件类型是`S_IFLNK`。
+5. 一个目录项不能指向另一个文件系统的i-node，所以硬链接不能跨越文件系统。
+6. 在不更换文件系统的情况下为一个文件重命名的话。文件的实际内容没有变，只是构造了一个新的目录项，它的i-node就是待重命名的文件，然后删除老的目录项。链接的计数并不会改变，这就是`mv`命令的工作方式。
+7. i-node节点指向的数据块也可以存放目录项，在i-node的`st_mode`中可以确定它的类型是`S_IFDIR`。创建一个名为`testdir`的空目录，它的链接计数是2，一个是`.`目录，一个是`testdir`。`testdir`的上一级目录，它的链接计数是3（假设上一级目录只包含`testdir`），一个是这个目录的名字，一个是`.`，一个是`testdir`中的`..`。
+
+
 关于linux文件系统，可以查看[linux file system](https://mxxhcm.github.io/2019/05/07/linux-file-system/).
+
 ## 函数`link`, `linkat`, `unlink`, `unlinkat`和`remove`
 
 ## 函数`rename`和`renameat`
@@ -272,7 +285,10 @@ int ftruncate(int fd, off_t length);
 ## 创建和读取符号链接
 
 ## 文件的时间
-
+每一个文件守护三个事时间：
+1. `st_atim`，记录文件数据的最后访问时间。使用`ls -u`查看。
+2. `st_mtim`，记录文件数据的最后修改时间。默认的`ls`显示的就是文件的最后修改时间。
+3. `st_ctim`，记录i-node状态的最后更改时间。使用`ls -c`查看。常见的许多操作都会影响i-node，主要就是`i-node`中存放的那些信息，更改文件权限，更改文件的`st_uid`和`st_gid`，文件的链接数等等。
 
 ## 函数`futimens`, `utimensat`和`utimes`
 
