@@ -327,6 +327,208 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/19/C-program-in-memory/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/19/C-program-in-memory/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/7/index.html">C/C++ program in memory</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-19 20:41:02" itemprop="dateCreated datePublished" datetime="2019-10-19T20:41:02+08:00">2019-10-19</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-11-14 15:57:13" itemprop="dateModified" datetime="2019-11-14T15:57:13+08:00">2019-11-14</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="c语言程序在内存中的组成部分">C语言程序在内存中的组成部分</h2>
+<p>C语言程序在内存中的构成如下所示：<br>
+<img src="/2019/10/19/C-program-in-memory/c_in_memory.jpg" alt="c_program_in_memory"><br>
+即一个C语言程序在内存中由text segment, data segment，heap和stack组成。在程序执行的过程中，<a href><code>exec</code></a>从程序文件中读取代码段和初始化数据段相关内容，然后<code>exec</code>负责将未初始化数据(bss)段中的内容初始化为0。<br>
+所有的static和全局变量存放在数据段，所有的自动变量和临时变量都存在stack中，动态变量存放在heap中。<br>
+所有的函数参数存放在stack中，每一个函数都有一个不同的stack frames。</p>
+<h2 id="text-segment-代码段">Text segment （代码段）</h2>
+<p>Text Segment中存放的是编译后的二进制代码，只读，固定大小。代码段也可能会放在heap或者stack下面，当它们溢出时就会覆盖代码段。</p>
+<h2 id="data-segment-数据段">Data segment （数据段）</h2>
+<p>数据段分为初始化段和未初始段两部分。</p>
+<h3 id="initialized-data-segment">Initialized Data Segment</h3>
+<p>初始化段通常简称数据段，数据段包含程序员初始化的global变量和static变量。<br>
+这个段也可以被划分成初始只读区域和初始读写区域，例如：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> s[] = <span class="string">"hello world"</span>;   <span class="comment">//s在初始化数据段，存放的是"hello world"</span></span><br><span class="line"><span class="keyword">int</span> debug = <span class="number">1</span>;      <span class="comment">//全局初始化变量</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> i = <span class="number">10</span>;  <span class="comment">//全局静态变量</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *str = <span class="string">"hello world"</span>;    <span class="comment">//字符串常量存放在字符串常量区，str是全局指向常量的指针，存放的是字符串常量"hello world"在内存中的地址。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    statit <span class="keyword">int</span> si;  <span class="comment">//局部static 变量。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="uninitialized-data-segment">Uninitialized Data Segment</h3>
+<p>未初始化段通常被称为bss段，“block started by symbol”。在这个段中的数据在程序开始执行前被初始化arighmetic 0。<br>
+未初始化段从数据段的结束开始，包含所有初始化为0的global和static变量以及在源代码中没有显式初始化的global和static变量。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> i;   <span class="comment">//static 变量</span></span><br><span class="line"><span class="keyword">int</span> j;      <span class="comment">//global变量</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="data-segment属性">Data Segment属性</h3>
+<p>，bss段包括全局区和静态区。<br>
+常量区包括字符串常量区和常变量区。</p>
+<h2 id="heap-堆">Heap （堆）</h2>
+<p>堆是动态分配的内存，从低地址往高地址增长，存放的是用户手动分配的内存，即malloc()和calloc()等函数生成的数据存放地址。</p>
+<h2 id="stack-栈">Stack （栈）</h2>
+<p>栈也是动态分配的内存，从高地址向低地址增长，栈中存放的是临时数据：函数参数，返回地址，局部变量等等。栈可以用来保存函数调用的现场，在递归调用中，如果调用次数太多，就可能会有stack overflow问题。</p>
+<h2 id="size">size</h2>
+<p>可以使用<code>size(1)</code>命令查看可执行文件的text segmen, initialized data segment(data segment)和uninitialized data segment(bss)段的大小。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.geeksforgeeks.org/memory-layout-of-c-program/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/memory-layout-of-c-program/</a><br>
+2.<a href="https://www.tenouk.com/ModuleZ.html" target="_blank" rel="noopener">https://www.tenouk.com/ModuleZ.html</a><br>
+3.<a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Executable_and_Linkable_Format</a><br>
+4.<a href="https://en.wikipedia.org/wiki/Data_segment" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Data_segment</a><br>
+5.<a href="https://www.tutorialspoint.com/memory-layout-of-c-programs" target="_blank" rel="noopener">https://www.tutorialspoint.com/memory-layout-of-c-programs</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/17/data-structure-tree/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2381,292 +2583,6 @@ DQN expert的输入是图像，输出是$Q$值，replay buffer记录$10$个小�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/12/python-ptan/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/12/python-ptan/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/7/index.html">python ptan</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-12 20:36:40" itemprop="dateCreated datePublished" datetime="2019-10-12T20:36:40+08:00">2019-10-12</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-28 13:39:52" itemprop="dateModified" datetime="2019-10-28T13:39:52+08:00">2019-10-28</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="pytorch-agent-net-library">PyTorch Agent Net library</h2>
-<h3 id="简介">简介</h3>
-<p>Ptan是一个简化RL的库，它主要目标是实现两个问题的平衡：</p>
-<ol>
-<li>导入库函数，只需要一行命令，就像OpenAI的baselines一样</li>
-<li>从头开始实现</li>
-</ol>
-<p>我们既不想一行命令直接调包，也不想从头开始实现一切。</p>
-<h3 id="模块">模块</h3>
-<ul>
-<li>Agent：</li>
-<li>ActionSelector</li>
-<li>ExperienceSource</li>
-<li>ExperienceSourceBuffer</li>
-<li>others</li>
-</ul>
-<h2 id="action-selector">Action Selector</h2>
-<h3 id="简介-v2">简介</h3>
-<p>将network的输出转换成具体的action。常用的有</p>
-<ul>
-<li>Argmax：用于使用Q网络的方法，生成离散action。</li>
-<li>Policy-based：网络输出logits或者normalizaed distribution，从这个distribution中采样。</li>
-</ul>
-<p>Action Selector被Agent使用，常用的有：</p>
-<ul>
-<li>ArgmaxActionSelector</li>
-<li>EpsilonGreedyActionSector</li>
-<li>ProbabilityActionSelector</li>
-</ul>
-<h3 id="基类">基类</h3>
-<h4 id="actionselector">ActionSelector</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ActionSelector</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__call__</span><span class="params">(self, scores)</span></span></span><br></pre></td></tr></table></figure>
-<h3 id="子类">子类</h3>
-<h4 id="argmaxactionselector">ArgmaxActionSelector</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ArgmaxActionSelector</span><span class="params">(ActionSelector)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__call__</span><span class="params">(self, scores)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="epsilongreedyactionsector">EpsilonGreedyActionSector</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EpsilonGreedyActionSector</span><span class="params">(ActionSelector)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, epsilon=<span class="number">0.05</span>, selector=None)</span></span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">__call</span><span class="params">(self, scores)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="probabilityactionselector">ProbabilityActionSelector</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ProbabilityActionSelector</span><span class="params">(ActionSelector)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__call__</span><span class="params">(self, probs)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="对比三个actionselector">对比三个ActionSelector</h4>
-<p>两个GreedySelector：Argmax和EpsilonGreedy，输入都需要是q值，输出是action。<br>
-而Probability需要的输入是概率，输出是动作。</p>
-<h3 id="其他">其他</h3>
-<h4 id="epsilontraker">EpsilonTraker</h4>
-<p>用来记录epsilon的变化。</p>
-<h2 id="agent">Agent</h2>
-<p>将observation转换为actions，常见的三种方法如下：</p>
-<ul>
-<li>Q-function：预测当前observation下所有可能采取的action的$Q$值，选择$\arg \max Q(s)$作为action。</li>
-<li>Policy-based：预测$\pi(s)$的概率分布，从分布中采样。</li>
-<li>Continuous Contrl：预测连续控制参数$\mu(s)$，直接输出action。</li>
-</ul>
-<h3 id="基类-v2">基类</h3>
-<h4 id="baseagent">BaseAgent</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BaseAgent</span>:</span></span><br><span class="line">    <span class="comment"># 1.</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__initial_state</span><span class="params">(self)</span></span></span><br><span class="line"><span class="function">    # 2.</span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">__call__</span><span class="params">(self, states, agent_states)</span></span></span><br><span class="line"><span class="function">        """</span></span><br><span class="line"><span class="function">        :</span>param states: env states list </span><br><span class="line">        :param agent_states: agent state list</span><br><span class="line">        :<span class="keyword">return</span>: actions tuple, agent_states</span><br><span class="line">        <span class="string">"""</span></span><br></pre></td></tr></table></figure>
-<h3 id="子类-v2">子类</h3>
-<h4 id="dqnagent">DQNAgent</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">DQNAgent</span><span class="params">(BaseAgent)</span>:</span></span><br><span class="line">    <span class="comment"># 1.</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, dqn_model, action_selector, device=<span class="string">"cpu"</span>, preprocessor=default_states_preprocessor)</span></span></span><br><span class="line"><span class="function">    # 2</span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">__call__</span><span class="params">(self, states, agent_states=None)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="policyagent">PolicyAgent</h4>
-<p>输入的model产生离散动作的policy distribution，Policy distribution可以是logtis或者normalized distribution。<br>
-PolicyAgent调用probability action selector对这个distribution进行采样 。PolicyAgent其实就是将model和action selector组装在了一起。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PolicyAgent</span><span class="params">(BaseAgent)</span>:</span></span><br><span class="line">    <span class="comment"># 1.</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, model, action_selector=actions.ProbabilityActionSelector<span class="params">()</span>, device=<span class="string">"cpu"</span>, apply_softmax=False, preprocessor=default_states_preprocessor)</span></span></span><br><span class="line"><span class="function">    # 2.</span></span><br><span class="line"><span class="function">    @<span class="title">torch</span>.<span class="title">no_grad</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">__call__</span><span class="params">(self, states, agent_states=None)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="actorcriticagent">ActorCriticAgent</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ActorCriticAgent</span></span></span><br><span class="line"><span class="class">    # 1.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__init__</span><span class="params">(self, model, action_selector=actions.ProbabilityActionSelector<span class="params">()</span>, device=<span class="string">"cpu"</span>, apply_softmax=False, preprocessor=default_states_preprocessor)</span></span></span><br><span class="line"><span class="class">    # 2.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__call__</span><span class="params">(self, states, agent_states=None)</span></span></span><br></pre></td></tr></table></figure>
-<h3 id="其他-v2">其他</h3>
-<h4 id="default-states-preprocessor">default_states_preprocessor</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">default_states_preprocessor</span><span class="params">(states)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Convert list of states into the form suitable for model. By default we assume Variable</span></span><br><span class="line"><span class="string">    :param states: list of numpy arrays with states</span></span><br><span class="line"><span class="string">    :return: Variable</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">if</span> len(states) == <span class="number">1</span>:</span><br><span class="line">        np_states = np.expand_dims(states[<span class="number">0</span>], <span class="number">0</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        np_states = np.array([np.array(s, copy=<span class="literal">False</span>) <span class="keyword">for</span> s <span class="keyword">in</span> states], copy=<span class="literal">False</span>)</span><br><span class="line">    <span class="keyword">return</span> torch.tensor(np_states)</span><br></pre></td></tr></table></figure>
-<h4 id="targetnet">TargetNet</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TargetNet</span></span></span><br><span class="line"><span class="class">    # 1.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__init__</span><span class="params">(self, model)</span></span></span><br><span class="line"><span class="class">    # 2.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">sync</span><span class="params">(self)</span></span></span><br><span class="line"><span class="class">    # 3.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">alpha_sync</span><span class="params">(self, alpha)</span></span></span><br></pre></td></tr></table></figure>
-<h2 id="experience-source">Experience Source</h2>
-<p>Agent不断的和env进行交互产生一系列的trajectories，Experience可以将这些交互存储起来，重复利用。Experience的主要作用有：</p>
-<ol>
-<li>支持batch，利用GPU的并行计算提高训练效率</li>
-<li>可以对transitions或者trajectory进行预处理。比如n-step DQN。</li>
-<li>???</li>
-</ol>
-<p>常见的ExperienceSource有：</p>
-<ul>
-<li>ExperienceSource</li>
-<li>ExperienceSourceFirstLast</li>
-<li>ExperienceSourceRollouts</li>
-<li>ExperienceReplayBuffer: ：DQN中几乎不会使用刚刚获得的experience samples，因为他们是高度相关的，让训练很不稳定。Buffer用来存放experience pieces，从buffer中采样进行训练，因为buffer容量有限，老样本会被从replay buffer中删掉</li>
-<li>PrioReplayBufferNaive: Complexity of sampling is O(n)</li>
-<li>PrioritizedReplayBuffer: O(log(n)) sampling complexity.</li>
-</ul>
-<h3 id="基类-v3">基类</h3>
-<h4 id="experiencesource">ExperienceSource</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExperienceSource</span> </span></span><br><span class="line"><span class="class">    """</span></span><br><span class="line"><span class="class">    简单的<span class="title">n</span>-<span class="title">step</span> <span class="title">source</span> <span class="title">for</span> <span class="title">single</span> <span class="title">or</span> <span class="title">multiple</span> <span class="title">envs</span></span></span><br><span class="line"><span class="class">    每一个<span class="title">experience</span>都有<span class="title">n</span>个<span class="title">Experience</span> <span class="title">entries</span>的<span class="title">list</span></span></span><br><span class="line"><span class="class">    """</span></span><br><span class="line"><span class="class">    # 1.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__init__</span><span class="params">(self, env, agent, steps_count=<span class="number">2</span>, steps_delta=<span class="number">1</span>, vectorized=False)</span></span></span><br><span class="line"><span class="class">        """</span></span><br><span class="line"><span class="class">        <span class="title">env</span>:</span> 环境或者list of环境</span><br><span class="line">        agent: 将observation 转换为actions</span><br><span class="line">        steps_count: 每一个experience chain的计数</span><br><span class="line">        steps_delta: experience items之间相隔多少个steps</span><br><span class="line">        vectorized: bool,OpenAI vectorized</span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">    # 2.</span></span><br><span class="line"><span class="string">    def __iter__(self):</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    重写<span class="keyword">for</span>循环的iter方法</span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    # 3.返回rewards，然后重置</span></span><br><span class="line"><span class="string">    def pop_total_rewards(self)</span></span><br><span class="line"><span class="string">    # 4.返回rewards和steps，然后重置</span></span><br><span class="line"><span class="string">    def pop_rewards_steps(self)</span></span><br></pre></td></tr></table></figure>
-<h4 id="experiencereplaybuffer">ExperienceReplayBuffer</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExperienceReplayBuffer</span></span></span><br><span class="line"><span class="class">    #</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__init__</span><span class="params">(self, experience_source, buffer_size)</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">    #</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__len__</span><span class="params">(self)</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">    #</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__iter__</span><span class="params">(self)</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">    # 从<span class="title">experience</span>中随机采样一个<span class="title">batch_size</span>大小的样本</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">sample</span><span class="params">(self, batch_size)</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">    # 添加一个<span class="title">sample</span>，类内函数</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">_add</span><span class="params">(self, sample)</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">    # 从<span class="title">experience_source</span>中获得<span class="title">samples_numbers</span>个样本，将其添加到<span class="title">buffer</span></span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">populate</span><span class="params">(self, samples_numbers)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="batchpreprocessor">BatchPreprocessor</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BatchPreprocessor</span></span></span><br></pre></td></tr></table></figure>
-<h3 id="子类-v3">子类</h3>
-<h4 id="experiencesourcefirstlast">ExperienceSourceFirstLast</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Q(st, at) = rt+1 + \gamma r_t+2 + ... \gamma^t+n-1 r_t+n + Q(s t+n, s t+n)</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExperienceSourceFirstLast</span><span class="params">(ExperienceSource)</span>:</span></span><br><span class="line">    <span class="comment">#</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, env, agent, gamma, steps_count=<span class="number">1</span>, steps_delta=<span class="number">1</span>, vectorized=False)</span></span></span><br><span class="line"><span class="function">    #</span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">__iter</span><span class="params">(self)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="prioritizedreplaybuffer">PrioritizedReplayBuffer</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">PrioritizedReplayBuffer</span><span class="params">(ExperienceReplayBuffer)</span></span></span><br><span class="line"><span class="class">    # 1.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__init__</span><span class="params">(self, experience_source, buffer_size, alpha)</span></span></span><br><span class="line"><span class="class">    # 2.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">_add</span><span class="params">(self, *args, **kwargs)</span></span></span><br><span class="line"><span class="class">    # 3.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">_sample_proprotional</span><span class="params">(self, batch_size)</span></span></span><br><span class="line"><span class="class">    # 4.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">sample</span><span class="params">(self, batch_size, beta)</span></span></span><br><span class="line"><span class="class">    # 5.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">update_priorities</span><span class="params">(self, idxes, priorities)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="qlearningpreprocessor">QLearningPreprocessor</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">QLearningPreprocessor</span><span class="params">(BatchPreprocessor)</span></span></span><br></pre></td></tr></table></figure>
-<h3 id="其他-v3">其他</h3>
-<h4 id="experiencesourcerollouts">ExperienceSourceRollouts</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExperienceSourceRollouts</span>:</span></span><br><span class="line">    <span class="comment">#</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, env, agent, gamma, setps_count=<span class="number">5</span>)</span></span></span><br><span class="line"><span class="function">    # </span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">__iter__</span><span class="params">(self)</span></span></span><br><span class="line"><span class="function">    #</span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">pop_total_rewards</span><span class="params">(self)</span></span></span><br><span class="line"><span class="function">    # </span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">pop_rewards_steps</span><span class="params">(self)</span></span></span><br></pre></td></tr></table></figure>
-<h4 id="experiencesourcebuffer">ExperienceSourceBuffer</h4>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">class ExperienceSourceBuffer</span><br></pre></td></tr></table></figure>
-<h4 id="experiencereplaynaive">ExperienceReplayNaive</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExperienceReplayNaive</span></span></span><br></pre></td></tr></table></figure>
-<h2 id="代码解析">代码解析</h2>
-<h3 id="experiencesource-v2">ExperienceSource</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExperienceSource</span> </span></span><br><span class="line"><span class="class">    """</span></span><br><span class="line"><span class="class">    简单的<span class="title">n</span>-<span class="title">step</span> <span class="title">source</span> <span class="title">for</span> <span class="title">single</span> <span class="title">or</span> <span class="title">multiple</span> <span class="title">envs</span></span></span><br><span class="line"><span class="class">    每一个<span class="title">experience</span>都有<span class="title">n</span>个<span class="title">Experience</span> <span class="title">entries</span>的<span class="title">list</span></span></span><br><span class="line"><span class="class">    """</span></span><br><span class="line"><span class="class">    # 1.</span></span><br><span class="line"><span class="class">    <span class="title">def</span> <span class="title">__init__</span><span class="params">(self, env, agent, steps_count=<span class="number">2</span>, steps_delta=<span class="number">1</span>, vectorized=False)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">        env: 环境或者list of环境</span></span><br><span class="line"><span class="string">        agent: 将observation 转换为actions</span></span><br><span class="line"><span class="string">        steps_count: 每一个experience chain的计数</span></span><br><span class="line"><span class="string">        steps_delta: experience items之间相隔多少个steps</span></span><br><span class="line"><span class="string">        vectorized: bool,OpenAI vectorized</span></span><br><span class="line"><span class="string">        """</span></span><br><span class="line">        <span class="keyword">assert</span> isinstance(env, (gym.Env, list, tuple))</span><br><span class="line">        <span class="keyword">assert</span> isinstance(agent, BaseAgent)</span><br><span class="line">        <span class="keyword">assert</span> isinstance(steps_count, int)</span><br><span class="line">        <span class="keyword">assert</span> steps_count &gt;= <span class="number">1</span></span><br><span class="line">        <span class="keyword">assert</span> isinstance(vectorized, bool)</span><br><span class="line">        <span class="comment"># self.pool存放envs list，类型是list</span></span><br><span class="line">        <span class="keyword">if</span> isinstance(env, (list, tuple)):</span><br><span class="line">            self.pool = env</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            self.pool = [env]</span><br><span class="line">        self.agent = agent</span><br><span class="line">        self.steps_count = steps_count</span><br><span class="line">        self.steps_delta = steps_delta</span><br><span class="line">        self.total_rewards = []</span><br><span class="line">        self.total_steps = []</span><br><span class="line">        self.vectorized = vectorized</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 2.</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__iter__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># states记录所有env的所有obs</span></span><br><span class="line">        <span class="comment"># agent_states记录</span></span><br><span class="line">        <span class="comment"># histories记录当前的steps_count个experience</span></span><br><span class="line">        <span class="comment"># cur_rewards记录当前episode的rewards</span></span><br><span class="line">        <span class="comment"># cur_steps记录当前episode的steps</span></span><br><span class="line">        states, agent_states, histories, cur_rewards, cur_steps = [], [], [], [], []</span><br><span class="line"></span><br><span class="line">        <span class="comment"># env个数， 记录每个env observation的shape，如果向量化，[&gt;=1, &gt;=1, ...]，如果不向量化[1, 1, 1,...]，不管是否向量化，长度都等于envs个数的list，</span></span><br><span class="line">        env_lens = [] </span><br><span class="line"></span><br><span class="line">        <span class="comment"># 对每一个env进行操作，生成需要记录变量的维度</span></span><br><span class="line">        <span class="keyword">for</span> env <span class="keyword">in</span> self.pool:</span><br><span class="line">            obs = env.reset()</span><br><span class="line">            <span class="comment"># if the environment is vectorized, all it's output is lists of results.</span></span><br><span class="line">            <span class="comment"># 生成state的维度</span></span><br><span class="line">            <span class="comment"># 如果向量化obs，states的维度大于等于env数，否则states的维度和env数量一样</span></span><br><span class="line">            <span class="keyword">if</span> self.vectorized:</span><br><span class="line">                obs_len = len(obs)</span><br><span class="line">                states.extend(obs)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                obs_len = <span class="number">1</span></span><br><span class="line">                states.append(obs)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># [env1_obs_len, env_2_obs_len, ..., envn_obs_len]</span></span><br><span class="line">            env_lens.append(obs_len)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 生成histories, cur_rewards，cur_steps，agent_states的维度</span></span><br><span class="line">            <span class="keyword">for</span> _ <span class="keyword">in</span> range(obs_len):</span><br><span class="line">                <span class="comment"># 记录所有env中所有的obs</span></span><br><span class="line">                histories.append(deque(maxlen=self.steps_count))</span><br><span class="line">                cur_rewards.append(<span class="number">0.0</span>)</span><br><span class="line">                cur_steps.append(<span class="number">0</span>)</span><br><span class="line">                agent_states.append(self.agent.initial_state())</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 总的迭代次数，用于steps_delta</span></span><br><span class="line">        iter_idx = <span class="number">0</span></span><br><span class="line">        <span class="comment"># ================================分界线===========================</span></span><br><span class="line">        <span class="comment"># 上面是iteration的初始化，生成各类信息(states, agent_states, histories)的初始值。</span></span><br><span class="line">        <span class="comment"># 下面开始iteration</span></span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            <span class="comment"># 1.根据states生成len(states)个action</span></span><br><span class="line">            <span class="comment"># states &gt;= len(envs_len) 个数</span></span><br><span class="line">            actions = [<span class="literal">None</span>] * len(states)</span><br><span class="line">            states_input = []</span><br><span class="line">            states_indices = []</span><br><span class="line">            <span class="keyword">for</span> idx, state <span class="keyword">in</span> enumerate(states):</span><br><span class="line">                <span class="keyword">if</span> state <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">                    actions[idx] = self.pool[<span class="number">0</span>].action_space.sample()  <span class="comment"># assume that all envs are from the same family</span></span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    states_input.append(state)</span><br><span class="line">                    states_indices.append(idx)</span><br><span class="line">            <span class="keyword">if</span> states_input:</span><br><span class="line">                states_actions, new_agent_states = self.agent(states_input, agent_states)</span><br><span class="line">                <span class="keyword">for</span> idx, action <span class="keyword">in</span> enumerate(states_actions):</span><br><span class="line">                    g_idx = states_indices[idx]</span><br><span class="line">                    actions[g_idx] = action</span><br><span class="line">                    agent_states[g_idx] = new_agent_states[idx]</span><br><span class="line">            <span class="comment"># 根据env_lens将actions进行合并，长度和envs number一样</span></span><br><span class="line">            grouped_actions = _group_list(actions, env_lens)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 2.step执行action</span></span><br><span class="line">            <span class="comment"># global_of是全局offset，相当于每个env obs初始位置，ofs是每个env的len(action_n)个维度。</span></span><br><span class="line">            global_ofs = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">            <span class="comment"># 分别对每个env执行相应的action_n个动作</span></span><br><span class="line">            <span class="keyword">for</span> env_idx, (env, action_n) <span class="keyword">in</span> enumerate(zip(self.pool, grouped_actions)):</span><br><span class="line">                <span class="keyword">if</span> self.vectorized:</span><br><span class="line">                    next_state_n, r_n, is_done_n, _ = env.step(action_n)</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    next_state, r, is_done, _ = env.step(action_n[<span class="number">0</span>])</span><br><span class="line">                    next_state_n, r_n, is_done_n = [next_state], [r], [is_done]</span><br><span class="line"></span><br><span class="line">                <span class="comment"># ofs是每个env的局部offset</span></span><br><span class="line">                <span class="keyword">for</span> ofs, (action, next_state, r, is_done) <span class="keyword">in</span> enumerate(zip(action_n, next_state_n, r_n, is_done_n)):</span><br><span class="line">                    idx = global_ofs + ofs</span><br><span class="line">                    state = states[idx]</span><br><span class="line">                    history = histories[idx]</span><br><span class="line"></span><br><span class="line">                    cur_rewards[idx] += r</span><br><span class="line">                    cur_steps[idx] += <span class="number">1</span></span><br><span class="line">                    <span class="keyword">if</span> state <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">                        <span class="comment"># 记录state, action, reward, done，没有记录next_state，使用完之后，更新state[idx] = next_state</span></span><br><span class="line">                        history.append(Experience(state=state, action=action, reward=r, done=is_done))</span><br><span class="line">                    <span class="comment"># 每一个env在enumerate时都会算一次</span></span><br><span class="line">                    <span class="keyword">if</span> len(history) == self.steps_count <span class="keyword">and</span> iter_idx % self.steps_delta == <span class="number">0</span>:</span><br><span class="line">                        <span class="keyword">yield</span> tuple(history)</span><br><span class="line">                    <span class="comment"># 更新下一步，states[idx] = next_state</span></span><br><span class="line">                    states[idx] = next_state</span><br><span class="line">                    <span class="keyword">if</span> is_done:</span><br><span class="line">                        <span class="comment"># in case of very short episode (shorter than our steps count), send gathered history</span></span><br><span class="line">                        <span class="keyword">if</span> <span class="number">0</span> &lt; len(history) &lt; self.steps_count:</span><br><span class="line">                            <span class="keyword">yield</span> tuple(history)</span><br><span class="line">                        <span class="comment"># generate tail of history</span></span><br><span class="line">                        <span class="keyword">while</span> len(history) &gt; <span class="number">1</span>:</span><br><span class="line">                            history.popleft()</span><br><span class="line">                            <span class="keyword">yield</span> tuple(history)</span><br><span class="line">                        self.total_rewards.append(cur_rewards[idx])</span><br><span class="line">                        self.total_steps.append(cur_steps[idx])</span><br><span class="line">                        cur_rewards[idx] = <span class="number">0.0</span></span><br><span class="line">                        cur_steps[idx] = <span class="number">0</span></span><br><span class="line">                        <span class="comment"># vectorized envs are reset automatically</span></span><br><span class="line">                        states[idx] = env.reset() <span class="keyword">if</span> <span class="keyword">not</span> self.vectorized <span class="keyword">else</span> <span class="literal">None</span></span><br><span class="line">                        agent_states[idx] = self.agent.initial_state()</span><br><span class="line">                        history.clear()</span><br><span class="line">                global_ofs += len(action_n)</span><br><span class="line">            iter_idx += <span class="number">1</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    重写for循环的iter方法</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="comment"># 3. 重置total_rewards</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">pop_total_rewards</span><span class="params">(self)</span></span></span><br><span class="line"><span class="function">    # 4. 重置<span class="title">total</span> <span class="title">rewards</span>和<span class="title">total</span> <span class="title">steps</span></span></span><br><span class="line"><span class="function">    <span class="title">def</span> <span class="title">pop_rewards_steps</span><span class="params">(self)</span></span></span><br></pre></td></tr></table></figure>
-<h3 id="experiencesourcefirstlast-v2">ExperienceSourceFirstLast</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExperienceSourceFirstLast</span><span class="params">(ExperienceSource)</span>:</span></span><br><span class="line">        <span class="string">"""</span></span><br><span class="line"><span class="string">    def __init__(self, env, agent, gamma, steps_count=1, steps_delta=1, vectorized=False):</span></span><br><span class="line"><span class="string">        assert isinstance(gamma, float)</span></span><br><span class="line"><span class="string">        super(ExperienceSourceFirstLast, self).__init__(env, agent, steps_count+1, steps_delta, vectorized=vectorized)</span></span><br><span class="line"><span class="string">        self.gamma = gamma</span></span><br><span class="line"><span class="string">        self.steps = steps_count</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    def __iter__(self):</span></span><br><span class="line"><span class="string">        # 并不保留中间n步的experience，因为没必要，只留第一步和最后一步，中间计算rewards就行了</span></span><br><span class="line"><span class="string">        for exp in super(ExperienceSourceFirstLast, self).__iter__():</span></span><br><span class="line"><span class="string">            if exp[-1].done and len(exp) &lt;= self.steps:</span></span><br><span class="line"><span class="string">                last_state = None</span></span><br><span class="line"><span class="string">                elems = exp</span></span><br><span class="line"><span class="string">            else:</span></span><br><span class="line"><span class="string">                last_state = exp[-1].state</span></span><br><span class="line"><span class="string">                elems = exp[:-1]</span></span><br><span class="line"><span class="string">            total_reward = 0.0</span></span><br><span class="line"><span class="string">            # 计算中间的rewards</span></span><br><span class="line"><span class="string">            for e in reversed(elems):</span></span><br><span class="line"><span class="string">                total_reward *= self.gamma</span></span><br><span class="line"><span class="string">                total_reward += e.reward</span></span><br><span class="line"><span class="string">            yield ExperienceFirstLast(state=exp[0].state, action=exp[0].action,</span></span><br><span class="line"><span class="string">                                      reward=total_reward, last_state=last_state)</span></span><br></pre></td></tr></table></figure>
-<h3 id="experiencereplaybuffer-v2">ExperienceReplayBuffer</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ExperienceReplayBuffer</span></span></span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://github.com/Shmuma/ptan/blob/master/docs/intro.ipynb" target="_blank" rel="noopener">https://github.com/Shmuma/ptan/blob/master/docs/intro.ipynb</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2716,7 +2632,7 @@ PolicyAgent调用probability action selector对这个distribution进行采样 �
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">274</span>
+                    <span class="site-state-item-count">275</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3550,41 +3466,7 @@ PolicyAgent调用probability action selector对这个distribution进行采样 �
                     
                       
                     
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">379</span>
+                    <span class="site-state-item-count">380</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3839,9 +3721,9 @@ PolicyAgent调用probability action selector对这个distribution进行采样 �
       
     
       
-        
-      
     
+      
+        
       
     
       
