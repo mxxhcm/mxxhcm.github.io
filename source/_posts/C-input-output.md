@@ -128,13 +128,7 @@ int main() {
 /* 
  * 打开文件，打开成功返回一个FILE指针，打开失败返回NULL
  * type：是文件操作方法，包括'w', 'a', 'rb', 'wb', 'ab', 'r+', 'w+', 'a+', 'rb+', 'wb+', 'ab+'
- */
 FILE* fopen(char*filename, char* type);
-
-/*
- * 关闭FILE指针
- * FILE* stream: 文件流
- */
 int fclose(FILE* stream);
 ```
 

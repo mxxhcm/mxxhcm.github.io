@@ -409,13 +409,46 @@ int ftruncate(int fd, off_t length);
 3. `ftruncate`操作的是文件描述符，`truncate`操作的是文件。
 
 ## 文件的时间
-每一个文件守护三个事时间：
+### 文件的三个时间
+每一个文件守护三个时间：
 1. `st_atim`，记录文件数据的最后访问时间。使用`ls -u`查看。
 2. `st_mtim`，记录文件数据的最后修改时间。默认的`ls`显示的就是文件的最后修改时间。
 3. `st_ctim`，记录i-node状态的最后更改时间。使用`ls -c`查看。常见的许多操作都会影响i-node，主要就是`i-node`中存放的那些信息，更改文件权限，更改文件的`st_uid`和`st_gid`，文件的链接数等等。
 
-## 函数`futimens`, `utimensat`和`utimes`
+这个让我想不明白的是为什么`link`,`unlink`,`creat`等会影响所使用文件的父目录的inode节点。
 
+### 函数`futimens`, `utimensat`和`utimes`原型
+``` c
+#include <sys/stat.h>
+
+int utimensat(int dirfd, const char *pathname, const struct timespec times[2], int flags);
+int futimens(int fd, const struct timespec times[2]);
+
+#include <sys/time.h>
+
+int utimes(const char *filename, const struct timeval times[2]);
+```
+
+### 函数`futimens`, `utimensat`和`utimes`性质
+1. 如果`times`为空，访问时间和修改时间都设为当前时间
+2. 如果`times`指向两个`timespec`结构的数组，任一元素的`tv_nsec`字段的值为`UTIME_NOW`，相应的时间戳设置为当前时间，忽略相应的`tv_sec`字段。
+3. 如果`times`指向两个`timespec`结构的数组，任一元素的`tv_nsec`字段的值为`UTIME_OMIT`，相应的时间戳保持不变，忽略相应的`tv_sec`字段。
+4. 如果`times`指向两个`timespec`结构的数组，`tv_nsec`字段的值既不是`UTIME_NOW`也不是`UTIME_OMIT`，相应的时间戳设置为相应的`tv_sec`和`tv_nsec`字段。
+5. `futimens`需要打开文件更改它的时间
+6. `utimensat`可以使用文件名更改时间。
+7. `utimes`对路径进行操作。
+8. `struct timespec`结构体是：```c
+struct {
+    time_t tv_sec;
+    long tv_nsec;
+};
+```
+9. `struct timeval` 结构体是：```c
+struct timeval{
+    time_t tv_sec;  //秒
+    long tv_usec;   //微妙
+};
+```
 
 ## 读目录
 目录可以被任何具有读权限的用户读取，但是为了保护文件系统，只有kernel可以写目录。目录的`w`权限位和`x`权限位表示的是用户是否可以在目录中创建或者删除新文件，并不是说用户可以写目录本身。
@@ -442,6 +475,9 @@ ino_d d_ino;
 char d_name[];
 ```
 POSIX.1并没有定义`d_ino`，而POSIX.1的XSI扩展定义了`d_ino`。
+4. `DIR`是一个内部结构，这几个函数使用这个内部结构保存当前正在被读的目录的有关信息。`opendir`和`fdopendir`返回`DIR`，而其他函数把`DIR`当做参数。
+使用`opendir`打开文件时，`readdir`返回的是目录项中的第一项。
+使用`fdopndir`打开文件时，`readdir`返回的第一项取决于传递给`fopendir`的文件描述符的当前文件偏移量。
 
 ## 函数`chdir`, `fchdir`和`getcwd`
 每一个进程都有一个当前工作目录，**当前工作目录是进程的一个属性，**这个目录是搜索所有相对路径名的起点，不以"/"开始的路径名都是相对路径名。可以使用`chdir`后者`fchdir`改变当前进程的工作目录。它们的原型如下：``` c
