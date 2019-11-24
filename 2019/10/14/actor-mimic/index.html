@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="Actor Mimic 本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。 Policy Regression Objective 给定多个sources games $S_1, \cdots, S_N$">
+  <meta name="description" content="Actor Mimic本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。 Policy Regression Objective给定多个sources games $S_1, \cdots, S_N$，我">
 <meta name="keywords" content="强化学习,rl papers">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Actor-Mimic">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/10/14/actor-mimic/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="Actor Mimic 本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。 Policy Regression Objective 给定多个sources games $S_1, \cdots, S_N$">
+<meta property="og:description" content="Actor Mimic本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。 Policy Regression Objective给定多个sources games $S_1, \cdots, S_N$，我">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-10-16T02:12:44.933Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Actor-Mimic">
-<meta name="twitter:description" content="Actor Mimic 本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。 Policy Regression Objective 给定多个sources games $S_1, \cdots, S_N$">
+<meta name="twitter:description" content="Actor Mimic本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。 Policy Regression Objective给定多个sources games $S_1, \cdots, S_N$，我">
 
 
 
@@ -449,68 +449,26 @@
       
 
       
-        <h2 id="actor-mimic">Actor Mimic</h2>
-<p>本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。</p>
-<h2 id="policy-regression-objective">Policy Regression Objective</h2>
-<p>给定多个sources games $S_1, \cdots, S_N$，我们的第一个目标是获得一个能玩任何source games，并且尽可能和expert DQN性能相近的single multitask policy network。为了训练这样一个网络，使用$N$个expert DQN $E_1, \cdots, E_N$进行指导。一个可能的方法是定义student network和expert network之间$Q$值的均方根误差。因为expert values funcitons在不同的游戏之间可能变化很大，所以作者首先将$Q$值经过softmax变成了policies，softmax的输出都在$0$和$1$之间，所以可以提高训练的稳定性。我们可以把softmax看成让student更多的关注expert DQN在每个state选择的action（DQN选择的是Q值最大的action），经过softmax相当于让它更sharp了。<br>
-最后得到了一个actor，或者说是一个policy，它模仿了所有DQN experts的decisions。比如，在$Q$值上计算Boltzman分布：<br>
-$$\pi_{E_i} (a|s) = \frac{ e^{\tau^{-1} Q_{E_i}(s,a) } }{\sum_{a’\in A_{E_i} } e^{\tau^{-1} Q_{E_i}(s,a) } } \tag{1}$$<br>
-其中$\tau$是温度，$A_{E_i}$是expert DQN $E_i$使用的action space。给定$S_i$的一个state s，定义multitask  network的policy objective是expert network’s policy和currnet multitask policcy的cross-entropy:<br>
-$$L^i_{policy}(\theta) = \sum_{a\in A_{E_i} }\pi_{E_i} (a|s) \log \pi_{AMN}(a|s;\theta) \tag{2}$$<br>
-其中$\pi_{AMN}(a|s;\theta) $是$\theta$参数化的multitask Actor Mimic Network policy。和Q-learning把自身当做target value相比，AMN得到了一个stable supervised training signal (expert network)指导 multitask network训练。<br>
-为了获得训练数据，可以sample expert network后者使用AMN action outputs生成trajectories。即使AMN还在学习过程中，也能得到好的结果。至少在AMN是linear function approximator时，可以证明AMN会收敛到expert policy。</p>
-<h2 id="feature-regression-objective">Feature Regression Objective</h2>
-<p>除了对policy进行回归以外，还可以对feature进行回归。用$h_{AMN}(s)$和$h_{E_i}(s)$分别表示AMN和第$i$个expert network在state s处feature的hidden activation，他们两个的dimension不一定要相等。使用一个feature回归网络$f_i(h_{AMN}(s))$，预测$s$处$h_{E_i}(s)$到$h_{AMN}(s)$的映射，映射$f_i$的结构是随意的，可以使用以下的回归loss进行训练：<br>
-$$L^i_{FeatureRegression}(\theta, \theta_{f_i}) = || f_i(h_{AMN}(s;\theta); \theta_{f_i}) - h_{E_i}(s) ||^2_2 \tag{3}$$<br>
-其中$\theta$是AMN的参数，$\theta_{f_i}$是第$i$个特征回归网络的参数。使用这个loss训练，最终我们的目标是得到一个multitask network能够包含多个expert network的features。</p>
-<h2 id="actor-mimic-objective">Actor-Mimic Objective</h2>
-<p>将policy objective和feature objective结合在一起，就得到了actor-mimic objective：<br>
-$$ L^i_{ActorMimic}(\theta, \theta_{f_i}) = L^i_{policy}(\theta) + \beta L^i_{FeatureRegression}(\theta, \theta_{f_i}) \tag{4}$$<br>
-$\beta$用来控制两个objective的权重。直观上来说，我们可以把policy objective看成expert network教会AMN该怎么act（模仿expert的action），而feature objective类似于expert network教会AMN为什么这样act，模仿expert的思考过程（特征提取过程）。</p>
-<h2 id="transfering-knowledge">Transfering Knowledge</h2>
-<p>通过优化actor-mimic objective，我们得到一个在所有source target上都表现不错的expert network，接下来我们可以把它迁移到相关的target task上。为了迁移到新的task上，首先移除掉AMN的final softmax layer，然后用AMN的参数初始化一个DQN在新的task上继续训练，接下来和标准的DQN训练方式一样。Multitask pretaining可以看成学习了related tasks中对于policies definition相当有效的特征，然后初始化DQN。如果source和target tasks很像的话，pretained features对于target task是相当有效的。</p>
-<h2 id="multitask-experiments">Multitask experiments</h2>
-<h3 id="简介">简介</h3>
-<p>Multitask任务中并不进行transfer，仅仅使用policy regression objective同时在multitask上训练一个AMN。</p>
-<h3 id="baselines">baselines</h3>
-<ul>
+        <h2 id="Actor-Mimic"><a href="#Actor-Mimic" class="headerlink" title="Actor Mimic"></a>Actor Mimic</h2><p>本文提出了Actor-Mimic，一个multitask和transfer learning方法，使用多个expert DQN指导训练一个可以在多个taskes上使用的单个policy network，并且可以将这些经验迁移到新的taskes上。</p>
+<h2 id="Policy-Regression-Objective"><a href="#Policy-Regression-Objective" class="headerlink" title="Policy Regression Objective"></a>Policy Regression Objective</h2><p>给定多个sources games $S_1, \cdots, S_N$，我们的第一个目标是获得一个能玩任何source games，并且尽可能和expert DQN性能相近的single multitask policy network。为了训练这样一个网络，使用$N$个expert DQN $E_1, \cdots, E_N$进行指导。一个可能的方法是定义student network和expert network之间$Q$值的均方根误差。因为expert values funcitons在不同的游戏之间可能变化很大，所以作者首先将$Q$值经过softmax变成了policies，softmax的输出都在$0$和$1$之间，所以可以提高训练的稳定性。我们可以把softmax看成让student更多的关注expert DQN在每个state选择的action（DQN选择的是Q值最大的action），经过softmax相当于让它更sharp了。<br>最后得到了一个actor，或者说是一个policy，它模仿了所有DQN experts的decisions。比如，在$Q$值上计算Boltzman分布：</p>
+<script type="math/tex; mode=display">\pi\_{E\_i} (a|s) = \frac{ e\^{\tau^{-1} Q\_{E\_i}(s,a) } }{\sum\_{a'\in A\_{E\_i} } e\^{\tau^{-1} Q\_{E\_i}(s,a) } } \tag{1}</script><p>其中$\tau$是温度，$A_{E_i}$是expert DQN $E_i$使用的action space。给定$S_i$的一个state s，定义multitask  network的policy objective是expert network’s policy和currnet multitask policcy的cross-entropy:</p>
+<script type="math/tex; mode=display">L^i\_{policy}(\theta) = \sum\_{a\in A\_{E\_i} }\pi\_{E\_i} (a|s) \log \pi\_{AMN}(a|s;\theta) \tag{2}</script><p>其中$\pi_{AMN}(a|s;\theta) $是$\theta$参数化的multitask Actor Mimic Network policy。和Q-learning把自身当做target value相比，AMN得到了一个stable supervised training signal (expert network)指导 multitask network训练。<br>为了获得训练数据，可以sample expert network后者使用AMN action outputs生成trajectories。即使AMN还在学习过程中，也能得到好的结果。至少在AMN是linear function approximator时，可以证明AMN会收敛到expert policy。</p>
+<h2 id="Feature-Regression-Objective"><a href="#Feature-Regression-Objective" class="headerlink" title="Feature Regression Objective"></a>Feature Regression Objective</h2><p>除了对policy进行回归以外，还可以对feature进行回归。用$h_{AMN}(s)$和$h_{E_i}(s)$分别表示AMN和第$i$个expert network在state s处feature的hidden activation，他们两个的dimension不一定要相等。使用一个feature回归网络$f_i(h_{AMN}(s))$，预测$s$处$h_{E_i}(s)$到$h_{AMN}(s)$的映射，映射$f_i$的结构是随意的，可以使用以下的回归loss进行训练：</p>
+<script type="math/tex; mode=display">L^i\_{FeatureRegression}(\theta, \theta\_{f\_i}) = || f\_i(h\_{AMN}(s;\theta); \theta\_{f\_i}) - h\_{E\_i}(s) ||^2\_2 \tag{3}</script><p>其中$\theta$是AMN的参数，$\theta_{f_i}$是第$i$个特征回归网络的参数。使用这个loss训练，最终我们的目标是得到一个multitask network能够包含多个expert network的features。</p>
+<h2 id="Actor-Mimic-Objective"><a href="#Actor-Mimic-Objective" class="headerlink" title="Actor-Mimic Objective"></a>Actor-Mimic Objective</h2><p>将policy objective和feature objective结合在一起，就得到了actor-mimic objective：</p>
+<script type="math/tex; mode=display">L^i\_{ActorMimic}(\theta, \theta\_{f\_i}) = L^i\_{policy}(\theta) + \beta L^i\_{FeatureRegression}(\theta, \theta\_{f\_i}) \tag{4}</script><p>$\beta$用来控制两个objective的权重。直观上来说，我们可以把policy objective看成expert network教会AMN该怎么act（模仿expert的action），而feature objective类似于expert network教会AMN为什么这样act，模仿expert的思考过程（特征提取过程）。</p>
+<h2 id="Transfering-Knowledge"><a href="#Transfering-Knowledge" class="headerlink" title="Transfering Knowledge"></a>Transfering Knowledge</h2><p>通过优化actor-mimic objective，我们得到一个在所有source target上都表现不错的expert network，接下来我们可以把它迁移到相关的target task上。为了迁移到新的task上，首先移除掉AMN的final softmax layer，然后用AMN的参数初始化一个DQN在新的task上继续训练，接下来和标准的DQN训练方式一样。Multitask pretaining可以看成学习了related tasks中对于policies definition相当有效的特征，然后初始化DQN。如果source和target tasks很像的话，pretained features对于target task是相当有效的。</p>
+<h2 id="Multitask-experiments"><a href="#Multitask-experiments" class="headerlink" title="Multitask experiments"></a>Multitask experiments</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>Multitask任务中并不进行transfer，仅仅使用policy regression objective同时在multitask上训练一个AMN。</p>
+<h3 id="baselines"><a href="#baselines" class="headerlink" title="baselines"></a>baselines</h3><ul>
 <li>Multitask DQN: 使用多个games训练一个DQN，只有最后的full-connected layer不同。</li>
 <li>Multitask Convolutions DQN: 使用多个games训练一个DQN，但是只共享convolutional layer，每个game都有自己的全连接层和softmax层。</li>
 </ul>
-<h3 id="网络架构：">网络架构：</h3>
-<p>32个步长为$4$的$8\times 8$filters<br>
-64个步长为$2$的$4\times 4$filters<br>
-64个步长为$1$的$3\times 3$filters<br>
-$512$ fully-connected units<br>
-$18$个actions<br>
-除了最后一层都有一个relu。</p>
-<h3 id="实验数据采集">实验数据采集</h3>
-<h4 id="amn和dqn-expert对比">AMN和DQN expert对比</h4>
-<p>DQN训练到收敛，使用的是训练到收敛过程中的max test reward，收敛过程中最后10个epochs的mean test reward。<br>
-AMN在每个source game上训练100个epochs， 每一个epoch是250000 frames，总共有2500万 frames。图中展示了AMN在100个epochs中最大的test reward和最后100个epochs的mean test reward。</p>
-<h4 id="amn和mdqn-mcdqn对比">AMN和MDQN，MCDQN对比</h4>
-<p>AMN，MDQN和MCDQN在每个source game上训练40个epochs， 每一个epoch是250000 frames，总共有2500万frames，每一个training epoch之后进行一个$125000$ frames的tesing epoch。最后图中展示了AMN,MDQN以及MCDQN在每个tesing epoch的test average episode rewrad。</p>
-<h2 id="transfer-experiments">Transfer experiments</h2>
-<p>小的AMN（和DQN expert架构相同）的AMN能够学习多个source tasks的knowledge，而大一些的AMN能够更容易的迁移。在transfer实验中，使用了比DQN expert更复杂的AMN model，能够同时玩13个source games。为了防止过拟合，AMN在每个source game上训练400万个frames。<br>
-然后用训练完的AMN当做新任务上DQN的初始化权重。仅仅使用policy regression objective的叫做AMN-policy，而使用feature和policy objective的叫做AMN-feature。将AMN-feature以及AMN-policy的结果和随机初始化的DQN baseline进行比较。<br>
-每隔4个traing epoches，每个training epoch后都有一个testing epoch，输出这4个epoches的average test reward。<br>
-使用的网络架构：<br>
-256个步长为$4$的$8\times 8$filters<br>
-512个步长为$2$的$4\times 4$filters<br>
-512个步长为$1$的$3\times 3$filters<br>
-512个步长为$1$的$3\times 3$filters<br>
-$2048$ fully-connected units<br>
-$1024$ fully-connected units<br>
-$18$个actions<br>
-除了最后一层都有一个relu。</p>
-<h2 id="amn的细节">AMN的细节</h2>
-<p>所有的AMN使用Adam优化器，有一个18-unit的output layer，每一个对应atari 18个actions中可能的一个，使用18个actions简化了不同游戏有不同的action subsets。训练一个特定的游戏时，mask那些not valid的actions，然后在valid actions上使用softmax。AMN每个game使用100000大小的replay memeory。<br>
-在feature regression objective中，设置$\beta$是$0.01$，设置$f_i$是第$i$个expert feature的线性投影。在训练过程中，AMN使用的$\epsilon$-greedy policy中$\epsilon$是常数$0.1$。在训练过程中，基于AMN而不是expert DQN选择actions。<br>
-在实验中使用的DQN，使用RMSProp优化，和nature-DQN的架构，超参数以及训练过程都一样。Replay memory总共有1000000 frames。</p>
-<h2 id="参考文献">参考文献</h2>
-<ol>
-<li></li>
-</ol>
+<h3 id="网络架构："><a href="#网络架构：" class="headerlink" title="网络架构："></a>网络架构：</h3><p>32个步长为$4$的$8\times 8$filters<br>64个步长为$2$的$4\times 4$filters<br>64个步长为$1$的$3\times 3$filters<br>$512$ fully-connected units<br>$18$个actions<br>除了最后一层都有一个relu。</p>
+<h3 id="实验数据采集"><a href="#实验数据采集" class="headerlink" title="实验数据采集"></a>实验数据采集</h3><h4 id="AMN和DQN-expert对比"><a href="#AMN和DQN-expert对比" class="headerlink" title="AMN和DQN expert对比"></a>AMN和DQN expert对比</h4><p>DQN训练到收敛，使用的是训练到收敛过程中的max test reward，收敛过程中最后10个epochs的mean test reward。<br>AMN在每个source game上训练100个epochs， 每一个epoch是250000 frames，总共有2500万 frames。图中展示了AMN在100个epochs中最大的test reward和最后100个epochs的mean test reward。</p>
+<h4 id="AMN和MDQN，MCDQN对比"><a href="#AMN和MDQN，MCDQN对比" class="headerlink" title="AMN和MDQN，MCDQN对比"></a>AMN和MDQN，MCDQN对比</h4><p>AMN，MDQN和MCDQN在每个source game上训练40个epochs， 每一个epoch是250000 frames，总共有2500万frames，每一个training epoch之后进行一个$125000$ frames的tesing epoch。最后图中展示了AMN,MDQN以及MCDQN在每个tesing epoch的test average episode rewrad。</p>
+<h2 id="Transfer-experiments"><a href="#Transfer-experiments" class="headerlink" title="Transfer experiments"></a>Transfer experiments</h2><p>小的AMN（和DQN expert架构相同）的AMN能够学习多个source tasks的knowledge，而大一些的AMN能够更容易的迁移。在transfer实验中，使用了比DQN expert更复杂的AMN model，能够同时玩13个source games。为了防止过拟合，AMN在每个source game上训练400万个frames。<br>然后用训练完的AMN当做新任务上DQN的初始化权重。仅仅使用policy regression objective的叫做AMN-policy，而使用feature和policy objective的叫做AMN-feature。将AMN-feature以及AMN-policy的结果和随机初始化的DQN baseline进行比较。<br>每隔4个traing epoches，每个training epoch后都有一个testing epoch，输出这4个epoches的average test reward。<br>使用的网络架构：<br>256个步长为$4$的$8\times 8$filters<br>512个步长为$2$的$4\times 4$filters<br>512个步长为$1$的$3\times 3$filters<br>512个步长为$1$的$3\times 3$filters<br>$2048$ fully-connected units<br>$1024$ fully-connected units<br>$18$个actions<br>除了最后一层都有一个relu。</p>
+<h2 id="AMN的细节"><a href="#AMN的细节" class="headerlink" title="AMN的细节"></a>AMN的细节</h2><p>所有的AMN使用Adam优化器，有一个18-unit的output layer，每一个对应atari 18个actions中可能的一个，使用18个actions简化了不同游戏有不同的action subsets。训练一个特定的游戏时，mask那些not valid的actions，然后在valid actions上使用softmax。AMN每个game使用100000大小的replay memeory。<br>在feature regression objective中，设置$\beta$是$0.01$，设置$f_i$是第$i$个expert feature的线性投影。在训练过程中，AMN使用的$\epsilon$-greedy policy中$\epsilon$是常数$0.1$。在训练过程中，基于AMN而不是expert DQN选择actions。<br>在实验中使用的DQN，使用RMSProp优化，和nature-DQN的架构，超参数以及训练过程都一样。Replay memory总共有1000000 frames。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.</p>
 
       
     </div>
@@ -640,7 +598,7 @@ $18$个actions<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">275</span>
+                    <span class="site-state-item-count">276</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1474,7 +1432,9 @@ $18$个actions<br>
                     
                       
                     
-                    <span class="site-state-item-count">380</span>
+                      
+                    
+                    <span class="site-state-item-count">381</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1542,7 +1502,7 @@ $18$个actions<br>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#actor-mimic"><span class="nav-number">1.</span> <span class="nav-text">Actor Mimic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#policy-regression-objective"><span class="nav-number">2.</span> <span class="nav-text">Policy Regression Objective</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#feature-regression-objective"><span class="nav-number">3.</span> <span class="nav-text">Feature Regression Objective</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#actor-mimic-objective"><span class="nav-number">4.</span> <span class="nav-text">Actor-Mimic Objective</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#transfering-knowledge"><span class="nav-number">5.</span> <span class="nav-text">Transfering Knowledge</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#multitask-experiments"><span class="nav-number">6.</span> <span class="nav-text">Multitask experiments</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">6.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#baselines"><span class="nav-number">6.2.</span> <span class="nav-text">baselines</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网络架构："><span class="nav-number">6.3.</span> <span class="nav-text">网络架构：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实验数据采集"><span class="nav-number">6.4.</span> <span class="nav-text">实验数据采集</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#amn和dqn-expert对比"><span class="nav-number">6.4.1.</span> <span class="nav-text">AMN和DQN expert对比</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#amn和mdqn-mcdqn对比"><span class="nav-number">6.4.2.</span> <span class="nav-text">AMN和MDQN，MCDQN对比</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#transfer-experiments"><span class="nav-number">7.</span> <span class="nav-text">Transfer experiments</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#amn的细节"><span class="nav-number">8.</span> <span class="nav-text">AMN的细节</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Actor-Mimic"><span class="nav-number">1.</span> <span class="nav-text">Actor Mimic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Policy-Regression-Objective"><span class="nav-number">2.</span> <span class="nav-text">Policy Regression Objective</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Feature-Regression-Objective"><span class="nav-number">3.</span> <span class="nav-text">Feature Regression Objective</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Actor-Mimic-Objective"><span class="nav-number">4.</span> <span class="nav-text">Actor-Mimic Objective</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Transfering-Knowledge"><span class="nav-number">5.</span> <span class="nav-text">Transfering Knowledge</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Multitask-experiments"><span class="nav-number">6.</span> <span class="nav-text">Multitask experiments</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#简介"><span class="nav-number">6.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#baselines"><span class="nav-number">6.2.</span> <span class="nav-text">baselines</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#网络架构："><span class="nav-number">6.3.</span> <span class="nav-text">网络架构：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实验数据采集"><span class="nav-number">6.4.</span> <span class="nav-text">实验数据采集</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#AMN和DQN-expert对比"><span class="nav-number">6.4.1.</span> <span class="nav-text">AMN和DQN expert对比</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AMN和MDQN，MCDQN对比"><span class="nav-number">6.4.2.</span> <span class="nav-text">AMN和MDQN，MCDQN对比</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Transfer-experiments"><span class="nav-number">7.</span> <span class="nav-text">Transfer experiments</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AMN的细节"><span class="nav-number">8.</span> <span class="nav-text">AMN的细节</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
