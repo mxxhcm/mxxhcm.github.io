@@ -9,13 +9,12 @@ categories: UNIX
 
 ## 总结
 1. `fgets`, `sprintf`, `snprintf`会在缓冲区数组的结尾加上一个null字节，但是使用的时候不会包含这个字节。
-2. `fgets`和`getline`都会读入回车，并且将它存入数组。
+2. `fgets`和`getline`都会读入回车，并且将它存入缓冲区，`getchar`, `getc`和`fgetc`也会读入回车，并且将它存起来。
 3. 每个标准I/O流都有一个和它相关联的文件描述符，可以对一个流调用`fileno`获得它的文件描述符。`fileno`不是ISO C的部分，因为文件描述符不属于ISO C。
 4. 标准I/O库的一个不足是效率不高。这和它复制的数据量有关。每当使用一次`fgets`和`fputs`时，通常需要复制两次数据，一次是在用户程序的行缓冲区和标准I/O缓冲区之间，一次是在内核和标准I/O缓冲区之间。
 使用`fgets`需要用户指定`fgets`使用的缓冲区，或者使用`getline`，如果传入的指针指向NULL，`getline`会负责分配缓冲区大小。
-标准I/O可以设置行缓冲和全缓冲，如果设置缓冲的话也需要一个缓冲区，通常是由系统指定的，也可以通过`setbuf`和`setvbuf`进行更改。而在`setbuf`中，如果`buf`是`NULL`的话，是关闭缓冲区，如果不为空的话，必须是`BUFSIZ`大小。在`setvbuf`中，通过`mode`指定缓冲区的类型，`buf`是`NULL`的话，库函数负责分配缓冲区。否则`buf`是多大就用多大的缓冲区。
-`read`和`write`也需要设置缓冲区，这是系统调用级别的，大小可以任意指定，通常使用`sturct stat.st_blksize`的大小。
-
+`read`和`write`需要设置缓冲区，这是系统调用级别的，大小可以任意指定，通常使用`sturct stat.st_blksize`的大小，用户如果直接调用`read`和`write`的话，需要自己设置缓冲区。而标准I/O库可以自己选择是否进行缓冲，如果缓冲的话，标准I/O库可以负责进行缓冲区大小选择和分配，也可以用户自己进行指定缓冲类型：行缓冲和全缓冲，用户也可以自己通过`setbuf`和`setvbuf`更改缓冲区大小和地址。而在`setbuf`中，如果`buf`是`NULL`的话，是关闭缓冲区，如果不为空的话，必须是`BUFSIZ`大小。在`setvbuf`中，通过`mode`指定缓冲区的类型，`buf`是`NULL`的话，库函数负责分配缓冲区。否则`buf`是多大就用多大的缓冲区。
+而在内核中，还存在buffer cache和page cache，用于“延迟写”，减少和磁盘的交互。
 
 ## 概述
 ### 特殊符号的ASCII
@@ -62,16 +61,20 @@ FILE *freopen(const char *pathname, const char *mode, FILE *stream);
 
 ### 全缓冲
 填满标准I/O的缓冲区之后，进行实际的I/O操作。对于存储在磁盘上的文件通常是由标准I/O实施全缓冲的。在一个流上第一次执行I/O操作时，相关的标准I/O函数调用`malloc`获得需要的缓冲区。
-标准I/O库使用flush将输出流缓冲区的内容写到和输出流相关联的文件，缓冲区可以使用标准I/O例程自动的flush，比如当缓冲区填满时，或者缓冲区不满时可以手动调用`fflush`函数进行flush。``` c
-int flussh(FILE *fp);
-```
-任何时候，都可以手动强制冲洗一个流，当`fp`是`NULL`时，冲洗所有的输出流。
 
 ### 行缓冲
 在行缓冲中，当输入和输出遇到换行符时，标准I/O库执行I/O操作。这允许我们一次输出一个字符，使用标准I/O的`fputc`，但是只有在写了一行之后才能进行实际I/O操作。当涉及一个终端时，通常使用行缓冲。
 对于行缓冲来说，有两个限制：
 1. 因为标准I/O库用来存放每一行的缓冲区的长度是固定的，所以，只要缓冲区满了，没有遇到换行符，也进行I/O操作。
 2. 任何时候只要通过标准I/O库要求从一个不带缓冲的流或者一个行缓冲的流中得到输入数据，那么就会flush所有行缓冲输出流。从行缓冲的流中得到输入数据的一个例子就是从终端按下回车，刚才输入的数据就会立刻从输出流中输出。
+
+### `fflush`函数
+标准I/O库使用flush将输出流缓冲区的内容写到和输出流相关联的文件，缓冲区可以使用标准I/O例程自动的flush，比如当缓冲区填满时，或者缓冲区不满时可以手动调用`fflush`函数进行flush。``` c
+int flussh(FILE *fp);
+```
+任何时候，都可以手动强制冲洗一个流，当`fp`是`NULL`时，冲洗所有的输出流。
+注意`fflush`和`fsync`的区别，`fflush`是将位于主存中的缓冲区的内存冲洗到内核。而内核也有一个缓冲区，叫做buffer cache或者page cache，内核接收到数据会首先将它们写入buffer cache或者page cache中，然后排入队列，晚些时候再写，这种方式叫做延迟写。`fsync`是将buff cache中的内容立即写入磁盘而不等待。
+
 
 ### 不带缓冲
 标准I/O库不对字符进行缓冲存储。如果将字符传入不带缓冲的输出流中，字符会立即输出到输出流关联的文件或者设备。
@@ -140,7 +143,7 @@ int fclose(FILE *fp);
 对于一个打开的stream，可以使用3种不同的类型的非格式化I/O以及格式化I/O，对其进行读写操作。
 3种非格式化I/O包括：
 1. 单字符的I/O。如果流是带缓冲的，标准I/O会负责处理缓冲。
-2. 单行的I/O。**这里需要注意一下，单行I/O指定的buffer和标准I/O的buffer不一样，而标准I/O的buffer和`read`等的buffer又不一样。**
+2. 单行的I/O。**这里需要注意一下，单行I/O指定的buffer和标准I/O的buffer不一样。**
 3. 直接I/O（direct I/O）。
 
 ## `ferror`和`feof`, `clearerr`函数和属性
@@ -248,9 +251,9 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
 ## 格式化I/O
 除了三种非格式化的I/O，还有标准化I/O函数。标准化I/O函数需要指定格式说明。
 
-### 格式说明
+### 输出格式说明
 格式说明控制其余参数如何编写，以后如何限制。每个参数按照转换说明编写，转换说明以%号开始。除了转换说明外，格式化字符串中的其他字符都按照原样输出。
-一个转换说明由四个可选部分构成：
+一个输出格式说明由四个可选部分构成：
 `%[flags][fldwidth][precision][lenmodifier] convtype`
 #### flags
 - `'`，将整数按千位分组字符
@@ -291,7 +294,7 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
 - `S`，宽字符串，等于`ls`
 
 常见的格式化输出函数原型如下：
-### `printf`,`frpintf`, `snprintf`,`dprintf`和`fpritnf`原型
+### `printf`, `frpintf`, `dprintf`, `snprintf`和`fpritnf`原型
 ``` c
 #include <stdio.h>
 
@@ -309,6 +312,13 @@ int snprintf(char *str, size_t size, const char *format, ...);
 4. `sprintf`将格式化数据送入数组`buf`中，`sprintf`在数组的尾端自动加一个null字节，但是该字符不包含在返回值中。
 5. `sprintf`可能会造成`buf`指向的缓冲区溢出，调用者有责任保证该缓冲区足够大。
 6. `snprintf`是为了解决缓冲区溢出的问题而引入的，它需要显式指定缓冲区的长度，超过这个长度的话，输入数据都会被丢弃，同样`ssprintf`在数组的尾端自动加一个null字节，但是该字符不包含在返回值中。
+
+### 输入格式说明
+一个输入格式转换说明由三个可选部分：
+`%[*][fldwidth][m][lenmodifier] convtype`
+1. fldwidth用于说明最大宽度
+2. lenmodifier说明要用转换结果赋值的参数大小，`printf`函数族支持的长度修饰符同样能够得到`scanf`函数族的支持。
+3. 而convtype符号和`printf`中类似，但是有一些区别。比如，输入中的带符号数可以复制给无符号类型。
 
 ### `scanf`, `fscnaf`, `sscanf`原型
 ``` c
@@ -419,8 +429,9 @@ FILE *open_wmemstream(wchar_t **ptr, size_t *sizeloc);
 标准I/O库的一个不足是效率不高。这和它复制的数据量有关。每当使用一次`fgets`和`fputs`时，通常需要复制两次数据，一次是在用户程序的行缓冲区和标准I/O缓冲区之间，一次是在内核和标准I/O缓冲区之间。
 OK，这章我就认识到了这一个很重要的知识点。。
 使用`fgets`需要用户指定`fgets`使用的缓冲区，或者使用`getline`，如果传入的指针指向NULL，`getline`会负责分配缓冲区大小。
-标准I/O可以设置行缓冲和全缓冲，如果设置缓冲的话也需要一个缓冲区，通常是由系统指定的，也可以通过`setbuf`和`setvbuf`进行更改。而在`setbuf`中，如果`buf`是`NULL`的话，是关闭缓冲区，如果不为空的话，必须是`BUFSIZ`大小。在`setvbuf`中，通过`mode`指定缓冲区的类型，`buf`是`NULL`的话，库函数负责分配缓冲区。否则`buf`是多大就用多大的缓冲区。
-`read`和`write`也需要设置缓冲区，这是系统调用级别的，大小可以任意指定，通常使用`sturct stat.st_blksize`的大小。
+标准I/O可以设置行缓冲和全缓冲，如果设置缓冲的话也需要一个缓冲区，通常是由系统指定的，当然也可以通过`setbuf`和`setvbuf`自己进行更改。而在`setbuf`中，如果`buf`是`NULL`的话，是关闭缓冲区，如果不为空的话，必须是`BUFSIZ`大小。在`setvbuf`中，通过`mode`指定缓冲区的类型，`buf`是`NULL`的话，库函数负责分配缓冲区。否则`buf`是多大就用多大的缓冲区。
+直接使用系统调用`read`和`write`函数也需要设置缓冲区，这是系统调用级别的，大小可以任意指定，通常使用`sturct stat.st_blksize`的大小。标准I/O库用的缓冲区和`read`,`write`指的是一个（我自己的理解）。
+内核中有buffer cache和page cache，调用`write`只是将数据复制到buffer cache和page cache，然后排入队列，实际的写磁盘操作可能在满足某个条件之后才实际写入磁盘。
 ``` c
 #include <unistd.h>
 ssize_t read(int fd, void *buf, size_t count);

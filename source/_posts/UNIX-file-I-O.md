@@ -26,17 +26,17 @@ UNIX系统shell把文件描述符0和进程的标准输入关联，文件描述�
 
 ## `open`,`openat`和`creat`, `close`
 函数原型：``` c
-       #include <sys/types.h>
-       #include <sys/stat.h>
-       #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-       int open(const char *pathname, int flags);
-       int open(const char *pathname, int flags, mode_t mode);
+int open(const char *pathname, int flags);
+int open(const char *pathname, int flags, mode_t mode);
 
-       int creat(const char *pathname, mode_t mode);
+int creat(const char *pathname, mode_t mode);
 
-       int openat(int dirfd, const char *pathname, int flags);
-       int openat(int dirfd, const char *pathname, int flags, mode_t mode);
+int openat(int dirfd, const char *pathname, int flags);
+int openat(int dirfd, const char *pathname, int flags, mode_t mode);
 ```
 参数`pathname`是路径名，可以是相对路径也可以是绝对路径，`flags`的选项有很多，它们定义在`<fcntl.h>`头文件中。flag参数必须在`O_RDONLY`,`O_WRONLY`和`O_RDWR`之中选且只能选一个。然后还有很多其他的可选flag，常见的有：`O_APPEND`，`O_CREAT`，`O_EXCL`, `O_DIRECTORY`等，使用`man 2 open`就可以查看。
 
@@ -65,7 +65,7 @@ UNIX系统shell把文件描述符0和进程的标准输入关联，文件描述�
 open(path, O_RDWR|O_CREAT|O_TRUNC, mode);
 ```
 
-### `close`
+### `close`函数
 调用`close`关闭一个已经打开的文件。函数原型：```c
 #include <unistd.h>
 
@@ -142,7 +142,6 @@ ssize_t write(int fd, const void *buf, size_t count);
 在使用`ext4`文件系统时，它的磁盘块长度是4096，所以当BUFFER大于等于4096时，读写时间几乎不变。
 
 ## 文件共享
-
 ### I/O数据结构
 UNIX支持在不同进程之间共享打开文件。这需要使用到内核用于I/O的数据结构。内核使用三种数据结构表示打开文件：进程表记录项，文件表项和节点表项。
 1. 进程表记录项。每个进程在进程表中都有一个记录项，记录项中包含一张打开文件描述符表，每隔描述符占用一项，其中内容有：文件描述符标志和指向文件表项的指针。
@@ -232,7 +231,7 @@ fcntl有很多种功能，这一节先介绍以下五种：
 2. 获取和设置文件描述符标志，设置`cmd`为`F_GETFD`或者`F_SETFD`。当前只有一个文件描述符标志，就是`FD_CLOEXEC`。
 3. 获取和设置文件状态标志，设置`cmd`为`F_GETFL`或者`F_SETFL`。
 获取文件状态标志时，介绍`open`时给出了许多文件状态标志。对于五个互斥的权限，需使用`O_ACCMODE`取得访问方式位，然后与相应的权限比对。对于其他的权限，将返回值和相应的标志进行与操作，判断是否设置了相应位。
-设置文件状态标志位时，可以更改的几个权限有，`O_APPEND`,`O_NONBLOCK`,`O_SYNC`,`O_DSYNC`,`O_RSYNC`, `O_FSYNC`, `O_ASYNC`。
+设置文件状态标志位时，可以更改的几个权限有，`O_APPEND`, `O_NONBLOCK`, `O_SYNC`, `O_DSYNC`, `O_RSYNC`, `O_FSYNC`, `O_ASYNC`。
 4. 获取和设置异步I/O所有权，设置`cmd`为`F_GETOWN`或者`F_SETOWN`。
 5. 获取和设置记录锁，设置`cmd`为`F_GETLK`，或者`F_SETLK`或者`F_SETLKW`。
 
