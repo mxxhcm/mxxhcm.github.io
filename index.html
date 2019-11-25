@@ -558,7 +558,7 @@
                 
               
 
-              <time title="创建时间：2019-11-25 10:31:02 / 修改时间：10:37:29" itemprop="dateCreated datePublished" datetime="2019-11-25T10:31:02+08:00">2019-11-25</time>
+              <time title="创建时间：2019-11-25 10:31:02 / 修改时间：22:28:32" itemprop="dateCreated datePublished" datetime="2019-11-25T10:31:02+08:00">2019-11-25</time>
             
 
             
@@ -617,8 +617,21 @@
         
           
             <h2 id="概述">概述</h2>
+<p>这一节主要介绍UNIX系统的进程控制，包括进程创建，进程执行和进程控制。以及进程属性的各种的ID-real UID, real GID和effective UID, effective GID和save UID， set UID和set GID，以及它们如何收到进程控制原语的影响。</p>
 <h2 id="进程标识-pid">进程标识(pid)</h2>
+<p>每一个进程都有一个非负整数表示它的唯一进程ID。进程ID标识符总是唯一的，但是可以复用。<br>
+系统中有一些专用进程，具体细节跟实现有关。<br>
+获得当前进程的各项id：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// real uid</span></span><br><span class="line"><span class="keyword">uid_t</span> ruid = getuid()</span><br><span class="line"><span class="comment">// effective uid</span></span><br><span class="line"><span class="keyword">uid_t</span> euid = geteuid()</span><br><span class="line"></span><br><span class="line"><span class="comment">// real gid</span></span><br><span class="line"><span class="keyword">uid_t</span> rgid = getgid()</span><br><span class="line"><span class="comment">// effective gid</span></span><br><span class="line"><span class="keyword">uid_t</span> egid = getegid()</span><br><span class="line"></span><br><span class="line"><span class="comment">// pid</span></span><br><span class="line"><span class="keyword">uid_t</span> pid = getpid()</span><br><span class="line"><span class="comment">// parent pid</span></span><br><span class="line"><span class="keyword">uid_t</span> ppid = getppid()</span><br></pre></td></tr></table></figure>
 <h2 id="fork"><code>fork</code></h2>
+<p><code>fork</code>创建一个子进程。函数原型：</p>
+<h3 id="fork原型"><code>fork</code>原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">pid_t</span> fork(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="fork性质"><code>fork</code>性质</h3>
+<ol>
+<li><code>fork</code>调用一次，返回两次，分别是0和子进程ID，用以区别父进程和子进程。对于父进程，返回子进程ID，对于子进程，返回0。因为父进程可能有多个子进程，并且没有提供获得一个进程所有子进程ID的函数，而fork只有一个父进程，可以通过<code>getppid</code>获得它的父进程的ID。所以这样子进行区分。</li>
+<li>子进程和父进程分别继续执行调用<code>fork</code>之后的指令。子进程是父进程的一副本，，</li>
+</ol>
 <h2 id="vfork"><code>vfork</code></h2>
 <h2 id="exit"><code>exit</code></h2>
 <h2 id="wait和waitpid"><code>wait</code>和<code>waitpid</code></h2>
@@ -736,7 +749,7 @@
                 
               
 
-              <time title="创建时间：2019-11-25 10:22:51 / 修改时间：17:48:21" itemprop="dateCreated datePublished" datetime="2019-11-25T10:22:51+08:00">2019-11-25</time>
+              <time title="创建时间：2019-11-25 10:22:51 / 修改时间：21:46:00" itemprop="dateCreated datePublished" datetime="2019-11-25T10:22:51+08:00">2019-11-25</time>
             
 
             
@@ -890,8 +903,15 @@ UNIX内核并不使用环境变量，通常都是应用程序使用这些环境�
 如果这是第一次增加一个<code>name</code>，必须调用<code>malloc</code>为指针数组增加空间。将原来的指针数组复制到新分配的空间中，然后将新字符串的指针放在指针数组的尾部，然后存放一个空指针。最后让全局变量<code>char **environ</code>指向这个指针数组。如果原来的指针数组存放在栈顶之上，需要将它复制到堆中。需要注意的是，这个指针数组中的未修改的环境变量的指针还是指向栈顶的字符串上。<br>
 如果这不是第一个添加<code>name</code>，只需要使用<code>realloc</code>重新多分配一个指针数组的空间即可，然后将它指向新字符串的地址即可。</p>
 <h2 id="setjmp和longjmp"><code>setjmp</code>和<code>longjmp</code></h2>
+<h3 id="setjmp和longjmp原型"><code>setjmp</code>和<code>longjmp</code>原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;setjmp.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setjmp</span><span class="params">(jmp_buf env)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">longjmp</span><span class="params">(jmp_buf env, <span class="keyword">int</span> val)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="setjmp和longjmp属性"><code>setjmp</code>和<code>longjmp</code>属性</h3>
+<ol>
+<li>自动变量存储在每个函数的栈帧中。</li>
+<li><code>setjmp</code>和<code>longjmp</code>实在栈上跳过若干调用栈，返回到当前函数调用路径上的某个函数中。</li>
+</ol>
 <h2 id="getrlimit和setrlimit"><code>getrlimit</code>和<code>setrlimit</code></h2>
-<p>每个进程能使用的资源都是有限的，可以使用<code>getrlimt</code>和<code>setrlimit</code>进行修改。它们都是XSI扩展，不是ISO C的定义。</p>
+<p>每个进程能使用的资源都是有限的，可以使用<code>getrlimt</code>和<code>setrlimit</code>进行修改。它们都是XSI扩展，不是ISO C的定义。有些资源可以设置为<code>RLIM_INFINITY</code>，表示无限。</p>
 <h3 id="getrlimit和setrlimit性质"><code>getrlimit</code>和<code>setrlimit</code>性质</h3>
 <ol>
 <li>任何一个进程都可以将<code>rlim_cur</code>改为小于等于<code>rlim_max</code>。</li>
