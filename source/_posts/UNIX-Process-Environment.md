@@ -146,8 +146,20 @@ int unsetenv(const char *name);
 
 ## `setjmp`和`longjmp`
 
+### `setjmp`和`longjmp`原型
+```c
+#include <setjmp.h>
+
+int setjmp(jmp_buf env);
+void longjmp(jmp_buf env, int val);
+```
+
+### `setjmp`和`longjmp`属性
+1. 自动变量存储在每个函数的栈帧中。
+2. `setjmp`和`longjmp`实在栈上跳过若干调用栈，返回到当前函数调用路径上的某个函数中。
+
 ## `getrlimit`和`setrlimit`
-每个进程能使用的资源都是有限的，可以使用`getrlimt`和`setrlimit`进行修改。它们都是XSI扩展，不是ISO C的定义。
+每个进程能使用的资源都是有限的，可以使用`getrlimt`和`setrlimit`进行修改。它们都是XSI扩展，不是ISO C的定义。有些资源可以设置为`RLIM_INFINITY`，表示无限。
 
 ### `getrlimit`和`setrlimit`性质
 1. 任何一个进程都可以将`rlim_cur`改为小于等于`rlim_max`。
@@ -184,9 +196,6 @@ struct rlimit
     rlim_t rlim_max;    // hard limit
 }
 ```
-
-
-
 
 ## 参考文献
 1. 《APUE》第三版
