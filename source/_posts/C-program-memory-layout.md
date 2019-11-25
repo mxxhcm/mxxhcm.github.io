@@ -1,5 +1,5 @@
 ---
-title: C/C++ program in memory
+title: C/C++ program memory layout
 date: 2019-10-19 20:41:02
 tags:
  - C/C++
