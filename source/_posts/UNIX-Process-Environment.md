@@ -41,7 +41,7 @@ int main(int argc, char *argv[], char *envp[]);
 7. 接到一个`signal`
 8. 最后一个线程对取消请求做出响应
 
-### 退出函数
+### `exit`函数
 #### 函数原型
 ``` c
 #include <stdlib.h>
@@ -56,7 +56,7 @@ void _exit(int status);
 
 #### 性质
 1. `exit`和`_Exit`是ISO C的内容，而`_exit`是POSIX.1的内容
-2. `exit`函数总是执行一个标准I/O库的关闭操作，对于所有打开的流调用`fclose`函数，所有带有未写缓冲的标准I/O流被flush。
+2. 它们都用于正常终止一个程序，`_Exit`和`_exit`立刻进入内核，而`exit`先执行一些清理操作，然后返回内核。`exit`函数总是执行一个标准I/O库的关闭操作，对于所有打开的流调用`fclose`函数，所有带有未写缓冲的标准I/O流被flush。
 3. 三个退出函数都需要一个整形的参数，被称为exit status。
 4. 如果满足以下条件：
     - 调用这三个函数不带终止状态
@@ -64,6 +64,8 @@ void _exit(int status);
     - `main`没有声明返回类型为整形，进程的终止状态是未定义的。
 那么这个进程的终止状态是未定义的。
 5. `main`返回返回一个整型值和用该值调用`exit`是等价的。对于某些C编译器和UNIX lint(1)程序来说，会产生警告信息，因为这些编译器并不了解`main`中的`return`和`exit`的作用是相同的。避开这种警告信息的一种方法是在`main`中使用`return`而不是`exit`，这样做的结果是UNIX grep命令无法找出程序中所有的`exit`调用。另一个方法是将`main`声明为`void`而不是`int`，然后调用`exit`，但是这不并不是标准，ISO C和POSIX.1定义`main`的返回值应当是带符号整形。
+
+关于更多`exit`函数的内容，可以查看[]()。
 关于`return`和`exit`的区别，更多可以查看[]()。
 
 ### `atexit`
