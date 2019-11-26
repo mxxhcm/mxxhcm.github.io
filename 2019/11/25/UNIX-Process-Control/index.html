@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="概述 这一节主要介绍UNIX系统的进程控制，包括进程创建，进程执行和进程控制。以及进程属性的各种的ID-real UID, real GID和effective UID, effective GID和save UID， set UID和set GID，以及它们如何收到进程控制原语的影响。 进程标识(pid) 每一个进程都有一个非负整数表示它的唯一进程ID。进程ID标识符总是唯一的，但是可以复用。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-11-25T14:28:32.961Z">
+<meta property="og:updated_time" content="2019-11-26T04:02:45.077Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UNIX Process Control">
 <meta name="twitter:description" content="概述 这一节主要介绍UNIX系统的进程控制，包括进程创建，进程执行和进程控制。以及进程属性的各种的ID-real UID, real GID和effective UID, effective GID和save UID， set UID和set GID，以及它们如何收到进程控制原语的影响。 进程标识(pid) 每一个进程都有一个非负整数表示它的唯一进程ID。进程ID标识符总是唯一的，但是可以复用。">
@@ -371,12 +371,24 @@
                 
               
 
-              <time title="创建时间：2019-11-25 10:31:02 / 修改时间：22:28:32" itemprop="dateCreated datePublished" datetime="2019-11-25T10:31:02+08:00">2019-11-25</time>
+              <time title="创建时间：2019-11-25 10:31:02" itemprop="dateCreated datePublished" datetime="2019-11-25T10:31:02+08:00">2019-11-25</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-11-26 12:02:45" itemprop="dateModified" datetime="2019-11-26T12:02:45+08:00">2019-11-26</time>
               
             
           </span>
@@ -450,11 +462,75 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">pid_t</span> fork(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure>
 <h3 id="fork性质"><code>fork</code>性质</h3>
 <ol>
-<li><code>fork</code>调用一次，返回两次，分别是0和子进程ID，用以区别父进程和子进程。对于父进程，返回子进程ID，对于子进程，返回0。因为父进程可能有多个子进程，并且没有提供获得一个进程所有子进程ID的函数，而fork只有一个父进程，可以通过<code>getppid</code>获得它的父进程的ID。所以这样子进行区分。</li>
-<li>子进程和父进程分别继续执行调用<code>fork</code>之后的指令。子进程是父进程的一副本，，</li>
+<li><strong>进程ID</strong>。<code>fork</code>调用一次，返回两次，分别是0和子进程ID，用以区别父进程和子进程。对于父进程，返回子进程ID，对于子进程，返回0。因为父进程可能有多个子进程，并且没有提供获得一个进程所有子进程ID的函数，而fork只有一个父进程，可以通过<code>getppid</code>获得它的父进程的ID。所以这样子进行区分。</li>
+<li>子进程和父进程分别继续执行调用<code>fork</code>之后的指令。子进程是父进程的副本。子进程获得父本的数据段，堆和栈的完全副本。这是子进程的副本，和父进程不一样，它们并不共享数据的内存空间，但是它们共享text segment。</li>
+<li>现代的操作系统实现，使用写时复制代替了父进程数据段，堆和栈的完全副本。这些区域是由父进程和子进程共享的，但是它们的访问权限是只读。如果父进程或者子进程想要对这些区域进行修改的话，内核会为修改区域的那块内存制作一个副本，用于进程修改。</li>
+<li>父进程和子进程因为不共享数据，堆和栈，每个进程都有自己的变量，不会相互影响。</li>
+<li><strong>执行顺序</strong>。<code>fork</code>后父进程和子进程的执行顺序是不确定的，这跟内核的调度算法有关。如果要求父进程和子进程之间进行同步，需要它们之间进行某种形式的进程通信。</li>
+<li><strong>文件共享</strong>。对于父进程打开的文件，<code>fork</code>相当于将父进程的文件描述符都复制到了子进程中，相当于对父进程的每一个文件描述符，都调用了<code>dup</code>函数。父进程和子进程每个相同的打开文件描述符共享同一个文件表项。一般来说，在<code>fork</code>之后处理文件描述符有以下两种情况：
+<ul>
+<li>父进程等待子进程完成。父进程不需要对它的文件描述符做任何处理。</li>
+<li>父进程和子进程分别执行不同的程序段。父进程和子进程各自关闭它们不需要的文件描述符。</li>
+</ul>
+</li>
+<li><strong><code>fork</code>后子进程继承的信息</strong>。
+<ul>
+<li>real UID, real GID, effective UID, effective GID</li>
+<li>set UID和 set GID</li>
+<li>附属组ID</li>
+<li>进程组ID</li>
+<li>Session ID</li>
+<li>控制终端</li>
+<li>cwd</li>
+<li>root dir</li>
+<li>umask</li>
+<li>signal mask</li>
+<li>文件描述符标志</li>
+<li>环境</li>
+<li>共享的内存段</li>
+<li>内存映像</li>
+<li>Resource limits</li>
+</ul>
+</li>
+<li><strong>父进程和子进程的区别。</strong>
+<ul>
+<li><code>fork</code>的返回值不同</li>
+<li>pid不同</li>
+<li>它们有不同的ppid</li>
+<li>子进程的很多时间设置为0</li>
+<li>父进程设置的文件锁子进程不继承。</li>
+<li>子进程的未处理闹钟被清除</li>
+<li>子进程的未处理信号被设置为空集。</li>
+</ul>
+</li>
+<li><strong><code>fork</code>的两种用法</strong>。
+<ul>
+<li>父进程和子进程分别执行不同的代码。比如网络服务中，父进程负责等待客户端请求，子进程负责处理父进程接收到的请求。</li>
+<li>一个进程要执行不同的程序。对shell比较常见，通常执行完<code>fork</code>返回后立即调用<code>exec</code>。</li>
+</ul>
+</li>
 </ol>
 <h2 id="vfork"><code>vfork</code></h2>
+<p>创建一个子进程，并且阻塞父进程，函数原型如下：</p>
+<h3 id="vfork原型"><code>vfork</code>原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">pid_t</span> vfork(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="vfork属性"><code>vfork</code>属性</h3>
+<ol>
+<li><code>vfork</code>和<code>fork</code>都创建一个新进程，但是<code>vfork</code>并不会将父进程的地址空间完全复制到子进程中。因为子进程会立即调用<code>exec</code>或者<code>exit</code>，就不会引用该地址空间。但是如果在调用<code>exec</code>或者<code>exit</code>之前，它会在父进程的空间中运行，这种做法会提高效率。但是如果子进程修改除了<code>vfork</code>的返回值，或者在没有调用<code>exit</code>或者<code>exec</code>之前调用其他函数，这种行为是未定义的。</li>
+<li><code>vfork</code>保证子进程先运行，在子进程没有调用<code>exec</code>或者<code>exit</code>时，内核会使父进程休眠，在子进程调用<code>exec</code>或者<code>exit</code>之后父进程才会恢复运行。如果子进程需要父进程进一步操作的时候，就会产生死锁。</li>
+</ol>
 <h2 id="exit"><code>exit</code></h2>
+<p>总共有八种方式可以让进程终止，包括五种正常和三种异常，前五种是正常终止，后五种是异常终止：</p>
+<ol>
+<li>从<code>main</code>返回，相当于调用<code>exit</code>。</li>
+<li>调用<code>exit</code>，</li>
+<li>调用<code>_exit</code>或者<code>_Exit</code></li>
+<li>最后一个线程从其启动例程返回</li>
+<li>最后一个线程调用<code>pthread_exit</code></li>
+<li>调用<code>abort</code></li>
+<li>接到一个<code>signal</code></li>
+<li>最后一个线程对取消请求做出响应</li>
+</ol>
 <h2 id="wait和waitpid"><code>wait</code>和<code>waitpid</code></h2>
 <h2 id="waitid">`waitid</h2>
 <h2 id="wait3和wait4"><code>wait3</code>和<code>wait4</code></h2>
@@ -1506,7 +1582,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程标识-pid"><span class="nav-number">2.</span> <span class="nav-text">进程标识(pid)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fork"><span class="nav-number">3.</span> <span class="nav-text">fork</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#fork原型"><span class="nav-number">3.1.</span> <span class="nav-text">fork原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fork性质"><span class="nav-number">3.2.</span> <span class="nav-text">fork性质</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vfork"><span class="nav-number">4.</span> <span class="nav-text">vfork</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#exit"><span class="nav-number">5.</span> <span class="nav-text">exit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wait和waitpid"><span class="nav-number">6.</span> <span class="nav-text">wait和waitpid</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#waitid"><span class="nav-number">7.</span> <span class="nav-text">`waitid</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wait3和wait4"><span class="nav-number">8.</span> <span class="nav-text">wait3和wait4</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#race-condition"><span class="nav-number">9.</span> <span class="nav-text">race condition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#exec"><span class="nav-number">10.</span> <span class="nav-text">exec</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#更改uid和gid"><span class="nav-number">11.</span> <span class="nav-text">更改UID和GID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解释器文件"><span class="nav-number">12.</span> <span class="nav-text">解释器文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#system"><span class="nav-number">13.</span> <span class="nav-text">system</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程会计"><span class="nav-number">14.</span> <span class="nav-text">进程会计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用户标识"><span class="nav-number">15.</span> <span class="nav-text">用户标识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程调度"><span class="nav-number">16.</span> <span class="nav-text">进程调度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程时间"><span class="nav-number">17.</span> <span class="nav-text">进程时间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">18.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程标识-pid"><span class="nav-number">2.</span> <span class="nav-text">进程标识(pid)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fork"><span class="nav-number">3.</span> <span class="nav-text">fork</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#fork原型"><span class="nav-number">3.1.</span> <span class="nav-text">fork原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fork性质"><span class="nav-number">3.2.</span> <span class="nav-text">fork性质</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vfork"><span class="nav-number">4.</span> <span class="nav-text">vfork</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#vfork原型"><span class="nav-number">4.1.</span> <span class="nav-text">vfork原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vfork属性"><span class="nav-number">4.2.</span> <span class="nav-text">vfork属性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#exit"><span class="nav-number">5.</span> <span class="nav-text">exit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wait和waitpid"><span class="nav-number">6.</span> <span class="nav-text">wait和waitpid</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#waitid"><span class="nav-number">7.</span> <span class="nav-text">`waitid</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#wait3和wait4"><span class="nav-number">8.</span> <span class="nav-text">wait3和wait4</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#race-condition"><span class="nav-number">9.</span> <span class="nav-text">race condition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#exec"><span class="nav-number">10.</span> <span class="nav-text">exec</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#更改uid和gid"><span class="nav-number">11.</span> <span class="nav-text">更改UID和GID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解释器文件"><span class="nav-number">12.</span> <span class="nav-text">解释器文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#system"><span class="nav-number">13.</span> <span class="nav-text">system</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程会计"><span class="nav-number">14.</span> <span class="nav-text">进程会计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用户标识"><span class="nav-number">15.</span> <span class="nav-text">用户标识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程调度"><span class="nav-number">16.</span> <span class="nav-text">进程调度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程时间"><span class="nav-number">17.</span> <span class="nav-text">进程时间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">18.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
