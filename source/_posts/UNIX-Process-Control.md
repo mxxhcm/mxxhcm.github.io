@@ -190,7 +190,7 @@ while(getppid() != 1)
 这种方式浪费了很多CPU时间。为了避免这些问题，可以使用signal或者进程间通信解决这些问题。
 
 ## `exec`
-通常使用`fork`创建新的子进程之后，子进程往往会调用一种`exec`函数执行另一个程序。当进程调用`exec`函数时，该进程执行的程序完全替换为新程序，而新程序从其`main`函数开始执行。调用`exec`并不会创建新进程，所以前后的进程ID不变。`exec`使用磁盘上的一个新程序替换了当前进程的text segment, data segment, heap和stack。
+通常使用`fork`创建新的子进程之后，子进程往往会调用一种`exec`函数执行另一个程序。当进程调用`exec`函数时，该进程执行的程序完全替换为新程序，而新程序从其`main`函数开始执行。调用`exec`并不会创建新进程，所以前后的进程ID不变。`exec`使用磁盘上的一个新程序替换了当前进程的text segment, data segment, heap和stack。`exec`函数只有在出错的时候才返回-1，并且设置`errno`。
 总共有七种不同的`exec`函数，它们被统称为`exec`函数。它们的原型如下：
 
 ### `exec`函数原型
@@ -312,11 +312,11 @@ POSIX.1包括了`system`接口，扩展了ISO C定义，描述了`system`在POSI
 
 int system(const char *command);
 ```
-如果`command`是一个空指针，`system`返回非0值，表示当前系统是否有可用的shell。在UNIX中，一定提供了shell，所以`system`是可用的。
-`system`在其实现中调用了`fork`, `exec`和`waitpid`，可能有三种返回值：
-1. `fork`失败或者`waitpid`返回处`EINTR`之外的出错，返回-1，设置errno。
-2. 如果`exec`失败，表示不能执行shell，返回值如同shell执行了exit(127)一样
-3. 所有三个函数都成功，`system`的返回值是shell的termination status，格式在`waitpid`中说明。
+`system`在其实现中调用了`fork`, `exec`和`waitpid`，可能有以下的返回值：
+1. 如果`command`是一个空指针，当前系统是有可用的shell时，`system`返回非0值，否则返回0。在UNIX的各个实现中，一定提供了shell，当`command`是空指针时，总是返回非零值。
+2. `fork`失败或者`waitpid`返回处`EINTR`之外的出错，返回-1，设置errno。
+3. 如果`exec`失败，表示不能执行shell，返回值如同shell执行了exit(127)一样
+4. 所有三个函数都成功，`system`的返回值和在shell中执行相应命令的的termination status一样。
 
 其中一种`system`的可能实现如下所示：```c
 int system(const char *cmdstring)
@@ -360,12 +360,61 @@ while((lastpid = wait(&status) != pid && lastpid !=-1)
 **system函数还有可能会出现漏洞。如果设置了set UID或者set GID位的程序执行`system`，那么这个进程的高级别权限可能会保持下来（现代的系统都解决了这个问题）。如果一个进程正在以特殊的权限(set UID和set GID)运行，它又想生成另一个进程执行另一个程序，它应该直接使用`fork`和`exec`，而且在`fork`之后，`exec`之前要改回普通权限，set UID和set GID程序绝不应该调用`system`函数。**
 
 ## 进程会计
+大多数UNIX系统都提供了一个选项进行进程会计处理。启动该选项之后，每当进程结束时内核就会写一个会记记录。典型的会计记录是一个二进制数据，一般包括命令名，所有的CPU时间总量，UID和GID，启动时间等。所有的标准都没有定义进程会记，所以实现上就千差万别。
+`acct`函数启用和关闭进程会计。
+会记记录结构定义在头文件`<sys/acct.h>`的`struct acct`中，其中`ac_flag`标志记录了进程执行期间的某些事件：
+- `AFORK`，进程是`fork`产生的，但是未调用`exec`
+- `ASU`，进程使用superuser权限
+- `ACORE`，进程转储到core
+- `AXSIG`，进程由一个signal杀死
+- `AEXPND`，扩展的会计条目
+- `ANVER`，新纪录格式
 
-## 用户标识
+在LINUX上，`ac_flag`是枚举类型，所以不能使用`#ifdef`判断是否支持`ACCORE`等flag，可以使用`if !defied HAS_ACCORE`进行判断。
+
+会计记录所需的各个数据（各CPU时间，传输的字符数等）都由内核保存在process table中，并在一个新进程被创建时初始化，进程终止时写一个会计记录。这产生了两个后果：
+1. 对于那些不会终止的进程，比如`init`进程，我们无法获得它的会计记录。内核守护进程也不会终止，所以也不会产生会计记录。
+2. 在会计文件中记录的顺序对应于进程终止的顺序，而不是它们启动的顺序。
+
+会记记录对应于进程而不是程序。在`fork`之后，内核为子进程初始化一个记录，而不是在一个新程序被执行初始化时。`exec`并不会创建一个新的记录，但是相应记录中的名字会改变，`AFORK`标志没了。
+
+## 获得当前登录用户名
+可以使用`getlogin`获得当前登录用户的用户名。
+``` c
+#include <unistd.h>
+
+char *getlogin(void);
+```
 
 ## 进程调度
+调度策略和调度优先级是由内核确定的。
+
+### `nice`, `getpriority`, `setpriority`原型
+``` c
+#include <unistd.h>
+
+int nice(int inc);
+
+#include <sys/resource.h>
+
+int getpriority(int which, id_t who);
+int setpriority(int which, id_t who, int prio);
+```
+
+### `nice`, `getpriority`, `setpriority`属性
+1. `nice`函数将输入的参数加到当前的`nice`值上。`nice`值越大，优先级越低，否则越高。
+2. 在单核的机器中，同时运行一个父进程和一个子进程，它们的`nice`值不同的话，CPU占用比也可能会不同，这取决于进程调度程序如何使用`nice`值。在多核的机器上可能看不到这样的结果。
 
 ## 进程时间
+可以使用`times`获得某进程和它的子进程的CPU时间以及墙上时钟时间。`times`通过`struct tms`传递信息。它包含进程的用户CPU时间，系统CPU时间和子进程的用户CPU时间和系统CPU时间。但是不包含墙上时钟时间，墙上时钟时间是通过函数的返回值得到的，而且得到的时间是相对于过去某个时间点得到的，所以不能使用它的绝对值，要使用相对值。比如第一次调用`times`，记录返回值，等到下一次调用`times`时，用新的值减去刚才保存的值，得到墙上时间时间。
+**所有时间（结构体和返回值）的单位都是滴答数。**
+函数原型如下：``` c
+#include <sys/times.h>
+
+clock_t times(struct tms *buf);
+```
+shell的`time(1)`可以使用`times(2)`实现，看程序。
+
 
 ## 参考文献
 1.《APUE》第三版
