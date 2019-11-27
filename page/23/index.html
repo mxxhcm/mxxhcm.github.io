@@ -327,6 +327,329 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/19/a3c/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/04/19/a3c/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/23/index.html">Asynchronous Methods for Deep Reinforcement Learning</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-19 18:11:56" itemprop="dateCreated datePublished" datetime="2019-04-19T18:11:56+08:00">2019-04-19</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-30 15:59:13" itemprop="dateModified" datetime="2019-10-30T15:59:13+08:00">2019-10-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="摘要">摘要</h2>
+<p>DQN使用experience replay buffer来稳定学习过程。本文提出一个异步框架来代替buffer，稳定学习过程。这个框架同时适用于on-policy和off-policy环境，也能应用于离散动作空间和连续的动作空间，既能训练前馈智能体，也能训练循环智能体。</p>
+<h2 id="introduction">Introduction</h2>
+<p>强化学习算法一般都是online的，而online学习是不稳定的，并且online更新通常都是强相关的。DQN通过引入experience replay buffer解决了这个问题，但是DQN只能应用在off policy算法上。DQN通过引入replay buffer取得了很大成功，但是replay buffer还有以下的几个缺点：</p>
+<ul>
+<li>在每一步交互的时候使用了更多的内存和计算资源</li>
+<li>它只能应用在off policy的算法上，也就是说权重的更新可能会使用到很久之前的数据。</li>
+</ul>
+<p>这篇文章提出不使用replay buffer，而是使用异步的框架，同时在多个相同的环境中操作多个智能体（每个环境中一个智能体）并行的采集数据。这种并行性也能将智能体的数据分解成更稳定的过程（即和experience replay buffer起到了相同的作用），因为在给定的一个时间步，智能体可能会experience很多个不同的states。<br>
+这个框架既可以应用在on policy算法，如Sarsa，n-step methods和actor-critc等方法上，也可以应用在off policy算法如Q-learning上。</p>
+<h2 id="异步框架">异步框架</h2>
+<p>作者给出了一个框架，将够将on-policy search的actor-critic方法以及off-policy value-based的Q-learning方法都包括进去。<br>
+具体的，使用一台机器上的多CPU线程，这样子可以避免在不同机器上传递参数和梯度的消耗。然后，多个并行的actor-learner可能会探索环境的不同部分，每个actor-learner可以设置不同的exploration policy。不同的thread运行不同的exploration policy，多个actor-learner并行执行online update可能比单智能体更新在时间上更不相关。所以这里使用了不同的探索策略取代了DQN中buffer稳定学习过程的作用。<br>
+除了稳定学习过程之外，多个actor-learner还可以减少训练时间，此外，不使用buffer以后还可以使用on-policy的方法进行训练。</p>
+<p><strong>总的来说，下面要介绍的四个算法，前面三个算法都使用了target network，第四个A3C算法没有使用target network。最重要的是所有四个算法都使用了多个actor-learner进行训练，并且使用累计的梯度进行更新（相当于batch的作用）。总共出现了三类参数，一类是network参数，一类是target network参数，一类是thread-specific（每个线程的参数）的参数。thread-specific参数是每个线程自己持有的，通过更新每个线程的参数更新network的参数，然后使用network的参数更新target network的参数，target network参数比network参数更新的要慢很多。<br>
+A3C算法的实质就是在多个线程中同步训练。分为主网络和线程中的网络，主网络不需要训练，主要用来存储和传递参数，每个线程中的网络用来训练参数。总的来说，多个线程同时训练提高了效率，另一方面，减小了数据之间的相关性，比如，线程$1$和$2$中都用主网络复制来的参数计算梯度，但是同一时刻只能有一个线程更新主网络的参数，比如线程$1$更新主网络的参数，那么线程$2$利用原来主网络参数计算的梯度会更新在线程$1$更新完之后的主网络参数上。</strong></p>
+<h3 id="异步的one-step-q-learning">异步的one-step Q-learning</h3>
+<ul>
+<li>每个thread都和它自己的环境副本进行交互，在每一个时间步计算Q-learning loss的梯度。</li>
+<li>通过使用不同的exploration策略，可以改进性能，这里实现exploration policy不同的方式就是使用$\epsilon$的不同取值实现。</li>
+<li>使用一个共享的更新的比较缓慢的target network，就是和DQN中的target network一样。</li>
+<li>同时也使用多个时间步上的累计梯度，和batch挺像的，这就减少了multi actor learner重写其他更新的可能性，同时也在计算效率和数据效率方面做了一个权衡。</li>
+</ul>
+<h4 id="伪代码">伪代码</h4>
+<p><strong>Algorithm 1</strong> 异步的one-step Q-learning－－每个actor-learn线程的伪代码<br>
+用$\theta,\theta^{-}$表示全局共享参数，计数器$T=0$，<br>
+初始化线程时间步计数器$t\leftarrow 0$，<br>
+初始化target network权重$\theta^{-} \leftarrow 0$,<br>
+初始化network梯度$d\theta\leftarrow 0$，<br>
+初始化，得到初始状态$s$，<br>
+<strong>repeat</strong><br>
+$\qquad$使用$\epsilon-$greedy策略采取action $a$，<br>
+$\qquad$接收下一个状态$s’$和reward $r$，<br>
+$\qquad$设置target value，$y=\begin{cases}r,&amp;for\ terminal\ s’ \\ r+\gamma max_{a’}Q(s’,a’;\theta^{-}), &amp;for\ non-terminal\ s’\end{cases}$<br>
+$\qquad$累计和$\theta$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$<br>
+$\qquad s\leftarrow s’$<br>
+$\qquad T\leftarrow T+1, t\leftarrow t+1$<br>
+$\qquad$<strong>if</strong> $T\ \ mod\ \ I_{target} ==0 $，那么<br>
+$\qquad\qquad$更新target network $\theta^{-}\leftarrow 0$<br>
+$\qquad$<strong>end if</strong><br>
+$\qquad$<strong>if</strong> $t\ \ mod\ \ I_{AsyncUpdate} ==0$或者$s$是terminal state，那么<br>
+$\qquad\qquad$使用$d\theta$异步更新$\theta$<br>
+$\qquad\qquad$将累计梯度$d\theta\leftarrow 0$<br>
+$\qquad$<strong>end if</strong><br>
+<strong>until</strong> $T\ge T_{max}$</p>
+<h3 id="异步的one-step-sarsa">异步的one-step Sarsa</h3>
+<h4 id="概述">概述</h4>
+<ul>
+<li>和算法$1$很像，$Q-learning$计算target value使用$r+\gamma max_{a’}Q(s’,a’;\theta^{-})$，而Sarsa计算target value使用$r+\gamma Q(s’,a’;\theta^{-})$，即Q-learning的bahaviour policy和评估的策略是不一样的，而Sarsa的behaviour policy和评估策略是一样的。</li>
+<li>使用target network，</li>
+<li>同时使用多个时间步的累计梯度更新用来稳定学习过程。</li>
+</ul>
+<h4 id="伪代码-v2">伪代码</h4>
+<p>和算法$1$很像。</p>
+<h3 id="异步的n-step-q-learning">异步的n-step Q-learning</h3>
+<h4 id="概述-v2">概述</h4>
+<ul>
+<li>计算$n-step$的return</li>
+<li>在计算一次更新的时候，使用exploration policy采样到$t_{max}$步或者到terminal state。然后累加从上次更新到$t_{max}$时间步的reward。</li>
+<li>然后计算$n-step$更新对于上次更新之后所有state-action的梯度。</li>
+<li>使用单个时间步中的累计梯度进行更新。</li>
+<li>使用了target network。</li>
+</ul>
+<h4 id="伪代码-v3">伪代码</h4>
+<p><strong>Algorithm 2</strong> 异步的n-step Q-learning算法－－每个actor-learner线程的伪代码<br>
+用$\theta,\theta^{-}$表示全局共享的network参数和target network参数，用$T=0$表示全局共享计数器。<br>
+初始化线程步计数器$t\leftarrow 1$，<br>
+初始化target network参数$\theta^{-}\leftarrow \theta$<br>
+初始化每个线程的参数参数$\theta^{-}\leftarrow \theta$<br>
+初始化网络梯度$d\theta\leftarrow 0$<br>
+<strong>repeat</strong><br>
+$\qquad$重置累计梯度$d\theta\leftarrow0$<br>
+$\qquad$同步每个线程的参数$\theta’=\theta$<br>
+$\qquad t_{start}=t$<br>
+$\qquad$得到$s_t$<br>
+$\qquad$<strong>repeat</strong><br>
+$\qquad\qquad$根据基于$Q(s_t,a;\theta’)$的$\epsilon-greedy$策略执行动作$a_t$，<br>
+$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，<br>
+$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>
+$\qquad$ <strong>until</strong> terminal $s_t$或者$t-t_{start}==t_{max}$<br>
+$\qquad$设置奖励$R=\begin{cases}0,&amp;for\ terminal\ s_t\max_aQ(s_t,a;\theta^{-}), &amp;for\ non-terminal\ s_t\end{cases}$<br>
+$\qquad$<strong>for</strong> $i\in{t-1,\cdots,t_{start}}$ do<br>
+$\qquad\qquad R\leftarrow r_i+\gamma R$<br>
+$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (R-Q(s_t,a;\theta’))^2}{\partial \theta’}$<br>
+$\qquad$<strong>end for</strong><br>
+$\qquad$使用$d\theta$异步更新$\theta$.<br>
+$\qquad$<strong>if</strong>$\quad T\quad mod\quad I_{target}==0$那么<br>
+$\qquad\qquad\theta^{-}\leftarrow \theta$<br>
+$\qquad$<strong>end if</strong><br>
+<strong>until</strong> $T\gt T_{max}$</p>
+<h3 id="异步的advantage-actor-critic">异步的advantage actor-critic</h3>
+<h4 id="概述-v3">概述</h4>
+<ul>
+<li>A3C算法，是一个on-policy的actor-critic方法，使用值函数$V(s_t;\theta_v)$辅助学习policy $\pi(a_t|s_t;\theta)$，同时这里使用$n-step$的returns更新policy和value function。</li>
+<li>每隔$t_{max}$个action更新一次或者到了terminal state更新一次。</li>
+<li>Actor的更新方向为$\nabla_{\theta’}log\pi(a_t|s_t;\theta’)A(s_t,a_t;\theta,\theta_v)$，其中$A$是advantage function的一个估计，通过$\sum_{i=0}^{k-1} \gamma^ir_{t+i}+\gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$计算。</li>
+<li>这里同样使用并行的actor-learner和累计的梯度用来稳定学习。$\theta$和$\theta_v$在实现上通常共享参数。</li>
+<li>添加entropy正则项鼓励exploration。包含了正则化项的的objective function的梯度为$\nabla_{\theta’}log\pi(a_t|s_t;\theta’)(R_t-V(s_t;\theta_v))+\beta\nabla_{\theta’}H(\pi(s_t;\theta’))$。这里的$R$就是上面的$\sum_{i=0}^{k-1}\gamma^ir_{t+i}+\gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。</li>
+<li>Critic的更新方向通过最小化loss来实现，这里的loss指的是TD-error，即$\sum_{i=0}^{k-1}\gamma^ir_{t+i} + \gamma^kV(s_{t+k};\theta_v) - V(s_t;\theta_v)$。</li>
+<li>没有使用target network。</li>
+</ul>
+<h4 id="伪代码-v4">伪代码</h4>
+<p><strong>Algorithm 3</strong> A3C－－每个actor-learn线程的伪代码<br>
+用$\theta,\theta_v$表示全局共享参数，用$T=0$表示全局共享计数器，<br>
+用$\theta’,\theta’_v$表示每个线程中的参数<br>
+初始化线程步计数器$t\leftarrow 1$，<br>
+<strong>repeat</strong><br>
+$\qquad$重置梯度$d\theta\leftarrow 0,d\theta_v\leftarrow 0$，<br>
+$\qquad$同步线程参数$\theta’=\theta,\theta’_v=\theta_v$<br>
+$\qquad t_{start}=t$<br>
+$\qquad$得到状态$s_t$，<br>
+$\qquad$<strong>repeat</strong><br>
+$\qquad\qquad$根据策略$\pi(a_t|s_t;\theta’)$执行动作$a_t$，<br>
+$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_t$，<br>
+$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>
+$\qquad$ <strong>until</strong> terminal $s_t$或者$t-t_{start}==t_{max}$<br>
+$\qquad$设置奖励$R=\begin{cases}0,&amp;for\ terminal\ s_t\\ V(s_t,\theta’_v), &amp;for\ non-terminal\ s_t\end{cases}$<br>
+$\qquad$<strong>for</strong> $i\in{t-1,\cdots,t_{start}}$ do<br>
+$\qquad\qquad R\leftarrow r_i+\gamma R$<br>
+$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$<br>
+$\qquad\qquad$累计和$\theta’_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta’_v))^2}{\partial \theta’_v}$<br>
+$\qquad$<strong>end for</strong><br>
+$\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.<br>
+<strong>until</strong> $T\ge T_{max}$</p>
+<h3 id="优化方法">优化方法</h3>
+<p>作者尝试了三种不同的优化方法，带有momentum的SGD，带有共享statistics的RMSProp以及不带shared statistics的RMSProp。</p>
+<h2 id="实验">实验</h2>
+<h3 id="优化细节">优化细节</h3>
+<p>作者在异步框架中测试了两个优化算法SGD和RMSProp，并且因为效率原因没有使用线程锁。</p>
+<h3 id="设置">设置</h3>
+<ul>
+<li>Atari环境中，每个实验使用$16$个actor-learner线程。</li>
+<li>所有方法都每隔$5$个actions更新一次，并且使用共享的RMSProp进行优化。</li>
+<li>三个异步的value-based算法使用每隔$40000$帧更新的共享target network，</li>
+<li>使用了DQN中action repeat of $4$.</li>
+<li>网络架构和DQN一样</li>
+<li>基于值的方法只有一个线性输出层，每个输出单元代表一个action的值。</li>
+<li>actor-critic方法有两个输出层，一个softmax表示选择某一个action的概率，一个线性输出代表值函数。</li>
+<li>所有实验使用的$\gamma=0.99$，RMSProp的衰减因子$\alpha = 0.99$。</li>
+<li>Value-based方法采用的exploration rate $\epsilon$有三个取值$\epsilon_1,\epsilon_2,\epsilon_3$，相应的概率为$0.4,0.3,0.3$，它们的值在前$4$百万帧中从$1$退火到$0.1,0.01,0.5$。</li>
+<li>A3C使用了entropy进行正则化，entropy项的权重为$\beta=0.01$</li>
+<li>初始学习率从分布$LogUniform(10^{-4},10^{-2})$中进行采样，在训练过程中退火到$0$。</li>
+</ul>
+<h2 id="代码">代码</h2>
+<h3 id="代码地址">代码地址</h3>
+<p><a href="https://github.com/ikostrikov/pytorch-a3c" target="_blank" rel="noopener">https://github.com/ikostrikov/pytorch-a3c</a></p>
+<h3 id="问题">问题</h3>
+<p>如果直接git下来运行的话，会出问题，需要在main()下加上这样一句</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mp.set_start_method(<span class="string">"forkserver"</span>)</span><br></pre></td></tr></table></figure>
+<p>可能是因为Unix系统默认的多进程方式是fork，这里只要不设置为fork,设置为其他两种方式spawn, forkserver都行。</p>
+<h3 id="参考文献">参考文献</h3>
+<p>1.<a href="https://arxiv.org/pdf/1602.01783.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1602.01783.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/18/distral/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2359,228 +2682,6 @@ array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/04/13/python-深复制和浅复制/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/04/13/python-深复制和浅复制/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/23/index.html">python中的深复制和浅复制</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-13 14:43:31" itemprop="dateCreated datePublished" datetime="2019-04-13T14:43:31+08:00">2019-04-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-07 00:22:27" itemprop="dateModified" datetime="2019-05-07T00:22:27+08:00">2019-05-07</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简单赋值-浅拷贝-深拷贝">简单赋值，浅拷贝，深拷贝</h2>
-<h3 id="简单赋值">简单赋值</h3>
-<h4 id="str">str</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">'hello'</span></span><br><span class="line">b = <span class="string">'hello'</span></span><br><span class="line">c = a</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>2432356754632  2432356754632  2432356754632</p>
-</blockquote>
-<p>这里打印出a，b，c的id是一样的，因为他们全是指向’hello’这个字符串在内存中的地址</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = <span class="string">'world'</span></span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>2432356757376  2432356754632  2432356754632</p>
-</blockquote>
-<p>将a指向一个新的字符串’world’,所以变量a的地址就改变了，指向字符串’world’的地址，但是b和c还是指向字符串’hello’的地址。</p>
-<h4 id="list">list</h4>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="string">'hello'</span>]</span><br><span class="line">b = [<span class="string">'hello'</span>]</span><br><span class="line">c = a</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>2432356788424 2432356797064 2432356788424</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">b = [<span class="string">'world'</span>]</span><br><span class="line">print(id(a),id(b),id(c))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>2432356798024 2432356797064 2432356788424</p>
-</blockquote>
-<h4 id="结论">结论</h4>
-<p>简单赋值是先给一个变量分配内存，然后把变量的地址赋值给一个变量名。<br>
-对于一些不可变的类型，比如str，int等，某一个值在内存中的地址是固定的，如果用赋值操作直接指向一个值的话，那么变量名指向的就是这个值在内存中地址。<br>
-比如a=‘hello’,b=‘hello’,这样a和b的id是相同的，都指向内存中hello的地址<br>
-对于一些可变的类型，比如list，因为他是可变的，所以如果用赋值操作指向同一个值的话，那么这几个变量的地址也不一样<br>
-比如a =[‘hello’],b=[‘hello’],这样a和b的id是不同的，虽然他们指向的值是一样的，</p>
-<h3 id="浅拷贝">浅拷贝</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a = [<span class="string">'hello'</span> , [<span class="number">123</span>] ]</span><br><span class="line">b = a[:]</span><br><span class="line">a = [<span class="string">'hello'</span> , [<span class="number">123</span>] ]</span><br><span class="line">b = a[:]</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>[‘hello’, [123]] [‘hello’, [123]]<br>
-2432356775368 2432356775432 2432356754632 2432356774984<br>
-2432356754632 2432356774984</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt;a[<span class="number">0</span>] = <span class="string">'world'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(a,b)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(a),id(b))</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>[‘world’, [123]] [‘hello’, [123]]<br>
-2432356775368 2432356775432<br>
-2432356756424 2432356774984<br>
-2432356754632 2432356774984</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">a[<span class="number">1</span>].append(<span class="number">3</span>)</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>[‘world’, [123, 3]] [‘hello’, [123, 3]]<br>
-2432356775368 2432356775432<br>
-2432356756424 2432356774984<br>
-2432356754632 2432356774984</p>
-</blockquote>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">a[<span class="number">1</span>] = [<span class="number">123</span>]</span><br><span class="line">print(a,b)</span><br><span class="line">print(id(a),id(b))</span><br><span class="line">print(id(a[<span class="number">0</span>]),id(a[<span class="number">1</span>]))</span><br><span class="line">print(id(b[<span class="number">0</span>]),id(b[<span class="number">1</span>]))</span><br><span class="line">``` </span><br><span class="line">&gt; [<span class="string">'world'</span>, [<span class="number">123</span>]] [<span class="string">'hello'</span>, [<span class="number">123</span>, <span class="number">3</span>]]</span><br><span class="line"><span class="number">2432356775368</span> <span class="number">2432356775432</span></span><br><span class="line"><span class="number">2432356756424</span> <span class="number">2432356822984</span></span><br><span class="line"><span class="number">2432356754632</span> <span class="number">2432356774984</span></span><br><span class="line"></span><br><span class="line"><span class="comment">### 深拷贝</span></span><br><span class="line">``` python</span><br><span class="line"><span class="keyword">from</span> copy <span class="keyword">import</span> deepcopy</span><br><span class="line">a = [<span class="string">'hello'</span>,[<span class="number">123</span>,<span class="number">234</span>]</span><br><span class="line">b = deepcopy(a)</span><br></pre></td></tr></table></figure>
-<p>a，b以及a，b中任何元素（除了str，int等类型）的地址都是不一样的</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2630,7 +2731,7 @@ array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">281</span>
+                    <span class="site-state-item-count">282</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3470,7 +3571,9 @@ array[array &gt; 0].size    #统计一个数组有多少个非零元素，不论
                     
                       
                     
-                    <span class="site-state-item-count">382</span>
+                      
+                    
+                    <span class="site-state-item-count">383</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
