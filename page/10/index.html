@@ -327,6 +327,206 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/23/gradient-method-proximal-policy-optimization/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/09/23/gradient-method-proximal-policy-optimization/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">gradient method proximal policy optimization</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-23 16:57:43" itemprop="dateCreated datePublished" datetime="2019-09-23T16:57:43+08:00">2019-09-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-27 10:33:39" itemprop="dateModified" datetime="2019-09-27T10:33:39+08:00">2019-09-27</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="abstract">Abstract</h2>
+<p>标准的policy gradietn每一次更新需要一个样本，本文提出的PPO能够使用minibatch更新。PPO有着TRPO的优势，但是更容易实现，更普遍，更好的采样复杂度。</p>
+<h2 id="introduction">Introduction</h2>
+<h3 id="policy-gradient">Policy Gradient</h3>
+<p>目标函数：<br>
+$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t \right] \tag{1}$$<br>
+约束条件：<br>
+$$\vert d\theta\vert^2 \le \delta \tag{2}$$</p>
+<h3 id="natural-policy-gradient">Natural Policy Gradient</h3>
+<p>目标函数：<br>
+$$ L^{NPG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t  \right]\tag{3}$$<br>
+约束条件：<br>
+$$\hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}$$<br>
+等价于<br>
+$$\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{5}$$</p>
+<h3 id="trust-region-policy-optimization">Trust Region Policy Optimization</h3>
+<p>目标函数：<br>
+$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{old}(a_t|s_t)}\hat{A}_t \right]\tag{6}$$<br>
+约束条件：<br>
+$$\hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{7}$$</p>
+<h3 id="proximal-policy-optimization">Proximal Policy Optimization</h3>
+<p>目标函数：<br>
+$$L^{PPO}(\theta) =\hat{\mathbb{E}}_t \left[L_t^{CLIP+VF+S}(\theta) - \beta\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t) \right] \right] \tag{8}$$<br>
+其中$S$表示entropy bonus。<br>
+$$L_t^{CLIP}(\theta) = \hat{\mathbb{E}}_t \left[\min(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)},\ clip(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)}, 1-\epsilon, 1+\epsilon) \hat{A}_t) \right]\tag{9}$$<br>
+$$L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ} )^2 \tag{10}$$</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1707.06347.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1707.06347.pdf</a><br>
+2.<a href="https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/23/Newton-method/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2291,195 +2491,6 @@ $2$的幂有一个特征，就是只有一个二进制是$1$，其余的所有�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/12/log-derivative-trick/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/12/log-derivative-trick/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">log derivative trick</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-12 19:21:10" itemprop="dateCreated datePublished" datetime="2019-09-12T19:21:10+08:00">2019-09-12</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-09-13 11:01:21" itemprop="dateModified" datetime="2019-09-13T11:01:21+08:00">2019-09-13</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/高等数学/" itemprop="url" rel="index"><span itemprop="name">高等数学</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="什么是log-derivative-trick">什么是log derivative trick</h2>
-<p>$$\nabla_{\theta} log p(\mathbf{x}; \theta) = \frac{\nabla_{\theta} p(\mathbf{x}; \theta)}{ p(\mathbf{x}; \theta)}$$</p>
-<h2 id="为什么？">为什么？</h2>
-<p>导数公式：<br>
-$$(log_a x)’ = \frac{1}{x ln\ a}$$<br>
-$$(ln\ x)’ = \frac{1}{x}$$<br>
-所以：<br>
-$$(ln\ p(\mathbf{x};\theta))’ = \frac{1}{p(\mathbf{x}; \theta)}$$<br>
-\begin{align*}<br>
-\nabla_{\theta} ln\ p(\mathbf{x};\theta) &amp;=\left[\frac{\partial ln\ p(\mathbf{x}; \theta)}{\partial \theta} \right]^T \\<br>
-&amp;= \left[\frac{\partial ln\ p(\mathbf{x}; \theta)}{\partial p(\mathbf{x};\theta)}\frac{\partial p(\mathbf{x};\theta)}{\partial \theta} \right]^T  \\<br>
-&amp;= \left[\frac{1}{ p(\mathbf{x};\theta)}\frac{\partial p(\mathbf{x};\theta)}{\partial \theta} \right]^T \\<br>
-&amp;= \frac{1}{ p(\mathbf{x};\theta)}\left[\frac{\partial p(\mathbf{x};\theta)}{\partial \theta} \right]^T \\<br>
-&amp;=\frac{\nabla_{\theta}p(\mathbf{x}; \theta)}{p(\mathbf{x}; \theta)}\\<br>
-\end{align*}</p>
-<p>其实就是$\nabla log\ p = \frac{\nabla p}{p}$。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://math.stackexchange.com/questions/2554749/whats-the-trick-in-log-derivative-trick" target="_blank" rel="noopener">https://math.stackexchange.com/questions/2554749/whats-the-trick-in-log-derivative-trick</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2529,7 +2540,7 @@ $$(ln\ p(\mathbf{x};\theta))’ = \frac{1}{p(\mathbf{x}; \theta)}$$<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">285</span>
+                    <span class="site-state-item-count">286</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3375,7 +3386,9 @@ $$(ln\ p(\mathbf{x};\theta))’ = \frac{1}{p(\mathbf{x}; \theta)}$$<br>
                     
                       
                     
-                    <span class="site-state-item-count">385</span>
+                      
+                    
+                    <span class="site-state-item-count">386</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3626,11 +3639,11 @@ $$(ln\ p(\mathbf{x};\theta))’ = \frac{1}{p(\mathbf{x}; \theta)}$$<br>
   
     
       
-    
-      
-    
-      
         
+      
+    
+      
+    
       
     
       
