@@ -88,7 +88,7 @@ int atexit(void (*function)(void));
 共享库使得可执行文件中不再需要包含公用的库函数，只需要在所有进程都可引用的存储区保存这种库例程的一个副本。程序第一次执行或者第一次调用某个库函数时，使用动态链接的方法将程序和共享库函数链接，这减少了每个可执行文件的长度，但是增加了一些时间运行开销。这种时间开销发生在程序第一次被执行时，或者每个共享库函数第一次被调用时。共享库的另一个优点是可以使用库函数的新版本代替老版本而无需对使用该库的程序重新链接和编辑。
 
 ## 内存空间分配
-ISO C说明了三个用于memory allocation的函数，`malloc`, `calloc`和`realloc`，它们的原型如下：
+ISO C说明了三个用于memory allocation的函数，`malloc`, `calloc`和`realloc`，它们的原型如下，更多关于C中`malloc`的内容可以查看[C/C++ malloc(alloc) free new and delete]()。
 
 ### `malloc`, `calloc`和`realloc`原型
 ``` c
