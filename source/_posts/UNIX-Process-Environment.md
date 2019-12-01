@@ -120,7 +120,7 @@ void *reallocarray(void *ptr, size_t nmemb, size_t size);
 UNIX内核并不使用环境变量，通常都是应用程序使用这些环境变量。比如shell使用了大量的环境变量。
 
 ### 标准定义
-ISO C定义了`getev`函数可以获取环境变量。但是ISO C没有定义任何环境变量。SUS环境变量包括POSIX.1和XSI环境变量。
+ISO C定义了`getenv`函数可以获取环境变量。但是ISO C没有定义任何环境变量，SUS环境变量包括POSIX.1和XSI环境变量。
 除了获取环境变量，有时候我们也需要设置环境变量。ISO C没有定义获取环境变量的函数。SUS除了定义了ISO C，还定义了`putenv`, `setenv`和`unsetenv`对环境变量进行操作。
 
 ### `putenv`,`setenv`和`unsetenv`原型
