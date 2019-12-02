@@ -66,7 +66,7 @@ void _exit(int status);
 5. `main`返回返回一个整型值和用该值调用`exit`是等价的。对于某些C编译器和UNIX lint(1)程序来说，会产生警告信息，因为这些编译器并不了解`main`中的`return`和`exit`的作用是相同的。避开这种警告信息的一种方法是在`main`中使用`return`而不是`exit`，这样做的结果是UNIX grep命令无法找出程序中所有的`exit`调用。另一个方法是将`main`声明为`void`而不是`int`，然后调用`exit`，但是这不并不是标准，ISO C和POSIX.1定义`main`的返回值应当是带符号整形。
 
 关于更多`exit`函数的内容，可以查看[]()。
-关于`return`和`exit`的区别，更多可以查看[]()。
+关于`exit`和`return`的内容，更多可以查看[C/C++ exit and return]()。
 
 ### `atexit`
 每个进程可以通过`atexit` register至多32个由`exit`自动调用的函数，这些函数被称为exit handler（终止处理程序）。```c
