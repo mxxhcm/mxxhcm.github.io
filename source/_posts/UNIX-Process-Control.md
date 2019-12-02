@@ -131,17 +131,18 @@ pid_t waitpid(pid_t pid, int *wstatus, int options);
 
 ### `wait`和`waitpid`性质
 1. 在一个子进程终止前，`wait`使其调用者阻塞，直到任意一个子进程终止。`wait`返回终止子进程的进程ID。如果`wait`要等待一个特定的进程，将返回的pid和要等待的pid相比，如果不相等，将这个pid和termination status保存起来，再次调用`wait`，直到等到目标pid。下一次想要等待一个特定进程的时候，现场看已经终止的进程列表中是否已有它 ，没有的haunted继续调用`wait`。
-2. `waitpid`可以指定等待的进程的pid。当`pid`为-1时，`waitpid`和`wait`一样。当`pid`大于或者小于0时，等待相应的pid（绝对值）。当pid等于0时，等待gid等于调用进程组id的任意一个子进程。
-3. 而`waitpid`可以设置使得调用不阻塞。
-4. `waitpid`通过`WUNTRACED`和`WCONTINUED`选择支持job control。
-5. 对于`wait`，只有当调用进程没有子进程时，才出错。对于`waitpid`，指定的进程或者进程组不存在，或者参数pid不是调用进程的子进程时，都会出错。
-6. `wstatus`是一个整形指针。如果它不为空指针，终止进程的终止状态就存放在它所指的单元内。
-7. `wstatus`指向的整形变量的意义是由实现定义的，其中的某一些位表示exit status，即正常退出。另外一些位表示signal number，表示不正常退出，一位表示是否产生core file，等等。POSIX.1指定了termination status可以用`<sys/wait.h>`中定义的宏查看。四个互斥宏可以用来取得进程终止的原因：
+2. ISO中定义了`waitpid`中option的四个可能值：0，`WNOHANG`, `WUNTRACED`和`WCONTINUED`。POSXI扩展了许多其他选项。其中0表示阻塞调用，`WNOHANG`表示如果没有子进程结束就立刻退出，`WUNTRACED`表示如果一个子进程停止了也返回，`WCONTINUED`表示一个子进程恢复运行了也会返回。
+3. 指定option为0时，设置`waitpid`阻塞等待指定的进程pid。当`pid`为-1时，`waitpid`和`wait`一样。当`pid`大于或者小于0时，等待相应的pid（绝对值）。当pid等于0时，等待gid等于调用进程组id的任意一个子进程。
+4. 指定option为`WNOHANG`，设置`waitpid`不阻塞，表示如果没有子进程结束，就立刻返回。在Linux上，`WNOHANG`是1。
+5. 指定option为`WUNTRACED`和`WCONTINUED`，设置`waitpid`支持job control。
+6. 对于`wait`，只有当调用进程没有子进程时，才出错。对于`waitpid`，指定的进程或者进程组不存在，或者参数pid不是调用进程的子进程时，都会出错。
+7. `wstatus`是一个整形指针。如果它不为空指针，终止进程的终止状态就存放在它所指的单元内。
+8. `wstatus`指向的整形变量的意义是由实现定义的，其中的某一些位表示exit status，即正常退出。另外一些位表示signal number，表示不正常退出，一位表示是否产生core file，等等。POSIX.1指定了termination status可以用`<sys/wait.h>`中定义的宏查看。四个互斥宏可以用来取得进程终止的原因：
     - `WIFEXITED(status)`，如果status是一个正常终止子进程返回的，为true。执行`WEXITSTATUS(statue)`获取子进程传递给`exit`或者`_exit`的参数的低八位。
     - `WIFSIGNALED(status)`，如果status是一个异常终止子进程返回的，为true。执行`WTERMSIG(status)`获取使得子进程终止的signal。
     - `WIFSTOPPED(status)`，如果status是一个当前暂停的子进程返回的，为true。执行`WSTOPSIG(status)`获取使得子进程暂停的signal。
     - `WIFCONTINUED(status)`，。
-8. `fork`两次可以让原始进程不用自己调用`wait`，也可以避免产生僵尸进程。
+9. `fork`两次可以让原始进程不用自己调用`wait`，也可以避免产生僵尸进程。
 
 ## `waitid`
 ### `waitid`原型
