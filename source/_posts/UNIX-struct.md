@@ -6,7 +6,6 @@ tags:
 categories: UNIX
 ---
 
-##
 
 struct FILE
 {
@@ -18,6 +17,8 @@ struct DIR
 
 };
 
+## 结构体
+POSIX定义了
 struct dirent
 {
 

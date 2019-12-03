@@ -26,7 +26,9 @@ x 2
 ```
 
 ## 分数转二进制
-$15/32$转换为二进制小数
+将分数转换成小数。
+下面的做法只针对于这一个，对于其他的一些并不简单。
+$15/32$转换为二进制小数？？这个是不是有问题，如果分母是28怎么算？？？
 分开来算，
 $15 = (1111)\_2 = 2^3 + 2^2 + 2^1 + 2^0 $
 $32 = (100000)\_2 = 2^5 $
@@ -87,3 +89,4 @@ This can be written in hexadecimal form 4055480000000000
 2.https://www.geeksforgeeks.org/ieee-standard-754-floating-point-numbers/
 3.https://www.cnblogs.com/xkfz007/articles/2590472.html
 4.https://www.cnblogs.com/weixuqin/p/7086442.html
+5.http://cs.furman.edu/digitaldomain/more/ch6/dec_frac_to_bin.htm

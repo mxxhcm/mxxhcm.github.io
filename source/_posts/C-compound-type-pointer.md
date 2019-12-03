@@ -113,7 +113,12 @@ int b = *p; //b被初始化为32,p存放的是val的地址，*p获得该地址�
 也就是说，对于一个给定类型的指针，将它加一，得到的新指针指向下一个同类型的变量，这也是声明指针类型的作用。
 
 ### 指针的大小
-任何类型的指针本身所占的大小都是相等的，取决于计算机的地址大小，如果是`32`位的地址，指针的大小就是`4`个字节，如果是`64`位的地址，指针的大小就是`8`个字节。
+任何类型的指针本身所占的大小都是相等的，取决于计算机的地址大小，如果是`32`位的地址，指针的大小就是`4`个字节，如果是`64`位的地址，指针的大小就是`8`个字节。!!!!这是错误的。。
+> The size of a pointer depends on many factors - including the CPU architecture, compiler, Operating System etc.
+Usually the size is equal to the word size of the underlying processor architecture, and the size of total addressable memory (including virtual memory).
+So, for a 32bit computer, the pointer size can be 4 bytes; 64bit computers can have 8 bytes. Or, a 64bit computer running a 32bit OS will have 4 bytes. Still, under a specific architecture, all types of pointers (void*, int*, char*, long* etc) will have same size (except function pointers).
+That's, pointers in C (or C++) doesn't have a fixed size.
+
 
 ### 算术运算
 C的算术运算只有两种形式。第一种是指针加减一个整数，第二种是两个指针相减。
@@ -177,3 +182,4 @@ char *cp = ch;
 2.《C和指针》
 3.https://stackoverflow.com/questions/54621080/lvalues-in-the-iso-c11-standard
 4.http://www.open-std.org/jtc1/sc22/WG14/www/docs/n1570.pdf
+5.https://www.quora.com/What-is-the-size-of-a-pointer-in-C`

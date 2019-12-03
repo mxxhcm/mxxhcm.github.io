@@ -98,8 +98,8 @@ pid_t vfork(void);
 关于`exit`函数的介绍，可以查看[C/C++ exit and return]()。
 总共有八种方式可以让进程终止，包括五种正常和三种异常，前五种是正常终止，后五种是异常终止：
 1. 从`main`返回，相当于调用`exit`。
-2. 调用`exit`，ISO C定义的，它的操作包括调用各个exit handler，处理所有标准I/O流。
-3. 调用`_exit`或者`_Exit`，ISO C定义了`_Exit`，而POSIX.1说明了`_exit`。它的目的是提供一种无需运行exit handler或者信号处理程序而终止的方法。是否对标准I/O流进行flush，取决于实现。在UNIX中，`_Exit`和`_exit`是同义的，并不flush I/O流。
+2. 调用`exit`，ISO C定义的，它的操作包括调用各个exit handler，处理所有标准I/O流。`exit`会冲洗标准I/O流，如果这是函数库所采取的唯一的动作，那么不会出现什么问题。而如果`exit`除了冲洗标准I/O流，还会关闭I/O流，那么在`vfork`时就会出问题了。当然，现在的`exit`实现都不会关闭流了，这个操作一般都交给内核实现。
+3. 调用`_exit`或者`_Exit`，ISO C定义了`_Exit`，而POSIX.1说明了`_exit`。它的目的是提供一种无需运行exit handler或者信号处理程序而终止的方法。是否对标准I/O流进行flush，取决于实现。在UNIX中，`_Exit`和`_exit`是同义的，并不冲洗I/O流。
 4. 最后一个线程从其启动例程返回
 5. 最后一个线程调用`pthread_exit`
 6. 调用`abort`

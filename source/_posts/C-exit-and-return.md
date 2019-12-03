@@ -25,21 +25,28 @@ categories: C/C++
 **如果子进程在父进程之前终止**，那么父进程是无法获取它的终止状态的。内核为每一个终止进程保留了一部分信息，当终止进程的父进程调用`wait`或者`waitpid`时，可以获取这些信息，这些信息包含终止进程PID，进程的终止状态，进程占用的CPU时间总量。内核可以释放这些进程的内存，关闭打开的文件。如果一个进程终止了，但是它的父进程没有等待它，它被称为一个zombie（僵尸）进程。如果一个长期运行的进程，`fork`了很多子进程，除非父进程等到取得子进程的终止状态，要不它们就会变成僵尸进程。**当父进程结束时，僵尸进程就会结束？？？**
 `init`的子进程，不会变成僵尸进程，因为`init`进程被编写成无论何时只要有一个子进程终止，`init`就会调用一个`wait`函数获得其终止状态。
 
-### `exit`函数
+### `exit`和`_Exit`函数
 #### C11标准定义
-定义在`<stdlib.h>`头文件中
+`exit`定义在`<stdlib.h>`头文件中
 > void exit( int exit_code ); (until C11)
 > _Noreturn void exit( int exit_code );(since C11)
 > Causes normal program termination to occur.
 > Several cleanup steps are performed:
-- functions passed to atexit are called, in reverse order of registration
-- all C streams are flushed and closed 
-- files created by tmpfile are removed
-- control is returned to the host environment. If exit_code is zero or EXIT_SUCCESS, an implementation-defined status, indicating successful termination is returned. If exit_code is EXIT_FAILURE, an implementation-defined status, indicating unsuccessful termination is returned. In other cases implementation-defined status value is returned.
+- functions passed to atexit are called, in reverse order of registration（调用atexit注册的函数）
+- all C streams are flushed and closed （冲洗C的缓冲区，不是不关闭流吗？？？）
+- files created by tmpfile are removed  (删除临时文件）
+- control is returned to the host environment. If exit_code is zero or EXIT_SUCCESS, an implementation-defined status, indicating successful termination is returned. If exit_code is EXIT_FAILURE, an implementation-defined status, indicating unsuccessful termination is returned. In other cases implementation-defined status value is returned.（将控制权返还给操作系统。）
+
+`-Exit`定义在`<stdlib.h>`头文件中
+> void _Exit( int exit_code ); (since C99) (until C11)
+> _Noreturn void _Exit( int exit_code );(since C11)
+> Causes normal program termination to occur without completely cleaning the resources.
+> Functions passed to at_quick_exit() or atexit() are not called. Whether open streams with unwritten buffered data are flushed, open streams are closed, or temporary files are removed is implementation-defined. （不调用atexit注册的函数，是否冲洗缓冲区，关闭打开的stream和删除临时文件是由实现定义的，UNIX都不做这些操作）
+> If exit_code is 0 or EXIT_SUCCESS, an implementation-defined status indicating successful termination is returned to the host environment. If exit_code is EXIT_FAILURE, an implementation-defined status, indicating unsuccessful termination, is returned. In other cases an implementation-defined status value is returned.
 
 #### 性质
-1. `exit`和`_Exit`是ISO C的内容，而`_exit`是POSIX.1的内容
-2. 它们都用于正常终止一个程序，`_Exit`和`_exit`立刻进入内核，而`exit`先执行一些清理操作，然后返回内核。`exit`函数总是执行一个标准I/O库的关闭操作，对于所有打开的流调用`fclose`函数，所有带有未写缓冲的标准I/O流被flush。
+1. `exit`和`_Exit`是ISO C的内容，而`_exit`是POSIX.1的内容。
+2. 它们都用于正常终止一个程序，`_Exit`和`_exit`立刻进入内核，`_Exit`和`_exit`是否冲洗缓冲区是由实现定义的，UNIX上选择不冲洗。而`exit`先执行一些清理操作，然后返回内核，`exit`函数首先调用`atexit`函数登记的终止处理程序，然后冲洗标准I/O流，现代的`exit`实现都不会关闭标准I/O流，之前的一些实现还会关闭标准I/O流，这在调用`vfork`的时候可能会出现问题，还会删除临时文件。
 3. 三个退出函数都需要一个整形的参数，被称为exit status。
 4. 如果满足以下条件：
     - 调用这三个函数不带终止状态
@@ -78,7 +85,6 @@ int atexit(void (*function)(void));
 3. ISO C和POSIX.1标准规定，`exit`首先调用各个exit handler，然后使用`fclose`关闭所有标准I/O流。
 4. POSIX.1对ISO C进行了扩展，如果程序调用了任何`exec`函数，清除exit handler。
 5. 内核执行一个程序的唯一方法是调用一个`exec`函数。进程自愿终止的唯一办法是显式或者隐式的（通过`exit`）调用`_exit`和`_Exit`。
-
 
 
 ## `return`

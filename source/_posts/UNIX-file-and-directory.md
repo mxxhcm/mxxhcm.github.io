@@ -468,7 +468,7 @@ long telldir(DIR *dirp);
 void seekdir(DIR *dirp, long loc);
 ```
 ### 函数性质
-1. `opendir`将文件转换成目录处理函数需要的`DIR`结构，而`fdopendir`将文件描述符转换成目录处理函数需要的`DIR`结构。
+1. `opendir`将文件转换成目录处理函数需要的`DIR`结构，而`fdopendir`将文件描述符转换成目录处理函数需要的`DIR`结构。这里的`DIR`到底是什么，没有告诉，so上有一个回答说它是不透明数据类型，只需要使用它，不需要知道它的定义[3]。
 2. `telldir`和`seekdir`不是POSIX.1的组成部分，但是它是SUS的XSI扩展。所有UNIX系统都会提供这两个实现。
 3. `struct dirent`结构体定义在`<dirent.h>`头文件中，它与实现相关，但是必须包含以下两个成员：``` c
 ino_d d_ino;
@@ -503,3 +503,4 @@ char *getcwd(char *buf, size_t size);
 1.《APUE》第三版
 2.https://unix.stackexchange.com/questions/21251/execute-vs-read-bit-how-do-directory-permissions-in-linux-work
 3.https://superuser.com/questions/168578/why-must-a-folder-be-executable/168583
+4.https://stackoverflow.com/questions/22122405/where-is-dir-defined
