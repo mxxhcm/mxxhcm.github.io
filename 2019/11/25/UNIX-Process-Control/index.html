@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="概述 这一节主要介绍UNIX系统的进程控制，包括进程创建，进程执行和进程控制。以及进程属性的各种的ID-real UID, real GID和effective UID, effective GID和save UID， set UID和set GID，以及它们如何收到进程控制原语的影响。 进程标识(pid) 每一个进程都有一个非负整数表示它的唯一进程ID。进程ID标识符总是唯一的，但是可以复用。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-12-01T07:19:52.231Z">
+<meta property="og:updated_time" content="2019-12-02T08:35:12.758Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UNIX Process Control">
 <meta name="twitter:description" content="概述 这一节主要介绍UNIX系统的进程控制，包括进程创建，进程执行和进程控制。以及进程属性的各种的ID-real UID, real GID和effective UID, effective GID和save UID， set UID和set GID，以及它们如何收到进程控制原语的影响。 进程标识(pid) 每一个进程都有一个非负整数表示它的唯一进程ID。进程ID标识符总是唯一的，但是可以复用。">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-01 15:19:52" itemprop="dateModified" datetime="2019-12-01T15:19:52+08:00">2019-12-01</time>
+                <time title="修改时间：2019-12-02 16:35:12" itemprop="dateModified" datetime="2019-12-02T16:35:12+08:00">2019-12-02</time>
               
             
           </span>
@@ -520,11 +520,12 @@
 <li><code>vfork</code>保证子进程先运行，在子进程没有调用<code>exec</code>或者<code>exit</code>时，内核会使父进程休眠，在子进程调用<code>exec</code>或者<code>exit</code>之后父进程才会恢复运行。如果子进程需要父进程进一步操作的时候，就会产生死锁。</li>
 </ol>
 <h2 id="exit函数"><code>exit</code>函数</h2>
-<p>总共有八种方式可以让进程终止，包括五种正常和三种异常，前五种是正常终止，后五种是异常终止：</p>
+<p>关于<code>exit</code>函数的介绍，可以查看<a href>C/C++ exit and return</a>。<br>
+总共有八种方式可以让进程终止，包括五种正常和三种异常，前五种是正常终止，后五种是异常终止：</p>
 <ol>
 <li>从<code>main</code>返回，相当于调用<code>exit</code>。</li>
-<li>调用<code>exit</code>，ISO C定义的，它的操作包括调用各个exit handler，处理所有标准I/O流。</li>
-<li>调用<code>_exit</code>或者<code>_Exit</code>，ISO C定义了<code>_Exit</code>，而POSIX.1说明了<code>_exit</code>。它的目的是提供一种无需运行exit handler或者信号处理程序而终止的方法。是否对标准I/O流进行flush，取决于实现。在UNIX中，<code>_Exit</code>和<code>_exit</code>是同义的，并不flush I/O流。</li>
+<li>调用<code>exit</code>，ISO C定义的，它的操作包括调用各个exit handler，处理所有标准I/O流。<code>exit</code>会冲洗标准I/O流，如果这是函数库所采取的唯一的动作，那么不会出现什么问题。而如果<code>exit</code>除了冲洗标准I/O流，还会关闭I/O流，那么在<code>vfork</code>时就会出问题了。当然，现在的<code>exit</code>实现都不会关闭流了，这个操作一般都交给内核实现。</li>
+<li>调用<code>_exit</code>或者<code>_Exit</code>，ISO C定义了<code>_Exit</code>，而POSIX.1说明了<code>_exit</code>。它的目的是提供一种无需运行exit handler或者信号处理程序而终止的方法。是否对标准I/O流进行flush，取决于实现。在UNIX中，<code>_Exit</code>和<code>_exit</code>是同义的，并不冲洗I/O流。</li>
 <li>最后一个线程从其启动例程返回</li>
 <li>最后一个线程调用<code>pthread_exit</code></li>
 <li>调用<code>abort</code></li>
@@ -550,9 +551,10 @@
 <h3 id="wait和waitpid性质"><code>wait</code>和<code>waitpid</code>性质</h3>
 <ol>
 <li>在一个子进程终止前，<code>wait</code>使其调用者阻塞，直到任意一个子进程终止。<code>wait</code>返回终止子进程的进程ID。如果<code>wait</code>要等待一个特定的进程，将返回的pid和要等待的pid相比，如果不相等，将这个pid和termination status保存起来，再次调用<code>wait</code>，直到等到目标pid。下一次想要等待一个特定进程的时候，现场看已经终止的进程列表中是否已有它 ，没有的haunted继续调用<code>wait</code>。</li>
-<li><code>waitpid</code>可以指定等待的进程的pid。当<code>pid</code>为-1时，<code>waitpid</code>和<code>wait</code>一样。当<code>pid</code>大于或者小于0时，等待相应的pid（绝对值）。当pid等于0时，等待gid等于调用进程组id的任意一个子进程。</li>
-<li>而<code>waitpid</code>可以设置使得调用不阻塞。</li>
-<li><code>waitpid</code>通过<code>WUNTRACED</code>和<code>WCONTINUED</code>选择支持job control。</li>
+<li>ISO中定义了<code>waitpid</code>中option的四个可能值：0，<code>WNOHANG</code>, <code>WUNTRACED</code>和<code>WCONTINUED</code>。POSXI扩展了许多其他选项。其中0表示阻塞调用，<code>WNOHANG</code>表示如果没有子进程结束就立刻退出，<code>WUNTRACED</code>表示如果一个子进程停止了也返回，<code>WCONTINUED</code>表示一个子进程恢复运行了也会返回。</li>
+<li>指定option为0时，设置<code>waitpid</code>阻塞等待指定的进程pid。当<code>pid</code>为-1时，<code>waitpid</code>和<code>wait</code>一样。当<code>pid</code>大于或者小于0时，等待相应的pid（绝对值）。当pid等于0时，等待gid等于调用进程组id的任意一个子进程。</li>
+<li>指定option为<code>WNOHANG</code>，设置<code>waitpid</code>不阻塞，表示如果没有子进程结束，就立刻返回。在Linux上，<code>WNOHANG</code>是1。</li>
+<li>指定option为<code>WUNTRACED</code>和<code>WCONTINUED</code>，设置<code>waitpid</code>支持job control。</li>
 <li>对于<code>wait</code>，只有当调用进程没有子进程时，才出错。对于<code>waitpid</code>，指定的进程或者进程组不存在，或者参数pid不是调用进程的子进程时，都会出错。</li>
 <li><code>wstatus</code>是一个整形指针。如果它不为空指针，终止进程的终止状态就存放在它所指的单元内。</li>
 <li><code>wstatus</code>指向的整形变量的意义是由实现定义的，其中的某一些位表示exit status，即正常退出。另外一些位表示signal number，表示不正常退出，一位表示是否产生core file，等等。POSIX.1指定了termination status可以用<code>&lt;sys/wait.h&gt;</code>中定义的宏查看。四个互斥宏可以用来取得进程终止的原因：
