@@ -128,14 +128,49 @@ ps -o pid,ppid,pgid,sid,comm | cat &    // 前台job
 
 ### 不支持job control的shell
 在不支持job control的shell中，管道的最后一个进程是shell的子进程，而执行管道中其他命令的进程是该最后进程的子进程。当最后一个进程终止时，shell得到通知。
+所有的job的process group id和shell的都一样。
+![shell_no_job_control](shell_no_job_control.png)
 
 ### 支持job control的shell
-而在支持job control的shell中，每一个job都在同一个进程组中，bash是两个job的父进程。
-
+而在支持job control的shell中
+每一个job都有一个自己的process group id，和shell的不一样。
+shell是两个job的父进程。
 
 
 ## 孤儿进程组
+当一个进程组的父进程退出之后，而子进程还没有结束，这个时候整个进程组就成了孤儿进程组。
+什么是孤儿进程组：
+进程组中每个成员的父进程要么是它组内的一个成员，要么不是这个进程组所在session的成员。
 
+## FreeBSD实现
+每个session都会有一个seesion结构，它包含：
+- `s_count`
+- `s_leader`
+- `s_ttyvp`
+- `s_ttyp`
+- `s_sid`，这一部分不是SUS的组成，只有FreeBSD有。
+
+每个终端或者伪终端会在内核中分配一个tty结构，它包含：
+- `t_session`
+- `t_pgrp`
+- `t_termios`
+- `t_winsize`
+
+每个进程组都包含一个pgrp结构，它包含：
+- `pg_id`
+- `pg_session`
+- `pg_memebers`
+
+每个进程都有一个`proc`结构，它包含：
+- `p_pid`
+- `p_ptr`
+- `p_grp`
+- `p_pglist`
+
+进程通过v_node结构体访问/dev/tty。
+
+它们之间的关系如下图所示：
+![session_and_process_group]()
 
 ## 参考文献
 1.《APUE》第三版
