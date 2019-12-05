@@ -61,6 +61,12 @@ sighandler_t signal(int signum, sighandler_t handler);
 1. `handler`的值是常量`SIG_IGN`，`SIG_DFL`或者一个函数的地址。分别表示忽略该信号，执行默认动作，或者调用相应的函数。
 2. `signal`函数要求两个参数，返回一个函数指针，这个指针指向的函数没有返回值。第一个参数`signum`是整形术，第二个参数是函数指针。
 
+###  `exec`和`fork`
+当使用`exec`执行一个程序时，所有signal的状态都是系统默认或者忽略。通常所有signal都被设置为它们的默认的动作，除非调用`exec`的进程忽略该signal。更确切的说，`exec`函数将原先设置为要catch的signal更改为默认动作，其他signal的状态不变。比如一个进程原先要捕捉的signal，执行一个新程序后就不再catch了，因为signal catch函数的地址可能在执行的新程序文件中无意义了。
+
+### 不可靠的`signal`
+
+
 
 ## 参考文献
 1.《APUE》第三版
