@@ -26,12 +26,24 @@ Signals是软件终端。它提供了一种处理异步事件的方法。
 - 调用`kill(1)`命令，它是`kill(2)`的接口
 - 检测到某种软件条件已经发生
 
+
+常见的signal可以分为以下几类：
+- 程序出错signals，用于report程序错误
+- Termination singals，用于中断或者终止程序
+- Alarm signals,
+- 异步I/O signals
+- Joc control signals
+- 操作错误signal
+- miscellaneous signals
+- signal messages
+
+关于具体的每个signal的介绍，可以看书，看文档`man 7 signal`，或者查看另一篇文章[UNIX signals]()。
+
 在某个signal出现后，可以按照以下三种方式之一进行signal处理：
 1. 忽略singal。有两个signal不能被忽略：`SIGKILL`和`SIGTSTP`，它们向内核或者root用户踢欧冠呢了停止或者终止进程的可靠方法。还有某些硬件signal，除零或者非法内存引用，进程的行为是未定义的。
 2. 捕获signal。通过内核接收到某个signal后，调用相应的用户函数。
 3. 执行系统默认动作。对于大多数系统，默认动作是终止进程的执行。
 
-关于具体的每个signal的介绍，可以看书，看文档`man 7 signal`。
 
 ## 函数`signal`
 `signal`是ISO C定义的。但是ISO C不涉及多进程，进程组，终端I/O等概念。所以它对signal的定义非常含糊，对于UNIX的用处很小。
@@ -49,5 +61,7 @@ sighandler_t signal(int signum, sighandler_t handler);
 1. `handler`的值是常量`SIG_IGN`，`SIG_DFL`或者一个函数的地址。分别表示忽略该信号，执行默认动作，或者调用相应的函数。
 2. `signal`函数要求两个参数，返回一个函数指针，这个指针指向的函数没有返回值。第一个参数`signum`是整形术，第二个参数是函数指针。
 
+
 ## 参考文献
 1.《APUE》第三版
+2.https://www.gnu.org/software/libc/manual/html_node/Standard-Signals.html#Standard-Signals
