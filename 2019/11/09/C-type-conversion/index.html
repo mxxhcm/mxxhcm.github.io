@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="类型转换 在C类型中，某些类型之间有关联。如果说两种类型有关联，当程序需要其中一种类型的运算对象时，可以使用另一种类型关联的对象或者值来替代。或者说如果两种类型可以相互转换，那么他们就是关联的。 C提供了两种类型相互转换的规则：  隐式类型转换，隐式类型转换指的是编译器自动执行的，无需程序员的介入的转换。隐式类型转换包含上下文转换，值转换，算术提升，算术转换等。 显式类型转换。  隐式类型转换 [">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-12-05T08:42:31.373Z">
+<meta property="og:updated_time" content="2019-12-06T01:24:17.132Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++ type conversion">
 <meta name="twitter:description" content="类型转换 在C类型中，某些类型之间有关联。如果说两种类型有关联，当程序需要其中一种类型的运算对象时，可以使用另一种类型关联的对象或者值来替代。或者说如果两种类型可以相互转换，那么他们就是关联的。 C提供了两种类型相互转换的规则：  隐式类型转换，隐式类型转换指的是编译器自动执行的，无需程序员的介入的转换。隐式类型转换包含上下文转换，值转换，算术提升，算术转换等。 显式类型转换。  隐式类型转换 [">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-05 16:42:31" itemprop="dateModified" datetime="2019-12-05T16:42:31+08:00">2019-12-05</time>
+                <time title="修改时间：2019-12-06 09:24:17" itemprop="dateModified" datetime="2019-12-06T09:24:17+08:00">2019-12-06</time>
               
             
           </span>
@@ -497,21 +497,51 @@ C</ins>提供了两种类型相互转换的规则：</p>
 <h3 id="值转换">值转换</h3>
 <p>每一个表达式都有一个非引用类型和值类别，值转换发生在表达式的值类别上。无论何时当表达式的值类别时和操作符需要的操作数值类别不同时，发生这类转换。</p>
 <h4 id="左值到右值转换">左值到右值转换</h4>
+<p>任何非函数，非数组类型T的glvalue可以隐式的转换成相同类型的prvalue。如果T是非类类型的话，这个转换还会去掉cv修饰。<br>
+在以下情况中，对象表示的glvalue是不可访问的：</p>
+<ul>
+<li>转化发生在无法评估的上下文，比如<code>sizoef</code>, <code>decltype</code>或者静态形式的的<code>typid</code>。</li>
+<li></li>
+</ul>
 <h4 id="数组到指针的转换">数组到指针的转换</h4>
 <h4 id="函数到指针">函数到指针</h4>
 <h3 id="算术提升">算术提升</h3>
 <h4 id="整形提升">整形提升</h4>
-<ol>
-<li>整形提升。把整数类型转换成大整数类型。对于<code>bool</code>, <code>char</code>, <code>unisigned char</code>, <code>short</code>和<code>unsigned char</code>等类型来说，只要它们所有可能的值都能存在<code>int</code>里，就把它们提升成<code>int</code>类型，否则，提升成<code>unsigned int</code>类型。</li>
-</ol>
+<p>小整形（如<code>char</code>）的prvalue可以转换为大整形（如<code>int</code>）的prvalues。特别的，算术操作符不接受比<code>int</code>还小的类型作为参数，在使用了lvalue到rvalue的转换之后，自动的进行整形提升。这种转换不会丢失精度。<br>
+整形提升可以分为以下几类：</p>
+<ul>
+<li><code>signed char</code>或者<code>signed short</code>可以被转换成<code>int</code>；</li>
+<li><code>unsigned char</code>或者<code>unsigned short</code>被转化成<code>int</code>，如果超过<code>int</code>的表示范围，转换成<code>unsigned int</code>；</li>
+<li><code>char</code>被转换成<code>int</code>还是<code>unsigned int</code>取决于它是<code>signed char</code>还是<code>unsigned char</code>；</li>
+<li><code>w_char_t</code>, <code>char16_t</code>, <code>char32_t</code>可以被转换成下列第一个可以容纳它们整个取值范围的类型：<code>int</code>, <code>unsigned int</code>, <code>long</code>, <code>unsigned long</code>, <code>long long</code>, <code>unsigned long long</code>；（有个疑问，<code>wchar_t</code>等是有符号的还是无符号的？？）</li>
+</ul>
+<p>总的来说，就是对于<code>bool</code>, <code>char</code>, <code>unisigned char</code>, <code>short</code>和<code>unsigned char</code>等类型来说，只要它们所有可能的值都能存在<code>int</code>里，就把它们提升成<code>int</code>类型，否则，提升成<code>unsigned int</code>类型。<br>
+并不是所有的转换都是提升，当<code>char</code>到<code>short</code>就是一个转换。</p>
 <h4 id="浮点数提升">浮点数提升</h4>
+<p>一个<code>float</code>类型的prvalue可以转换成<code>double</code>的prvalue。值不会改变，精度不会丢失。</p>
 <h3 id="算术转换">算术转换</h3>
-<p>算术转换的含义是把一种算术类型转换成另外一种算术类型。</p>
+<p>算术转换的含义是把一种算术类型转换成另外一种算术类型。算术转换可能会改变对象的值，丢失一定精度。</p>
 <h4 id="整形转换">整形转换</h4>
+<ul>
+<li>如果目标类型是无符号的，转换结果是source value对$2^n$取余得到的最小无符号整数，n是目标类型的位数。</li>
+<li>如果目标类型是有符号的，如果source整数能够保存在目标类型中，对象的值不变。否则转换的结果是由实现定义的（注意和有符号整形算术溢出的区别，溢出是未定义行为）。</li>
+<li>如果source type是<code>bool</code>，值<code>false</code>被转换为0，值<code>true</code>被转换成destination类型的值1（注意，如果destination类型是<code>int</code>的话，就变成了整形提升）。</li>
+<li>如果目标类型是<code>bool</code>，这就是一个boolean转换</li>
+</ul>
 <h4 id="浮点数转换">浮点数转换</h4>
-<h4 id="浮点数到整形转换">浮点数到整形转换</h4>
+<p>一个浮点数类型的prvalue可以被被转换成任何其他浮点数类型的prvalue。如果这个转换是浮点数提升，那么这就是一个浮点数提升而不是一个浮点数转换。</p>
+<ul>
+<li>如果source value可以精确的表示在目标类型中，这个值不变。</li>
+<li>如果source value在目标类型的两个可表示值之间（就是目标类型的精度比较低），则结果是其中的一个（由实现定义）。</li>
+<li>否则是未定义行为。</li>
+</ul>
+<h4 id="浮点数和整形之间的转换">浮点数和整形之间的转换</h4>
+<ul>
+<li>一个浮点数类型的prvalue可以转换成一个整形的prvalue，小数部分被截断。如果这个值不适合目标类型，是未定义行为。</li>
+<li>一个整形的prvalue或者没有范围的枚举类型可以被转换成浮点数类型的prvalue。如果这个值不能被正确表示，由实现定义选择。如果这个值不适合目标类型，是未定义行为。如果source type是<code>bool</code>，值<code>false</code>被转换成0，值<code>true</code>被转换成1。</li>
+</ul>
 <h4 id="指针转换">指针转换</h4>
-<ol start="2">
+<ol>
 <li>指针的转换。常量0或者<code>nullpt</code>能转换成任意类型的指针。指向非常量的指针能转换成<code>void *</code>类型。指向任意对象的指针能转换成<code>const void *</code>。</li>
 <li>数组转换成指针。将数组转换成指向数组首元素的指针。注意，数组名表示的指针是不可修改的。当数组作为<code>decltyp</code>参数，或者作为取值地址符，<code>sizeof</code>或者<code>typeid</code>的运算对象时，上述转换不会发生。同样，使用一个应用来初始化数组，上述转换也不会发生。</li>
 <li>转换成常量。允许将指向非常量的指针转换成相应类型的指针常量的类型，对应引用也是如此。</li>
@@ -526,9 +556,9 @@ C</ins>提供了两种类型相互转换的规则：</p>
 </ol>
 <h4 id="其他隐式类型转换">其他隐式类型转换</h4>
 <p>类类型定义的转换</p>
-<h2 id="qualification转换">Qualification转换</h2>
-<h3 id="函数指针转换">函数指针转换</h3>
-<h2 id="bool变量的安全性问题">bool变量的安全性问题</h2>
+<h3 id="qualification转换">Qualification转换</h3>
+<h4 id="函数指针转换">函数指针转换</h4>
+<h3 id="bool变量的安全性问题">bool变量的安全性问题</h3>
 <h2 id="显式类型转换">显式类型转换。</h2>
 <ol>
 <li>命名的强制类型转换。它的形式如下所示：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cast-name&lt;type&gt;(expression)</span><br></pre></td></tr></table></figure></li>
@@ -683,7 +713,7 @@ C</ins>提供了两种类型相互转换的规则：</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">287</span>
+                    <span class="site-state-item-count">290</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1509,31 +1539,7 @@ C</ins>提供了两种类型相互转换的规则：</p>
                     
                       
                     
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                      
-                    
-                    <span class="site-state-item-count">387</span>
+                    <span class="site-state-item-count">375</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1601,7 +1607,7 @@ C</ins>提供了两种类型相互转换的规则：</p>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#类型转换"><span class="nav-number">1.</span> <span class="nav-text">类型转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隐式类型转换"><span class="nav-number">2.</span> <span class="nav-text">隐式类型转换</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#转换的顺序"><span class="nav-number">2.1.</span> <span class="nav-text">转换的顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#上下文转换"><span class="nav-number">2.2.</span> <span class="nav-text">上下文转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#值转换"><span class="nav-number">2.3.</span> <span class="nav-text">值转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#左值到右值转换"><span class="nav-number">2.3.1.</span> <span class="nav-text">左值到右值转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数组到指针的转换"><span class="nav-number">2.3.2.</span> <span class="nav-text">数组到指针的转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#函数到指针"><span class="nav-number">2.3.3.</span> <span class="nav-text">函数到指针</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#算术提升"><span class="nav-number">2.4.</span> <span class="nav-text">算术提升</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#整形提升"><span class="nav-number">2.4.1.</span> <span class="nav-text">整形提升</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#浮点数提升"><span class="nav-number">2.4.2.</span> <span class="nav-text">浮点数提升</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#算术转换"><span class="nav-number">2.5.</span> <span class="nav-text">算术转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#整形转换"><span class="nav-number">2.5.1.</span> <span class="nav-text">整形转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#浮点数转换"><span class="nav-number">2.5.2.</span> <span class="nav-text">浮点数转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#浮点数到整形转换"><span class="nav-number">2.5.3.</span> <span class="nav-text">浮点数到整形转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#指针转换"><span class="nav-number">2.5.4.</span> <span class="nav-text">指针转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#指针到成员转换"><span class="nav-number">2.5.5.</span> <span class="nav-text">指针到成员转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#布尔转换"><span class="nav-number">2.5.6.</span> <span class="nav-text">布尔转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他隐式类型转换"><span class="nav-number">2.5.7.</span> <span class="nav-text">其他隐式类型转换</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#qualification转换"><span class="nav-number">3.</span> <span class="nav-text">Qualification转换</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数指针转换"><span class="nav-number">3.1.</span> <span class="nav-text">函数指针转换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bool变量的安全性问题"><span class="nav-number">4.</span> <span class="nav-text">bool变量的安全性问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#显式类型转换"><span class="nav-number">5.</span> <span class="nav-text">显式类型转换。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#类型转换"><span class="nav-number">1.</span> <span class="nav-text">类型转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#隐式类型转换"><span class="nav-number">2.</span> <span class="nav-text">隐式类型转换</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#转换的顺序"><span class="nav-number">2.1.</span> <span class="nav-text">转换的顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#上下文转换"><span class="nav-number">2.2.</span> <span class="nav-text">上下文转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#值转换"><span class="nav-number">2.3.</span> <span class="nav-text">值转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#左值到右值转换"><span class="nav-number">2.3.1.</span> <span class="nav-text">左值到右值转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数组到指针的转换"><span class="nav-number">2.3.2.</span> <span class="nav-text">数组到指针的转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#函数到指针"><span class="nav-number">2.3.3.</span> <span class="nav-text">函数到指针</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#算术提升"><span class="nav-number">2.4.</span> <span class="nav-text">算术提升</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#整形提升"><span class="nav-number">2.4.1.</span> <span class="nav-text">整形提升</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#浮点数提升"><span class="nav-number">2.4.2.</span> <span class="nav-text">浮点数提升</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#算术转换"><span class="nav-number">2.5.</span> <span class="nav-text">算术转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#整形转换"><span class="nav-number">2.5.1.</span> <span class="nav-text">整形转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#浮点数转换"><span class="nav-number">2.5.2.</span> <span class="nav-text">浮点数转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#浮点数和整形之间的转换"><span class="nav-number">2.5.3.</span> <span class="nav-text">浮点数和整形之间的转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#指针转换"><span class="nav-number">2.5.4.</span> <span class="nav-text">指针转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#指针到成员转换"><span class="nav-number">2.5.5.</span> <span class="nav-text">指针到成员转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#布尔转换"><span class="nav-number">2.5.6.</span> <span class="nav-text">布尔转换</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#其他隐式类型转换"><span class="nav-number">2.5.7.</span> <span class="nav-text">其他隐式类型转换</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#qualification转换"><span class="nav-number">2.6.</span> <span class="nav-text">Qualification转换</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#函数指针转换"><span class="nav-number">2.6.1.</span> <span class="nav-text">函数指针转换</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bool变量的安全性问题"><span class="nav-number">2.7.</span> <span class="nav-text">bool变量的安全性问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#显式类型转换"><span class="nav-number">3.</span> <span class="nav-text">显式类型转换。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">4.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -1827,6 +1833,36 @@ C</ins>提供了两种类型相互转换的规则：</p>
   
   
 
+  
+    
+      <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      TeX: {equationNumbers: { autoNumber: "AMS" }}
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+    overflow: auto hidden;
+}
+</style>
+
+    
   
 
 
