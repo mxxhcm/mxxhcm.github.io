@@ -1,5 +1,5 @@
 ---
-title: C++ variable initialize
+title: C++ initialize
 date: 2019-11-05 20:05:12
 tags:
  - C/C++
@@ -96,3 +96,5 @@ C++ Primer第五版第76页
 C++ Primer第五版第91页
 2.https://stackoverflow.com/questions/13461027/why-does-the-standard-differentiate-between-direct-list-initialization-and-copy
 3.https://stackoverflow.com/questions/18222926/why-is-list-initialization-using-curly-braces-better-than-the-alternatives
+4.https://en.cppreference.com/w/cpp/language/list_initialization
+5.https://en.cppreference.com/w/cpp/utility/initializer_list

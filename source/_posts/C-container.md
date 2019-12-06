@@ -3,10 +3,7 @@ title: C++ container
 date: 2019-11-10 12:34:56
 tags:
  - C/C++
- - container
  - 容器
- - 顺序容器
- - 关联容器
 categories: C/C++
 mathjax: true
 ---
@@ -69,7 +66,7 @@ mathjax: true
 具体如下：
 - `map`，关联数组，保存关键字－值对
 - `set`，只保存关键字的容器
-- `multimap`，关键子可以重复出现的`map`
+- `multimap`，关键字可以重复出现的`map`
 - `multiset`，关键字可以重复出现的`set`
 - `unordered_map`，用哈希函数组织的`map`
 - `unordered_set`，用哈希函数组织的`set`
@@ -86,6 +83,7 @@ mathjax: true
 
 ### 关键字类型的要求
 ### `pair`类型
+
 ### `map`的使用
 
 ### `set`的使用
@@ -209,6 +207,5 @@ int main()
 - c.clear()，删除c中所有元素，返回void
 
 
-
 ## 参考文献
-1.
+1.《C++ Primer》第五版
