@@ -125,24 +125,42 @@ C++提供了两种类型相互转换的规则：
 ### bool变量的安全性问题
 
 ## 显式类型转换。
-1. 命名的强制类型转换。它的形式如下所示：```c
+命名的强制类型转换。它的形式如下所示：```c
 cast-name<type>(expression)
 ```
 其中`cast-name`是`static_cast`,`dynamic_cast`, `const_cast`和`reinterpret_cast`的一种，`type`是转换的目标类型，而`expression`是要转换的值。
-2. `static_cast`，只要不包含底层`const`，任何具有明确定义的类型转换，都可以使用`static_cast`。比如将一个运算对象强制转换成`double`类型执行浮点数出发。```c
+
+### `static_cast`
+`static_cast`，只要不包含底层`const`，任何具有明确定义的类型转换，都可以使用`static_cast`。比如将一个运算对象强制转换成`double`类型执行浮点数出发。```c
 double slope = static_cast<double>(j)/i;
 ```
 可以把较大的算术类型转换成较小的算术类型。这个时候，强制类型转换告诉读者和编译器，我不在乎可能的精度损失。
 它对于编译器无法自动执行的类型转换也非常有用。
-3. `const_cast`，它只能改变底层`const`，将常量对象转换成非常量对象，这种性质叫做去掉`const`性质。如果对象本身不是一个常量，使用强制类型转换获得写权限是一个合法的行为，如果对象是一个常量，使用`const_cast`执行写操作就会产生未定义的后果。
-`const_cast`只能改变表达式的常量值，使用其他类型的命名强制类型转换改变表达式的常量属性都会引发编译器的错误。同样的，也不能使用`const_cast`改变表达式的类型。
-通常用于有函数重载的上下文。
-4. `reinterpret_cast`。尽量不使用强制类型转换，它干扰了正常的类型检查。在有重载的上下文中使用`const cast`无可厚非。但是在其他情况下使用`const_cast`也就意味着程序存在某种缺陷。其他的强制类型转换也不应该频繁使用。
-5. 旧式的类型转换。旧式的类型转换分别具有和上述三种强制类型转换相同的结果。如果换成`const_cast`和`static_cast`也合法，其行为和对应的命名转换一样。如果替换后不合法，则旧式的强制类型转换执行和`reinterpret_cast`类似的功能。
 
+### `const_cast`
+0. `const_cast`只能改变运算对象的底层`const`，将常量对象转换成非常量对象，这种性质叫做去掉`const`性质。如果对象本身不是一个常量，使用强制类型转换获得写权限是一个合法的行为，如果对象是一个常量，使用`const_cast`执行写操作就会产生未定义的后果。`const_cast`还可以将一个非`const`对象变成`const`对象。```c
+string s1("hello"); 
+const string s2("world");
+
+string *p1 = &s1;
+const string *p2 = &s2;
+
+string *p3 = const_cast<string *>(p2);  //去掉底层const，但是通过p3写它指向的东西是未定义行为。
+const string *p4 = const_cast<const string*>(p1);   //将非底层const转换成底层const。
+```
+2. 只有`const_cast`能改变表达式的常量属性，使用其他类型的命名强制类型转换改变表达式的常量属性都会引发编译器的错误，注意不能使用`const_cast`改变表达式的类型。
+3. 通常用于有函数重载的上下文。
+
+### `reinterpret_cast`
+`reinterpret_cast`。尽量不使用强制类型转换，它干扰了正常的类型检查。在有重载的上下文中使用`const cast`无可厚非。但是在其他情况下使用`const_cast`也就意味着程序存在某种缺陷。其他的强制类型转换也不应该频繁使用。
+
+### 旧式的类型转换。
+旧式的类型转换分别具有和上述三种强制类型转换相同的结果。如果换成`const_cast`和`static_cast`也合法，其行为和对应的命名转换一样。如果替换后不合法，则旧式的强制类型转换执行和`reinterpret_cast`类似的功能。
+
+
+### 总结
 总的来说，`static_cast`可以进行不包含底层`const`的具有明确定义的类型转换。
 `cosnt_cast`可以去掉底层`const`的`const`，但是不能改变表达式类型，也不能对去掉const的常量表达式执行写操作。
-
 
 
 ## 参考文献

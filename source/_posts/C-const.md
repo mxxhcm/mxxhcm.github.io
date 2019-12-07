@@ -96,23 +96,39 @@ const double *const pip = &pi;  //
 常量指针（顶层const）可以用来初始化非常量对象。
 对常量的引用和指向常量的指针（底层const）不可以用来初始化非常量对象。
 
-## `constexpr`和常量表达式
-常量表达式，值不会改变，并且在编译过程中就能得到计算结果的表达式。字面值和用常量表达式初始化的`const`对象也是常量表达式。比如：```c
+## `constexpr`和常量表达式，`constexpr`函数
+1. 常量表达式，值不会改变，并且在编译过程中就能得到计算结果的表达式。字面值和用常量表达式初始化的`const`对象也是常量表达式。比如：```c
 int size = 23;  //不是常量表达式，因为他不是`const`对象
 const int sz = get_size();  //sz是常量，但不是常量表达式，因为它的值需要等到运行时才能获得。
 ```
-常量表达式一定是常量，但是常量不一定是常量表达式。
-声明为`constexpr`的变量由编译器验证它是否是常量表达式。
-声明为`constexpr`的变量一定是个常量，而且必须用常量表达式初始化。
-如果认定变量一定是个常量表达式，就把它声明成`constexpr`类型，即`constexpr`用于声明常量表达式。
+2. 常量表达式一定是常量，但是常量不一定是常量表达式。
+3. 声明为`constexpr`的变量由编译器验证它是否是常量表达式。
+4. 声明为`constexpr`的变量一定是个常量，而且必须用常量表达式初始化。
+5. 如果认定变量一定是个常量表达式，就把它声明成`constexpr`类型，即`constexpr`用于声明常量表达式。
+6. `constexpr`函数的形参和返回值都必须是字面值类型，并且函数体有且只有一条`return`语句。
+7. `constexpr`函数不一定返回常量表达式。
 
 ### 字面值类型
 算术类型，引用和指针都属于字面值类型，`string`，IO库和类不属于字面值类型。算术类型包含整形和浮点型，整形中又包含整数，字符和布尔。`constexpr`只能用于字面值类型。
 指针和引用能用定义成`constexpr`，但是初值受到严格限制，一个`constexpr`指针的初始值必须是`nullptr`，`0`或者某个固定地址的对象。一般来说，函数内部的变量(除了`static`变量)没有存在固定地址中，而所有函数之外的对象地址固定不变，能用来初始化`constexpr`指针。`constexpr`声明的指针是顶层`const`，即指针本身是个`const`，它指向的对象不能变，它指向的对象的值能变。
 
+## `const_cast`
+1. `const_cast`只能改变运算对象的底层`const`，将常量对象转换成非常量对象，这种性质叫做去掉`const`性质。如果对象本身不是一个常量，使用强制类型转换获得写权限是一个合法的行为，如果对象是一个常量，使用`const_cast`执行写操作就会产生未定义的后果。`const_cast`还可以将一个非`const`对象变成`const`对象。```c
+string s1("hello"); 
+const string s2("world");
+
+string *p1 = &s1;
+const string *p2 = &s2;
+
+string *p3 = const_cast<string *>(p2);  //去掉底层const，但是通过p3写它指向的东西是未定义行为。
+const string *p4 = const_cast<const string*>(p1);   //将非底层const转换成底层const。
+```
+2. 只有`const_cast`能改变表达式的常量属性，使用其他类型的命名强制类型转换改变表达式的常量属性都会引发编译器的错误，注意不能使用`const_cast`改变表达式的类型。
+3. 通常用于有函数重载的上下文。
+
 
 ## `const`形参和实参
-当形参是`const`时，必须注意顶层`const`，顶层`const`作业于对象本身。当用实参初始化形参时，会忽略掉顶层`const`，即形参的顶层`const`被忽略掉了。当形参有顶层`const`时，传递给它常量或者非常量对象都是可以的。
+当形参是`const`时，必须注意顶层`const`，顶层`const`作用于对象本身。当用实参初始化形参时，会忽略掉顶层`const`，即形参的顶层`const`被忽略掉了。当形参有顶层`const`时，传递给它常量或者非常量对象都是可以的。
 
 ### 指针或者引用形参和`const`
 形参的初始化方式和变量的初始化方式是一样的，所以指针或者引用形参和`const`结合时，按照`const`变量的初始化规则执行就行。
@@ -124,6 +140,25 @@ const int sz = get_size();  //sz是常量，但不是常量表达式，因为它
 当函数不需要对数组进行写操作时，数组形参应该是指向`const`的指针。只有当函数确实需要改变数组元素值的时候，才把形参定义成指向非常量的指针。
 
 
+## 重载和`const`
+### 重载和`const`形参
+顶层`const`不影响传入函数的对象
+1. 一个拥有顶层`const`的形参无法和另一个没有顶层`const`的形参区分开来。
+2. 如果形参是某种类型的指针或引用，即形参是底层`const`，区分其指向的是常量对象还是非常量对象可以实现函数重载。
+
+### `const_cast`和重载
+`const_cast`在重载函数的情景中有最有用。如下函数：``` c++
+const string& stringCompare(const string &s1, const string &s2);
+```
+函数的形参是底层`const`，可以接收常量或者非常量的实参。但是返回的都是`const string`的引用，如果输入是两个`string`的引用，返回一个`const string`的引用显然是不合理的，这时候就可以使用`const_cast`了。对上述代码做一个改进：```c++
+string& stringCompare(string &s1, string &s2)
+{
+
+    auto &r = stringCompare(static_cast<const string &>(s1), static_cast<const string &>(s2)a);
+    return static_cast<string &>(r);
+}
+
+```
 
 ## 参考文献
 1.《C++ Primer》第五版
