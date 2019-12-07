@@ -1,5 +1,5 @@
 ---
-title: C++ special function
+title: C++ function special characterics
 date: 2019-12-07 15:53:38
 tags:
  - C/C++
