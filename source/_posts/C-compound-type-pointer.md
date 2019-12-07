@@ -177,6 +177,18 @@ char *cp = ch;
 
 关于更多指针和数组之间的内容，点击查看[数组](https://mxxhcm.github.io/2019/11/13/C-compound-type-array/)的介绍。
 
+## 函数指针
+函数指针指向的是函数而不是对象。和其他指针一样，函数指针指向某种特定类型。函数的类型由它的返回值和形参共同决定，和函数名无关。例如：``` c++
+bool lengthCompare(const string &, const string &);
+```
+这个函数的类型是`bool(const string &, const string &)`，要想声明一个指向该函数的指针，只需要使用指针代替函数名字即可：``` c++
+bool (*pf)(const string &, const string &);
+```
+从声明符中的变量名字开始，`pf`前面有个`*`，所以`pf`是个指针，右侧是形参列表，左侧是函数的返回值类型。因此，`pf`是一个指向函数的指针，函数的参数是两个`const string`的引用，返回值是`bool`类型，指针类型是`boo(*)(const string &, const string &)`
+
+函数指针可以作为形参，也可以作为返回值，还可以使用`decltype`和`typedef`简化函数指针。需要注意的是，`decltype`不会把函数转换成指针。
+
+
 ## 参考文献
 1.《C++ Primer第五版》
 2.《C和指针》
