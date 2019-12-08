@@ -327,6 +327,1827 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/03/linear-algebra-singular-value-decomposition/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/03/linear-algebra-singular-value-decomposition/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">singular value decomposition（奇异值分解）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-03 15:19:54" itemprop="dateCreated datePublished" datetime="2019-01-03T15:19:54+08:00">2019-01-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-09 16:53:25" itemprop="dateModified" datetime="2019-09-09T16:53:25+08:00">2019-09-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="特征值分解-eigen-value-decomposition">特征值分解(eigen value decomposition)</h2>
+<p>要谈奇异值分解，首先要从特征值分解(eigen value decomposition, EVD)谈起。<br>
+矩阵的作用有三个：一个是旋转，一个是拉伸，一个是平移，都是线性操作。如果一个$n\times n$方阵$A$对某个向量$x$只产生拉伸变换，而不产生旋转和平移变换，那么这个向量就称为方阵$A$的特征向量(eigenvector)，对应的伸缩比例叫做特征值(eigenvalue)，即满足等式$Ax = \lambda x$。其中$A$是方阵，$x$是方阵$A$的一个特征向量，$\lambda$是方阵$A$对应特征向量$x$的特征值。<br>
+假设$S$是由方阵$A$的$n$个线性无关的特征向量构成的方阵，$\Lambda$是方阵$A$的$n$个特征值构成的对角矩阵，则$A=S\Lambda S^{-1}$，这个过程叫做对角化过程。<br>
+证明：<br>
+因为$Ax_1 = \lambda_1 x_1,\cdots,Ax_n = \lambda_n x_n$,<br>
+所以<br>
+\begin{align*}AS &amp;= A\begin{bmatrix}x_1&amp; \cdots&amp;x_n\end{bmatrix}\\<br>
+&amp;=\begin{bmatrix} \lambda_1x_1&amp;\cdots&amp;\lambda x_n\end{bmatrix}\\<br>
+&amp;= \begin{bmatrix}x_1&amp; \cdots&amp;x_n\end{bmatrix} \begin{bmatrix}\lambda_1&amp; &amp; &amp;\\&amp;\lambda_2&amp;&amp;\\&amp;&amp;\cdots&amp;\\&amp;&amp;&amp;\lambda_n\end{bmatrix}\<br>
+&amp;= S\Lambda<br>
+\end{align*}<br>
+所以$AS=S\Lambda, A=S\Lambda S^{-1}, S^{-1}AS=\Lambda$。<br>
+若方阵$A$为对称矩阵，矩阵$A$的特征向量是正交的，将其单位化为$Q$，则$A=Q\Lambda Q^T$，这个过程就叫做特征值分解。</p>
+<h2 id="奇异值分解-singular-value-decomposition">奇异值分解(singular value decomposition)</h2>
+<p>特征值分解是一个非常好的分解，因为它能把一个方阵分解称两类非常好的矩阵，一个是正交阵，一个是对角阵，这些矩阵都便于进行各种计算，但是它对于原始矩阵的要求太严格了，必须要求矩阵是对称正定矩阵，这是一个很苛刻的条件。所以就产生了奇异值分解，奇异值分解可以看作特征值分解在$m\times n$维矩阵上的推广。对于对称正定矩阵来说，有特征值，对于其他一般矩阵，有奇异值。</p>
+<p>奇异值分解可以看作将一组正交基映射到另一组正交基的变换。普通矩阵$A$不是对称正定矩阵，但是$AA^T $和$A^TA $一定是对称矩阵，且至少是半正定的。从对$A^TA $进行特征值分解开始，$A^T A=V\Sigma_1V^T $，$V$是一组正交的单位化特征向量${v_1,\cdots,v_n}$，则$Av_1,\cdots,Av_n$也是正交的。<br>
+证明：<br>
+\begin{align*}Av_1\cdot Av_2 &amp;=(Av_1)^T Av_2\\<br>
+&amp;=v_1^T A^T Av_2\\<br>
+&amp;=v_1^T \lambda v_2\\<br>
+&amp;=\lambda v_1^T v_2\\<br>
+&amp;=0<br>
+\end{align*}<br>
+所以$Av_1,Av_2$是正交的，同理可得$Av_1,\cdots,Av_n$都是正交的。<br>
+而：<br>
+\begin{align*}<br>
+Av_i\cdot Av_i &amp;= v_i^T A^T Av_i\\<br>
+&amp;=v_i \lambda v_i\\<br>
+&amp;=\lambda v_i^2\\<br>
+&amp;=\lambda<br>
+\end{align*}<br>
+将$Av_i$单位化为$u_i$，得$u_i = \frac{Av_i}{|Av_i|} = \frac{Av_i}{\sqrt{\lambda_i}}$，所以$Av_i = \sqrt{\lambda_i}u_i$。<br>
+将向量组${v_1,\cdots,v_r}$扩充到$R^n $中的标准正交基${v_1,\cdots,v_n}$，将向量组${u_1,\cdots,u_r}$扩充到$R^n $中的标准正交基${u_1,\cdots,u_n}$，则$AV = U\Sigma$，$A=U\sigma V^T $。</p>
+<p>事实上，奇异值分解可以看作将行空间的一组正交基加上零空间的一组基映射到列空间的一组正交基加上左零空间的一组基的变换。对一矩阵$A,A\in \mathbb{R}^{m\times n} $，若$r(A)=r$，取行空间的一组特殊正交基${v_1,\cdots,v_r}$，当矩阵$A$作用到这组基上，会得到另一组正交基${u_1,\cdots,u_r}$，即$Av_i = \sigma_iu_i$。<br>
+矩阵表示是：<br>
+\begin{align*}<br>
+AV &amp;= A\begin{bmatrix}v_1&amp;\cdots&amp;v_r\end{bmatrix}\\<br>
+&amp;= \begin{bmatrix}\sigma_1u_1 &amp; \cdots &amp; \sigma_ru_r\end{bmatrix}\\<br>
+&amp;= \begin{bmatrix}u_1&amp;u_2&amp;\cdots&amp;u_r\end{bmatrix}\begin{bmatrix}\sigma_1&amp;&amp;&amp;\\&amp;\sigma_2&amp;&amp;\\&amp;&amp;\cdots&amp;\\&amp;&amp;&amp;\sigma_n\end{bmatrix}\\<br>
+&amp;=U\Sigma<br>
+\end{align*}<br>
+其中$A\in \mathbb{R}^{m\times n}, V\in \mathbb{R}^{n\times r},U\in \mathbb{R}^{m\times r}, \Sigma \in \mathbb{R}^{r\times n}$。<br>
+当有零空间的时候，行空间的一组基是$r$维，加上零空间的$n-r$维，构成$R^n $空间中的一组标准正交基。列空间的一组基也是$r$维的，加上左零空间的$m-r$维，构成$R^m $空间的一组标准正交基。零空间中的向量在对角矩阵$\Sigma$中体现为$0$，<br>
+则$A=U\Sigma V^{-1} $，$V$是正交的，所以$A=U\Sigma V^T $，其中$V\in \mathbb{R}^{n\times n}, U\in \mathbb{R}^{m\times m}, \Sigma \in \mathbb{R}^{m\times n}$。</p>
+<p>$A=U\Sigma V^T $,<br>
+$A^T = V\Sigma^T U^T $,<br>
+$AA^T = U\Sigma V^T V\Sigma^T U^T $,<br>
+$A^T A = V\Sigma^T U^T U\Sigma V^T $<br>
+对$A A^T $和$A^T A$作特征值分解，则$A A^T = U\Sigma_1U^T $,$A^T A=V\Sigma_2V^T $，所以对$AA^T $作特征值分解求出来的$U$和对$A^T A$作特征值分解求出来的$V$就是对$A$作奇异值分解求出来的$U$和$V$，$AA^T $和$A^T A$作特征值分解求出来的$\Sigma$的非零值是相等的，都是对$A$作奇异值分解的$\Sigma$的平方。</p>
+<h3 id="a-t-a-和-aa-t-的非零特征值是相等的">$A^T A$和$AA^T $的非零特征值是相等的</h3>
+<p>证明：对于任意的$m\times n$矩阵$A$，$A^T A$和$AA^T $的非零特征值相同的。 设$A^T A$的特征值为$\lambda_i$，对应的特征向量为$v_i$，即$A^T Av_i = \lambda_i v_i$。<br>
+则$AA^T Av_i = A\lambda_iv_i = \lambda_i Av_i$。<br>
+所以$AA^T $的特征值为$\lambda_i$，对应的特征向量为$Av_i$。<br>
+因此$A^T A$和$AA^T $的非零特征值相等。</p>
+<h3 id="几何意义">几何意义</h3>
+<p>对于任意一个矩阵，找到其行空间(加上零空间)的一组正交向量，使得该矩阵作用在该向量序列上得到的新的向量序列保持两两正交。奇异值的几何意义就是这组变化后的新的向量序列的长度。</p>
+<h3 id="物理意义">物理意义</h3>
+<p>奇异值往往对应着矩阵隐含的重要信息，且重要性和奇异值大小正相关。每个矩阵都可以表示为一系列秩为$1$的“小矩阵”的和，而奇异值则衡量了这些秩一矩阵对$A$的权重。<br>
+奇异值分解的物理意义可以通过图像压缩表现出来。给定一张$m\times n$像素的照片$A$，用奇异值分解将矩阵分解为若干个秩一矩阵之和，即：<br>
+\begin{align*}<br>
+A&amp;=\sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T +\cdots+\sigma_r u_rv_r^T\\<br>
+&amp;= \begin{bmatrix}u_1&amp;u_2&amp;\cdots&amp;u_r\end{bmatrix}\begin{bmatrix}\sigma_1&amp;&amp;&amp;\&amp;\sigma_2&amp;&amp;\&amp;&amp;\cdots&amp;\&amp;&amp;&amp;\sigma_n\end{bmatrix}\begin{bmatrix}v_1<sup>T\v_2</sup>T\ \vdots\v_r^T\end{bmatrix}\\<br>
+&amp;=U\Sigma V^T<br>
+\end{align*}</p>
+<p>这个也叫部分奇异值分解。其中$V\in R^{r\times n}, U\in R^{m\times r}, \Sigma \in R^{r\times r}$。因为不含有零空间和左零空间的基，如果加上零空间的$n-r$维和左零空间的$m-r$维，就是奇异值分解。<br>
+较大的奇异值保存了图片的主要信息，特别小的奇异值有时可能是噪声，或者对于图片的整体信息不是特别重要。做图像压缩的时候，可以只取一部分较大的奇异值，比如取前八个奇异值作为压缩后的图片：<br>
+$$A = \sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T + \cdots + \sigma_8 u_8v_8^T$$<br>
+现实中常用的做法有两个：</p>
+<ol>
+<li>保留矩阵中$90%$的信息：将奇异值平方和累加到总值的%90%为止。</li>
+<li>当矩阵有上万个奇异值的时候，取前面的$2000$或者$3000$个奇异值。。</li>
+</ol>
+<h2 id="参考文献-references">参考文献(references)</h2>
+<p>1.Gilbert Strang, MIT Open course：Linear Algebra<br>
+2.<a href="https://www.cnblogs.com/pinard/p/6251584.html" target="_blank" rel="noopener">https://www.cnblogs.com/pinard/p/6251584.html</a><br>
+3.<a href="http://www.ams.org/publicoutreach/feature-column/fcarc-svd" target="_blank" rel="noopener">http://www.ams.org/publicoutreach/feature-column/fcarc-svd</a><br>
+4.<a href="https://www.zhihu.com/question/22237507/answer/53804902" target="_blank" rel="noopener">https://www.zhihu.com/question/22237507/answer/53804902</a><br>
+5.<a href="http://charleshm.github.io/2016/03/Singularly-Valuable-Decomposition/" target="_blank" rel="noopener">http://charleshm.github.io/2016/03/Singularly-Valuable-Decomposition/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/02/pca/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/02/pca/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">主成分分析(Principal Component Analysis)</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-02 20:51:19" itemprop="dateCreated datePublished" datetime="2019-01-02T20:51:19+08:00">2019-01-02</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-30 17:54:46" itemprop="dateModified" datetime="2019-08-30T17:54:46+08:00">2019-08-30</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="降维">降维</h2>
+<h3 id="降维的目标">降维的目标</h3>
+<p>降维可以看做将$p$维的数据映射到$m$维，其中$p\gt m$。或者可以说将$n$个$p$维空间中的点映射成$n$个$m$维空间中的点。</p>
+<h3 id="降维的目的">降维的目的</h3>
+<ol>
+<li>维度灾难(curse of dimensionity)</li>
+<li>随着维度增加，精确度和效率的退化。</li>
+<li>可视化数据</li>
+<li>数据压缩</li>
+<li>去噪声<br>
+…</li>
+</ol>
+<h3 id="降维的方法">降维的方法</h3>
+<h4 id="无监督的降维">无监督的降维</h4>
+<ol>
+<li>线性的:PCA</li>
+<li>非线性的: GPCA, Kernel PCA, ISOMAP, LLE</li>
+</ol>
+<h4 id="有监督的降维">有监督的降维</h4>
+<ol>
+<li>线性的: LDA</li>
+<li>非线性的: Kernel LDA</li>
+</ol>
+<h2 id="主成分分析-pca">主成分分析(PCA)</h2>
+<p>主成分分析(principal component analysis,PCA)是一个降维工具。PCA使用正交变换(orthogonal transformation)将可能相关的变量的一系列观测值(observation)转换成一系列不相关的变量，这些转换后不相关的变量叫做主成分(principal component)。第一个主成分有着最大的方差，后来的主成分必须和前面的主成分正交，然后最大化方差。或者PCA也可以看成根据数据拟合一个$m$维的椭球体(ellipsoid)，椭球体的每一个轴代表着一个主成分。<br>
+上课的时候，老师给出了五种角度来看待PCA，分别是信息保存，投影，拟合，嵌入(embedding)，mainfold learning。本文首先从保存信息的角度来给出PCA的推理过程，其他的几种方法就随缘了吧。。。</p>
+<h3 id="信息保存-preserve-information">信息保存(preserve information)</h3>
+<h4 id="目标">目标</h4>
+<p>从信息保存的角度来看PCA的目标是用尽可能小的空间去存储尽可能多的信息。一般情况下，信息用信息熵$-\int p lnp$来表示，如果这里使用信息熵的话，不知道信息的概率表示，一般不知道概率分布的情况下就采用高斯分布，带入高斯分布之后得到$\frac{1}{2}log(2\pi e\sigma^2)$，其中$2\pi e$都是常量，只剩下方差。给出一堆数据，直接计算信息熵是行不通的，但是计算方差是可行的，而方差和信息熵是有联系的，所以可以考虑用方差来表示信息。考虑一下降维前的$p$维数据$x$和降维后的$m$维数据$z$方差之间的关系，$var(z)?var(x)$，这里$z$和$x$的方差维度是不同的，所以不能相等，这里我们的目标就是最大化$z$的方差。方差能解释变化，方差越大，数据的变化就越大，越能包含信息。PCA的目标就是让降维后的数据方差最大。</p>
+<h4 id="线性pca过程">线性PCA过程</h4>
+<h5 id="目标函数">目标函数</h5>
+<p>给定$n$个观测数据$x_1,x_2,\cdots,x_n \in \mathbb{R}^p$，形成一个观测矩阵$X,X\in \mathbb{R}^{p\times n}$，即$X = \begin{bmatrix}x_{11}&amp;\cdots &amp;x_{1n}\\ &amp;\cdots&amp;\\ x_{p1}&amp;\cdots &amp;x_{pn}\end{bmatrix}$。我们的目标是将这样一组$p$维的数据转换成$m$维的数据。线性PCA是通过线性变换(matrix)来实现的，也就是我们要求一个$p\times m$的矩阵$V$，将原始的$X$矩阵转换成$Z$矩阵，使得<br>
+$$Z_{m\times n}= V_{p\times m}^{T}X_{p\times n},$$<br>
+其中$V\in \mathbb{R}^{p\times m}$, $v_i=\begin{bmatrix}v_{1i}\\v_{2i}\\ \vdots\\v_{pi}\end{bmatrix}$, $V = \begin{bmatrix}v_{11}&amp;v_{12}&amp;\cdots&amp;v_{1m}\\v_{21}&amp;v_{22}&amp;\cdots&amp;v_{2m}\\ \vdots&amp;\vdots&amp;\cdots&amp;\vdots\\v_{p1}&amp;v_{p2}&amp;\cdots&amp;v_{pm}\end{bmatrix}=\begin{bmatrix}v_1&amp;v_2&amp;\cdots&amp;v_m\end{bmatrix}$, $V^T = \begin{bmatrix}v_{11}&amp;v_{21}&amp;\cdots&amp;v_{p1}\\v_{12}&amp;v_{22}&amp;\cdots&amp;v_{p2}\\ \vdots&amp;\vdots&amp;\cdots&amp;\vdots\\v_{1m}&amp;v_{2m}&amp;\cdots&amp;v_{pm}\end{bmatrix}=\begin{bmatrix}v_1^T \\v_2^T \\ \vdots\\v_m^T \end{bmatrix}$。<br>
+所以就有：<br>
+\begin{align*}<br>
+z_1 &amp;= v_1^Tx_j\\<br>
+&amp;\cdots\\<br>
+z_k &amp;= v_k^Tx_j\\<br>
+&amp;\cdots\\<br>
+z_m &amp;= v_m^Tx_j<br>
+\end{align*}<br>
+其中$z_1,\cdots,z_m$是标量，$v_1^T,\cdots, v_m^T $是$1\times p$的向量，$x_j$是一个$p\times 1$维的观测向量，而我们有$n$个观测向量，所以随机变量$z_k$共有$n$个可能取值：<br>
+$$z_{k} = v_k^Tx_i= \sum_{i=1}^{p}v_{ik}x_{ij}, j = 1,2,\cdots,n$$<br>
+其中$x_i$是观测矩阵$X$的第$i$列，$X\in \mathbb{R}^{p\times n}$。</p>
+<h5 id="协方差矩阵">协方差矩阵</h5>
+<p>离散型随机变量$X$($X$的取值等可能性)方差的计算公式是：<br>
+$$var(X) = E[(X-\mu)^2] = \frac{1}{n}\sum_{i=1}^n (x_i-\mu)^2,$$<br>
+其中$\mu$是X的平均数，即$\mu = \frac{1}{n}\sum_{i=1}^nx_i$。</p>
+<p>让$z_k$的方差最大即最大化：<br>
+\begin{align*}<br>
+var(z_1) &amp;=E(z_1,\bar{z_1})^2 \\<br>
+&amp;=\frac{1}{n}\sum_{i=1}^n (v_1^T x_i - v_1^T \bar{x_i})^2\\<br>
+&amp;=\frac{1}{n}\sum_{i=1}^n (v_1^T x_i - v_1^T \bar{x_i})(v_1^T x_i - v_1^T \bar{x_i})^T\\<br>
+&amp;=\frac{1}{n}\sum_{i=1}^n v_1^T (x_i - \bar{x_i})(x_i - \bar{x_i})^T v_1\\<br>
+\end{align*}<br>
+其中$x_i=\begin{bmatrix}x_{1i}\\x_{2i}\\ \vdots\\x_{pi}\end{bmatrix}$,$\bar{x_i}=\begin{bmatrix}\bar{x_{1i}}\\\bar{x_{2i}}\\ \vdots\\\bar{x_{pi}}\end{bmatrix}$,$x_i$是$p$维的，$x_i^p$也是$p$维的，$(x_i-\bar{x_i})$是$p\times 1$维的，$(x_i -\bar{x_i})^T$是$1\times p$维的。<br>
+令$S=\frac{1}{n}\sum_{i=1}^n(x_i -\bar{x_i})(x_i-\bar{x_i})^T$，$S$是一个$p\times p$的对称矩阵，其实$S$是一个协方差矩阵。这个协方差矩阵可以使用矩阵$X$直接求出来，也可以通过对$X$进行奇异值分解求出来。<br>
+如果使用奇异值分解的话，首先对矩阵$X$进行去中心化，即$\bar{x_i}=0$，则：<br>
+\begin{align*}<br>
+S &amp;= \frac{1}{n}\sum_{i=1}^T x_ix_i^T \\<br>
+&amp;=\frac{1}{n}X_{p\times n}X_{n\times p}^T<br>
+\end{align*}<br>
+$X=U\Sigma V^T $<br>
+$X X^T =U\Sigma V^T V\Sigma U^T = U\Sigma_1^2 U^T $<br>
+$X^T X =V\Sigma U^T U\Sigma V^T = V\Sigma_2^2 V^T $<br>
+$S=\frac{1}{n}XX^T =\frac{1}{n}U\Sigma^2 U^T $</p>
+<h5 id="拉格朗日乘子法">拉格朗日乘子法</h5>
+<p>将$S$代入得：<br>
+$$var(z_1) = v_1^TSv_1,$$<br>
+接下来的目标是最大化$var(z_1)$，这里要给出一个限制条件，就是$v_1^Tv_1 = 1$，否则的话$v_1$无限大，$var(z_1)$就没有最大值了。<br>
+使用拉格朗日乘子法，得到目标函数：<br>
+$$L=v_1^TSv_1 - \lambda (v_1^Tv_1 -1)$$<br>
+求偏导，令偏导数等于零得：<br>
+\begin{align*}<br>
+\frac{\partial{L}}{\partial{v_1}}&amp;=2Sv_1 - 2\lambda v_1\\<br>
+&amp;=2(S-\lambda) v_1\\<br>
+&amp;=0<br>
+\end{align*}<br>
+即$Sv_1 = \lambda v_1$，所以$v_1$是矩阵$S$的一个特征向量(eigenvector)。所以：<br>
+$$var(z_1) = v_1^TSv_1 = v_1^T\lambda v_1 = \lambda v_1^Tv_1 = \lambda,$$<br>
+第一个主成分$v_1$对应矩阵$S$的最大特征值。</p>
+<h5 id="其他主成分">其他主成分</h5>
+<p>对于$z_2$,同理可得：<br>
+$var(z_2) = v_2^TSv_2$，<br>
+但是这里要加一些限制条件$v_2<sup>Tv_2=1$，除此以外，第2个主成分还有和之前的主成分不相关，即$cov[z_1,z_2]=0$,或者说是$v_1</sup>Tv_2=0$，证明如下。<br>
+\begin{align*}<br>
+cov[z_1,z_2] &amp;=\mathbb{E}[(z_1-\bar{z_1})(z_2-\bar{z_2})]\\<br>
+&amp;=\frac{1}{n}(v_1^T x_i - v_1^T \bar{x_i})(v_2^T x_i-v_2^T \bar{x_i})\\<br>
+&amp;=\frac{1}{n}v_1^T (x_i-\bar{x_i})(x_i-\bar{x_i})v_2\\<br>
+&amp;=\frac{1}{n}v_1^T SV_2\\<br>
+&amp;=\frac{1}{n}\lambda v_1^T v_2\\<br>
+&amp;=0<br>
+\end{align*}</p>
+<p>维基百科上是通过将数据减去第一个主成分之后再最大化方差，这两种理解方法都行。<br>
+所以拉格朗日目标函数就成了：<br>
+$$L=v_1^TSv_1 - \lambda (v_1^Tv_1 -1) -\beta v_2^Tv_1$$<br>
+求导，令导数等于零得：<br>
+$$\frac{\partial{L}}{\partial{v_1}}=2Sv_2 - 2\lambda v_2 - \beta v_1 = 0$$<br>
+而$v_1$和$v_2$不相关，所以$\beta=0$，所以$Sv_2 = \lambda v_2$，即$v_2$也是矩阵$S$的特征向量，但是最大的特征值对应的特征向量已经被$v_1$用了，所以$v_2$是第二大的特征值对应的特征向量。<br>
+同理可得第$k$个主成分是$S$的第$k$大特征值对应的特征向量。</p>
+<p>但是这种理解方法没有办法推广到非线性PCA。接下来的集中理解方式可以由线性PCA开始，并且可以推广到非线性PCA。</p>
+<h3 id="函数拟合">函数拟合</h3>
+<h4 id="线性pca过程-v2">线性PCA过程</h4>
+<h4 id="非线性pca过程">非线性PCA过程</h4>
+<h5 id="广义主成分分析-generalized-pca-gpca">广义主成分分析(Generalized PCA,GPCA)</h5>
+<p>刚才讲的PCA是线性PCA，是拟合一个超平面(hyperplane)的过程，但是如果数据不是线性的，比如说是一个曲面$x^2 +y^2 +z=0$，这样子线性PCA就不适用了，可以稍加变化让其依然是可以用的。比如$x+y+1=0$可以看成$\begin{bmatrix}a&amp;b&amp;c\end{bmatrix}\begin{bmatrix}x\\y\\1\end{bmatrix}$，而$x^2 +y^2 +z=0$可以看成$\begin{bmatrix}a&amp;b&amp;c\end{bmatrix}\begin{bmatrix}x^2 \\y^2 \\z\end{bmatrix}$。</p>
+<p>如果原始数据是非线性的，我们可以通过多个特征映射函数$\Phi$从原始数据提取非线性特征（也可看成升维，变成高维空间中数据，在高维中可以看成是线性的），然后利用线性PCA对非线性特征进行降维。例如：<br>
+假设$x=[x_1,x_2,x_3]^T \in \mathbb{R}^3$，按照转换函数$v(x) = [x_1^2 , x_1x_2,x_1x_3,x_2^2 ,x_2x_3,x_3^2 $将其转换成$\mathbb{R}^6$中的特征，接下来使用线性PCA对这些非线性特征进行降维。</p>
+<p>给定一个函数$\Phi$将$p$维数据映射到特征空间$F$中，即$\Phi:\mathbb{R}^p\rightarrow F,\mathbf{x}\rightarrow X$。我们可以通过计算协方差矩阵$C_F = \frac{\Phi\Phi^T }{n}$,即$C_F = \frac{1}{n}\sum_{i=1}<sup>{n}\phi(x_i)\phi(x_i)</sup>T $，然后对协方差矩阵$C_F$进行特征值分解$C_Fx=\lambda x$就可以求解，这里我们假设空间$F$中的数据均值为$0$，即$E[\Phi(x)] = 0$。</p>
+<h3 id="嵌入-embedding-保距离">嵌入(embedding)，保距离</h3>
+<h4 id="核函数技巧-kernel-trick">核函数技巧(Kernel trick)</h4>
+<p>在GPCA中，如果不知道$\Phi$的话，或者$\Phi$将数据映射到了无限维空间中，就没有办法求解了。这里就给出了一个假设，假设低维空间中$x_i,x_j$的点积(dot product)可以通过一个函数计算，将$x_i,x_j$的点积记为$K_{ij}$，则：<br>
+$$K_{ij} = &lt; \phi(x_i),\phi(x_j) &gt; = k(x_i,x_j)$$<br>
+其中$k()$是一个函数，比如可以取高斯函数，$k(x,y) = e^{\frac{(\Vert x-y\Vert)^2 }{2\sigma^2 }}$，我们叫它核函数(kernel function)。<br>
+这样即使我们不知道$\Phi$，也可以计算点积，直接使用核函数计算。</p>
+<h4 id="dot-pca">dot PCA</h4>
+<p>给定原始数据$X_D = [x_1,\cdots,x_n],x_i\in \mathbb{R}^p$，假定$\hat{x}=0$，那么$X_D$的协方差矩阵：<br>
+\begin{align*}<br>
+S&amp;= \frac{\sum_{i=1}^n (x_i-\bar{x})(x_i-\bar{x})^T }{n}\\<br>
+&amp;= \frac{\sum_{i=1}^n (x_i-0)(x_i-0)^T }{n}\\<br>
+&amp;= \frac{\sum_{i=1}^n (x_i)(x_i)^T }{n}\\<br>
+&amp;= \frac{\begin{bmatrix}x_1&amp;\cdots&amp;x_n\end{bmatrix}\begin{bmatrix}x_1\\\vdots\\x_n\end{bmatrix}}{n}\\<br>
+&amp;= \frac{X_DX_D^T}{n}\\<br>
+&amp;= Cov(X_D, X_D)<br>
+\end{align*}<br>
+即$S=\frac{X_DX_D^T}{n}$，而对$X_D$做奇异值分解，有$X_D = V\Sigma U^T$，所以$S = \frac{V\Sigma^2 V^T}{n}$，其中$U$是$S$的特征值矩阵，则：$Z’ = V^T X’$，其中$V\in \mathbb{R}^{p\times m}$，$X’$是新的样本数据。</p>
+<p>这里我们推导一下点积和PCA的关系，即假设我们有$K = Dot(X_D,X_D) = X_D^T X_D$，则$K=U^T \sigma^2U$，而我们根据奇异值分解$X_D = V\Sigma U^T $可以得到$U$和$V$的关系，即$V=X_DU\Sigma^{-1} $，对$K$进行特征值分解，可以求得$U$和$\Sigma$，所以来了一个新的样本$X’$，<br>
+$$Z’ = V^TX’ = D^{-1} U^T X_D^T X’ = D^{-1} U^T &lt; X_D,X’ &gt;.$$<br>
+事实上，这里$X’$是已知的，可以直接计算协方差，但是这里是为了给Kernel PCA做引子，所以，推导的过程中是没有用到$X$的，只用到了$X$的点积，在测试的时候会用到$X’$。</p>
+<h5 id="kernel-pca">Kernel PCA</h5>
+<p>Kernel PCA就是将Kernel trick应用到了dot PCA中，由Kernel trick得$K = \Phi^T \Phi$，$K=U\Sigma^2 U^T $，则<br>
+$$V = \Phi U\Sigma^{-1} = \Phi U diag(1/sqrt(\lambda_1),1/sqrt(\lambda_2),\cdots)$$<br>
+但是我们求不出来$V$，因为$\Phi$不知道，但是可以让$V$中的$\Phi$和样本$X’$中的$\Phi$在一起，就可以计算了，即<br>
+$$Z’ = V^T\phi(X’) = \Sigma^{-1}U\Phi\phi(X’) = \Sigma^{-1}UK(X,X’)$$</p>
+<h3 id="流形学习-manifold">流形学习(manifold)</h3>
+<h4 id="线性">线性</h4>
+<h5 id="pca">PCA</h5>
+<h5 id="mds">MDS</h5>
+<h4 id="非线性">非线性</h4>
+<h5 id="lle">LLE</h5>
+<h5 id="isomap">ISOMAP</h5>
+<h2 id="线性判断分析-fisher-linear-discrimiant-analysis-lda">线性判断分析(Fisher linear discrimiant analysis,LDA)</h2>
+<h3 id="线性lda">线性LDA</h3>
+<h4 id="两类">两类</h4>
+<h5 id="示例">示例</h5>
+<h4 id="c类-c-gt-2">C类(C$\gt 2$)</h4>
+<p>两维的问题是通过将原始数据投影到一维空间进行分类，而$C$维的问题则是将原始数据投影到$C-1$空间进行分类，通过一个投影矩阵$W=\begin{bmatrix}w_1&amp;\cdots&amp;w_{C-1}\end{bmatrix}$将$C$维的$x$投影到$C-1$维，得到$y=\begin{bmatrix}y_1&amp;\cdots&amp;y_{C-1}\end{bmatrix}$，即$y_i = w_i^Tx\Rightarrow y = W^Tx$。</p>
+<h5 id="示例-v2">示例</h5>
+<h3 id="不足">不足</h3>
+<ul>
+<li>最多投影到$C-1$维特征空间。</li>
+<li>LDA是参数化的方法，它假设数据服从单高斯分布，并且所有类的协方差都是等价的。对于多个高斯分布，线性的LDA是无法分开的。</li>
+<li>当数据之间的差异主要通过方差而不是均值体现的话，LDA就会失败(fail)。如下图<br>
+<img src="/2019/01/02/pca/" alt="figure"></li>
+</ul>
+<h3 id="kernel-lda">Kernel LDA</h3>
+<h2 id="pca和lda区别和联系">PCA和LDA区别和联系</h2>
+<p>PCA是一个无监督的降维方法，通过最大化降维后数据的方差实现；LDA是一个有监督的降维方法，通过最大化类可分性实现(class discrimnatory)。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://en.wikipedia.org/wiki/Principal_component_analysis" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Principal_component_analysis</a><br>
+2.<a href="https://en.wikipedia.org/wiki/Variance" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Variance</a><br>
+3.<a href="https://sebastianraschka.com/faq/docs/lda-vs-pca.html" target="_blank" rel="noopener">https://sebastianraschka.com/faq/docs/lda-vs-pca.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/28/内积空间、赋范空间和希尔伯特空间/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/28/内积空间、赋范空间和希尔伯特空间/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">内积空间、赋范空间和希尔伯特空间</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-28 15:15:37" itemprop="dateCreated datePublished" datetime="2018-12-28T15:15:37+08:00">2018-12-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-11-21 15:19:16" itemprop="dateModified" datetime="2019-11-21T15:19:16+08:00">2019-11-21</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="引言">引言</h2>
+<p>数学的空间是研究工作的对象和遵循的规则。<br>
+线性空间：加法和数乘<br>
+拓扑空间：距离，范数和内积。</p>
+<h2 id="距离">距离</h2>
+<p>距离是用来衡量两个点有多“近”的。</p>
+<h3 id="距离定义">距离定义</h3>
+<p>$X$是一非空集合，任给一对这一集合中的元素$x,y$，都会给定一个实数$d(x,y)$与它们对应，并且这个实数满足以下条件：</p>
+<ol>
+<li>$d(x,y)\ge 0, d(x,y) = 0 \Leftrightarrow x=y$；</li>
+<li>$d(x,y) = d(y,x)$；</li>
+<li>$d(x,y) \le d(x,z) + d(z,y)$。</li>
+</ol>
+<p>则$d(x,y)$为这两点$x$和$y$之间的距离。</p>
+<h3 id="示例">示例</h3>
+<h4 id="向量的距离">向量的距离</h4>
+<p>$d_1(x,y) = \sqrt{(x_1-y_1)<sup>2+\cdots,(x_n-y_n)</sup>n}$<br>
+$d_2(x,y) = max{|x_1-y_1|,\cdots,|x_n,y_n|}$<br>
+$d_3(x,y) = |x_1-y_1|+\cdots+|x_n,y_n|$</p>
+<h4 id="曲线的距离">曲线的距离</h4>
+<p>$d_1(f,g) = \int_a<sup>b(f(x)-g(x))</sup>2 dx$<br>
+$d_2(f,g) = max_{a\le x\le b}|f(x)-f(y)|$<br>
+$d_3(f,g) = \int_a<sup>b(f(x)-g(x))</sup>k dx$</p>
+<h3 id="线性空间">线性空间</h3>
+<p>向量的加法和数乘</p>
+<h3 id="线性空间的八个性质">线性空间的八个性质</h3>
+<p>加法的交换律和结合律，零元，负元，数乘的交换律，单位一，数乘与加法的结合律。</p>
+<h2 id="范数-向量到零点的距离-定义">范数（向量到零点的距离）定义</h2>
+<p>如果$\Vert x\Vert $是$R^n$上的范数（$x$是向量），那么它需要满足以下条件：</p>
+<ol>
+<li>$\Vert x\Vert \ge 0, \forall x\in R, \Vert x\Vert  = 0  \Leftrightarrow x = 0$；</li>
+<li>$\Vert \alpha x\Vert  = |\alpha|\Vert x\Vert, \forall \alpha \in R, x\in R^n$</li>
+<li>$\Vert x+y\Vert  \le \Vert x\Vert  + \Vert y\Vert , \forall x,y\in R$</li>
+</ol>
+<p>可以看成是点到零点距离多了条件2。</p>
+<h3 id="示例-v2">示例</h3>
+<p>$\Vert x\Vert_2  = \sqrt{x_1<sup>2+\cdots,x_n</sup>n}$<br>
+$\Vert x\Vert_{\infty}  = max{|x_1|,\cdots,|x_n|}$<br>
+$\Vert x\Vert_1  = |x_1|+\cdots+|x_n|$</p>
+<h3 id="距离和范数的关系">距离和范数的关系</h3>
+<p>由范数可以定义距离。$d(x,y) = \Vert  x-y\Vert$。<br>
+但是由距离不一定可以定义范数。如$\Vert x\Vert  = d(0,x)$,但是$\Vert \alpha x\Vert  = d(0, \alpha x) \ne |\alpha|\Vert x\Vert $。</p>
+<h3 id="赋范空间和度量空间">赋范空间和度量空间</h3>
+<p>赋予范数的集合称为赋范空间。<br>
+距离的集合称为度量空间。</p>
+<h3 id="线性赋范空间和线性度量空间">线性赋范空间和线性度量空间</h3>
+<p>赋予范数加上线性空间称为线性赋范空间。<br>
+距离加上线性空间称为线性度量空间。</p>
+<h2 id="内积">内积</h2>
+<h3 id="引言-v2">引言</h3>
+<p>赋范空间有向量的模长，即范数。但是范数只有大小，没有夹角，所以就引入了内积。</p>
+<h3 id="定义">定义</h3>
+<p>给定$(x,y)\in R$,如果它满足：</p>
+<ol>
+<li>对称性；</li>
+<li>对第一变元的线性性；</li>
+<li>正定性。</li>
+</ol>
+<p>那么就称$(x,y)$为内积。</p>
+<h3 id="示例-v3">示例</h3>
+<ol>
+<li>$(x,y) = \sum_{n=1}^nx_ny_n$。</li>
+<li>$(f,g) = \int_{-\infty}^{\infty}f(x)g(x)dx$。</li>
+</ol>
+<h3 id="内积和范数的关系">内积和范数的关系</h3>
+<ul>
+<li>内积可以导出范数</li>
+<li>范数不能导出距离</li>
+</ul>
+<h3 id="内积空间">内积空间</h3>
+<p>在线性空间上定义内积，这个空间称为内积空间。<br>
+常见的欧几里得空间就是一个内积空间，内积空间是一个抽象的空间，而欧几里得空间是一个具象化了的内积空间。<br>
+希尔伯特引入了无穷维空间并定义了内积，其空间称为内积空间，再加上完备性，称为希尔伯特空间。完备性是取极限之后还在这个空间内。<br>
+完备的赋范空间称为巴拿赫空间。</p>
+<h2 id="拓扑空间">拓扑空间</h2>
+<p>欧几里得几何学需要定义内积，连续的概念不需要内积，甚至不需要距离。</p>
+<h3 id="定义-v2">定义</h3>
+<p>给定一个集合$X$,$\tau$是$X$的一系列子集，如果$\tau$满足以下条件：</p>
+<ol>
+<li>空集(empty set)和全集X都是$\tau$的元素;</li>
+<li>$\tau$中任意元素的并集(union)仍然是$\tau$的元素;</li>
+<li>$\tau$中任意有限多个元素的交集(intersection)仍然是$\tau$中的元素。<br>
+则称$\tau$是$X$上的一个拓扑。</li>
+</ol>
+<h2 id="距离-范数和内积之间的关系">距离，范数和内积之间的关系</h2>
+<p>距离$\gt$范数$\gt$内积</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/24/convex-optimization-chapter-2-Convex-sets/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/24/convex-optimization-chapter-2-Convex-sets/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">convex optimization chapter 2 Convex sets</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-24 16:28:45" itemprop="dateCreated datePublished" datetime="2018-12-24T16:28:45+08:00">2018-12-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-09 16:25:28" itemprop="dateModified" datetime="2019-09-09T16:25:28+08:00">2019-09-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/凸优化/" itemprop="url" rel="index"><span itemprop="name">凸优化</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="仿射集-affine-sets-和凸集-convex-sets">仿射集(affine sets)和凸集(convex sets)</h2>
+<h3 id="直线-line-和线段-line-segmens">直线(line)和线段(line segmens)</h3>
+<p>假设$x_1,x_2 \in \mathbb{R}^n $是n维空间中不重合$(x_1 \ne x_2)$的两点，给定：<br>
+$$y = \theta x_1 + (1 - \theta)x_2,$$<br>
+当$\theta\in R$时，$y$是经过点$x_1$和点$x_2$的直线。当$\theta=1$时，$y=x_1$,当$\theta=0$时，$y=x_2$。当$\theta\in[0,1]$时，$y$是$x_1$和$x_2$之间的线段(line segment)。 把$y$改写成如下形式： $$y = x_2 + \theta(x_1 - x_2)$$，可以给出另一种解释，$y$是点$x_2$和方向$x_1 - x_2$(从$x_2$到$x_1$的方向)乘上一个缩放因子$\theta$的和。<br>
+如下图所示，可以将y看成$\theta$的函数。<br>
+<img src="https://ws1.sinaimg.cn/large/006wtfMEly1fyhy7m4llij30mz0alwep.jpg" alt="line_line-segment"></p>
+<h3 id="仿射集-affine-sets">仿射集(affine sets)</h3>
+<h4 id="仿射集的定义">仿射集的定义</h4>
+<p>给定一个集合$C\subset \mathbb{R}^n $,如果经过$C$中任意两个不同点的直线仍然在$C$中，那么$C$就是一个仿射集。即，对于任意$x_1,x_2\in C$和$\theta\in R$，都有$\theta x_1 + (1 - \theta)x_2 \in C$。换句话说，给定线性组合的系数和为$1$，$C$中任意两点的线性组合仍然在$C$中，我们就称这样的集合是仿射的(affine)。</p>
+<h4 id="仿射组合-affine-combination">仿射组合(affine combination)</h4>
+<p>我们可以把两个点的线性组合推广到多个点的线性组合，这里称它为仿射组合。<br>
+仿射组合的定义：给定$\theta_1+\cdots+\theta_k = 1$,则$\theta_1 x_1 + \cdots + \theta_k x_k$是点$x_1,\cdots,x_k$的仿射组合(affine combination)。<br>
+根据仿射集的定义，一个仿射集(affine set)包含集合中任意两个点的仿射（线性）组合，那么可以推导出仿射集包含集合中任意点（大于等于两个）的仿射组合，即：如果$C$是一个仿射集，$x_1,\cdots,x_k\in C$,且$\theta_1 x_1 + \cdots + \theta_k x_k = 1$,那么点$\theta_1 x_1 + \cdots + \theta_k x_k$仍然属于$C$。</p>
+<h4 id="仿射集的子空间-subspce">仿射集的子空间(subspce)</h4>
+<p>如果$C$是一个仿射集，$x_0 \in C$,那么集合<br>
+$$V = C - x_0 = {x - x_0\big|x \in C}$$<br>
+是一个子空间(subspace),因为$V$是加法封闭和数乘封闭的。<br>
+证明：<br>
+假设$v_1, v_2 \in V$，并且$\alpha,\beta \in R$。<br>
+要证明V是一个子空间，那么只需要证明$\alpha v_1 + \beta v_2 \in V$即可。<br>
+因为$v_1, v_2 \in V$，则$v_1+x_0, v_2+x_0 \in C$。<br>
+而$x_0 \in C$，所以有<br>
+$$\alpha(v_1+x_0) + \beta(v_2+x_0) + (1 - \alpha - \beta)x_0 \in C$$<br>
+即：<br>
+\begin{align*}<br>
+\alpha v_1 + \beta v_2 + (\alpha + \beta + 1 - \alpha - \beta)x_0 &amp;\in C\\<br>
+\alpha v_1 + \beta v_2 + x_0 &amp;\in C<br>
+\end{align*}<br>
+所以$\alpha v_1 + \beta v_2 \in V$。<br>
+所以，仿射集$C$可以写成：<br>
+$$C = V + x_0 = { v + x_0\big| v \in V},$$<br>
+即，一个子空间加上一个偏移(offset)。而与仿射集$C$相关的子空间$V$与$x_0$的选择无关，即$x_0$可以为$C$中任意一点。</p>
+<h4 id="示例">示例</h4>
+<p>线性方程组的解。一个线性方程组的解可以表示为一个仿射集:$C={x\big|Ax = b}$,其中 $A\in \mathbb{R}^{m \times n}, b \in \mathbb{R}^m $。<br>
+证明：<br>
+设$x_1, x_2 \in C$,即$Ax_1 = b, Ax_2 = b$。对于任意$\theta \in R$,有:<br>
+\begin{align*}<br>
+A(\theta x_1 + (1-\theta x_2) &amp;= \theta Ax_1 + (1-\theta)Ax_2\\<br>
+&amp;= \theta b + (1 - \theta) b\\<br>
+&amp;= b \end{align*}<br>
+所以线性方程组的解是一个仿射组合：$\theta x_1 + (1 - \theta) x_2$，这个仿射组合在集合$C$中，所以线性方程组的解集$C$是一个仿射集。<br>
+和该仿射集$C$相关的子空间$V$是$A$的零空间(nullspace)。因为仿射集$C$中的任意点都是方程$Ax = b$的解，而$V = C - x_0 = {x - x_0\big|x \in C}$，有$Ax = b, Ax_0 = b$，则$Ax - Ax_0 = A(x - x_0) = b - b = 0$，所以$V$是$A$的零空间。</p>
+<h4 id="仿射包-affine-hull">仿射包(affine hull)</h4>
+<p>给定集合$C\subset \mathbb{R}^n $，集合中点的仿射组合称为集合$C$的仿射包(affine hull),表示为$aff C$:<br>
+$aff C = {\theta_1 x_1 + \cdots + \theta_k x_k\big| x_1,\cdots,x_k \in C, \theta_1 + \cdots + \theta_k = 1}$<br>
+集合$C$可以是任意集合。仿射包是包含集合$C$的最小仿射集（一个集合的仿射包只有一个，是不变的）。即如果$S$是任意仿射集，满足$C\subset S$，那么有$aff C \subset S$。或者说仿射包是所有包含集合$C$的仿射集的交集。</p>
+<h3 id="仿射纬度-affine-dimension-和相对内部-relative-interior">仿射纬度(affine dimension)和相对内部(relative interior)</h3>
+<h4 id="拓扑-topology">拓扑(topology)</h4>
+<p>拓扑(topology)，开集(open sets),闭集(close sets),内部(interior),边界(boundary),闭包(closure),邻域(neighbood),相对内部(relative interior)<br>
+同一个集合可以有很多个不同的拓扑。</p>
+<h5 id="定义">定义</h5>
+<p>给定一个集合$X$,$\tau$是$X$的一系列子集，如果$\tau$满足以下条件：</p>
+<ol>
+<li>空集(empty set)和全集X都是$\tau$的元素;</li>
+<li>$\tau$中任意元素的并集(union)仍然是$\tau$的元素;</li>
+<li>$\tau$中任意有限多个元素的交集(intersection)仍然是$\tau$中的元素。</li>
+</ol>
+<p>则称$\tau$是集合$X$上的一个拓扑。<br>
+如果$\tau$是$X$上的一个拓扑，那么$(X,\tau)$对称为一个拓扑空间(topological space)。<br>
+如果$X$的一个子集在$\tau$中，这个子集被称为开集(open set)。<br>
+如果$X$的一个子集的补集是在$\tau$中，那么这个子集是闭集(closed set)。<br>
+$X$的子集可能是开集，闭集，或者都是，都不是。<br>
+空集和全集是开集，也是闭集（定义）。</p>
+<h5 id="示例-v2">示例</h5>
+<ol>
+<li>给定集合$X={1,2,3,4}$, 集合$\tau = { {},{1,2,3,4} }$就是$X$上的一个拓扑。</li>
+<li>给定集合$X={1,2,3,4}$, 集合$\tau = { {},{1}, {3,4},{1,3,4},{1,2,3,4} }$就是$X$上的另一个拓扑。</li>
+<li>给定集合$X={1,2,3,4}$, $X$的幂集(power set)也是$X$上的另一个拓扑。</li>
+</ol>
+<p><strong>通常如果不说的话，默认是在欧式空间(1维，2维,…,n维欧式空间)的拓扑，即欧式拓扑。以下讲的一些概念是在欧式空间的拓扑（通常拓扑）上的定义和一般拓扑直观上可能不太一样，但实际上意义是相同的。</strong></p>
+<h4 id="epsilon-disc-或-epsilon-邻域">$\epsilon-disc$或$\epsilon$邻域</h4>
+<h5 id="定义-v2">定义</h5>
+<p>给定$x\in \mathbb{R}^n $以及$\epsilon\gt 0$，集合<br>
+$$D(x,\epsilon) = {y\in \mathbb{R}^n \big|d(x,y) \lt \epsilon}$$<br>
+称为关于$x$的$\epsilon-disc$或者$\epsilon$邻域(neighbood)或者$\epsilon$球(ball)。即所有离点$x$距离小于$\epsilon$的点$y$的集合。</p>
+<h4 id="开集-open-sets">开集(open sets)</h4>
+<h5 id="定义-v3">定义</h5>
+<p><strong>给定集合$A\subset \mathbb{R}^n $，对于$A$中的所有元素，即$\forall x\in A$，都存在$\epsilon \gt 0$使得$D(x,\epsilon)\subset A$，那么就称该集合是开的。</strong><br>
+即集合$A$中所有元素的$spsilon$邻域都还在集合$A$中（定理$1$）。<br>
+<strong>注意：必须满足$\epsilon \gt 0$</strong></p>
+<h5 id="定理">定理</h5>
+<h6 id="定理-1-epsilon-邻域是开集">定理$1$ $epsilon$邻域是开集</h6>
+<ul>
+<li>在$\mathbb{R}^n $中，对于一个$\epsilon \gt 0, x\in \mathbb{R}^n $,那么集合$x$的$\epsilon$邻域$D(x,\epsilon)$是开的，给定一个$\epsilon$，能找到一个更小的$epsilon$邻域。</li>
+</ul>
+<h6 id="定理-2">定理$2$</h6>
+<ul>
+<li>$\mathbb{R}^n $中有限个开子集的交集是$\mathbb{R}^n $的开子集。</li>
+<li>$\mathbb{R}^n $中任意个开子集的并集是$\mathbb{R}^n $的开子集。</li>
+</ul>
+<p><strong>注意：任意开集的交可能不是开集，一个点不是开集，但是它是所有包含它的开集的交。</strong></p>
+<h5 id="示例-v3">示例</h5>
+<p><img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/unit_circle.png" alt="unit_circle"></p>
+<ol>
+<li>$\mathbb{R}^2 $中的不包含边界的球是开的，如图。</li>
+<li>考虑一个$\mathbb{R}^1 $中的开区间，如$(0,1)$，它是一个开集，但是如果把它放在二维欧式空间中(是x轴上的一个线段)，它不是开的，不满足定义，所以开集是必须针对于某一个给定的集合$X$。</li>
+<li>$\mathbb{R}^2 $上的包含边界的单位圆$X = {x\in \mathbb{R}^2 \big||x|\le 1}$不是开的。因为边界上的点$x$不满足$\epsilon \gt 0, D(x,\epsilon) \subset X$。</li>
+<li>集合$S={(x,y) \in \mathbb{R}^2 \big|0 \lt x \lt 1}$是开集。对于每个点$(x,y)\in S$,我们可以画出半径$r = min{x,1-x}$的邻域并且其全部含于$S$，所以$S$是开集。</li>
+<li>集合$S={(x,y) \in \mathbb{R}^2 \big|0 \lt x \le 1}$不是开集。因为点$(1,0) \in S$的邻域包含点$(x,0)$,其中$x\gt 1$。</li>
+</ol>
+<h4 id="内部-interior">内部(interior)</h4>
+<h5 id="定义-v4">定义</h5>
+<p><strong>给定集合$A\subset \mathbb{R}^n $,点$x \in A$，如果有一个开集$U$使得$x \in U\subset A$,那么该点就称为$A$的一个内点。或者说对于$x\in A$，有一个$\epsilon \gt 0$使得$D(x,\epsilon)\subset A$。$A$的所有内点组成的集合叫做$A$的内部(interior)，记做$int(A)$。</strong></p>
+<h5 id="属性">属性</h5>
+<ol>
+<li>集合内部可能是空的，单点的内部就是空的。</li>
+<li>单位圆的内部是不包含边界的单位圆。</li>
+<li>事实上$A$的内部是$A$所有开子集的并，由开集的定理得$A$的内部是开的，且$A$的内部是$A$的最大的开集。</li>
+<li>当且仅当$A$的内部等于$A$的时候，$A$是开集（$A$可能是闭集）。</li>
+<li>只需要寻找集合内$\epsilon$邻域还在这个集合内的点即可。</li>
+</ol>
+<h5 id="示例-v4">示例</h5>
+<ol>
+<li>给定集合$S={(x,y)\in \mathbb{R}^2 \big| 0 \lt x \le 1}$，$int(S) = {(x,y)\big|0 \lt x \lt 1}$。因为区间$(0,1)$中的点都满足它们的$\epsilon$邻域在$S$中。</li>
+<li>$int(A) \cup int(B) \ne int(A\cup B)$。在实数轴上，$A=[0,1],B=[1,2]$，那么$int(A) = (0,1),int(B) = (1,2)$，所以$int(A) \cup int(B) = (0,1)\cup (1,2) = (0,2)\backslash {1}$，而$int(A\cup B) = int[0,2] = (0,2)$。</li>
+</ol>
+<h4 id="闭集-closed-set">闭集(closed set)</h4>
+<h5 id="定义-v5">定义</h5>
+<p><strong>对于$\mathbb{R}^n $中的集合$B$，如果它在$\mathbb{R}^n $的补（即集合$\mathbb{R}^n \backslash B$）是开集，那么它是闭集。</strong><br>
+单点是闭集。含有边界的单位圆组成的集合是闭集，因为它的补集不包含边界。一个集合可能既不是开集也不是闭集。例如，在一维欧几里得空间，半开半闭区间（如$(0,1]$）既不是开集也不是闭集。</p>
+<h5 id="定理-v2">定理</h5>
+<ol>
+<li>$\mathbb{R}^n $中有限个闭子集的并是闭集。</li>
+<li>$\mathbb{R}^n $中任意个闭子集的交是闭集。</li>
+</ol>
+<p>这个定理是从开集的定理中得出的，在对开集取补变成闭集时候，并与交相互变换即可。</p>
+<h5 id="示例-v5">示例</h5>
+<ol>
+<li>给定集合$S={(x,y) \in \mathbb{R}^2 \big| 0 \lt x \le 1, 0 \lt y \lt 1}$，$S$不是闭集。因为目标区域的下边界不在S中。</li>
+<li>给定集合$S={(x,y) \in \mathbb{R}^2 \big| x^2 +y^2 \le 1}$，$S$是闭集，因为它的闭集是$\mathbb{R}^2 $中的开集。</li>
+<li>$\mathbb{R}^n $中任何有限集是闭集。因为单点是闭集，有限集可以看成很多个单点的并，由定理$1$可以得出。</li>
+</ol>
+<h4 id="聚点-accumulation-point">聚点(accumulation point)</h4>
+<h5 id="定义-v6">定义</h5>
+<p>对于点$x\in \mathbb{R}^n $，如果包含$x$的每个开集$U$包含不同于$x$但依然属于集合$A$中的点，那么就称$x$是$A$的一个聚点(accumulation points)，也叫聚类点(cluster points)。**注意这里是包含集合$A$中的点，而不是全部是集合$A$中的点，所以集合的聚点不一定必须在集合中。**如，在一维欧式空间中，单点集合没有聚点，开区间$(0,1)$的聚点是$[0,1]$，${0,1}$不在区间内，但是是聚点。<br>
+此外，$x$是聚类点等价于：对于每个$\epsilon \gt 0$，$D(x,\epsilon)$包含$A$中的某点$y$且$y\ne x$。</p>
+<h5 id="定理-v3">定理</h5>
+<p>当且仅当集合$S$的所有聚点属于$S$时，$S\subset \mathbb{R}^n $是闭集。</p>
+<h5 id="示例-v6">示例</h5>
+<ol>
+<li>给定集合$S={x\in R\big|x\in [0,1]且x是有理数}$，$S$的聚点为$[0,1]$中所有点。任何不属于$[0,1]$的点都不是聚点，因为这类点有一个包含它的$\epsilon$邻域与$[0,1]$不相交。</li>
+<li>给定集合$S={(x,y)\in \mathbb{R}^2 \big| 0 \le  x\le 1\ or\ \ x = 2}$, 它的聚点是它本身，因为它是闭集。</li>
+<li>给定集合$S={(x,y)\in \mathbb{R}^2 \big|y \lt x^2 + 1}$，S的聚点为集合${(x,y)\in \mathbb{R}^2 \big|y \le x^2 + 1}$，</li>
+</ol>
+<h4 id="闭包-closure">闭包(closure)</h4>
+<h5 id="定义-v7">定义</h5>
+<p>给定集合$A\subset \mathbb{R}^n $,集合$A$的闭包$cl(A)$定义成所有包含$A$的闭集的交，所以$cl(A)$是一个闭集。定价的定义是给定集合$A$，包含$A$的最小闭集叫做这个集合$X$的闭包(closure)，用$cl(A)$或者${\overline{A}}$表示。</p>
+<h5 id="定理-v4">定理</h5>
+<p>给定$A\subset \mathbb{R}^n $，那么$cl(A)$由$A$和$A$的所有聚点组成。</p>
+<h5 id="示例-v7">示例</h5>
+<ol>
+<li>$R$中$S=[0,1)\cup {2}$的闭包是$[0,1]$和${2}$。$S$的聚点是$[0,1]$，再并上$S$得到$S$的闭包是$[0,1]\cup{2}$。</li>
+<li>对于任意$S\subset \mathbb{R}^n $，$\mathbb{R}^n \backslash cl(S)$是开集。因为$cl(S)$是闭集，所以它的补集是开集。</li>
+<li>$cl(A\cap B) \ne cl(A)\cap cl(B)$。比如$A=(0,1),B(1,2),cl(A)=[0,1],cl(B)=[1,2]$,$A\cap B = \varnothing$,$cl(A\cap B) = \varnothing$,而$cl(A)\cap cl(B) = {1}$。</li>
+</ol>
+<h4 id="边界-boundary">边界(boundary)</h4>
+<h5 id="定义-v8">定义</h5>
+<p>对于$\mathbb{R}^n $中的集合$A$，边界定义为集合：<br>
+$bd(A) = cl(A)\cap cl(\mathbb{R}^n \backslash A)$<br>
+即集合$A$的补集的闭包和$A$的闭包的交集，所以$bd(A)$是闭集。$bd(A)$是$A$与$\mathbb{R}^n \backslash A$之间的边界。</p>
+<h5 id="定理-v5">定理</h5>
+<p>给定$A\subset \mathbb{R}^n $，当且仅当对于每个$\epsilon \gt 0$，$D(x,\epsilon)$包含$A$与$\mathbb{R}^n \backslash A$的点，$x\in bd(A)$。</p>
+<h5 id="示例-v8">示例</h5>
+<ol>
+<li>给定集合$S={x\in R\big|x\in [0,1],x是有理数}$，$bd(S) = [0,1]$。因为对于任意$\epsilon \gt 0, x\in [0,1],D(x,\epsilon) = (x-\epsilon, x+\epsilon)$包含有理数和无理数，即x是有理数和无理数之间的边界。</li>
+<li>给定$x\in bd(S)$，$x$不一定是聚点。给定集合$S = {0} \subset R$，$bd(S) = {0}$，但是单点没有聚点。</li>
+<li>给定集合$S={(x,y)\in \mathbb{R}^2 \big| x^2 -y^2 \gt 1 }$，$bd(S)={(x,y)\big|x^2 - y^2 = 1}$。</li>
+</ol>
+<h4 id="仿射维度-affine-dimension">仿射维度(affine dimension)</h4>
+<h5 id="定义-v9">定义</h5>
+<p>给定一个仿射集$C$，仿射维度是它的仿射包的维度。<br>
+仿射维度和其他维度的定义不总是相同的，具体可以看以下的示例。</p>
+<h5 id="示例-v9">示例</h5>
+<p>给定一个二维欧几里得空间的单位圆，${x\in C\big|x_1^2 +x_2^2 =1}$。它的仿射包是整个$\mathbb{R}^2$，所以二维平面的单位圆仿射维度是$2$。但是在很多定义中，二维平面的单位圆的维度是$1$。</p>
+<h4 id="相对内部-relative-interior">相对内部(relative interior)</h4>
+<p>给定一个集合$C\subset \mathbb{R}^n $，它的仿射维度可能小于$n$，这个时候仿射集$aff\ C \ne \mathbb{R}^n $。</p>
+<h5 id="定义-v10">定义</h5>
+<p>给定集合$C$，相对内部的定义如下：<br>
+$relint\ C = {x\in C\big|(B(x,r)\cup aff\ C) \subset C, \exists \ r \gt 0}.$<br>
+就是集合$C$内所有$\epsilon$球在$C$的仿射集内的点的集合。<br>
+其中$B(x,r)={y \big|\Vert y- x\Vert \le r}$，是以$x$为中心，以$r$为半径的圆。这里的范数可以是任何范数，它们定义的相对内部是相同的。</p>
+<h5 id="示例-v10">示例</h5>
+<p>给定一个$\mathbb{R}^3 $空间中$(x_1,x_2)$平面上的正方形，$C={x\in \mathbb{R}^3 \big|-1 \le x_1 \le 1, -1\le x_2 \le 1, x_3 = 0}$。它的仿射包是$(x_1,x_2)$平面，$aff\ C = {x\in \mathbb{R}^3 \big|x_3=0}$。$C$的内部是空的，但是相对内部是：<br>
+$relint\ C = {x \in \mathbb{R}^3 \big|-1 \le x_1 \le 1, -1\le x_2 \le 1,x_3=0}$。</p>
+<h4 id="相对边界-relative-boundary">相对边界(relative boundary)</h4>
+<h5 id="定义-v11">定义</h5>
+<p>给定集合$C$，相对边界(relative boundary)定义为$cl\ C \backslash relint\ C$，其中$cl\ C$是集合$C$的闭包(closure)。</p>
+<h5 id="示例-v11">示例</h5>
+<p>对于上例（相对内部的示例）来说，它的边界(boundary)是它本身。它的相对内部是边框，${x\in \mathbb{R}^3 \big|max{|x_1|,|x_2|}=1,x_3=0}$。</p>
+<h3 id="凸集-convex-sets">凸集(convex sets)</h3>
+<h4 id="凸集定义">凸集定义</h4>
+<p>给定一个集合$C$，如果集合$C$中经过任意两点的线段仍然在$C$中，这个集合就是一个凸集。<br>
+给定$\forall x_1,x_2 \in C, 0 \le \theta \le 1$，那么我们有$\theta x_1 + (1-\theta)x_2 \in C$。<br>
+每一个仿射集都是凸的，因为它包含经过任意两个不同点的直线，所以肯定就包含过那两个点的线段。</p>
+<h4 id="凸组合-convex-combination">凸组合(convex combination)</h4>
+<p>给定$k$个点$x_1,x_2,\cdots,x_k$，如果具有$\theta_1 x_1 + \cdots, \theta_k x_k$形式且满足$\theta_1 + \cdots + \theta_k=1, \theta_i \ge 0,i=1,\cdots,k$,那么就称这是$x_1,\cdots,x_k$的一个凸组合。<br>
+当且仅当一个集合包含其中所有点的凸组合，这个集合是一个凸集。点的一个凸组合可以看成点的混合或者加权，$\theta_i$是第$i$个点$x_i$的权重。<br>
+凸组合可以推广到无限维求和，积分，概率分布等等。假设$\theta_1,\theta_2,\cdots$满足：<br>
+$$\theta_i \le 0, i = 1,2,\cdots, \sum_{i=1}^{\infty}\theta_i = 1$$<br>
+并且$x_1,x_2,\cdots \in C$，$C\subset \mathbb{R}^n $是凸的，如果(series)$\sum_{i=1}^{\infty} \theta_i x_i$收敛，那么$\sum_{i=1}^{\infty} \theta_i x_i \in C$。<br>
+更一般的，假设概率分布$p$，$\mathbb{R}^n \rightarrow R$满足$p(x)\le 0 for\ all\ x\in C, \int_{C}p(x)dx = 1$,其中$C\subset \mathbb{R}^n $是凸的，如果$\int_{C}p(x)xdx$存在的话，那么$\int_{C}p(x)xdx\in C$。</p>
+<h4 id="凸包-convex-hull">凸包(convex hull)</h4>
+<p>给定一个集合$C$，凸包的定义为包含集合$C$中所有点的凸组合的结合，记为$conv\ C$，公式如下：<br>
+$conv\ C = {\theta_1 x_1 + \cdots + \theta_k x_k\big|x_i \in C, \theta_i \ge 0, i = 1,\cdots,k,\theta_1 +\cdots + \theta_k = 1}$<br>
+任意集合都是有凸包的。一个集合的凸包总是凸的。集合$C$的凸包是包含集合$C$的最小凸集。如果集合$B$是任意包含$C$的凸集，那么$conv\ C \subset B$。</p>
+<h4 id="示例-v12">示例</h4>
+<p><img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_2.png" alt="figure 2.2"><br>
+<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_3.png" alt="figure 2.3"></p>
+<h3 id="锥-cones">锥(cones)</h3>
+<h4 id="锥-cones-和凸锥-convex-cones-的定义">锥(cones)和凸锥(convex cones)的定义</h4>
+<p>给定集合$C$，如果$\forall x \in C, \theta \ge 0$，都有$\theta x\in C$，这样的集合就称为一个锥(cone)，或者非负同质(nonnegative homogeneour)。<br>
+一个集合$C$如果既是锥又是凸的，那这个集合是一个凸锥(convex cone)，即：$\forall x_1,x_2 \in C, \theta_1,\theta_2 \ge 0$,那么有$\theta_1 x_1+\theta_2 x_2 \in C$。几何上可以看成经过顶点为原点，两条边分别经过点$x_1$和$x_2$的$2$维扇形。</p>
+<h4 id="锥组合-conic-combination">锥组合(conic combination)</h4>
+<p>给定$k$个点$x_1,x_2,\cdots,x_k$，如果具有$\theta_1 x_1 + \cdots, \theta_k x_k$形式且满足$\theta_i \ge 0,i=1,\cdots,k$,那么就称这是$x_1,\cdots,x_k$的一个锥组合(conic combination)或者非负线性组合(nonnegative combination)。<br>
+给定集合$C$是凸锥，那么集合$C$中任意点$x_i$的锥组合仍然在集合$C$中。反过来，当且仅当集合$C$包含它的任意元素的凸组合时，这个集合是一个凸锥(convex cone)。</p>
+<h4 id="锥包-conic-hull">锥包(conic hull)</h4>
+<p>给定集合$C$，它的锥包(conic hull)是集合$C$中所有点的锥组合。即：<br>
+$conic\ C = {\theta_1 x_1 + \cdots + \theta_k x_k\big|x_i \in C, \theta_i \ge 0, i = 1,\cdots,k}$<br>
+集合$C$的锥包是包含集合$C$的最小凸锥。</p>
+<h4 id="示例-v13">示例</h4>
+<p><img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_4.png" alt="figure 2.4"><br>
+<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_5.png" alt="figure 2.5"></p>
+<h3 id="一些想法">一些想法</h3>
+<p>在我自己看来，在几何上<br>
+仿射集可以看成是集合中任意两个点的直线的集合。<br>
+凸集可以看成是集合中任意两个点的线段的集合，因为直线一定包含线段，所以仿射集一定是凸集。<br>
+锥集可以看成是集合中任意一个点和原点构成的射线的集合，锥集不一定是连续的（两条射线也是锥集），所以锥集不一定是凸集。<br>
+而凸锥既是凸集又是锥集。<br>
+我在stackexchange看到这样一句话觉得说的挺好的。</p>
+<blockquote>
+<p>What basically distinguishes the definitions of convex, affine and cone, is the domain of the coefficients and the constraints that relate them.</p>
+</blockquote>
+<p>区别凸集，仿射和锥的是系数的取值范围和一些其他限制。仿射集要求$\theta_1+\cdots+\theta_k = 1$，凸集要求$\theta_1 +\cdots +\theta_k = 1, 0\le \theta \le 1$，锥的要求是$\theta \ge 0$，凸锥的要求是$\theta_i \ge 0,i=1,\cdots,k$。<br>
+仿射集不是凸集的子集，凸集也不是仿射集的子集。所有仿射集的集合是所有凸集的集合的子集，一个仿射集是一个凸集。</p>
+<h2 id="示例-v14">示例</h2>
+<ul>
+<li>$\emptyset$，单点(single point)${x_0}$，整个$\mathbb{R}^n $空间都是$\mathbb{R}^n $中的仿射子集，所以也是凸集，点不一定是凸锥（在原点熵是凸锥），空集是凸锥，$\mathbb{R}^n $维空间也是凸锥。<strong>根据定义证明。</strong></li>
+<li>任意一条直线都是仿射的，所以是凸集。如果经过原点，它是一个子空间，也就是一个凸锥，否则不是。</li>
+<li>任意一条线段都是凸集，不是仿射集，当它退化成一点的时候，它是仿射的，线段不是凸锥。</li>
+<li>一条射线${x_0 + \theta v\big| \theta \ge 0}$是凸的，但是不是仿射的，当$x_0=0$时，它是凸锥。</li>
+<li>任意子空间都是仿射的，也是凸锥，所以是凸的。</li>
+</ul>
+<p>补充最后一条，任意子空间都是仿射的，也是凸锥。<br>
+如果$V$是一个子空间，那么$V$中任意两个向量的线性组合还在$V$中。即如果$x_1,x_2\in V$，对于$\theta_1,\theta_2 \in R$，都有$\theta_1 x_1 + \theta_2 x_2 \in V$。正如前面说的，子空间是加法和数乘封闭的。<br>
+而根据仿射集的定义，如果$x_1,x_2$在一个仿射集$C$中，那么对于$\theta_1+\theta_2 = 1$，都有$\theta_1 x_1 + \theta_2 x_2 \in C$。我们可以看出来，如果取子空间中线性组合的系数和为$1$，那么就成了仿射集。如果取子空间中的系数$\theta_1,\theta_2 \in R_+$,那么就成了锥，如果同时满足$\theta_1+\theta_2 = 1$，那么就成凸锥。那么如果加上这些限制条件，即取子空间中线性组合的系数和为$1$，或者取子空间中的系数$\theta_1,\theta_2 \in R_+$,同时满足$\theta_1+\theta_2 = 1$。<br>
+事实上，子空间要求的条件比仿射集和凸锥的条件要更严格。仿射集和凸锥只要求在系数$\theta_i$满足相应的条件时,有$\theta_1 x_1 + \theta_2 x_2 \in \mathbb{R}^n $；而子空间要求的是在系数$\theta_i$取任意值的时候，都有$\theta_1 x_1 + \theta_2 x_2 \in \mathbb{R}^n $，所以子空间一定是仿射集，也一定是凸锥。（拿二维的举个例子，给定$x_1$和$x_2$，仿射集可以看成是$\theta_1$的函数，因为$\theta_2=1-\theta_1$，而子空间可以看成$\theta_1$和$\theta_2$的函数，一个是一元函数，一个是二元函数）</p>
+<h3 id="超平面-hyperplane-和半空间-halfspace">超平面(hyperplane)和半空间(halfspace)</h3>
+<p>超平面是一个仿射集，也是凸集，但不一定是锥集(过原点才是锥集，也是一个子空间)。<br>
+闭的半空间是一个凸集，不是仿射集。</p>
+<h4 id="超平面-hyperplane">超平面(hyperplane)</h4>
+<p>超平面通常具有以下形式：<br>
+$${x\big|a^T x=b},$$<br>
+其中$a\in \mathbb{R}^n ,a\ne 0,b\in R$，它其实是一个平凡(nontrivial)线性方程组的解，因此也是一个仿射集。几何上，超平面可以解释为和一个给定向量$a$具有相同内积(inner product)的点集，或者说是法向量为$a$的一个超平面。常数$b$是超平面和原点之间的距离(offset)。<br>
+几何意义可以被表示成如下形式：<br>
+$${x\big|a^T (x-x_0) = 0},$$<br>
+其中$x_0$是超平面上的一点，即满足$a^T x_0=0$。可以被表示成如下形式：<br>
+$${x\big|a^T (x-x_0)=0} = x_0+a^{\perp},$$<br>
+其中$a^{\perp} $是$a$的正交补，即所有与$a$正交的向量的集合，满足$a^{\perp} ={v\big|a^T v=0}$。所以，超平面的几何解释可以看做一个偏移(原点到这个超平面的距离)加上所有垂直于一个特定向量$a$(正交向量)的向量，即这些垂直于$a$的向量构成了一个过原点的超平面，再加上这个偏移量就是我们要的超平面。几何表示如下图所示。<br>
+<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_6.png" alt="figure 2.6"></p>
+<h4 id="半空间-halfspace">半空间(halfspace)</h4>
+<p>一个超平面将$\mathbb{R}^n $划分为两个半空间(halfspaces)，一个是闭(closed)半空间，一个是开半空间。闭的半空间可以表示成${x\big|a^T x\le b}$，其中$a\ne 0$，半空间是凸的，但不是仿射的。下图便是一个闭的半空间。<br>
+<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_7.png" alt="figure 2.7"><br>
+这个半空间也可以写成：<br>
+$${x\big|a^T (x-x_0)\le 0},$$<br>
+其中$x_0$是划分两个半空间的超平面上的一点，即满足$a^T x_0=b$。一个几何解释是：半空间由一个偏移$x_0$加上所有和一个特定向量$a$(超平面的外(outward)法向量)成钝角(obtuse)或者直角(right)的所有向量组成。<br>
+这个半空间的边界是超平面${x\big|a^T x=b}$。这个半空间${x\big|a^T x\le b}$的内部是${x\big|a^T x\lt b}$，也被称为一个开半平面。</p>
+<h3 id="欧几里得球-euclidean-ball-和椭球-ellipsoid">欧几里得球(Euclidean ball)和椭球(ellipsoid)</h3>
+<h4 id="欧几里得球">欧几里得球</h4>
+<p>$\mathbb{R}^n $空间中的欧几里得球或者叫球，有如下的形式：<br>
+$$B(x_r,r = {x\big|\Vert x-x_c\Vert_2\le r}={x \big|(x-x_c)^T (x-x_c)\le \mathbb{R}^2 },$$<br>
+其中$r\gt 0$,$\Vert \cdot\Vert_2$是欧几里得范数(第二范数)，即$\Vert u\Vert_2=(u^T u)^{\frac{1}{2}} $。向量$x_c$是球心，标量$r$是半径。$B(x_c,r)$包含所有和圆心$x_c$距离小于$r$的球。<br>
+欧几里得球的另一种表示形式是：<br>
+$$B(x_c,r)={x_c + ru\big| \Vert u \Vert_2 \le 1},$$<br>
+一个欧几里得球是凸集，如果$\Vert x_1-x_c\Vert_2 \le r,\Vert x_2-x_c\Vert_2\le r, 0\le\theta\le1$，那么：<br>
+\begin{align*}<br>
+\Vert\theta x_1 + (1-\theta)x_2 - x_c\Vert_2 &amp;= \Vert\theta(x_1-x_c)+(1-\theta)(x_2-x_c)\Vert_2\\<br>
+&amp;\le\theta\Vert x_1-x_c\Vert_2 + (1-\theta)\Vert x_2 - x_c \Vert_2\\<br>
+&amp;\le r<br>
+\end{align*}<br>
+用其次性和三角不等式可证明</p>
+<h4 id="椭球">椭球</h4>
+<p>另一类凸集是椭球，它们有如下的形式：<br>
+$$\varepsilon ={x\big|(x-x_c)^T P^{-1} (x-x_c) \le 1},$$<br>
+其中$P=P^T \succ 0$即$P$是对称和正定的。向量$x_c\in \mathbb{R}^n $是椭球的中心。矩阵$P$决定了椭球从$x_c$向各个方向扩展的距离。椭球$\varepsilon$的半轴由矩阵$P$的特征值$\lambda_i$算出，$\sqrt{\lambda_i}$，球是$P=\mathbb{R}^2 I$的椭球。<br>
+<strong>这里这种表示形式为什么要用$P^{-1} $？</strong><br>
+椭球的另一种表示是：<br>
+$$\varepsilon = {x_c + Au\big| \Vert u \Vert_2 \le 1},$$<br>
+其中$A$是一个非奇异方阵。假设$A$是对称正定的，取$A=P^{\frac{1}{2}} $，这种表示就和上面的表示是一样的。第一次看到这种表示的时候，我在想，椭球的边界上有无数个点，一个方阵$A$是怎么实现对这无数个操作的，后来和球做了对比，发现自己一直都想错了，这无数个点是通过范数实现的而不是通过矩阵$A$实现的，到球心距离为$\Vert u\Vert_2\le 1$的点有无数个，$A$对这无数个点的坐标都做了仿射变换，将一个球变换成了椭球，特殊情况下就是球。当矩阵$A$是对称半正定但是是奇异的时候，这个情况下称为退化椭球(degenerate ellipsoid)，它的仿射维度和矩阵$A$的秩(rank)是相同的。退化椭球也是凸的。</p>
+<h3 id="范数球-norm-ball-和范数锥-norm-cone">范数球(norm ball)和范数锥(norm cone)</h3>
+<h4 id="范数球-norm-ball">范数球(norm ball)</h4>
+<h5 id="定义-v12">定义</h5>
+<p>$\Vert \cdot\Vert$是$\mathbb{R}^n $上的范数。一个范数球(norm ball)可以看成一个以$x_c$为中心，以$r$为半径的集合，但是这个$r$可以是任何范数，即${x\big|\Vert x-x_c \Vert \le r}$，它是凸的。</p>
+<h5 id="示例-v15">示例</h5>
+<p>我们常见的球是二范数（欧几里得范数）对应的范数球。</p>
+<h4 id="范数锥">范数锥</h4>
+<h5 id="定义-v13">定义</h5>
+<p>和范数相关的范数锥是集合：$C = {(x,t)\big|\Vert x\Vert \le t} \subset \mathbb{R}^{n+1} $，它也是凸锥。</p>
+<h5 id="示例-v16">示例</h5>
+<p><img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_10.png" alt="figure 2.10"><br>
+二阶锥(second-order cone)是欧几里得范数对应的范数锥，如图所示，其表达式为：<br>
+\begin{align*}<br>
+C &amp;={(x,t)\in \mathbb{R}^{n+1} \big| \Vert x\Vert_2 \le t}\\<br>
+&amp;= \left{ \begin{bmatrix}x\\t\end{bmatrix} \big| \begin{bmatrix}x\\t\end{bmatrix}^T \begin{bmatrix}I&amp;0\\ 0&amp;-1\end{bmatrix} \begin{bmatrix}x\\t\end{bmatrix}\le 0, t \gt 0 \right}<br>
+\end{align*}<br>
+这个二阶锥也被称为二次锥(quadratic cone)，因为它是通过一个二次不等式定义的，也被叫做Lorentz cone或者冰激凌锥(ice-cream cone)。</p>
+<h4 id="范数锥和范数球的区别">范数锥和范数球的区别</h4>
+<p>范数球是所有点到圆心$x_c$的范数小于一个距离$r$。<br>
+范数锥是很多直线组成的锥。</p>
+<h3 id="多面体-polyhedra">多面体(polyhedra)</h3>
+<h4 id="定义-v14">定义</h4>
+<p>多面体(polyhedron)是有限个线性不等式或者线性方程组的解集的集合：<br>
+$P = {x\big|a_j^T x\le b_j, j=1,\cdots,m,c_j^T x=d_j,j=1,\cdots,p}$<br>
+多面体因此也是有限个半空间或者超平面的交集。仿射集(如，子空间，超平面，直线)，射线，线段，半空间等等都是多面体，多面体也是凸集。有界的polyhedron有时也被称为polytope，一些作者会把它们两个反过来叫。<br>
+上式的紧凑(compact)表示是：<br>
+$$P={x\big|Ax\preceq b, Cx=d}$$<br>
+其中$A=\begin{bmatrix}a_1^T \\ \vdots\\ a_m^T \end{bmatrix},C=\begin{bmatrix}c_1^T \\ \vdots\\c_p^T \end{bmatrix}$，$\preceq$表示$\mathbb{R}^m $空间中的向量不等式(vector ineuqalitied)或者分量大小的不等式，$u\preceq v$代表着$u_i\le v_i, i=1,\cdots,m$。</p>
+<h5 id="simplexes">simplexes</h5>
+<p>simplexes是另一类很重要的多面体。假设$\mathbb{R}^n $空间中的$k+1$个点是仿射独立(affinely independent)，意味着$v_1-v_0, \cdots,v_k-v_0$是线性独立的。由$k+1$个仿射独立的点确定的simplex是：<br>
+$$C = conv{v_0,\cdots,v_k} = {\theta_0v_0+\cdots+\theta_kv_k\big| \theta \succeq 0, \mathcal{1}\theta=1 },$$<br>
+其中$\mathcal{1}$是全为$1$的列向量。这个simplex的仿射维度是$k$，所以它也叫$\mathbb{R}^n $空间中的$k$维simplex。为什么仿射维度是$k$，我的理解是simplex是凸集，而凸集不是子空间，凸集去掉其中任意一个元素才是子空间，所以就是$k$维而不是$k+1$维。<br>
+为了将simplex表达成一个紧凑形式的多面体。定义$y=(\theta_1,\cdots,\theta_k)$和$B=[v_1-v_0\ \cdots\ v_k-v_0]\in \mathbb{R}^{n\times k} $，当且仅当存在$y\succeq 0, \mathcal{1}^T y\le 1$，$x=v_0+By$有$x\in C$，<strong>疑问，这里为什么变成了$\mathcal{1}^T y\le 1$，难道是因为少了个$v_0$吗</strong>。点$v_0,\cdots,v_k$表明矩阵$B$的秩为$k$。因此存在一个非奇异矩阵$A=(A_1,A_2)\in \mathbb{R}^{n\times n} $使得：<br>
+$$AB = \begin{bmatrix}A_1\\A_2\end{bmatrix}B= \begin{bmatrix}I\\0\end{bmatrix}.$$<br>
+对$x = v_0+By$同时左乘$A$，得到：<br>
+$$A_1x = A_1v_0+y, A_2x=A_xv_0.$$<br>
+从中我们可以看出如果$A_2x=A_2v_0$，且向量$y=A_1x-A_1v_0$满足$y\succeq 0, \mathcal{1}^T y\le1$时，$x\in C$。换句话说，当且仅当$x$满足以下等式和不等式时：<br>
+$$A_2x = A_2v_0,A_1x\succeq A_1v_0, \mathcal{1}A_1x\le1+\mathcal{1}^T A_1v_0,$$<br>
+有$x\in C$。</p>
+<h5 id="多面体的凸包描述">多面体的凸包描述</h5>
+<p>一个有限集合${v_1,\cdots,v_k}$的凸包是：<br>
+$$conv{v_1,\cdots,v_k} = {\theta_1 v_1 +\cdots +\theta_k v_k\big| \theta \succeq 0, \mathcal{1}^T \theta = 1}.$$<br>
+这个集合是一个多面体，并且有界。但是它（除了simplex）不容易化成多面体的紧凑表示，即不等式和等式的集合。<br>
+一个一般化的凸包描述是：<br>
+$${\theta_1 v_1 +\cdots +\theta_k v_k\big| \theta_1+\cdots + \theta_m = 1,\theta_i \ge 0,i=1,\cdots,k}.$$<br>
+其中$m\le k$，它可以看做是点$v_1,\cdots,v_m$的凸包加上点$v_{m+1},\cdots,v_{k}$的锥包。这个集合定义了一个多面体，反过来，任意一个多面体可以看做凸包加上锥包。<br>
+一个多面体如何表示是很有技巧的。比如一个$\mathbb{R}^n $空间上的无穷范数单位球$C$：<br>
+$$C={x\big|\ |x_i|\le 1,i = 1,\cdots,n}.$$<br>
+集合$C$可以被表示成$2n$个线性不等式$\pm e_i^T x\le 1$，其中$e_i$是第$i$个单位向量。然而用凸包形式描述这个集合需要用至少$2^n $个点：<br>
+$$C = conv{v_{1},\cdots,v_{2^n }},$$<br>
+其中$v_{1},\cdots,v_{2n}$是$2^n $个向量，每个向量的元素都是$1$或$-1$。因此凸包描述和不等式描述有很大差异，尤其是$n$很大的时候。<br>
+这里为什么是$2^n $个点呢？因为是无穷范数构成的单位圆，在数轴上是区间$[-1,1]$，在$\mathbb{R}^2 $是正方形${(x,)\big|-1 \le x\le 1,-1\le y\le 1}$，对应的四个点是${(1,1),(1,-1),(-1,1),(-1,-1)}$，而在$\mathbb{R}^3 $是立方体${(x,y,z)\big|-1 \le x\le 1,-1\le y\le 1, -1\le z\le 1}$，对应的是立方体的八个顶点${(1,1,1),(1,1,-1),(1,-1,1),(1,-1,-1),(-1,1,1),(-1,1,-1),(-1,-1,1),(-1,-1,-1)}$。</p>
+<h4 id="示例-v17">示例</h4>
+<ol>
+<li>如图所示，是五个半平面的交集定义的多面体。<br>
+<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_11.png" alt="figure 2.11"></li>
+<li>非负象限(nonnegative orthant)是非负点的集合，即：<br>
+$$R_{+}^n = {x\in \mathbb{R}^n \big| x_i\ge 0, i = 1,\cdots,n} = {x\in \mathbb{R}^n \big| x\succeq 0}.$$<br>
+非负象限是一个多面体，也是一个锥，所以也叫多面体锥(polyhedral cone)，也叫非负象限锥。</li>
+<li>一个1维的simplex是一条线段。一个二维的simplex是一个三角形（包含它的内部）。一个三维的simple是一个四面体(tetrahedron)。</li>
+<li>由$\mathbb{R}^n $中的零向量和单位向量确定的simplex是$n$维unit simplex。它是向量集合：<br>
+$$x\succeq 0, \mathcal{1}^T x \le 1.$$</li>
+<li>由$\mathbb{R}^n $中的单位向量确定的simplex是$n-1$维probability simplex。它是向量集合：<br>
+$$x\succeq 0, \mathcal{1}^T x = 1.$$<br>
+Probability simplex是中的向量可以看成具有$n$个元素的集合的概率分布，$x_i$解释为第$i$个元素的概率。</li>
+</ol>
+<h3 id="半正定锥-positive-sefidefinite-cone">半正定锥(positive sefidefinite cone)</h3>
+<h4 id="定义-v15">定义</h4>
+<p>用$S^n $表示$n\times n$的对称矩阵：$S^n ={X\in \mathbb{R}^{n\times n} \big| X = X^T }$，$S^n $是一个$n(n+1)/2$维基的向量空间。比如，三维空间中对称矩阵的一组基是：<br>
+$$\begin{bmatrix}1&amp;0&amp;0\\0&amp;0&amp;0\\0&amp;0&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\1&amp;0&amp;0\\0&amp;0&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\0&amp;1&amp;0\\0&amp;0&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\0&amp;0&amp;0\\1&amp;0&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\0&amp;0&amp;0\\0&amp;1&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\0&amp;0&amp;0\\0&amp;0&amp;1\end{bmatrix}.$$<br>
+用$S_{+}^n $表示半正定的对称矩阵集合：<br>
+$$S_{+}^n = {X\in S^n \big| X\succeq 0},$$<br>
+用$S_{++}^n $表示正定的对称矩阵集合：<br>
+$$S_{+}^n = {X\in S^n \big| X\succ 0},$$<br>
+集合$S_{+}^n $是凸锥：如果$\theta_1,\theta_2 \ge 0$且$A,B\in S_{+}^n $，那么$\theta_1 A+\theta_{2} B\in S_{+}^n $。这个可以直接从依靠半正定的定义来证明，如果$A,B\in S_{+}^n ,\theta_1,\theta_2\ge 0$，(<strong>这里原书中用的是$A,B\succeq 0$,我觉得应该是写错了吧</strong>)，对任意$\forall x \in \mathbb{R}^n $，都有：<br>
+$$x^T (\theta_1A+\theta_2B)x = \theta_1x^T Ax + \theta_2x^T Bx.$$</p>
+<h4 id="示例-v18">示例</h4>
+<p>对于$S^2 $空间中的半正定锥，有<br>
+$$X=\begin{bmatrix}x&amp;y\\y&amp;z\end{bmatrix}\in S_{+}^2 \Leftrightarrow x\ge 0,z\ge 0, xz\ge y^2 $$<br>
+这个锥的边界如下图所示。<br>
+<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_12.png" alt="figure 2.12"></p>
+<h3 id="常见的几种锥">常见的几种锥</h3>
+<p>范数锥，非负象限锥，半正定锥，它们都过原点。<br>
+想想对应的图像是什么样的。<br>
+范数锥和非负象限锥图像还好理解一些，非负象限锥是$\mathbb{R}^n $空间所有非负半轴围成的锥，范数锥的边界像一个沙漏，但是是无限延伸的。半正定锥怎么理解，还没有太好的类比。</p>
+<h2 id="保凸运算-operations-that-preserve-convexity">保凸运算(operations that preserve convexity)</h2>
+<p>这一小节介绍的是一些保留集合凸性，或者从一些集合中构造凸集的运算。这些运算和simplex形成了凸集的积分去确定或者建立集合的凸性。</p>
+<h3 id="集合交-intersection">集合交(intersection)</h3>
+<p>凸集求交集可以保留凸性：如果$S_1$和$S_2$是凸集，那么$S_1\cup S_2$是凸集。扩展到无限个集合就是：如果$\forall \alpha \in A,S_{\alpha}$都是凸的，那么$\cup_{\alpha\in A S_{\alpha}}$是凸的</p>
+<h3 id="仿射函数-affine-functions">仿射函数(affine functions)</h3>
+<h3 id="线性分式-linear-fractional-和视角函数-perspective-functions">线性分式(linear-fractional)和视角函数(perspective functions)</h3>
+<h4 id="线性分式-linear-fractional">线性分式(linear-fractional)</h4>
+<h4 id="视角函数-perspective-functions">视角函数(perspective functions)</h4>
+<h2 id="广义不等式-generalized-inequalities">广义不等式（Generalized inequalities)</h2>
+<h3 id="真锥-proper-cones-和广义不等式-generalized-inequalities">真锥(Proper cones)和广义不等式（Generalized inequalities)</h3>
+<h3 id="最小-minimum-和最小元素-minimal-elemetns">最小(Minimum)和最小元素(minimal elemetns)</h3>
+<h2 id="separating和supporting-hyperplanes">Separating和supporting hyperplanes</h2>
+<h3 id="separating-hyperplane-theorem">Separating hyperplane theorem</h3>
+<h3 id="supporting-hyperplanes">Supporting Hyperplanes</h3>
+<h2 id="对偶锥-dual-cones-和广义不等式-generalized-inequalities">对偶锥(dual cones)和广义不等式(generalized inequalities)</h2>
+<h3 id="none"></h3>
+<h2 id="符号定义">符号定义</h2>
+<p>$\preceq$表示$\mathbb{R}^m $空间中的向量不等式(vector ineuqalitied)或者element-wise的不等式，$u\preceq v$代表着$u_i\le v_i, i=1,\cdots,m$。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.stephen boyd. Convex optimization<br>
+2.<a href="https://en.wikipedia.org/wiki/Topology" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Topology</a><br>
+3.<a href="https://en.wikipedia.org/wiki/Topological_space" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Topological_space</a><br>
+4.<a href="https://en.wikipedia.org/wiki/Power_set" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Power_set</a><br>
+5.<a href="https://en.wikipedia.org/wiki/Open_set" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Open_set</a><br>
+6.<a href="https://en.wikipedia.org/wiki/Closed_set" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Closed_set</a><br>
+7.<a href="https://en.wikipedia.org/wiki/Clopen_set" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Clopen_set</a><br>
+8.<a href="https://en.wikipedia.org/wiki/Interior_(topology)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Interior_(topology)</a><br>
+9.<a href="https://en.wikipedia.org/wiki/Closure_(topology)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Closure_(topology)</a><br>
+10.<a href="https://en.wikipedia.org/wiki/Boundary_(topology)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Boundary_(topology)</a><br>
+11.<a href="https://en.wikipedia.org/wiki/Ball_(mathematics)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Ball_(mathematics)</a><br>
+12.<a href="https://blog.csdn.net/u010182633/article/details/53792588" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/53792588</a><br>
+13.<a href="https://blog.csdn.net/u010182633/article/details/53819910" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/53819910</a><br>
+14.<a href="https://blog.csdn.net/u010182633/article/details/53983642" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/53983642</a><br>
+15.<a href="https://blog.csdn.net/u010182633/article/details/53997843" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/53997843</a><br>
+16.<a href="https://blog.csdn.net/u010182633/article/details/54093987" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/54093987</a><br>
+17.<a href="https://blog.csdn.net/u010182633/article/details/54139896" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/54139896</a><br>
+18.<a href="https://math.stackexchange.com/questions/1168898/why-is-any-subspace-a-convex-cone" target="_blank" rel="noopener">https://math.stackexchange.com/questions/1168898/why-is-any-subspace-a-convex-cone</a><br>
+19.<a href="https://www.zhihu.com/question/22799760/answer/139753685" target="_blank" rel="noopener">https://www.zhihu.com/question/22799760/answer/139753685</a><br>
+20.<a href="https://www.zhihu.com/question/22799760/answer/34282205" target="_blank" rel="noopener">https://www.zhihu.com/question/22799760/answer/34282205</a><br>
+21.<a href="https://www.zhihu.com/question/22799760/answer/137768096" target="_blank" rel="noopener">https://www.zhihu.com/question/22799760/answer/137768096</a><br>
+22.<a href="https://en.wikipedia.org/wiki/Positive-definite_matrix" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Positive-definite_matrix</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/23/熵、交叉熵和K-L散度/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/23/熵、交叉熵和K-L散度/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">熵，交叉熵，相对熵（KL散度），条件熵，互信息</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-23 10:54:31" itemprop="dateCreated datePublished" datetime="2018-12-23T10:54:31+08:00">2018-12-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-09-07 18:10:20" itemprop="dateModified" datetime="2019-09-07T18:10:20+08:00">2019-09-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="乡农熵-shannon-entropy">乡农熵(Shannon entropy)</h2>
+<p>乡农定义了一个事件的信息量是其发生概率的负对数($-log§$)，即乡农信息量，乡农熵是信息量的期望。</p>
+<h3 id="介绍">介绍</h3>
+<p>这里的熵都是指的信息论中的熵，也叫乡农熵(shannon entropy)。通常，熵是无序或不确定性的度量。<br>
+与每个变量可能的取值相关的信息熵是每个可能取值的概率质量函数的负对数：<br>
+$$S = - \sum_i P_i lnP_i$$<br>
+当事件发生的概率较低时，该事件比高概率事件携带更多“信息”。这种方式定义的每个事件所携带的信息量是一个随机变量，事实上乡农熵定义的一个事件的信息量就是这个事件发生的概率的负对数，这个随机变量（信息量）的期望值是信息熵。信息熵通常以比特(或者称为shannons),自然单位(nats)或十进制数字(dits，bans或hartleys)来测量。具体的单位取决于用于定义熵的对数的基。<br>
+采用概率分布的对数形式作为信息的度量的原因是因为它的可加性。例如，投掷公平硬币的熵是$1$比特，投掷$m$个硬币的熵是$m$比特。以比特为单位的时候，如果$n$是$2$的指数次方，则需要$log_2n$位来表示一个具有$n$个取值的变量。如果该变量的$n$个取值发生的可能性是相等的，则熵等于$log_2n$。<br>
+如果一个事件发生的可能性比其他事件发生的可能性更高，观察到该事件发生的信息量少于观测到一些罕见事件，即观测到更罕见的事件时能提供更多的信息。由于小概率事件发生的可能性更低，因此最终的结果是从非均匀分布的数据接收的熵总是小于或等于$log_2n$。当一个结果一定发生时，熵为零。<br>
+但是熵仅仅量化考虑事件发生的概率，它封装的信息是有关概率分布的信息，事件本身的意义在这种度量方式的定义中无关紧要。<br>
+熵的另一种解释是最短平均编码长度。</p>
+<h3 id="定义">定义</h3>
+<p>乡农定义了entropy, 定义离散型随机变量$X$，其可能取值为${x_1,\cdots,x_n}$，它对应的概率质量函数(probability mass function) P(X)，则熵$H$为：<br>
+$$H(X) = E[I(X)] = E[-log(P(X))]$$<br>
+其中$E$是求期望，$I$是随机变量$X$的信息量, $I(X)$本身是一个随机变量。<br>
+它可以显示写成：<br>
+$$H(X) = \sum_{i=1}^nP(x_i)I(x_i) = -\sum_{i=1}^nP(x_i)log_bP(x_i)$$<br>
+其中b是自然对数的底，$b$常取的值为$2,e,10$，对应的熵的单位是bits, nats，bans。<br>
+当$P(x_i)=0$的时候，对应的$PlogP$的值为$0log_b(0)$, 和极限(limit)是一致的：<br>
+$$lim_{p\rightarrow 0_+}plog§ = 0.$$</p>
+<h4 id="连续型随机变量的熵">连续型随机变量的熵</h4>
+<p>将概率质量函数替换为概率密度函数，即可得到连续性随机变量的熵：<br>
+$$h[f] = E[-ln(f(x))] = - \int_X f(x)ln(f(x))dx.$$</p>
+<h3 id="示例">示例</h3>
+<p>抛一枚硬币，已知其正反两面出现的概率是不相等的，求其正面朝上的概率，该问题可以看做一个伯努利分布问题。<br>
+如果硬币是公平的，此时得到结果的熵是最大的。这是因为此时抛一次抛硬币的结果具有最大的不确定性。每一个抛硬币的结果会占满一整个bit位。因为<br>
+\begin{align*}<br>
+H(X) &amp;= - \sum_{i=1}^n P(x_i)log_bP(x_i)\\<br>
+&amp;= - \sum_{i=1}^2\frac{1}{2}log_2\frac{1}{2}\\<br>
+&amp;= - \sum_{i=1}^2\frac{1}{2}\cdot(-1)\\<br>
+&amp;= 1<br>
+\end{align*}<br>
+如果硬币是不公平的，正面向上的概率是$p$，反面向上的概率是$q$，$p \ne q$, 则结果的不确定性更小。因为每次抛硬币，出现其中一面的可能性要比另一面要大，减小的不确定性就得到了更小的熵：每一次抛硬币得到的信息都会小于$1$bit，比如，$p=0.7$时：<br>
+\begin{align*}<br>
+H(X) &amp;= -plog_2p - qlog_2q\\<br>
+&amp;= -0.7log_20.7 - 0.3log_20.3\\<br>
+&amp;= -0.7\cdot(-0.515) - 0.3\cdot(-1.737)\\<br>
+&amp;= 0.8816\\<br>
+&amp;\le 1<br>
+\end{align*}<br>
+上面的例子证明不确定性跟变量取值的概率有关。<br>
+不确定性也跟变量的取值个数有关，上面例子的极端情况是正反面一样（即只有一种取值），那么熵就是0，没有不确定性。</p>
+<h3 id="解释-rationale">解释(rationale)</h3>
+<p>为什么乡农定义了信息量为$-log§$？$-\sum p_i log(p_i)$的意义是什么？<br>
+首先我们需要想一想信息量需要满足什么条件，然后定义一个信息函数I表示发生概率为$p_i$的事件$i$的信息量，那么这个信息函数需要满足以下条件。</p>
+<ul>
+<li>$I§$是单调下降的；</li>
+<li>$I§ \ge 0$, 即信息是非负的；</li>
+<li>$I(1) = 0$, 一定发生的事件不包含信息；</li>
+<li>$I(p_1p_2) = I(p_1) + I(p_2)$, 独立事件包含的信息是可加的。<br>
+最后一个条件很关键，它指出了两个独立事件的联合分布和两个分开的独立事件所包含的信息是一样多的。例如，$A$事件有$m$个等可能性的结果，$B$事件有$n$个等可能性的结果，$AB$有$mn$个等可能性的结果。$A$事件需要$log_2(m)$bits去编码，$B$事件需要用$log_2(n)$bits去编码，$AB$需要$log_2(mn) = log_2(m) + log_2(n)$bits编码。乡农发现了$log$函数能够保留可加性，即：<br>
+$$I§ = log(\frac{1}{p}) = - log§$$<br>
+事实上，这个函数$I$是唯一的(可以证明),选择$I$当做信息函数。如果一个分布中事件$i$发生的概率是$p_i$,那么采样$N$次，事件$i$发生的次数为$n_i = N p_i$, 所有$n_i$次的信息为$$\sum_in_iI(p_i) = - \sum_iNp_ilog(p_i).$$<br>
+每个事件的平均信息就是：<br>
+$$-\sum_ip_ilog(p_i)$$<br>
+所以$-\sum_ip_ilog(p_i)$就是信息量的期望，即信息熵。<br>
+在信息论中，熵的另一种解释是最短平均编码长度。</li>
+</ul>
+<h2 id="交叉熵-cross-entropy">交叉熵(cross entropy)</h2>
+<h3 id="介绍-v2">介绍</h3>
+<p>交叉熵用于衡量在给定真实分布下，用非真实分布表示真实概率分布需要付出的花费。<br>
+交叉熵是信息熵的推广。假设有两个分布$p$和$q$，$p$是真实分布，$q$是非真实分布。信息熵是用真实分布$p$来衡量识别一个事件所需要的编码长度的期望。而交叉熵是用非真实分布$q$来估计真实分布$p$的期望编码长度，用$q$来编码的事件来自分布$p$，所以期望中使用的概率是$p(i)$，$H(p,q)$称为交叉熵。</p>
+<h3 id="定义-v2">定义</h3>
+<p>给定真实分布$q$，分布p和q在给定集合X的交叉熵定义为：<br>
+$$H(p,q) = E_p[log\frac{1}{q}] = H§ + D_{KL}(p||q)$$<br>
+其中$H§$是$p$的信息熵，$D_{KL}(p||q)$是从$q$到$p$的$K-L$散度，或者说$p$相对于$q$的相对熵。</p>
+<h3 id="示例-v2">示例</h3>
+<p>如含有4个字母$(A,B,C,D)$的数据集中，真实$p=(\frac{1}{2}, \frac{1}{2}, 0, 0)$，即$A$和$B$出现的概率均为$\frac{1}{2}$，$C$和$D$出现的概率都为$0$。使用完美的编码方案进行编码所需要的编码长度是$H§$为$1$，即只需要$1$位编码即可识别$A$和$B$。如果使用非完美编码方案$q=(\frac{1}{4},\frac{1}{4},\frac{1}{4},\frac{1}{4})$编码则得到$H(p,q)=2$，即需要$2$位编码来识别$A$和$B$。</p>
+<h3 id="解释">解释</h3>
+<p>在机器学习中，交叉熵用于衡量估计的概率分布与真实概率分布之间的差异。<br>
+在信息论中，Kraft-McMillan定理建立了任何可直接解码的编码方案，为了识别一个$X$的可能值$x_i$f可以看做服从一个在$X$上的隐式概率分布$q(x_i)=2^{-l_i}$,其中$l_i$是$x_i$的编码长度，单位是bits。因此，交叉熵可以被解释为当数据服从真实分布$p$时，在假设分布$q$下得到的每个信息编码长度的期望。</p>
+<h3 id="性质">性质</h3>
+<ul>
+<li>$H(p,q) \ge H§$,由吉布森不等式可以知道，该式子恒成立，当$q$等于$p$时等号成立。</li>
+</ul>
+<h3 id="to-do-交叉熵损失函数和logistic-regression之间的关系">to do ?交叉熵损失函数和logistic regression之间的关系。</h3>
+<h2 id="k-l-散度-kullback-leibler-divergence">$K-L$散度(Kullback-Leibler divergence)</h2>
+<h3 id="介绍-v3">介绍</h3>
+<p>$K-L$散度也叫相对熵(relative entropy)，是用来衡量估计分布和真实分布之间的差异性。<br>
+$K-L$散度也叫相对熵(relative entropy)，信息熵是用来度量信息量的，信息熵给出了最小熵是多少，但是信息熵并没有给出如何得到最小熵，$K-L$散度也没有给出来如何得到最小熵。但是$K-L$散度可以用来衡量用一个带参数的估计分布来近似真实数据分布时损失了多少信息，可以理解为根据非真实分布$q$得到的平均编码长度比由真实分布$p$得到的平均编码长度多出的长度叫做相对熵。</p>
+<h3 id="定义-v3">定义</h3>
+<h4 id="离散型随机变量">离散型随机变量</h4>
+<p>给定概率分布$P$和$Q$在相同的空间中，它们的$K-L$散度定义为：<br>
+\begin{align*}<br>
+D_{KL}(P||Q) &amp;= -\sum_iP(i)(logQ(i)) - (-\sum_iP(i)logP(i))\\<br>
+D_{KL}(P||Q) &amp;= \sum_iP(i)(logP(i) - logQ(i))\\<br>
+D_{KL}(P||Q) &amp;= -\sum_iP(i)log(\frac{Q(i)}{Q(i)})\\<br>
+D_{KL}(P||Q) &amp;= \sum_iP(i)log(\frac{P(i)}{Q(i)})<br>
+\end{align*}<br>
+可以看出，$K-L$散度是概率分布$P$和$Q$对数差相对于概率分布$P$的期望。需要注意的是$D_{KL}(P||Q) \ne D_{KL}(Q||P),$因为$P$和$Q$的地位是不同的。相对熵的前半部分就是交叉熵，后半部分是相对熵。</p>
+<h4 id="连续型随机变量">连续型随机变量</h4>
+<p>对于连续性随机变量的分布$P$和$Q$，$K-L$散度被定义为积分：<br>
+$$D_{KL}(P||Q) = \int_{-\infty}^{\infty} p(x)log(\frac{p(x)}{q(x)})dx,$$<br>
+其中$p$和$q$代表分布$P$和分布$Q$的概率密度函数。<br>
+更一般的，$P$和$Q$表示是同一个集合$X$的概率分布，$P$相对于$Q$是绝对连续的，从$Q$到$P$的$K-L$散度定义为：<br>
+$$D_{KL}(P||Q) = \int_X log(\frac{dP}{dQ})dP$$<br>
+上式可以被写成：<br>
+$$D_{KL}(P||Q) = \int_X log(\frac{dP}{dQ})\frac{dP}{dQ}dP$$<br>
+可以看成$\frac{P}{Q}$的熵。</p>
+<h3 id="示例-v3">示例</h3>
+<p>$P$是一个二项分布，$P~(2,0.4)$，$Q$是一个离散型均匀分布，$x = 0,1,2$, 每一个取值的概率都是$p=\frac{1}{3}$。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$P$分布</td>
+<td>0.36</td>
+<td>0.48</td>
+<td>0.16</td>
+</tr>
+<tr>
+<td>$Q$分布</td>
+<td>0.333</td>
+<td>0.333</td>
+<td>0.333</td>
+</tr>
+</tbody>
+</table>
+<p>$K-L$散度的计算公式如下（使用自然对数）：<br>
+\begin{align*}<br>
+D_{KL}(Q||P) &amp;= \sum_iQ(i)ln(\frac{Q(i)}{P(i)})\\<br>
+&amp; = 0.333ln(\frac{0.333}{0.36}) + 0.333ln(\frac{0.333}{0.48}) + 0.333ln(\frac{0.333}{0.16})\\<br>
+&amp; = -0.02596 + (-0.12176) + 0.24408\\<br>
+&amp; = 0.09637(nats)<br>
+\end{align*}<br>
+上面计算出来的是从$P$到$Q$的K-L散度，或者$Q$相对于$P$的相对熵。</p>
+<h3 id="解释-v2">解释</h3>
+<p>从$Q$到$P$的$K-L$散度表示为$D_{KL}(P||Q)$。在机器学习中，$D_{KL}(P||Q)$被称为信息增益。<br>
+在信息论中，$K-L$散度也被称为$P$相对于$Q$的相对熵。从信息编码角度来看，$D_{KL}(P||Q)$可以看做用估计分布$q$得到的平均编码长度比用真实分布p得到的平均编码长度多出的长度。</p>
+<h3 id="性质-v2">性质</h3>
+<ul>
+<li>非负性，$D_{KL}(P||Q)\ge 0$,当且仅当$P=Q$时等号成立。</li>
+<li>可加性，如果$P_1,P_2$的分布是独立的，即$P(x,y) = P_1(x)P_2(y)$, $Q,Q_1,Q_2$类似，那么：<br>
+$$D_{KL}(P||Q) = D_{KL}(P_1||Q_1) + D_{KL}(P_2||Q_2)$$</li>
+<li>不对称性，所以K-L散度不是距离，距离需要满足对称性。</li>
+</ul>
+<h2 id="条件熵">条件熵</h2>
+<h3 id="定义-v4">定义</h3>
+<p>给定$X$，$Y$的条件熵定义如下：<br>
+给定离散变量${\displaystyle X}$和${\displaystyle Y}$,给定${\displaystyle X}$以后，${\displaystyle Y}$的条件熵定义为每一个${\displaystyle x}$使用权值${\displaystyle p(x)}$ 的加权和${\displaystyle \mathrm {H} (Y|X=x)}$。<br>
+$$H(Y|X) \equiv \sum_{x\in\boldsymbol{X} } p(x) H(Y|X=x)$$<br>
+可以证明它等价于下式：<br>
+$$H(Y|X) = -\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log{\frac{p(X,Y)}{p(X)}}$$</p>
+<h3 id="证明">证明</h3>
+<p>\begin{align*}<br>
+H(Y|X) &amp;\equiv \sum_{x\in\boldsymbol{X}}p(x)H(Y|X=x)\\<br>
+&amp;=-\sum_{x\in\boldsymbol{X}}p(x)\sum_{y\in \boldsymbol{Y}}p(y|x)logp(y|x)\\<br>
+&amp;=-\sum_{x\in\boldsymbol{X}}\sum_{y\in \boldsymbol{Y}}p(x)p(y|x)logp(y|x)\\<br>
+&amp;=-\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)logp(y|x)\\<br>
+&amp;=-\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)\frac{logp(x,y)}{logp(x)}\\<br>
+&amp;=\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)\frac{logp(x)}{logp(x,y)}\\<br>
+\end{align*}</p>
+<h3 id="属性">属性</h3>
+<ul>
+<li>当且仅当$Y$完全由$X$的值确定时，条件熵为$0$。</li>
+<li>当且仅当$X$和$Y$是独立随机变量的时候，$H(Y|X) = H(Y)$。</li>
+<li>链式法则。假设一个系统由随机变量$X,Y$确定，他们有联合熵$H(X,Y)$，我们需要$H(X,Y)$个比特去表述这个系统，如果我们已经知道了$X$的值，相当于我们已经有了$H(X)$位的信息。一旦$X$已知了，我们只需要$H(X,Y)-H(X)$位去描述整个系统。所以就有了链式法则：$H(Y|X) = H(X,Y) - H(X)$。<br>
+\begin{align*}<br>
+H(Y|X) &amp;= \sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{\frac{p(X)}{p(X,Y)}}\\<br>
+&amp;= - \sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{p(X,Y)}+\sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{p(X)}\\<br>
+&amp;=H(X,Y) +\sum_{X\in \boldsymbol{X}}p(X)log{p(X)}\\<br>
+&amp;=H(X,Y) - H(X)<br>
+\end{align*}</li>
+<li>贝叶斯公式。$H(Y|X) = H(X|Y) - H(X) + H(Y)$。<br>
+证明：$H(Y|X)=H(X,Y) - H(X),H(X|Y) = H(X,Y) - H(Y)$。两个式子相减就可以得到。</li>
+</ul>
+<h2 id="互信息">互信息</h2>
+<p>决策树中的信息增益指的是互信息不是KL散度。</p>
+<h3 id="定义-v5">定义</h3>
+<p>用$(X,Y)$表示空间$\boldsymbol{X}\times\boldsymbol{Y}$上的一对随机变量，他们的联合分布是$P_{(X,Y)}$，边缘分布是$P_X,P_Y)$，信息熵被定义为：<br>
+$I(X;Y) = D_{KL}(P_{(X,Y)}||P_XP_Y)$<br>
+对于离散变量：<br>
+$I(X;Y)=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})$<br>
+对于随机变量：<br>
+$I(X;Y)=\int_X\int_Y p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})dxdy$</p>
+<h2 id="信息熵-相对熵-交叉熵-条件熵-互信息之间的关系">信息熵，相对熵，交叉熵，条件熵，互信息之间的关系</h2>
+<h3 id="信息论">信息论</h3>
+<p>信息熵是对随机事件用真实的概率分布$p$进行编码的长度的期望，是最短平均编码长度。<br>
+交叉熵是对随机事件用估计的概率分布$q$按照其真实概率分布$p$进行编码的长度的期望（随机事件是从真实概率分布$p$中取的，但是用分布$q$进行编码），大于等于最短平均编码长度，只有$q$等于真实分布$q$时，才是最短编码长度。<br>
+而相对熵对随机事件用估计的概率分布$q$比用真实的概率分布$p$进行编码多用的编码长度，如果$p$和$q$相等的话，相对熵为$0$。</p>
+<h3 id="机器学习">机器学习</h3>
+<p>在机器学习中，交叉熵通常作为一个loss函数，用来衡量真实分布$p$和估计分布$q$之间的差异。而$K-L$散度也是用来衡量两个概率分布的差异，但是多了一个信息熵项。$K-L$散度的前半部分是交叉熵，后半部分是真实分布$p$的信息熵。(一个我自己认为的不严谨的说法是相对熵算的是相对值，而交叉熵算的是绝对值)。交叉熵正比于负的对数似然估计，最小化交叉熵等价于最大化对数似然估计。<br>
+如果$p$是固定的，那么随着$q$的增加相对熵也在增加，但是如果$p$是不固定的，很难说相对熵是差异的绝对量度，因为它随着$p$的增长而改变。而在机器学习领域，真实分布$p$是固定的，随着$q$的改变，$H§$是不变的,也就是信息熵是固定的。所以，从优化的角度来说，最小化交叉熵也就是最小化了相对熵。但是在其他领域，$p$可能是变化的，最小化交叉熵和最小化相对熵就不是等价的了。</p>
+<h3 id="互信息和条件熵-相对熵的关系">互信息和条件熵，相对熵的关系</h3>
+<p>互信息可以被等价定义为：<br>
+\begin{align*}<br>
+I(X;Y)&amp; \equiv H(X)-H(X|Y)\\<br>
+&amp;\equiv H(Y) - H(Y|X)\\<br>
+&amp;\equiv H(X)+H(Y)-H(X,Y)\\<br>
+&amp;\equiv H(X,Y)-H(X|Y)-H(Y|X)\\<br>
+\end{align*}</p>
+<p>证明：<br>
+\begin{align*}<br>
+I(X;Y)&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)p(Y)})\\<br>
+&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)})-\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)logp(Y)\\<br>
+&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X)P(Y|X)logp(Y|X)-\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)logp(Y)\\<br>
+&amp;=\sum_{X\in \boldsymbol{X}}p(X)(\sum_{Y\in \boldsymbol{Y}}P(Y|X)logp(Y|X))-\sum_{Y\in \boldsymbol{Y}}(\sum_{X\in \boldsymbol{X}}p(X,Y))logp(Y)\\<br>
+&amp;=\sum_{X\in \boldsymbol{X}}p(X)H(Y|X=x)-\sum_{Y\in \boldsymbol{Y}}p(Y)logp(Y)\\<br>
+&amp;=-H(Y|X)+H(Y)\\<br>
+&amp;=H(Y)-H(Y|X)<br>
+\end{align*}</p>
+<p>互信息和KL散度的联系：<br>
+从联合分布$p(x,y)$到边缘分布$p(X)p(Y)$或者条件分布$p(X|Y)p(X)$的KL散度。</p>
+<h2 id="参考文献-references">参考文献(references)</h2>
+<p>1.<a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Entropy_(information_theory)</a><br>
+2.<a href="https://zh.wikipedia.org/wiki/%E7%86%B5_(%E4%BF%A1%E6%81%AF%E8%AE%BA)" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/熵_(信息论)</a><br>
+3.<a href="https://www.zhihu.com/question/22178202/answer/49929786" target="_blank" rel="noopener">https://www.zhihu.com/question/22178202/answer/49929786</a><br>
+4.<a href="https://en.wikipedia.org/wiki/Cross_entropy" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Cross_entropy</a><br>
+5.<a href="https://en.wikipedia.org/wiki/Kullback-Leibler_divergence" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Kullback-Leibler_divergence</a><br>
+6:<a href="https://www.zhihu.com/question/41252833/answer/108777563" target="_blank" rel="noopener">https://www.zhihu.com/question/41252833/answer/108777563</a><br>
+7.<a href="https://www.zhihu.com/question/41252833/answer/141598211" target="_blank" rel="noopener">https://www.zhihu.com/question/41252833/answer/141598211</a><br>
+8.<a href="https://stats.stackexchange.com/questions/265966/why-do-we-use-kullback-leibler-divergence-rather-than-cross-entropy-in-the-t-sne" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/265966/why-do-we-use-kullback-leibler-divergence-rather-than-cross-entropy-in-the-t-sne</a><br>
+9.<a href="https://en.wikipedia.org/wiki/Conditional_entropy" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Conditional_entropy</a><br>
+10.<a href="https://en.wikipedia.org/wiki/Mutual_information" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Mutual_information</a><br>
+11.<a href="https://zhuanlan.zhihu.com/p/26551798" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/26551798</a><br>
+12.<a href="https://blog.csdn.net/gangyin5071/article/details/82228827#4%E7%9B%B8%E5%AF%B9%E7%86%B5kl%E6%95%A3%E5%BA%A6" target="_blank" rel="noopener">https://blog.csdn.net/gangyin5071/article/details/82228827#4相对熵kl散度</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/22/convex-optimization-chapter-1-Introduction/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1652,1347 +3473,6 @@ Compile with:</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/10/24/assembly-MIPS/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/24/assembly-MIPS/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">assamble MIPS</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-24 20:42:37" itemprop="dateCreated datePublished" datetime="2018-10-24T20:42:37+08:00">2018-10-24</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-01 10:29:57" itemprop="dateModified" datetime="2019-12-01T10:29:57+08:00">2019-12-01</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/汇编/" itemprop="url" rel="index"><span itemprop="name">汇编</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="技巧">技巧</h2>
-<p>怎么写汇编程序。<br>
-写一个函数时，在被调用函数内，首先说明参数，表明每个寄存器存放的都是什么。比如a0-a3,都存放的是什么。在调用功能函数内，使用a0-a3传递参数。<br>
-先使用寄存器，最后在分配栈帧大小。。</p>
-<p>s0-s7可以用来保存数据，比如函数A调用函数B，函数A中使用的s0-s7，在调用完函数B返回后，s0-s7原来的值是什么，现在就还是什么。<br>
-t0-t9就随用随操作。<br>
-在写循环的时候<br>
-先写循环的框架。。</p>
-<h2 id="mips-r2000-指令格式">MIPS R2000 指令格式</h2>
-<p>每条指令都是32位长，由几个bits field构成，如下所示：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center"></th>
-<th style="text-align:center">6 bits</th>
-<th style="text-align:center">5 bits</th>
-<th style="text-align:center">5 bits</th>
-<th style="text-align:center">5 bits</th>
-<th style="text-align:center">5 bits</th>
-<th style="text-align:center">6 bits</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">寄存器</td>
-<td style="text-align:center">op</td>
-<td style="text-align:center">reg1</td>
-<td style="text-align:center">reg2</td>
-<td style="text-align:center">des</td>
-<td style="text-align:center">shift</td>
-<td style="text-align:center">funct</td>
-</tr>
-<tr>
-<td style="text-align:center">立即数</td>
-<td style="text-align:center">op</td>
-<td style="text-align:center">reg1</td>
-<td style="text-align:center">reg2</td>
-<td style="text-align:center">16位常数</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td style="text-align:center">jump</td>
-<td style="text-align:center">op</td>
-<td style="text-align:center">26位常数</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-</tbody>
-</table>
-<p>前六位是op域，确定这条指令是寄存器指令，立即数指令还是jump指令，从而确定后面的指令该如何被解释。<br>
-如果op域是0，表示这是一条寄存器指令，通常执行一个算术或者逻辑运算。funct域指定要执行的操作，reg1和reg2表示用作操作数的寄存器，des表示存储结果的寄存器。</p>
-<h2 id="mips-register集合">MIPS Register集合</h2>
-<p>MISP R200 CPU总共有32个寄存器，其中31个都是通用寄存器，可以用来存储任何指令，剩下的一个，叫做register zero，任何时候存放的总是0。<br>
-尽管理论上任意一个register都可以用作任何目的。MIPS程序员通常有一个默认的规定：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">symbolic name</th>
-<th style="text-align:center">序号</th>
-<th style="text-align:center">用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">zero</td>
-<td style="text-align:center">0</td>
-<td style="text-align:center">一直存放的都是常数0。</td>
-</tr>
-<tr>
-<td style="text-align:center">at</td>
-<td style="text-align:center">1</td>
-<td style="text-align:center">保留</td>
-</tr>
-<tr>
-<td style="text-align:center">v0-v1</td>
-<td style="text-align:center">2-3</td>
-<td style="text-align:center">包含返回值，如果值是单字的，只有$v0有用</td>
-</tr>
-<tr>
-<td style="text-align:center">a0-a3</td>
-<td style="text-align:center">4-7</td>
-<td style="text-align:center">参数寄存器，包含一个子程序调用的前4个参数</td>
-</tr>
-<tr>
-<td style="text-align:center">t0-t9</td>
-<td style="text-align:center">8-15, 24-25</td>
-<td style="text-align:center">临时寄存器0到9</td>
-</tr>
-<tr>
-<td style="text-align:center">s0-s7</td>
-<td style="text-align:center">16-23</td>
-<td style="text-align:center">保存寄存器0到7</td>
-</tr>
-<tr>
-<td style="text-align:center">k0-k1</td>
-<td style="text-align:center">26-27</td>
-<td style="text-align:center">内核寄存器0,1，DO NOT USE</td>
-</tr>
-<tr>
-<td style="text-align:center">gp</td>
-<td style="text-align:center">28</td>
-<td style="text-align:center">全局数据指针用于定位static global varaibles。现在忽略它</td>
-</tr>
-<tr>
-<td style="text-align:center">sp</td>
-<td style="text-align:center">29</td>
-<td style="text-align:center">栈指针</td>
-</tr>
-<tr>
-<td style="text-align:center">fp</td>
-<td style="text-align:center">30</td>
-<td style="text-align:center">帧指针</td>
-</tr>
-<tr>
-<td style="text-align:center">ra</td>
-<td style="text-align:center">31</td>
-<td style="text-align:center">返回地址</td>
-</tr>
-</tbody>
-</table>
-<h2 id="spim环境系统调用">SPIM环境系统调用</h2>
-<p>|service | code |参数|结果|<br>
-|打印int| 1| $a0|在console打印出int|<br>
-|打印float| 2| $f12|在console打印出float|<br>
-|打印double| 3| $f12|在console打印出double|<br>
-|打印string| 4| $a0|在console打印出string|<br>
-|读入int| 5|none|结果存放在v0|<br>
-|读入float| 6|none|结果存放在f0|<br>
-|读入double| 7|none|结果存放在f0|<br>
-|读入string| 8|$a0存放地址，$a1存放长度|空|<br>
-|sbrk|9| $a0(长度)|$v0|<br>
-|exit|10|空|空|</p>
-<h2 id="stack-frames">Stack Frames</h2>
-<p>每一次调用一个子程序，就会专门为当前子程序调用创建一个独一无二的栈帧。在递归调用的情况下，创建了很多个栈帧，每一次调用就有一个。栈帧的组织形式是很重要的，因为它们需要在调用者和被调者之间传递参数，定义寄存器如何在调用函数和被调用函数之间共享。此外，还需要在被调用函数的栈帧内定义局部变量的存储格式。每个栈帧的最小值是32。<br>
-一般来说，一个子程序调用的栈帧可能包含以下的内容：</p>
-<ul>
-<li>传递给子程序的参数</li>
-<li>saved寄存器的值（$s0到$s7）</li>
-<li>子程序调用返回地址（$ra）</li>
-<li>局部变量</li>
-</ul>
-<p>如下图所示，栈从高地址向低地址增长。<br>
-<img src="/2018/10/24/assembly-MIPS/" alt><br>
-每个stack frame被分成了五个区域：</p>
-<ol>
-<li>参数区域，存放子程序调用的其他子程序所需要的参数。它们不会被当前子程序使用，而是用于当前子程序调用的子程序。前四个参数可以使用参数寄存器（$a0到$a3）进行传递，如果超过四个参数，就存放在sp+16, sp+20, 等等。也就是说当前栈帧最底部存放的是它调用的子程序所需要的参数，如果它没有调用子程序，那就不需要这个区域了。</li>
-<li>保留寄存器区域用于保存saved寄存器（$s0到$s7）的值。这些寄存器的值在进入当前子程序时就被保存，在子程序返回前，从这个区域将值复制到saved寄存器。在这期间，saved寄存器的值可以随意使用。这个很有用哦。</li>
-<li>返回地址区域用于存放返回地址寄存器（$ra）的值，这个值在当前子程序被执行的时候，就被复制到栈上，在当前子程序返回前被拷贝回去。如果当前子程序没有调用其他子程序，不需要这个区了。</li>
-<li>Pad区域是保证栈帧的总大小是8的倍数。在这里插入是为了确保，局部变量的存储区域总是以双字开始的。</li>
-<li>局部存储区域用于局部变量的存储。当前子程序必须保留足够的字存放局部变量和局部寄存器（$t0到$t9）的值。这个区域也必须进行padding确保它的大小总是8 words的整数倍。</li>
-</ol>
-<p>总结以下，当一个函数被调用时，为它创建一个栈帧，这个栈帧的最小值是32，最大值不限，要能容纳所有要保存的对象，包括上面介绍的五个部分。具体怎么操作呢。如果当前函数被调用了，首先移动<code>sp</code>到能容纳下所有要保存的内容，然后保存返回地址，保存可能使用到的saved寄存器。然后将传递给这个子程序的参数，$a0到$a3这几个参数的值存放在<strong>调用当前函数的函数的栈帧底部</strong>，然后当前函数用到这几个值时，从那里获取，超过4个参数的通过栈传递，直接存放在sp+16, sp+20等位置。<br>
-比如当前函数调用了两次子函数，需要用到传递给当前函数的这几个参数，在这几个子函数调用前后参数值不应该改变。</p>
-<h2 id="mips-insturction-set">MIPS Insturction Set</h2>
-<ul>
-<li>如果op包含 a(u)，这条指令是有符号数或者无符号数参与的算术运算，取决于有没有u。</li>
-<li>des 一定是一个寄存器</li>
-<li>src1 一定是一个寄存器</li>
-<li>reg2 一定是一个寄存器</li>
-<li>src2 可以是一个寄存器，也可以是一个32位整数</li>
-<li>addr一定是一个地址。</li>
-</ul>
-<h3 id="区别">区别</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">    .data</span><br><span class="line">array:  .space 1024*4</span><br><span class="line">    .text</span><br><span class="line">la  $t1, array  # la将数组的地址存放到一个寄存器</span><br><span class="line">lw  $a0, ($t1)  # lw将数组地址的内容load出来</span><br><span class="line">lw  $a0, 24($t1)</span><br><span class="line"></span><br><span class="line">move $t2, $t1</span><br></pre></td></tr></table></figure>
-<h3 id="算术指令">算术指令</h3>
-<ul>
-<li>mul des, src1, src2   将寄存器src1和寄存器或者数值src2的结果存放在寄存器des</li>
-<li>mult(u) src1, reg2    将寄存器src1和寄存器reg2的结果存放在lo和寄存器hi上。</li>
-<li>div src1, reg2</li>
-<li>div des, sr1, src2</li>
-</ul>
-<h3 id="比较指令">比较指令</h3>
-<h3 id="分支和跳转指令">分支和跳转指令</h3>
-<h4 id="分支-branch">分支(branch)</h4>
-<ul>
-<li>
-<p>beq ssr1, src2, lab</p>
-</li>
-<li>
-<p>ble sr1, src2, lab    如果src1 &lt;= src2，跳转到lab</p>
-</li>
-<li>
-<p>bgt sr1, src2, lab    如果src1 &gt;= src1，跳转到lab</p>
-</li>
-</ul>
-<p>和零比</p>
-<ul>
-<li>beqz src1, lab    如果寄存器src1的值等于0，跳转到lab</li>
-<li>bnez src1, lab    如果寄存器src1的值不等于0，跳转到lab</li>
-<li>blez src1, lab    如果寄存器src1的值小于等于0，跳转到lab</li>
-<li>bgez src1, lab    如果寄存器src1的值大于等于0，跳转到lab</li>
-</ul>
-<h4 id="跳转">跳转</h4>
-<ul>
-<li>j label   跳转到一个label</li>
-<li>jr src1   跳转到一个位置src1</li>
-<li>jar label 跳转到label，并且存储下一条指令到$ra</li>
-<li>jalr src1 跳转一个位置src1，并且将下一条指令的位置存储到$ra</li>
-</ul>
-<h3 id="load-store和数据移动">Load,Store和数据移动</h3>
-<h4 id="load">Load</h4>
-<ul>
-<li>la des, addr  加载一个label的地址到des</li>
-<li>lw des, addr 加载地址addr处的一个word</li>
-<li>li des, const 加载一个而常数到des</li>
-</ul>
-<h4 id="store">Store</h4>
-<h4 id="数据移动">数据移动</h4>
-<ul>
-<li>move des, src1  将寄存器src1的内容复制到寄存器des中</li>
-<li>mfhi des      将hi中的内容复制到des中</li>
-<li>mflo des      将lo中的内容复制到des中</li>
-<li>mthi src1     将寄存器src1中的内容复制到hi中</li>
-<li>mtlo src1     将寄存器src1中的内容复制到lo中</li>
-</ul>
-<h3 id="异常处理">异常处理</h3>
-<h2 id="spim-assembler">SPIM Assembler</h2>
-<h3 id="段和链接器指令">段和链接器指令</h3>
-<h3 id="数据指令">数据指令</h3>
-<p>.asciiz str，汇编给定的以null结尾的字符串，<br>
-.ascii str，汇编给定的不以null结尾的字符串<br>
-.byte byte1 … byteN，汇编给定的字节（八位整数）<br>
-.half half1 … halfN，汇编给定的半字（十六位整数）<br>
-.word word1 … wordN，汇编给定的字（三十二位整数）<br>
-.space size，在当前的段中分配n字节的空间，在SPIM中，只允许在数据段中进行。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://sites.cs.ucsb.edu/~franklin/64/lectures/mipsassemblytutorial.pdf" target="_blank" rel="noopener">https://sites.cs.ucsb.edu/~franklin/64/lectures/mipsassemblytutorial.pdf</a><br>
-2.<a href="https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf" target="_blank" rel="noopener">https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf</a><br>
-3.<a href="http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html" target="_blank" rel="noopener">http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html</a><br>
-4.<a href="https://stackoverflow.com/questions/7748769/mips-programming-how-to-call-a-function-from-a-separate-file" target="_blank" rel="noopener">https://stackoverflow.com/questions/7748769/mips-programming-how-to-call-a-function-from-a-separate-file</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/10/23/python-继承/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/23/python-继承/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">python 继承</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-23 21:27:43" itemprop="dateCreated datePublished" datetime="2018-10-23T21:27:43+08:00">2018-10-23</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-23 22:05:03" itemprop="dateModified" datetime="2019-10-23T22:05:03+08:00">2019-10-23</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="继承">继承</h2>
-<p>和C++一样，python也是面向对象的变成语言，也支持封装继承和多态。python同时支持单继承和多继承。<br>
-继承是指这样一种能力：它可以使用现有类的所有功能，并在无需重新编写原来的类的情况下对这些功能进行扩展。<br>
-通过继承创建的新类称为“子类”或“派生类”，被继承的类称为“基类”、“父类”或“超类”，继承的过程，就是从一般到特殊的过程。在某些语言中，一个子类可以继承多个基类。但是一般情况下，一个子类只能有一个基类，要实现多重继承，可以通过多级继承来实现。<br>
-继承概念的实现方式主要有2类：实现继承、接口继承。</p>
-<ul>
-<li>实现继承是指使用基类的属性和方法而无需额外编码的能力。</li>
-<li>接口继承是指仅使用属性和方法的名称、但是子类必须提供实现的能力(子类重构爹类方法)</li>
-</ul>
-<h2 id="python继承定义">python继承定义</h2>
-<p>父类定义</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gender</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"Unknown"</span></span><br></pre></td></tr></table></figure>
-<p>子类定义</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Man</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gender</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"male"</span></span><br></pre></td></tr></table></figure>
-<h2 id="python构造函数继承">python构造函数继承</h2>
-<p>父类构造函数</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        self.name = name</span><br></pre></td></tr></table></figure>
-<p>子类构造函数</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Woman</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        super(Person, self).__init__(name)</span><br></pre></td></tr></table></figure>
-<p>或者</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Woman</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        Person.__init__(self, name)</span><br></pre></td></tr></table></figure>
-<h2 id="python接口继承">python接口继承</h2>
-<p>父类</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        self.name = name</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gender</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> NotImplentedError</span><br></pre></td></tr></table></figure>
-<p>子类</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Man</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        super(Man, self).__init__(name)</span><br><span class="line">        self.name = name</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">gender</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">"male"</span></span><br></pre></td></tr></table></figure>
-<h2 id="代码示例">代码示例</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Person</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        self.name = name</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">work</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> NotImplementedError</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Chief</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, salary)</span>:</span></span><br><span class="line">        super(Chief, self).__init__(name)</span><br><span class="line">        self.salary = salary</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">work</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"cook..."</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Student</span><span class="params">(Person)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, grades, person)</span>:</span></span><br><span class="line">        super(Student, self).__init__(name)</span><br><span class="line">        self.grades = grades</span><br><span class="line">        self.person = person</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">work</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(<span class="string">"study..."</span>)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span><span class="params">(Student)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, grades, person)</span>:</span></span><br><span class="line">        super(A, self).__init__(name, grades, person)</span><br><span class="line">        self.type = <span class="string">"A"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span><span class="params">(A)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, grades, person)</span>:</span></span><br><span class="line">        super(B, self).__init__(name, grades, person)</span><br><span class="line">        self.type = <span class="string">"B"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    chief = Chief(<span class="string">"chief_a"</span>, <span class="number">100</span>)</span><br><span class="line">    student = Student(<span class="string">"student"</span>, <span class="number">200</span>, chief)</span><br><span class="line">    a = A(<span class="string">"student_a"</span>, <span class="number">300</span>, student)</span><br><span class="line">    b = B(<span class="string">"student_b"</span>, <span class="number">400</span>, a)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    print(b.person.name)</span><br><span class="line">    print(b.person.person.name)</span><br><span class="line">    print(b.person.person.person.name)</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.cnblogs.com/bigberg/p/7182741.html" target="_blank" rel="noopener">https://www.cnblogs.com/bigberg/p/7182741.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/10/21/R-basic/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/21/R-basic/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">R basic</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-21 19:50:55" itemprop="dateCreated datePublished" datetime="2018-10-21T19:50:55+08:00">2018-10-21</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-26 16:18:50" itemprop="dateModified" datetime="2019-10-26T16:18:50+08:00">2019-10-26</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/R/" itemprop="url" rel="index"><span itemprop="name">R</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="矩阵索引">矩阵索引</h2>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 下标都是从0开始</span></span><br><span class="line">A=matrix(<span class="number">1</span>:<span class="number">16</span>, <span class="number">4</span>, <span class="number">4</span>)</span><br><span class="line">A</span><br><span class="line"><span class="comment"># 矩阵下标</span></span><br><span class="line">A[<span class="number">2</span>,<span class="number">3</span>]</span><br><span class="line"><span class="comment"># 不包含</span></span><br><span class="line">A[-c(<span class="number">1</span>,<span class="number">3</span>)] <span class="comment"># 不包含第一行和第三行</span></span><br><span class="line">A[,-c(<span class="number">2</span>)] <span class="comment"># 不包含第二行</span></span><br><span class="line"><span class="comment"># 矩阵维度</span></span><br><span class="line">dim(A)</span><br></pre></td></tr></table></figure>
-<h2 id="常用命令">常用命令</h2>
-<h3 id="赋值">赋值</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">x &lt;- c(<span class="number">1</span>, <span class="number">3</span>, <span class="number">2</span>,<span class="number">5</span>)</span><br><span class="line"><span class="comment"># c是连接的意思，括号中的数被连在一起</span></span><br><span class="line"><span class="comment"># 也可以用等号</span></span><br><span class="line">x = c(<span class="number">1</span>, <span class="number">6</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="长度">长度</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = c(<span class="number">1</span>, <span class="number">6</span>, <span class="number">2</span>)</span><br><span class="line">length(x)</span><br></pre></td></tr></table></figure>
-<h3 id="删除varaibles">删除varaibles</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rm(x)   <span class="comment"># 删除x</span></span><br><span class="line">rm(list=ls())   <span class="comment">#</span></span><br></pre></td></tr></table></figure>
-<h3 id="查看variables">查看variables</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls()</span><br></pre></td></tr></table></figure>
-<h3 id="矩阵">矩阵</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#matrix()    # 创建一个矩阵</span></span><br><span class="line">matrix(data=c(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>), nrow=<span class="number">2</span>, ncol=<span class="number">2</span>,byrow=<span class="literal">TRUE</span>) <span class="comment"># byrow=TRUE表示先行后列</span></span><br></pre></td></tr></table></figure>
-<h3 id="转置">转置</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">a = matrix(c(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>), <span class="number">4</span>, <span class="number">4</span>)</span><br><span class="line">at = t(a)</span><br></pre></td></tr></table></figure>
-<h3 id="幂和开方">幂和开方</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">x^<span class="number">3</span></span><br><span class="line">poly(x, <span class="number">4</span>)</span><br><span class="line">sqrt(x)</span><br></pre></td></tr></table></figure>
-<h3 id="正态分布">正态分布</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 默认的均值和方差是0,1</span></span><br><span class="line">x = rnorm(n=<span class="number">10</span>, mean=<span class="number">50</span>, std=<span class="number">0.1</span>)</span><br><span class="line">y = x + rnorm(<span class="number">50</span>)</span><br><span class="line">cor(x,y) <span class="comment"># 相关系数</span></span><br></pre></td></tr></table></figure>
-<h3 id="均匀分布">均匀分布</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = runif(<span class="number">100</span>, -<span class="number">100</span>, <span class="number">100</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="随机数种子">随机数种子</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set.seed(<span class="number">1303</span>)</span><br><span class="line"><span class="comment"># 设置完随机数之后，产生的随机数都是可以复现的</span></span><br></pre></td></tr></table></figure>
-<h3 id="均值和方差-标准差">均值和方差，标准差</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">set.seed(<span class="number">3</span>)</span><br><span class="line">y=rnorm(<span class="number">100</span>)</span><br><span class="line">mean(y)</span><br><span class="line">var(y)</span><br><span class="line">sd(y)</span><br></pre></td></tr></table></figure>
-<h3 id="seq创建序列">seq创建序列</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># seq(a,b)</span><br><span class="line">a= seq(1, 3, 1)</span><br><span class="line">3:11 = seq(3, 11)</span><br></pre></td></tr></table></figure>
-<h2 id="绘图">绘图</h2>
-<h3 id="plot二维">plot二维</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">x = rnorm(<span class="number">100</span>)</span><br><span class="line">y = rnorm(<span class="number">100</span>)</span><br><span class="line">plot(x, y)</span><br><span class="line">plot(x, y, xlab=<span class="string">"x-axis"</span>, ylab=<span class="string">"y-axis"</span>, main=<span class="string">"x-y"</span>)</span><br><span class="line"><span class="comment"># 保存在主目录下</span></span><br><span class="line">pdf(<span class="string">"Figure.pdf"</span>)</span><br><span class="line">plot(x,y, col=<span class="string">"green"</span>)</span><br><span class="line">dev.off()</span><br></pre></td></tr></table></figure>
-<h3 id="contour等高线和image-heatmap-persp-三维图">contour等高线和image heatmap，persp()三维图</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">x = seq(-pi,pi)</span><br><span class="line">y = x</span><br><span class="line">f = outer(x, y, <span class="keyword">function</span>(x,y)cos(y)/(<span class="number">1</span>+x^<span class="number">2</span>))</span><br><span class="line">contour(x, y, f)</span><br><span class="line">fa = (f - t(f)) /<span class="number">2</span></span><br><span class="line">contour(x, y, fa)</span><br><span class="line">image(x, y, fa)</span><br><span class="line">persp(x, y, fa)</span><br></pre></td></tr></table></figure>
-<h2 id="加载数据">加载数据</h2>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1.header=TRUE 表示第一行是变量名</span></span><br><span class="line"><span class="comment"># na.string表示缺失符号</span></span><br><span class="line">auto_data = read.table(<span class="string">"Auto.data"</span>, header = <span class="literal">T</span>, na.strings = <span class="string">"?"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.使用fix查看数据</span></span><br><span class="line">fix(auto_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 查看数据维度</span></span><br><span class="line">dim(auto_data)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4.忽略不规则数据</span></span><br><span class="line">na.omit(auto_data)</span><br><span class="line">dim(auto_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5.查看变量名字</span></span><br><span class="line">names(auto_data)</span><br></pre></td></tr></table></figure>
-<h2 id="其他操作">其他操作</h2>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">auto_data = read.table(<span class="string">"Auto.data"</span>, header = <span class="literal">T</span>, na.strings = <span class="string">"?"</span>)</span><br><span class="line">auto_data = na.omit(auto_data)</span><br><span class="line">names(auto_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 访问dataset中的变量</span></span><br><span class="line">plot(auto_data$cylinders, auto_data$mpg)</span><br><span class="line"><span class="comment"># or</span></span><br><span class="line"><span class="keyword">attach</span>(auto_data)</span><br><span class="line">plot(cylinders, mpg)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. as.factor() and boxplot</span></span><br><span class="line">cylinders = as.factor(cylinders)</span><br><span class="line">plot(cylinders, mpg)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3.绘制直方图</span></span><br><span class="line">hist(mpg)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. pairs()绘制任意两个变量之间的散点图矩阵</span></span><br><span class="line">pairs(auto_data)</span><br><span class="line">pairs(~mpg+weight, auto_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 识别图中鼠标点击的点的坐标</span></span><br><span class="line">plot(horsepower, mpg)</span><br><span class="line">identify(horsepower, mpg, name)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6.summary()给出指定变量的描述信息</span></span><br><span class="line">summary(auto_data)</span><br></pre></td></tr></table></figure>
-<h2 id="库">库</h2>
-<h3 id="安装package">安装package</h3>
-<figure class="highlight r"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">install.packages(<span class="string">"ISLR"</span>)</span><br></pre></td></tr></table></figure>
-<h3 id="加载package">加载package</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">library(ISLR)</span><br></pre></td></tr></table></figure>
-<h2 id="分支">分支</h2>
-<h3 id="for循环">for循环</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">for (val in sequence)</span><br><span class="line">&#123;</span><br><span class="line">statement</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"># 示例</span><br><span class="line">x &lt;- c(2,5,3,9,8,11,6)</span><br><span class="line">count &lt;- 0</span><br><span class="line">for (val in x) &#123;</span><br><span class="line">if(val %% 2 == 0)  count = count+1</span><br><span class="line">&#125;</span><br><span class="line">print(count)</span><br></pre></td></tr></table></figure>
-<h3 id="while-循环">while 循环</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">while (TRUE)</span><br><span class="line">&#123;</span><br><span class="line">    print(&quot;hello&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="if-语句">if 语句</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">if (3 &gt; 2 &amp;&amp; 2 &lt; 3):</span><br><span class="line">    print(</span><br></pre></td></tr></table></figure>
-<h2 id="函数">函数</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">rand_interval = function(min, max, number)</span><br><span class="line">&#123;</span><br><span class="line">  sd = (max.numeric()-min.numeric())/3</span><br><span class="line">  count = 0</span><br><span class="line">  res = 1:number</span><br><span class="line">  while(TRUE)</span><br><span class="line">  &#123;</span><br><span class="line">    x = rnorm(1, mean=0,sd=sd)</span><br><span class="line">    if(x &gt;= min &amp;&amp; x &lt;= max)</span><br><span class="line">    &#123;</span><br><span class="line">      count = count+1</span><br><span class="line">      res[count] = x</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  return (res)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">min = -100</span><br><span class="line">max = 100</span><br><span class="line">number = 20</span><br><span class="line">x1 = rand_interval(min, max, number)</span><br></pre></td></tr></table></figure>
-<h2 id="类型转换">类型转换</h2>
-<h3 id="字符转数值">字符转数值</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">as.numeric(str(3))</span><br></pre></td></tr></table></figure>
-<h2 id="写入文件">写入文件</h2>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">library(&quot;xlsx&quot;)</span><br><span class="line">data = matrix = c()</span><br><span class="line">write.xlsx(data, file = &quot;myworkbook.xlsx&quot;, append = FALSE)</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.datamentor.io/r-programming/for-loop/" target="_blank" rel="noopener">https://www.datamentor.io/r-programming/for-loop/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/10/21/classfication/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/21/classfication/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">classfication</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-21 18:47:44" itemprop="dateCreated datePublished" datetime="2018-10-21T18:47:44+08:00">2018-10-21</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-21 22:53:18" itemprop="dateModified" datetime="2019-10-21T22:53:18+08:00">2019-10-21</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="classfication">Classfication</h2>
-<h2 id="lda">LDA</h2>
-<h2 id="logistic-regression">Logistic Regression</h2>
-<h3 id="logistic-function">Logistic function</h3>
-<p>$$ S(x) = \frac{1}{1+e^{x} }$$<br>
-如下图所示：<br>
-<img src="/2018/10/21/classfication/logistic_function.png" alt="logistic_func"><br>
-它的取值在$[0,1]$之间。<br>
-logistic regression的目标函数是：<br>
-$$h(x) = \frac{1}{1+e<sup>{-\theta</sup>T x} 3}$$<br>
-其中$x$是输入，$\theta$是要求的参数。</p>
-<h3 id="思路">思路</h3>
-<p>Logistic regression利用logistic function进行分类，给出一个输入，经过参数$\theta$的变换，输出一个$[0,1]$之间的值，如果大于$0.5$，把它分为一类，小于$0.5$，分为另一类。这个$0.5$只是一个例子，可以根据不同的需求选择不同的值。<br>
-$\theta^T x$相当于给出了一个非线性的决策边界。</p>
-<h3 id="cost-function">Cost function</h3>
-<p>$$J(\theta) = -\log L(\theta) = -\sum_{i=1}^m (y(i)\log h(x^{(i)}) + (1-y<sup>{(i)})\log(1-h(x</sup>{(i)} )) )$$<br>
-给出两种方式推导logistic regression的cost function</p>
-<h4 id="maximum-likelyhood-estimation">Maximum likelyhood estimation</h4>
-<p>通过极大似然估计推导得到的，当是两个类别的分类时，即$0$或者$1$，有：<br>
-$$P(y=1|x,\theta) = h(x)$$<br>
-$$P(y=0|x,\theta) = 1- h(x)$$<br>
-服从二项分布，写成一个式子是：<br>
-$$P(y|x,\theta) = h(x)^y (1-h(x))^{1-y}$$<br>
-其中$y$取值只有$0$和$1$。<br>
-有了$y$的表达式，我们就可以使用最大似然估计进行求解了：<br>
-$$L(\theta) = \prod_{i=1}^m (h(x<sup>{(i)})</sup>{y(i)}(1-h(x^{(i)} ))<sup>{(1-y</sup>{(i)})}$$<br>
-似然函数要求最大化，即求使得$m$个observation出现概率最大的$\theta$，<br>
-损失函数是用来衡量损失的，令损失函数取负的对数似然，然后最小化loss也就是最大化似然函数了：<br>
-$$J(\theta) = -\log L(\theta) = -\sum_{i=1}^m (y(i)\log h(x^{(i)}) + (1-y<sup>{(i)})\log(1-h(x</sup>{(i)} )) )$$</p>
-<h4 id="cross-entropy">Cross-entropy</h4>
-<p>对于$k$类问题，写出交叉熵公式如下所示：<br>
-$$J(\theta) = -\frac{1}{n}\left[\sum_{i=1}^m \sum_k y_k^{(i)} \log h(x_k^{(i)} ) \right]$$<br>
-当$k=2$时：<br>
-$$J(\theta) = -\frac{1}{n}\left[\sum_{i=1}^m  y^{(i)} \log h(x^{(i)} ) + (1-y^{(i)}) \log (1-h(x^{(i)} ))\right]$$</p>
-<h3 id="梯度下降">梯度下降</h3>
-<p>$$J(\theta) = -\log L(\theta) = -\sum_{i=1}^m \left[y(i)\log h(x^{(i)}) + (1-y<sup>{(i)})\log(1-h(x</sup>{(i)} )) \right]$$</p>
-<p>\begin{align*}<br>
-\nabla J &amp; =  -\sum_{i=1}^m \left[ y(i)\frac{1}{h(x^{(i)})}\nabla h(x^{(i)}) - (1-y<sup>{(i)})\frac{1}{\log(1-h(x</sup>{(i)} ))}\nabla\log(1-h(x^{(i)} ))\right]<br>
-&amp;=-\sum_{i=1}^m  (h(x^{(i)}) - y^{(i)}) x^{(i)}<br>
-\end{align*}</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://blog.csdn.net/jk123vip/article/details/80591619" target="_blank" rel="noopener">https://blog.csdn.net/jk123vip/article/details/80591619</a><br>
-2.<a href="https://zhuanlan.zhihu.com/p/28408516" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/28408516</a><br>
-3.<a href="https://www.cnblogs.com/pinard/p/6029432.html" target="_blank" rel="noopener">https://www.cnblogs.com/pinard/p/6029432.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/10/21/regression/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/21/regression/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">regression</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-21 18:47:01" itemprop="dateCreated datePublished" datetime="2018-10-21T18:47:01+08:00">2018-10-21</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-22 23:31:54" itemprop="dateModified" datetime="2019-10-22T23:31:54+08:00">2019-10-22</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="linear-regression">linear regression</h2>
-<p>这一部分主要介绍线性回归。</p>
-<h2 id="simple-linear-regression">simple linear regression</h2>
-<p>第一节介绍两个变量的linear regression，也叫simple linear regression，假设$X$和$Y$之间存在线性关系。用<br>
-$$Y = \beta_0 + \beta_1 X \tag{1}$$<br>
-表示。然后根据我们已有的数据集划分训练集和测试集，使用训练集上的$n$组数据学习相应的参数，使得学习出的直接尽可能进行这$n$组数据点，即$y_i\approx \hat{\beta_0} + \hat{\beta_1}x_i$。</p>
-<h3 id="参差平方和">参差平方和</h3>
-<p>最小二乘法的目标是最小化残差平方和：<br>
-$$ \text{RSS} = e_1^2 + e_2^2 + \cdots e_n^2 \tag{2}$$<br>
-即<br>
-$$ \text{RSS} = (y_1-\hat{\beta_0}- \hat{\beta_1}x_1)^2 + (y_2-\hat{\beta_0}- \hat{\beta_1}x_2)^2 + \cdots (y_n-\hat{\beta_0}- \hat{\beta_1}x_n)^2 \tag{3}$$<br>
-最小二乘法通过最小化残差平方和，得到：<br>
-$$\hat{\beta_1} = \frac{\sum_{i=1}^n (x_i-\bar{x}(y_i-\bar{y}}{\sum_{i=1}<sup>n(x_i-\bar{x})</sup>2 } \tag{4}$$<br>
-$$\hat{\beta_0} = \bar{y} - \hat{\beta_1}\bar{x}\tag{5}$$</p>
-<h3 id="系数准确性">系数准确性</h3>
-<h4 id="标准差">标准差</h4>
-<p>$$SE(\bar{\mu}) = \sqrt{var(\bar{\mu})}$$</p>
-<h4 id="置信区间">置信区间</h4>
-<h4 id="假设检验">假设检验</h4>
-<p>零假设(hull hypothesis)：<br>
-$H_0:X$和$Y$之间没有关系，<br>
-备择假设(alternative hypothesis)：<br>
-$H_a:X$和$Y$之间有一定关系，<br>
-数学上，就相当于检验：<br>
-$H_0:\beta_1 = 0$和$H_a:\beta_1 \neq 0$<br>
-如果$\beta_1 = 0$，则$Y=\beta_0 + \epsilon$，即说明$X,Y$不相关。怎么判断$\beta_1$是否为$0$。这取决于$\beta_1$的准确性，和$\text{SE}(\hat{\beta_1})$相关。在实践中，计算$t$统计量：<br>
-$$t=\frac{\hat{\beta_1} -0}{\text{SE}(\hat{\beta_1})$$<br>
-假设$\beta_1=0$，观测任意观测值大于$\vert t\vert$的概率就行了，这个值称为$p$值。一个很小的$p$值表示，自变量和因变量之间的真实关系未知时，不太可能完全由于偶然观察到自变量和因变量之间的强相关。$p$值足够小，就决绝零假设。<br>
-所以方法是：</p>
-<ol>
-<li>计算$t$统计量</li>
-<li>计算$p$值</li>
-<li>p很小，决绝零假设，接收备择假设。</li>
-</ol>
-<h3 id="模型准确性">模型准确性</h3>
-<p>如果拒绝零假设，选择备择假设，想要量化模型拟合的程度。给出两个指标：</p>
-<h4 id="residual-standard-error-rse">Residual standard error (RSE)</h4>
-<p>RSE定义如下：<br>
-$$ \text{RSE} = \sqrt{\frac{1}{n-2} RSS} = \sqrt{\frac{1}{n-2} \sum_{i=1}<sup>n(y_i-\hat{y_i})</sup>2 }<br>
-其中$\text{RSS} =\sum_{i=1}<sup>n(y_i-\hat{y_i})</sup>2 $。</p>
-<h4 id="r-2">$R^2 $</h4>
-<p>$R^2$的取值在$0$和$1$之间，越接近于$1$越好。<br>
-$$R^2 = \frac{\text{TSS}-\text{RSS}}{\text{TSS}} = 1- \frac{\text{RSS}}{\text{RSS}}$$<br>
-其中$\text{TSS} = \sum(y_i - \bar{y})^2$是 total sum of squares。</p>
-<h3 id="相关性">相关性</h3>
-<h2 id="多元线性回归">多元线性回归</h2>
-<p>假设有$p$个自变量，一个因变量$Y$，则假设多元线性回归方程为：<br>
-$$Y = \beta_0 + \beta_1 X_1+ \beta_2 X_2 + \cdots+ \beta_p X_p + \epsilon  \tag{1}$$<br>
-其中$X_j$表示第$j$个自变量，$\beta_j$表示第$j$个自变量和因变量之间的关系，$\beta_j$可以解释为，所有其他自变量不变的情况下，$X_j$增加一个单位，对$Y$产生的平均效果。</p>
-<h3 id="计算回归系数">计算回归系数</h3>
-<p>有时候多元线性回归和简单线性回归可能会得到相反的结果，即某些变量的取值，在一个中为$0$，在另一个中不为$0$。但是实际上，它们表述的东西是一样的，多元线性回归中的某两个变量可能和简单线性回归中的一个变量起到了相同的作用，这样子多元线性回归中这两个变量可能一个起作用，一个不起作用。</p>
-<h3 id="分析">分析</h3>
-<h4 id="假设检验-v2">假设检验</h4>
-<p>对于多元线性回归来说，我们需要判定是否所有的回归系数都为$0$，同样使用假设检验，<br>
-零假设：<br>
-$$H_0: \beta_1 = \beta_2 = \cdots \beta_p  =0$$<br>
-备择假设：<br>
-$H_a:$至少有一个$\beta_j$不为$0$。</p>
-<h4 id="f统计量">F统计量</h4>
-<p>$$F=\frac{(TSS-RSS)/p}{RSS/(n-p-1)}$$<br>
-其中$\text{TSS} = \sum(y_i-\bar{y})^2 , \text{RSS}= \sum(y_i - \bar{y_i})^2$。<br>
-如果假设是正确的，有：<br>
-$$\mathbb{E}\left[\text{RSS}/(n-p-1)\right] = \sigma^2$$<br>
-且<br>
-$$\mathbb{E}\left[(\text{TSS} - \text{RSS})/p\right] = \sigma^2$$<br>
-因此，如果零假设正确，有$F$接近于$1$；否则，$F \gt 1$。</p>
-<h4 id="重要变量选择">重要变量选择</h4>
-<h3 id="模型拟合">模型拟合</h3>
-<h4 id="rse">RSE</h4>
-<p>$$ \text{RSE} = \sqrt{\frac{1}{n-p-1}\text{RSS}}$$</p>
-<h2 id="其他注意事项">其他注意事项</h2>
-<h3 id="定性自变量">定性自变量</h3>
-<h4 id="二值自变量">二值自变量</h4>
-<p>假设我们考虑女性和男性的信用卡债务差异，只考虑性别原因，忽略所有其他的因素，可以根据性别创建一个指标，或者叫做哑变量(dummy variable)：<br>
-$x_i = 1$表示女性，$x_i=0$表示男性。<br>
-在回归方程中使用这个变量，得到：<br>
-$$y_i = \beta_0 + \beta_1 x_i + \epsilon_i = \begin{cases}\beta_0+\beta_1 + \epsilon_i, 女性\\\beta_0 + \epsilon_i,男性 \end{cases}$$<br>
-其中$beta_0$可能看成男性的信用卡债务，$\beta_0+\beta_1$是女性的平均信用卡债务，$\beta_1$就是男性和女性的差别了。<br>
-也可以用$1,-1$代替$0,1$。</p>
-<h4 id="多值定性自变量">多值定性自变量</h4>
-<p>比如种族，用两个哑变量：<br>
-$x_{i1}= \begin{cases}1,Asian\\ 0, non-Asian\end{cases}$<br>
-第二个哑变量：<br>
-$x_{i1}= \begin{cases}1,white\\ 0, non-white\end{cases}$<br>
-得到模型：<br>
-$y_i = \beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \epsilon_i$= \begin{cases}\beta_0 + \beta_1 +\epsilon_i \\ \beta_0 + \beta_2+\epsilon_2 \\\beta_0+\epsilon_i\end{cases}$</p>
-<h4 id="线性模型的扩展">线性模型的扩展</h4>
-<h5 id="去除可加性">去除可加性</h5>
-<p>线性回归模型假设所有的自变量和因变量之间的关系是可加和线性的。但是，可能两个自变量之间会有一定的作用，考虑两个变量的标准线性回归模型：<br>
-$$ Y = \beta_0 + \beta X_1 + \beta X_2 + \epsilon$$<br>
-根据这个模型，改变$X_1$，$X_2$的存在不影响结果，可以对该模型做一个扩展，加一个有$X_1,X_2$的乘积组成的交互项：<br>
-$$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1X_2 + \epsilon$$<br>
-如果$X_1,X_2$之间的交互作用很重要，那么即使$X_1,X_2$各自系数的$p$值很大，这两个变量也应该在模型中。</p>
-<h5 id="去除非线性">去除非线性</h5>
-<p>多项式拟合</p>
-<h3 id="可能的问题">可能的问题</h3>
-<h4 id="非线性拟合">非线性拟合</h4>
-<p>绘制参差图，如果参差有规律，说明不适合当前的拟合方法。</p>
-<h4 id="误差项自相关">误差项自相关</h4>
-<h4 id="误差项方差不恒定">误差项方差不恒定</h4>
-<h4 id="外点">外点</h4>
-<p>误差特别大，真实值$y_i$异常。</p>
-<h4 id="高杠杆点">高杠杆点</h4>
-<p>观测点$x_i$的值是异常的，就是$x_i$的取值和绝大部分$x_i$的取值不同。<br>
-计算杠杆统计量(leverage statistic)：<br>
-$$h_i = \frac{1}{n} + \frac{(x_i-\bar{x})^2 }{ \sum_{j=1}^n (x_j - \bar{x})^2 }$$<br>
-$h_i$的取值总是在$\frac{1}{n}$和$1$之间，求所有观测的平均杠杆值是$\frac{p+1}{n}$，如果给定观测的杠杆量大大超过$\frac{p+1}{n}$，那么该点有较高的杠杆作用。</p>
-<h4 id="共线性">共线性</h4>
-<p>共线性指的是两个或者更多的自变量高度相关。<br>
-检测共线性的一个方法是看预测变量的相关系数矩阵。但是这种方法只能检测出两个变量之间的共线性。<br>
-可能有三个或者更多自变量之间的共线性，叫多重共线性。可以计算方差膨胀因子variance inflation factor(VIF)，最小值是$1$，表示完全不存在共线性。一般来说，VIF超过$5$或者$10$就表示有共线性问题。<br>
-$$ VIF(\hat{\beta_j}) = \frac{1}{1-R^2_{X_j|X_{-j} } }$$<br>
-其中$R^2_{X_j|X_{-j} }$表示对$X_j$对所有自变量回归的$R^2$，如果它接近于$1$,就存在共线性。</p>
-<h2 id="knn-regression-vs-linear-regression">KNN regression vs linear regression</h2>
-<p>真实情况是线性情况下，KNN可能会略逊于linear regression。<br>
-在真实情况是非线性情况下，当变量个数$p$取$1$或者$2$时，KNN优于linear regression。取$3$时，不确定。当$p\ge 4$时，linear regression优于KNN。更高的话会有curse of dimension。<br>
-如果变量个数很少，样本数很多，多项式拟合可能会拟合到误差。<br>
-当$K=1,2$时，</p>
-<h2 id="参考文献">参考文献</h2>
-<ol>
-<li></li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3042,7 +3522,7 @@ $$ VIF(\hat{\beta_j}) = \frac{1}{1-R^2_{X_j|X_{-j} } }$$<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">292</span>
+                    <span class="site-state-item-count">297</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
