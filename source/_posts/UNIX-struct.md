@@ -58,4 +58,7 @@ struct rlimit{
 ```
 
 ## 参考文献
+1.《C++ Primer》第五版
+2.https://en.cppreference.com/w/c/chrono/timespec
+3.https://www.gnu.org/software/libc/manual/html_node/Elapsed-Time.html
 
