@@ -10,7 +10,7 @@ categories: C/C++
 
 ## 功能文件头文件和实现
 ### 头文件
-``` cpp
+``` c
 // print_string.h
 #ifndef PRINT_STRING
 #define PRINT_STRING
@@ -21,7 +21,7 @@ void print_string(const char *str);
 ```
 
 ### 实现
-``` cpp
+``` c
 // print_string.cpp
 #include "print_string.h"
 #include <stdio.h>
@@ -33,7 +33,7 @@ void print_string(const char *str)
 ```
 
 ## 测试文件实现
-``` cpp
+``` c
 #include "print_string.h"
 
 
@@ -56,4 +56,5 @@ g++ main.cpp print_string.cpp -o main
 ## 理解
 在`main`中包含了`print_string.h`头文件，相当于对函数进行了声明。然后使用`g++`编译的时候相当于提供了`print_string`的实现。
 
+关于分离式编译的原理可以查看[CSAPP linking]()。
 
