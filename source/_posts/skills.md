@@ -6,6 +6,20 @@ tags:
 categories: python
 ---
 
+## C交换两个指针的值
+``` c
+void in_place_swap(int *x, int *y)
+{
+
+    *y = *x ^ *y;
+    *x = *x ^ *y;
+    *y = *x ^ *y;
+
+}
+```
+有一个问题就是，如果x和y指向同一个变量，因为`x^x=0`，所以这个代码会失效。
+
+
 ## 累加
 ### 简单介绍
 今天在看Reinforcment Learning: an Introduction第五章的时候，写了figure_5_4的代码，然后跟github上作者写出来的效率差了太多。

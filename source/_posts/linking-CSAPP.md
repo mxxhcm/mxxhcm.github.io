@@ -14,6 +14,8 @@ categories: CSAPP
 ## 静态链接
 
 ## 目标文件
+C语言中如何读取一个ELF文件的ELF-header。
+shell中直接使用`readelf`命令。`-h`, `-s`
 
 ## 可重定位目标文件
 
@@ -39,21 +41,6 @@ categories: CSAPP
 
 ## 总结
 
-## 总结
-
-## 总结
-
-## 总结
-
-## 总结
-
-## 总结
-
-## 总结
-
-## 总结
-
-## 总结
-
 ## 参考文献
 1.《CSAPP》第七章
+2.https://stackoverflow.com/questions/34960383/how-read-elf-header-in-c
