@@ -54,14 +54,27 @@ string s("hello world!");
 const char *str = s.c_str();
 ```
 
+## 字符串转整数[2]
+``` c
+int my_atoi(char *p) {
+    int res = 0;
+    while (*p) {
+        res = (res << 3) + (res << 1) + (*p) - '0';
+        p++;
+     }
+     return res;
+}
+```
 
-## 字符串分割
+## 字符串分割[1]
+重要的就是怎么存，返回一个指针数组，每个指针指向一个字符串，记得用完以后free。
+```
+```
 
-## 去掉多余的空白字符
+## 去掉空白字符
+
 
 ## 参考文献
 1.https://stackoverflow.com/a/34957656/8939281
-2.http://source-code-share.blogspot.com/2014/07/implementation-of-java-stringsplit.html
-3.https://stackoverflow.com/questions/9210528/split-string-with-delimiters-in-c
-4. https://stackoverflow.com/questions/17770202/remove-extra-whitespace-from-a-string-in-c
+2.https://stackoverflow.com/questions/17770202/remove-extra-whitespace-from-a-string-in-c
 
