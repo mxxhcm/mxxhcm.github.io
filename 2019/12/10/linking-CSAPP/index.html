@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="链接编译器驱动程序静态链接目标文件C语言中如何读取一个ELF文件的ELF-header。shell中直接使用readelf命令。-h, -s 可重定位目标文件符号和符号表符号解析重定位可执行目标文件加载可执行目标文件动态链接库加载和链接共享库位置无关代码库打桩机制处理目标文件的工具总结参考文献1.《CSAPP》第七章2.https://stackoverflow.com/questions/349">
+  <meta name="description" content="链接 链接是将各种代码和数据片段收集并组合成一个单一文件的过程，这个文件可以被加载到内存并执行。链接可以在三个时刻进行：  编译时(compilation time)，也就是在源代码被翻译成机器代码时。 加载时(load time)，在程序被加载器加载到内存并执行时。 运行时(run time)，由应用程序负责加载。  链接是由链接器程序自动执行的，链接器使得分离编译变得可能。 编译器驱动程序 执">
 <meta name="keywords" content="C&#x2F;C++,CSAPP">
 <meta property="og:type" content="article">
-<meta property="og:title" content="CSAPP linking">
+<meta property="og:title" content="C&#x2F;C++ linking">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/12/10/linking-CSAPP/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="链接编译器驱动程序静态链接目标文件C语言中如何读取一个ELF文件的ELF-header。shell中直接使用readelf命令。-h, -s 可重定位目标文件符号和符号表符号解析重定位可执行目标文件加载可执行目标文件动态链接库加载和链接共享库位置无关代码库打桩机制处理目标文件的工具总结参考文献1.《CSAPP》第七章2.https://stackoverflow.com/questions/349">
+<meta property="og:description" content="链接 链接是将各种代码和数据片段收集并组合成一个单一文件的过程，这个文件可以被加载到内存并执行。链接可以在三个时刻进行：  编译时(compilation time)，也就是在源代码被翻译成机器代码时。 加载时(load time)，在程序被加载器加载到内存并执行时。 运行时(run time)，由应用程序负责加载。  链接是由链接器程序自动执行的，链接器使得分离编译变得可能。 编译器驱动程序 执">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-12-11T12:26:00.278Z">
+<meta property="og:updated_time" content="2019-12-12T15:47:38.158Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="CSAPP linking">
-<meta name="twitter:description" content="链接编译器驱动程序静态链接目标文件C语言中如何读取一个ELF文件的ELF-header。shell中直接使用readelf命令。-h, -s 可重定位目标文件符号和符号表符号解析重定位可执行目标文件加载可执行目标文件动态链接库加载和链接共享库位置无关代码库打桩机制处理目标文件的工具总结参考文献1.《CSAPP》第七章2.https://stackoverflow.com/questions/349">
+<meta name="twitter:title" content="C&#x2F;C++ linking">
+<meta name="twitter:description" content="链接 链接是将各种代码和数据片段收集并组合成一个单一文件的过程，这个文件可以被加载到内存并执行。链接可以在三个时刻进行：  编译时(compilation time)，也就是在源代码被翻译成机器代码时。 加载时(load time)，在程序被加载器加载到内存并执行时。 运行时(run time)，由应用程序负责加载。  链接是由链接器程序自动执行的，链接器使得分离编译变得可能。 编译器驱动程序 执">
 
 
 
@@ -130,7 +130,7 @@
   };
 </script>
 
-  <title>CSAPP linking | mxxhcm's blog</title>
+  <title>C/C++ linking | mxxhcm's blog</title>
   
 
 
@@ -345,7 +345,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">CSAPP linking
+          <h1 class="post-title" itemprop="name headline">C/C++ linking
 
               
             
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-11 20:26:00" itemprop="dateModified" datetime="2019-12-11T20:26:00+08:00">2019-12-11</time>
+                <time title="修改时间：2019-12-12 23:47:38" itemprop="dateModified" datetime="2019-12-12T23:47:38+08:00">2019-12-12</time>
               
             
           </span>
@@ -449,8 +449,36 @@
       
 
       
-        <h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><h2 id="编译器驱动程序"><a href="#编译器驱动程序" class="headerlink" title="编译器驱动程序"></a>编译器驱动程序</h2><h2 id="静态链接"><a href="#静态链接" class="headerlink" title="静态链接"></a>静态链接</h2><h2 id="目标文件"><a href="#目标文件" class="headerlink" title="目标文件"></a>目标文件</h2><p>C语言中如何读取一个ELF文件的ELF-header。<br>shell中直接使用<code>readelf</code>命令。<code>-h</code>, <code>-s</code></p>
-<h2 id="可重定位目标文件"><a href="#可重定位目标文件" class="headerlink" title="可重定位目标文件"></a>可重定位目标文件</h2><h2 id="符号和符号表"><a href="#符号和符号表" class="headerlink" title="符号和符号表"></a>符号和符号表</h2><h2 id="符号解析"><a href="#符号解析" class="headerlink" title="符号解析"></a>符号解析</h2><h2 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h2><h2 id="可执行目标文件"><a href="#可执行目标文件" class="headerlink" title="可执行目标文件"></a>可执行目标文件</h2><h2 id="加载可执行目标文件"><a href="#加载可执行目标文件" class="headerlink" title="加载可执行目标文件"></a>加载可执行目标文件</h2><h2 id="动态链接库"><a href="#动态链接库" class="headerlink" title="动态链接库"></a>动态链接库</h2><h2 id="加载和链接共享库"><a href="#加载和链接共享库" class="headerlink" title="加载和链接共享库"></a>加载和链接共享库</h2><h2 id="位置无关代码"><a href="#位置无关代码" class="headerlink" title="位置无关代码"></a>位置无关代码</h2><h2 id="库打桩机制"><a href="#库打桩机制" class="headerlink" title="库打桩机制"></a>库打桩机制</h2><h2 id="处理目标文件的工具"><a href="#处理目标文件的工具" class="headerlink" title="处理目标文件的工具"></a>处理目标文件的工具</h2><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《CSAPP》第七章<br>2.<a href="https://stackoverflow.com/questions/34960383/how-read-elf-header-in-c" target="_blank" rel="noopener">https://stackoverflow.com/questions/34960383/how-read-elf-header-in-c</a></p>
+        <h2 id="链接">链接</h2>
+<p><strong>链接</strong>是将各种代码和数据片段收集并组合成一个单一文件的过程，这个文件可以被加载到内存并执行。链接可以在三个时刻进行：</p>
+<ul>
+<li>编译时(compilation time)，也就是在源代码被翻译成机器代码时。</li>
+<li>加载时(load time)，在程序被加载器加载到内存并执行时。</li>
+<li>运行时(run time)，由应用程序负责加载。</li>
+</ul>
+<p>链接是由链接器程序自动执行的，链接器使得分离编译变得可能。</p>
+<h2 id="编译器驱动程序">编译器驱动程序</h2>
+<p>执行将源文件翻译成可执行目标文件过程的<strong>程序</strong>，即预处理器，编译器，汇编器和链接器，构成了<strong>编译系统。</strong><br>
+<strong>编译器驱动程序</strong>负责完成整个编译过程，即在需要时分别调用预处理器，编译器，汇编器和连接器，整个编译过程都是由编译器驱动程序负责的。</p>
+<h2 id="静态链接">静态链接</h2>
+<h2 id="目标文件">目标文件</h2>
+<p>C语言中如何读取一个ELF文件的ELF-header。<br>
+shell中直接使用<code>readelf</code>命令。<code>-h</code>, <code>-s</code></p>
+<h2 id="可重定位目标文件">可重定位目标文件</h2>
+<h2 id="符号和符号表">符号和符号表</h2>
+<h2 id="符号解析">符号解析</h2>
+<h2 id="重定位">重定位</h2>
+<h2 id="可执行目标文件">可执行目标文件</h2>
+<h2 id="加载可执行目标文件">加载可执行目标文件</h2>
+<h2 id="动态链接库">动态链接库</h2>
+<h2 id="加载和链接共享库">加载和链接共享库</h2>
+<h2 id="位置无关代码">位置无关代码</h2>
+<h2 id="库打桩机制">库打桩机制</h2>
+<h2 id="处理目标文件的工具">处理目标文件的工具</h2>
+<h2 id="总结">总结</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《CSAPP》第七章<br>
+2.<a href="https://stackoverflow.com/questions/34960383/how-read-elf-header-in-c" target="_blank" rel="noopener">https://stackoverflow.com/questions/34960383/how-read-elf-header-in-c</a></p>
 
       
     </div>
@@ -580,7 +608,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">303</span>
+                    <span class="site-state-item-count">304</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1420,7 +1448,11 @@
                     
                       
                     
-                    <span class="site-state-item-count">379</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">381</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
