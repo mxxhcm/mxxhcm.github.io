@@ -327,6 +327,600 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/09/gym-wrappers-and-monitors/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/09/gym-wrappers-and-monitors/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">gym wrappers and monitors</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-09 15:24:33" itemprop="dateCreated datePublished" datetime="2019-10-09T15:24:33+08:00">2019-10-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-21 19:50:05" itemprop="dateModified" datetime="2019-10-21T19:50:05+08:00">2019-10-21</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>这一篇文章主要介绍wrappers和monitors。</p>
+<h2 id="什么是Wrappers"><a href="#什么是Wrappers" class="headerlink" title="什么是Wrappers"></a>什么是Wrappers</h2><p>对已有的environments的功能进行扩展。比如保留过去的N个observation或者对输入进行cropped。Gym提供了这样的借口，叫做Wrapper class。<br>Wrapper继承自Env class，构造函数只接收一个参数，要被”wrapped”的Env实例。为了添加新的逻辑，需要重写step()或者reset()方法，但是需要调用父类的original方法。为了更细粒度的满足要求，gym还提供了三个Wrapper的subclass，ObservationWrapper，RewardWrapper和ActionWrapper分别只对observation，reward和action进行重定义。他们之间的关系如下所示：<br><img src="/2019/10/09/gym-wrappers-and-monitors/gym_wrapper.png" alt="gym_wrapper"><br>Env是一个abstract class，具体的environments如Breakout继承了Env class，实现了step()，reset()等abstract function。Wrapper继承了env class，对step(), reset()等方法进行了重载。ActionWrapper对Wrapper进行了重载，对step和reset进行了重载。<br>Env </p>
+<ul>
+<li>abstract step(self, action)</li>
+<li>abstract reset(self)</li>
+</ul>
+<p>Breakout(Env)</p>
+<ul>
+<li>overwrite step(self, action)</li>
+<li>overwrite reset(self)</li>
+</ul>
+<p>Wrapper(Env)</p>
+<ul>
+<li>__init__(self, env): self.env = env # instance of gym environment</li>
+<li>overwrite step(self, action): self.env.step(action) # 调用的是传入参数env的step函数</li>
+<li>overwrite reset(self) # 调用的是传入参数env的reset函数</li>
+</ul>
+<p>ActionWrapper(Wrapper)</p>
+<ul>
+<li>overwrite step(self, action): self.env.step(self.action(action)) # 调用的是self.env的step函数</li>
+<li>overwrite reset(self) # 调用的是self.env的step函数</li>
+<li>abstract action(self, action)</li>
+<li>abstract reverse_action(self, action)</li>
+</ul>
+<p>MyownActionWrapper(ActionWrapper)</p>
+<ul>
+<li>overwrite action(self, action)</li>
+</ul>
+<h2 id="Wrapper示例"><a href="#Wrapper示例" class="headerlink" title="Wrapper示例"></a>Wrapper示例</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gym</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">RandomActionWrapper</span><span class="params">(gym.ActionWrapper)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, environment, epsilon=<span class="number">-1.1</span>)</span>:</span></span><br><span class="line">        super(RandomActionWrapper, self).__init__(environment)</span><br><span class="line">        self.epsilon = epsilon</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">action</span><span class="params">(self, action)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> random.random() &lt; self.epsilon:</span><br><span class="line">            print(<span class="string">"Random"</span>)</span><br><span class="line">            <span class="keyword">return</span> self.env.action_space.sample()</span><br><span class="line">            <span class="comment"># return self.environment.action_space.sample()</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># print("Not random")</span></span><br><span class="line">            <span class="keyword">pass</span></span><br><span class="line">        <span class="keyword">return</span> action</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">reverse_action</span><span class="params">(self, action)</span>:</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    environment = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">    env = RandomActionWrapper(environment)</span><br><span class="line">    </span><br><span class="line">    obs = env.reset()</span><br><span class="line">    episode = <span class="number">0</span></span><br><span class="line">    total_steps = <span class="number">0</span></span><br><span class="line">    total_reward = <span class="number">0</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        action = env.action_space.sample()</span><br><span class="line">        obs, reward, done, info = env.step(action)</span><br><span class="line">        print(reward)</span><br><span class="line">        total_reward += reward</span><br><span class="line">        total_steps += <span class="number">1</span></span><br><span class="line">        env.render()</span><br><span class="line">        time.sleep(<span class="number">0.1</span>)</span><br><span class="line">        <span class="keyword">if</span> done:</span><br><span class="line">            print(<span class="string">"Episode %d done in %d steps, total reward %.1f"</span> %(episode, total_steps, total_reward))</span><br><span class="line">            time.sleep(<span class="number">0.1</span>)</span><br><span class="line">            env.reset()</span><br><span class="line">            episode += <span class="number">1</span></span><br><span class="line">            total_reward = <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>在这个例子中，env其实是RandomActionWrapper的对象，而RandomActionWrapper继承自ActionWrapper，对ActionWrapper的action方法进行了重载。这个Wrapper对象拥有CartPole environment的对象，调用wrapper对象的step方法时，其实调用的是ActionWrapper的step方法，而ActionWrapper调用的是self.env.env(self.action(action))。<br>最终其实就是将env.step(action)改成了env.step(action(action))。</p>
+<h2 id="什么是Monitors"><a href="#什么是Monitors" class="headerlink" title="什么是Monitors"></a>什么是Monitors</h2><p>使用gym.wrapper.Monior记录当前agent的执行动作。它的使用方法很简单，如下所示：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">env = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">env = gym.wrappers.Monitor(env, <span class="string">"path"</span>)</span><br></pre></td></tr></table></figure></p>
+<p>只需要在env的外面套上一个Monitor即可，它会自动记录玩游戏的过程。</p>
+<h2 id="Wrapper-in-baselines"><a href="#Wrapper-in-baselines" class="headerlink" title="Wrapper in baselines"></a>Wrapper in baselines</h2><p>Openai baselines中实现了许多wrappers。它们包括：</p>
+<ul>
+<li>将一个大的episode切分成更小的episode，一个游戏可能有好几条命，原来的实现中是这几条命都是一个episode，现在把它改成一条命一个episode</li>
+<li>执行至多$30$个no-op。</li>
+<li>frame-skip和取最后两帧中pixel更大的那个当做observation</li>
+<li>在游戏开始时Pressing FIRE，一般在重置游戏的时候，有些游戏需要按一下fire才会开始，否则一直都是fixed。</li>
+<li>Image cropped,将$210\times 160$三通道转换成$84\times 84$单通道</li>
+<li>Stacking $4$ frames当做observation</li>
+<li>Clipped reward 到$-1, 0, 1$，或者$[-1, 1]$</li>
+<li>将$0-255$之间的值转换成$[0.0, 1.0]$</li>
+</ul>
+<h2 id="Monitors示例"><a href="#Monitors示例" class="headerlink" title="Monitors示例"></a>Monitors示例</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> gym</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    env = gym.make(<span class="string">"CartPole-v0"</span>)</span><br><span class="line">    env = gym.wrappers.Monitor(env, <span class="string">"recording"</span>)</span><br><span class="line"></span><br><span class="line">    total_reward = <span class="number">0.0</span></span><br><span class="line">    total_steps = <span class="number">0</span></span><br><span class="line">    obs = env.reset()</span><br><span class="line">    episode = <span class="number">1</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        action = env.action_space.sample()</span><br><span class="line">        obs, reward, done, _ = env.step(action)</span><br><span class="line">        total_reward += reward</span><br><span class="line">        total_steps += <span class="number">1</span></span><br><span class="line">        env.render()</span><br><span class="line">        <span class="keyword">if</span> done:</span><br><span class="line">            print(<span class="string">"Episode %d done in %d steps, total reward %.2f"</span> %(episode, total_steps, total_reward))</span><br><span class="line">            time.sleep(<span class="number">1</span>)</span><br><span class="line">            env.reset()</span><br><span class="line">            <span class="keyword">if</span> episode &gt; <span class="number">5</span>:</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            episode += <span class="number">1</span></span><br><span class="line">            total_reward = <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://hub.packtpub.com/openai-gym-environments-wrappers-and-monitors-tutorial/" target="_blank" rel="noopener">https://hub.packtpub.com/openai-gym-environments-wrappers-and-monitors-tutorial/</a><br>2.<a href="https://www.packtpub.com/big-data-and-business-intelligence/deep-reinforcement-learning-hands" target="_blank" rel="noopener">https://www.packtpub.com/big-data-and-business-intelligence/deep-reinforcement-learning-hands</a><br>3.<a href="https://discuss.pytorch.org/t/in-the-official-q-learning-example-what-does-the-env-unwrapped-do-exactly/28695/2" target="_blank" rel="noopener">https://discuss.pytorch.org/t/in-the-official-q-learning-example-what-does-the-env-unwrapped-do-exactly/28695/2</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/08/python-pickle/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/08/python-pickle/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">python pickle</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-08 17:56:48" itemprop="dateCreated datePublished" datetime="2019-10-08T17:56:48+08:00">2019-10-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-11 13:30:51" itemprop="dateModified" datetime="2019-10-11T13:30:51+08:00">2019-10-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>pickle是一个序列化模块，它能将python对象序列化转换成二进制串再反序列化成python对象。</p>
+<h2 id="常用函数"><a href="#常用函数" class="headerlink" title="常用函数"></a>常用函数</h2><h3 id="pickle-dump"><a href="#pickle-dump" class="headerlink" title="pickle.dump()"></a>pickle.dump()</h3><h4 id="API"><a href="#API" class="headerlink" title="API"></a>API</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.dump(obj, file, [,protocol])</span><br></pre></td></tr></table></figure>
+<h4 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h4><p>将python对象obj以二进制字符串形式保存到文件file中，使用protocol。</p>
+<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"test.txt"</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    pickle.dump(dictionary, f)</span><br></pre></td></tr></table></figure>
+<h3 id="pickle-load"><a href="#pickle-load" class="headerlink" title="pickle.load()"></a>pickle.load()</h3><h4 id="API-1"><a href="#API-1" class="headerlink" title="API"></a>API</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.load(file)</span><br></pre></td></tr></table></figure>
+<h4 id="作用-1"><a href="#作用-1" class="headerlink" title="作用"></a>作用</h4><p>从文件file中读取二进制字符串，将其反序列成python对象。</p>
+<h4 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">"test.txt"</span>, <span class="string">'rb'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    b = pickle.load(f)</span><br><span class="line"></span><br><span class="line">print(b)</span><br><span class="line">print(type(b))</span><br></pre></td></tr></table></figure>
+<h3 id="pickle-dumps"><a href="#pickle-dumps" class="headerlink" title="pickle.dumps()"></a>pickle.dumps()</h3><h4 id="API-2"><a href="#API-2" class="headerlink" title="API"></a>API</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.dumps(obj, [,protocol])</span><br></pre></td></tr></table></figure>
+<h4 id="作用-2"><a href="#作用-2" class="headerlink" title="作用"></a>作用</h4><p>将python对象obj转化成二进制字符串，返回一个字符串</p>
+<h4 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line">s = pickle.dumps(dictionary)</span><br><span class="line">print(s)</span><br><span class="line">print(type(s))</span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line"><span class="comment"># b'\x80\x03&#125;q\x00(X\x04\x00\x00\x00nameq\x01X\x03\x00\x00\x00mxxq\x02X\x03\x00\x00\x00ageq\x03K\x17u.'</span></span><br><span class="line"><span class="comment"># &lt;class 'bytes'&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="pickle-loads"><a href="#pickle-loads" class="headerlink" title="pickle.loads()"></a>pickle.loads()</h3><h4 id="API-3"><a href="#API-3" class="headerlink" title="API"></a>API</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pickle.loads(string)</span><br></pre></td></tr></table></figure>
+<h4 id="作用-3"><a href="#作用-3" class="headerlink" title="作用"></a>作用</h4><p>从二进制字符串中返回序列化前的python obj对象。</p>
+<h4 id="示例-3"><a href="#示例-3" class="headerlink" title="示例"></a>示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pickle</span><br><span class="line"></span><br><span class="line">dictionary = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line"></span><br><span class="line">s = pickle.dumps(dictionary)</span><br><span class="line">b = pickle.loads(s)</span><br><span class="line">print(b)</span><br><span class="line">print(type(b))</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.jianshu.com/p/cf91849064e3" target="_blank" rel="noopener">https://www.jianshu.com/p/cf91849064e3</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/08/python-mpi4py/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/08/python-mpi4py/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">python mpi4py</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-08 17:25:46" itemprop="dateCreated datePublished" datetime="2019-10-08T17:25:46+08:00">2019-10-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-11 13:30:51" itemprop="dateModified" datetime="2019-10-11T13:30:51+08:00">2019-10-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="MPI"><a href="#MPI" class="headerlink" title="MPI"></a>MPI</h2><p>MPI全名是Message Passing Interface，它是一个标准，而不是一个实现，专门为进程间通信实现的。它的工作原理很简单，启动一组进程，在同一个通信域中的不同进程有不同的编号，可以给不同编号的进程分配不同的任务，最终实现整个任务。<br>MPI4PY就是python中MPI的实现。在python中有很多种方法实现多进程以及进程间通信，比如multiprocessing，但是multiprocessing进程间通信不够方便，mpi4py的效率更高一些。<br>mpi4py提供了点对点通信，点对面，面对点通信。点对点通信又包含阻塞和非阻塞等等，通信的内容包含python内置对象，也包含numpy数组等。</p>
+<h2 id="mpi4py简单对象和方法介绍"><a href="#mpi4py简单对象和方法介绍" class="headerlink" title="mpi4py简单对象和方法介绍"></a>mpi4py简单对象和方法介绍</h2><p>MPI.COMM_WORLD是一个通信域，在这个通信域中有不同的进程，每个进程的编号以及进程的数量都可以通过这个通信域获得。具体看以下comm_world.py代码：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获得多进程通信域</span></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"><span class="comment"># 获得当前进程通信域中进程数量</span></span><br><span class="line">size = comm.Get_size()</span><br><span class="line"><span class="comment"># 获得当前进程在通信域中的编号</span></span><br><span class="line">rank = comm.Get_rank()</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>mpiexec -np 3 python comm_world.py</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h2 id="点对点通信"><a href="#点对点通信" class="headerlink" title="点对点通信"></a>点对点通信</h2><h3 id="阻塞通信"><a href="#阻塞通信" class="headerlink" title="阻塞通信"></a>阻塞通信</h3><h4 id="python对象"><a href="#python对象" class="headerlink" title="python对象"></a>python对象</h4><h5 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h5><p>comm.send(data, dest, tag)<br>comm.recv(source, tag)<br>send和recv都是阻塞方法，即调用这个方法之后，等到该函数调用结束之后再返回。dest是目的process编号，source是发送的process编号。data是要发送的数据，需要是python的内置对象，即可以pickle的对象。</p>
+<h5 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = &#123;<span class="string">'name'</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    comm.send(data, dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = comm.recv(source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="numpy数组"><a href="#numpy数组" class="headerlink" title="numpy数组"></a>numpy数组</h4><h5 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h5><p>comm.Send(data, dest, tag)<br>comm.Recv(source, tag)<br>Send和Recv都是阻塞方法，即调用这个方法之后，等到该函数调用结束之后再返回。dest是目的process编号，source是发送的process编号。data是要发送的数据，需要是numpy对象，和c语言的效率差不多。</p>
+<h5 id="代码示例-1"><a href="#代码示例-1" class="headerlink" title="代码示例"></a>代码示例</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"></span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = &#123;<span class="string">'name'</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    comm.isend(data, dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = comm.irecv(source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="非阻塞通信"><a href="#非阻塞通信" class="headerlink" title="非阻塞通信"></a>非阻塞通信</h3><h4 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h4><p>comm.isend(data, dest, tag)<br>comm.irecv(source, tag)<br>isend和irecv都是非阻塞方法，即调用这个方法之后，调用该函数之后立即返回，无需等待它执行结束。dest是目的process编号，source是发送的process编号。data要是python对象，可以被pickle处理的。</p>
+<h4 id="代码示例-2"><a href="#代码示例-2" class="headerlink" title="代码示例"></a>代码示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"></span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = np.ones((<span class="number">3</span>, <span class="number">4</span>), dtype=<span class="string">'i'</span>)</span><br><span class="line">    comm.Send([data, MPI.INT], dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = np.empty((<span class="number">3</span>, <span class="number">4</span>), dtype=<span class="string">'i'</span>)</span><br><span class="line">    data = comm.Recv([data, MPI.INT], source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="组通信"><a href="#组通信" class="headerlink" title="组通信"></a>组通信</h2><h3 id="bcast"><a href="#bcast" class="headerlink" title="bcast"></a>bcast</h3><h4 id="简介-3"><a href="#简介-3" class="headerlink" title="简介"></a>简介</h4><p>将一个process中的数据发送给所有在通信池中的process。<br>comm.bcast(data, dest, tag)</p>
+<h4 id="代码示例-3"><a href="#代码示例-3" class="headerlink" title="代码示例"></a>代码示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">1</span>:</span><br><span class="line">    data = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    print(<span class="string">"data bcast to others"</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">data = comm.bcast(data, root=<span class="number">1</span>)</span><br><span class="line">print(<span class="string">"process &#123;&#125; has received data"</span>.format(rank))</span><br></pre></td></tr></table></figure>
+<h3 id="scatter"><a href="#scatter" class="headerlink" title="scatter"></a>scatter</h3><h4 id="简介-4"><a href="#简介-4" class="headerlink" title="简介"></a>简介</h4><p>将一个process的数据拆分成n份，发送给所有在通信池中的process每个一份，和bcast的区别在于，bcast发送的数据对于每一个process都是一样的，而scatter是将一份数据拆分成n份分别发送给每个process。<br>comm.scatter(data, dest, tag)</p>
+<h4 id="代码示例-4"><a href="#代码示例-4" class="headerlink" title="代码示例"></a>代码示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line">recv_data = <span class="literal">None</span></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">1</span>:</span><br><span class="line">    send_data = range(size) </span><br><span class="line">    print(<span class="string">"data bcast to others"</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    send_data = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">recv_data = comm.scatter(send_data, root=<span class="number">1</span>)</span><br><span class="line">print(<span class="string">"process &#123;&#125; has received data &#123;&#125;"</span>.format(rank, recv_data))</span><br></pre></td></tr></table></figure>
+<h3 id="gather"><a href="#gather" class="headerlink" title="gather"></a>gather</h3><h4 id="简介-5"><a href="#简介-5" class="headerlink" title="简介"></a>简介</h4><p>和comm.bcast相反，将每个process中的数据收集到一个process中。<br>comm.gather(data, dest, tag)</p>
+<h4 id="代码示例-5"><a href="#代码示例-5" class="headerlink" title="代码示例"></a>代码示例</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line">send_data = rank</span><br><span class="line">print(<span class="string">"process &#123;&#125; send data &#123;&#125; to root."</span>.format(rank, send_data))</span><br><span class="line"></span><br><span class="line">recv_data = comm.gather(send_data, root=<span class="number">9</span>)</span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">9</span>:</span><br><span class="line">    print(<span class="string">"process &#123;&#125; gather all data &#123;&#125; to others."</span>.format(rank, recv_data))</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://zhuanlan.zhihu.com/p/25332041" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/25332041</a><br>2.<a href="https://www.jianshu.com/p/f497f3a5855f" target="_blank" rel="noopener">https://www.jianshu.com/p/f497f3a5855f</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/06/gradient-method-deep-deterministic-policy-gradient/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -430,68 +1024,25 @@
       
         
           
-            <h2 id="ddpg">ddpg</h2>
-<p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>
-论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
-<h3 id="摘要">摘要</h3>
-<p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
-<h3 id="简介">简介</h3>
-<p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>
-简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。<br>
-$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}$$<br>
-（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>
-许多rl方法使用bellman方程递归的更新Q:<br>
-$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}$$<br>
-如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：<br>
-$$Q{\mu}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}$$<br>
-而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>
-在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
-<h3 id="ddpg-v2">DDPG</h3>
-<p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>
-DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>
-\begin{align*}<br>
-\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|_{s=s_t}\right]\\<br>
-&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\ \tag{4}<br>
-\end{align*}<br>
-中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
-<h4 id="contributions">Contributions</h4>
-<p>本文的几个改进：</p>
+            <h2 id="ddpg"><a href="#ddpg" class="headerlink" title="ddpg"></a>ddpg</h2><p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h3 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h3><p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。</p>
+<script type="math/tex; mode=display">Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}</script><p>（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>许多rl方法使用bellman方程递归的更新Q:</p>
+<script type="math/tex; mode=display">Q{\pi}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}\_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}</script><p>如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：</p>
+<script type="math/tex; mode=display">Q{\mu}(s_t,a_t) = \mathbb{E}\_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}</script><p>而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
+<h3 id="DDPG"><a href="#DDPG" class="headerlink" title="DDPG"></a>DDPG</h3><p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>\begin{align*}<br>\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|_{s=s_t}\right]\\\\<br>&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\\ \tag{4}<br>\end{align*}<br>中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
+<h4 id="Contributions"><a href="#Contributions" class="headerlink" title="Contributions"></a>Contributions</h4><p>本文的几个改进：</p>
 <ol>
 <li>使用replay buffer，</li>
 <li>使用target network解决不稳定的问题。</li>
 <li>使用了batch-normalization。</li>
-<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<br>
-$$\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}$$</li>
+<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<script type="math/tex; mode=display">\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}</script></li>
 </ol>
-<h4 id="算法">算法</h4>
-<p>算法1 DDPG<br>
-随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $<br>
-初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q ,\theta^{\mu’} \leftarrow \theta^{\mu} $<br>
-初始化replay buffer $R$<br>
-<strong>for</strong> episode = 1, M <strong>do</strong><br>
-初始化一个随机process $N$用于exploration<br>
-receive initial observation state $s_1$<br>
-for $t=1, T$ do<br>
-根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>
-执行action $a_t$，得到$r_t$和$s_{t+1}$<br>
-将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>
-从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>
-设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’} )$<br>
-使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic<br>
-使用sampled policy gradient 更新acotr:<br>
-$$\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|_{s=s_i, a=\mu(s_i)}\nabla_{\theta^{\mu} }\mu(s|\theta^{\mu} )|_{s_i}$$<br>
-更新target networks:<br>
-$$\theta’\leftarrow \tau \theta + (1-\tau) \theta’$$<br>
-end for<br>
-end for</p>
-<h3 id="实验">实验</h3>
-<p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>
-在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>
-作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h4 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h4><p>算法1 DDPG<br>随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $<br>初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q ,\theta^{\mu’} \leftarrow \theta^{\mu} $<br>初始化replay buffer $R$<br><strong>for</strong> episode = 1, M <strong>do</strong><br>初始化一个随机process $N$用于exploration<br>receive initial observation state $s_1$<br>for $t=1, T$ do<br>根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>执行action $a_t$，得到$r_t$和$s_{t+1}$<br>将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’} )$<br>使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic<br>使用sampled policy gradient 更新acotr:</p>
+<script type="math/tex; mode=display">\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|\_{s=s_i, a=\mu(s_i)}\nabla\_{\theta^{\mu} }\mu(s|\theta^{\mu} )|\_{s_i}</script><p>更新target networks:</p>
+<script type="math/tex; mode=display">\theta'\leftarrow \tau \theta + (1-\tau) \theta'</script><p>end for<br>end for</p>
+<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
 
           
         
@@ -800,59 +1351,18 @@ end for</p>
       
         
           
-            <h2 id="importance-sampling">Importance Sampling</h2>
-<p>Importance sampling是使用一个分布近似估计另一个分布期望的方法，即通过分布$q$计算分布$p$下$f(x)$的期望。通过从$q$中采样而不是从$p$中采样近似：<br>
-$$\mathbb{E}_p\left[f(x)\right] = \mathbb{E}_q\left[ \frac{p(x)f(x)}{q(x)}\right] \tag{1}$$<br>
-使用采样分布$q$估计分布$p$下的期望：<br>
-$$\mathbb{E}_p\left[f(x)\right] \approx \frac{1}{n} \sum_{i=1}^n \frac{p(x_i)f(x_i)}{q(x_i)} x_i\sim q\tag{2}$$<br>
-上面的公式需要满足$p(x_i)$不为$0$时，$q(x_i)$也不为$0$。直接计算$\mathbb{E}_p\left[f(x)\right]$和$\mathbb{E}_q\left[f(x)\right]$，一般来说是不同的，通过importance ratio调整权重，就可以使用$q$分布估计$p$分布的期望了。举个例子：<br>
-$$f(1) = 2, f(2) = 3, f(3) = 4, otherwise 0 \tag{3}$$<br>
-概率分布$p$为：$p(x=1) = 0, p(x=2) = \frac{1}{3},p(x=3) = \frac{2}{3}$，概率分布$q$为：$q(x=1) = \frac{1}{3}, q(x=2) = \frac{1}{3}, q(x=3) = \frac{1}{3}$。计算期望，$\mathbb{E}_p\left[f(x)\right] = \frac{11}{3}$，$\mathbb{E}_q\left[f(x)\right] = 3$<br>
-使用importance ratio进行权重调整：<br>
-\begin{align*}<br>
-\mathbb{E}_p\left[f(x)\right] &amp; = \mathbb{E}_q\left[\frac{q(x)}{p(x)}f(x)\right] \\<br>
-&amp; = \mathbb{E}_q\left[\frac{p(x=1)}{q(x=1)}f(x=1) \right] + \mathbb{E}_q\left[\frac{p(x=2)}{q(x=2)}f(x=2) \right] + \mathbb{E}_q\left[\frac{p(x=3)}{q(x=3)}f(x=3) \right] \\<br>
-&amp; = \frac{1}{3}*0 + \frac{1}{3}\frac{\frac{1}{3}}{\frac{1}{3}}*3 + \frac{1}{3}\frac{\frac{2}{3}}{\frac{1}{3}}*4\\<br>
-&amp; =\frac{11}{3}\\<br>
-\end{align*}<br>
-可以看出来，我们使用分布$q$估计除了分布$p$的期望。通过使用一个简单分布$q$进行采样，可以计算出$p$的期望。在RL中，通常通过复用old policy的sample trajectory学习current policy。</p>
-<h2 id="optimal-importance-sampling">Optimal Importance Sampling</h2>
-<p>Importance sampling使用采样近似估计$\mathbb{E}_p\left[f(x)\right]\approx \frac{1}{N}\sum_i \frac{p(x_i)}{q(x_i)}f(x_i)$近似计算$\mathbb{E}_p\left[f(x)\right]$。随着样本数量$N$的增加，期望值越准确。但是这种方法的方差很大，为了减少方差，样本分布$q$应该满足：<br>
-$$q(x) \propto p(x)\vert f(x)\vert \tag{4}$$<br>
-简单来说，为了减少方差，我们需要采样return更大的点。</p>
-<h2 id="normalized-importanct-sampling">Normalized importanct sampling</h2>
-<p>上面介绍的方法叫做unnormalized importance sampling。可以使用下里面的公式将unnormalized importance sampling转换为normalized importance sampling。<br>
-$$p(x) = \frac{\hat{p}(x)}{Z}\tag{5}$$<br>
-许多ML方法属于贝叶斯网络或者马尔科夫随机场，对于贝叶斯网络中，$p$很容易计算。但是当$p$是马尔科夫随机场时，$\sum\hat{p}(x)$是很难计算的。<br>
-\begin{align*}<br>
-\mathbb{E}_p\left[f(x)\right] &amp; = \int f(x) p(x) dx\\<br>
-&amp; = \int f(x) \frac{\hat{p}(x)}{Z} \frac{q(x)}{q(x)} dx\\<br>
-&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}dx}{Z}\\<br>
-&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x) dx}\\<br>
-&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\<br>
-&amp; = \frac{\int f(x) q(x)\frac{\hat{p}(x)}{q(x)} dx}{\int q(x)\frac{\hat{p}(x)}{q(x)} dx}\\<br>
-&amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\<br>
-\end{align*}<br>
-接下来用采样样本的求和近似积分求期望：<br>
-\begin{align*}<br>
-\mathbb{E}_p\left[f(x)\right] &amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\<br>
-&amp; \approx \frac{\sum_i f(x^i) r^i }{\sum r^i}\qquad\qquad 其中 r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\<br>
-&amp; = \sum_i f(x^i) r^i  \frac{r^i}{\sum_i r^i}\\<br>
-\end{align*}<br>
-通过计算<br>
-这就避免了计算$Z$，这种方法叫做normalized importance sampling。但是需要付出一定代价，unnormalized importance sampling是无偏的，而normalized importance是有偏的但是方差更小。</p>
-<h2 id="importance-sampling-in-rl">Importance sampling in RL</h2>
-<p>我们可以使用importance sampling方法从old policy $\pi’$采样估计new policy $\pi$的值函数。计算一个action的returns的代价很高，但是如果新的action和老的action很接近，importance sampling可以帮助我们利用old calculation计算新的returns。举个例子，在MC方法中，无论何时更新$\theta$，都需要根据新的trajectories计算returns。<br>
-$$\nabla_{\theta}J(\theta) = \frac{1}{N}\sum_{i=1}^T \left(\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_{i,t}|s_{i,t})\right)\left(\prod_{t=1}^T R(s_{i,t},a_{i,t})\right) \tag{6}$$<br>
-一个trajectory可以有几百个steps，单个的更新是非常低效的。有了importance sampling之后，我们可以基于old samples计算新的return。然而，如果两个policy差的太远，accuracy会降低。因此周期性的同步policy是非常必要的。<br>
-使用importance sampling，重写policy gradient的等式：<br>
-$$\nabla_{\theta}J(\theta) = \mathbb{E}_{\tau\sim\bar{\pi}(\tau)}\left[\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_t|s_t)\left(\prod_{t’=1}^T \frac{\pi_{\theta}(a_{t’}|s_{t’})}{\hat{\pi}_{\theta}(a_{t’}|s_{t’})}\right)\left(\prod_{t’=t}^T R(s_{t’},a_{t’})\right)\right]\tag{7}$$<br>
-为了约束policy的变化，可以加入trust region约束条件，在这个region内，我们认为使用importance sampling得到的结果是可信的：<br>
-$$\max_{\theta} \hat{\mathbb{E}}_t\left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t}\hat{A}_t\right]\tag{8}$$<br>
-$$s.t. \hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{\theta_{old}}(\cdot|s_t),\pi_{\theta}(\cdot|s_t)\right]\right]\tag{9}$$</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://medium.com/@jonathan_hui/rl-importance-sampling-ebfb28b4a8c6" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-importance-sampling-ebfb28b4a8c6</a><br>
-2.<a href="http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf" target="_blank" rel="noopener">http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf</a></p>
+            <h2 id="Importance-Sampling"><a href="#Importance-Sampling" class="headerlink" title="Importance Sampling"></a>Importance Sampling</h2><p>Importance sampling是使用一个分布近似估计另一个分布期望的方法，即通过分布$q$计算分布$p$下$f(x)$的期望。通过从$q$中采样而不是从$p$中采样近似：</p>
+<script type="math/tex; mode=display">\mathbb{E}\_p\left[f(x)\right] = \mathbb{E}\_q\left[ \frac{p(x)f(x)}{q(x)}\right] \tag{1}</script><p>使用采样分布$q$估计分布$p$下的期望：</p>
+<script type="math/tex; mode=display">\mathbb{E}\_p\left[f(x)\right] \approx \frac{1}{n} \sum\_{i=1}^n \frac{p(x\_i)f(x\_i)}{q(x\_i)} x\_i\sim q\tag{2}</script><p>上面的公式需要满足$p(x_i)$不为$0$时，$q(x_i)$也不为$0$。直接计算$\mathbb{E}_p\left[f(x)\right]$和$\mathbb{E}_q\left[f(x)\right]$，一般来说是不同的，通过importance ratio调整权重，就可以使用$q$分布估计$p$分布的期望了。举个例子：</p>
+<script type="math/tex; mode=display">f(1) = 2, f(2) = 3, f(3) = 4, otherwise 0 \tag{3}</script><p>概率分布$p$为：$p(x=1) = 0, p(x=2) = \frac{1}{3},p(x=3) = \frac{2}{3}$，概率分布$q$为：$q(x=1) = \frac{1}{3}, q(x=2) = \frac{1}{3}, q(x=3) = \frac{1}{3}$。计算期望，$\mathbb{E}_p\left[f(x)\right] = \frac{11}{3}$，$\mathbb{E}_q\left[f(x)\right] = 3$<br>使用importance ratio进行权重调整：<br>\begin{align*}<br>\mathbb{E}_p\left[f(x)\right] &amp; = \mathbb{E}_q\left[\frac{q(x)}{p(x)}f(x)\right] \\\\<br>&amp; = \mathbb{E}_q\left[\frac{p(x=1)}{q(x=1)}f(x=1) \right] + \mathbb{E}_q\left[\frac{p(x=2)}{q(x=2)}f(x=2) \right] + \mathbb{E}_q\left[\frac{p(x=3)}{q(x=3)}f(x=3) \right] \\\\<br>&amp; = \frac{1}{3}<em>0 + \frac{1}{3}\frac{\frac{1}{3}}{\frac{1}{3}}</em>3 + \frac{1}{3}\frac{\frac{2}{3}}{\frac{1}{3}}<em>4\\\\<br>&amp; =\frac{11}{3}\\\\<br>\end{align\</em>}<br>可以看出来，我们使用分布$q$估计除了分布$p$的期望。通过使用一个简单分布$q$进行采样，可以计算出$p$的期望。在RL中，通常通过复用old policy的sample trajectory学习current policy。</p>
+<h2 id="Optimal-Importance-Sampling"><a href="#Optimal-Importance-Sampling" class="headerlink" title="Optimal Importance Sampling"></a>Optimal Importance Sampling</h2><p>Importance sampling使用采样近似估计$\mathbb{E}_p\left[f(x)\right]\approx \frac{1}{N}\sum_i \frac{p(x_i)}{q(x_i)}f(x_i)$近似计算$\mathbb{E}_p\left[f(x)\right]$。随着样本数量$N$的增加，期望值越准确。但是这种方法的方差很大，为了减少方差，样本分布$q$应该满足：</p>
+<script type="math/tex; mode=display">q(x) \propto p(x)\vert f(x)\vert \tag{4}</script><p>简单来说，为了减少方差，我们需要采样return更大的点。</p>
+<h2 id="Normalized-importanct-sampling"><a href="#Normalized-importanct-sampling" class="headerlink" title="Normalized importanct sampling"></a>Normalized importanct sampling</h2><p>上面介绍的方法叫做unnormalized importance sampling。可以使用下里面的公式将unnormalized importance sampling转换为normalized importance sampling。</p>
+<script type="math/tex; mode=display">p(x) = \frac{\hat{p}(x)}{Z}\tag{5}</script><p>许多ML方法属于贝叶斯网络或者马尔科夫随机场，对于贝叶斯网络中，$p$很容易计算。但是当$p$是马尔科夫随机场时，$\sum\hat{p}(x)$是很难计算的。<br>\begin{align*}<br>\mathbb{E}_p\left[f(x)\right] &amp; = \int f(x) p(x) dx\\\\<br>&amp; = \int f(x) \frac{\hat{p}(x)}{Z} \frac{q(x)}{q(x)} dx\\\\<br>&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)}dx}{Z}\\\\<br>&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x) dx}\\\\<br>&amp; = \frac{\int f(x) \hat{p}(x) \frac{q(x)}{q(x)} dx}{\int \hat{p}(x)\frac{q(x)}{q(x)} dx}\\\\<br>&amp; = \frac{\int f(x) q(x)\frac{\hat{p}(x)}{q(x)} dx}{\int q(x)\frac{\hat{p}(x)}{q(x)} dx}\\\\<br>&amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\\\<br>\end{align*}<br>接下来用采样样本的求和近似积分求期望：<br>\begin{align*}<br>\mathbb{E}_p\left[f(x)\right] &amp; = \frac{\int f(x) r(x)q(x) dx}{\int r(x)q(x) dx}\qquad\qquad 记r(x) = \frac{\hat{p}(x)}{q(x)}\\\\<br>&amp; \approx \frac{\sum_i f(x^i) r^i }{\sum r^i}\qquad\qquad 其中 r^i = \frac{\hat{p}(x^i ) }{q(x^i ) }\\\\<br>&amp; = \sum_i f(x^i) r^i  \frac{r^i}{\sum_i r^i}\\\\<br>\end{align*}<br>通过计算<br>这就避免了计算$Z$，这种方法叫做normalized importance sampling。但是需要付出一定代价，unnormalized importance sampling是无偏的，而normalized importance是有偏的但是方差更小。</p>
+<h2 id="Importance-sampling-in-RL"><a href="#Importance-sampling-in-RL" class="headerlink" title="Importance sampling in RL"></a>Importance sampling in RL</h2><p>我们可以使用importance sampling方法从old policy $\pi’$采样估计new policy $\pi$的值函数。计算一个action的returns的代价很高，但是如果新的action和老的action很接近，importance sampling可以帮助我们利用old calculation计算新的returns。举个例子，在MC方法中，无论何时更新$\theta$，都需要根据新的trajectories计算returns。</p>
+<script type="math/tex; mode=display">\nabla_{\theta}J(\theta) = \frac{1}{N}\sum_{i=1}^T \left(\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_{i,t}|s_{i,t})\right)\left(\prod_{t=1}^T R(s_{i,t},a_{i,t})\right) \tag{6}</script><p>一个trajectory可以有几百个steps，单个的更新是非常低效的。有了importance sampling之后，我们可以基于old samples计算新的return。然而，如果两个policy差的太远，accuracy会降低。因此周期性的同步policy是非常必要的。<br>使用importance sampling，重写policy gradient的等式：</p>
+<script type="math/tex; mode=display">\nabla_{\theta}J(\theta) = \mathbb{E}\_{\tau\sim\bar{\pi}(\tau)}\left[\sum_{t=1}^T \nabla_{\theta} \log \pi_{\theta}(a_t|s_t)\left(\prod_{t'=1}^T \frac{\pi_{\theta}(a_{t'}|s_{t'})}{\hat{\pi}\_{\theta}(a_{t'}|s_{t'})}\right)\left(\prod_{t'=t}^T R(s_{t'},a_{t'})\right)\right]\tag{7}</script><p>为了约束policy的变化，可以加入trust region约束条件，在这个region内，我们认为使用importance sampling得到的结果是可信的：</p>
+<script type="math/tex; mode=display">\max_{\theta} \hat{\mathbb{E}}\_t\left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t}\hat{A}\_t\right]\tag{8}</script><script type="math/tex; mode=display">s.t. \hat{\mathbb{E}}\_t\left[\text{KL}\left[\pi_{\theta_{old}}(\cdot|s_t),\pi_{\theta}(\cdot|s_t)\right]\right]\tag{9}</script><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://medium.com/@jonathan\_hui/rl-importance-sampling-ebfb28b4a8c6" target="_blank" rel="noopener">https://medium.com/@jonathan\_hui/rl-importance-sampling-ebfb28b4a8c6</a><br>2.<a href="http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf" target="_blank" rel="noopener">http://webee.technion.ac.il/people/shimkin/MC15/MC15lect4-ImportanceSampling.pdf</a></p>
 
           
         
@@ -1012,23 +1522,11 @@ $$s.t. \hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{\theta_{old}}(\cdot|s_t),\pi_
       
         
           
-            <h2 id="mm">MM</h2>
-<p>MM是一类迭代优化方法，利用函数的凸性寻找极大值或者极小值。MM是Majoriza-Minimization或者Minorize-Maximization的缩写，取决于优化目标是maximization还是minimization。MM不是一个算法，它描述了如何如构建一个优化算法。<br>
-<a href="https://mxxhcm.github.io/2019/01/21/expectatin_maximization/">EM算法</a>可以看成MM算法的一个例子。但是EM算法使用到了条件期望，而MM算法中凸性和不等式是重点。</p>
-<h2 id="算法思路">算法思路</h2>
-<p>MM算法寻找objective function的一个替代品，然后优化新的目标函数直到一个极值点。<br>
-拿minorize-maximization算法举个例子，用$f(\theta)$表示需要被maximized的目标函数，它是一个concave函数。在第$m=0,1,\cdots$步中，构建新的目标函数$g(\theta|theta_m)$满足：<br>
-$$g(\theta|\theta_m) \le f(\theta), \forall \theta \tag{1}$$<br>
-$$g(\theta_m|\theta_m) = f(\theta_m) \tag{2}$$<br>
-式子$(1)表示$g(\theta|\theta_m)$是$f(\theta)$的下界，式子$(2)$表明$f(\theta)$和$g(\theta|\theta_m)$可以取到等号。<br>
-如下图所示：<br>
-<img src="/2019/09/25/mm/mm.jpg" alt="mm"><br>
-接下来，通过最大化$g(\theta|\theta_m)$就可以最大化$f(\theta)$：<br>
-$$\theta_{m+1} = \arg \max_{\theta} g(\theta|\theta_m) \tag{3}$$<br>
-当$m\rightarrow \infty$时，$f(\theta_m)$就会收敛到极小值点或者鞍点。我们能够得到以下的几个关系式：<br>
-$$f(\theta_{m+1}) \ge g(\theta_{m+1}|\theta_m) \ge g(\theta_m|\theta_m)=f(\theta_m) $$</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://en.wikipedia.org/wiki/MM_algorithm" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/MM_algorithm</a></p>
+            <h2 id="MM"><a href="#MM" class="headerlink" title="MM"></a>MM</h2><p>MM是一类迭代优化方法，利用函数的凸性寻找极大值或者极小值。MM是Majoriza-Minimization或者Minorize-Maximization的缩写，取决于优化目标是maximization还是minimization。MM不是一个算法，它描述了如何如构建一个优化算法。<br><a href="https://mxxhcm.github.io/2019/01/21/expectatin_maximization/">EM算法</a>可以看成MM算法的一个例子。但是EM算法使用到了条件期望，而MM算法中凸性和不等式是重点。</p>
+<h2 id="算法思路"><a href="#算法思路" class="headerlink" title="算法思路"></a>算法思路</h2><p>MM算法寻找objective function的一个替代品，然后优化新的目标函数直到一个极值点。<br>拿minorize-maximization算法举个例子，用$f(\theta)$表示需要被maximized的目标函数，它是一个concave函数。在第$m=0,1,\cdots$步中，构建新的目标函数$g(\theta|theta_m)$满足：</p>
+<script type="math/tex; mode=display">g(\theta|\theta_m) \le f(\theta), \forall \theta \tag{1}</script><script type="math/tex; mode=display">g(\theta_m|\theta_m) = f(\theta_m) \tag{2}</script><p>式子$(1)表示$g(\theta|\theta_m)$是$f(\theta)$的下界，式子$(2)$表明$f(\theta)$和$g(\theta|\theta_m)$可以取到等号。<br>如下图所示：<br><img src="/2019/09/25/mm/mm.jpg" alt="mm"><br>接下来，通过最大化$g(\theta|\theta_m)$就可以最大化$f(\theta)$：</p>
+<script type="math/tex; mode=display">\theta_{m+1} = \arg \max_{\theta} g(\theta|\theta_m) \tag{3}</script><p>当$m\rightarrow \infty$时，$f(\theta_m)$就会收敛到极小值点或者鞍点。我们能够得到以下的几个关系式：</p>
+<script type="math/tex; mode=display">f(\theta_{m+1}) \ge g(\theta_{m+1}|\theta_m) \ge g(\theta_m|\theta_m)=f(\theta_m)</script><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://en.wikipedia.org/wiki/MM_algorithm" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/MM_algorithm</a></p>
 
           
         
@@ -1200,35 +1698,17 @@ $$f(\theta_{m+1}) \ge g(\theta_{m+1}|\theta_m) \ge g(\theta_m|\theta_m)=f(\theta
       
         
           
-            <h2 id="abstract">Abstract</h2>
-<p>标准的policy gradietn每一次更新需要一个样本，本文提出的PPO能够使用minibatch更新。PPO有着TRPO的优势，但是更容易实现，更普遍，更好的采样复杂度。</p>
-<h2 id="introduction">Introduction</h2>
-<h3 id="policy-gradient">Policy Gradient</h3>
-<p>目标函数：<br>
-$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t \right] \tag{1}$$<br>
-约束条件：<br>
-$$\vert d\theta\vert^2 \le \delta \tag{2}$$</p>
-<h3 id="natural-policy-gradient">Natural Policy Gradient</h3>
-<p>目标函数：<br>
-$$ L^{NPG} (\theta) = \hat{\mathbb{E}}_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}_t  \right]\tag{3}$$<br>
-约束条件：<br>
-$$\hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}$$<br>
-等价于<br>
-$$\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{5}$$</p>
-<h3 id="trust-region-policy-optimization">Trust Region Policy Optimization</h3>
-<p>目标函数：<br>
-$$ L^{PG} (\theta) = \hat{\mathbb{E}}_t \left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{old}(a_t|s_t)}\hat{A}_t \right]\tag{6}$$<br>
-约束条件：<br>
-$$\hat{\mathbb{E}}_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{7}$$</p>
-<h3 id="proximal-policy-optimization">Proximal Policy Optimization</h3>
-<p>目标函数：<br>
-$$L^{PPO}(\theta) =\hat{\mathbb{E}}_t \left[L_t^{CLIP+VF+S}(\theta) - \beta\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t) \right] \right] \tag{8}$$<br>
-其中$S$表示entropy bonus。<br>
-$$L_t^{CLIP}(\theta) = \hat{\mathbb{E}}_t \left[\min(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)},\ clip(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)}, 1-\epsilon, 1+\epsilon) \hat{A}_t) \right]\tag{9}$$<br>
-$$L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ} )^2 \tag{10}$$</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://arxiv.org/pdf/1707.06347.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1707.06347.pdf</a><br>
-2.<a href="https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12</a></p>
+            <h2 id="Abstract"><a href="#Abstract" class="headerlink" title="Abstract"></a>Abstract</h2><p>标准的policy gradietn每一次更新需要一个样本，本文提出的PPO能够使用minibatch更新。PPO有着TRPO的优势，但是更容易实现，更普遍，更好的采样复杂度。</p>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><h3 id="Policy-Gradient"><a href="#Policy-Gradient" class="headerlink" title="Policy Gradient"></a>Policy Gradient</h3><p>目标函数：</p>
+<script type="math/tex; mode=display">L^{PG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}\_t \right] \tag{1}</script><p>约束条件：</p>
+<script type="math/tex; mode=display">\vert d\theta\vert^2 \le \delta \tag{2}</script><h3 id="Natural-Policy-Gradient"><a href="#Natural-Policy-Gradient" class="headerlink" title="Natural Policy Gradient"></a>Natural Policy Gradient</h3><p>目标函数：</p>
+<script type="math/tex; mode=display">L^{NPG} (\theta) = \hat{\mathbb{E}}\_t \left[\log \pi_{\theta}(a_t|s_t)\hat{A}\_t  \right]\tag{3}</script><p>约束条件：</p>
+<script type="math/tex; mode=display">\hat{\mathbb{E}}\_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{4}</script><p>等价于</p>
+<script type="math/tex; mode=display">\frac{1}{2} d\theta^T \text{H} d\theta \le \delta \tag{5}</script><h3 id="Trust-Region-Policy-Optimization"><a href="#Trust-Region-Policy-Optimization" class="headerlink" title="Trust Region Policy Optimization"></a>Trust Region Policy Optimization</h3><p>目标函数：</p>
+<script type="math/tex; mode=display">L^{PG} (\theta) = \hat{\mathbb{E}}\_t \left[\frac{\pi_{\theta}(a_t|s_t)}{\pi_{old}(a_t|s_t)}\hat{A}\_t \right]\tag{6}</script><p>约束条件：</p>
+<script type="math/tex; mode=display">\hat{\mathbb{E}}\_t\left[\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t)\right] \right] \tag{7}</script><h3 id="Proximal-Policy-Optimization"><a href="#Proximal-Policy-Optimization" class="headerlink" title="Proximal Policy Optimization"></a>Proximal Policy Optimization</h3><p>目标函数：</p>
+<script type="math/tex; mode=display">L^{PPO}(\theta) =\hat{\mathbb{E}}\_t \left[L_t^{CLIP+VF+S}(\theta) - \beta\text{KL}\left[\pi_{old}(\cdot|s_t), \pi_{\theta}(\cdot|s_t) \right] \right] \tag{8}</script><p>其中$S$表示entropy bonus。</p>
+<script type="math/tex; mode=display">L_t^{CLIP}(\theta) = \hat{\mathbb{E}}\_t \left[\min(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)},\ clip(\frac{\pi_{\theta}(\cdot|s_t)}{\pi_{old}(\cdot|s_t)}, 1-\epsilon, 1+\epsilon) \hat{A}\_t) \right]\tag{9}</script><script type="math/tex; mode=display">L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ} )^2 \tag{10}</script><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://arxiv.org/pdf/1707.06347.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1707.06347.pdf</a><br>2.<a href="https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-proximal-policy-optimization-ppo-explained-77f014ec3f12</a></p>
 
           
         
@@ -1388,8 +1868,7 @@ $$L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ} )^2 \tag{10}$$</p>
       
         
           
-            <h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://tangxman.github.io/2015/11/19/optimize-newton/" target="_blank" rel="noopener">https://tangxman.github.io/2015/11/19/optimize-newton/</a></p>
+            <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://tangxman.github.io/2015/11/19/optimize-newton/" target="_blank" rel="noopener">https://tangxman.github.io/2015/11/19/optimize-newton/</a></p>
 
           
         
@@ -1549,608 +2028,7 @@ $$L_t^{VF} = (V_{\theta}(s_t) - V_t^{targ} )^2 \tag{10}$$</p>
       
         
           
-            <h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://zhuanlan.zhihu.com/p/27644403" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/27644403</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/23/conjugate-gradient/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/23/conjugate-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">conjugate gradient</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-23 14:49:28" itemprop="dateCreated datePublished" datetime="2019-09-23T14:49:28+08:00">2019-09-23</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-09-27 15:57:21" itemprop="dateModified" datetime="2019-09-27T15:57:21+08:00">2019-09-27</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/凸优化/" itemprop="url" rel="index"><span itemprop="name">凸优化</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="简介">简介</h2>
-<p>共轭梯度(conjugate method)方法是一种<a href="https://mxxhcm.github.io/2019/09/23/%E8%BF%AD%E4%BB%A3%E6%B3%95/">迭代法</a>。<br>
-共轭梯度收敛的快慢取决于系数矩阵谱分解的情况。特征集集中，系数矩阵的条件数很小，收敛的就快。</p>
-<h2 id="核心">核心</h2>
-<p>解线性对称正定方程组（$A$是对称正定矩阵）：<br>
-$$Ax=b$$<br>
-可以转化为<br>
-$$\min_x f(x) = \frac{1}{2} x^T Ax - b^T x$$<br>
-因为：<br>
-$$f’(x) = Ax-b$$</p>
-<h2 id="和其他迭代法的对比">和其他迭代法的对比</h2>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://tangxman.github.io/2015/11/18/optimize-gradient/" target="_blank" rel="noopener">https://tangxman.github.io/2015/11/18/optimize-gradient/</a><br>
-2.<a href="https://www.zhihu.com/question/27157047" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047</a><br>
-3.<a href="https://www.zhihu.com/question/27157047/answer/121950241" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047/answer/121950241</a><br>
-4.<a href="https://www.zhihu.com/question/27157047/answer/171336970" target="_blank" rel="noopener">https://www.zhihu.com/question/27157047/answer/171336970</a><br>
-5.<a href="https://blog.csdn.net/lusongno1/article/details/78550803" target="_blank" rel="noopener">https://blog.csdn.net/lusongno1/article/details/78550803</a><br>
-6.<a href="https://medium.com/@jonathan_hui/rl-conjugate-gradient-5a644459137a" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-conjugate-gradient-5a644459137a</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/18/asymptotically-efficient-渐进有效性/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/18/asymptotically-efficient-渐进有效性/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">asymptotically efficient 渐进有效性</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-18 14:55:50" itemprop="dateCreated datePublished" datetime="2019-09-18T14:55:50+08:00">2019-09-18</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-26 16:35:02" itemprop="dateModified" datetime="2019-10-26T16:35:02+08:00">2019-10-26</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论与统计/" itemprop="url" rel="index"><span itemprop="name">概率论与统计</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="无偏估计的方差下界-cramer-rao-bound">无偏估计的方差下界 cramer-rao bound</h2>
-<p>理论上可以证明，任何无偏估计的方差都有一个下界，这个下界叫做cramer-rao bound。具体的证明好复杂，这里只是简单说一下。如果证明算法无偏估计量的方差的下界是cramer-rao bound，说明这个算法的下界已经没有优化了。。。这个下界其实很多时候不知道什么时候能取到，到时能给我们一定的信息，就像期望一样。</p>
-<p>它的最简单形式是：任何无偏估计的方差至少大于fisher information的倒数。</p>
-<h2 id="efficient">Efficient</h2>
-<p>Efficient说的是在所有的无偏估计方法中，如果某种方法中无偏估计的方差等于cramer-rao bound，那么这个方法就是efficient。（应该是这样子吧。。。）</p>
-<h2 id="asymptotically">Asymptotically</h2>
-<p>在样本有效的情况下，统计量的方差不好计算。但是当样本不断增大时，方差会逐渐接近一个定值。用asymptotically修饰不断增大趋向于无穷的样本数量。</p>
-<h2 id="asymptotically-efficient">Asymptotically  Efficient</h2>
-<p>Asymptotically efficient指得是某种方法在小样本时可能不是efficient的，但是随着样本数量不断增加，变成了efficient的，这种方式就是asymptotically efficient的。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>渐进有效性<br>
-1.<a href="https://www.zhihu.com/question/285834087/answer/446120288" target="_blank" rel="noopener">https://www.zhihu.com/question/285834087/answer/446120288</a><br>
-2.<a href="https://bbs.pinggu.org/thread-2139008-1-1.html" target="_blank" rel="noopener">https://bbs.pinggu.org/thread-2139008-1-1.html</a><br>
-3.<a href="https://www.zhihu.com/question/28908532/answer/254617423" target="_blank" rel="noopener">https://www.zhihu.com/question/28908532/answer/254617423</a><br>
-4.<a href="https://en.wikipedia.org/wiki/Efficiency_(statistics)#Asymptotic_efficiency" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Efficiency_(statistics)#Asymptotic_efficiency</a><br>
-5.<a href="https://cs.stackexchange.com/questions/69819/what-does-it-mean-by-saying-asymptotically-more-efficient" target="_blank" rel="noopener">https://cs.stackexchange.com/questions/69819/what-does-it-mean-by-saying-asymptotically-more-efficient</a><br>
-cramer-rao bound<br>
-6.<a href="https://www.zhihu.com/question/24710773/answer/117796031" target="_blank" rel="noopener">https://www.zhihu.com/question/24710773/answer/117796031</a><br>
-7.<a href="http://www2.math.ou.edu/~kmartin/stats/cramer-rao.pdf" target="_blank" rel="noopener">http://www2.math.ou.edu/~kmartin/stats/cramer-rao.pdf</a><br>
-8.<a href="https://www.zhihu.com/question/311561435/answer/607730638" target="_blank" rel="noopener">https://www.zhihu.com/question/311561435/answer/607730638</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/17/C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/17/C/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/11/index.html">C</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-17 17:12:35" itemprop="dateCreated datePublished" datetime="2019-09-17T17:12:35+08:00">2019-09-17</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-11-13 18:04:20" itemprop="dateModified" datetime="2019-11-13T18:04:20+08:00">2019-11-13</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="获得数组长度">获得数组长度</h2>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a[] = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>&#125;;</span><br><span class="line">l = <span class="keyword">sizeof</span>(a)/<span class="keyword">sizeof</span>(<span class="keyword">int</span>);</span><br></pre></td></tr></table></figure>
-<h2 id="printf输出格式">printf输出格式</h2>
-<p>%d  有符号十进制整数(int)<br>
-%ld, %Ld    长整形数据(long)<br>
-%i  有符号十进制数，和%d一样<br>
-%u  无符号十进制整数(unsigned int)<br>
-%lu, %Lu    无符号十进制长整形数据(unsigned long)<br>
-%f  单精度浮点数(float)<br>
-%c  单字符(char)<br>
-%o  无符号八进制整数<br>
-%x(%X) 十六进制无符号整数</p>
-<h2 id="c类型字符串数组">c类型字符串数组</h2>
-<ol>
-<li>导包</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br></pre></td></tr></table></figure>
-<ol start="2">
-<li>完整字符串复制</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">strcpy</span>(des, src);</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>部分字符串复制</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">strncpy</span>(des, src+n, len);</span><br></pre></td></tr></table></figure>
-<ol start="4">
-<li>结束符</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sub[len] = <span class="string">'\0'</span>;</span><br></pre></td></tr></table></figure>
-<ol start="5">
-<li>new字符串数组</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *str = <span class="keyword">new</span> <span class="keyword">char</span>[<span class="number">100</span>];</span><br></pre></td></tr></table></figure>
-<ol start="6">
-<li>delete字符串数组</li>
-</ol>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> []str;</span><br></pre></td></tr></table></figure>
-<h2 id="生成随机数">生成随机数</h2>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">srand(time(<span class="literal">NULL</span>));   <span class="comment">// Initialization, should only be called once.</span></span><br><span class="line"><span class="keyword">int</span> r = rand();      <span class="comment">// Returns a pseudo-random integer between 0 and RAND_MAX.</span></span><br></pre></td></tr></table></figure>
-<h2 id="计算函数运行时间">计算函数运行时间</h2>
-<h3 id="计算实际运行时间">计算实际运行时间</h3>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstdlib&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;ctime&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//struct timeval</span></span><br><span class="line"><span class="comment">//&#123;</span></span><br><span class="line"><span class="comment">//     long tv_sec;//秒域</span></span><br><span class="line"><span class="comment">//     long tv_usec;//微秒域</span></span><br><span class="line"><span class="comment">//&#125;</span></span><br><span class="line"><span class="comment">//int getimeofday(struct timeval* tv,NULL);</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">timeval</span>  <span class="title">tv1</span>, <span class="title">tv2</span>;</span></span><br><span class="line">    gettimeofday(&amp;tv1, <span class="literal">NULL</span>);</span><br><span class="line">    sleep(<span class="number">2</span>);</span><br><span class="line">    gettimeofday(&amp;tv2, <span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">printf</span> (<span class="string">"Total time = %f seconds\n"</span>,</span><br><span class="line">         (<span class="keyword">double</span>) (tv2.tv_usec - tv1.tv_usec) / <span class="number">1000000</span> +</span><br><span class="line">         (<span class="keyword">double</span>) (tv2.tv_sec - tv1.tv_sec));</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="计算cpu运行时间">计算cpu运行时间</h3>
-<p>clock()返回的是OS花了多少时间运行当前的进程。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;ctime&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">clock_t</span> start, end;</span><br><span class="line">    start = clock();</span><br><span class="line">    time.sleep(<span class="number">10</span>);</span><br><span class="line">    end = clock()</span><br><span class="line">    print(<span class="string">"%f"</span>, (<span class="keyword">double</span>)(end-start)/CLOCK_PER_SEC);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/822323/how-to-generate-a-random-int-in-c" target="_blank" rel="noopener">https://stackoverflow.com/questions/822323/how-to-generate-a-random-int-in-c</a><br>
-2.<a href="https://blog.csdn.net/zhangwei_zone/article/details/11219757" target="_blank" rel="noopener">https://blog.csdn.net/zhangwei_zone/article/details/11219757</a><br>
-3.<a href="https://stackoverflow.com/questions/5248915/execution-time-of-c-program" target="_blank" rel="noopener">https://stackoverflow.com/questions/5248915/execution-time-of-c-program</a></p>
+            <h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://zhuanlan.zhihu.com/p/27644403" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/27644403</a></p>
 
           
         
@@ -2196,7 +2074,7 @@ cramer-rao bound<br>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/10/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="extend next" rel="next" href="/page/12/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/10/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/10/">10</a><span class="page-number current">11</span><a class="page-number" href="/page/12/">12</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><a class="extend next" rel="next" href="/page/12/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2241,7 +2119,7 @@ cramer-rao bound<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">300</span>
+                    <span class="site-state-item-count">303</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2306,7 +2184,11 @@ cramer-rao bound<br>
                     
                       
                     
-                    <span class="site-state-item-count">26</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">28</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3075,7 +2957,9 @@ cramer-rao bound<br>
                     
                       
                     
-                    <span class="site-state-item-count">378</span>
+                      
+                    
+                    <span class="site-state-item-count">379</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3330,13 +3214,13 @@ cramer-rao bound<br>
       
     
       
+    
+      
+    
+      
+    
+      
         
-      
-    
-      
-    
-      
-    
       
     
       
