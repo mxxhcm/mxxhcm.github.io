@@ -2,7 +2,7 @@
 title: assamble MIPS
 date: 2018-10-24 20:42:37
 tags:
-- 汇编语言
+- 汇编
 - MIPS
 categories: 汇编
 ---
@@ -31,7 +31,7 @@ t0-t9就随用随操作。
 ## MIPS Register集合
 MISP R200 CPU总共有32个寄存器，其中31个都是通用寄存器，可以用来存储任何指令，剩下的一个，叫做register zero，任何时候存放的总是0。
 尽管理论上任意一个register都可以用作任何目的。MIPS程序员通常有一个默认的规定：
-|symbolic name| 序号| 用途
+|symbolic name| 序号| 用途|
 |:--:|:--:|:--:|
 |zero| 0| 一直存放的都是常数0。|
 |at| 1|保留|
@@ -47,6 +47,7 @@ MISP R200 CPU总共有32个寄存器，其中31个都是通用寄存器，可以
 
 ## SPIM环境系统调用
 |service | code |参数|结果|
+|:--:|:--:|:--:|:--:|
 |打印int| 1| $a0|在console打印出int|
 |打印float| 2| $f12|在console打印出float|
 |打印double| 3| $f12|在console打印出double|
@@ -101,9 +102,12 @@ move $t2, $t1
 
 ### 算术指令
 - mul des, src1, src2   将寄存器src1和寄存器或者数值src2的结果存放在寄存器des
+- mulo des, src1, src2  有溢出
 - mult(u) src1, reg2    将寄存器src1和寄存器reg2的结果存放在lo和寄存器hi上。
 - div src1, reg2
 - div des, sr1, src2
+- add(u) des, src1, src1  
+
 
 ### 比较指令
 
@@ -159,7 +163,9 @@ move $t2, $t1
 
 
 ## 参考文献
+MIPS教程
 1.https://sites.cs.ucsb.edu/~franklin/64/lectures/mipsassemblytutorial.pdf
-2.https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf
-3.http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html
+MIPS汇编指令以及对应的机器代码
+2.http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html
+3.https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf
 4.https://stackoverflow.com/questions/7748769/mips-programming-how-to-call-a-function-from-a-separate-file
