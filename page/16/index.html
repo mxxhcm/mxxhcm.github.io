@@ -327,6 +327,1014 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">reinforcement learning an introduction 第7章笔记</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-30 09:59:50" itemprop="dateCreated datePublished" datetime="2019-07-30T09:59:50+08:00">2019-07-30</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-06 21:59:10" itemprop="dateModified" datetime="2019-10-06T21:59:10+08:00">2019-10-06</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="n-step-bootstrapping">n-step Bootstrapping</h2>
+<p>这章要介绍的n-step TD方法，将MC和one-step TD用一个统一的框架整合了起来。在一个任务中，两种方法可以无缝切换。n-step方法生成了一系列方法，MC在一头，one-step在另一头。最好的方法往往不是MC也不是one-step TD。One-step TD每隔一个timestep进行bootstrapping，在许多需要及时更新变化的问题，这种方法很有用，但是一般情况下，经历了长时间的稳定变化之后，bootstrap的效果会更好。N-step TD就是将one-step TD方法中time interval的one改成了n。N-step方法的idea和eligibility traces很像，eligibility traces同时使用多个不同的time intervals进行bootstarp。</p>
+<h2 id="n-step-td-prediction">n-step TD Prediction</h2>
+<p>对于使用采样进行policy evaluation的方法来说，不断使用policy $\pi$生成sample episodes，然后估计$v_{\pi}$。MC方法用的是每一个episode中每个state的return进行更新，即无穷步reward之和。TD方法使用每一个state执行完某一个action之后的下一个reward加上下一个state的估计值进行更新。N-step方法使用的是每一个state接下来n步的reward之和加上第n步之后的state的估计值。相应的backup diagram如下所示：<br>
+<img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n_step_backup_diagram.png" alt="n_step_diagram"></p>
+<p>n-step方法还是属于TD方法，因为n-step的更新还是基于时间维度上不同estimate的估计进行的。</p>
+<blockquote>
+<p>n-step updates are still TD methods because they still chagne an erlier estimate based on how it differs from a later estimate. Now the later estimate is not one step later, but n steps later。</p>
+</blockquote>
+<p>正式的，假设$S_t$的estimated value是基于state-reward sequence $S_t, R_{t+1}, S_{t+1}, R_{t+2}, \cdots, R_T,S_T$得到的。<br>
+MC方法更新基于completer return：<br>
+$$G_T = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \cdots + \gamma^{T-t-1}R_T \tag{1}$$<br>
+one-step TD更新基于one-step return：<br>
+$$G_{t:t+1} = R_{t+1}+ \gamma V_t(S_{t+1}) \tag{2}$$<br>
+two-step TD更新基于two-step return：<br>
+$$G_{t:t+2} = R_{t+1}+ \gamma V_t(S_{t+1}) + \gamma^2 V_{t+1}(S_{t+2}) \tag{3}$$<br>
+n-step TD更新基于n-step return：<br>
+$$G_{t:t+n} = R_{t+1}+ \gamma V_t(S_{t+1}) + \gamma^2 V_{t+1}(S_{t+2}) +\cdots + \gamma^{n-1} R_{t+n} + \gamma^n V_{t+n-1}(S_{t+n}), n\ge1, 0\le t\le T-n \tag{4}$$<br>
+所有的n-step方法都可以看成使用n steps的rewards之和加上$V_{t+n-1}(S_{t+n})$近似其余项的rewards近似return。如果$t+n \ge T$时，$T$步以后的reward以及estimated value当做$0$，相当于定义$t+n \ge T$时，$G_{t:t+1} = G_t$。<br>
+当$n &gt; 1$时，只有在$t+n$时刻之后，$R_{t+n},S_{t+n}$也是已知的，所以不能使用real time的算法。使用$t+n-1$时刻的$V$近似估计$V_{t+n-1}(S_{t+n})$，将n-step return当做n-step TD的target，得到的更新公式如下：<br>
+$$V_{t+n}(S_t) = V_{t+n-1} (S_t) + \gamma(G_{t:t+n} - V_{t+n-1}(S_{t}))\tag{5}$$<br>
+当更新$V_{t+n}(S_t)$时，所有其他states的$V$不变，用公式来表示是$V_{t+n}(s) = V_{t+n-1}(s), \forall s\neq S_t$。在每个episode的前$n-1$步中，不进行任何更新，为了弥补这几步，在每个episode结束以后，即到达terminal state之后，仍然继续进行更新，直到下一个episode开始之前，依然进行updates。完整的n-step TD算法如下：</p>
+<h3 id="n-step-td-prediction伪代码">n-step TD prediction伪代码</h3>
+<p>n-step TD估计$V\approx v_{\pi}$<br>
+输入：一个policy $\pi$<br>
+算法参数：step size $\alpha \in (0, 1]$，正整数$n$<br>
+随机初始化$V(s), \forall s\in S$<br>
+Loop for each episode<br>
+$\qquad$初始化 $S_0 \neq terminal$<br>
+$\qquad$$T\leftarrow \infty$<br>
+$\qquad$Loop for $t=0, 1, 2, \cdots:$<br>
+$\qquad$ IF $t\lt T$, THEN<br>
+$\qquad\qquad$ 根据$\pi(\cdot|S_t)$执行action<br>
+$\qquad\qquad$ 接收并记录$R_{t+1}, S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$<br>
+$\qquad$ END IF<br>
+$\qquad$ $\tau \leftarrow t - n + 1, \tau$是当前更新的时间<br>
+$\qquad$ If $\tau \ge 0$, then<br>
+$\qquad\qquad$ $G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>
+$\qquad\qquad$ 如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$<br>
+$\qquad\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$<br>
+$\qquad$ End if<br>
+Until $\tau = T-1$<br>
+n-step return有一个重要的属性叫做error reduction property，在最坏的情况下，n-step returns的期望也是一个比$V_{t+n-1}$更好的估计：<br>
+$$max_{s}|\mathbb{E}_{\pi}\left[G_{t:t+n}|S_t = s\right]- v_{\pi}(s)| \le \gamma^n max_s | V_{t+n-1}(s)-v_{\pi}(s)| \tag{6}$$<br>
+所以所有的n-step TD方法都可以收敛到真实值，MC和one-step TD是其中的一种特殊情况。</p>
+<h2 id="n-step-sarsa">n-step Sarsa</h2>
+<p>介绍完了prediction算法，接下来要介绍的就是control算法了。因为TD方法是model-free的，所以，还是要估计action value function。上一章介绍了one-step Sarsa，这一章自然介绍一下n-step Sarsa。n-step Sarsa的backup图如下所示：<br>
+<img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n_step_sarsa.png" alt="n_step_sarsa"><br>
+就是将n-step TD的state换成state-action就行了。定义action value的n-step returns如下：<br>
+$$G_{t:t+n} = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+1} + \cdots + \gamma^{n-1} R_{t+n} + \gamma^n Q_{t+n-1}(S_{t+n},A_{t+n}), n\ge 1, 0\le t\le T-n\tag{7}$$<br>
+如果$t+n\ge T$，那么$G_{t:t+n} = G_t$。<br>
+完整的$n$-step Sarsa如下所示：</p>
+<h3 id="n-step-sarsa算法伪代码">n-step Sarsa算法伪代码</h3>
+<p>n-step Sarsa算法，估计$Q\approx q_{*}$<br>
+随机初始化$Q(s,a),\forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>
+算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq$ terminal<br>
+$\qquad$ 选择action $A_0= \pi(\cdot| S_0)$<br>
+$\qquad$ $T\leftarrow \infty$<br>
+$\qquad$ Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$ If $t\lt T$,then:<br>
+$\qquad\qquad\qquad$ 采取action $A_t$，<br>
+$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>
+$\qquad\qquad$ $T\leftarrow t+1$<br>
+$\qquad\qquad$ 否则选择$A_{t+1} = \pi(\cdot|S_{t+1})$<br>
+$\qquad\qquad$End if<br>
+$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>
+$\qquad\qquad$ If $\tau \ge 0$<br>
+$\qquad\qquad\qquad$ $G\leftarrow \sum_{i=\tau +1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>
+$\qquad\qquad\qquad$ If $\tau+n \le T$,then<br>
+$\qquad\qquad\qquad$ $G\leftarrow G+\gamma^n Q(S_{\tau+n}, A_{\tau+n})$<br>
+$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>
+$\qquad\qquad$End if<br>
+$\qquad$ Until $\tau =T-1$</p>
+<h3 id="n-step-expected-sarsa">n-step Expected Sarsa</h3>
+<p>n-step Expected Sarsa的n-step return定义为：<br>
+$$G_{t:t+n} = R_{t+1} +\gamma R_{t+1} + \cdots +\gamma^{n-1} R_{t+n} + \gamma^n \bar{V}_{t+n-1}(S_{t+n}) \tag{8}$$<br>
+其中$\bar{V}_t(s) = \sum_{a}\pi(a|s) Q_t(s,a), \forall s\in S$<br>
+如果$s$是terminal，它的期望是$0$。</p>
+<h2 id="n-step-off-policy-learning">n-step Off-policy Learning</h2>
+<p>Off-policy算法使用behaviour policy采样的内容得到target policy的value function，但是需要使用他们在不同policy下采取某个action的relavtive probability。在$n$-step方法中，我们感兴趣的只有对应的$n$个actions，所以最简单的off-policy $n$-step TD算法，$t$时刻的更新可以使用importance sampling ratio $\rho_{t:t+n-1}$：<br>
+$$V_{t+n}(S_t) = V_{t+n-1} S_t + \alpha \rho_{t:t+n-1}\left[G_{t:t+n} - V_{t+n-1}(S_t)\right], 0\le t\le T \tag{9}$$<br>
+$\rho_{t:t+n-}$计算的是从$A_t$到$A_{t+n-1}$这$n$个action在behaviour policy和target policy下的relative probability，计算公式如下：<br>
+$$\rho_{t:h} = \prod_{k=t}^{min(h, T-1)} \frac{\pi(A_k|S_k)}{b(A_k|S_k)} \tag{10}$$<br>
+如果$\pi(A_k|S_k) = 0$，那么对应的$n$-step return对应的权重就应该是$0$，如果policy $pi$下选中某个action的概率很大，那么对应的return就应该比$b$下的权重大一些。因为在$b$下出现的概率下，很少出现，所以权重就该大一些啊。如果是on-policy的话，importance sampling ratio一直是$1$，所以公式$9$可以将on-policy和off-policy的$n$-step TD概括起来。同样的，$n$-step的Sarsa的更新公式也可以换成：<br>
+$$Q_{t+n}(S_t,A_t) = Q_{t+n-1}(S_t,A_t) + \alpha \rho_{t+1:t+n}\left[G_{t:t+n} - Q_{t+n-1} (S_t,A_t)\right], 0\le t\le T \tag{11}$$<br>
+公式$11$中的importance sampling ratio要比公式$9$中计算的晚一步。这是因为我们是在更新一个state-action pair，我们并不关心有多大的概率选中这个action，我们现在已经选中了它，importance sampling只是用于后续actions的选择。这个解释也让我理解了为什么Q-learning和Sarsa为什么没有使用importance sampling。完整的伪代码如下。</p>
+<h3 id="off-policy-n-step-sarsa-估计-q">Off-policy $n$-step Sarsa 估计$Q$</h3>
+<p>输入：任意的behaviour policy $b$, $b(a|s)\gt 0, \forall s\in S, a\in A$<br>
+随机初始化$Q(s,a), \forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的greedy policy<br>
+算法参数：步长$\alpha \in (0,1]$，正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq terminal$<br>
+$\qquad$选择并存储$A_0 \sim b(\cdot|S_0)$<br>
+$\qquad T\leftarrow \infty$<br>
+$\qquad$Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$IF $t\lt T$,then<br>
+$\qquad\qquad\qquad$执行action $A_t$，接收$R_{t+1}, S_{t+1}$<br>
+$\qquad\qquad\qquad$如果$S_{t+1}$是terminal，那么$T\leftarrow t+1$<br>
+$\qquad\qquad\qquad$否则选择并记录$A_{t+1} \sim b(\cdot| S_{t+1})$<br>
+$\qquad\qquad$END IF<br>
+$\qquad\qquad \tau \leftarrow t-n +1$  (加$1$表示下标是从$0$开始的)<br>
+$\qquad\qquad$ IF $\tau \ge 0$<br>
+$\qquad\qquad\qquad \rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n,T)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n}$，这里是不是写成了Expected Sarsa公式）<br>
+$\qquad\qquad\qquad G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)}\gamma^{i-\tau -1}R_i$ （计算$n$个reward, $R_{\tau+1}+\cdots+R_{\tau+n}$）<br>
+$\qquad\qquad\qquad$如果$\tau+n \lt T$，$G\leftarrow G + \gamma^n Q(S_{\tau+n},A_{\tau+n})$ （因为没有$Q(S_T,A_T)$）<br>
+$\qquad\qquad\qquad Q(S_{\tau}, A_{\tau}) \leftarrow Q(S_{\tau}, A_{\tau})+\alpha \rho \left[G-Q(S_{\tau}, A_{\tau})\right]$（计算$Q(S_{\tau+n},A_{\tau+n})$）<br>
+$\qquad\qquad\qquad$确保$\pi$是相对于$Q$的greedy policy<br>
+$\qquad\qquad$ END IF<br>
+$\qquad$Until $\tau = T-1$<br>
+上面介绍的算法是$n$-step的Sarsa，计算importance ratio使用的$\rho_{t+1:t+n}$，$n$-step的Expected Sarsa计算importance ratio使用的是$\rho_{t+1:t+n-1}$，因为在估计$\bar{V}_{t+n-1}$时候，考虑到了last state中所有的actions。</p>
+<h2 id="n-step-tree-backup算法">$n$-step Tree Backup算法</h2>
+<p>这一章介绍的是不适用importance sampling的off-policy算法，叫做tree-backup algorithm。如下图所示，是一个$3$-step的tree-backup diaqgram。<br>
+沿着中间这条路走，有三个sample states和rewards以及两个sample actions。在旁边的是没有被选中的actions。对于这些没有选中的actions，因为没有采样，所以使用bootstrap计算target value。因为它的backup diagram有点像tree，所以就叫做tree backup upadte。或者更精确的说，backup update使用的是所用tree的叶子结点action value的估计值进行计算的。非叶子节点的action对应的是采样的action，不参与更新，所有叶子节点对于target的贡献都有一个权重正比于它在target policy下发生的概率。在$S_{t+1}$处的除了$A_{t+1}$之外所有action权重是$\pi(a|S_{t+1})$，$A_{t+1}$一点贡献没有；在$S_{t+2}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(a’|S_{t+2})$；在$S_{t+3}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(A_{t+2}|S_{t+2})\pi(a’’|S_{t+3})$<br>
+one-step Tree backup 算法其实就是Expected Sarsa：<br>
+$$G_{t:t+1} = R_{t+1} + \gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1 \tag{12}$$<br>
+two-step Tree backup算法return计算公式如下：<br>
+\begin{align*}<br>
+G_{t:t+2} &amp;= R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})(R_{t+2} + \sum_{a} \pi(a|S_{t+2})Q(a, S_{t+2})\\<br>
+&amp;=R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})G_{t+1:t+2}, t \lt T-2<br>
+\end{align*}<br>
+下面的形式给出了tree-backup的递归形式如下：<br>
+$$G_{t:t+n} = R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a,S_{t+1}) + \gamma\pi(A_{t+1}|S_{t+1}) G_{t+1:t+n}, n\ge 2, t\lt T-1, \tag{13}$$<br>
+当$n=1$时除了$G_{T-1:t+n} = R_T$，其他的和式子$12$一样。使用这个新的target代替$n$-step Sarsa中的target就可以得到$n$-step tree backup 算法。<br>
+完整的算法如下所示：</p>
+<h3 id="n-step-tree-backup-算法">$n$-step Tree Backup 算法</h3>
+<p>随机初始化$Q(s,a),\forall s\in S, a\in A$<br>
+初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>
+算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>
+Loop for each episode<br>
+$\qquad$初始化$S_0\neq$ terminal<br>
+$\qquad$ 根据$S_0$随机选择action $A_0$<br>
+$\qquad$ $T\leftarrow \infty$<br>
+$\qquad$ Loop for $t=0,1,2,\cdots$<br>
+$\qquad\qquad$ If $t\lt T$,then:<br>
+$\qquad\qquad\qquad$ 采取action $A_t$，<br>
+$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>
+$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>
+$\qquad\qquad$ $T\leftarrow t+1$<br>
+$\qquad\qquad$ 根据$S_{t+1}$随机选择action $A_{t+1}$<br>
+$\qquad\qquad$End IF<br>
+$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>
+$\qquad\qquad\qquad$ IF $\tau+n\ge T$ then<br>
+$\qquad\qquad\qquad\qquad G\leftarrow R_T$<br>
+$\qquad\qquad\qquad$ ELSE<br>
+$\qquad\qquad\qquad\qquad G\leftarrow R_{t+1}+\gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1})$<br>
+$\qquad\qquad\qquad$ END IF<br>
+$\qquad\qquad\qquad$Loop for $k = min(t, T-1)$ down $\tau+1$<br>
+$\qquad\qquad\qquad G\leftarrow R_k+\gamma^n\sum_{a\neq A_k}\pi(a|S_k)Q(a, S_k) + \gamma \pi(A_k|S_k) G$<br>
+$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>
+$\qquad\qquad$End if<br>
+$\qquad$ Until $\tau =T-1$</p>
+<h2 id="n-step-q-sigma">$n$-step $Q(\sigma)$</h2>
+<p>现在已经讲了$n$-step Sarsa，$n$-step Expected Sarsa，$n$-step Tree Backup，$4$-step的一个backup diagram如下所示。它们其实有很多共同的特性，可以用一个框架把它们统一起来。<br>
+具体的算法就不细说了。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《reinforcement learning an introduction》第二版<br>
+2.<a href="https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/24/linear-algebra-complexity-of-A-LU/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/24/linear-algebra-complexity-of-A-LU/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">linear algebra complexity of A=LU</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-24 11:54:58" itemprop="dateCreated datePublished" datetime="2019-07-24T11:54:58+08:00">2019-07-24</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-24 11:55:28" itemprop="dateModified" datetime="2019-10-24T11:55:28+08:00">2019-10-24</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/16/maddpg/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/16/maddpg/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">maddpg</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-16 10:31:58" itemprop="dateCreated datePublished" datetime="2019-07-16T10:31:58+08:00">2019-07-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-02 16:05:52" itemprop="dateModified" datetime="2019-12-02T16:05:52+08:00">2019-12-02</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="代码解析">代码解析</h2>
+<h2 id="参考文献">参考文献</h2>
+<ol>
+<li></li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/16/gradient-method-deterministic-policy-gradient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/07/16/gradient-method-deterministic-policy-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">policy gradient</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-07-16 10:31:55" itemprop="dateCreated datePublished" datetime="2019-07-16T10:31:55+08:00">2019-07-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-07 15:58:09" itemprop="dateModified" datetime="2019-10-07T15:58:09+08:00">2019-10-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="简介">简介</h2>
+<p>本文主要介绍了deterministic policy gradient算法。它属于policy gradient的一种，只不过是将stochastic policy改成了deterministic policy，和stochastic policy一样，deterministic policy也有相应的deterministic policy gradient theorem。<br>
+实际上deterministic policy gradient是action value function的gradient的期望，这让deterministic policy gradient比stochastic policy gradient要更efficiently。还介绍了保证足够的exploration的off-policy actor-critic算法学习determinitic target policy。</p>
+<h2 id="stochastic-policy-gradient-vs-deterministic-policy-gradiet">stochastic policy gradient vs deterministic policy gradiet</h2>
+<h3 id="sotchastic-policy-gradient">sotchastic policy gradient</h3>
+<p>Policy gradient的basic idea是用参数化的probability distribution $\pi_\theta(a|s) = \mathbb{P}\left[a|s,\theta\right]$表示policy，在state $s$处根据$\theta$表示的policy $\pi$随机选择action $a$。Policy gradient通过对policy 进行采样，根据stochastic policy gradient theorem近似计算$J$相对于参数$\theta$的累计梯度然后调整policy的参数$\theta$朝着使$J$更大的方向移动。</p>
+<h3 id="deterministic-policy-gradient">deterministic policy gradient</h3>
+<p>用$a=\mu_\theta(s)$表示deterministic policy，根据stochastic policy gradient theorm，很容易想到是否有deterministic policy gardient theorem，即朝着使得cumulative reward更大的方向更新policy的参数。<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">deterministic policy gradient</a>证明了deterministic policy gradient是存在的，可以使用action value function的梯度近似得到。在某些情况下，deterministic policy gradient还可以看成stochastic policy gradient的特殊情况。</p>
+<h3 id="spg-vs-dpg">spg vs dpg</h3>
+<p>spg和dpg的区别和联系</p>
+<ol>
+<li>spg和dpg的第一个显著区别就是积分的space是不同的。Spg中policy gradient是在action和state spaces上进行积分的，而dpg的policy gradient仅仅在state space上进行积分。因此，计算spg需要更多samples，尤其是action spaces维度很高的情况下。</li>
+<li>为了充分explore整个state和action space，需要使用stochastic policy。而在使用deterministic policy时，为了确保能够持续的进行explore，就需要使用off-policy的算法了，behaviour policy使用stochastic policy进行采样，target policy是deterministic policy。作者使用deterministic policy gradient推导出了一个off-policy的actor-critic方法，使用可导的function approximators估计action values，然后利用这个function的梯度更新policy的参数，同时为了确保policy gradient没有bias，使用而来compatible function。</li>
+</ol>
+<h2 id="stochastic-policy-gradient-theorem">stochastic policy gradient theorem</h2>
+<p>详细的介绍可以查看<a href="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/">policy gradient</a>。spg的基本想法就是朝着$J$的梯度方向更新policy的参数。对$J(\pi_{\theta})$对$\theta$求导，得到：<br>
+\begin{align*}<br>
+\nabla_{\theta} J(\pi_{\theta})&amp;=\int_S\rho^{\pi} (s) \int_A\nabla_\theta\pi_\theta (a|s)Q^{\pi} (s,a) dads \tag{1}\\<br>
+&amp;=\mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_\theta}\left[\nabla_\theta \log\pi_\theta(a|s)Q^{\pi} (s,a)\right] \tag{2}<br>
+\end{align*}<br>
+这就是policy gradient theorem。从这个theorem中，我们得到了一个有用的信息，state distribution $\rho\pi(s)$取决于policy parameters。我们计算$J$关于$\theta$的梯度时，需要计算statedistribution，很难实现，policy gradient theorem消去了对$\rho^{\pi} $的依赖，具有很重要的实用价值。同时利用log derivative trick将performance gradient的估计变成了一个期望，可以通过sampling估计。这个方法中需要使用$Q^{\pi} (s,a)$，估计$Q$不同方法就是不同的算法。比如最简单的使用sample return $G_t$估计$Q^{\pi} (s, a)$，就是REINFORCE算法。</p>
+<h2 id="stochastic-actor-critic-算法">stochastic actor-critic 算法</h2>
+<p>Actor-critic是一个基于policy gradient theorem的结构，包含policy和value function两个部分。Actors通过stochastic gradient ascent调整stochastic policy $\pi_\theta(s)$的参数$\theta$；同时critic用一个action-value function $Q^w (s,a)$近似$Q^\pi (s,a)$, $w$是function approximation的参数。Critic一般使用policy evaluation方法进行学习，比如使用td和mc等估计action value function $Q^w (s,a)\approx Q^\pi (s,a)$。一般来说，使用$Q^w (s,a)$代替真实的$Q^\pi (s,a)$会引入bias，但是，如果function approximator是compatible，即满足以下两个条件，就会是无偏的：</p>
+<ol>
+<li>$Q^w (s,a) = \nabla_\theta \log\pi_\theta(a|s)^T w$</li>
+<li>参数$w$最小化mse: $\epsilon^2 (w)=\mathbb{E}_{s\sim \rho^\pi ,a\sim \pi_\theta}\left[(Q^w (s, a)-Q^\pi (s,a))^2 \right]$，这样就没有bias了，即：<br>
+$$\nabla_\theta J(\pi_\theta)=\mathbb{E}_{s\sim \rho^\pi, a\sim \pi_\theta}\left[\nabla_\theta \log\pi_\theta(a|s)Q^w (s,a)\right] \tag{3}$$</li>
+</ol>
+<p>直观上来说，条件1说的是compatible function approximators是stochastic policy梯度$\nabla_\theta \log\pi_\theta(a|s)$的线性features，条件2需要满足$Q^w (s,a)$是$Q^\pi (s,a)$的linear regression soulution。在实际应用中，条件2会放宽，使用如TD之类policy evaluation算法更efficiently的估计value function。事实上，如果条件1和2都满足的话，整个算法等价于没有使用critic，和REINFORCE算法很像。</p>
+<h2 id="off-policy-actor-critic">off-policy actor critic</h2>
+<p>在off-policy设置中，performance objective通常改成target policy的value function在behaviour policy的state distribution上进行平均，用$\beta(a|s)$表示behaviour policy：<br>
+\begin{align*}<br>
+J_\beta(\pi_\theta) &amp;= \int_S\rho^\beta (s) V^\pi (s)ds\tag{4}\\<br>
+&amp;=\int_S\int_A\rho^\beta (s)\pi_\theta(a|s)Q^\pi (s,a)dads \tag{5}\\<br>
+\end{align*}<br>
+对其求导和近似，得到：<br>
+\begin{align*}<br>
+\nabla_\theta J_\beta(\pi_\theta) &amp;\approx \int_S\int_A\rho^\beta (s)\nabla_\theta\pi_\theta(a|s) Q^\pi (s,a)dads\tag{6} \\<br>
+&amp;=\mathbb{E}_{s\sim \rho\beta, a\sim \beta}\left[\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}\nabla_\theta \log\pi_\theta(a|s) Q^\pi (s,a) \right]\tag{7}<br>
+\end{align*}<br>
+这个近似去掉了一项：$\nabla_\theta Q^\pi (s,a)$，已经有人证明去掉这一项之后仍然会收敛到局部最优。Off-policy actor-critic算法使用behaviour policy $\beta$生成trajectories，critic off-policy的从那些trajectories中估计state value function $V^v (s)\approx v^\pi (s)$。actor使用sgd从这些trajectories中off policy的更新policy paramters $\theta$，同时使用TD-error估计$Q^\pi (s,a)$。actor和critic都是用importance sampling ratio $\frac{\pi_\theta(a|s)}{\beta_\theta(a|s)}$。</p>
+<h2 id="action-value-gradients">action value gradients</h2>
+<p>绝大多数的model-free rl算法都属于GPI，迭代的policy evaluation和policy improvement。在contious action spaces中，greedy policy improvement是不可行的，因为在每一步都需要计算一个全局最大值。一个替代的方法是让policy朝着$Q$的gradient方向移动，而不是全局最大化$Q$。具体而言，对每一个访问到的state $s$，policy parameters $\theta^{k+1} $的更新正比于$\nabla_{\theta} Q^{ {\mu}^k } (s, \mu_{\theta}(s) )$。每一个state给出一个不同的方向，可以使用state distribution $\rho^{\mu} (s)$求期望，对最终的方向进行平均：<br>
+$$\theta^{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_\theta Q^{ {\mu}^k } (s, \mu_{\theta}(s))\right] \tag{8}$$<br>
+通过使用chain rule，我们可以看到policy improvement可以被分解成action-value对于action的gradient和policy相对于policy parameters的gradient：<br>
+$$\theta_{k+1} = \theta^k + \alpha \mathbb{E}_{s\sim \rho^{ {\mu}^k } }\left[\nabla_{\theta}\mu_{\theta}(s)\nabla_a Q^{ {\mu}^k } (s,a)|_{a=\mu_\theta(s_0)}\right] \tag{9}$$<br>
+按照惯例来说，$\nabla_{\theta}\mu_{\theta}(s)$是一个jacobian matrix，每一列是policy的$dth$ action对$\theta$的gradient $\nabla_\theta\left[\mu_\theta(s)\right]_d$。如果改变了policy，state distribution　$\rho^{\mu} $也会改变。如果不考虑distribution的变化的话，这个方法是保证收敛的。不过幸运的是，已经有人证明了和sgd一样，有deterministic policy gradient theorem，不需要计算state distributiond的gradient即可更新参数。</p>
+<h2 id="deterministic-policy-gradient-theorem">deterministic policy gradient theorem</h2>
+<h3 id="新的术语定义">新的术语定义</h3>
+<ul>
+<li>$\rho_0(s)$：初始状态分布</li>
+<li>$\rho^{\mu} (s\rightarrow s’, k)$：在policy $\mu$下从state $s$出发经过$k$步到达$s’$的概率。</li>
+<li>$\rho^{\mu} (s’)$：带有折扣因子的状态分布，定义为：<br>
+$$\rho^{\mu} (s’) = \int_S \sum_{k=0}^{\infty} \gamma^{k} \rho_0(s) \rho^{\mu} (s\rightarrow s’, k)ds\tag{10}$$</li>
+</ul>
+<h3 id="证明">证明</h3>
+<p>deterministic policy定义为：$\mu_\theta: S\rightarrow A, \theta \in \mathbb{R}^n $。定义performance objective $J(\mu_\theta) =\mathbb{E}\left[G_0|\mu\right]$，将performance objective写成expectation如下：<br>
+\begin{align*}<br>
+J(\mu_\theta) &amp; = \int_S\rho^\mu (s) G_0 ds\tag{11}\\<br>
+&amp;= \mathbb{E}_{s\sim \rho^\mu }\left[G_0\right] \tag{12}<br>
+\end{align*}<br>
+给出deterministic policy gradient theorem：<br>
+假设MDP满足以下条件，即$\nabla_\theta\mu_\theta(s)$和$\nabla_a Q^\mu (s,a)$存在，那么deterministic policy gradient存在，<br>
+\begin{align*}<br>
+\nabla_\theta J(\mu_\theta) &amp;= \int_S\rho^\mu (s) \nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}ds\tag{13}\\<br>
+&amp;=\mathbb{E}_{s\sim \rho^\mu }\left[\nabla_\theta\mu_\theta(s)\nabla_aQ^\mu (s,a)|_{a=\mu_\theta(s)}\right] \tag{14}<br>
+\end{align*}<br>
+证明：<br>
+\begin{align*}<br>
+\nabla_{\theta}V^{\mu} (s) &amp; =  \nabla_{\theta} Q^{\mu} (s, \mu(s))\tag{15}\\<br>
+&amp; = \nabla_{\theta} \left( R(s,\mu(s)) + \int_S \gamma p(s’|s,\mu(s))V^{\mu} (s’) ds’ \right)\tag{16}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a R(s,a)|_{a=\mu(s)} + \nabla_{\theta}\int_S \gamma p(s’|s,\mu(s))V^{\mu} (s’) ds’\tag{17}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a R(s,a)|_{a=\mu(s)} + \int_S \gamma \left(p(s’|s,\mu(s))\nabla_{\theta} V^{\mu} (s’) + \nabla_{\theta}\mu(s)\nabla_a p(s’|s, a)|_{a=\mu(s)} V^{\mu} (s’) \right) ds’\tag{18}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a \left( R(s,a) + \nabla_{\theta}\mu(s)\nabla_a p(s’|s, a)|_{a=\mu(s)} V^{\mu} (s’)ds’ \right) |_{a=\mu(s)} + \int_S \gamma p(s’|s,\mu(s))\nabla_{\theta} V^{\mu} (s’)  ds’\tag{19}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)} + \int_S \gamma p(s\rightarrow s’, 1, \mu(s))\nabla_{\theta} V^{\mu} (s’)  ds’\tag{20}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
+&amp;\qquad+ \int_S \gamma p(s\rightarrow s’, 1, \mu) \left(\nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)}  + \int_S \gamma p(s’ \rightarrow s^{’’}, 1, \mu(s’) ) \nabla_{\theta} V^{\mu} (s’’) ds^{’’} \right) ds’ \tag{21}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
+&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)}ds’ \\<br>
+&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \int_S \gamma p(s’ \rightarrow s^{’’}, 1, \mu(s’) )\nabla_{\theta} V^{\mu} (s’)ds^{’’} ds’ \tag{22}\\<br>
+&amp; = \nabla_{\theta}\mu(s) \nabla_a Q^{\mu}(s,a) |_{a=\mu(s)}\\<br>
+&amp;\qquad + \int_S \gamma p(s\rightarrow s’, 1, \mu) \nabla_{\theta}\mu(s’) \nabla_a Q^{\mu} (s’, a’) |_{a’ = \mu(s’)} ds’\\<br>
+&amp;\qquad + \int_S \gamma^2 p(s\rightarrow s’, 2, \mu)\nabla_{\theta} V^{\mu} (s’) ds’ \tag{23}\\<br>
+&amp; = \int_S \sum_{t=0}^{\infty} \gamma^t p(s\rightarrow s’, t, \mu)\nabla_{\theta} \mu(s’)\nabla_{a} Q^{\mu} (s’, a)|_{a=\mu(s’)} ds’ \tag{24}\\<br>
+\end{align*}<br>
+所以：<br>
+\begin{align*}<br>
+\nabla_{\theta} J(\mu) &amp; = \nabla_{\theta} \int_S \rho_0(s) V^{\mu} (s) ds \tag{25}\\<br>
+&amp; = \int_S \rho_0(s) \nabla_{\theta} V^{\mu} (s) ds \tag{26}\\<br>
+&amp; = \int_S\int_S \sum_{t=0}^{\infty} \gamma^t\rho_0(s) p(s\rightarrow s’, t, \mu)\nabla_{\theta} \mu(s’)\nabla_{a} Q^{\mu} (s’, a)|_{a=\mu(s’)} ds’ ds\tag{27}\\<br>
+&amp; = \int_S\rho^{\mu} (s) \nabla_{\theta} \mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} ds\tag{28}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^\mu}\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{30}\\<br>
+\end{align*}<br>
+公式$(25)$到公式$(26)$是因为$\rho_0(s_0)$和$\mu$无关。。</p>
+<h2 id="spg的limit">spg的limit</h2>
+<p>dpg实际上可以看成是spg的一个特殊情况。如果使用deterministic policy $\mu_\theta:S\rightarrow A$和variance parameter $\sigma$表示某些stochastic policy $\pi_{\mu_{\theta,\sigma}}$，比如$\sigma = 0$时，$\pi_{\mu_{\theta, 0}} \equiv \mu_\theta$，当$\sigma \rightarrow 0$时，stochastic policy gradient收敛于deterministic policy gradient。<br>
+考虑一个stochastic policy $\pi_{\mu_{\theta,\sigma}}$让$\pi_{\mu_{\theta,\sigma}}(s,a)=v_\sigma(\mu_\theta(s),a)$，其中$\sigma$是控制方差的参数，并且$v_\sigma$满足条件B.1，以及MDP满足条件A.1和A.2，那么<br>
+$$\lim_{\sigma\rightarrow 0}\nabla_\theta J(\pi_{\mu_{\theta, \sigma}}) = \nabla_\theta J(\mu_\theta) \tag{31} $$<br>
+其中左边的gradient是标准spg的gradient，右边是dpg的gradient。这就说明spg的很多方法同样也是适用于dpg的。</p>
+<h2 id="deterministic-actor-critic">deterministic actor-critic</h2>
+<p>接下来使用dpg theorem推导on-policy和off-policy的actor-critic算法。从最简单的on-policy update开始，使用Sarsa critic，然后介绍off-policy算法，使用Q-learning critic介绍核心思想。这些算法在实践中可能会有收敛问题，因为function approximator引入了biases，off-policy引入了不稳定性，可以使用compatiable function approximation的方法以及gradient td learning解决这些问题。</p>
+<h3 id="on-policy-deterministic-actor-critic">on-policy deterministic actor-critic</h3>
+<p>使用deterministic behaviour policy不能确保足够的exploration，会产生suboptimal solutions。但是我们还是要首先介绍on-policy actor-critic算法，它对于我们理解算法背后的核心思路很有用。尤其是在环境有噪音，即使使用deterministic behaviour policy也能够保证充足的exploration时。<br>
+和stochastic actor-critic一样。deterministic actor-critic也由actor和critic两部分组成，actor使用梯度下降调整$\mu(s)$的参数$\theta$，critic使用policy evaluation方法估计$Q^w (s,a) \approx Q^{\mu} (s, a)$指导actor的更新。比如critic使用Sarsa估计action value：<br>
+\begin{align*}<br>
+\delta_t &amp; = R_{t+1} + \gamma Q^w (s_{t+1}, a_{t+1}) - Q^w(s_t, a_t) \tag{32}\\<br>
+w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{33}\\<br>
+\theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{34}\\<br>
+\end{align*}</p>
+<h3 id="off-policy-deterministic-actor-critic">off-policy deterministic actor-critic</h3>
+<p>考虑off-policy actor-critic方法。目标函数是使用behaviour policy对target policy的value function求期望：<br>
+\begin{align*}<br>
+J_{\beta}(\mu) &amp; = \int_S \rho^{\beta}(s) V^{\mu} (s) ds\\<br>
+&amp; = \int_S \rho^{\beta} (s) Q^{\mu} (s, \mu(s,a) ) ds \tag{35}\\<br>
+\end{align*}<br>
+求梯度是：<br>
+\begin{align*}<br>
+\nabla_{\theta}J_{\beta}(\theta) &amp; \approx \int_S\rho^\beta (s) \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a) ds \\<br>
+&amp; = \mathbb{E}_{s\sim \rho^\beta }\left[ \nabla_{\theta}\mu(s)\nabla_{a} Q^{\mu} (s, a)|_{a=\mu(s)} \right]\tag{36}\\<br>
+\end{align*}<br>
+critic使用Q-learning更新action value function：<br>
+\begin{align*}<br>
+\delta_t &amp; = R_{t+1} + \gamma Q^w (s_{t+1}, \mu_{\theta}(s_{t+1})) - Q^w(s_t, a_t) \tag{37}\\<br>
+w_{t+1} &amp; = w_t + \alpha_w \delta_t \nabla_w Q^w (s_t,a_t)\tag{38}\\<br>
+\theta_{t+1} &amp; = \theta_t + \alpha_{\theta} \nabla_{\theta} \mu_{\theta}(s_t) \nabla_a Q^w(s_t, a_t)|_{a=\mu(s)} \tag{39}\\<br>
+\end{align*}<br>
+在stochastic off-policy actor-critic中，actor和critic都使用了importance sampling，而在deterministic off policy actor-critic中，deterministic去掉了对actions的积分，所以避免了actor的importance sampling，使用one step Q-learning去掉了critic中的importance sampling。</p>
+<h2 id="总结">总结</h2>
+<p>Deterministic policy gradient比stochastic policy gradient要好，尤其是high dimensional tasks上。此外，dpg不需要消耗更多的计算资源。还有就是对于一些应用，有可导的policy，但是没有办法加noise，这种情况下dpg更合适。<br>
+目标函数：</p>
+<h3 id="stochastic-policy-gradient-theorem-v2">stochastic policy gradient theorem:</h3>
+<p>具体证明可以见<a href="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/">policy gradient</a>。<br>
+\begin{align*}<br>
+J(\pi_\theta) &amp; = \int_S\rho^{\pi} (s)\int_A\pi(s,a) R(s,a) da ds \tag{40}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_{\theta}} \left [R(s,a) \right]\tag{41}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta}J(\pi_\theta) &amp; = \int_S\rho^{\pi} (s)\int_A \nabla\pi(s,a) Q^{\pi} (s,a) da ds\tag{42}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\pi} , a\sim \pi_{\theta}} \left [\log \nabla_{\theta} \pi(a|s)Q^{\pi} (s,a) \right]\tag{43}\\<br>
+\end{align*}</p>
+<h3 id="stochastic-off-policy-actor-crtic">stochastic off-policy actor-crtic</h3>
+<p>具体证明可以参考<a href="https://arxiv.org/pdf/1205.4839.pdf" target="_blank" rel="noopener">Linear off-policy actor-critic</a>。<br>
+\begin{align*}<br>
+J(\pi_\theta) &amp; = \int_S\rho^{\beta}(s) V^{\pi} (s) ds\tag{44}\\<br>
+&amp; = \int_S \int_A\rho^{\beta}(s) \pi(a|s) Q^{\pi} (s, a) ds\tag{45}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta}J(\pi_\theta) &amp; \approx \int_S\int_A\rho^{\pi} (s) \nabla_{\theta} \pi_{\theta}(s,a) Q^{\pi} (s,a) da ds\tag{46}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\beta}, a\sim \beta} \left[ \frac{\pi_{\theta}(a|s) }{\beta_{\theta}(a|s) } \nabla_{\theta}\log \pi_{\theta}(s,a) Q^{\pi} (s,a) \right]\tag{47}\\<br>
+\end{align*}</p>
+<h3 id="deterministic-policy-gradient-theorem-v2">deterministic policy gradient theorem:</h3>
+<p>具体证明见本文上半部分。但是我还有一些疑问，在stochastic policy gradient theorem中，$p(s’, r|s, a)$是$a$的函数，$a = \pi(s)$，所以$p(s’,r|s, a)$不应该也是$\theta$的函数吗？<br>
+\begin{align*}<br>
+J(\mu_{\theta}) &amp; = \int_S\rho^{\mu} (s) R(s, \mu_{\theta}(s)) da ds\tag{48}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} } \left[R(s, \mu_{\theta}(s) \right]\tag{49}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta} J(\mu_\theta) &amp; = \int_S\rho^{\mu} (s)\nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} da ds\tag{50}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} (s)} \left[ \nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} \right]\tag{51}\\<br>
+\end{align*}</p>
+<h3 id="deterministic-off-policy-actor-critic">deterministic off-policy actor-critic</h3>
+<p>具体证明可以参考<a href="https://arxiv.org/pdf/1205.4839.pdf" target="_blank" rel="noopener">Linear off-policy actor-critic</a>。<br>
+\begin{align*}<br>
+J_{\beta}(\mu_\theta) &amp; = \int_S\rho^{\beta} (s) V^{\mu} (s) ds\tag{52}\\<br>
+&amp; = \int_S\rho^{\beta} (s) Q^{\mu} (s, \mu_{\theta}(s)) ds\tag{53}\\<br>
+\end{align*}<br>
+\begin{align*}<br>
+\nabla_{\theta} J_{\beta} (\mu_\theta) &amp; \approx \int_S\rho^{\beta} (s)\nabla_{\theta}\mu_{\theta}(a|s) \nabla_a Q^{\mu} (s, a) ds\tag{54}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\beta}}\left[\nabla_{\theta}\mu_{\theta}(a|s) \nabla_a Q^{\mu} (s, a) \right]\tag{55}\\<br>
+\end{align*}</p>
+<h2 id="参考文献">参考文献</h2>
+<p>Policy Gradient<br>
+1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a><br>
+2.<a href="http://www0.cs.ucl.ac.uk/staff/d.silver/web/Publications_files/deterministic-policy-gradients.pdf" target="_blank" rel="noopener">http://www0.cs.ucl.ac.uk/staff/d.silver/web/Publications_files/deterministic-policy-gradients.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/13/tensorflow-distributed-tensorflow/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1399,1034 +2407,6 @@ rd dir_name</li>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/29/常见单词解释/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/29/常见单词解释/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">常见单词解释</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-29 14:59:41" itemprop="dateCreated datePublished" datetime="2019-06-29T14:59:41+08:00">2019-06-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-07-07 22:24:23" itemprop="dateModified" datetime="2019-07-07T22:24:23+08:00">2019-07-07</time>
-              
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="non-trivial">non-trivial</h2>
-<p>在数学上有专门的翻译，非平凡的。<br>
-trivial是无足轻重的，不重要的，所以non-trivial是有一定规模的，复杂的。</p>
-<h2 id="whitened">whitened</h2>
-<p>图片变化，指的是将输入经过线性变换成均值为0和单位方差的数据。。我是在batch_normalization论文中遇到的。</p>
-<h2 id="saturating-and-non-saturating">saturating and non-saturating</h2>
-<p>出现在ReLU论文中，用来形容激活函数，saturating指的是输出挤压在一个区间内。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/20681622" target="_blank" rel="noopener">https://www.zhihu.com/question/20681622</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/23/linux-init系统/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/23/linux-init系统/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">linux init系统</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-23 16:35:02 / 修改时间：20:41:34" itemprop="dateCreated datePublished" datetime="2019-06-23T16:35:02+08:00">2019-06-23</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="linux-init系统">Linux init系统</h2>
-<p>这里会介绍下面三种init系统</p>
-<ul>
-<li>SysVInit(initd)</li>
-<li>Upstart</li>
-<li>SystemD</li>
-</ul>
-<p>Linux的启动从BIOS开始，bootloader载入内核，进行内核初始化。内核初始化的最后一步是启动pid为$1$的init进程。这个进程是系统的第一个进程，它负责产生其他所有用户进程。<br>
-Init系统能够定义、管理和控制init进程的行为。它负责组织和运行许多独立的或相关的始化job(因此被称为init系统)，从而让计算机系统进入某种用户规定的run level。<br>
-大多数Linux发行版的init 系统是和 System V 相兼容的，称为 SysVInit。Ubuntu和RHEL采用upstart替代了SysVInit。而 Fedora 从版本15开始使用SystemD的新init系统。ubuntu-16.10之后开始不再使用SysVInt管理系统，改用SystemD。</p>
-<h2 id="sysvinit-initd">SysVInit(initd)</h2>
-<p>SysVInit的最大缺点是主要依赖于 Shell 脚本，启动太慢。</p>
-<h3 id="runlevel">runlevel</h3>
-<p>SysVInit检查/etc/inittab文件中是否含有’initdefault’ 项，然后进入默认run level。如果没有默认的run level，用户手动决定进入哪个run level。SysVInit通常会有8种run-level，0到6和S或者s。但 0，1，6 run level的操作是公认的： 0代表关机, 1代表单用户模式, 6代表重启，其他run level跟发行版有关。/etc/inittab 文件中还定义了各种run level需要执行的初始化工作。</p>
-<h3 id="sysvinit初始化顺序">SysVInit初始化顺序</h3>
-<p>SysVInit用脚本，文件命名规则和软链接来实现不同的runlevel。首先，SysVInit 需要读取/etc/inittab 文件，获得以下配置信息：</p>
-<ul>
-<li>系统需要进入的 runlevel</li>
-<li>捕获组合键的定义</li>
-<li>定义电源 fail/restore 脚本</li>
-<li>启动 getty 和虚拟控制台</li>
-</ul>
-<p>得到配置信息后，SysVInit 顺序地执行以下初始化步骤将系统初始化为相应的runlevel X。</p>
-<ul>
-<li>/etc/rc.d/rc.sysinit</li>
-<li>/etc/rc.d/rc 和/etc/rc.d/rcX.d/ (X 代表运行级别 0-6)</li>
-<li>/etc/rc.d/rc.local</li>
-<li>X Display Manager（如果需要的话）</li>
-</ul>
-<h4 id="rc-sysinit初始化">rc.sysinit初始化</h4>
-<p>首先运行rc.sysinit完成以下任务。</p>
-<ul>
-<li>激活 udev 和 selinux</li>
-<li>设置定义在/etc/sysctl.conf 中的内核参数</li>
-<li>设置系统时钟</li>
-<li>加载 keymaps</li>
-<li>使能交换分区</li>
-<li>设置主机名(hostname)</li>
-<li>根分区检查和 remount</li>
-<li>激活 RAID 和 LVM 设备</li>
-<li>开启磁盘配额</li>
-<li>检查并挂载所有文件系统</li>
-<li>清除过期的 locks 和 PID 文件</li>
-</ul>
-<h4 id="etc-rd-c-rc初始化">/etc/rd.c/rc初始化</h4>
-<p>接下来运行/etc/rc.d/rc脚本。根据不同的runlevel，rc脚本打开对应该runlevel的rcX.d目录，以S开头的脚本是启动时运行的脚本，S后面的数字定义了这些脚本的执行顺序。</p>
-<h4 id="etc-rc-d-rc-local初始化">/etc/rc.d/rc.local初始化</h4>
-<p>rc.local是自定义脚本存放目录。</p>
-<h3 id="sysvinit关闭系统">SysVInit关闭系统</h3>
-<p>关闭顺序的控制也是依靠/etc/rc.d/rcX.d/目录下所有脚本的命名规则来控制的，所有以K开头的脚本都将在关闭系统时调用，K后的数字规定了执行顺序。这些脚本负责安全地停止service或者其他的关闭job。</p>
-<h3 id="sysvinit工具">SysVInit工具</h3>
-<p>SysVInit包含了一系列启动，运行和关闭所有其他程序的工具和命令。</p>
-<ul>
-<li>halt  停止系统。</li>
-<li>init  SysVInit本身的init进程，pid=1，是所有用户进程的父进程。最主要的作用是在启动过程中使用/etc/inittab文件创建所有其他初始化进程。</li>
-<li>killall5  SystemV的killall 命令。向除自己的会话(session)进程之外的其它进程发出信号，所以不能杀死当前使用的 shell。</li>
-<li>last  回溯/var/log/wtmp 文件(或者-f 选项指定的文件)，显示自从这个文件建立以来，所有用户的登录情况。</li>
-<li>lastb 作用和 last 差不多，默认情况下使用/var/log/btmp 文件，显示所有失败登录企图。</li>
-<li>mesg  控制其它用户对用户终端的访问。</li>
-<li>pidof 找出程序的进程识别号(pid)，输出到标准输出设备。</li>
-<li>poweroff  等于 shutdown -h –p，或者 telinit 0。关闭系统并切断电源。</li>
-<li>reboot    等于 shutdown –r 或者 telinit 6。重启系统。</li>
-<li>runlevel  读取系统的登录记录文件(一般是/var/run/utmp)把以前和当前的run level输出到标准输出设备。</li>
-<li>shutdown  以一种安全的方式终止系统，所有正在登录的用户都会收到系统将要终止通知，并且不准新的登录。</li>
-<li>sulogin   当系统进入单用户模式时，被init调用。当接收到启动加载程序传递的-b 选项时，init 也会调用 sulogin。</li>
-<li>telinit   实际是init的一个连接，用来向init传送单字符参数和信号。</li>
-<li>utmpdump  以一种用户友好的格式向标准输出设备显示/var/run/utmp 文件的内容。</li>
-<li>wall  向所有有信息权限的登录用户发送消息。</li>
-</ul>
-<h2 id="upstart">Upstart</h2>
-<p>Ubuntu使用upstart init系统，没有/etc/inittab文件。Upstart解决了热插拔以及网络共享盘的挂载问题。在/etc/fstab 中，可以指定系统自动挂载一个网络盘，比如 NFS等，SysVInit 分析/etc/fstab 挂载文件系统这个步骤是在网络启动之前。可是如果网络没有启动，NFS或者iSCSI服务都不可访问，当然也无法进行挂载操作。SysVInit采用netdev的方式来解决这个问题，即/etc/fstab发现netdev属性挂载点的时候，不尝试挂载它，在网络初始化之后，有专门的netfs service来挂载所有这些网络盘。<br>
-UpStart 解决了之前提到的 SysVInit 的缺点。采用event驱动模型，UpStart 可以：</p>
-<ul>
-<li>更快地启动系统。采用event驱动机制加快了系统启动时间。SysVInit 运行时是同步阻塞的。一个脚本运行的时候，后续脚本必须等待。这意味着所有的初始化步骤都是串行执行的，而实际上很多service彼此并不相关，完全可以并行启动，从而减小系统的启动时间。</li>
-<li>当新硬件被发现时动态启动相应的service，Ubuntu 开发了基于event机制的UpStart，比如 U 盘插入 USB 接口后，udev得到内核通知，发现该设备，这是一个新的event。UpStart感知到该event之后触发相应的等待任务，比如处理/etc/fstab中新的挂载点。采用这种event驱动的模式，upstart 完美地解决了即插即用设备带来的新问题。</li>
-<li>硬件被拔除时动态停止相应的service</li>
-</ul>
-<h3 id="upstart-job和event">Upstart job和event</h3>
-<p>Job是一个job unit，用来完成一件工作，比如启动一个后台service，或者运行一个配置命令。每个 Job 都等待一个或多个event，一旦event发生，upstart 就触发该job完成相应的工作。</p>
-<h4 id="job">Job</h4>
-<p>Job是一个job的unit，一个task或者一个service。可以理解为SysVInit中的一个service脚本。有三种类型的job：</p>
-<ul>
-<li>task job，task job 代表在一定时间内会执行完毕的任务，比如删除一个文件；</li>
-<li>service job，service job 代表后台service进程，比如 apache httpd。这里进程一般不会退出，一旦开始运行就成为一个后台deamon，由 init 进程管理，如果这类进程退出，由 init 进程重新启动，它们只能由 init 进程发送信号停止。它们的停止一般也是由于所依赖的停止event而触发的，不过 upstart 也提供命令行工具，让管理人员手动停止某个service；</li>
-<li>abstract job，abstract job 仅由 upstart 内部使用，仅对理解 upstart 内部机理有所帮助。我们不用关心它。</li>
-</ul>
-<h5 id="system-job-and-session-job">system job and session job</h5>
-<p>还可以根据Upstart初始化的范围对job进行分类。系统的初始化任务叫做system job，比如挂载文件系统的任务就是一个system job；用户会话的初始化service就叫做 session job。</p>
-<h5 id="job-生命周期">Job 生命周期</h5>
-<p>Upstart为每个job都维护一个生命周期。一般来说，job有开始，运行和结束。以及其他更精细的状态，比如开始有开始之前(pre-start)，即将开始(starting)和已经开始了(started)几种不同的状态，这样可以更加精确地描述job的当前状态。详细的状态如下表所示：</p>
-<table>
-<thead>
-<tr>
-<th>状态名</th>
-<th>含义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Waiting</td>
-<td>初始状态</td>
-</tr>
-<tr>
-<td>Starting</td>
-<td>Job 即将开始</td>
-</tr>
-<tr>
-<td>pre-start</td>
-<td>执行 pre-start 段，即任务开始前应该完成的job</td>
-</tr>
-<tr>
-<td>Spawned</td>
-<td>准备执行 script 或者 exec 段</td>
-</tr>
-<tr>
-<td>post-start</td>
-<td>执行 post-start 动作</td>
-</tr>
-<tr>
-<td>Running</td>
-<td>interim state set after post-start section processed denoting job is running (But it may have no associated PID!)</td>
-</tr>
-<tr>
-<td>pre-stop</td>
-<td>执行 pre-stop 段</td>
-</tr>
-<tr>
-<td>Stopping</td>
-<td>interim state set after pre-stop section processed</td>
-</tr>
-<tr>
-<td>Killed</td>
-<td>任务即将被停止</td>
-</tr>
-<tr>
-<td>post-stop</td>
-<td>执行 post-stop 段</td>
-</tr>
-</tbody>
-</table>
-<p>当job的状态即将发生变化的时候，init 进程会发出相应的event（event），如下图是job的状态机。其中只有四个状态Starting，Started，Stopping，Stopped会引起init进程发送相应的event，而其它的状态变化不会发出event。<br>
-<img src="/2019/06/23/linux-init系统/" alt></p>
-<h4 id="event">Event</h4>
-<p>Event在upstart中以通知消息的形式具体存在。一旦某个event发生了，Upstart 就向整个系统发送一个消息。Event 可以分为三类: signal，methods 或者 hooks。</p>
-<ul>
-<li>Signals，Signal event是非阻塞的，异步的。发送一个信号之后控制权立即返回。</li>
-<li>Methods，Methods event是阻塞的，同步的。</li>
-<li>Hooks，Hooks event是阻塞的，同步的。它介于 Signals 和 Methods 之间，调用发出 Hooks event的进程必须等待event完成才可以得到控制权，但不检查event是否成功。</li>
-</ul>
-<h5 id="event示例">Event示例</h5>
-<ol>
-<li>系统上电启动，init 进程会发送&quot;start&quot;event</li>
-<li>根文件系统可写时，相应 job 会发送文件系统就绪的event</li>
-<li>一个块设备被发现并初始化完成，发送相应的event</li>
-<li>某个文件系统被挂载，发送相应的event</li>
-<li>类似 atd 和 cron，可以在某个时间点，或者周期的时间点发送event</li>
-<li>另外一个 job 开始或结束时，发送相应的event</li>
-<li>一个磁盘文件被修改时，可以发出相应的event</li>
-<li>一个网络设备被发现时，可以发出相应的event</li>
-<li>缺省路由被添加或删除时，可以发出相应的event</li>
-</ol>
-<p>不同的 Linux 发行版对 upstart 有不同的定制和实现，实现和支持的event也有所不同，可以用man 7 upstart-events来查看event列表。</p>
-<h4 id="job-和-event-的相互协作">Job 和 Event 的相互协作</h4>
-<p>Upstart是由event触发job运行的一个系统，每一个程序的运行都由其依赖的event发生而触发的。系统初始化时，init进程开始运行，init进程自身会发出不同的event，这些event会触发一些job运行。每个job运行过程中会释放不同的event，这些event又将触发新的job运行。如此反复，直到整个系统正常运行起来。</p>
-<h4 id="job配置文件">job配置文件</h4>
-<p>每一个Job都是由一个job配置文件（Job Configuration File）定义的。job配置文件存放在/etc/init下面，是以.conf 作为文件后缀的文件。</p>
-<h5 id="示例">示例</h5>
-<p>~$:cat /etc/init/anacron.conf</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># anacron - anac(h)ronistic cron</span><br><span class="line">#</span><br><span class="line"># anacron executes commands at specific periods, but does not assume that</span><br><span class="line"># the machine is running continuously</span><br><span class="line"></span><br><span class="line">description	&quot;anac(h)ronistic cron&quot;</span><br><span class="line"></span><br><span class="line">start on runlevel [2345]</span><br><span class="line">stop on runlevel [!2345]</span><br><span class="line"></span><br><span class="line">expect fork</span><br><span class="line">normal exit 0</span><br><span class="line"></span><br><span class="line">exec anacron -s</span><br></pre></td></tr></table></figure>
-<h5 id="常见的sec">常见的sec</h5>
-<p><strong>“expect” Stanza</strong><br>
-为了启动，停止，重启和查询某个系统service。Upstart 需要跟踪该service所对应的进程。部分service为了将自己变成daemon，会采用fork调用， UpStart必须采用fork出来的进程号作为service的 PID。但是，UpStart 本身无法判断service进程是否fork了，所以需要指定expect告诉 UpStart 进程是否fork了。&quot;expect fork&quot;表示进程只会 fork 一次；&quot;expect daemonize&quot;表示进程会 fork 两次。</p>
-<p><strong>“exec” Stanza 和&quot;script&quot; Stanza</strong><br>
-&quot;exec&quot;关键字配置job需要运行的命令，&quot;script&quot;关键字定义需要运行的脚本。</p>
-<h5 id="示例-v2">示例</h5>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># mountall.conf</span><br><span class="line">description “Mount filesystems on boot”</span><br><span class="line">start on startup</span><br><span class="line">stop on starting rcS</span><br><span class="line">...</span><br><span class="line">script</span><br><span class="line">  . /etc/default/rcS</span><br><span class="line">  [ -f /forcefsck ] &amp;&amp; force_fsck=”--force-fsck”</span><br><span class="line">  [ “$FSCKFIX”=”yes” ] &amp;&amp; fsck_fix=”--fsck-fix”</span><br><span class="line">    </span><br><span class="line">  ...</span><br><span class="line">   </span><br><span class="line">  exec mountall –daemon $force_fsck $fsck_fix</span><br><span class="line">end script</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>该job在系统启动时运行，负责挂载所有的文件系统。该job需要执行复杂的脚本，由&quot;script&quot;关键字定义；在脚本中，使用了 exec 来执行 mountall 命令。</p>
-<p><strong>“start on” Stanza 和&quot;stop on&quot; Stanza</strong><br>
-&quot;start on&quot;定义了触发job的所有event。&quot;start on&quot;的语法很简单，如下所示：</p>
-<p>start on EVENT [[KEY=]VALUE]… [and|or…]<br>
-EVENT 表示event的名字，可以在 start on 中指定多个event，表示该job的开始需要依赖多个event发生。多个event之间可以用 and 或者 or 组合，&quot;表示全部都必须发生&quot;或者&quot;其中之一发生即可&quot;等不同的依赖条件。除了event发生之外，job的启动还可以依赖特定的条件，因此在 start on 的 EVENT 之后，可以用 KEY=VALUE 来表示额外的条件，一般是某个环境变量(KEY)和特定值(VALUE)进行比较。如果只有一个变量，或者变量的顺序已知，则 KEY 可以省略。<br>
-&quot;stop on&quot;定义job在什么情况下需要停止。</p>
-<h5 id="示例-v3">示例</h5>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#dbus.conf</span><br><span class="line">description     “D-Bus system message bus”</span><br><span class="line"> </span><br><span class="line">start on local-filesystems</span><br><span class="line">stop on deconfiguring-networking</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
-<p>D-Bus 是一个系统消息service，上面的配置文件表明当系统发出 local-filesystems event时启动 D-Bus；当系统发出 deconfiguring-networking event时，停止 D-Bus service。</p>
-<h3 id="session初始化">Session初始化</h3>
-<p>Session 就是一个用户会话，即用户从远程或者本地登入系统开始job，直到用户退出，整个过程构成一个会话。用户往往会为自己的会话做一个定制，如添加特定的命令别名等等。这些job都属于对特定会话的初始化操作，被称为 Session Init。在字符模式下，会话初始化相对简单。用户登录后只能启动一个 Shell，通过 shell 命令使用系统。各种 shell 程序都支持一个自动运行的启动脚本，比如~/.bashrc。用户在这些脚本中加入需要运行的定制化命令。在图形界面下，用户登录后看到的并不是一个 shell 提示符，而是一个桌面。一个完整的桌面环境包括 window manager，panel以及其它一些定义在/usr/share/gnome-session/sessions/下面的基本组件，此外还有一些辅助的应用程序，，比如 system monitors，panel applets，NetworkManager，Bluetooth，printers 等。当用户登录之后，这些组件都需要被初始化。目前启动各种图形组件和应用的job由 gnome-session 完成。过程如下：<br>
-以 Ubuntu 为例，当用户登录 Ubuntu 图形界面后，显示管理器(Display Manager)lightDM 启动 Xsession。Xsession 接着启动 gnome-session，gnome-session 负责其它的初始化job，然后就开始了一个 desktop session。如下所示，是传统的desktop session 启动过程：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">init</span><br><span class="line"> |- lightdm</span><br><span class="line"> |   |- Xorg</span><br><span class="line"> |   |- lightdm ---session-child</span><br><span class="line"> |        |- gnome-session --session=ubuntu</span><br><span class="line"> |             |- compiz</span><br><span class="line"> |             |- gwibber</span><br><span class="line"> |             |- nautilus</span><br><span class="line"> |             |- nm-applet</span><br><span class="line"> |             :</span><br><span class="line"> |             :</span><br><span class="line"> |</span><br><span class="line"> |- dbus-daemon --session</span><br><span class="line"> |</span><br><span class="line"> :</span><br><span class="line"> :</span><br></pre></td></tr></table></figure>
-<p>但是事实上一些应用和组件并不需要在会话初始化过程中启动，而是需要在需要它们的时候才启动。比如 Network Manager，一天之内用户很少切换网络设备，所以大部分时间 Network Manager service仅仅是在浪费系统资源。UpStart的基于event的按需启动的模式就可以很好地解决这些问题。下面给出了采用UpStart之后的会话初始化过程：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">init</span><br><span class="line"> |- lightdm</span><br><span class="line"> |   |- Xorg</span><br><span class="line"> |   |- lightdm ---session-child</span><br><span class="line"> |        |- session-init # &lt;-- upstart running as normal user</span><br><span class="line"> |             |- dbus-daemon --session</span><br><span class="line"> |             |- gnome-session --session=ubuntu</span><br><span class="line"> |             |- compiz</span><br><span class="line"> |             |- gwibber</span><br><span class="line"> |             |- nautilus</span><br><span class="line"> |             |- nm-applet</span><br><span class="line"> |             :</span><br><span class="line"> |             :</span><br><span class="line"> :</span><br><span class="line"> :</span><br></pre></td></tr></table></figure>
-<h3 id="upstart-v2">UpStart</h3>
-<h4 id="upstart系统中的run-level">Upstart系统中的run level</h4>
-<p>Upstart 的运作完全是基于job和event的。Job的状态变化和运行会引起event，进而触发其它job和event。而SysVInit是基于运行级别的，因为历史的原因，Linux 上的多数软件还是采用传统的 SysVInit 脚本启动方式，所以UpStart还是必须模拟老的SysVInit的run level，以便和多数现有软件兼容。</p>
-<h4 id="系统启动过程">系统启动过程</h4>
-<p>下图描述了 UpStart 的启动过程。<br>
-<img src="/2019/06/23/linux-init系统/startup.png" alt="upstart startup"><br>
-系统上电后运行GRUB载入内核。内核执行硬件初始化和内核自身初始化。在内核初始化的最后，内核将启动pid为1的Upstart init 进程。Upstart 进程执行一些自身的初始化job后，立即发出&quot;startup&quot; event。上图中用红色方框加红色箭头表示event，可以在左上方看到&quot;startup&quot;event。<br>
-所有依赖于&quot;startup&quot;event的job被触发，其中最重要的是mountall。mountall jog负责挂载系统中需要使用的文件系统，完成相应job后，mountall任务会发出以下event：local-filesystem，virtual-filesystem，all-swaps，<br>
-其中 virtual-filesystem event触发 udev 任务开始job。任务 udev 触发 upstart-udev-bridge 的job。Upstart-udev-bridge 会发出 net-device-up IFACE=lo event，表示本地回环 IP 网络已经准备就绪。同时，任务 mountall 继续执行，最终会发出 filesystem event。此时，任务 rc-sysinit 会被触发，因为 rc-sysinit 的 start on条件如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">start on filesystem and net-device-up IFACE=lo</span><br></pre></td></tr></table></figure>
-<p>任务rc-sysinit调用telinit。Telinit任务会发出 runlevel event，触发执行/etc/init/rc.conf。rc.conf 执行/etc/rc$.d/目录下的所有脚本，和 SysVInit 非常类似。</p>
-<h3 id="upstart注意的事项">Upstart注意的事项</h3>
-<ol>
-<li>fork次数，都通过fork 两次的技巧将自己变成后台service程序需要指定expect stanza。</li>
-<li>fork后即可用，后台程序在完成第二次fork的时候，必须保证service已经可用。因为UpStart通过派生计数来决定service是否处于就绪状态。</li>
-<li>遵守 SIGHUP 的要求，UpStart 会给daemon发送SIGHUP信号，此时，UpStart 希望该deamon做以下这些响应job：</li>
-</ol>
-<ul>
-<li>完成所有必要的重新初始化job，比如重新读取配置文件。这是因为 UpStart 的命令&quot;initctl reload&quot;被设计为可以让service在不重启的情况下更新配置。</li>
-<li>deamon必须继续使用现有的 PID，即收到 SIGHUP 时不能调用 fork。如果service必须在这里调用 fork，则等同于派生两次，参考上面的规则一的处理。这个规则保证了 UpStart 可以继续使用 PID 管理本service。</li>
-</ul>
-<ol start="4">
-<li>收到 SIGTEM 即 shutdown。</li>
-</ol>
-<ul>
-<li>当收到 SIGTERM 信号后，UpStart 希望deamon进程立即干净地退出，释放所有资源。如果一个进程在收到 SIGTERM 信号后不退出，Upstart 将对其发送 SIGKILL 信号。</li>
-</ul>
-<ol start="5">
-<li>initctl list 来查看所有job的概况，用 initctl stop 停止一个正在运行的job；用 initctl start 开始一个job；还可以用 initctl status 来查看一个job的状态；initctl restart 重启一个job；initctl reload 可以让一个正在运行的service重新载入配置文件。这些命令和传统的 service 命令十分相似。<br>
-~$:initctl list</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">alsa-mixer-save stop/waiting</span><br><span class="line">avahi-daemon start/running, process 690</span><br><span class="line">mountall-net stop/waiting</span><br><span class="line">rc stop/waiting</span><br><span class="line">rsyslog start/running, process 482</span><br><span class="line">screen-cleanup stop/waiting</span><br><span class="line">tty4 start/running, process 859</span><br><span class="line">udev start/running, process 334</span><br><span class="line">upstart-udev-bridge start/running, process 304</span><br><span class="line">ureadahead-other stop/waiting</span><br></pre></td></tr></table></figure>
-<p>第一列是job名，比如 rsyslog。第二列是job的目标；第三列是job的状态。<br>
-UpStart 还提供了一些快捷命令来简化 initctl。比如 reload，restart，start，stop 等等。启动一个service可以简单地调用<br>
-~$:start job<br>
-这和执行 initctl start job是一样的效果。<br>
-一些命令是为了兼容其它系统(主要是 SysVInit)，比如显示 runlevel 用/sbin/runlevel 命令：<br>
-~$:runlevel<br>
-&gt; N 2</p>
-<p>在 Upstart 系统中，需要修改/etc/init/rc-sysinti.conf 中的 DEFAULT_RUNLEVEL 这个参数，以便修改默认启动运行级别。这一点和 SysVInit 的习惯有所不同，大家需要格外留意。</p>
-<h2 id="systemd">SystemD</h2>
-<p>SystemD和SysVInit 和 LSB init scripts 兼容，以及更快的启动速度，SystemD 提供了比 UpStart 更激进的并行启动能力。<br>
-为了减少系统启动时间，SystemD 的目标是尽可能启动更少的进程和尽可能将更多进程并行启动，同样地，UpStart 也试图实现这两个目标。UpStart 采用event驱动机制，当service需要的时候才通过event触发启动；不相干的service可以并行启动。下面的图形演示了 UpStart 相对于 SysVInit 在并发启动这个方面的改进：<br>
-<img src="/2019/06/23/linux-init系统/SystemD.png" alt="systemd"><br>
-假设有 7 个不同的启动项目， 比如 JobA、Job B 等等。在 SysVInit 中，每一个启动项目都由一个独立的脚本负责，它们由 SysVInit 顺序地，串行地调用。因此总的启动时间为 T1+T2+T3+T4+T5+T6+T7。其中一些任务有依赖关系，比如 A,B,C,D。而Job E和F却和A,B,C,D无关。这种情况下，UpStart 能够并发地运行任务{E，F，(A,B,C,D)}，使得总的启动时间减少为 T1+T2+T3。但是在 UpStart 中，有依赖关系的service还是必须先后启动。<br>
-让我们例举一些例子， Avahi service需要 D-Bus 提供的功能，因此 Avahi 的启动依赖于 D-Bus，UpStart 中，Avahi 必须等到 D-Bus 启动就绪之后才开始启动。类似的，livirtd 和 X11 都需要 HAL service先启动，而所有这些service都需要 syslog service记录日志，因此它们都必须等待 syslog service先启动起来。然而 httpd 和他们都没有关系，因此 httpd 可以和 Avahi 等service并发启动。<br>
-SystemD 能够更进一步提高并发性，即便对于那些 UpStart 认为存在相互依赖而必须串行的service，比如 Avahi 和 D-Bus 也可以并发启动。从而实现如下图所示的并发启动过程：<br>
-<img src="/2019/06/23/linux-init系统/SystemD_para.jpg" alt="systemD_para"><br>
-所有的任务都同时并发执行，总的启动时间被进一步降低为 T1。</p>
-<ul>
-<li>SystemD 提供按需启动能力。</li>
-<li>SystemD采用Cgroup 特性跟踪和管理进程的生命周期。</li>
-</ul>
-<p><img src="/2019/06/23/linux-init系统/find_pid.jpg" alt="find_pid"><br>
-如果 UpStart 找错了，将 p1作为service进程的 Pid，那么停止service的时候，UpStart 会试图杀死 p1进程，而真正的 p1进程则继续执行。换句话说该service就失去控制了。还有更加特殊的情况。比如，一个 CGI 程序会fork两次，从而脱离了和 Apache 的父子关系。当 Apache 进程被停止后，该 CGI 程序还在继续运行。而我们希望service停止后，所有由它所启动的相关进程也被停止。为了处理这类问题，UpStart 通过 strace 来跟踪 fork、exit 等系统调用，但是这种方法很笨拙，且缺乏可扩展性。SystemD 则利用了 Linux 内核的特性即 CGroup 来完成跟踪的任务。当停止service时，通过查询 CGroup，SystemD 可以确保找到所有的相关进程，从而干净地停止service。CGroup 已经出现了很久，它主要用来实现系统资源配额管理。CGroup 提供了类似文件系统的接口，使用方便。当进程创建子进程时，子进程会继承父进程的 CGroup。因此无论service如何启动新的子进程，所有的这些相关进程都会属于同一个 CGroup，SystemD 只需要简单地遍历指定的 CGroup 即可正确地找到所有的相关进程，将它们一一停止即可。</p>
-<ul>
-<li>启动挂载点和自动挂载的管理。</li>
-<li>实现事务性依赖关系管理。</li>
-<li>能够对系统进行快照和恢复。</li>
-<li>日志service。SystemD Journal 的优点如下：</li>
-</ul>
-<ol>
-<li>简单性：代码少，依赖少，抽象开销最小。</li>
-<li>零维护：日志是除错和监控系统的核心功能，因此它自己不能再产生问题。举例说，自动管理磁盘空间，避免由于日志的不断产生而将磁盘空间耗尽。</li>
-<li>移植性：日志 文件应该在所有类型的 Linux 系统上可用，无论它使用的何种 CPU 或者字节序。</li>
-<li>性能：添加和浏览 日志 非常快。</li>
-<li>最小资源占用：日志 数据文件需要较小。</li>
-<li>统一化：各种不同的日志存储技术应该统一起来，将所有的可记录event保存在同一个数据存储中。</li>
-<li>扩展性：日志的适用范围很广，从嵌入式设备到超级计算机集群都可以满足需求。</li>
-<li>安全性：日志 文件是可以验证的，让无法检测的修改不再可能。</li>
-</ol>
-<h3 id="unit">Unit</h3>
-<p>一个service可以认为是一个unit；一个挂载点是一个unit；一个交换分区的配置是一个unit；等等，总共有12种unit</p>
-<ul>
-<li>service ：系统服务</li>
-<li>socket ：进程间通信的socket</li>
-<li>device ：硬件设备</li>
-<li>mount ：文件系统的挂在</li>
-<li>automount ：自动挂载点</li>
-<li>swap：swap文件</li>
-<li>target ：unit分组统一的控制。比如图形化模式的所有unit组合为一个target。 (例如：multi-user.target 相当于在传统使用 SysV 的系统中运行run level 5)</li>
-<li>timer：定时器</li>
-<li>snapshot ：快照，它保存了系统当前的运行状态。</li>
-</ul>
-<h3 id="依赖关系">依赖关系</h3>
-<p>虽然 SystemD 将大量的启动job解除了依赖，使得它们可以并发启动。但还是存在有些任务，它们之间存在天生的依赖，不能用&quot;套接字激活&quot;(socket activation)、D-Bus activation 和 autofs 三大方法来解除依赖（三大方法详情见后续描述）。比如：挂载必须等待挂载点在文件系统中被创建；挂载也必须等待相应的物理设备就绪。为了解决这类依赖问题，SystemD 的配置单元之间可以彼此定义依赖关系。<br>
-SystemD 用配置单元定义文件中的关键字来描述配置单元之间的依赖关系。比如：unit A 依赖 unit B，可以在 unit B 的定义中用&quot;require A&quot;来表示。这样 SystemD 就会保证先启动 A 再启动 B。</p>
-<h3 id="systemd-事务">SystemD 事务</h3>
-<p>SystemD 能保证事务完整性。SystemD 的事务概念和数据库中的有所不同，主要是为了保证多个依赖的配置单元之间没有环形引用。比如 unit A、B、C，假如它们的依赖关系为:<br>
-<img src="/2019/06/23/linux-init系统/recurrent_dependency.jpg" alt="dependency"><br>
-存在循环依赖，那么 SystemD 将无法启动任意一个service。此时 SystemD 将会尝试解决这个问题，因为配置单元之间的依赖关系有两种：required 是强依赖；want 则是弱依赖，SystemD 将去掉 wants 关键字指定的依赖看看是否能打破循环。如果无法修复，SystemD 会报错。<br>
-SystemD 能够自动检测和修复这类配置错误，极大地减轻了管理员的排错负担。</p>
-<h3 id="target-和运行级别">Target 和运行级别</h3>
-<p>SystemD 用目标（target）替代了运行级别的概念，提供了更大的灵活性，如您可以继承一个已有的目标，并添加其它service，来创建自己的目标。下表列举了 SystemD 下的目标和常见 runlevel 的对应关系：<br>
-SysVInit 运行级别|SystemD 目标|备注<br>
-0|runlevel0.target, poweroff.target|关闭系统。<br>
-1, s, single|runlevel1.target, rescue.target|单用户模式。<br>
-2, 4|runlevel2.target, runlevel4.target, multi-user.target|用户定义/域特定运行级别。默认等同于 3。<br>
-3|runlevel3.target, multi-user.target|多用户，非图形化。用户可以通过多个控制台或网络登录。<br>
-5|runlevel5.target, graphical.target|多用户，图形化。通常为所有运行级别 3 的service外加图形化登录。<br>
-6|runlevel6.target, reboot.target|重启<br>
-emergency|emergency.target|紧急Shell</p>
-<h3 id="systemd-的并发启动原理">SystemD 的并发启动原理</h3>
-<p>并发启动原理之一：解决 socket 依赖<br>
-并发启动原理之二：解决 D-Bus 依赖<br>
-并发启动原理之三：解决文件系统依赖</p>
-<h3 id="systemd-的使用">SystemD 的使用</h3>
-<ul>
-<li>后台service进程代码不需要执行两次fork来实现后台deamon，只需要实现service本身的主循环即可。</li>
-<li>不要调用 setsid()，交给 SystemD 处理</li>
-<li>不再需要维护 pid 文件。</li>
-<li>SystemD 提供了日志功能，service进程只需要输出到 stderr 即可，无需使用 syslog。</li>
-<li>处理信号 SIGTERM，这个信号的唯一正确作用就是停止当前service，不要做其他的事情。</li>
-<li>SIGHUP 信号的作用是重启service。</li>
-<li>需要套接字的service，不要自己创建套接字，让 SystemD 传入套接字。</li>
-<li>使用 sd_notify()函数通知 SystemD service自己的状态改变。一般地，当service初始化结束，进入service就绪状态时，可以调用它。</li>
-<li>Unit 文件的编写，详细可点击查看<a href></a>。</li>
-</ul>
-<h3 id="systemctl-工具">systemctl 工具</h3>
-<h3 id="systemctl-工具-v2">systemctl 工具</h3>
-<p>~$:systemctl list-units     # 列出正在运行的 Unit<br>
-~$:systemctl list-units --all   # 列出所有Unit，包括没有找到配置文件的或者启动失败的<br>
-~$:systemctl list-units --all --state=inactive      # 列出所有没有运行的 Unit<br>
-~$:systemctl list-units --failed    # 列出所有加载失败的 Unit<br>
-~$:systemctl list-units --type=service  # 列出所有正在运行的、类型为 service 的 Unit<br>
-~$:systemctl list-unit-files    # 列出所有配置文件<br>
-~$:systemctl list-unit-files --type=service    # 列出指定类型的配置文件<br>
-~$:systemctl start foo.service	# 用来启动一个service (并不会重启现有的)<br>
-~$:systemctl stop foo.service	# 用来停止一个service (并不会重启现有的)。<br>
-~$:systemctl restart foo.service	# 用来停止并启动一个service。<br>
-~$:systemctl reload foo.service	    # 当支持时，重新装载配置文件而不中断等待操作。<br>
-~$:systemctl condrestart foo.service    # 如果service正在运行那么重启它。<br>
-~$:systemctl status foo.service	    # 汇报service是否正在运行。<br>
-~$:systemctl list-unit-files --type=service     # 用来列出可以启动或停止的service列表。<br>
-~$:systemctl enable foo.service     # 在下次启动时或满足其他触发条件时设置service为启用<br>
-~$:systemctl disable foo.service	# 在下次启动时或满足其他触发条件时设置service为禁用<br>
-~$:systemctl is-enabled foo.service     # 用来检查一个service在当前环境下被配置为启用还是禁用。<br>
-~$:systemctl list-unit-files --type=service     # 输出在各个运行级别下service的启用和禁用情况<br>
-~$:systemctl daemon-reload	    # 创建新service文件或者变更设置时使用。<br>
-~$:systemctl isolate multi-user.target (OR systemctl isolate runlevel3.target OR telinit 3)	    # 改变至多用户运行级别<br>
-~$:ls /etc/SystemD/system/*.wants/foo.service      # 用来列出该service在哪些运行级别下启用和禁用。<br>
-~$:systemctl reboot     # 重启机器<br>
-~$:systemctl poweroff   # 关机<br>
-~$:systemctl suspend    # 待机<br>
-~$:systemctl hibernate  # 休眠<br>
-~$:systemctl hybrid-sleep   # 混合休眠模式（同时休眠到硬盘并待机）</p>
-<p>一般只有管理员才可以关机。正常情况下系统不应该允许 SSH 远程登录的用户执行关机命令。否则其他用户正在job，一个用户把系统关了就不好了。使用logind解决这个问题。logind 不是 pid-1 的 init 进程。它的作用和 UpStart 的 session init 类似，但功能要丰富很多，它能够管理几乎所有用户会话(session)相关的事情。logind 不仅是 ConsoleKit 的替代，它可以：</p>
-<ul>
-<li>维护，跟踪会话和用户登录情况。</li>
-<li>Logind 也负责统计用户会话是否长时间没有操作，可以执行休眠/关机等相应操作。</li>
-<li>为用户会话的所有进程创建 CGroup。这不仅方便统计所有用户会话的相关进程，也可以实现会话级别的系统资源控制。</li>
-<li>负责电源管理的组合键处理，比如用户按下电源键，将系统切换至睡眠状态。</li>
-<li>多席位(multi-seat) 管理。</li>
-</ul>
-<h2 id="sysvinit-upstart-systemd比较">SysVInit，Upstart，SystemD比较</h2>
-<p>SysVInit比较简单。Service开发人员只需要编写启动和停止脚本，将 service 添加/删除到某个 runlevel 时，只需要执行一些创建/删除软连接文件的基本操作。<br>
-其次，SysVInit 的另一个优点是确定的执行顺序：脚本严格按照启动数字的大小顺序执行，一个执行完毕再执行下一个，这非常有益于错误排查。UpStart 和 SystemD 支持并发启动，导致没有人可以确定地了解具体的启动顺序，排错不易。但是串行地执行脚本导致 SysVInit 运行效率较慢。<br>
-可以看到，UpStart 的设计比 SysVInit 更加先进。<br>
-SystemD 的最大特点有两个：并发启动能力强，极大地提高了系统启动速度；用 CGroup 统计跟踪子进程，干净可靠。<br>
-此外，和其前任不同的地方在于，SystemD 已经不仅仅是一个初始化系统了。SystemD 出色地替代了 SysVInit 的所有功能，但它并未就此自满。因为 init 进程是系统所有进程的父进程这样的特殊性，SystemD 非常适合提供曾经由其他service提供的功能，比如定时任务 (以前由 crond 完成)；会话管理 (以前由 ConsoleKit/PolKit 等管理) 。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init1/index.html</a><br>
-2.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init2/index.html?ca=drs-</a><br>
-3.<a href="https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1407_liuming_init3/index.html?ca=drs-</a><br>
-4.<a href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html" target="_blank" rel="noopener">http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-commands.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/22/linux-screen-capture/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/22/linux-screen-capture/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">linux screen capture</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-22 21:48:27 / 修改时间：23:04:49" itemprop="dateCreated datePublished" datetime="2019-06-22T21:48:27+08:00">2019-06-22</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="常用的截屏工具">常用的截屏工具</h2>
-<ul>
-<li>screenshot</li>
-<li>scrot</li>
-</ul>
-<p>screentshot是系统自带的截屏工具，可以部分截取，直接按win键搜索可运行。<br>
-scrot需要安装，这个工具需要从终端运行，截图默认保存在当前目录。</p>
-<h2 id="screenshot">screenshot</h2>
-<h2 id="scrot">scrot</h2>
-<p>scrot [options] [filename]</p>
-<h3 id="参数介绍">参数介绍</h3>
-<p>scrot [-vusbcm]<br>
-不加参数，直接截取整个screen<br>
--v  查看scort版本<br>
--u  截取当前鼠标焦点所在window<br>
--s  执行命令之后，点击鼠标截取相对应的window。<br>
--b  包含当前window的边界<br>
-–delay [NUM]   延长NUM秒之后截图<br>
--c  设置delay的时候显示数字延迟<br>
-–quliaty [NUM] 指定screenshot image的质量，从$1-100$<br>
-–thumb [NUM]   缩略图，是原始大小的百分之多少。。。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.howtoforge.com/tutorial/how-to-take-screenshots-in-linux-with-scrot/" target="_blank" rel="noopener">https://www.howtoforge.com/tutorial/how-to-take-screenshots-in-linux-with-scrot/</a><br>
-2.<a href="http://awesomescreenshot.com/" target="_blank" rel="noopener">http://awesomescreenshot.com/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/06/18/python-指定长度list初始化/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/06/18/python-指定长度list初始化/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">python 指定长度list初始化</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-06-18 15:26:32 / 修改时间：15:35:43" itemprop="dateCreated datePublished" datetime="2019-06-18T15:26:32+08:00">2019-06-18</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="指定长度list初始化">指定长度list初始化</h2>
-<p>想要找到初始化指定长度list最快的方法。<br>
-方法一：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">array = [[]] * length</span><br></pre></td></tr></table></figure>
-<p>方法二</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">array = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> range(length)]</span><br></pre></td></tr></table></figure>
-<p>事实上，只有第二种方法是对的。第一种方法中，arrary中的10个[]都指向了同一个对象。。</p>
-<h2 id="示例">示例</h2>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">length = <span class="number">10</span></span><br><span class="line">v1 = [[]]*length</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(length):</span><br><span class="line">    v1[i].append(i)</span><br><span class="line">print(v1)</span><br><span class="line"><span class="comment"># [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]]</span></span><br><span class="line"></span><br><span class="line">v2 = [[] <span class="keyword">for</span> _ <span class="keyword">in</span> range(length)]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(length):</span><br><span class="line">    v2[i].append(i)</span><br><span class="line"></span><br><span class="line">print(v2)</span><br><span class="line"><span class="comment"># [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]]</span></span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2476,7 +2456,7 @@ scrot需要安装，这个工具需要从终端运行，截图默认保存在当
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">305</span>
+                    <span class="site-state-item-count">309</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3320,7 +3300,13 @@ scrot需要安装，这个工具需要从终端运行，截图默认保存在当
                     
                       
                     
-                    <span class="site-state-item-count">381</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">384</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3571,6 +3557,8 @@ scrot需要安装，这个工具需要从终端运行，截图默认保存在当
   
     
       
+        
+      
     
       
     
@@ -3592,6 +3580,36 @@ scrot需要安装，这个工具需要从终端运行，截图默认保存在当
     
   
 
+  
+    
+      <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      TeX: {equationNumbers: { autoNumber: "AMS" }}
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+    overflow: auto hidden;
+}
+</style>
+
+    
   
 
 

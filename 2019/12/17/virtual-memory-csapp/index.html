@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="物理和虚拟寻址 地址空间 虚拟内存作为缓存的工具 DRAM缓存的组织结构 页表 页表是一个数据结构，它和操作系统，MMU（内存管理单元中的）地址翻译硬件，将虚拟页翻译成物理页。 页命中 缺页 分配页面 局部性和抖动 虚拟内存作为内存管理的工具 虚拟内存作为内存保护的工具 地址翻译 形式上来说，地址翻译是一个N元素的虚拟地址空间(VAS)中的元素和一个M元素的物理地址空间(PAS)中元素之间的映射。">
+<meta name="keywords" content="操作系统,计算机系统,虚拟内存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="virtual memory csapp">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/12/17/virtual-memory-csapp/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="物理和虚拟寻址 地址空间 虚拟内存作为缓存的工具 DRAM缓存的组织结构 页表 页表是一个数据结构，它和操作系统，MMU（内存管理单元中的）地址翻译硬件，将虚拟页翻译成物理页。 页命中 缺页 分配页面 局部性和抖动 虚拟内存作为内存管理的工具 虚拟内存作为内存保护的工具 地址翻译 形式上来说，地址翻译是一个N元素的虚拟地址空间(VAS)中的元素和一个M元素的物理地址空间(PAS)中元素之间的映射。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-12-16T19:25:05.213Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="virtual memory csapp">
+<meta name="twitter:description" content="物理和虚拟寻址 地址空间 虚拟内存作为缓存的工具 DRAM缓存的组织结构 页表 页表是一个数据结构，它和操作系统，MMU（内存管理单元中的）地址翻译硬件，将虚拟页翻译成物理页。 页命中 缺页 分配页面 局部性和抖动 虚拟内存作为内存管理的工具 虚拟内存作为内存保护的工具 地址翻译 形式上来说，地址翻译是一个N元素的虚拟地址空间(VAS)中的元素和一个M元素的物理地址空间(PAS)中元素之间的映射。">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/12/17/virtual-memory-csapp/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>virtual memory csapp | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/17/virtual-memory-csapp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">virtual memory csapp
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-17 02:55:10 / 修改时间：03:25:05" itemprop="dateCreated datePublished" datetime="2019-12-17T02:55:10+08:00">2019-12-17</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机系统/" itemprop="url" rel="index"><span itemprop="name">计算机系统</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/12/17/virtual-memory-csapp/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/12/17/virtual-memory-csapp/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="物理和虚拟寻址">物理和虚拟寻址</h2>
+<h2 id="地址空间">地址空间</h2>
+<h2 id="虚拟内存作为缓存的工具">虚拟内存作为缓存的工具</h2>
+<h3 id="dram缓存的组织结构">DRAM缓存的组织结构</h3>
+<h3 id="页表">页表</h3>
+<p>页表是一个数据结构，它和操作系统，MMU（内存管理单元中的）地址翻译硬件，将虚拟页翻译成物理页。</p>
+<h3 id="页命中">页命中</h3>
+<h3 id="缺页">缺页</h3>
+<h3 id="分配页面">分配页面</h3>
+<h3 id="局部性和抖动">局部性和抖动</h3>
+<h2 id="虚拟内存作为内存管理的工具">虚拟内存作为内存管理的工具</h2>
+<h2 id="虚拟内存作为内存保护的工具">虚拟内存作为内存保护的工具</h2>
+<h2 id="地址翻译">地址翻译</h2>
+<p>形式上来说，地址翻译是一个N元素的虚拟地址空间(VAS)中的元素和一个M元素的物理地址空间(PAS)中元素之间的映射。</p>
+<h3 id="结合高速缓存和虚拟内存">结合高速缓存和虚拟内存</h3>
+<h3 id="利用tlb加速地址翻译">利用TLB加速地址翻译</h3>
+<h3 id="多级页表">多级页表</h3>
+<h3 id="端到端的地址翻译">端到端的地址翻译</h3>
+<h2 id="intel-core-i7-linux-内存系统">Intel Core i7/Linux 内存系统</h2>
+<h2 id="内存映射">内存映射</h2>
+<p>Linux通过将一个虚拟内存区域和磁盘上的对象关联起来，初始化这个虚拟内存区域中的内容，这个过程叫做内存映射(memory mapping)。</p>
+<h3 id="再看共享对象">再看共享对象</h3>
+<h3 id="再看fork函数">再看fork函数</h3>
+<h3 id="再看execve函数">再看execve函数</h3>
+<h3 id="使用mmap函数的用户级内存映射">使用mmap函数的用户级内存映射</h3>
+<h2 id="动态内存分配">动态内存分配</h2>
+<h3 id="malloc和free">malloc和free</h3>
+<h3 id="为什么要使用动态内存分配">为什么要使用动态内存分配</h3>
+<h3 id="分配器的要求和目标">分配器的要求和目标</h3>
+<h3 id="碎片">碎片</h3>
+<h3 id="实现问题">实现问题</h3>
+<h3 id="隐式空闲链表">隐式空闲链表</h3>
+<h3 id="放置已分配的块">放置已分配的块</h3>
+<h3 id="分隔空闲块">分隔空闲块</h3>
+<h3 id="获取额外的堆内存">获取额外的堆内存</h3>
+<h3 id="合并空闲块">合并空闲块</h3>
+<h3 id="带边界标记的合并">带边界标记的合并</h3>
+<h3 id="实现一个简单的分配器">实现一个简单的分配器</h3>
+<h3 id="显式空闲链表">显式空闲链表</h3>
+<h3 id="分离的空闲链表">分离的空闲链表</h3>
+<h2 id="垃圾收集">垃圾收集</h2>
+<h3 id="基本知识">基本知识</h3>
+<h3 id="mark和sweep垃圾收集器">Mark和Sweep垃圾收集器</h3>
+<h3 id="c程序的保守mark和sweep">C程序的保守Mark和Sweep</h3>
+<h2 id="c中常见的内存相关错误">C中常见的内存相关错误</h2>
+<h3 id="解引用坏指针">解引用坏指针</h3>
+<h3 id="读取未初始化的内存">读取未初始化的内存</h3>
+<h3 id="允许栈缓冲区溢出">允许栈缓冲区溢出</h3>
+<h3 id="假设指针和它们指向的对象是相同大小的">假设指针和它们指向的对象是相同大小的</h3>
+<h3 id="造成错位错误">造成错位错误</h3>
+<h3 id="引用指针-而不是它所指向的对象">引用指针，而不是它所指向的对象</h3>
+<h3 id="误解引用指针">误解引用指针</h3>
+<h3 id="引用不存在的变量">引用不存在的变量</h3>
+<h3 id="引用空闲堆块中的数据">引用空闲堆块中的数据</h3>
+<h3 id="引起内存泄露">引起内存泄露</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《CSAPP》</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
+          
+            <a href="/tags/计算机系统/" rel="tag"># 计算机系统</a>
+          
+            <a href="/tags/虚拟内存/" rel="tag"># 虚拟内存</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/16/storage-technologies-csapp/" rel="next" title="storage technologies csapp">
+                <i class="fa fa-chevron-left"></i> storage technologies csapp
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/12/17/Processor-Architecture/" rel="prev" title="Processor Architecture">
+                Processor Architecture <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">309</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">28</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">384</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#物理和虚拟寻址"><span class="nav-number">1.</span> <span class="nav-text">物理和虚拟寻址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址空间"><span class="nav-number">2.</span> <span class="nav-text">地址空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为缓存的工具"><span class="nav-number">3.</span> <span class="nav-text">虚拟内存作为缓存的工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dram缓存的组织结构"><span class="nav-number">3.1.</span> <span class="nav-text">DRAM缓存的组织结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页表"><span class="nav-number">3.2.</span> <span class="nav-text">页表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页命中"><span class="nav-number">3.3.</span> <span class="nav-text">页命中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺页"><span class="nav-number">3.4.</span> <span class="nav-text">缺页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分配页面"><span class="nav-number">3.5.</span> <span class="nav-text">分配页面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#局部性和抖动"><span class="nav-number">3.6.</span> <span class="nav-text">局部性和抖动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为内存管理的工具"><span class="nav-number">4.</span> <span class="nav-text">虚拟内存作为内存管理的工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为内存保护的工具"><span class="nav-number">5.</span> <span class="nav-text">虚拟内存作为内存保护的工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址翻译"><span class="nav-number">6.</span> <span class="nav-text">地址翻译</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#结合高速缓存和虚拟内存"><span class="nav-number">6.1.</span> <span class="nav-text">结合高速缓存和虚拟内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用tlb加速地址翻译"><span class="nav-number">6.2.</span> <span class="nav-text">利用TLB加速地址翻译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多级页表"><span class="nav-number">6.3.</span> <span class="nav-text">多级页表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#端到端的地址翻译"><span class="nav-number">6.4.</span> <span class="nav-text">端到端的地址翻译</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#intel-core-i7-linux-内存系统"><span class="nav-number">7.</span> <span class="nav-text">Intel Core i7/Linux 内存系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存映射"><span class="nav-number">8.</span> <span class="nav-text">内存映射</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#再看共享对象"><span class="nav-number">8.1.</span> <span class="nav-text">再看共享对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再看fork函数"><span class="nav-number">8.2.</span> <span class="nav-text">再看fork函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再看execve函数"><span class="nav-number">8.3.</span> <span class="nav-text">再看execve函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用mmap函数的用户级内存映射"><span class="nav-number">8.4.</span> <span class="nav-text">使用mmap函数的用户级内存映射</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态内存分配"><span class="nav-number">9.</span> <span class="nav-text">动态内存分配</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#malloc和free"><span class="nav-number">9.1.</span> <span class="nav-text">malloc和free</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要使用动态内存分配"><span class="nav-number">9.2.</span> <span class="nav-text">为什么要使用动态内存分配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分配器的要求和目标"><span class="nav-number">9.3.</span> <span class="nav-text">分配器的要求和目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#碎片"><span class="nav-number">9.4.</span> <span class="nav-text">碎片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现问题"><span class="nav-number">9.5.</span> <span class="nav-text">实现问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#隐式空闲链表"><span class="nav-number">9.6.</span> <span class="nav-text">隐式空闲链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#放置已分配的块"><span class="nav-number">9.7.</span> <span class="nav-text">放置已分配的块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分隔空闲块"><span class="nav-number">9.8.</span> <span class="nav-text">分隔空闲块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取额外的堆内存"><span class="nav-number">9.9.</span> <span class="nav-text">获取额外的堆内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#合并空闲块"><span class="nav-number">9.10.</span> <span class="nav-text">合并空闲块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#带边界标记的合并"><span class="nav-number">9.11.</span> <span class="nav-text">带边界标记的合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现一个简单的分配器"><span class="nav-number">9.12.</span> <span class="nav-text">实现一个简单的分配器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#显式空闲链表"><span class="nav-number">9.13.</span> <span class="nav-text">显式空闲链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分离的空闲链表"><span class="nav-number">9.14.</span> <span class="nav-text">分离的空闲链表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#垃圾收集"><span class="nav-number">10.</span> <span class="nav-text">垃圾收集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本知识"><span class="nav-number">10.1.</span> <span class="nav-text">基本知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mark和sweep垃圾收集器"><span class="nav-number">10.2.</span> <span class="nav-text">Mark和Sweep垃圾收集器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c程序的保守mark和sweep"><span class="nav-number">10.3.</span> <span class="nav-text">C程序的保守Mark和Sweep</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#c中常见的内存相关错误"><span class="nav-number">11.</span> <span class="nav-text">C中常见的内存相关错误</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#解引用坏指针"><span class="nav-number">11.1.</span> <span class="nav-text">解引用坏指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读取未初始化的内存"><span class="nav-number">11.2.</span> <span class="nav-text">读取未初始化的内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#允许栈缓冲区溢出"><span class="nav-number">11.3.</span> <span class="nav-text">允许栈缓冲区溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#假设指针和它们指向的对象是相同大小的"><span class="nav-number">11.4.</span> <span class="nav-text">假设指针和它们指向的对象是相同大小的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#造成错位错误"><span class="nav-number">11.5.</span> <span class="nav-text">造成错位错误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用指针-而不是它所指向的对象"><span class="nav-number">11.6.</span> <span class="nav-text">引用指针，而不是它所指向的对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#误解引用指针"><span class="nav-number">11.7.</span> <span class="nav-text">误解引用指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用不存在的变量"><span class="nav-number">11.8.</span> <span class="nav-text">引用不存在的变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用空闲堆块中的数据"><span class="nav-number">11.9.</span> <span class="nav-text">引用空闲堆块中的数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引起内存泄露"><span class="nav-number">11.10.</span> <span class="nav-text">引起内存泄露</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">12.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
