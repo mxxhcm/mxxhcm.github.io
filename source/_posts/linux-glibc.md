@@ -2,7 +2,6 @@
 title: linux glibc
 date: 2019-11-24 11:57:59
 tags:
- - glibc
  - linux
 categories: linux
 ---

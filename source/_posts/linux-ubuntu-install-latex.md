@@ -2,8 +2,7 @@
 title: linux-ubuntu install latex
 date: 2018-10-15 10:42:22
 tags:
-- linux
-- latex
+ - linux
 categories: linux
 ---
 
