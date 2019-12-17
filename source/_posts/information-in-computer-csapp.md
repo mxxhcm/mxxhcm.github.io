@@ -3,7 +3,8 @@ title: information in computer csapp
 date: 2019-12-11 15:21:36
 tags:
  - CSAPP
-categories: CSAPP
+ - 计算机系统
+categories: 计算机系统
 mathjax: true
 ---
 

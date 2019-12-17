@@ -4,7 +4,8 @@ date: 2019-12-10 19:19:32
 tags:
  - C/C++
  - CSAPP
-categories: CSAPP
+ - 计算机系统
+categories: 计算机系统
 ---
 
 

@@ -3,8 +3,7 @@ title: computer configure
 date: 2019-05-01 12:31:18
 tags:
  - 计算机系统
- - 工具
-categories: 工具
+categories: 计算机系统
 ---
 
 ## SSD

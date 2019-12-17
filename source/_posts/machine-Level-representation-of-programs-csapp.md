@@ -3,7 +3,8 @@ title: machine-Level representation of programs csapp
 date: 2019-12-12 23:49:34
 tags:
  - CSAPP
-categories: CSAPP
+ - 计算机系统
+categories: 计算机系统
 ---
 
 
