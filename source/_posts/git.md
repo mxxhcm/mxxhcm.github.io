@@ -2,9 +2,10 @@
 title: linux git
 date: 2019-05-07 16:56:44
 tags:
- - github
+ - git
+ - 工具
  - linux
-categories: git
+categories: 工具
 ---
 
 ## linux安装github

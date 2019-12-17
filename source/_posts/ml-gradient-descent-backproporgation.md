@@ -1,9 +1,7 @@
 ---
-title: 梯度下降和反向传播
+title: gradient descent and backproporgation
 date: 2019-03-18 15:19:07
 tags:
- - 梯度下降
- - 反向传播
  - 机器学习
 categories: 机器学习
 mathjax: true
@@ -33,6 +31,8 @@ $$\frac{\partial f}{\partial l} = \lim\_{\rho \to 0}\frac{f(x+\Delta x,y+\Delta 
 ## 反向传播算法
 使用梯度下降算法的时候，我们需要计算函数的梯度，反向传播算法解释计算神经网络中误差函数梯度的一种方法。
 
+## 手动实现bp
+可以查看[]()。
 
 ## 参考文献
 1.https://zhuanlan.zhihu.com/p/25355758

@@ -2,10 +2,7 @@
 title: PRML chapter 8 Graphical Models
 date: 2019-01-06 14:31:09
 tags:
- - 模式识别
  - 机器学习
- - 概率图模型
- - 贝叶斯网络
 categories: 机器学习
 mathjax: true
 ---

@@ -2,8 +2,6 @@
 title: C/C++ exit and return
 date: 2019-11-12 13:51:20
 tags:
- - return
- - exit
  - C/C++
 categories: C/C++
 ---

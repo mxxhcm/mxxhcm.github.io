@@ -3,8 +3,6 @@ title: C++ expression
 date: 2019-11-10 12:15:22
 tags:
  - C/C++
- - unary operator
- - binary operator
 categories: C/C++
 ---
 

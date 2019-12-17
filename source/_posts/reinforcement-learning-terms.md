@@ -2,24 +2,7 @@
 title: reinforcment learning terms
 date: 2019-05-29 17:59:28
 tags:
- - online
- - offline
- - on-policy
- - off-policy
- - bootstrap
- - model-free
- - model-based
- - value based
- - policy gradient
- - actor critic
  - 强化学习
- - state space
- - action space
- - reward
- - return
- - advantage 
- - state value
- - action value
 categories: 强化学习
 mathjax: true
 ---

@@ -3,9 +3,7 @@ title: gradient method deep deterministic policy gradient
 date: 2019-10-06 10:17:25
 tags:
  - 强化学习
- - 深度学习
  - policy gradient
- - ddpg 
 categories: 强化学习
 mathajx: true
 ---

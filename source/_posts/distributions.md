@@ -2,12 +2,6 @@
 title: distributions
 date: 2019-07-31 11:25:10
 tags:
- - 概率论
- - 二项分布
- - 几何分布
- - 伯努利分布
- - 泊松分布
- - beta分布
  - 概率论与统计
 categories: 概率论与统计
 mathjax: true

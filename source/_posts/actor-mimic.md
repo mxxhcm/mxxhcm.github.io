@@ -3,7 +3,6 @@ title: Actor-Mimic
 date: 2019-10-14 11:43:48
 tags:
  - 强化学习
- - rl papers
 categories: 强化学习
 mathjax: true
 ---

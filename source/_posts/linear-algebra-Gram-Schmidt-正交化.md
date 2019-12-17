@@ -3,9 +3,6 @@ title: linear algebra Gram-Schmidt 正交化
 date: 2019-11-01 09:39:44
 tags:
  - 线性代数
- - 正交化
- - 正交基
- - Gram-Schmidt
 categories: 线性代数
 ---
 

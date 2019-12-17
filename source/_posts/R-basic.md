@@ -3,7 +3,8 @@ title: R basic
 date: 2018-10-21 19:50:55
 tags:
  - R
-categories: R
+ - 其他编程语言
+categories: 其他编程语言
 ---
 
 

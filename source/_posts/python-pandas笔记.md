@@ -1,8 +1,7 @@
 ---
-title: pandas笔记
+title: python pandas笔记
 date: 2019-03-18 15:15:54
 tags:
- - pandas
  - python
 categories: python
 ---

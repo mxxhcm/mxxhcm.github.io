@@ -2,9 +2,8 @@
 title: gradient method proximal policy optimization
 date: 2019-09-23 16:57:43
 tags:
- - proximal policy optimization
- - ppo
  - policy gradient
+ - 强化学习
 categories: 强化学习
 mathjax: ture
 ---

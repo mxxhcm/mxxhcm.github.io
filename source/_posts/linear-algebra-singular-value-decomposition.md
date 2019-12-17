@@ -2,8 +2,6 @@
 title: singular value decomposition（奇异值分解）
 date: 2019-01-03 15:19:54
 tags:
- - 奇异值分解
- - 特征值分解
  - 线性代数
 categories: 线性代数
 mathjax: true

@@ -2,13 +2,7 @@
 title: 神经网络-激活函数
 date: 2019-03-14 11:45:46
 tags:
- - 激活函数
  - 机器学习
- - 深度学习
- - 神经网络
- - ReLU
- - tanh
- - sigmod
 categories: 机器学习 
 mathjax: true
 ---

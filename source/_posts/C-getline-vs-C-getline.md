@@ -2,11 +2,10 @@
 title: C getline vs C++ getline
 date: 2019-11-13 13:11:10
 tags:
- - getline
  - C/C++
  - string
- - char array
- - 字符数组
+ - C风格字符串
+ - 数组
 categories: C/C++
 ---
 

@@ -3,7 +3,6 @@ title: assembly x86-64
 date: 2019-12-16 14:26:52
 tags:
  - 汇编
- - x86
 categories: 汇编
 ---
 

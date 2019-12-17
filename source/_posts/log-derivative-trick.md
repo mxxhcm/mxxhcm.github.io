@@ -2,9 +2,8 @@
 title: log derivative trick
 date: 2019-09-12 19:21:10
 tags:
- - 高等数学
- - log detivative trick
-categories: 高等数学
+ - 强化学习
+categories: 强化学习
 mathjax: true
 ---
 

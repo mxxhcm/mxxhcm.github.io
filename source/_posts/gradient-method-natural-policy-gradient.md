@@ -3,7 +3,6 @@ title: gradient method natural policy gradient
 date: 2019-09-07 19:38:03
 tags:
  - gradient method
- - natural policy gradient
  - 强化学习
 categories: 强化学习
 mathjax: true

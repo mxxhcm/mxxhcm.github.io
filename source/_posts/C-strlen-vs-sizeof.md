@@ -2,8 +2,8 @@
 title: C/C++ strlen vs sizeof
 date: 2019-11-26 10:07:37
 tags:
- - C/++
-categories: C/++
+ - C/C++
+categories: C/C++
 ---
 
 

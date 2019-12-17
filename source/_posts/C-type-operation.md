@@ -2,9 +2,6 @@
 title: C++ type operation
 date: 2019-11-13 14:19:46
 tags:
- - auto
- - typedef
- - decltype
  - C/C++
 categories: C/C++
 ---

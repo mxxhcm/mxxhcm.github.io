@@ -2,13 +2,7 @@
 title: python multiprocessing 
 date: 2019-04-23 15:46:14
 tags:
-- python
-- Pool
-- Process
-- multiprocessing
-- threading
-- 进程
-- 线程
+ - python
 categories: python
 ---
 

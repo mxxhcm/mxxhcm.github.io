@@ -3,9 +3,6 @@ title: probability basic
 date: 2019-07-31 11:24:55
 tags:
  - 概率论与统计
- - 先验
- - 后验
- - 似然
 categories: 概率论与统计
 mathajax: true
 ---

@@ -235,3 +235,4 @@ I(X;Y)&=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(
 10.https://en.wikipedia.org/wiki/Mutual_information
 11.https://zhuanlan.zhihu.com/p/26551798
 12.https://blog.csdn.net/gangyin5071/article/details/82228827#4相对熵kl散度
+

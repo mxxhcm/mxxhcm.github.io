@@ -3,9 +3,6 @@ title: OS process vs thread
 date: 2019-11-12 00:09:16
 tags:
  - 操作系统
- - 进程
- - 线程
- - 操作系统重点
 categories: 操作系统
 ---
 

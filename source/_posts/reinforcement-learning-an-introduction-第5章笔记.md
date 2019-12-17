@@ -3,7 +3,6 @@ title: reinforcement learning an introduction 第5章笔记
 date: 2019-04-29 15:53:02 
 tags:
 - 强化学习
-- 蒙特卡洛
 categories: 强化学习
 mathjax: true
 ---

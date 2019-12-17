@@ -3,10 +3,6 @@ title: 主成分分析(Principal Component Analysis)
 date: 2019-01-02 20:51:19
 tags:
  - 机器学习
- - 主成分分析
- - PCA
- - 降维
- - 监督学习
 categories: 机器学习
 mathjax: true
 ---

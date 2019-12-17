@@ -1,9 +1,8 @@
 ---
-title: h5py笔记
+title: python h5py笔记
 date: 2019-03-18 15:12:03
 tags:
  - python
- - h5py
 categories: python
 ---
 

@@ -3,11 +3,6 @@ title: EM(Expectation Maximization)算法
 date: 2019-01-21 10:22:45
 tags:
 - 机器学习
-- 非监督学习
-- 最大似然估计
-- EM
-- 期望最大化
-- Jensen不等式
 categories: 机器学习
 mathjax: true
 ---

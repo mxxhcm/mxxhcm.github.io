@@ -3,8 +3,8 @@ title: matlab basic
 date: 2019-10-26 16:16:58
 tags:
  - matlab
- - 概率论与统计
-categories: matlab
+ - 其他编程语言
+categories: 其他编程语言
 ---
 
 ## Matlab基础

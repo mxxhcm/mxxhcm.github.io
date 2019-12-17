@@ -2,7 +2,6 @@
 title: gradient method policy gradient
 date: 2019-09-07 19:37:52
 tags:
- - gradient method
  - policy gradient
  - 强化学习
 categories: 强化学习

@@ -2,11 +2,6 @@
 title: C/C++ malloc(alloc) free new and delete
 date: 2019-11-05 10:37:48
 tags:
- - malloc
- - alloc
- - free
- - new
- - delete
  - C/C++
 categories: C/C++
 ---

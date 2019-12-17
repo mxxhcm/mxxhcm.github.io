@@ -2,8 +2,6 @@
 title: eigenvalues and eigenvectors（特征值和特征向量）
 date: 2019-08-28 17:21:43
 tags:
- - 特征值
- - 特征向量
  - 线性代数
 categories: 线性代数
 mathjax: true

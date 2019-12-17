@@ -3,7 +3,6 @@ title: C/C++ compound type array
 date: 2019-11-13 14:09:40
 tags:
  - 数组
- - array
  - 指针
  - C/C++
 categories: C/C++

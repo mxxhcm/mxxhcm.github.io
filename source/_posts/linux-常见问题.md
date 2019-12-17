@@ -2,10 +2,8 @@
 title: linux 常见问题（不定期更新）
 date: 2018-12-20 20:30:34
 tags: 
-  - gcc
-  - codeblocks
   - linux
-  - 常见问题
+  - 问题
 categories: linux
 ---
 

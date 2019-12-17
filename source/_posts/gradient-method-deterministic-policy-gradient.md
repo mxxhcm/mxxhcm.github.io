@@ -2,10 +2,7 @@
 title: policy gradient
 date: 2019-07-16 10:31:55
 tags:
- - pg
- - dpg
  - policy gradient
- - 深度学习
  - 强化学习
 categories: 强化学习
 mathjax: true

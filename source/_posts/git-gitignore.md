@@ -2,8 +2,9 @@
 title: github .gitignore
 date: 2019-04-29 16:03:21
 tags:
-- git
-categories: git
+ - git
+ - 工具
+categories: 工具
 mathjax: true
 ---
 

@@ -2,9 +2,6 @@
 title: asymptotically efficient 渐进有效性
 date: 2019-09-18 14:55:50
 tags:
- - 渐进有效性
- - asymptotically efficient
- - cramer-rao bound
  - 概率论与统计
 categories: 概率论与统计
 mathjax: true
@@ -36,4 +33,4 @@ cramer-rao bound
 6.https://www.zhihu.com/question/24710773/answer/117796031
 7.http://www2.math.ou.edu/~kmartin/stats/cramer-rao.pdf
 8.https://www.zhihu.com/question/311561435/answer/607730638
-
+9.https://zhuanlan.zhihu.com/p/27644403

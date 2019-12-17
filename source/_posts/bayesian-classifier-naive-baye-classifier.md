@@ -2,9 +2,7 @@
 title: beyesian classifier naive baye classifier
 date: 2019-10-27 21:57:09
 tags:
- - 朴素贝叶斯分类器
- - 概率论与统计
- - 贝叶斯分类器
+ - 机器学习
 categories: 机器学习
 ---
 

@@ -3,7 +3,6 @@ title: C
 date: 2019-09-17 17:12:35
 tags:
  - C/C++
- - C
 categories: C/C++
 mathjax: true
 ---

@@ -3,9 +3,6 @@ title: model evaluation and selection
 date: 2019-10-22 15:53:48
 tags:
  - 机器学习
- - bootstrapping
- - hold-out
- - cross-validation
 categories: 机器学习
 ---
 

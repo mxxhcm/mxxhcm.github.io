@@ -4,8 +4,6 @@ date: 2019-07-12 20:08:59
 tags:
  - python
  - numpy 
- - expand_dims
- - newaxis
 categories: python
 ---
 

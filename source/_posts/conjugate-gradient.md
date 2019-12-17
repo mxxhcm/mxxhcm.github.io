@@ -2,10 +2,8 @@
 title: conjugate gradient
 date: 2019-09-23 14:49:28
 tags:
- - 共轭梯度
- - conjugate gradient
- - 二次优化
-categories: 凸优化
+ - 机器学习
+categories: 机器学习
 mathjax: true
 ---
 

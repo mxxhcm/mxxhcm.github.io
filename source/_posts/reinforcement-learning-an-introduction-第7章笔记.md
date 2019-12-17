@@ -2,7 +2,6 @@
 title: reinforcement learning an introduction 第7章笔记
 date: 2019-07-30 09:59:50
 tags:
- - n-steps
  - 强化学习
 categories: 强化学习
 mathjax: true

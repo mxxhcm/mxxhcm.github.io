@@ -3,9 +3,7 @@ title: linux cp, scp vs rsync
 date: 2019-06-16 16:29:17
 tags:
  - linux
- - cp
- - scp
- - rsync
+ - shell command
 categories: linux
 ---
 

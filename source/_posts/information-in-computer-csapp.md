@@ -2,8 +2,8 @@
 title: information in computer csapp
 date: 2019-12-11 15:21:36
 tags:
- - csapp
-categories: csapp
+ - CSAPP
+categories: CSAPP
 mathjax: true
 ---
 

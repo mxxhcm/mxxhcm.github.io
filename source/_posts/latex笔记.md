@@ -2,7 +2,7 @@
 title: latex笔记
 date: 2018-12-22 10:08:26
 tags: 
-  - Latex
+  - latex
 categories: 工具
 mathjax: true
 ---

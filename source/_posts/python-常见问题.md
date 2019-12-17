@@ -3,9 +3,7 @@ title: python 常见问题（不定期更新）
 date: 2019-03-13 10:40:03
 tags:
  - python
- - gym
- - 常见问题
- - pip源
+ - 问题
 categories: python 
 ---
 

@@ -1,10 +1,9 @@
 ---
-title: numpy backpropagation
+title: pytohn numpy implements simple backpropagation
 date: 2019-06-08 23:10:17
 tags:
  - python
- - numpy 
- - back propagation
+ - 机器学习
 categories: 机器学习
 ---
 
@@ -54,4 +53,10 @@ for t in range(500):
 
 ## 参考文献
 1.http://pytorch.org/tutorials/beginner/pytorch_with_examples.html
-
+2.https://datascience.stackexchange.com/questions/27506/back-propagation-in-cnn
+3.https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
+4.https://medium.com/@pavisj/convolutions-and-backpropagations-46026a8f5d2c
+5.https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199
+6.http://www.robots.ox.ac.uk/~vgg/practicals/cnn/
+7.https://www.researchgate.net/post/How_backpropagation_works_for_learning_filters_in_CNN
+8.https://github.com/ivallesp/awesome-optimizers

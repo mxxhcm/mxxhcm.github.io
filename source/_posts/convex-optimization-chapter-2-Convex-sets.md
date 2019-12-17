@@ -2,15 +2,6 @@
 title: convex optimization chapter 2 Convex sets
 date: 2018-12-24 16:28:45
 tags: 
- - convex sets
- - affine sets
- - cones
- - convex cones
- - convex optimizaitons
- - 锥
- - 凸锥
- - 凸集
- - 仿射集
  - 凸优化
 categories: 凸优化
 mathjax: true

@@ -3,9 +3,6 @@ title: Monte Carlo Markov Chain
 date: 2019-08-01 20:07:38
 tags:
  - 强化学习
- - 蒙特卡洛
- - MCMC
- - 概率论
 categories: 强化学习
 mathjax: true
 ---

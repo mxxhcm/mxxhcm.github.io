@@ -3,7 +3,6 @@ title: assamble MIPS
 date: 2018-10-24 20:42:37
 tags:
 - 汇编
-- MIPS
 categories: 汇编
 ---
 

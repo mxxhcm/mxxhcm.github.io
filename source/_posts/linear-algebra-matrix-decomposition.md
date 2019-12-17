@@ -2,7 +2,6 @@
 title: linear algebra matrix decomposition
 date: 2019-11-01 09:35:12
 tags:
- - 矩阵分解
  - 线性代数
 categories: 线性代数
 ---

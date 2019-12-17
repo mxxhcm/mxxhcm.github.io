@@ -3,8 +3,7 @@ title: CNN
 date: 2019-03-13 15:21:27
 tags:
  - CNN
- - 卷积神经网络
- - alexnet
+ - 机器学习
 categories: 机器学习
 mathjax: true
 ---

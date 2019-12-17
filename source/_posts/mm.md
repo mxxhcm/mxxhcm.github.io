@@ -2,9 +2,7 @@
 title: mm
 date: 2019-09-25 10:06:34
 tags:
- - MM
- - Majorize-Minimization
- - Minorize-Maximization
+ - 机器学习
 categories: 机器学习
 mathjax: true
 ---

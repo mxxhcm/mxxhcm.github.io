@@ -2,8 +2,6 @@
 title: orthogonality（正交性）
 date: 2019-08-27 19:21:44
 tags:
- - 正交
- - orthogonality
  - 线性代数
 categories: 线性代数
 mathjax: true

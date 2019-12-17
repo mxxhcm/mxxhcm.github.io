@@ -2,10 +2,10 @@
 title: gym retro
 date: 2019-09-15 20:28:55
 tags:
- - gym-retro
  - 强化学习
+ - python
  - gym
-categories: gym
+categories: 强化学习
 ---
 
 ## Gym Retro

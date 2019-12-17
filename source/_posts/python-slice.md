@@ -3,7 +3,6 @@ title: python slice
 date: 2019-07-13 10:30:16
 tags:
  - python
- - slice
 categories: python
 ---
 

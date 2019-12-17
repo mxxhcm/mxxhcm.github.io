@@ -3,7 +3,6 @@ title: ESL chapter 1 Introduction
 date: 2019-01-05 09:46:39
 tags:
  - 机器学习
- - 统计
 categories: 机器学习
 mathjax: true
 ---

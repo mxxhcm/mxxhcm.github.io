@@ -3,9 +3,6 @@ title: reinforcement learning an introduction 第3章笔记
 date: 2018-12-21 15:13:38
 tags: 
   - 强化学习
-  - MDP
-  - MRP
-  - Bellman Equation
 categories: 强化学习
 mathjax: true
 ---

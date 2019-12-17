@@ -2,11 +2,8 @@
 title: gradient method trust region policy optimization
 date: 2019-09-08 14:24:37
 tags:
- - gradient method
- - trust region policy optimization
- - trpo
+ - policy gradient
  - 强化学习
- - reinforcement learning
 categories: 强化学习
 mathjax: true
 ---

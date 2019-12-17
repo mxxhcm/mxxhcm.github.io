@@ -2,7 +2,7 @@
 title: shadowsocks服务端以及客户端配置
 date: 2019-03-04 13:03:57
 tags: 
- - shadowsocks
+ - shell command
  - linux
  - 工具
 categories: linux

@@ -2,10 +2,7 @@
 title: Markov Matrices
 date: 2019-07-31 20:18:10
 tags:
- - 马尔科夫矩阵
- - 马尔科夫属性
- - Markov matrices
- - Markov
+ - 强化学习
 categories: 强化学习
 mathjax: true
 ---
@@ -31,8 +28,8 @@ $$P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t) \tag{1}$$
 为什么要用Markov Chain呢？因为它有一个很好的性质，叫做stationary distribution。简单的来说，就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。举个例子，股票有牛市和熊市，还有波动状态，它们的转换关系如下所示：
 ![markov_transition](markov_transition.png)
 状态转义矩阵矩阵如下表所示：
-||牛市|熊市|波动|
-|:-:|:-:|:-:|:-:|
+| |牛市|熊市|波动|
+|:--:|:--:|:--:|:--:|
 |牛市|0.9|0.075|0.025|
 |熊市|0.15|0.8|0.05|
 |波动|0.25|0.25|0.5|

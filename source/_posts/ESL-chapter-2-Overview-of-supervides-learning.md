@@ -2,10 +2,7 @@
 title: ESL chapter 2 Overview of supervised learning
 date: 2019-01-05 09:30:55
 tags:
- - 统计
  - 机器学习
- - 监督学习
- - 非监督学习
 categories: 机器学习
 mathjax: true
 ---

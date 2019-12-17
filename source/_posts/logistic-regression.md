@@ -2,7 +2,6 @@
 title: logistic regression
 date: 2019-10-28 19:40:06
 tags:
- - 逻辑回归
  - 机器学习
 categories: 机器学习
 mathjax: true

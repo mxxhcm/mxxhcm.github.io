@@ -3,12 +3,7 @@ title: linux process ps kill top pstree nice
 date: 2019-06-03 21:30:04
 tags:
  - linux
- - ps
- - top
- - pstree
- - process
- - kill
- - nice
+ - shell command
 categories: linux
 mathjax: false
 ---

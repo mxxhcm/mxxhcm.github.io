@@ -5,8 +5,7 @@ tags:
  - C/C++
  - C风格字符串
  - string
- - 数组指针
- - 指针数组
+ - 数组
  - 指针
 categories: C/C++
 ---

@@ -1,9 +1,8 @@
 ---
-title: numpy
+title: python numpy
 date: 2019-03-18 15:15:29
 tags:
  - python
- - numpy
 categories: python
 mathjax: true
 ---

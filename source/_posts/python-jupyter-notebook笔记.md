@@ -1,11 +1,12 @@
 ---
-title: jupyter notebook笔记
+title: python jupyter notebook笔记
 date: 2019-03-18 15:14:33
 tags:
  - python
- - jupyter
-categories: 工具
+ - 工具
+categories: python
 ---
+
 ## 一、安装和运行
 ### 1.安装
 #### Anaconda安装

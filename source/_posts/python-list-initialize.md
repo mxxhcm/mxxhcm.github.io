@@ -1,9 +1,8 @@
 ---
-title: python 指定长度list初始化
+title: python list initialize
 date: 2019-06-18 15:26:32
 tags:
  - python
- - list
 categories: python
 ---
 

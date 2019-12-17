@@ -2,8 +2,6 @@
 title: determinants（行列式）
 date: 2019-08-28 14:45:18
 tags:
- - 行列式
- - determinants
  - 线性代数
 categories: 线性代数
 mathjax: true

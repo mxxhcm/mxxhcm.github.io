@@ -3,8 +3,9 @@ title: gym介绍
 date: 2019-04-12 16:54:44
 tags:
  - gym
+ - python
  - 强化学习
-categories: gym
+categories: 强化学习
 mathjax: true
 ---
 
