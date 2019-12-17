@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.6.0" rel="stylesheet" type="text/css">
+
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.jpg?v=6.6.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.jpg?v=6.6.0">
+
+
+
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.6.0',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="激活函数的一些问题 为什么要使用non-linear激活函数不使用linear激活函数？  给定一个如图所示的前馈神经网络。有一个输入层，一个隐藏层，一个输出层。输入是$2$维的，有$4$个隐藏单元，输出是$2$维的。 则：$ \hat{f}(x) = \sigma(w_1x+b_1)w_2 + b_2$ 这里$\sigma$是一个线性的激活函数，不妨设$\sigma(x) = x$。 那么就有：">
+<meta name="keywords" content="机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="神经网络-激活函数">
+<meta property="og:url" content="http://mxxhcm.github.io/2019/03/14/ml-activation/index.html">
+<meta property="og:site_name" content="mxxhcm&#39;s blog">
+<meta property="og:description" content="激活函数的一些问题 为什么要使用non-linear激活函数不使用linear激活函数？  给定一个如图所示的前馈神经网络。有一个输入层，一个隐藏层，一个输出层。输入是$2$维的，有$4$个隐藏单元，输出是$2$维的。 则：$ \hat{f}(x) = \sigma(w_1x+b_1)w_2 + b_2$ 这里$\sigma$是一个线性的激活函数，不妨设$\sigma(x) = x$。 那么就有：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/03/14/ml-activation/fnn.png">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/03/14/ml-activation/absolute.png">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/03/14/ml-activation/quadratic.png">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/03/14/ml-activation/tanh.png">
+<meta property="og:updated_time" content="2019-12-17T07:55:49.339Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="神经网络-激活函数">
+<meta name="twitter:description" content="激活函数的一些问题 为什么要使用non-linear激活函数不使用linear激活函数？  给定一个如图所示的前馈神经网络。有一个输入层，一个隐藏层，一个输出层。输入是$2$维的，有$4$个隐藏单元，输出是$2$维的。 则：$ \hat{f}(x) = \sigma(w_1x+b_1)w_2 + b_2$ 这里$\sigma$是一个线性的激活函数，不妨设$\sigma(x) = x$。 那么就有：">
+<meta name="twitter:image" content="http://mxxhcm.github.io/2019/03/14/ml-activation/fnn.png">
+
+
+
+  <link rel="alternate" href="/atom.xml" title="mxxhcm's blog" type="application/atom+xml">
+
+
+
+
+  <link rel="canonical" href="http://mxxhcm.github.io/2019/03/14/ml-activation/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>神经网络-激活函数 | mxxhcm's blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion .logo-line-before i { left: initial; }
+    .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">mxxhcm's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/14/ml-activation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">神经网络-激活函数
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-14 11:45:46" itemprop="dateCreated datePublished" datetime="2019-03-14T11:45:46+08:00">2019-03-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:55:49" itemprop="dateModified" datetime="2019-12-17T15:55:49+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/03/14/ml-activation/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">评论数：</span> <span class="post-comments-count gitment-comments-count" data-xid="/2019/03/14/ml-activation/" itemprop="commentsCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="激活函数的一些问题">激活函数的一些问题</h2>
+<h3 id="为什么要使用non-linear激活函数不使用linear激活函数？">为什么要使用non-linear激活函数不使用linear激活函数？</h3>
+<p><img src="/2019/03/14/ml-activation/fnn.png" alt="fnn"><br>
+给定一个如图所示的前馈神经网络。有一个输入层，一个隐藏层，一个输出层。输入是$2$维的，有$4$个隐藏单元，输出是$2$维的。<br>
+则：$ \hat{f}(x) = \sigma(w_1x+b_1)w_2 + b_2$<br>
+这里$\sigma$是一个线性的激活函数，不妨设$\sigma(x) = x$。<br>
+那么就有：<br>
+\begin{align*}<br>
+\hat{f}(x) &amp;= \sigma(w_1x+b_1)w_2 + b_2\<br>
+&amp;= (w_1x+b_1)w_2 + b_2\<br>
+&amp;= w_1w_2x + w_2b1 + b_2\<br>
+&amp;= (w_1w_2) x + (w_2b1 + b_2)\<br>
+&amp;= w’ x + b’<br>
+\end{align*}<br>
+因此，当使用线性激活函数的时候，我们可以把一个多层感知机模型化简成一个线性模型。当使用线性激活函数时，增加网络的深度没有用，使用线性激活函数的十层感知机和一层感知机没有区别，并不能增加网络的表达能力。因为任意两个仿射函数的组合还是仿射函数。</p>
+<h3 id="为什么relu激活函数是non-linear的？">为什么ReLU激活函数是non-linear的？</h3>
+<p>ReLU的数学表达形式如下：<br>
+$$g(x) = max(0, x)$$<br>
+首先考虑一下什么是linear function,什么是non-linear function。在微积分上，平面内的任意一条直线是线性函数，否则就是非线性函数。<br>
+考虑这样一个例子，输入数据的维度为$1$，输出数据的维度也为$1$，用$g(ax+b)$表示ReLU激活函数。如果我们使用两个隐藏单元，那么$h_1(x) = g(x)+g(-x)$可以用来表示$f(x)=|x|$，而函数$|x|$是一个非线性函数，函数图像如下所示。<br>
+<img src="/2019/03/14/ml-activation/absolute.png" alt="f(x)=|x|"><br>
+我们还可以用ReLU逼近二次函数$f(x) = x^2$，如使用函数$h_2(x) = g(x) + g(-x) + g(2x-2) + g(2x+2)$逼近二次函数，对应的图像如下。<br>
+<img src="/2019/03/14/ml-activation/quadratic.png" alt="h_2(x)"><br>
+使用的项越多，最后近似出来的图像也就和我们要逼近的二次函数越像。<br>
+同理，可以使用ReLU激活函数去逼近任意非线性函数。</p>
+<h3 id="为什么relu比sigmod还有tanh激活函数要好？">为什么ReLU比sigmod还有tanh激活函数要好？</h3>
+<p>ReLU收敛的更快，因为梯度更大。<br>
+当CNN的层数越来越深的时候，实验表明，使用ReLU的CNN要比使用sigmod或者tanh的CNN训练的更容易，更快收敛。<br>
+为什么会这样，目前有两种理论，见参考文献[4]。<br>
+第一个，$tanh(x)$有梯度消散问题(vanishing gradient)。当$x$趋向于$\pm\infty$时，$tanh(x)$的导数趋向于$0$。如下图所示。</p>
+<blockquote>
+<p>Vanishing gradients occur when lower layers of a DNN have gradients of nearly 0 because higher layer units are nearly saturated at -1 or 1, the asymptotes of the tanh function. Such vanishing gradients cause slow optimization convergence, and in some cases the final trained network converges to a poor local minimum.</p>
+</blockquote>
+<blockquote>
+<p>One way ReLUs improve neural networks is by speeding up training. The gradient computation is very simple (either 0 or 1 depending on the sign of x). Also, the computational step of a ReLU is easy: any negative elements are set to 0.0 – no exponentials, no multiplication or division operations.</p>
+</blockquote>
+<p><img src="/2019/03/14/ml-activation/tanh.png" alt="tanh(x)"><br>
+ReLU是non-saturating nonlinearity的激活函数，sigmod和tanh是saturating nonlinearity激活函数，会将输出挤压到一个区间内。</p>
+<blockquote>
+<p>f是non-saturating 当且仅当$|lim_{z\rightarrow -\infty} f(z)| \rightarrow + \infty$或者$|lim_{z\rightarrow +\infty} f(z)| \rightarrow + \infty$</p>
+</blockquote>
+<p>tanh和sigmod将输入都挤压在某一个很小的区间内，比如(0,1)，输入发生很大的变化，经过激活函数以后变化很小，经过好几层之后，基本上就没有差别了。而当网络很深的时候，反向传播主要集中在后几层，而输入层附近的权值没办法好好学习。而对于ReLU来说，任意深度的神经网络，都不存在梯度消失。</p>
+<p>第二种理论是说有一些定理能够证明，在某些假设条件下，局部最小就是全局最小。如果使用sigmod或者tanh激活函数的时候，这些假设不能成立，而使用ReLU的话，这些条件就会成立。</p>
+<h3 id="为什么发生了梯度消失以后训练结构很差？">为什么发生了梯度消失以后训练结构很差？</h3>
+<p>我的想法是，</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://stats.stackexchange.com/a/391971" target="_blank" rel="noopener">https://stats.stackexchange.com/a/391971</a><br>
+2.<a href="https://stats.stackexchange.com/a/299933" target="_blank" rel="noopener">https://stats.stackexchange.com/a/299933</a><br>
+3.<a href="https://stats.stackexchange.com/a/141978" target="_blank" rel="noopener">https://stats.stackexchange.com/a/141978</a><br>
+4.<a href="https://stats.stackexchange.com/a/335972" target="_blank" rel="noopener">https://stats.stackexchange.com/a/335972</a><br>
+5.<a href="https://stats.stackexchange.com/a/174438" target="_blank" rel="noopener">https://stats.stackexchange.com/a/174438</a><br>
+6.<a href="https://stats.stackexchange.com/questions/391968/relu-vs-a-linear-activation-function" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/391968/relu-vs-a-linear-activation-function</a><br>
+7.<a href="https://stats.stackexchange.com/questions/141960/why-are-rectified-linear-units-considered-non-linear" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/141960/why-are-rectified-linear-units-considered-non-linear</a><br>
+8.<a href="https://stats.stackexchange.com/questions/299915/how-does-the-rectified-linear-unit-relu-activation-function-produce-non-linear" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/299915/how-does-the-rectified-linear-unit-relu-activation-function-produce-non-linear</a><br>
+9.<a href="https://stats.stackexchange.com/questions/226923/why-do-we-use-relu-in-neural-networks-and-how-do-we-use-it/226927#226927" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/226923/why-do-we-use-relu-in-neural-networks-and-how-do-we-use-it/226927#226927</a><br>
+10.<a href="https://www.zhihu.com/question/264163033" target="_blank" rel="noopener">https://www.zhihu.com/question/264163033</a><br>
+11.<a href="http://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf" target="_blank" rel="noopener">http://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/13/cnn/" rel="next" title="CNN">
+                <i class="fa fa-chevron-left"></i> CNN
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/03/18/MongoDB笔记/" rel="prev" title="MongoDB笔记">
+                MongoDB笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      
+        <div id="gitment-container"></div>
+      
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/favicon.jpg" alt="马晓鑫爱马荟荟">
+            
+              <p class="site-author-name" itemprop="name">马晓鑫爱马荟荟</p>
+              <p class="site-description motion-element" itemprop="description">记录硕士三年自己的积累</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">302</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">186</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/mxxhcm" title="GitHub &rarr; https://github.com/mxxhcm" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                    
+                  
+                  
+                    
+                  
+                  <a href="mailto:mxxhcm@gmail.com" title="E-Mail &rarr; mailto:mxxhcm@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#激活函数的一些问题"><span class="nav-number">1.</span> <span class="nav-text">激活函数的一些问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要使用non-linear激活函数不使用linear激活函数？"><span class="nav-number">1.1.</span> <span class="nav-text">为什么要使用non-linear激活函数不使用linear激活函数？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么relu激活函数是non-linear的？"><span class="nav-number">1.2.</span> <span class="nav-text">为什么ReLU激活函数是non-linear的？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么relu比sigmod还有tanh激活函数要好？"><span class="nav-number">1.3.</span> <span class="nav-text">为什么ReLU比sigmod还有tanh激活函数要好？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么发生了梯度消失以后训练结构很差？"><span class="nav-number">1.4.</span> <span class="nav-text">为什么发生了梯度消失以后训练结构很差？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">2.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">马晓鑫爱马荟荟</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v6.6.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.6.0"></script>
+
+  <script src="/js/src/motion.js?v=6.6.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.6.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.6.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.6.0"></script>
+<script src="/js/src/post-details.js?v=6.6.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.6.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+<!-- LOCAL: You can save these files to your site and update links -->
+    
+        
+        <link rel="stylesheet" href="https://aimingoo.github.io/gitmint/style/default.css">
+        <script src="https://aimingoo.github.io/gitmint/dist/gitmint.browser.js"></script>
+    
+<!-- END LOCAL -->
+
+    
+
+    
+      <script>
+      function renderGitment(){
+        var gitment = new Gitmint({
+            id: window.location.pathname,
+            owner: 'mxxhcm',
+            repo: 'mxxhcm.github.io',
+            
+            lang: "" || navigator.language || navigator.systemLanguage || navigator.userLanguage,
+            
+            oauth: {
+            
+            
+                client_secret: '9a33d210d29f526a771d47bff6940b5798b2631f',
+            
+                client_id: '61a64228cba52787dea0'
+            }});
+        gitment.render('gitment-container');
+      }
+
+      
+      renderGitment();
+      
+      </script>
+    
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+      <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      TeX: {equationNumbers: { autoNumber: "AMS" }}
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<style>
+.MathJax_Display {
+    overflow: auto hidden;
+}
+</style>
+
+    
+  
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
