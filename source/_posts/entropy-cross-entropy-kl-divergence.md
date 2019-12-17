@@ -1,15 +1,8 @@
 ---
-title: '熵，交叉熵，相对熵（KL散度），条件熵，互信息'
+title: 'entropy, cross entropy, kl divergence，条件熵，互信息'
 date: 2018-12-23 10:54:31
 tags:
   - 机器学习
-  - 熵
-  - 交叉熵
-  - 条件熵
-  - 相对熵
-  - 交叉熵
-  - KL散度 
-  - 互信息
 categories: 机器学习
 mathjax: true
 ---

@@ -2,8 +2,6 @@
 title: C and C++ lvalue and rvalue
 date: 2019-11-14 17:22:02
 tags:
- - 左值
- - 右值
  - C/C++
 categories: C/C++
 ---

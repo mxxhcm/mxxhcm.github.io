@@ -3,10 +3,6 @@ title: linux init系统
 date: 2019-06-23 16:35:02
 tags:
  - linux
- - init
- - Upstart
- - SystemD
- - SysVInit
 categories: linux
 ---
 

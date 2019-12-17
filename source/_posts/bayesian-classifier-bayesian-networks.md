@@ -2,13 +2,7 @@
 title: bayesian classifier bayesian networks
 date: 2019-01-06 14:32:16
 tags:
- - 人工智能
- - 概率图模型
- - 推理
- - 贝叶斯网络
- - 生成式模型
- - 概率论与统计
- - 贝叶斯分类器
+ - 机器学习
 categories: 机器学习
 mathjax: true
 ---

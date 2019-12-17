@@ -2,12 +2,8 @@
 title: gradient, directional, derivative derivative, partial derivative
 date: 2019-09-13 09:56:12
 tags:
- - 梯度
- - 导数
- - 偏导数
- - 方向导数
- - 高等数学
-categories: 高等数学
+ - 数学
+categories: 数学
 ---
 
 ## 导数

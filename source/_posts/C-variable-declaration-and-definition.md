@@ -2,9 +2,6 @@
 title: C++ variable declaration and definition
 date: 2019-11-13 21:22:49
 tags:
- - 变量
- - 声明
- - 定义
  - C/C++
 categories: C/C++
 ---

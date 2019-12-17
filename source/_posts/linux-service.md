@@ -3,10 +3,6 @@ title: linux service and daemon
 date: 2019-05-07 16:47:38
 tags:
  - linux
- - serveice
- - daemon
- - initd
- - SystemD
 categories: linux
 ---
 

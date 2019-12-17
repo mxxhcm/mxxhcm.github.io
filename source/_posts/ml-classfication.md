@@ -2,7 +2,6 @@
 title: classfication
 date: 2018-10-21 18:47:44
 tags:
- - classfication
  - 机器学习
 categories: 机器学习
 mathjax: true

@@ -3,8 +3,6 @@ title: data structure bineary search trees vs binary heaps
 date: 2019-11-20 09:37:58
 tags:
  - 数据结构
- - 树
- - 堆
 categories: 数据结构
 ---
 
