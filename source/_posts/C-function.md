@@ -2,8 +2,8 @@
 title: C++ function
 date: 2019-11-10 12:25:56
 tags:
- - function
  - C/C++
+ - 函数
 categories: C/C++
 ---
 

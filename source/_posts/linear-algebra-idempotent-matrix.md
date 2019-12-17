@@ -3,7 +3,6 @@ title: linear algebra idempotent matrix
 date: 2019-08-24 13:07:15
 tags:
  - 线性代数
- - idempotent matrix
 categories: 线性代数
 mathjax: ture
 ---

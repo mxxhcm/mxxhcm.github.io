@@ -3,9 +3,6 @@ title: python iteration-iterable and iterator
 date: 2019-10-12 15:51:26
 tags:
  - python
- - iteration
- - iterable
- - iterator
 categories: python
 ---
 

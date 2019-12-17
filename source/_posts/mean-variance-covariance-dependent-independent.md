@@ -3,10 +3,6 @@ title: mean, variance, covarance, dependent and independent
 date: 2019-08-08 19:01:15
 tags:
  - 概率论与统计
- - 均值
- - 方差
- - 样本均值
- - 样本方差
 categories: 概率论与统计
 mathjax: true
 ---

@@ -2,7 +2,6 @@
 title: Processor Architecture csapp
 date: 2019-12-17 03:25:13
 tags:
- - 处理器
  - 计算机系统
 categories: 计算机系统
 ---

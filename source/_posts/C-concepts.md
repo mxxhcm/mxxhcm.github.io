@@ -1,9 +1,9 @@
 ---
-title: C++ terms
+title: C++ concepts
 date: 2019-11-05 17:03:42
 tags:
  - C/C++
- - 注意事项
+ - 概念
 categories: C/C++
 mathjax: true
 ---
@@ -96,6 +96,8 @@ const int sz = get_size() //sz是常量，但是不是常量表达式
 2. `string`的初始化方式，默认初始化，拷贝初始化，直接初始化
 3. range for语句逐字符操作。
 4. 
+
+## 
 
 ## 参考文献
 1.《C++ Prime第五版》

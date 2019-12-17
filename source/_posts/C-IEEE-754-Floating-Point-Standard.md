@@ -1,9 +1,8 @@
 ---
-title: IEEE 754 Floating Point Standard
+title: C/C++ IEEE 754 Floating Point Standard
 date: 2019-10-24 19:16:02
 tags:
  - C/C++
- - 浮点数
 categories: C/C++
 mathjax: true
 ---

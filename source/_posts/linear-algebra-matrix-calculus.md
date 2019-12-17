@@ -1,9 +1,8 @@
 ---
-title: Matrix calculus
+title: linear algebra matrix calculus
 date: 2019-09-12 09:35:36
 tags:
- - 矩阵求导
- - 矩阵微积分
+ - 线性代数
 categories: 线性代数
 mathjax: true
 ---

@@ -5,6 +5,7 @@ tags:
  - 数组
  - 指针
  - C/C++
+ - 复合类型
 categories: C/C++
 ---
 

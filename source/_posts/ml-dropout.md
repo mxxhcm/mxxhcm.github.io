@@ -2,9 +2,6 @@
 title: 神经网络-dropout
 date: 2019-03-23 19:26:18
 tags:
- - 神经网络
- - dropout
- - 深度学习
  - 机器学习
 categories: 机器学习
 mathjax: true

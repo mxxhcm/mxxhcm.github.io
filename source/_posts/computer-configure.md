@@ -1,8 +1,9 @@
 ---
-title: 电脑配置
+title: computer configure
 date: 2019-05-01 12:31:18
 tags:
- - 硬件
+ - 计算机系统
+ - 工具
 categories: 工具
 ---
 

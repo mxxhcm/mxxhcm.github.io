@@ -3,8 +3,6 @@ title: C/C++ input and output
 date: 2019-10-27 10:00:47
 tags:
  - C/C++
- - 标准输入/输出
- - 文件输入/输出
 categories: C/C++
 ---
 

@@ -3,8 +3,6 @@ title: MongoDB笔记
 date: 2019-03-18 15:06:56
 tags: 
  - 数据库
- - MongoDB
- - 非关系型数据库
 categories: 数据库
 mathjax: false
 ---

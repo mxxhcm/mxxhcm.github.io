@@ -2,13 +2,11 @@
 title: python regex
 date: 2019-04-13 14:50:41
 tags:
- - 正则表达式
  - python
 categories: python
 ---
 
 ## regex examples
-
 ``` python
 import regex as re
 

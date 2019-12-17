@@ -4,9 +4,6 @@ date: 2019-11-11 18:08:07
 tags:
  - UNIX
  - shell
- - 文件描述符
- - 系统调用
- - 公用库函数
 categories: UNIX
 ---
 

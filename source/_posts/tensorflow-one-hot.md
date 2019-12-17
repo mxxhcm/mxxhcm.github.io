@@ -4,7 +4,6 @@ date: 2019-07-13 12:08:55
 tags:
  - tensorflow 
  - python
- - one-hot
 categories: tensorflow
 ---
 

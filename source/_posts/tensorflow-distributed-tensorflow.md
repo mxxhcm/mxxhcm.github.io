@@ -4,7 +4,6 @@ date: 2019-07-13 21:11:06
 tags:
  - tensorflow
  - python
- - distributed tensorflow
 categories: tensorflow
 ---
 

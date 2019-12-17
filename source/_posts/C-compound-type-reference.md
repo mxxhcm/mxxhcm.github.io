@@ -2,9 +2,8 @@
 title: C++ compound type reference
 date: 2019-11-13 14:14:15
 tags:
- - 复合类型
- - reference
  - C/C++
+ - 复合类型
 categories: C/C++
 ---
 

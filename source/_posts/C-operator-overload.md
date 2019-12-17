@@ -3,7 +3,7 @@ title: C++ operator overload
 date: 2019-11-10 12:49:42
 tags:
  - C/C++
- - 运算符重载
+ - 重载
 categories: C/C++
 ---
 

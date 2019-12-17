@@ -3,7 +3,7 @@ title: linux 常见问题（不定期更新）
 date: 2018-12-20 20:30:34
 tags: 
   - linux
-  - 问题
+  - 常见问题
 categories: linux
 ---
 

@@ -3,8 +3,6 @@ title: UNIX file and directory
 date: 2019-11-21 10:18:13
 tags:
  - UNIX
- - 文件
- - 目录
 categories: UNIX
 ---
 

@@ -5,7 +5,7 @@ tags:
  - hexo 
  - 工具
  - 常见问题
-categories: hexo
+categories: 工具
 mathjax: true 
 ---
 

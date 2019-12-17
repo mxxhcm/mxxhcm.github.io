@@ -3,9 +3,6 @@ title: DQN
 date: 2019-03-02 19:29:35
 tags: 
  - 强化学习
- - 值迭代
- - 深度学习
- - 机器学习
 categories: 强化学习
 mathjax: true
 ---

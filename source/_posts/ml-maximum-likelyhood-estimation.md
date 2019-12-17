@@ -2,10 +2,6 @@
 title: maximum likelyhood estimation
 date: 2019-01-20 15:22:45
 tags:
- - 参数估计
- - 点估计
- - 最大似然估计
- - 概率论与统计 
  - 机器学习
 categories: 机器学习
 mathjax: true

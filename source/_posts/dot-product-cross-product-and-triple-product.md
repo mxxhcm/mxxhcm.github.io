@@ -2,9 +2,6 @@
 title: dot product cross product and triple product
 date: 2019-08-28 17:26:35
 tags:
- - 点积
- - 叉积
- - 混合积
  - 线性代数
 categories: 线性代数
 mathjax: true

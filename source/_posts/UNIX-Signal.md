@@ -3,7 +3,7 @@ title: UNIX Signal
 date: 2019-12-04 15:22:47
 tags:
  - UNIX
- - singal
+ - signal
 categories: UNIX
 ---
 

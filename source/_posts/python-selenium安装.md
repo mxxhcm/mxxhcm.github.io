@@ -3,7 +3,6 @@ title: python selenium
 date: 2019-08-06 11:24:09
 tags:
  - python
- - selenium
 categories: python
 ---
 

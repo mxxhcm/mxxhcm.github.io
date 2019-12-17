@@ -3,8 +3,6 @@ title: linux file perission
 date: 2019-05-07 17:08:26
 tags:
  - linux
- - 文件
- - 目录
 categories: linux
 ---
 

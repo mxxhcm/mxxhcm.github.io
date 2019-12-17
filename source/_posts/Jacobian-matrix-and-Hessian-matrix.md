@@ -1,10 +1,8 @@
 ---
-title: 雅克比矩阵和海塞矩阵
+title: Jacobi matrix and Hessian matrix
 date: 2019-09-10 19:22:54
 tags:
  - 线性代数
- - 雅克比矩阵
- - 海塞矩阵
 categories: 线性代数
 mathjax: true
 ---

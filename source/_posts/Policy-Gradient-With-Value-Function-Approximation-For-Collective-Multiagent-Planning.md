@@ -3,9 +3,6 @@ title: Policy Gradient With Value Function Approximation For Collective Multiage
 date: 2019-01-26 19:33:50
 tags:
  - 强化学习
- - actor-critic
- - 深度学习
- - 论文
 categories: 强化学习
 mathjax: true
 ---

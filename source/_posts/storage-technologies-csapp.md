@@ -2,7 +2,6 @@
 title: storage technologies csapp
 date: 2019-12-16 22:11:33
 tags:
- - 存储器
  - 计算机系统
 categories: 计算机系统
 ---

@@ -4,7 +4,7 @@ date: 2019-04-23 20:29:40
 tags:
  - hexo
  - 工具
-categories: hexo
+categories: 工具
 ---
 
 ## hexo博客迁移

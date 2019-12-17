@@ -3,10 +3,6 @@ title: generative model and discriminative model
 date: 2019-10-26 19:24:35
 tags:
  - 机器学习
- - generative model
- - 生成式模型
- - discriminative model
- - 判别式模型
 categories: 机器学习
 mathjax: true
 ---

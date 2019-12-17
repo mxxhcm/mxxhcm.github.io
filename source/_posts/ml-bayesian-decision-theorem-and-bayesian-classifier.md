@@ -1,12 +1,8 @@
 ---
-title: bayesian classifier and bayesian decision theorem
+title: bayesian decision theorem and bayesian classifier 
 date: 2019-10-26 20:02:39
 tags:
  - 机器学习
- - 贝叶斯分类器
- - 朴素贝叶斯
- - 概率论与统计
- - 贝叶斯决策理论
 categories: 机器学习
 mathjax: true
 ---

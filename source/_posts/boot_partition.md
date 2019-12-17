@@ -2,9 +2,8 @@
 title: OS boot and partition
 date: 2019-04-03 16:15:36
 tags:
- - 硬件
- - 操作系统
-categories: 操作系统
+ - 计算机系统
+categories: 计算机系统
 mathjax: true
 ---
 

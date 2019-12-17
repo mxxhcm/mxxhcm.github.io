@@ -3,8 +3,6 @@ title: C++ initialize
 date: 2019-11-05 20:05:12
 tags:
  - C/C++
- - 值初始化
- - 默认初始化
 categories: C/C++
 ---
 

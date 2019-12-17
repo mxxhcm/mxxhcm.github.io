@@ -3,8 +3,6 @@ title: C++ dyncamic memory
 date: 2019-11-10 12:39:41
 tags:
  - C/C++
- - 智能指针
- - 动态内存
 categories: C/C++
 ---
 

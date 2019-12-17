@@ -1,9 +1,9 @@
 ---
-title: linux gcc编译
+title: linux gcc
 date: 2019-08-30 23:35:20
 tags:
  - linux
- - gcc
+ - 工具
 categories: linux
 ---
 

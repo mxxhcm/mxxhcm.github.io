@@ -1,10 +1,9 @@
 ---
-title: ubuntu NVIDIA 驱动安装
+title: ubuntu NVIDIA driver
 date: 2019-04-26 21:03:02
 tags:
  - ubuntu
  - linux
- - 显卡驱动
 categories: linux
 maxhjax: true
 ---
