@@ -2,8 +2,8 @@
 title: gradient, directional, derivative derivative, partial derivative
 date: 2019-09-13 09:56:12
 tags:
- - 数学
-categories: 数学
+ - 机器学习
+categories: 机器学习
 ---
 
 ## 导数
