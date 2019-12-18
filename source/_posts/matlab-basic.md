@@ -7,11 +7,30 @@ categories: 其他编程语言
 ---
 
 ## Matlab基础
+### plot
+``` matlab
+xlabel('your x label', 'fontsize', 20);
+xlim([0, 2*pi]);
+```
 
 ### 矩阵大小
 ``` matlab
 x = ones(20, 3);
 size(x);
+```
+### 产生随机数
+``` matlab
+% 0和1之间均匀分布的随机数
+R = rand(N);
+%...
+
+% 随机整数
+R = randi(iMax);
+%...
+
+% 服从高斯分布的随机数
+R = randn(N);
+%...
 ```
 
 ### 矩阵减去向量
