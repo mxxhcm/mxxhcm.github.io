@@ -1,5 +1,5 @@
 ---
-title: ISO C Standard I/O library
+title: C(ISO C) Standard I/O library
 date: 2019-11-22 23:28:22
 tags:
  - UNIX
