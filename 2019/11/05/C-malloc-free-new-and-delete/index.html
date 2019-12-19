@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="malloc C标准malloc定义 malloc定义在头文件&amp;lt;stdlib.h&amp;gt;中  Allocates size bytes of uninitialized storage. If allocation succeeds, returns a pointer to the lowest (first) byte in the allocated memory block that">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-12-17T07:09:01.017Z">
+<meta property="og:updated_time" content="2019-12-19T12:31:09.374Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C&#x2F;C++ malloc(alloc) free new and delete">
 <meta name="twitter:description" content="malloc C标准malloc定义 malloc定义在头文件&amp;lt;stdlib.h&amp;gt;中  Allocates size bytes of uninitialized storage. If allocation succeeds, returns a pointer to the lowest (first) byte in the allocated memory block that">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 15:09:01" itemprop="dateModified" datetime="2019-12-17T15:09:01+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-19 20:31:09" itemprop="dateModified" datetime="2019-12-19T20:31:09+08:00">2019-12-19</time>
               
             
           </span>
@@ -463,7 +463,18 @@ A previous call to free or realloc that deallocates a region of memory synchroni
 </blockquote>
 <h3 id="malloc-calloc和realloc原型"><code>malloc</code>, <code>calloc</code>和<code>realloc</code>原型</h3>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc</span><span class="params">(<span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">calloc</span><span class="params">(<span class="keyword">size_t</span> nmemb, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">realloc</span><span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">reallocarray</span><span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> nmemb, <span class="keyword">size_t</span> size)</span></span>;</span><br></pre></td></tr></table></figure>
-<h3 id="malloc实现"><code>malloc</code>实现</h3>
+<h3 id="malloc-calloc和realloc性质"><code>malloc</code>, <code>calloc</code>和<code>realloc</code>性质</h3>
+<ol start="0">
+<li><code>malloc</code>函数的实现中（C标准没有规定），在分配空间的时候，通常分配的空间要比申请的要大一些，这些额外的空间用来记录<code>malloc</code>这片空间的大小，在使用<code>free</code>的时候会用到。</li>
+<li><code>malloc</code>，分配指定字节的内存空间，初始值不定。</li>
+<li><code>calloc</code>，为指定长度的固定数量的对象分配空间，每一个bit都被初始化为0。</li>
+<li><code>realloc</code>，增加或者减少已经分配的内存空间的大小。当这个大小增加时，可能需要将之前分配的空间中的数据移到另一个足够大的区域以便于增加大小，新增加的区域内的值是不确定的。</li>
+<li>这三个函数返回的指针一定是对齐的，保证它可以用于任何对象。比如<code>double</code>的要求最严格，需要从8的倍数的地址单元开始，这三个函数返回的地址一定满足这个要求。</li>
+<li>它们的返回类型都是<code>void*</code>，需要使用强制类型转换。</li>
+<li><code>realloc</code>函数可以增加或者减少之前分配的内存空间的大小。比如分配了一个固定大小的数组，后来发小它不够用了，可以使用<code>realloc</code>对它进行扩充，如果原有的存储后有足够的大小进行扩充，则可以在原存储区的位置上向高地址进行扩充，无需移动原有数组，返回和传入相同的指针。如果原来的内存空间后没有足够的空间，就重新分配一个足够大的内存空间，再将原有数据的内容复制过去，然后释放原来的内存空间，返回新的指针。</li>
+<li><code>realloc</code>传入的参数是存储区的新长度。如果传入的<code>ptr</code>参数是<code>NULL</code>指针，那就退化成了<code>malloc</code>。</li>
+</ol>
+<h3 id="自己实现一个malloc">自己实现一个<code>malloc</code></h3>
 <p>???</p>
 <h2 id="free"><code>free</code></h2>
 <h3 id="c标准free定义">C标准<code>free</code>定义</h3>
@@ -495,46 +506,58 @@ free is thread-safe: it behaves as though only accessing the memory locations vi
 等等。为什么？？？因为标准并没有定义<code>malloc</code>应该怎么实现，有的内存分配器，<code>malloc</code>实际申请的内存要比传入的参数大，里面存放了额外的数据记录这块内存有多大，一般就是存在指针左边。<code>free</code>的时候，就会读取那个内存块中存放的信息，进行<code>free</code>，所以上面的那些都是未定义的行为。</p>
 </li>
 </ol>
-<h2 id="malloc-calloc-realloc和free"><code>malloc</code>, <code>calloc</code>,<code>realloc</code>和<code>free</code></h2>
+<p>其他属性</p>
 <ol>
-<li><code>malloc</code>，分配指定字节的内存空间，初始值不定。</li>
-<li><code>calloc</code>，为指定长度的固定数量的对象分配空间，每一个bit都被初始化为0。</li>
-<li><code>realloc</code>，增加或者减少已经分配的内存空间的大小。当这个大小增加时，可能需要将之前分配的空间中的数据移到另一个足够大的区域以便于增加大小，新增加的区域内的值是不确定的。</li>
-<li>这三个函数返回的指针一定是对齐的，保证它可以用于任何对象。比如<code>double</code>的要求最严格，需要从8的倍数的地址单元开始，这三个函数返回的地址一定满足这个要求。</li>
-<li>它们的返回类型都是<code>void*</code>，需要使用强制类型转换。</li>
-<li><code>realloc</code>函数可以增加或者减少之前分配的内存空间的大小。比如分配了一个固定大小的数组，后来发小它不够用了，可以使用<code>realloc</code>对它进行扩充，如果原有的存储后有足够的大小进行扩充，则可以在原存储区的位置上向高地址进行扩充，无需移动原有数组，返回和传入相同的指针。如果原来的内存空间后没有足够的空间，就重新分配一个足够大的内存空间，再将原有数据的内容复制过去，然后释放原来的内存空间，返回新的指针。</li>
-<li><code>realloc</code>传入的参数是存储区的新长度。如果传入的<code>ptr</code>参数是<code>NULL</code>指针，那就退化成了<code>malloc</code>。</li>
 <li><code>free</code>可以释放<code>ptr</code>指向的内存空间，释放的空间通常送入可用内存池，之后可以通过这三个函数重新分配。</li>
 <li><code>malloc</code>和<code>free</code>底层通常使用<code>sbrk</code>系统调用实现，这个系统调用扩充或者减小进程的堆，虽然<code>sbrk</code>可以扩充或者缩小进程的堆，但是一般<code>malloc</code>和<code>free</code>的实现不会减少进程的内存空间，释放的内存空间保存在<code>malloc</code>池中，而不是交给内核。</li>
 <li>大多数实现分配的空间要比请求的空间大一些，因为需要存储一些管理信息，如block的大小，指向下一个block的指针等等。因此，如果对超过一个分配区域的内存进行读写的话，会造成很严重的错误。</li>
 <li><code>free</code>一个已经释放了的块，<code>free</code>的不是<code>alloc</code>函数的返回值，没有进行<code>free</code>等等，都是未定义的结果。为什么？？？</li>
 </ol>
+<h2 id="new"><code>new</code></h2>
+<p>默认情况下，new分配的对象，不管是单个分配的还是数组中的，都是默认初始化的。这意味着内置类型或组合类型的对象的值是无定义的，而类类型对象将用默认构造函数进行初始化。</p>
+<ol>
+<li>
+<p>对于内置类型而言，new仅仅是分配内存，即使后面显示加(),相当于调用它的构造函数，<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *pi = <span class="keyword">new</span> <span class="keyword">int</span>; <span class="comment">//pi指向一个动态分配的内存，没有初始化</span></span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>对于自定义类型而言，只要一调用new，无论后面有没有加()，那么编译器不仅仅给它分配内存，还调用它的默认构造函数初始化。</p>
+</li>
+</ol>
+<h2 id="delete"><code>delete</code></h2>
+<ol>
+<li><code>delete</code>是和<code>new</code>配对的操作。调用<code>delete</code>操作，编译器实际上会将它转换为两步操作，第一步是调用析构函数；第二部调用<code>opereator delete()</code>，其内部调用了<code>free</code>。</li>
+<li>数组的<code>new</code>一定要和数组的<code>delete</code>配对，否则就会出现内存泄露。第一条中说了<code>delete</code>分为两步，第一步其实不会造成内存泄露；而是第二步中，析构函数被调用的次数，<code>delete p</code>只会调用一次析构函数，而<code>delete[] p</code>会调用多次析构函数，调用次数和<code>new</code>时申请的数组大小一样。</li>
+</ol>
 <h2 id="malloc-vs-new"><code>malloc</code> vs <code>new</code></h2>
 <ol>
-<li><code>malloc</code>是C语言中的函数，而<code>new</code>是C++的操作符；</li>
-<li>对于自定义类型而言，<code>new</code>操作符首先调用operator new()函数申请内存，然后调用类的构造函数初始化对象，最后返回自定义对象的指针；<code>malloc</code>只负责内存的分配而不会调用类的构造函数数。</li>
-<li><code>malloc</code>返回的是<code>void*</code>类型的指针，需要进行强制类型转换转换成我们需要的类型，而<code>new</code>返回的是对象类型的指针，类型和对象严格匹配，<code>new</code>是类型安全型操作符。</li>
-<li>在分配内存失败时，<code>malloc</code>会返回NULL，而<code>new</code>会throw on failure。</li>
-<li><code>malloc</code>需要指定申请的内存占多少个字节，而<code>new</code>不需要指定申请内存块的大小，编译器会根据类型计算需要的内存大小；</li>
-<li><code>malloc</code>和<code>new</code>都是申请heap上的内存；</li>
-<li><code>new</code>操作符调用的operator new()函数可以重载（操作符<code>new</code>不能重载），而<code>malloc</code>不能重载。</li>
-<li><code>malloc</code>和<code>free</code>，<code>new</code>和<code>delete</code>必须配套使用。</li>
+<li>
+<p><code>malloc</code>是C语言中的函数，而<code>new</code>是C++的操作符；</p>
+</li>
+<li>
+<p><code>malloc</code>返回的是<code>void*</code>类型的指针，需要我们手动进行强制类型转换转换成我们需要的类型，而<code>new</code>返回的是对象类型的指针，类型和对象严格匹配，<code>new</code>是类型安全型操作符。<br>
+对于自定义类型而言，<code>new</code>操作符首先调用operator new()函数申请内存，其内部调用的是malloc函数，返回一个<code>void*</code>类型的指针；<code>new</code>还会负责把它转换成自定义对象的指针；然后调用类的构造函数初始化对象；最后返回自定义对象的指针。<code>malloc</code>只负责内存的分配而不会调用类的构造函数数。举个例子：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Complex *pc = <span class="keyword">new</span> Complex(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line"><span class="comment">//等价于</span></span><br><span class="line"><span class="comment">// 1.内部调用malloc</span></span><br><span class="line"><span class="keyword">void</span> *mem = <span class="keyword">operator</span> <span class="keyword">new</span>(<span class="keyword">sizeof</span>(Complex));</span><br><span class="line"><span class="comment">// 2.将void *类型指针转换为Complex*类型的</span></span><br><span class="line">pc = <span class="keyword">static_cast</span>&lt;Complex*&gt; (mem);</span><br><span class="line"><span class="comment">// 3.调用Complex的构造函数</span></span><br><span class="line">pc-&gt;Complex::Complex(<span class="number">1</span>, <span class="number">2</span>);</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>在分配内存失败时，<code>malloc</code>会返回NULL，而<code>new</code>会throw on failure。</p>
+</li>
+<li>
+<p><code>malloc</code>需要指定申请的内存占多少个字节，而<code>new</code>不需要指定申请内存块的大小，编译器会根据类型计算需要的内存大小；</p>
+</li>
+<li>
+<p><code>malloc</code>和<code>new</code>都是申请heap上的内存；</p>
+</li>
+<li>
+<p><code>new</code>操作符调用的operator new()函数可以重载（操作符<code>new</code>不能重载），而<code>malloc</code>不能重载。</p>
+</li>
+<li>
+<p><code>malloc</code>和<code>free</code>，<code>new</code>和<code>delete</code>必须配套使用。</p>
+</li>
 </ol>
 <p>几个问题：</p>
 <ol>
 <li>什么时候<code>malloc</code>和<code>new</code>会申请内存失败。</li>
 <li><code>new</code>操作符的两个步骤，一个是申请内存，一个是调用构造函数，<code>new</code>的申请内存和<code>malloc</code>的申请内存有什么区别。</li>
 </ol>
-<h2 id="new"><code>new</code></h2>
-<p>默认情况下，new分配的对象，不管是单个分配的还是数组中的，都是默认初始化的。这意味着内置类型或组合类型的对象的值是无定义的，而类类型对象将用默认构造函数进行初始化。</p>
-<ul>
-<li>
-<p>对于内置类型而言，new仅仅是分配内存，即使后面显示加(),相当于调用它的构造函数，<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *pi = <span class="keyword">new</span> <span class="keyword">int</span>; <span class="comment">//pi指向一个动态分配的内存，没有初始化</span></span><br></pre></td></tr></table></figure></p>
-</li>
-<li>
-<p>对于自定义类型而言，只要一调用new，无论后面有没有加()，那么编译器不仅仅给它分配内存，还调用它的默认构造函数初始化。</p>
-</li>
-</ul>
 <h2 id="参考文献">参考文献</h2>
 <p>1.《C++ Primer第五版》<br>
 2.<a href="https://stackoverflow.com/questions/184537/in-what-cases-do-i-use-malloc-and-or-new" target="_blank" rel="noopener">https://stackoverflow.com/questions/184537/in-what-cases-do-i-use-malloc-and-or-new</a><br>
@@ -666,7 +689,7 @@ free is thread-safe: it behaves as though only accessing the memory locations vi
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">300</span>
+                    <span class="site-state-item-count">302</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -868,9 +891,7 @@ free is thread-safe: it behaves as though only accessing the memory locations vi
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">68</span>
+                    <span class="site-state-item-count">67</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -938,7 +959,7 @@ free is thread-safe: it behaves as though only accessing the memory locations vi
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#malloc"><span class="nav-number">1.</span> <span class="nav-text">malloc</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#c标准malloc定义"><span class="nav-number">1.1.</span> <span class="nav-text">C标准malloc定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#malloc-calloc和realloc原型"><span class="nav-number">1.2.</span> <span class="nav-text">malloc, calloc和realloc原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#malloc实现"><span class="nav-number">1.3.</span> <span class="nav-text">malloc实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#free"><span class="nav-number">2.</span> <span class="nav-text">free</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#c标准free定义"><span class="nav-number">2.1.</span> <span class="nav-text">C标准free定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#free原型"><span class="nav-number">2.2.</span> <span class="nav-text">free原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#free属性"><span class="nav-number">2.3.</span> <span class="nav-text">free属性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#malloc-calloc-realloc和free"><span class="nav-number">3.</span> <span class="nav-text">malloc, calloc,realloc和free</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#malloc-vs-new"><span class="nav-number">4.</span> <span class="nav-text">malloc vs new</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#new"><span class="nav-number">5.</span> <span class="nav-text">new</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#malloc"><span class="nav-number">1.</span> <span class="nav-text">malloc</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#c标准malloc定义"><span class="nav-number">1.1.</span> <span class="nav-text">C标准malloc定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#malloc-calloc和realloc原型"><span class="nav-number">1.2.</span> <span class="nav-text">malloc, calloc和realloc原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#malloc-calloc和realloc性质"><span class="nav-number">1.3.</span> <span class="nav-text">malloc, calloc和realloc性质</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自己实现一个malloc"><span class="nav-number">1.4.</span> <span class="nav-text">自己实现一个malloc</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#free"><span class="nav-number">2.</span> <span class="nav-text">free</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#c标准free定义"><span class="nav-number">2.1.</span> <span class="nav-text">C标准free定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#free原型"><span class="nav-number">2.2.</span> <span class="nav-text">free原型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#free属性"><span class="nav-number">2.3.</span> <span class="nav-text">free属性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#new"><span class="nav-number">3.</span> <span class="nav-text">new</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#delete"><span class="nav-number">4.</span> <span class="nav-text">delete</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#malloc-vs-new"><span class="nav-number">5.</span> <span class="nav-text">malloc vs new</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>

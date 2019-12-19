@@ -327,6 +327,472 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/05/C-malloc-free-new-and-delete/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/05/C-malloc-free-new-and-delete/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/9/index.html">C/C++ malloc(alloc) free new and delete</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-05 10:37:48" itemprop="dateCreated datePublished" datetime="2019-11-05T10:37:48+08:00">2019-11-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-19 20:31:09" itemprop="dateModified" datetime="2019-12-19T20:31:09+08:00">2019-12-19</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="malloc"><code>malloc</code></h2>
+<h3 id="c标准malloc定义">C标准<code>malloc</code>定义</h3>
+<p><code>malloc</code>定义在头文件<code>&lt;stdlib.h&gt;</code>中</p>
+<blockquote>
+<p>Allocates size bytes of uninitialized storage.<br>
+If allocation succeeds, returns a pointer to the lowest (first) byte in the allocated memory block that is suitably aligned for any object type with fundamental alignment.<br>
+If size is zero, the behavior is implementation defined (null pointer may be returned, or some non-null pointer may be returned that may not be used to access storage, but has to be passed to free).</p>
+</blockquote>
+<blockquote>
+<p>malloc is thread-safe: it behaves as though only accessing the memory locations visible through its argument, and not any static storage.<br>
+A previous call to free or realloc that deallocates a region of memory synchronizes-with a call to malloc that allocates the same or a part of the same region of memory. This synchronization occurs after any access to the memory by the deallocating function and before any access to the memory by malloc. There is a single total order of all allocation and deallocation functions operating on each particular region of memory. (since C11)</p>
+</blockquote>
+<h3 id="malloc-calloc和realloc原型"><code>malloc</code>, <code>calloc</code>和<code>realloc</code>原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc</span><span class="params">(<span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">calloc</span><span class="params">(<span class="keyword">size_t</span> nmemb, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">realloc</span><span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">reallocarray</span><span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> nmemb, <span class="keyword">size_t</span> size)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="malloc-calloc和realloc性质"><code>malloc</code>, <code>calloc</code>和<code>realloc</code>性质</h3>
+<ol start="0">
+<li><code>malloc</code>函数的实现中（C标准没有规定），在分配空间的时候，通常分配的空间要比申请的要大一些，这些额外的空间用来记录<code>malloc</code>这片空间的大小，在使用<code>free</code>的时候会用到。</li>
+<li><code>malloc</code>，分配指定字节的内存空间，初始值不定。</li>
+<li><code>calloc</code>，为指定长度的固定数量的对象分配空间，每一个bit都被初始化为0。</li>
+<li><code>realloc</code>，增加或者减少已经分配的内存空间的大小。当这个大小增加时，可能需要将之前分配的空间中的数据移到另一个足够大的区域以便于增加大小，新增加的区域内的值是不确定的。</li>
+<li>这三个函数返回的指针一定是对齐的，保证它可以用于任何对象。比如<code>double</code>的要求最严格，需要从8的倍数的地址单元开始，这三个函数返回的地址一定满足这个要求。</li>
+<li>它们的返回类型都是<code>void*</code>，需要使用强制类型转换。</li>
+<li><code>realloc</code>函数可以增加或者减少之前分配的内存空间的大小。比如分配了一个固定大小的数组，后来发小它不够用了，可以使用<code>realloc</code>对它进行扩充，如果原有的存储后有足够的大小进行扩充，则可以在原存储区的位置上向高地址进行扩充，无需移动原有数组，返回和传入相同的指针。如果原来的内存空间后没有足够的空间，就重新分配一个足够大的内存空间，再将原有数据的内容复制过去，然后释放原来的内存空间，返回新的指针。</li>
+<li><code>realloc</code>传入的参数是存储区的新长度。如果传入的<code>ptr</code>参数是<code>NULL</code>指针，那就退化成了<code>malloc</code>。</li>
+</ol>
+<h3 id="自己实现一个malloc">自己实现一个<code>malloc</code></h3>
+<p>???</p>
+<h2 id="free"><code>free</code></h2>
+<h3 id="c标准free定义">C标准<code>free</code>定义</h3>
+<p><code>free</code>定义在头文件<code>&lt;stdlib.h&gt;</code>中</p>
+<blockquote>
+<p>Deallocates the space previously allocated by malloc(), calloc(), aligned_alloc, (since C11) or realloc().<br>
+If ptr is a null pointer, the function does nothing.<br>
+The behavior is undefined if the value of ptr does not equal a value returned earlier by malloc(), calloc(), realloc(), or aligned_alloc() (since C11).<br>
+The behavior is undefined if the memory area referred to by ptr has already been deallocated, that is, free() or realloc() has already been called with ptr as the argument and no calls to malloc(), calloc() or realloc() resulted in a pointer equal to ptr afterwards.<br>
+The behavior is undefined if after free() returns, an access is made through the pointer ptr (unless another allocation function happened to result in a pointer value equal to ptr)<br>
+free is thread-safe: it behaves as though only accessing the memory locations visible through its argument, and not any static storage.</p>
+</blockquote>
+<blockquote>
+<p>A call to free that deallocates a region of memory synchronizes-with a call to any subsequent allocation function that allocates the same or a part of the same region of memory. This synchronization occurs after any access to the memory by the deallocating function and before any access to the memory by the allocation function. There is a single total order of all allocation and deallocation functions operating on each particular region of memory. (since C11)</p>
+</blockquote>
+<h3 id="free原型"><code>free</code>原型</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">void free(void *ptr);</span><br></pre></td></tr></table></figure>
+<h3 id="free属性"><code>free</code>属性</h3>
+<p>从标准的定义可以看出来，以下都是未定义的行为：</p>
+<ol>
+<li>
+<p><code>free</code>的对象不是<code>alloc</code>函数族的返回值；比如<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *pi = (<span class="keyword">int</span>*)<span class="built_in">malloc</span>(<span class="number">10</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">pi++;</span><br><span class="line"><span class="comment">//下面就是错误的，因为这个`pi`不是`alloc`函数族的返回值。</span></span><br><span class="line"><span class="built_in">free</span>(pi);</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p><code>free</code>一个已经被释放过了的块；</p>
+</li>
+<li>
+<p>访问一个<code>free</code>已经释放了的块。<br>
+等等。为什么？？？因为标准并没有定义<code>malloc</code>应该怎么实现，有的内存分配器，<code>malloc</code>实际申请的内存要比传入的参数大，里面存放了额外的数据记录这块内存有多大，一般就是存在指针左边。<code>free</code>的时候，就会读取那个内存块中存放的信息，进行<code>free</code>，所以上面的那些都是未定义的行为。</p>
+</li>
+</ol>
+<p>其他属性</p>
+<ol>
+<li><code>free</code>可以释放<code>ptr</code>指向的内存空间，释放的空间通常送入可用内存池，之后可以通过这三个函数重新分配。</li>
+<li><code>malloc</code>和<code>free</code>底层通常使用<code>sbrk</code>系统调用实现，这个系统调用扩充或者减小进程的堆，虽然<code>sbrk</code>可以扩充或者缩小进程的堆，但是一般<code>malloc</code>和<code>free</code>的实现不会减少进程的内存空间，释放的内存空间保存在<code>malloc</code>池中，而不是交给内核。</li>
+<li>大多数实现分配的空间要比请求的空间大一些，因为需要存储一些管理信息，如block的大小，指向下一个block的指针等等。因此，如果对超过一个分配区域的内存进行读写的话，会造成很严重的错误。</li>
+<li><code>free</code>一个已经释放了的块，<code>free</code>的不是<code>alloc</code>函数的返回值，没有进行<code>free</code>等等，都是未定义的结果。为什么？？？</li>
+</ol>
+<h2 id="new"><code>new</code></h2>
+<p>默认情况下，new分配的对象，不管是单个分配的还是数组中的，都是默认初始化的。这意味着内置类型或组合类型的对象的值是无定义的，而类类型对象将用默认构造函数进行初始化。</p>
+<ol>
+<li>
+<p>对于内置类型而言，new仅仅是分配内存，即使后面显示加(),相当于调用它的构造函数，<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *pi = <span class="keyword">new</span> <span class="keyword">int</span>; <span class="comment">//pi指向一个动态分配的内存，没有初始化</span></span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>对于自定义类型而言，只要一调用new，无论后面有没有加()，那么编译器不仅仅给它分配内存，还调用它的默认构造函数初始化。</p>
+</li>
+</ol>
+<h2 id="delete"><code>delete</code></h2>
+<ol>
+<li><code>delete</code>是和<code>new</code>配对的操作。调用<code>delete</code>操作，编译器实际上会将它转换为两步操作，第一步是调用析构函数；第二部调用<code>opereator delete()</code>，其内部调用了<code>free</code>。</li>
+<li>数组的<code>new</code>一定要和数组的<code>delete</code>配对，否则就会出现内存泄露。第一条中说了<code>delete</code>分为两步，第一步其实不会造成内存泄露；而是第二步中，析构函数被调用的次数，<code>delete p</code>只会调用一次析构函数，而<code>delete[] p</code>会调用多次析构函数，调用次数和<code>new</code>时申请的数组大小一样。</li>
+</ol>
+<h2 id="malloc-vs-new"><code>malloc</code> vs <code>new</code></h2>
+<ol>
+<li>
+<p><code>malloc</code>是C语言中的函数，而<code>new</code>是C++的操作符；</p>
+</li>
+<li>
+<p><code>malloc</code>返回的是<code>void*</code>类型的指针，需要我们手动进行强制类型转换转换成我们需要的类型，而<code>new</code>返回的是对象类型的指针，类型和对象严格匹配，<code>new</code>是类型安全型操作符。<br>
+对于自定义类型而言，<code>new</code>操作符首先调用operator new()函数申请内存，其内部调用的是malloc函数，返回一个<code>void*</code>类型的指针；<code>new</code>还会负责把它转换成自定义对象的指针；然后调用类的构造函数初始化对象；最后返回自定义对象的指针。<code>malloc</code>只负责内存的分配而不会调用类的构造函数数。举个例子：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Complex *pc = <span class="keyword">new</span> Complex(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line"><span class="comment">//等价于</span></span><br><span class="line"><span class="comment">// 1.内部调用malloc</span></span><br><span class="line"><span class="keyword">void</span> *mem = <span class="keyword">operator</span> <span class="keyword">new</span>(<span class="keyword">sizeof</span>(Complex));</span><br><span class="line"><span class="comment">// 2.将void *类型指针转换为Complex*类型的</span></span><br><span class="line">pc = <span class="keyword">static_cast</span>&lt;Complex*&gt; (mem);</span><br><span class="line"><span class="comment">// 3.调用Complex的构造函数</span></span><br><span class="line">pc-&gt;Complex::Complex(<span class="number">1</span>, <span class="number">2</span>);</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>在分配内存失败时，<code>malloc</code>会返回NULL，而<code>new</code>会throw on failure。</p>
+</li>
+<li>
+<p><code>malloc</code>需要指定申请的内存占多少个字节，而<code>new</code>不需要指定申请内存块的大小，编译器会根据类型计算需要的内存大小；</p>
+</li>
+<li>
+<p><code>malloc</code>和<code>new</code>都是申请heap上的内存；</p>
+</li>
+<li>
+<p><code>new</code>操作符调用的operator new()函数可以重载（操作符<code>new</code>不能重载），而<code>malloc</code>不能重载。</p>
+</li>
+<li>
+<p><code>malloc</code>和<code>free</code>，<code>new</code>和<code>delete</code>必须配套使用。</p>
+</li>
+</ol>
+<p>几个问题：</p>
+<ol>
+<li>什么时候<code>malloc</code>和<code>new</code>会申请内存失败。</li>
+<li><code>new</code>操作符的两个步骤，一个是申请内存，一个是调用构造函数，<code>new</code>的申请内存和<code>malloc</code>的申请内存有什么区别。</li>
+</ol>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer第五版》<br>
+2.<a href="https://stackoverflow.com/questions/184537/in-what-cases-do-i-use-malloc-and-or-new" target="_blank" rel="noopener">https://stackoverflow.com/questions/184537/in-what-cases-do-i-use-malloc-and-or-new</a><br>
+3.<a href="https://zhuanlan.zhihu.com/p/47089696?utm_source=wechat_session&amp;utm_medium=social&amp;utm_oi=687606928481730560" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/47089696?utm_source=wechat_session&amp;utm_medium=social&amp;utm_oi=687606928481730560</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/03/data-structure-map-vs-hash-map/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/03/data-structure-map-vs-hash-map/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/9/index.html">data structure map vs hash_map</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-03 21:28:13" itemprop="dateCreated datePublished" datetime="2019-11-03T21:28:13+08:00">2019-11-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:49:58" itemprop="dateModified" datetime="2019-12-17T15:49:58+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据结构/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>map vs hash_map(unordered_map)</p>
+<ul>
+<li>数据结构，<br>
+map使用平衡二叉树，通常是红黑树；hash_map使用哈希函表。</li>
+<li>查找时间<br>
+map是$O(\log n)$；hash_map是$O(1)$（没有冲突的情况下），最坏情况下是$O(n)$。</li>
+</ul>
+<p>C++中的hash_map叫做unordered_map。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://stackoverflow.com/questions/2189189/map-vs-hash-map-in-c/2189206" target="_blank" rel="noopener">https://stackoverflow.com/questions/2189189/map-vs-hash-map-in-c/2189206</a><br>
+2.<a href="https://stackoverflow.com/questions/5139859/what-the-difference-between-map-and-hashmap-in-stl/5139888" target="_blank" rel="noopener">https://stackoverflow.com/questions/5139859/what-the-difference-between-map-and-hashmap-in-stl/5139888</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/01/linear-algebra-Gram-Schmidt-正交化/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1169,7 +1635,7 @@ $$P(y_k|X) = \frac{P(y_k)P(X|y_k)}{P(X)} = \frac{P(y_k) \prod_{i=1}^m P(x_i|y_k)
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 16:44:52" itemprop="dateModified" datetime="2019-12-17T16:44:52+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-19 22:19:16" itemprop="dateModified" datetime="2019-12-19T22:19:16+08:00">2019-12-19</time>
               
             
           </span>
@@ -1910,420 +2376,11 @@ $$P(Y|X)$$</li>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/26/matlab-basic/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/26/matlab-basic/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/9/index.html">matlab basic</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-26 16:16:58" itemprop="dateCreated datePublished" datetime="2019-10-26T16:16:58+08:00">2019-10-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-18 15:21:12" itemprop="dateModified" datetime="2019-12-18T15:21:12+08:00">2019-12-18</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/其他编程语言/" itemprop="url" rel="index"><span itemprop="name">其他编程语言</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="matlab基础">Matlab基础</h2>
-<h3 id="plot">plot</h3>
-<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">xlabel(<span class="string">'your x label'</span>, <span class="string">'fontsize'</span>, <span class="number">20</span>);</span><br><span class="line">xlim([<span class="number">0</span>, <span class="number">2</span>*<span class="built_in">pi</span>]);</span><br></pre></td></tr></table></figure>
-<h3 id="矩阵大小">矩阵大小</h3>
-<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = <span class="built_in">ones</span>(<span class="number">20</span>, <span class="number">3</span>);</span><br><span class="line"><span class="built_in">size</span>(x);</span><br></pre></td></tr></table></figure>
-<h3 id="产生随机数">产生随机数</h3>
-<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 0和1之间均匀分布的随机数</span></span><br><span class="line">R = <span class="built_in">rand</span>(N);</span><br><span class="line"><span class="comment">%...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 随机整数</span></span><br><span class="line">R = randi(iMax);</span><br><span class="line"><span class="comment">%...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">% 服从高斯分布的随机数</span></span><br><span class="line">R = <span class="built_in">randn</span>(N);</span><br><span class="line"><span class="comment">%...</span></span><br></pre></td></tr></table></figure>
-<h3 id="矩阵减去向量">矩阵减去向量</h3>
-<h3 id="矩阵列拼接用">矩阵列拼接用,</h3>
-<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">x1 = <span class="built_in">ones</span>(<span class="number">200</span>, <span class="number">1</span>);</span><br><span class="line">x2 = <span class="built_in">ones</span>(<span class="number">200</span>, <span class="number">1</span>);</span><br><span class="line">x3 = <span class="built_in">ones</span>(<span class="number">200</span>, <span class="number">1</span>);</span><br><span class="line">x4 = <span class="built_in">ones</span>(<span class="number">200</span>, <span class="number">1</span>);</span><br><span class="line">x5 = <span class="built_in">ones</span>(<span class="number">200</span>, <span class="number">3</span>);</span><br><span class="line">x = [x1(:, <span class="number">1</span>), x2(:, <span class="number">1</span>), x5(:, <span class="number">2</span>:<span class="number">3</span>)]</span><br></pre></td></tr></table></figure>
-<h3 id="矩阵行拼接用">矩阵行拼接用;</h3>
-<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">x1 = <span class="built_in">ones</span>(<span class="number">1</span>, <span class="number">200</span>);</span><br><span class="line">x2 = <span class="built_in">ones</span>(<span class="number">1</span>, <span class="number">200</span>);</span><br><span class="line">x3 = <span class="built_in">ones</span>(<span class="number">1</span>, <span class="number">200</span>);</span><br><span class="line">x4 = <span class="built_in">ones</span>(<span class="number">1</span>, <span class="number">200</span>);</span><br><span class="line">x5 = <span class="built_in">ones</span>(<span class="number">3</span>, <span class="number">200</span>);</span><br><span class="line">x = [x1(<span class="number">1</span>, :), x2(<span class="number">1</span>, :), x5(<span class="number">2</span>:<span class="number">3</span>, :)]</span><br></pre></td></tr></table></figure>
-<h3 id="指数运算">指数运算</h3>
-<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = <span class="built_in">ones</span>(<span class="number">10</span>, <span class="number">1</span>);</span><br><span class="line">x2 = x.^<span class="number">2</span>;</span><br></pre></td></tr></table></figure>
-<h2 id="matlab进行回归分析">Matlab进行回归分析</h2>
-<ul>
-<li>多元线性回归</li>
-<li>多项式回归</li>
-<li>非线性回归</li>
-<li>逐步回归</li>
-</ul>
-<h3 id="多元线性回归">多元线性回归</h3>
-<h4 id="regress介绍">regress介绍</h4>
-<p>使用regress</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[b, bint, r, rint, stats] = regress(Y, X, alpha)</span><br></pre></td></tr></table></figure>
-<p>需要注意的是，X中还需要加上一列ones表示截距，否则会计算出错。<br>
-其中<br>
-b表示回归系数估计值，<br>
-bint表示回归系数的置信区间，<br>
-r表示残差，<br>
-rint表示残差的置信区间。<br>
-stats返回的是统计量，前三个值分别是$R^2 $，F，以及F对应的p</p>
-<h4 id="示例">示例</h4>
-<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">% 自变量</span></span><br><span class="line">x=[<span class="number">143</span> <span class="number">145</span> <span class="number">146</span> <span class="number">147</span> <span class="number">149</span> <span class="number">150</span> <span class="number">153</span> <span class="number">154</span> <span class="number">155</span> <span class="number">156</span> <span class="number">157</span> <span class="number">158</span> <span class="number">159</span> <span class="number">160</span> <span class="number">162</span> <span class="number">164</span>];</span><br><span class="line"><span class="comment">% 表示截距的ones</span></span><br><span class="line">X=[<span class="built_in">ones</span>(<span class="number">16</span>,<span class="number">1</span>) x];</span><br><span class="line"><span class="comment">% 因变量</span></span><br><span class="line">Y=[<span class="number">88</span> <span class="number">85</span> <span class="number">88</span> <span class="number">91</span> <span class="number">92</span> <span class="number">93</span> <span class="number">93</span> <span class="number">95</span> <span class="number">96</span> <span class="number">98</span> <span class="number">97</span> <span class="number">96</span> <span class="number">98</span> <span class="number">99</span> <span class="number">100</span> <span class="number">102</span>]';</span><br><span class="line"><span class="comment">% 回归分析</span></span><br><span class="line">[b,bint,r,rint,stats]=regress(Y,X)</span><br></pre></td></tr></table></figure>
-<h3 id="多项式回归">多项式回归</h3>
-<h4 id="一元多项式">一元多项式</h4>
-<p>使用polyfit或者polytool</p>
-<h4 id="多元二项式">多元二项式</h4>
-<p>使用rstool或者rsmdemo</p>
-<h3 id="非线性回归">非线性回归</h3>
-<p>使用nlinfit</p>
-<h3 id="逐步回归">逐步回归</h3>
-<p>stepwise</p>
-<h2 id="标准差怎么计算">标准差怎么计算</h2>
-<p>得到了参差平方和之后，可以计算标准差。<br>
-$$sd = \sqrt{\frac{R^2}{n-k} }$$<br>
-其中$n$是样本说，$k$是参数个数。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.cnblogs.com/hezhiyao/p/6824083.html" target="_blank" rel="noopener">https://www.cnblogs.com/hezhiyao/p/6824083.html</a><br>
-2.<a href="http://mcm.dept.ccut.edu.cn/u_newsfiles/1283049677/20120508/20120508204298149814.pdf" target="_blank" rel="noopener">http://mcm.dept.ccut.edu.cn/u_newsfiles/1283049677/20120508/20120508204298149814.pdf</a><br>
-2.<a href="http://blog.sina.com.cn/s/blog_03f96e310106lktb.html" target="_blank" rel="noopener">http://blog.sina.com.cn/s/blog_03f96e310106lktb.html</a><br>
-3.<a href="https://bbs.pinggu.org/thread-3065519-1-1.html" target="_blank" rel="noopener">https://bbs.pinggu.org/thread-3065519-1-1.html</a><br>
-5.<a href="https://zhidao.baidu.com/question/1819455048729653268.html" target="_blank" rel="noopener">https://zhidao.baidu.com/question/1819455048729653268.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/25/C-struct-vs-C-struct/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/25/C-struct-vs-C-struct/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/9/index.html">C struct vs C++ struct</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-25 19:32:07" itemprop="dateCreated datePublished" datetime="2019-10-25T19:32:07+08:00">2019-10-25</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-18 20:23:06" itemprop="dateModified" datetime="2019-12-18T20:23:06+08:00">2019-12-18</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <ol>
-<li>在C中，struct names也在定义的<code>struct</code>的namespace中，如果定义<code>struct Foo {};</code>类型，如果需要创建这种类型的变量，<br>
-在C中需要使用<code>struct Foo foo;</code><br>
-而在C++中只需要写 <code>Foo foo;</code> ，当然C那样子也是支持的。<br>
-而对于C语言程序员，可以使用 <code>typedef struct {} Foo;</code> ，然后像C++那样创建变量。</li>
-<li>在C++中，<code>struct</code>和<code>class</code>其实是相同的东西，除了<code>struct</code>的方法默认都是<code>public</code>的，<code>class</code>的方法默认都是`pri而C中，结构体不能拥有method。</li>
-<li>C中<code>struct</code>不能有static成员，而C++的<code>struct</code>可以。</li>
-<li>C中<code>struct</code>不能有构造函数，而C++的<code>struct</code>可以有构造函数。</li>
-<li>C中sizeof <code>struct Foo {};</code>是1，而C++中是0。</li>
-</ol>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.quora.com/What-is-the-difference-between-C-structure-C++-structure" target="_blank" rel="noopener">https://www.quora.com/What-is-the-difference-between-C-structure-C+±structure</a><br>
-2.<a href="https://www.geeksforgeeks.org/difference-c-structures-c-structures/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/difference-c-structures-c-structures/</a><br>
-3.<a href="https://stackoverflow.com/questions/2242696/c-structure-and-c-structure" target="_blank" rel="noopener">https://stackoverflow.com/questions/2242696/c-structure-and-c-structure</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/8/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/8/">8</a><span class="page-number current">9</span><a class="page-number" href="/page/10/">10</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><a class="extend next" rel="next" href="/page/10/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2368,7 +2425,7 @@ $$sd = \sqrt{\frac{R^2}{n-k} }$$<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">300</span>
+                    <span class="site-state-item-count">302</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2570,9 +2627,7 @@ $$sd = \sqrt{\frac{R^2}{n-k} }$$<br>
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">68</span>
+                    <span class="site-state-item-count">67</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -2825,9 +2880,9 @@ $$sd = \sqrt{\frac{R^2}{n-k} }$$<br>
       
     
       
-    
-      
         
+      
+    
       
     
       

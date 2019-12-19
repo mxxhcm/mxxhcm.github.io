@@ -327,6 +327,417 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/19/C-iterator/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/12/19/C-iterator/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">C++ iterator</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-19 20:00:45 / 修改时间：20:03:08" itemprop="dateCreated datePublished" datetime="2019-12-19T20:00:45+08:00">2019-12-19</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="迭代器">迭代器</h2>
+<p>C<ins>定义了许多容器，包括<code>vector</code>，<code>list</code>，<code>map</code>等等，这些容器中，只有少部分支持<code>[]</code>运算符，其他的都不支持，为了访问这些容器，C</ins>提供了迭代器访问这些容器，迭代器和指针类似，提供了对对象的间接访问。<br>
+注意<code>string</code>不是容器，但是它支持很多和容器类型的操作。</p>
+<h3 id="迭代器的使用">迭代器的使用</h3>
+<h4 id="获得迭代器">获得迭代器</h4>
+<p>拥有迭代器的类型（<code>string</code>和容器等）也拥有返回迭代器的成员函数，如<code>begin</code>和<code>end</code>，<code>begin</code>返回指向容器第一个元素或<code>string</code>第一个字符的迭代器，而<code>end</code>返回容器或者<code>string</code>的最后一个元素的下一个位置，是一个根本不存在的元素，通常把这个迭代器称为尾后迭代器。<br>
+如果容器（<code>string</code>)为空，<code>begin</code>和<code>end</code>返回的是同一个迭代器，都是尾后迭代器。</p>
+<h4 id="迭代器运算符">迭代器运算符</h4>
+<p>迭代器支持的运算有：</p>
+<ul>
+<li><code>*iter</code>，表示返回迭代器iter所指元素的引用</li>
+<li><code>iter-&gt;num</code>，解引用<code>iter</code>并且获得该元素中名为<code>num</code>的成员，等价于<code>(*iter).mem</code>，即箭头运算符把解引用和成员访问两个操作结合在了一起。</li>
+<li><code>++iter</code>，让<code>iter</code>指向容器中的下一个元素</li>
+<li><code>--iter</code>，让<code>iter</code>指向容器中的上一个元素</li>
+<li><code>iter1==iter2</code></li>
+<li><code>iter1!=iter2</code>，判断两个迭代器是否相等，即是否指向同一个元素或者指向同一个容器的尾后迭代器。</li>
+</ul>
+<p>尽量使用<code>!=</code>而不是使用<code>&lt;</code>，因为所有的标准容器和<code>string</code>都定义了<code>==</code>和<code>!=</code>，而只有部分容器和<code>string</code>定义了<code>&lt;</code>，所以<code>==</code>和<code>!=</code>是比较通用的。</p>
+<h4 id="迭代器的类型">迭代器的类型</h4>
+<p>迭代器有const和非const之分。他们通过如下方式定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator it;   <span class="comment">//非const迭代器，可读和可写</span></span><br><span class="line"><span class="built_in">string</span>::iterator it2;</span><br><span class="line"></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::const_iterator it3;    <span class="comment">//const迭代器，只是可读</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::const_iterator it4;</span><br></pre></td></tr></table></figure>
+<h4 id="begin和end"><code>begin</code>和<code>end</code></h4>
+<p>如果对象是常量，<code>begin</code>和<code>end</code>返回<code>const_iterator</code>，否则返回<code>iterator</code>。<br>
+而<code>cbgein</code>和<code>cend</code>无论对象是否是常量，都返回<code>const_iterator</code>。</p>
+<h4 id="解引用和成员访问操作相结合">解引用和成员访问操作相结合</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(*it).empty()</span><br><span class="line">it-&gt;empty()</span><br></pre></td></tr></table></figure>
+<h4 id="迭代器失效">迭代器失效</h4>
+<ol>
+<li>范围for语句会使迭代器失效</li>
+<li>任何一种可能改变<code>vector</code>对象容量的操作，如<code>push_back</code>，都会使得<code>vector</code>对象的迭代器失效。</li>
+</ol>
+<h3 id="迭代器运算">迭代器运算</h3>
+<p>所有的容器和<code>string</code>都实现了迭代器，迭代器的递增，递减运算，以及<code>==</code>和<code>!=</code>操作。<br>
+<code>vector</code>和<code>string</code>的迭代器提供了更多的运算符，这些运算被称为迭代器运算。如下所示：</p>
+<ul>
+<li><code>iter+n</code></li>
+<li><code>iter-n</code></li>
+<li><code>iter+=n</code></li>
+<li><code>iter-=n</code>，</li>
+<li><code>iter1-iter2</code>，</li>
+<li><code>&gt;, &gt;=, &lt;=, &lt;</code></li>
+</ul>
+<p>前面四个比较直观，<code>iter1-iter2</code>就不行，他其实是两个迭代器之间的距离，<code>iter</code>和<code>iter2</code>必须是同一个容器中的迭代器。可以使用这些运算符进行二分搜索。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// text是给定的有序序列</span></span><br><span class="line"><span class="keyword">auto</span> begin = text.begin(), end = text.end();</span><br><span class="line"><span class="keyword">auto</span> mid = text.begin() + (end-begin)/<span class="number">2</span>;</span><br><span class="line"><span class="keyword">while</span>(mid != end &amp;&amp; *mid != sought)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(sought &lt; mid)</span><br><span class="line">    &#123;</span><br><span class="line">        end = mid;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        begin = mid+<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    mid = begin + (end-begin)/<span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer第五版》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/19/C-STL-vector/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/12/19/C-STL-vector/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">C++ STL vector</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-19 19:59:56 / 修改时间：20:02:15" itemprop="dateCreated datePublished" datetime="2019-12-19T19:59:56+08:00">2019-12-19</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="vector">vector</h2>
+<p><code>vector</code>表示对象的集合，所有的对象类型都相同，因为<code>vector</code>容纳着其他对象，所以<code>vector</code>也叫容器。<br>
+<code>vecotr</code>在头文件<code>vector</code>中，使用前需要包含该头文件，并进行<code>using</code>声明：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">vector</span>;</span><br></pre></td></tr></table></figure>
+<p><code>vector</code>是一个类模板而不是类型。模板本身不是类或者函数，可以将模板看成编译器生成类或者函数编写的一份说明，编译器根据模板创建类或者函数的过程称为实例化，使用模板时需要指出编译器应该把类或者函数实例化成什么类型。<br>
+在模板名字后面跟上一对尖括号，括号内为具体的类型说明。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; ivec;   <span class="comment">//表示int类型的vector</span></span><br><span class="line"><span class="built_in">vector</span>&lt; <span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; &gt; file <span class="comment">//vector中是string的vector。</span></span><br></pre></td></tr></table></figure>
+<h3 id="vector对象的初始化">vector对象的初始化</h3>
+<ul>
+<li>
+<p>默认初始化<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; svec;    <span class="comment">//默认初始化，不含任何元素</span></span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>列表初始化</p>
+</li>
+</ul>
+<ol>
+<li>元素的初值只能放在花括号内，不能放在圆括号内</li>
+<li>给定类内初始值时只能使用拷贝初始化或者列表初始化。</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; c = &#123;<span class="string">"hello"</span>, <span class="string">"world"</span>&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>值初始化</li>
+</ul>
+<ol>
+<li>只提供给vector对象容纳的元素数量而不用略去初始值。会创建一个值初始化的元素初值，并把它赋给容器中所有元素，这个初始值由<code>vector</code>对象中元素类型决定。</li>
+<li>如果<code>vector</code>对象中元素类型是内置类型，如<code>int</code>，初始值自动设置为0。</li>
+<li>如果是某种类类型，比如<code>string</code>，由类默认初始化。</li>
+<li>有些类要求必须显式的给出初始值。如果<code>vector</code>中对象不支持默认初始化，必须提供初始值。</li>
+<li>如果值提供了元素的数量而没有设定初值，只能使用直接初始化。</li>
+<li>初始化的真实含义依赖于传递初始值时用的是花括号还是圆括号。花括号进行列表初始化，圆括号提供的信息构造<code>vecotr</code>对象。如果使用花括号中的形式，但是提供的值不能用来列表初始化，考虑使用值构造<code>vector</code>对象。但是如果使用圆括号提供不能构造<code>vector</code>对象的值，不能用来进行列表初始化。也就是说花括号可以用来列表初始化，也可以用来构建<code>vector</code>对象，但是圆括号只能用来构建<code>vector</code>对象。</li>
+</ol>
+<h3 id="vector添加元素">vector添加元素</h3>
+<p>直接初始化的方式适用于三种情况：</p>
+<ol>
+<li>初始值已知，且数量较少</li>
+<li>初始值是另一个<code>vector</code>对象的副本</li>
+<li>所有元素的初始值都一样。</li>
+</ol>
+<p>而当我们并不知道<code>vector</code>中有几个元素，元素的值也不知道的时候，就不适用直接初始化了，这个时候需要调用<code>vector</code>的成员函数<code>push_back</code>向其添加元素。</p>
+<p><code>vector</code>的最大优势是运行时能够高效的添加元素，它的容量能够在不够的时候，高效的增长，这样子在定义<code>vector</code>对象时设定大小没有太大的意义。只有一种情况，就是所有的元素值都一样的时候，指定<code>vector</code>的大小和初始值。否则更建议定义空的<code>vector</code>，然后向其中添加具体的而值。</p>
+<h3 id="vector对象的操作"><code>vector</code>对象的操作</h3>
+<ol>
+<li><code>vector</code>的大小</li>
+<li>向<code>vector</code>添加新的元素</li>
+<li>下标<code>[]</code>只能用于访问元素，不能用于添加元素。通过下标访问超出<code>vector</code>范围的元素的行为非常常见，这种错误叫做缓冲区溢出。</li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/17/numerical-analysis-secant-method/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1931,572 +2342,11 @@ pushq将一个四字值压入栈中，比如<code>pushq %rsp</code>相当于以�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/12/concepts-csapp/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/12/12/concepts-csapp/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">concepts csapp</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-12-12 17:12:10" itemprop="dateCreated datePublished" datetime="2019-12-12T17:12:10+08:00">2019-12-12</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:32:52" itemprop="dateModified" datetime="2019-12-17T15:32:52+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机系统/" itemprop="url" rel="index"><span itemprop="name">计算机系统</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h3 id="计算机系统">计算机系统</h3>
-<p>从机器的角度来看，程序仅仅是字节序列。</p>
-<h3 id="总线和字">总线和字</h3>
-<ul>
-<li><strong>总线</strong>。贯穿整个系统的一组电子管道，它携带信息字节并负责在各个部件之间传递。通常总线被设计成传送固定的<strong>字节块</strong>，也就是<strong>字</strong>。字中的字节数也就是字长，是一个基本的系统参数。总线包括系统总线，I/O总线，内存总线等。</li>
-<li><strong>字节</strong>，八位的位序列块，最小的可寻址内存单位。</li>
-<li><strong>字</strong>，总线传送的固定的字节块。</li>
-<li><strong>字长</strong>，字中的字节数。一个字长为w位的机器，虚拟地址的范围从0到$2^w -1$。</li>
-</ul>
-<h3 id="地址和虚拟内存">地址和虚拟内存</h3>
-<ul>
-<li><strong>机器程序的虚拟内存</strong>，机器级程序将内存看成一个非常大的字节数组，称为虚拟内存。</li>
-<li>**（虚拟）**地址，虚拟内存的每个字节都由一个唯一的数字标示，这个数字叫做这个字节的地址。</li>
-<li><strong>虚拟地址空间</strong>，所有（虚拟）地址的集合称为虚拟地址空间。</li>
-<li><strong>大端和小端</strong>。大端，最高有效字节在最前面；小端，最低有效字节在最前面。用于跨多字节的对象，它的地址是什么，如何排列这些字节。在网络传输二进制数据时，可能会出现问题。</li>
-</ul>
-<h3 id="i-o设备">I/O设备</h3>
-<ul>
-<li><strong>I/O设备</strong>。输入输出设备是系统和外部世界的联系通道。常见的用户输入设备有键盘和鼠标，用户输出设备显示器，以及磁盘驱动器（磁盘）。每个I/O设备都通过一个控制器或者设配和I/O总线相连接，是适配器和控制器的功能都是在I/O总线和I/O设备之间传递信息。</li>
-<li><strong>控制器</strong>。控制器是I/O设备本身或者系统的主印制电路板上的芯片组。</li>
-<li><strong>适配器</strong>。而适配器是一块插在主板插槽上的卡。</li>
-</ul>
-<h3 id="处理器">处理器</h3>
-<ul>
-<li><strong>处理器</strong>。中央处理单元，简称CPU，是解释（执行）存储在主存中指令的引擎。</li>
-<li><strong>程序计数器</strong>。处理器的核心是一个大小为一个字的存储设备（寄存器），称为程序计数器（PC）。在任何时刻，PC都指向主存中的某条机器指令。</li>
-<li><strong>指令集架构</strong>。处理器按照一个指令执行模型来操作，这个模型叫做指令集架构。指令集架构描述的是每条机器代码指令的效果。</li>
-<li><strong>微体系架构</strong>。微体系结构描述的是处理器是如何实现的。</li>
-<li><strong>算术/逻辑运算单元(ALU)</strong>。计算新的数据和地址值。</li>
-</ul>
-<h3 id="存储器">存储器</h3>
-<ul>
-<li><strong>主存</strong>。</li>
-<li><strong>动态随机访问存储器</strong></li>
-<li><strong>静态随机访问存储器</strong></li>
-<li><strong>高速缓存存储器</strong></li>
-<li><strong>闪存</strong></li>
-<li><strong>磁盘存储器</strong></li>
-<li><strong>寄存器文件</strong>。寄存器文件是一个小的存储设备，由一些单个字长的寄存器组成，每个寄存器都有一个唯一的名字。</li>
-</ul>
-<h3 id="程序和进程">程序和进程</h3>
-<ul>
-<li><strong>程序</strong>。程序是一个存储在磁盘上的某个目录中的可执行文件。内核使用<code>exec</code>函数将程序读入内存，并执行该程序。</li>
-<li><strong>进程</strong>。程序的执行实例被称为进程(process)，是操作系统对一个正在运行的程序的抽象。</li>
-<li><strong>线程</strong></li>
-<li><strong>并发</strong></li>
-<li><strong>并行</strong></li>
-</ul>
-<h2 id="运算">运算</h2>
-<ul>
-<li><strong>算术右移和逻辑右移</strong>。算术右移在左端补k个最高有效位的值，而逻辑右移在左端补k个0，C语言没有规定对于有符号数使用哪种右移，但是几乎所有的编译器和机器组合都对有符号数进行算术右移。对于无符号数，右移必须是逻辑右移。</li>
-</ul>
-<h2 id="机器指令和可执行文件">机器指令和可执行文件</h2>
-<ul>
-<li>机器指令。</li>
-<li>可执行目标程序(executable object program)，或者也叫可执行目标文件(executable object files)，是一种文件格式。将一系列形式机器指令以这种格式组织，然后存放成一个二进制文件。</li>
-</ul>
-<h2 id="编译器和编译器驱动程序">编译器和编译器驱动程序</h2>
-<ul>
-<li>编译器，或者编译系统(compile system)。执行将源文件翻译成可执行目标文件过程的<strong>程序</strong>，即预处理器，编译器，汇编器和链接器，构成编译系统。</li>
-<li>编译器驱动程序。编译器驱动程序自动的完成整个编译过程，即在需要时分别调用预处理器，编译器，汇编器和连接器，整个编译过程都是由编译器驱动程序负责的。[1,2]。</li>
-<li><strong>链接</strong>是将各种代码和数据片段收集并组合成一个单一文件的过程，这个文件可以被加载到内存并执行。</li>
-</ul>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《CSAPP》第三版<br>
-2.<a href="https://stackoverflow.com/a/58392562/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/58392562/8939281</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/11/information-in-computer-csapp/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/12/11/information-in-computer-csapp/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">information in computer csapp</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-12-11 15:21:36" itemprop="dateCreated datePublished" datetime="2019-12-11T15:21:36+08:00">2019-12-11</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 17:04:08" itemprop="dateModified" datetime="2019-12-17T17:04:08+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机系统/" itemprop="url" rel="index"><span itemprop="name">计算机系统</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="概念">概念</h2>
-<ol>
-<li>字节，八位的位块，最小的可寻址内存单位</li>
-<li>虚拟内存，机器级程序将内存看成一个非常大的字节数组，称为虚拟内存。</li>
-<li>（虚拟）地址，内存的每个字节都由一个唯一的数字标示，这个数字叫做这个字节的地址。</li>
-<li>虚拟地址空间，所有（虚拟）地址的集合称为虚拟地址空间。</li>
-<li>字长，指明指针数据的norminal size。一个字长为w位的机器，虚拟地址的范围从0到$2^w -1$。</li>
-<li>大端和小端。大端，最高有效字节在最前面；小端，最低有效字节在最前面。用于跨多字节的对象，它的地址是什么，如何排列这些字节。在网络传输二进制数据时，可能会出现问题。</li>
-<li>算术右移和逻辑右移。算术右移在左端补k个最高有效位的值，而逻辑右移在左端补k个0，C语言没有规定对于有符号数使用哪种右移，但是几乎所有的编译器和机器组合都对有符号数进行算术右移。对于无符号数，右移必须是逻辑右移。</li>
-</ol>
-<h2 id="信息的表示和处理">信息的表示和处理</h2>
-<p>浮点数表达的范围大，但是确实近似的，精度有限。如$(3.14+1e20) - 1e20$的值是$0.0$，而$3.14+(1e20-1e20)$的值是$3.14$。<br>
-而整数的表示范围小，但是是精确的。比如：$200\times 300\times 400\times 500$会溢出，</p>
-<h2 id="信息的存储">信息的存储</h2>
-<h3 id="虚拟内存和虚拟地址空间">虚拟内存和虚拟地址空间</h3>
-<p><strong>字节</strong>是八位的位块，它是最小的可寻址内存单位。<strong>机器级程序</strong>将内存看成一个非常大的字节数组，称为<strong>虚拟内存</strong>。内存的每个字节都由一个唯一的数字标示，这个数字叫做这个字节的<strong>地址</strong>。虚拟地址空间，所有（虚拟）地址的集合称为<strong>虚拟地址空间</strong>。</p>
-<h3 id="字数据大小">字数据大小</h3>
-<p>每台计算机都有一个字长，指明指针数据的标称大小（norminal size）。虚拟地址就是用这样的一个字编码的，字长决定的最重要的参数就是虚拟地址空间的最大大小。一个字长为w位的机器，虚拟地址的范围从0到$2^w -1$。</p>
-<h3 id="寻址和字节顺序">寻址和字节顺序</h3>
-<p>为了寻找跨越多字节的程序对象，我们必须建立两个规则：</p>
-<ol>
-<li>这个对象的地址是什么。在几乎所有的机器上，多字节对象都存储为连续的字节序列，对象的地址就是所使用字节中的最小的地址。</li>
-<li>如何在内存中排列这些字节。通常有两个规则，大端，最高有效字节在最前面；小端，最低有效字节在最前面。字节顺序在以下三个地方变得很重要：
-<ul>
-<li>在网络传输二进制数据时，可能会出现问题。</li>
-<li>阅读表示整数数据的字节序列时，通常是在检查机器级程序时。</li>
-<li>编写规避正常的类型系统的时候，比如C语言的强制类型转换时，把一个4字节的int转换成一个字符数组，大端小端输出的结果是不一样的。</li>
-</ul>
-</li>
-</ol>
-<p>一般情况下，数值变量在各类机器/操作系统中除了大端小端的区别外，没有其他区别。而指针变量在各类机器/操作系统之间差异显著。</p>
-<h3 id="字符串表示">字符串表示</h3>
-<p>使用ASCII码作为字符码的任何系统，它们对于字符串的表示是相同的。</p>
-<h3 id="函数表示">函数表示</h3>
-<p>指令编码在不同的机器上是不同的。不同的机器类型使用不同的而且不兼容的指令和编码方式。</p>
-<h3 id="布尔代数和c语言的位运算">布尔代数和C语言的位运算</h3>
-<p>与或非，异或，这四个操作，都是对位进行操作的。更多关于位运算的介绍可以查看<a href></a>。</p>
-<h3 id="c的逻辑运算和移位运算">C的逻辑运算和移位运算</h3>
-<p>逻辑运算一定要记得加括号。<br>
-<strong>算术右移和逻辑右移</strong>。算术右移在左端补k个最高有效位的值，而逻辑右移在左端补k个0，C语言没有规定对于有符号数使用哪种右移，但是几乎所有的编译器和机器组合都对有符号数进行算术右移。对于无符号数，右移必须是逻辑右移。</p>
-<h2 id="整数表示">整数表示</h2>
-<h3 id="整数的类型">整数的类型</h3>
-<p>ISO C给出了C中每个整形的最小取值范围（至少要满足这个范围，可以更大）。但是具体每个整形的长度是多少是和实现相关的。几个特殊的类型<code>int32_t</code>和<code>uint32_t</code>，``int64_t<code>，</code>uint64_t`，是和实现无关的，它们的长度通过类型中的数字显示出来。</p>
-<h3 id="无符号数的编码">无符号数的编码</h3>
-<p>假设一个w位的整数数据类型，用bit vector $x = [x_{w-1}, \cdots, w_0]$表示，其中每一位的取值都是0或者1。用一个函数$B2U_w$表示：<br>
-无符号数编码的定义<br>
-对于bit vector $x = [x_{w-1}, \cdots, w_0]$<br>
-$$ B2U_w (x) = \sum_{i=0}^{w-1} x_i 2^i $$<br>
-将一个长度为w的bit vector映射到一个非负整数。</p>
-<h3 id="有符号数的编码">有符号数的编码</h3>
-<h4 id="补码">补码</h4>
-<p>补码（Two’s Complement）是用来表示有符号的一种方法。这个定义中，将字的最高有效位解释为负权。用函数$B2T_w$表示：<br>
-补码的定义<br>
-对于bit vector $x = [x_{w-1}, \cdots, w_0]$<br>
-$$ B2U_w (x) = - x_{w-1} 2^{w-1} + \sum_{i=0}^{w-2} x_i 2^i $$<br>
-最高有效位$x_{w-1}$也称为符号位，它的权重是$-2^{w-1} $。</p>
-<h4 id="反码">反码</h4>
-<p>反码（Ones’ Complement）：最高有效位的权重是$ - (2^{w-1} -1) $而不是$ - 2^{w-1} $，其余的地方和补码一样：<br>
-$$ B2O_w (x) = - (x_{w-1} 2^{w-1} - 1) + \sum_{i=0}^{w-2} x_i 2^i $$</p>
-<h4 id="原码">原码</h4>
-<p>原码（Sign-Magnitude）：最高有效位是符号位，用来确定剩下的位是正权还是负权：<br>
-$$ B2S_w (x) = (-1)^{x_{w-1} } \cdot \sum_{i=0}^{w-2} x_i 2^i $$</p>
-<h4 id="区别和联系">区别和联系</h4>
-<p>原码和反码，它们对于数字0都有两种不同的表示方法。注意，反码和补码，反码是Ones’而补码是Two’s，因为对于一个正整数$x$，求$-x$的表示时，使用反码是$[111…111]<em>w - x$，而补码是$[1000…000]</em>{w+1}-x$。</p>
-<p>一个长度为$w$位的bit vector，可以解释成补码，也可以解释成无符号编码，当最高有效位为0时，它们都表示正整数；当最高有效位为$1$时，解释为补码时，它是负数，解释为无符号编码时，它是一个正整数，它们两个的绝对值相加等于$2^{w+1} $，</p>
-<h3 id="有符号数和无符号数的转换">有符号数和无符号数的转换</h3>
-<p>在C语言的大多数实现中，处理同样字长的有符号数和无符号数的转换的规则是：数值可能会改变，但是bite vector不变。</p>
-<h4 id="字长为16的整数补码">字长为16的整数补码</h4>
-<p>0<br>
-0000 0000 0000 0000<br>
--1<br>
-1111 1111 1111 1111<br>
--2^15<br>
-1000 0000 0000 0000<br>
-2^15-1<br>
-0111 1111 1111 1111</p>
-<h4 id="补码表示的有符号数转换为无符号数">补码表示的有符号数转换为无符号数</h4>
-<p>给定bit vector的补码表示的无符号数和无符号数之间的关系可以表示为函数$T2U$：<br>
-对于满足$TMin_w \lt x \lt TMax_w $的$x$有：<br>
-$$T2U_w(x) = \begin{cases}x, x\ge 0 \\ 2^w + x\lt 0\end{cases}$$</p>
-<h4 id="无符号数转换为补码表示的有符号数">无符号数转换为补码表示的有符号数</h4>
-<p>对于满足$0\le u \le UMax_w$的$u$，有：<br>
-$$U2T_w(u) = \begin{cases}u, u\le TMax_w \\u -  2^w\gt TMax_w\end{cases}$$</p>
-<h4 id="有符号数和补码表示的无符号数之间的关系">有符号数和补码表示的无符号数之间的关系</h4>
-<p>只要记住一条就行，上面的两个转换就能推导出来。<br>
-一个字长为$w$，最高有效位为$1$的bit vector，用补码方式解释为负数A，用无符号编码解释为整数B，A和B的绝对值之和为$2^w $。为什么？</p>
-<p>假设字长为8，给定一个正整数$x$，比如$x=9$，无符号编码为$0000 1001$，$-x$的补码编码怎么计算，$2^8 - 9$，即$10000 0000 - 0000 1001$，结果是$1111 0111$。<br>
-$1111 0111$表示$-x$的补码，绝对值$x$的无符号编码表示是$0000 1001$，用无符号编码解释$1111 0111$，显然，$1111 0111$加上$0000 1001$，等于$2^w $。</p>
-<h3 id="c语言中的有符号数和无符号数">C语言中的有符号数和无符号数</h3>
-<p><strong>对于相同字长的整形和无符号整形，如果一个运算的两个运算数一个是有符号的，一个是无符号的，C语言会隐式的将有符号参数强制转换为无符号的</strong>。</p>
-<h3 id="整形提升">整形提升</h3>
-<p>无符号数的扩展，在左面添加0，叫做<strong>零扩展</strong>。<br>
-有符号数的扩展，在左面添加最高有效位的值，叫做符号扩展。<br>
-<strong>当强制类型转换同时涉及到操作数的大小和符号变化时，先改变操作数的大小，然后再改变操作数的符号。比如short转换成unsigned，先把short转换成int，然后再把它转换成unsigned的</strong></p>
-<h3 id="整形截断">整形截断</h3>
-<h4 id="无符号数的截断">无符号数的截断</h4>
-<p>将长度为$w$的bit vector $\mathbf{x}$，丢弃最高位的值，将其截断为长度为$k$的bit vector $\mathbf{x’}$。令$x=B2U_w(\mathbf{x})$，$x’=B2U_k(\mathbf{x’})$，则$x’= x mod 2^k $。</p>
-<h4 id="补码数值截断">补码数值截断</h4>
-<p>将长度为$w$的bit vector $\mathbf{x}$，丢弃最高位的值，将其截断为长度为$k$的bit vector $\mathbf{x’}$。令$x=B2U_w(\mathbf{x})$，$x’=B2T_k(\mathbf{x’})$，则$x’=U2T_k(x mod 2^k)$。<br>
-<strong>先截断为无符号数，然后将无符号数转换成有符号数。</strong></p>
-<h3 id="有符号数和无符号数的建议">有符号数和无符号数的建议</h3>
-<ol>
-<li>相同长度的无符号数和有符号数，在运算中有有符号数的话，就会把有符号数转换成无符号数。比如for循环中，<code>for(unsigned i = 10; i &gt;= 0; --i)</code>，永远不会跳出<code>for</code>循环，因为当$i=0$时，<code>--i</code>就相当于得到了有符号数$-1$，而$-1$的补码形式和无符号数的$2^w -1 $的编码是一样的，而这里就是得到了$2^w -1$。</li>
-<li>两个无符号数相减。永远不可能小于0。</li>
-</ol>
-<h2 id="整数运算">整数运算</h2>
-<h3 id="无符号数加法">无符号数加法</h3>
-<h4 id="无符号数加法-v2">无符号数加法</h4>
-<p>无符号数加法：<br>
-对于满足$0\le x, y \lt 2^w $的无符号数$x$和$y$有：<br>
-$$x+y = \begin{cases}x+y, x+y \lt 2^w, 正常\\ x+y -2^w , 2^w \le x+y \le 2^{w+1}, 溢出 \end{cases}$$</p>
-<h4 id="算术溢出">算术溢出</h4>
-<p>当$x+y$的和超出$w$位能表示的最长长度时，就说它发生了算术溢出。</p>
-<h4 id="加法逆元">加法逆元</h4>
-<p>加法逆元，对于每一个值$0\le x \lt 2^w $，都存在一个值$0\le y \lt 2^w $$，使得$x+y = 0$，这个$y$就叫做$x$的加法逆元，反过来，$x$也是$y$的加法逆元。<br>
-$$y = \begin{cases}x, x=0\\ 2^w -x, x \gt 0\end{cases}$$</p>
-<h3 id="补码加法">补码加法</h3>
-<p>补码加法：<br>
-对于满足$- 2^{w-1} \le x, y \lt 2^{w-1} -1 $的有符号整数$x$和$y$有：<br>
-$$x+y = \begin{cases}x+y - 2^w, x+y \ge 2^{w-1} \\ x+y, - 2^{w-1} \le x+y \lt 2^{w-1} \\ x + y + 2^w, x+y \le 2^{w-1} \le 2^{w+1} \end{cases}$$</p>
-<p>可以先进行无符号数加法，然后将结果使用$U2T_w$转换成有符号数。为什么可以这样子呢？是因为，补码加法和无符号数加法有完全相同的位级表示，在很多实现中执行补码加法和无符号数加法的机器指令一样。</p>
-<h3 id="补码的非">补码的非</h3>
-<p>这个非是什么意思？？？怎么感觉有问题，就是用$2^w - x$呗。不管怎么样，这一接就是介绍补码的逆元，只要$x+y % 2^2 =0$就行了。<br>
-对于满足$TMin_w \le x \le TMax_w$的每个数字$x$都有加法逆元$y$：<br>
-$$y = \begin{cases}TMin_w, x=TMin_w\\ -x, x\gt TMin_w \end{cases}$$</p>
-<h3 id="无符号乘法">无符号乘法</h3>
-<p>对于满足$0\le x, y \lt 2^w $的w位无符号数$x$和$y$有，它们的乘积需要$2w$位来表示，而C语言中，无符号乘法定义为$w$位，从$2w$位中截取低$w$位，作为结果：<br>
-$$ x\times y = ((x\cdot y) mod 2^w)$$</p>
-<h3 id="补码乘法">补码乘法</h3>
-<p>对于满足$- 2^{w-1} \le x, y \lt 2^{w-1} -1 $的有符号整数$x$和$y$，先将它们当做无符号数相乘，然后截断为$w$位，再将无符号数转化成有符号数：<br>
-$$ x\times y = ((x\cdot y) mod 2^w)$$</p>
-<p>为什么可以这样子。因为对于无符号和补码乘法来说，它们具有相同的位级表示。即：<br>
-$$T2B_w(x\cdot y) = U2B(x’ \cdot y’)$$<br>
-给定bit vector $\mathbf{x}, \mathbf{y}$，分别用无符号整数编码和补码进行编码，得到$x’,y’, x, y$。最后它们乘出来的结果截断为$w$位之后还是一样的。</p>
-<h3 id="乘以常数">乘以常数</h3>
-<p>整数乘法的指令相当的慢，需要十个或者更多个时钟周期，而其他整数运算（加法，减法，位级运算和移位），都只需要一个时钟周期。所以，编译器会尝试使用移位和加法的组合运算来提高运算速度。<br>
-对于和2的幂相乘的无符号乘法来说，其实就相当于左移一个数值。而固定大小的补码算术运算的位级操作和其无符号运算等价。</p>
-<h3 id="除以2的幂">除以2的幂</h3>
-<h2 id="浮点数的表示">浮点数的表示</h2>
-<p>IEEE754标准。</p>
-<h3 id="二进制小数">二进制小数</h3>
-<p>将一个含有小数值的二进制数转换为十进制。给出如下形式的二进制小数：<br>
-$$b_mb_{m-1}\cdots b_1b_0.b_{-1}b_{-2}\cdots b_{-n-1}b_{-n}$$<br>
-它表示的数字$b$定义如下：<br>
-$$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
-小数点后的位，它的权值为$2$的负幂。</p>
-<h3 id="ieee浮点运算">IEEE浮点运算</h3>
-<h3 id="示例">示例</h3>
-<h3 id="舍入">舍入</h3>
-<h3 id="浮点运算">浮点运算</h3>
-<h3 id="c语言中的浮点数">C语言中的浮点数</h3>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《CSAPP》第五版</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2541,7 +2391,7 @@ $$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">300</span>
+                    <span class="site-state-item-count">302</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2743,9 +2593,7 @@ $$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">68</span>
+                    <span class="site-state-item-count">67</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3014,41 +2862,9 @@ $$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
       
     
       
-        
-      
     
   
 
-  
-    
-      <script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      tex2jax: {
-        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
-        processEscapes: true,
-        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-      },
-      TeX: {equationNumbers: { autoNumber: "AMS" }}
-    });
-</script>
-
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Queue(function() {
-      var all = MathJax.Hub.getAllJax(), i;
-        for (i=0; i < all.length; i += 1) {
-          all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-    });
-</script>
-<script src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-
-<style>
-.MathJax_Display {
-    overflow: auto hidden;
-}
-</style>
-
-    
   
 
 

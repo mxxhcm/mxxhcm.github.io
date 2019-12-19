@@ -327,6 +327,535 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/09/C-type-conversion/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/09/C-type-conversion/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C++ type conversion</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-09 23:12:15" itemprop="dateCreated datePublished" datetime="2019-11-09T23:12:15+08:00">2019-11-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-14 17:33:37" itemprop="dateModified" datetime="2019-12-14T17:33:37+08:00">2019-12-14</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="类型转换">类型转换</h2>
+<p>在C<ins>类型中，某些类型之间有关联。如果说两种类型有关联，当程序需要其中一种类型的运算对象时，可以使用另一种类型关联的对象或者值来替代。或者说如果两种类型可以相互转换，那么他们就是关联的。<br>
+C</ins>提供了两种类型相互转换的规则：</p>
+<ol>
+<li>隐式类型转换，隐式类型转换指的是编译器自动执行的，无需程序员的介入的转换。隐式类型转换包含上下文转换，值转换，算术提升，算术转换等。</li>
+<li>显式类型转换。</li>
+</ol>
+<h2 id="隐式类型转换">隐式类型转换</h2>
+<p>[13.3.3.1 Implicit conversion sequences]<br>
+什么时候会发生隐式类型转换？当一个类型为T1的表达式用在需要类型为T2的上下文时，会发生类型转换。比如：</p>
+<ul>
+<li>函数声明中参数是T2类型的，传入参数是T1类型的；</li>
+<li>将T1类型的表达式用作需要T2类型操作数的操作符。</li>
+<li>用T1类型的表达式初始化一个T2类型的新对象，包含函数的返回语句。</li>
+<li>当表达式被用在一个<code>switch</code>语句的条件中时（T2是整型）</li>
+<li>表达式用于<code>if</code>的条件或者循环语句的条件时或者循环语句的条件时或者循环语句的条件时或者循环语句的条件时或者循环语句的条件时或者循环语句的条件时或者循环语句的条件时或者循环语句的条件时或者循环语句的条件时（T2是<code>bool</code>类型）</li>
+</ul>
+<p>只有存在从T1到T2的没有歧义的隐式类型转换时，这个程序才能编译成功。</p>
+<h3 id="转换的顺序">转换的顺序</h3>
+<p>隐式类型转换序列如下所示：</p>
+<ol>
+<li>0或1个stand convesion sequence;</li>
+<li>0或1个用户自定义的转换;</li>
+<li>0或1个stand convesion sequence;</li>
+</ol>
+<p>一个stand conversion sequence由以下顺序组成：</p>
+<ol>
+<li>0或1个左值转换</li>
+<li>0或1个数值提升或者数值转换</li>
+<li>0或1个函数指针转换（从C++17开始）</li>
+<li>0或1个qualification adjustment。</li>
+</ol>
+<p>一个用户定义的转换由0个或者一个非显式的单个参数构造函数或者非显式的转换函数调用。</p>
+<blockquote>
+<p>An expression e is said to be implicitly convertible to T2 if and only if T2 can be copy-initialized from e, that is the declaration T2 t = e; is well-formed (can be compiled), for some invented temporary t. Note that this is different from direct initialization (T2 t(e)), where explicit constructors and conversion functions would additionally be considered.</p>
+</blockquote>
+<h3 id="上下文转换">上下文转换</h3>
+<p>在下面列出来的上下文中，期望获得一个<code>bool</code>类型的变量，如果声明语句<code>bool t(e)</code>能够编译成功，那么就进行隐式转换。这些表达式<code>e</code>被称为上下文转换成<code>bool</code>。</p>
+<ul>
+<li>控制流<code>if</code>, <code>while</code>和<code>for</code>；</li>
+<li>逻辑操作符<code>!</code>, <code>&amp;&amp;</code>, <code>||</code>的操作数；</li>
+<li>条件操作符<code>?:;</code>的第一个操作数；</li>
+</ul>
+<p>在下列上下文中，需要一个和上下文相关的类型<code>T</code>。<br>
+…</p>
+<h3 id="值转换">值转换</h3>
+<p>每一个表达式都有一个非引用类型和值类别，值转换发生在表达式的值类别上。无论何时当表达式的值类别时和操作符需要的操作数值类别不同时，发生这类转换。</p>
+<h4 id="左值到右值转换">左值到右值转换</h4>
+<p>任何非函数，非数组类型T的glvalue可以隐式的转换成相同类型的prvalue。如果T是非类类型的话，这个转换还会去掉cv修饰。<br>
+在以下情况中，对象表示的glvalue是不可访问的：</p>
+<ul>
+<li>转化发生在无法评估的上下文，比如<code>sizoef</code>, <code>decltype</code>或者静态形式的的<code>typid</code>。</li>
+<li></li>
+</ul>
+<h4 id="数组到指针的转换">数组到指针的转换</h4>
+<h4 id="函数到指针">函数到指针</h4>
+<h3 id="算术提升">算术提升</h3>
+<h4 id="整形提升">整形提升</h4>
+<p>小整形（如<code>char</code>）的prvalue可以转换为大整形（如<code>int</code>）的prvalues。特别的，算术操作符不接受比<code>int</code>还小的类型作为参数，在使用了lvalue到rvalue的转换之后，自动的进行整形提升。这种转换不会丢失精度。<br>
+整形提升可以分为以下几类：</p>
+<ul>
+<li><code>signed char</code>或者<code>signed short</code>可以被转换成<code>int</code>；</li>
+<li><code>unsigned char</code>或者<code>unsigned short</code>被转化成<code>int</code>，如果超过<code>int</code>的表示范围，转换成<code>unsigned int</code>；</li>
+<li><code>char</code>被转换成<code>int</code>还是<code>unsigned int</code>取决于它是<code>signed char</code>还是<code>unsigned char</code>；</li>
+<li><code>w_char_t</code>, <code>char16_t</code>, <code>char32_t</code>可以被转换成下列第一个可以容纳它们整个取值范围的类型：<code>int</code>, <code>unsigned int</code>, <code>long</code>, <code>unsigned long</code>, <code>long long</code>, <code>unsigned long long</code>；（有个疑问，<code>wchar_t</code>等是有符号的还是无符号的？？）</li>
+</ul>
+<p>总的来说，就是对于<code>bool</code>, <code>char</code>, <code>unisigned char</code>, <code>short</code>和<code>unsigned char</code>等类型来说，只要它们所有可能的值都能存在<code>int</code>里，就把它们提升成<code>int</code>类型，否则，提升成<code>unsigned int</code>类型。<br>
+并不是所有的转换都是提升，当<code>char</code>到<code>short</code>就是一个转换。</p>
+<h4 id="浮点数提升">浮点数提升</h4>
+<p>一个<code>float</code>类型的prvalue可以转换成<code>double</code>的prvalue。值不会改变，精度不会丢失。</p>
+<h3 id="算术转换">算术转换</h3>
+<p>算术转换的含义是把一种算术类型转换成另外一种算术类型。算术转换可能会改变对象的值，丢失一定精度。</p>
+<h4 id="整形转换">整形转换</h4>
+<ul>
+<li>如果目标类型是无符号的，转换结果是source value对$2^n$取余得到的最小无符号整数，n是目标类型的位数。</li>
+<li>如果目标类型是有符号的，如果source整数能够保存在目标类型中，对象的值不变。否则转换的结果是由实现定义的（注意和有符号整形算术溢出的区别，溢出是未定义行为）。</li>
+<li>如果source type是<code>bool</code>，值<code>false</code>被转换为0，值<code>true</code>被转换成destination类型的值1（注意，如果destination类型是<code>int</code>的话，就变成了整形提升）。</li>
+<li>如果目标类型是<code>bool</code>，这就是一个boolean转换</li>
+</ul>
+<p>整形转换的实现，可以查看<a href></a>。基本上所有的C/C++ 实现就是不改变二进制编码，分别使用无符号编码和补码形式进行解释这个二进制编码。<br>
+相同长度的无符号数和有符号数，在运算中有有符号数的话，就会把有符号数转换成无符号数。比如for循环中，<code>for(unsigned i = 10; i &gt;= 0; --i)</code>，永远不会跳出for循环，因为当i=0时，<code>--i</code>就相当于得到了有符号数<code>-1</code>，而<code>-1</code>的补码形式和无符号数的$2^w -1 $的编码是一样的，而这里就是得到了$2^w -1$。</p>
+<h4 id="浮点数转换">浮点数转换</h4>
+<p>一个浮点数类型的prvalue可以被被转换成任何其他浮点数类型的prvalue。如果这个转换是浮点数提升，那么这就是一个浮点数提升而不是一个浮点数转换。</p>
+<ul>
+<li>如果source value可以精确的表示在目标类型中，这个值不变。</li>
+<li>如果source value在目标类型的两个可表示值之间（就是目标类型的精度比较低），则结果是其中的一个（由实现定义）。</li>
+<li>否则是未定义行为。</li>
+</ul>
+<h4 id="浮点数和整形之间的转换">浮点数和整形之间的转换</h4>
+<ul>
+<li>一个浮点数类型的prvalue可以转换成一个整形的prvalue，小数部分被截断。如果这个值不适合目标类型，是未定义行为。</li>
+<li>一个整形的prvalue或者没有范围的枚举类型可以被转换成浮点数类型的prvalue。如果这个值不能被正确表示，由实现定义选择。如果这个值不适合目标类型，是未定义行为。如果source type是<code>bool</code>，值<code>false</code>被转换成0，值<code>true</code>被转换成1。</li>
+</ul>
+<h4 id="指针转换">指针转换</h4>
+<ol>
+<li>指针的转换。常量0或者<code>nullpt</code>能转换成任意类型的指针。指向非常量的指针能转换成<code>void *</code>类型。指向任意对象的指针能转换成<code>const void *</code>。</li>
+<li>数组转换成指针。将数组转换成指向数组首元素的指针。注意，数组名表示的指针是不可修改的。当数组作为<code>decltyp</code>参数，或者作为取值地址符，<code>sizeof</code>或者<code>typeid</code>的运算对象时，上述转换不会发生。同样，使用一个应用来初始化数组，上述转换也不会发生。</li>
+<li>转换成常量。允许将指向非常量的指针转换成相应类型的指针常量的类型，对应引用也是如此。</li>
+</ol>
+<h4 id="指针到成员转换">指针到成员转换</h4>
+<h4 id="布尔转换">布尔转换</h4>
+<ol>
+<li>转换成bool类型。存在一种从算术类型或者指针类型到布尔类型自动转换的机制。如果指针或者算术类型的值是0，那么转换结果是false，否则是true。</li>
+<li>无符号类型的运算对象。如果一个运算对象是无符号类型，另一个运算对象是有符号类型。<br>
+当无符号类型大于带符号类型，那么带符号类型转换成无符号。比如，<code>int</code>和<code>unsigned int</code>，将<code>int</code>转换成<code>unsigned int</code>类型，如果<code>int</code>是负值，将它转换成正值。相当于<code>int</code>对<code>unsigned int</code>所能所示的最大值取余。<br>
+当无符号类型小于带符号类型时，如果无符号类型的值能存放在有符号类型中，将无符号类型转换成带符号类型。否则将带符号类型转换成无符号类型。</li>
+</ol>
+<h4 id="其他隐式类型转换">其他隐式类型转换</h4>
+<p>类类型定义的转换</p>
+<h3 id="qualification转换">Qualification转换</h3>
+<h4 id="函数指针转换">函数指针转换</h4>
+<h3 id="bool变量的安全性问题">bool变量的安全性问题</h3>
+<h2 id="显式类型转换">显式类型转换。</h2>
+<p>命名的强制类型转换。它的形式如下所示：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cast-name&lt;type&gt;(expression)</span><br></pre></td></tr></table></figure></p>
+<p>其中<code>cast-name</code>是<code>static_cast</code>,<code>dynamic_cast</code>, <code>const_cast</code>和<code>reinterpret_cast</code>的一种，<code>type</code>是转换的目标类型，而<code>expression</code>是要转换的值。</p>
+<h3 id="static-cast"><code>static_cast</code></h3>
+<p><code>static_cast</code>，只要不包含底层<code>const</code>，任何具有明确定义的类型转换，都可以使用<code>static_cast</code>。比如将一个运算对象强制转换成<code>double</code>类型执行浮点数出发。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">double</span> slope = <span class="keyword">static_cast</span>&lt;<span class="keyword">double</span>&gt;(j)/i;</span><br></pre></td></tr></table></figure></p>
+<p>可以把较大的算术类型转换成较小的算术类型。这个时候，强制类型转换告诉读者和编译器，我不在乎可能的精度损失。<br>
+它对于编译器无法自动执行的类型转换也非常有用。</p>
+<h3 id="const-cast"><code>const_cast</code></h3>
+<ol start="0">
+<li>
+<p><code>const_cast</code>只能改变运算对象的底层<code>const</code>，将常量对象转换成非常量对象，这种性质叫做去掉<code>const</code>性质。如果对象本身不是一个常量，使用强制类型转换获得写权限是一个合法的行为，如果对象是一个常量，使用<code>const_cast</code>执行写操作就会产生未定义的后果。<code>const_cast</code>还可以将一个非<code>const</code>对象变成<code>const</code>对象。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">s1</span><span class="params">(<span class="string">"hello"</span>)</span></span>; </span><br><span class="line"><span class="function"><span class="keyword">const</span> <span class="built_in">string</span> <span class="title">s2</span><span class="params">(<span class="string">"world"</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span> *p1 = &amp;s1;</span><br><span class="line"><span class="keyword">const</span> <span class="built_in">string</span> *p2 = &amp;s2;</span><br><span class="line"></span><br><span class="line"><span class="built_in">string</span> *p3 = <span class="keyword">const_cast</span>&lt;<span class="built_in">string</span> *&gt;(p2);  <span class="comment">//去掉底层const，但是通过p3写它指向的东西是未定义行为。</span></span><br><span class="line"><span class="keyword">const</span> <span class="built_in">string</span> *p4 = <span class="keyword">const_cast</span>&lt;<span class="keyword">const</span> <span class="built_in">string</span>*&gt;(p1);   <span class="comment">//将非底层const转换成底层const。</span></span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>只有<code>const_cast</code>能改变表达式的常量属性，使用其他类型的命名强制类型转换改变表达式的常量属性都会引发编译器的错误，注意不能使用<code>const_cast</code>改变表达式的类型。</p>
+</li>
+<li>
+<p>通常用于有函数重载的上下文。</p>
+</li>
+</ol>
+<h3 id="reinterpret-cast"><code>reinterpret_cast</code></h3>
+<p><code>reinterpret_cast</code>。尽量不使用强制类型转换，它干扰了正常的类型检查。在有重载的上下文中使用<code>const cast</code>无可厚非。但是在其他情况下使用<code>const_cast</code>也就意味着程序存在某种缺陷。其他的强制类型转换也不应该频繁使用。</p>
+<h3 id="旧式的类型转换">旧式的类型转换。</h3>
+<p>旧式的类型转换分别具有和上述三种强制类型转换相同的结果。如果换成<code>const_cast</code>和<code>static_cast</code>也合法，其行为和对应的命名转换一样。如果替换后不合法，则旧式的强制类型转换执行和<code>reinterpret_cast</code>类似的功能。</p>
+<h3 id="总结">总结</h3>
+<p>总的来说，<code>static_cast</code>可以进行不包含底层<code>const</code>的具有明确定义的类型转换。<br>
+<code>cosnt_cast</code>可以去掉底层<code>const</code>的<code>const</code>，但是不能改变表达式类型，也不能对去掉const的常量表达式执行写操作。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》第五版<br>
+2.<a href="https://en.cppreference.com/w/cpp/language/implicit_conversion" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/implicit_conversion</a><br>
+3.<a href="https://en.cppreference.com/w/cpp/language/explicit_cast" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/explicit_cast</a><br>
+4.<a href="https://en.cppreference.com/w/cpp/language/cast_operator" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/cast_operator</a><br>
+5.<a href="https://en.cppreference.com/w/cpp/language/const_cast" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/const_cast</a><br>
+6.<a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3242.pdf" target="_blank" rel="noopener">http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2011/n3242.pdf</a><br>
+7.<a href="https://en.cppreference.com/w/cpp/language/value_category" target="_blank" rel="noopener">https://en.cppreference.com/w/cpp/language/value_category</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/07/linux-man/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/07/linux-man/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html"> linux man</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-07 16:12:01" itemprop="dateCreated datePublished" datetime="2019-11-07T16:12:01+08:00">2019-11-07</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-11-11 21:22:32" itemprop="dateModified" datetime="2019-11-11T21:22:32+08:00">2019-11-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="man的简介">man的简介</h2>
+<p>man是linux下的一个文档查看命令，它把所有的命令分为9个部分。</p>
+<ol>
+<li>user command</li>
+<li>system calls，系统调用，内核提供的函数</li>
+<li>library functions，库函数</li>
+<li>specifal files，像/dev/文件夹下的</li>
+<li>file formats，查看相应文件的文件格式</li>
+<li>games，</li>
+<li>conventions</li>
+<li>administration and privileged commands，系统管理员命令</li>
+<li>math library functions，数学函数库</li>
+<li>tcl functions</li>
+</ol>
+<p>一个命令可能会在多个类别中出现，在查找相应的命令的时候，可使用<code>man</code>加上具体的数字，就可以得到对应类中的手册。<br>
+具体示例<br>
+查看passwd和group的文件格式：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">man 5 passwd</span><br><span class="line">man 5 group</span><br></pre></td></tr></table></figure>
+<h2 id="man命令的介绍">man命令的介绍</h2>
+<ul>
+<li>名字(NAME)，命令简介</li>
+<li>格式(SYSOPSIS)，命令格式</li>
+<li>描述(DESCRIPTION)，介绍命令的参数options</li>
+<li>作者(AUTHOR)，命令的作者</li>
+<li>提交BUG(REPORTINT BUGS)，提交一些bug的地址</li>
+<li>版权(COPYRIGHT)</li>
+<li>更多参考(SEE ALSO)</li>
+</ul>
+<p>比如<code>man ls</code>的输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">NAME</span><br><span class="line">       ls - list directory contents</span><br><span class="line"></span><br><span class="line">SYNOPSIS</span><br><span class="line">       ls [OPTION]... [FILE]...</span><br><span class="line"></span><br><span class="line">DESCRIPTION</span><br><span class="line">       List  information  about  the FILEs (the current directory by default).</span><br><span class="line">       Sort entries alphabetically if none of -cftuvSUX nor --sort  is  speci‐</span><br><span class="line">       fied.</span><br><span class="line"></span><br><span class="line">       Mandatory  arguments  to  long  options are mandatory for short options</span><br><span class="line">       too.</span><br><span class="line"></span><br><span class="line">       -a, --all</span><br><span class="line">              do not ignore entries starting with .</span><br><span class="line"></span><br><span class="line">       -A, --almost-all</span><br><span class="line">              do not list implied . and ..</span><br><span class="line"></span><br><span class="line">       --author</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<h2 id="命令格式">命令格式</h2>
+<p>拿<code>ls</code>举个例子，<code>man ls</code>的SYNOPSIS如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls [OPTION]... [FILE]...</span><br></pre></td></tr></table></figure>
+<p>其中<code>[]</code>表示可选，<code>...</code>表示有多个。<code>[OPTION]...</code>表示有多个可选参数，<code>[FILE]...</code>表示有多个可选文件。</p>
+<h2 id="命令参数">命令参数</h2>
+<p>DESCRIPTION部分会给定更加详细一些的介绍，以及给出具体参数的含义。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">-a, --all</span><br><span class="line">    do not ignore entries string with .</span><br><span class="line">--author</span><br><span class="line">    with -l, print the author of each file</span><br></pre></td></tr></table></figure>
+<p>其中<code>-</code>是缩写，<code>--</code>是全称，他们的作用其实是一样的。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://linux.die.net/man/" target="_blank" rel="noopener">https://linux.die.net/man/</a><br>
+2.<a href="https://www.cnblogs.com/shanyu20/p/10943393.html" target="_blank" rel="noopener">https://www.cnblogs.com/shanyu20/p/10943393.html</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/06/C-namespace/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -507,7 +1036,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/06/C-string-vector-and-iterator/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/06/C-string/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -527,7 +1056,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/11/06/C-string-vector-and-iterator/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C++ string vector and iterator</a>
+                <a href="/2019/11/06/C-string/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C++ string</a>
               
             
           </h1>
@@ -569,7 +1098,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 15:06:33" itemprop="dateModified" datetime="2019-12-17T15:06:33+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-19 20:31:00" itemprop="dateModified" datetime="2019-12-19T20:31:00+08:00">2019-12-19</time>
               
             
           </span>
@@ -623,23 +1152,27 @@
         
           
             <h2 id="string标准库"><code>string</code>标准库</h2>
-<p><code>string</code>是标准库的一部分，提供了可变长的字符串，使用时需要包含`string头文件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">string</span>;</span><br></pre></td></tr></table></figure></p>
-<h3 id="string对象的初始化"><code>string</code>对象的初始化</h3>
+<p><code>string</code>是标准库的一部分，但是它不是一个容器库，不过string和容器一样支持很多操作，这里为了统一，就把它也放在STL这里部分了。<br>
+string是可变长的字符串，使用时需要包含<code>&lt;string&gt;</code>头文件。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">string</span>;</span><br></pre></td></tr></table></figure></p>
+<h2 id="string对象的初始化"><code>string</code>对象的初始化</h2>
 <ol>
 <li>
-<p>默认初始化，就是简单的声明。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> s1;</span><br></pre></td></tr></table></figure></p>
+<p>默认初始化，就是简单的声明：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> s1;</span><br></pre></td></tr></table></figure></p>
 </li>
 <li>
-<p>拷贝初始化，使用等号就是拷贝初始化</p>
+<p>拷贝初始化，使用等号就是拷贝初始化：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">s2</span><span class="params">(s1)</span></span>;</span><br><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">s3</span><span class="params">(<span class="string">"value"</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">s4</span><span class="params">(<span class="number">10</span>, <span class="string">'c'</span>)</span></span>;</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>直接初始化，不使用等号的初始化：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> s2 = s1;</span><br><span class="line"><span class="built_in">string</span> s3 = <span class="string">"value"</span>;</span><br></pre></td></tr></table></figure></p>
 </li>
 </ol>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">s2</span><span class="params">(s1)</span></span>;</span><br><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">s3</span><span class="params">(<span class="string">"value"</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">s4</span><span class="params">(<span class="number">10</span>, <span class="string">'c'</span>)</span></span>;</span><br></pre></td></tr></table></figure>
-<ol start="3">
-<li>直接初始化，不使用等号的初始化。</li>
-</ol>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> s2 = s1;</span><br><span class="line"><span class="built_in">string</span> s3 = <span class="string">"value"</span>;</span><br></pre></td></tr></table></figure>
 <p>当初始值只有一个的时候，使用直接初始化或者拷贝初始化都行，但是当初始化用到的值有多个时，只能使用直接初始化的方式。</p>
-<h3 id="string对象的操作"><code>string</code>对象的操作</h3>
+<h2 id="string和其他类型的转换"><code>string</code>和其他类型的转换</h2>
+<h3 id="string和c风格字符串的转换"><code>string</code>和C风格字符串的转换</h3>
+<h3 id="string和int的转换"><code>string</code>和<code>int</code>的转换</h3>
+<p><code>int</code>转换成<code>string</code>：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> i = <span class="number">100</span>;</span><br><span class="line"><span class="built_in">std</span>::to_string(i);</span><br></pre></td></tr></table></figure></p>
+<p><code>string</code>转换成<code>int</code>：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.使用atoi</span></span><br><span class="line"><span class="function"><span class="built_in">string</span> <span class="title">s1</span><span class="params">(<span class="string">"100"</span>)</span></span>;</span><br><span class="line">atoi(cs1.c_str());</span><br><span class="line"><span class="comment">// 2.使用sstrem的字符串流对象</span></span><br><span class="line"><span class="function"><span class="built_in">istringstream</span> <span class="title">is</span><span class="params">(<span class="string">"100"</span>)</span></span>;</span><br><span class="line"><span class="keyword">int</span> i;</span><br><span class="line">is &gt;&gt; i;</span><br></pre></td></tr></table></figure></p>
+<h2 id="string对象的操作"><code>string</code>对象的操作</h2>
 <ol>
 <li>读写</li>
 </ol>
@@ -650,122 +1183,26 @@
 <code>size()</code>返回<code>string</code>的长度。</li>
 <li><code>string::size_type</code><br>
 <code>size</code>返回一个无符号类型<code>string::size_type</code>的值，能够容纳放下任何<code>string</code>对象的大小。</li>
-<li>比较<code>string</code>对象<br>
-如果两个不同长度的<code>string</code>，如果短的<code>string</code>和长的<code>string</code>的共同部分完全一样，短的小。<br>
+<li>比较<code>string</code>对象。如果两个不同长度的<code>string</code>，如果短的<code>string</code>和长的<code>string</code>的共同部分完全一样，短的小。<br>
 如果两个<code>string</code>对象在某些位置上的字符不一样，按照字典序排大小，字典序在前的小。</li>
-<li><code>string</code>赋值<br>
-直接赋值字符串常量，<br>
-给字符串赋值字符串对象</li>
-<li><code>string</code>相加</li>
-<li>字面值和<code>string</code>对象相加<br>
-加号两边至少有一个对象是<code>string</code>对象</li>
+<li><code>string</code>赋值。可以给string直接赋值字符串常量，也可以给string赋值string对象</li>
+<li><code>string</code>相加。字面值和<code>string</code>对象相加，加号两边至少有一个对象是<code>string</code>对象</li>
 </ol>
-<h3 id="string对象中字符的处理"><code>string</code>对象中字符的处理</h3>
+<h2 id="string对象中字符的处理"><code>string</code>对象中字符的处理</h2>
 <p>标准库<code>cctype</code>提供了操作<code>string</code>中字符的函数。</p>
-<h4 id="范围for-range-for-语句">范围<code>for</code>(range for)语句</h4>
+<h3 id="范围for-range-for-语句">范围<code>for</code>(range for)语句</h3>
 <ol>
-<li>输出每个字符的值</li>
+<li>
+<p>输出每个字符的值：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> c: str)</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; c &lt;&lt; <span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>修改每个字符的值，加上引用：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; c: str)</span><br><span class="line">    c = <span class="built_in">toupper</span>(c);</span><br></pre></td></tr></table></figure></p>
+</li>
 </ol>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> c: str)</span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; c &lt;&lt; <span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure>
-<ol start="2">
-<li>修改每个字符的值，加上引用</li>
-</ol>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; c: str)</span><br><span class="line">    c = <span class="built_in">toupper</span>(c);</span><br></pre></td></tr></table></figure>
-<h4 id="下标运算符"><code>[]</code>下标运算符</h4>
+<h3 id="下标运算符"><code>[]</code>下标运算符</h3>
 <ol>
 <li>迭代访问每个元素</li>
 </ol>
-<h2 id="vector">vector</h2>
-<p><code>vector</code>表示对象的集合，所有的对象类型都相同，因为<code>vector</code>容纳着其他对象，所以<code>vector</code>也叫容器。<br>
-<code>vecotr</code>在头文件<code>vector</code>中，使用前需要包含该头文件，并进行<code>using</code>声明：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">vector</span>;</span><br></pre></td></tr></table></figure>
-<p><code>vector</code>是一个类模板而不是类型。模板本身不是类或者函数，可以将模板看成编译器生成类或者函数编写的一份说明，编译器根据模板创建类或者函数的过程称为实例化，使用模板时需要指出编译器应该把类或者函数实例化成什么类型。<br>
-在模板名字后面跟上一对尖括号，括号内为具体的类型说明。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; ivec;   <span class="comment">//表示int类型的vector</span></span><br><span class="line"><span class="built_in">vector</span>&lt; <span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; &gt; file <span class="comment">//vector中是string的vector。</span></span><br></pre></td></tr></table></figure>
-<h3 id="vector对象的初始化">vector对象的初始化</h3>
-<ul>
-<li>
-<p>默认初始化<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; svec;    <span class="comment">//默认初始化，不含任何元素</span></span><br></pre></td></tr></table></figure></p>
-</li>
-<li>
-<p>列表初始化</p>
-</li>
-</ul>
-<ol>
-<li>元素的初值只能放在花括号内，不能放在圆括号内</li>
-<li>给定类内初始值时只能使用拷贝初始化或者列表初始化。</li>
-</ol>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="built_in">string</span>&gt; c = &#123;<span class="string">"hello"</span>, <span class="string">"world"</span>&#125;;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>值初始化</li>
-</ul>
-<ol>
-<li>只提供给vector对象容纳的元素数量而不用略去初始值。会创建一个值初始化的元素初值，并把它赋给容器中所有元素，这个初始值由<code>vector</code>对象中元素类型决定。</li>
-<li>如果<code>vector</code>对象中元素类型是内置类型，如<code>int</code>，初始值自动设置为0。</li>
-<li>如果是某种类类型，比如<code>string</code>，由类默认初始化。</li>
-<li>有些类要求必须显式的给出初始值。如果<code>vector</code>中对象不支持默认初始化，必须提供初始值。</li>
-<li>如果值提供了元素的数量而没有设定初值，只能使用直接初始化。</li>
-<li>初始化的真实含义依赖于传递初始值时用的是花括号还是圆括号。花括号进行列表初始化，圆括号提供的信息构造<code>vecotr</code>对象。如果使用花括号中的形式，但是提供的值不能用来列表初始化，考虑使用值构造<code>vector</code>对象。但是如果使用圆括号提供不能构造<code>vector</code>对象的值，不能用来进行列表初始化。也就是说花括号可以用来列表初始化，也可以用来构建<code>vector</code>对象，但是圆括号只能用来构建<code>vector</code>对象。</li>
-</ol>
-<h3 id="vector添加元素">vector添加元素</h3>
-<p>直接初始化的方式适用于三种情况：</p>
-<ol>
-<li>初始值已知，且数量较少</li>
-<li>初始值是另一个<code>vector</code>对象的副本</li>
-<li>所有元素的初始值都一样。</li>
-</ol>
-<p>而当我们并不知道<code>vector</code>中有几个元素，元素的值也不知道的时候，就不适用直接初始化了，这个时候需要调用<code>vector</code>的成员函数<code>push_back</code>向其添加元素。</p>
-<p><code>vector</code>的最大优势是运行时能够高效的添加元素，它的容量能够在不够的时候，高效的增长，这样子在定义<code>vector</code>对象时设定大小没有太大的意义。只有一种情况，就是所有的元素值都一样的时候，指定<code>vector</code>的大小和初始值。否则更建议定义空的<code>vector</code>，然后向其中添加具体的而值。</p>
-<h3 id="vector对象的操作"><code>vector</code>对象的操作</h3>
-<ol>
-<li><code>vector</code>的大小</li>
-<li>向<code>vector</code>添加新的元素</li>
-<li>下标<code>[]</code>只能用于访问元素，不能用于添加元素。通过下标访问超出<code>vector</code>范围的元素的行为非常常见，这种错误叫做缓冲区溢出。</li>
-</ol>
-<h2 id="迭代器">迭代器</h2>
-<p>C<ins>定义了许多容器，包括<code>vector</code>，<code>list</code>，<code>map</code>等等，这些容器中，只有少部分支持<code>[]</code>运算符，其他的都不支持，为了访问这些容器，C</ins>提供了迭代器访问这些容器，迭代器和指针类似，提供了对对象的间接访问。<br>
-注意<code>string</code>不是容器，但是它支持很多和容器类型的操作。</p>
-<h3 id="迭代器的使用">迭代器的使用</h3>
-<h4 id="获得迭代器">获得迭代器</h4>
-<p>拥有迭代器的类型（<code>string</code>和容器等）也拥有返回迭代器的成员函数，如<code>begin</code>和<code>end</code>，<code>begin</code>返回指向容器第一个元素或<code>string</code>第一个字符的迭代器，而<code>end</code>返回容器或者<code>string</code>的最后一个元素的下一个位置，是一个根本不存在的元素，通常把这个迭代器称为尾后迭代器。<br>
-如果容器（<code>string</code>)为空，<code>begin</code>和<code>end</code>返回的是同一个迭代器，都是尾后迭代器。</p>
-<h4 id="迭代器运算符">迭代器运算符</h4>
-<p>迭代器支持的运算有：</p>
-<ul>
-<li><code>*iter</code>，表示返回迭代器iter所指元素的引用</li>
-<li><code>iter-&gt;num</code>，解引用<code>iter</code>并且获得该元素中名为<code>num</code>的成员，等价于<code>(*iter).mem</code>，即箭头运算符把解引用和成员访问两个操作结合在了一起。</li>
-<li><code>++iter</code>，让<code>iter</code>指向容器中的下一个元素</li>
-<li><code>--iter</code>，让<code>iter</code>指向容器中的上一个元素</li>
-<li><code>iter1==iter2</code></li>
-<li><code>iter1!=iter2</code>，判断两个迭代器是否相等，即是否指向同一个元素或者指向同一个容器的尾后迭代器。</li>
-</ul>
-<p>尽量使用<code>!=</code>而不是使用<code>&lt;</code>，因为所有的标准容器和<code>string</code>都定义了<code>==</code>和<code>!=</code>，而只有部分容器和<code>string</code>定义了<code>&lt;</code>，所以<code>==</code>和<code>!=</code>是比较通用的。</p>
-<h4 id="迭代器的类型">迭代器的类型</h4>
-<p>迭代器有const和非const之分。他们通过如下方式定义：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::iterator it;   <span class="comment">//非const迭代器，可读和可写</span></span><br><span class="line"><span class="built_in">string</span>::iterator it2;</span><br><span class="line"></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::const_iterator it3;    <span class="comment">//const迭代器，只是可读</span></span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;::const_iterator it4;</span><br></pre></td></tr></table></figure>
-<h4 id="begin和end"><code>begin</code>和<code>end</code></h4>
-<p>如果对象是常量，<code>begin</code>和<code>end</code>返回<code>const_iterator</code>，否则返回<code>iterator</code>。<br>
-而<code>cbgein</code>和<code>cend</code>无论对象是否是常量，都返回<code>const_iterator</code>。</p>
-<h4 id="解引用和成员访问操作相结合">解引用和成员访问操作相结合</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(*it).empty()</span><br><span class="line">it-&gt;empty()</span><br></pre></td></tr></table></figure>
-<h4 id="迭代器失效">迭代器失效</h4>
-<ol>
-<li>范围for语句会使迭代器失效</li>
-<li>任何一种可能改变<code>vector</code>对象容量的操作，如<code>push_back</code>，都会使得<code>vector</code>对象的迭代器失效。</li>
-</ol>
-<h3 id="迭代器运算">迭代器运算</h3>
-<p>所有的容器和<code>string</code>都实现了迭代器，迭代器的递增，递减运算，以及<code>==</code>和<code>!=</code>操作。<br>
-<code>vector</code>和<code>string</code>的迭代器提供了更多的运算符，这些运算被称为迭代器运算。如下所示：</p>
-<ul>
-<li><code>iter+n</code></li>
-<li><code>iter-n</code></li>
-<li><code>iter+=n</code></li>
-<li><code>iter-=n</code>，</li>
-<li><code>iter1-iter2</code>，</li>
-<li><code>&gt;, &gt;=, &lt;=, &lt;</code></li>
-</ul>
-<p>前面四个比较直观，<code>iter1-iter2</code>就不行，他其实是两个迭代器之间的距离，<code>iter</code>和<code>iter2</code>必须是同一个容器中的迭代器。可以使用这些运算符进行二分搜索。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// text是给定的有序序列</span></span><br><span class="line"><span class="keyword">auto</span> begin = text.begin(), end = text.end();</span><br><span class="line"><span class="keyword">auto</span> mid = text.begin() + (end-begin)/<span class="number">2</span>;</span><br><span class="line"><span class="keyword">while</span>(mid != end &amp;&amp; *mid != sought)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(sought &lt; mid)</span><br><span class="line">    &#123;</span><br><span class="line">        end = mid;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        begin = mid+<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    mid = begin + (end-begin)/<span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="参考文献">参考文献</h2>
 <p>1.《C++ Primer第五版》</p>
 
@@ -1602,7 +2039,7 @@ C++ Primer第五版第91页<br>
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/05/C-iostream/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/05/C-IO/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -1622,7 +2059,7 @@ C++ Primer第五版第91页<br>
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/11/05/C-iostream/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C++ iostream</a>
+                <a href="/2019/11/05/C-IO/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C++ IO</a>
               
             
           </h1>
@@ -1664,7 +2101,7 @@ C++ Primer第五版第91页<br>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-18 23:00:07" itemprop="dateModified" datetime="2019-12-18T23:00:07+08:00">2019-12-18</time>
+                <time title="修改时间：2019-12-20 00:41:02" itemprop="dateModified" datetime="2019-12-20T00:41:02+08:00">2019-12-20</time>
               
             
           </span>
@@ -1717,7 +2154,38 @@ C++ Primer第五版第91页<br>
       
         
           
-            <h2 id="iostream简介">iostream简介</h2>
+            <h2 id="i-o类">I/O类</h2>
+<p>标准库提供了三类IO操作，它们分别是读写流的iostream，读写文件的fstream，读写内存中string的sstream。如下表所示：<br>
+<img src="/2019/11/05/C-IO/io.png" alt="io"><br>
+ifstream和istringstrem都继承自istream，ofstream和ostringstream都继承自ostream。像使用cin和cout那样使用它们就行。</p>
+<h3 id="io对象的特性">IO对象的特性</h3>
+<ol>
+<li>不能拷贝或者对IO对象赋值。所以不能将形参和返回类型设置为流类型，必须将它们设置为流引用类型。</li>
+<li>读写一个IO对象会改变它的状态，因此传递和返回的引用不能是const的。</li>
+</ol>
+<h3 id="io流的状态">IO流的状态</h3>
+<p>IO操作很容易出错，一些错误是可恢复的，另一些是不可恢复的。下面是IO类中定义的函数和表示，可以帮助我们访问和操纵流的状态。<br>
+<img src="/2019/11/05/C-IO/condition.png" alt="condition"><br>
+<code>strm::iostate</code>中存放了当前IO流的状态，这个类型是一个位集合，IO类定义了四个iostate类型的常量表达式表达特定的位类型，可以使用位运算与设置或者检测多个标志位：</p>
+<ul>
+<li>strm::badbit，表示系统级的错误</li>
+<li>strm::failbit，可恢复错误（到达文件结束也会置位strm::failbit，发生系统级错误时也会被置位）</li>
+<li>strm::eofbit，到达文件结束</li>
+<li>strm::goodbit，流处于未出错状态</li>
+</ul>
+<p>它们用来表示流的状态，可以用<code>good()</code>, <code>fail()</code>，<code>eof()</code>, <code>bad()</code>分别查询对应标志位的状态。我们将流当做条件使用的代码其实就是使用的是状态位的状态。<br>
+可以使用<code>rdstate</code>函数获得当前流的状态，使用<code>setstate</code>对给定条件位置位，使用<code>clear</code>可以清除所错误标志位，也可以清除指定错误标志位。</p>
+<h3 id="管理缓冲区">管理缓冲区</h3>
+<p>关于缓冲区的内容，简单来说，缓冲区的作用就是减少系统级IO，提高读写效率。具体介绍可以查看<a href></a>。<br>
+这里介绍一下导致C++中缓冲区刷新的原因：</p>
+<ol>
+<li>程序结束，作为main函数return的一部分，冲洗缓冲区</li>
+<li>缓冲区满时，冲洗缓冲区</li>
+<li>使用操作符endl，会在输出内容的末尾加一个<code>'\n'</code>，然后刷新缓冲区；使用flush刷新缓冲区，不附加任何字符；使用ends在输出内容的末尾加一个空字节，并不会刷新缓冲区（C++ Primer第五版上写错了）。</li>
+<li>使用<code>cout &lt;&lt; unitbuf</code>设置为每次输出操作后都刷新缓冲区（即使不适用endl等操作符），即无缓冲，使用<code>cout &lt;&lt; nounitbuf</code>恢复。</li>
+<li>一个输出流可能关联到另一个流，当读写关联的流时，关联到的流的缓冲区都会被刷新。</li>
+</ol>
+<h2 id="iostream"><code>iostream</code></h2>
 <p>C++标准IO库<code>iostream</code>提供了输入流<code>istream</code>和输出流<code>ostream</code>，一个流就是一个字符序列，从IO设备中读出或者写入IO设备。</p>
 <h3 id="标准输入输出对象">标准输入输出对象</h3>
 <ul>
@@ -1726,7 +2194,7 @@ C++ Primer第五版第91页<br>
 <li><code>cerr</code>，标准错误</li>
 <li><code>clog</code>，用来输出一些普通信息。</li>
 </ul>
-<p>通常系统会将程序所运行的窗口和标准IO对象关联起来，读取<code>cin</code>，从当前程序关联的窗口进行读取，向<code>cout</code>,<code>cerr</code>和<code>clog</code>写入数据时，会写到同一个窗口中。当然可以重定向。</p>
+<p>通常系统会将程序所运行的窗口和标准IO对象关联起来，读取<code>cin</code>，从当前程序关联的窗口进行读取，向<code>cout</code>,<code>cerr</code>和<code>clog</code>写入数据时，会写到同一个窗口中，可对它们进行重定向。</p>
 <h3 id="输入输出运算符">输入输出运算符</h3>
 <ul>
 <li><code>&lt;&lt;</code>输出运算符，接收两个运算符，左侧需要是<code>ostream</code>对象，右侧需要是要打印的对象。返回左侧运算对象，即写入给定值的<code>ostream</code>对象。</li>
@@ -1734,7 +2202,7 @@ C++ Primer第五版第91页<br>
 </ul>
 <p>一直有个问题就是为什么<code>&lt;&lt;</code>是输出，<code>&gt;&gt;</code>是输入，可以简单的把箭头方向当做数据流向，输出的数据流向<code>ostream</code>中的标准输出<code>cin</code>，输入时，数据从<code>istream</code>的标准输入<code>cin</code>流向变量。</p>
 <h3 id="操纵符">操纵符</h3>
-<p><code>endl</code>称为操纵符。当把它写入到<code>ostream</code>的时候，有两个作用：</p>
+<p><code>endl</code>是一种操纵符。当把它写入到<code>ostream</code>的时候，有两个作用：</p>
 <ol>
 <li>结束当前行</li>
 <li>将与当前输出设备相关的缓冲区中的内容刷新到输出设备中。这个刷新操作可以保证目前为止程序的所有输出都真正写入输出流而不是在内存中的等待写入输出流。</li>
@@ -1745,8 +2213,37 @@ C++标准库定义的名字在都在<code>std</code>中。</p>
 <h3 id="读取任意的输入数据">读取任意的输入数据</h3>
 <p>下面的示例代码对任意的输入数据进行求和。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;iostream&gt;</span><br><span class="line"></span><br><span class="line">using std::cin;</span><br><span class="line">using std::endl;</span><br><span class="line">using std::cout;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    int sum = 0, value = 0;</span><br><span class="line">    while(std::cin &gt;&gt; value)</span><br><span class="line">    &#123;</span><br><span class="line">        sum += value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    std::cout &lt;&lt; &quot;Sum is: &quot; &lt;&lt; sum &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="文件输入输出">文件输入输出</h2>
-<h2 id="string流"><code>string</code>流</h2>
+<h2 id="fstream"><code>fstream</code></h2>
+<p>头文件<code>fstream</code>定义了三个类型支持文件IO：</p>
+<ul>
+<li><code>ifstream</code>从一个给定的文件读取数据；</li>
+<li><code>ofstream</code>向一个给定的文件写入数据；</li>
+<li><code>fstream</code>读写给定文件。</li>
+</ul>
+<p>这些类型和我们之前使用的<code>cin</code>和<code>cout</code>一样，可以使用<code>getline</code>从一个<code>ifstream</code>中读取数据。<code>fstream</code>具有以下的一些特殊操作：<br>
+<img src="/2019/11/05/C-IO/fstream.png" alt="fstream"><br>
+这些操作只有<code>fstream</code>,<code>ofstream</code>和<code>ifstream</code>对象能调用，其他类型不行。</p>
+<h3 id="使用fstream-ifstream和ofstream">使用<code>fstream</code>,<code>ifstream</code>和<code>ofstream</code></h3>
+<p>我们想要读文件的时候，可以定义一个<code>fstream</code>对象，然后将这个对象和文件关联起来，每个<code>fstream</code>类都定义了一个名字为<code>open</code>的成员函数，它完成了一些系统相关的操作，定位给定的文件，打开为读或写模式。<br>
+在创建<code>fstream</code>对象时，我们可以提供一个文件名，此时<code>open</code>函数会被自动调用。如果定义了一个空<code>fstream</code>对象，可以手动调用<code>open</code>将它和一个文件关联起来。调用<code>open</code>可能失败，进行<code>open</code>是否成功的检测通常是一个好习惯。<br>
+<code>close</code>函数可以关闭<code>fstream</code>当前关联的文件，当一个<code>fstream</code>对象被销毁时，会自动调用<code>close</code>函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.构造一个ifstream并打开给定文件，文件名可以是string，也可以是C风格字符串</span></span><br><span class="line"><span class="function">ifstream <span class="title">in</span><span class="params">(ifile)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.输出文件流并未关联到任何文件。</span></span><br><span class="line">ofstream out;</span><br><span class="line">out.open(ifile+<span class="string">".out"</span>);</span><br></pre></td></tr></table></figure>
+<p>可以使用<code>fstream</code>代替<code>iostream</code>，因为<code>fstream</code>是<code>iostream</code>的子类。</p>
+<h3 id="file-mode">file mode</h3>
+<p>C++ 中的file mode如下所示：<br>
+<img src="/2019/11/05/C-IO/file_mode.png" alt="file_mode"><br>
+具体的使用可以等用到的时候查资料。</p>
+<h2 id="sstream"><code>sstream</code></h2>
+<p>头文件<code>sstream</code>定义了三个类型支持内存IO：</p>
+<ul>
+<li><code>istringstream</code>从<code>string</code>读取数据；</li>
+<li><code>ostringfstream</code>向<code>string</code>写入数据；</li>
+<li><code>stringstream</code>读写<code>string</code>。</li>
+</ul>
+<p><code>stringstream</code>特有的操作如下：<br>
+<img src="/2019/11/05/C-IO/stringstream.png" alt="stringstream"></p>
+<h3 id="使用istringstream和使用ostringstream">使用<code>istringstream</code>和使用<code>ostringstream</code></h3>
+<p>最好的就是写一个例子。</p>
 <h2 id="参考文献">参考文献</h2>
 <p>1.《C++ Primer第五版》</p>
 
@@ -2141,454 +2638,11 @@ C++标准库定义的名字在都在<code>std</code>中。</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/05/C-malloc-free-new-and-delete/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/05/C-malloc-free-new-and-delete/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C/C++ malloc(alloc) free new and delete</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-05 10:37:48" itemprop="dateCreated datePublished" datetime="2019-11-05T10:37:48+08:00">2019-11-05</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:09:01" itemprop="dateModified" datetime="2019-12-17T15:09:01+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="malloc"><code>malloc</code></h2>
-<h3 id="c标准malloc定义">C标准<code>malloc</code>定义</h3>
-<p><code>malloc</code>定义在头文件<code>&lt;stdlib.h&gt;</code>中</p>
-<blockquote>
-<p>Allocates size bytes of uninitialized storage.<br>
-If allocation succeeds, returns a pointer to the lowest (first) byte in the allocated memory block that is suitably aligned for any object type with fundamental alignment.<br>
-If size is zero, the behavior is implementation defined (null pointer may be returned, or some non-null pointer may be returned that may not be used to access storage, but has to be passed to free).</p>
-</blockquote>
-<blockquote>
-<p>malloc is thread-safe: it behaves as though only accessing the memory locations visible through its argument, and not any static storage.<br>
-A previous call to free or realloc that deallocates a region of memory synchronizes-with a call to malloc that allocates the same or a part of the same region of memory. This synchronization occurs after any access to the memory by the deallocating function and before any access to the memory by malloc. There is a single total order of all allocation and deallocation functions operating on each particular region of memory. (since C11)</p>
-</blockquote>
-<h3 id="malloc-calloc和realloc原型"><code>malloc</code>, <code>calloc</code>和<code>realloc</code>原型</h3>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc</span><span class="params">(<span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">calloc</span><span class="params">(<span class="keyword">size_t</span> nmemb, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">realloc</span><span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">reallocarray</span><span class="params">(<span class="keyword">void</span> *ptr, <span class="keyword">size_t</span> nmemb, <span class="keyword">size_t</span> size)</span></span>;</span><br></pre></td></tr></table></figure>
-<h3 id="malloc实现"><code>malloc</code>实现</h3>
-<p>???</p>
-<h2 id="free"><code>free</code></h2>
-<h3 id="c标准free定义">C标准<code>free</code>定义</h3>
-<p><code>free</code>定义在头文件<code>&lt;stdlib.h&gt;</code>中</p>
-<blockquote>
-<p>Deallocates the space previously allocated by malloc(), calloc(), aligned_alloc, (since C11) or realloc().<br>
-If ptr is a null pointer, the function does nothing.<br>
-The behavior is undefined if the value of ptr does not equal a value returned earlier by malloc(), calloc(), realloc(), or aligned_alloc() (since C11).<br>
-The behavior is undefined if the memory area referred to by ptr has already been deallocated, that is, free() or realloc() has already been called with ptr as the argument and no calls to malloc(), calloc() or realloc() resulted in a pointer equal to ptr afterwards.<br>
-The behavior is undefined if after free() returns, an access is made through the pointer ptr (unless another allocation function happened to result in a pointer value equal to ptr)<br>
-free is thread-safe: it behaves as though only accessing the memory locations visible through its argument, and not any static storage.</p>
-</blockquote>
-<blockquote>
-<p>A call to free that deallocates a region of memory synchronizes-with a call to any subsequent allocation function that allocates the same or a part of the same region of memory. This synchronization occurs after any access to the memory by the deallocating function and before any access to the memory by the allocation function. There is a single total order of all allocation and deallocation functions operating on each particular region of memory. (since C11)</p>
-</blockquote>
-<h3 id="free原型"><code>free</code>原型</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">void free(void *ptr);</span><br></pre></td></tr></table></figure>
-<h3 id="free属性"><code>free</code>属性</h3>
-<p>从标准的定义可以看出来，以下都是未定义的行为：</p>
-<ol>
-<li>
-<p><code>free</code>的对象不是<code>alloc</code>函数族的返回值；比如<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *pi = (<span class="keyword">int</span>*)<span class="built_in">malloc</span>(<span class="number">10</span> * <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">pi++;</span><br><span class="line"><span class="comment">//下面就是错误的，因为这个`pi`不是`alloc`函数族的返回值。</span></span><br><span class="line"><span class="built_in">free</span>(pi);</span><br></pre></td></tr></table></figure></p>
-</li>
-<li>
-<p><code>free</code>一个已经被释放过了的块；</p>
-</li>
-<li>
-<p>访问一个<code>free</code>已经释放了的块。<br>
-等等。为什么？？？因为标准并没有定义<code>malloc</code>应该怎么实现，有的内存分配器，<code>malloc</code>实际申请的内存要比传入的参数大，里面存放了额外的数据记录这块内存有多大，一般就是存在指针左边。<code>free</code>的时候，就会读取那个内存块中存放的信息，进行<code>free</code>，所以上面的那些都是未定义的行为。</p>
-</li>
-</ol>
-<h2 id="malloc-calloc-realloc和free"><code>malloc</code>, <code>calloc</code>,<code>realloc</code>和<code>free</code></h2>
-<ol>
-<li><code>malloc</code>，分配指定字节的内存空间，初始值不定。</li>
-<li><code>calloc</code>，为指定长度的固定数量的对象分配空间，每一个bit都被初始化为0。</li>
-<li><code>realloc</code>，增加或者减少已经分配的内存空间的大小。当这个大小增加时，可能需要将之前分配的空间中的数据移到另一个足够大的区域以便于增加大小，新增加的区域内的值是不确定的。</li>
-<li>这三个函数返回的指针一定是对齐的，保证它可以用于任何对象。比如<code>double</code>的要求最严格，需要从8的倍数的地址单元开始，这三个函数返回的地址一定满足这个要求。</li>
-<li>它们的返回类型都是<code>void*</code>，需要使用强制类型转换。</li>
-<li><code>realloc</code>函数可以增加或者减少之前分配的内存空间的大小。比如分配了一个固定大小的数组，后来发小它不够用了，可以使用<code>realloc</code>对它进行扩充，如果原有的存储后有足够的大小进行扩充，则可以在原存储区的位置上向高地址进行扩充，无需移动原有数组，返回和传入相同的指针。如果原来的内存空间后没有足够的空间，就重新分配一个足够大的内存空间，再将原有数据的内容复制过去，然后释放原来的内存空间，返回新的指针。</li>
-<li><code>realloc</code>传入的参数是存储区的新长度。如果传入的<code>ptr</code>参数是<code>NULL</code>指针，那就退化成了<code>malloc</code>。</li>
-<li><code>free</code>可以释放<code>ptr</code>指向的内存空间，释放的空间通常送入可用内存池，之后可以通过这三个函数重新分配。</li>
-<li><code>malloc</code>和<code>free</code>底层通常使用<code>sbrk</code>系统调用实现，这个系统调用扩充或者减小进程的堆，虽然<code>sbrk</code>可以扩充或者缩小进程的堆，但是一般<code>malloc</code>和<code>free</code>的实现不会减少进程的内存空间，释放的内存空间保存在<code>malloc</code>池中，而不是交给内核。</li>
-<li>大多数实现分配的空间要比请求的空间大一些，因为需要存储一些管理信息，如block的大小，指向下一个block的指针等等。因此，如果对超过一个分配区域的内存进行读写的话，会造成很严重的错误。</li>
-<li><code>free</code>一个已经释放了的块，<code>free</code>的不是<code>alloc</code>函数的返回值，没有进行<code>free</code>等等，都是未定义的结果。为什么？？？</li>
-</ol>
-<h2 id="malloc-vs-new"><code>malloc</code> vs <code>new</code></h2>
-<ol>
-<li><code>malloc</code>是C语言中的函数，而<code>new</code>是C++的操作符；</li>
-<li>对于自定义类型而言，<code>new</code>操作符首先调用operator new()函数申请内存，然后调用类的构造函数初始化对象，最后返回自定义对象的指针；<code>malloc</code>只负责内存的分配而不会调用类的构造函数数。</li>
-<li><code>malloc</code>返回的是<code>void*</code>类型的指针，需要进行强制类型转换转换成我们需要的类型，而<code>new</code>返回的是对象类型的指针，类型和对象严格匹配，<code>new</code>是类型安全型操作符。</li>
-<li>在分配内存失败时，<code>malloc</code>会返回NULL，而<code>new</code>会throw on failure。</li>
-<li><code>malloc</code>需要指定申请的内存占多少个字节，而<code>new</code>不需要指定申请内存块的大小，编译器会根据类型计算需要的内存大小；</li>
-<li><code>malloc</code>和<code>new</code>都是申请heap上的内存；</li>
-<li><code>new</code>操作符调用的operator new()函数可以重载（操作符<code>new</code>不能重载），而<code>malloc</code>不能重载。</li>
-<li><code>malloc</code>和<code>free</code>，<code>new</code>和<code>delete</code>必须配套使用。</li>
-</ol>
-<p>几个问题：</p>
-<ol>
-<li>什么时候<code>malloc</code>和<code>new</code>会申请内存失败。</li>
-<li><code>new</code>操作符的两个步骤，一个是申请内存，一个是调用构造函数，<code>new</code>的申请内存和<code>malloc</code>的申请内存有什么区别。</li>
-</ol>
-<h2 id="new"><code>new</code></h2>
-<p>默认情况下，new分配的对象，不管是单个分配的还是数组中的，都是默认初始化的。这意味着内置类型或组合类型的对象的值是无定义的，而类类型对象将用默认构造函数进行初始化。</p>
-<ul>
-<li>
-<p>对于内置类型而言，new仅仅是分配内存，即使后面显示加(),相当于调用它的构造函数，<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *pi = <span class="keyword">new</span> <span class="keyword">int</span>; <span class="comment">//pi指向一个动态分配的内存，没有初始化</span></span><br></pre></td></tr></table></figure></p>
-</li>
-<li>
-<p>对于自定义类型而言，只要一调用new，无论后面有没有加()，那么编译器不仅仅给它分配内存，还调用它的默认构造函数初始化。</p>
-</li>
-</ul>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《C++ Primer第五版》<br>
-2.<a href="https://stackoverflow.com/questions/184537/in-what-cases-do-i-use-malloc-and-or-new" target="_blank" rel="noopener">https://stackoverflow.com/questions/184537/in-what-cases-do-i-use-malloc-and-or-new</a><br>
-3.<a href="https://zhuanlan.zhihu.com/p/47089696?utm_source=wechat_session&amp;utm_medium=social&amp;utm_oi=687606928481730560" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/47089696?utm_source=wechat_session&amp;utm_medium=social&amp;utm_oi=687606928481730560</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/03/data-structure-map-vs-hash-map/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/03/data-structure-map-vs-hash-map/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">data structure map vs hash_map</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-03 21:28:13" itemprop="dateCreated datePublished" datetime="2019-11-03T21:28:13+08:00">2019-11-03</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:49:58" itemprop="dateModified" datetime="2019-12-17T15:49:58+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据结构/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>map vs hash_map(unordered_map)</p>
-<ul>
-<li>数据结构，<br>
-map使用平衡二叉树，通常是红黑树；hash_map使用哈希函表。</li>
-<li>查找时间<br>
-map是$O(\log n)$；hash_map是$O(1)$（没有冲突的情况下），最坏情况下是$O(n)$。</li>
-</ul>
-<p>C++中的hash_map叫做unordered_map。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/2189189/map-vs-hash-map-in-c/2189206" target="_blank" rel="noopener">https://stackoverflow.com/questions/2189189/map-vs-hash-map-in-c/2189206</a><br>
-2.<a href="https://stackoverflow.com/questions/5139859/what-the-difference-between-map-and-hashmap-in-stl/5139888" target="_blank" rel="noopener">https://stackoverflow.com/questions/5139859/what-the-difference-between-map-and-hashmap-in-stl/5139888</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/7/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="extend next" rel="next" href="/page/9/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/7/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><a class="extend next" rel="next" href="/page/9/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2633,7 +2687,7 @@ map是$O(\log n)$；hash_map是$O(1)$（没有冲突的情况下），最坏情�
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">300</span>
+                    <span class="site-state-item-count">302</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2835,9 +2889,7 @@ map是$O(\log n)$；hash_map是$O(1)$（没有冲突的情况下），最坏情�
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">68</span>
+                    <span class="site-state-item-count">67</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3088,13 +3140,13 @@ map是$O(\log n)$；hash_map是$O(1)$（没有冲突的情况下），最坏情�
   
     
       
-    
-      
-    
-      
-    
-      
         
+      
+    
+      
+    
+      
+    
       
     
       

@@ -327,6 +327,376 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/06/gradient-method-deep-deterministic-policy-gradient/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/06/gradient-method-deep-deterministic-policy-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">gradient method deep deterministic policy gradient</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-06 10:17:25" itemprop="dateCreated datePublished" datetime="2019-10-06T10:17:25+08:00">2019-10-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:04:31" itemprop="dateModified" datetime="2019-12-17T15:04:31+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="ddpg">ddpg</h2>
+<p>论文名称：CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING<br>
+论文地址：<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>本文将DQN的思路推广到continuous action domain上。DQN是离散空间，DDPG是连续空间。</p>
+<h3 id="简介">简介</h3>
+<p>强化学习的目标是学习一个policy最大化$J=\mathbb{E}_{r_i,s_i\sim E, a_i\sim \pi}\left[R_1\right]$的expected return。<br>
+简要回顾以下action-value的定义，它的定义是从状态s开始,采取action a，采取策略$\pi$得到的回报的期望。<br>
+$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_{i\ge t}, s_{i \gt t}\sim E,a_{i\gt t}\sim \pi}\left[R_t|s_t,a_t\right] \tag{1}$$<br>
+（注意，这里$R$的下标和reinforcement learning an introduction中的定义不一样，但是这个无所谓，只要在用的时候保持统一就好了。）<br>
+许多rl方法使用bellman方程递归的更新Q:<br>
+$$Q{\pi}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma\mathbb{E}_{a_{t+1}\sim\pi}\left[Q^{\pi} (s_{t+1},a_{t+1})\right]\right]\tag{2}$$<br>
+如果target policy是deterministic的话，用$\mu$表示，那么就可以去掉式子里面的期望，action是deterministic的而不是服从一个概率分布：<br>
+$$Q{\mu}(s_t,a_t) = \mathbb{E}_{r_t,s_{t+1}\sim E}\left[r(s_t,a_t) + \gamma Q^{\mu} (s_{t+1},\mu(s_{t+1}))\right] \tag{3}$$<br>
+而第一个期望只和environment相关。这就意味着可以使用off-policy方法学习$Q{\mu}$。<br>
+在DQN中，作者使用replay buffer和target network缓解了non-linear funnction approximator不稳定的问题，作者在这篇文章将它们推广到了DDPG上面。</p>
+<h3 id="ddpg-v2">DDPG</h3>
+<p>直接将Q-learning推广到continuous action space是不可行的，因为action是continuous的，对其进行max等greedy操作是不可行的。这种优化方法只适合trival action spaces的情况。所以这里使用的是DPG(deterministic policy gradient)，将其推广到non-linear case，DPG是一种actor-critic的方法。<br>
+DPG使用一个参数化的actor function $\mu(s|\theta{\mu})$作为当前的policy，它将一个states直接mapping到一个specific action。$Q(s,a)$作为critic使用Q-learning中的Bellman公式进行更新。Actor的更新直接应用chain rule到$J$的expected reutrn ，更新actor的参数如下：<br>
+\begin{align*}<br>
+\nabla_{\theta{\mu}} &amp;\approx \mathbb{E}_{s_t\sim \rho^{\beta} }\left[\nabla_{\theta^{\mu} }Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial\theta^{\mu} }|_{s=s_t, a= \mu(s_t|\theta^{\mu} )}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\frac{\partial Q(s,a|\theta^Q )}{\partial a}|_{s=s_t, a= \mu(s_t)}\frac{\partial \mu(s_t|\theta^{\mu} )}{\partial\theta^{\mu} }|_{s=s_t}\right]\\<br>
+&amp;= \mathbb{E}_{s_t\sim \rho{\beta}}\left[\nabla_a Q(s,a|\theta^Q )|_{s=s_t, a= \mu(s_t)} \nabla_{\theta_{\mu}} \mu(s|\theta_{\mu})|_{s=s_t}\right]\\ \tag{4}<br>
+\end{align*}<br>
+中间的两行是我自己加的，不知道对不对，DPG论文中有证明，还没有看到，等到读完以后再说补充把。</p>
+<h4 id="contributions">Contributions</h4>
+<p>本文的几个改进：</p>
+<ol>
+<li>使用replay buffer，</li>
+<li>使用target network解决不稳定的问题。</li>
+<li>使用了batch-normalization。</li>
+<li>exploration。off policy的一个优势就是target policy和behaviour policy可以不同。本文使用的behaviour policy $\mu’$ 添加了一个从noise process $N$中采样的noise：<br>
+$$\mu(s_t) = \mu(s_t|\theta_t{\mu}) + N \tag{5}$$</li>
+</ol>
+<h4 id="算法">算法</h4>
+<p>算法1 DDPG<br>
+随机初始化critic 网络$Q(s,a |\theta Q)$，和actor网络$\mu(s|\theta^{\mu} )$的权重$\theta^Q $和$\theta^{\mu} $<br>
+初始化target networks　$Q’$和$\mu’$的权重$\theta{Q’}\leftarrow \theta^Q ,\theta^{\mu’} \leftarrow \theta^{\mu} $<br>
+初始化replay buffer $R$<br>
+<strong>for</strong> episode = 1, M <strong>do</strong><br>
+初始化一个随机process $N$用于exploration<br>
+receive initial observation state $s_1$<br>
+for $t=1, T$ do<br>
+根据behaviour policy选择action $a_t = \mu(s_t| \theta{\mu}) + N_t$<br>
+执行action $a_t$，得到$r_t$和$s_{t+1}$<br>
+将transition $s_t, a_t, r_t, s_{t+1}$存到$R$<br>
+从$R$中采样$N$个transition $s_i, a_i, r_i, s_{i+1}$<br>
+设置target value $y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta{\mu’})|\theta^{Q’} )$<br>
+使用$L = \frac{1}{N}\sum_i(y_i-Q(s_i,a_i|\theta Q))^2 $更新critic<br>
+使用sampled policy gradient 更新acotr:<br>
+$$\nabla_{\theta{\mu}}\approx \frac{1}{N}\sum_i\nabla_a Q(s,a|\theta^Q )|_{s=s_i, a=\mu(s_i)}\nabla_{\theta^{\mu} }\mu(s|\theta^{\mu} )|_{s_i}$$<br>
+更新target networks:<br>
+$$\theta’\leftarrow \tau \theta + (1-\tau) \theta’$$<br>
+end for<br>
+end for</p>
+<h3 id="实验">实验</h3>
+<p>所有任务中，都使用了low-dimensional state和high-dimensional renderings。在DQN中，为了让问题在high dimensional environment中fully observable，使用了action repeats。在agent的每一个timestep中，进行$3$个timesteps的仿真，包含repeating action以及rendering。因此agent的observation包含$9$个feature maps（RGB，每一个有3个renderings），可以让agent推理不同frames之间的differences。frames进行下采样，得到$64\times 64$的像素矩阵，然后$8$位的RGB值转化为$[0,1]$之间的float points。<br>
+在训练的时候，周期性的进行test，test时候的不需要exploration noise。实验表明，去掉不同的组件，即contribution中的几点之后，结果都会比原来差。没有使用target network的话，结果尤其差。<br>
+作者使用了两个baselines normalized scores，第一个是naive policy，在action space中均匀的采样action得到的mean return，第二个是iLQG。normalized之后，naive policy的mean score是0，iLQG的mean score是$1$。DDPG能够学习到好的policy，在某些任务上甚至比iLQG还要好。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1509.02971.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1509.02971.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/04/reinforcement-learning-why-use-baseline/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/04/reinforcement-learning-why-use-baseline/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">reinforcement learning why use baseline ?</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-04 15:46:00" itemprop="dateCreated datePublished" datetime="2019-10-04T15:46:00+08:00">2019-10-04</time>
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/27/reinforcement-learning-importance-sampling/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2149,433 +2519,11 @@ Reward scale|0.005</li>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/13/gradient-directional-derivative-derivative-partial-derivative/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/13/gradient-directional-derivative-derivative-partial-derivative/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">gradient, directional, derivative derivative, partial derivative</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-13 09:56:12" itemprop="dateCreated datePublished" datetime="2019-09-13T09:56:12+08:00">2019-09-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 17:13:48" itemprop="dateModified" datetime="2019-12-17T17:13:48+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="导数">导数</h2>
-<p>导数表示函数在该点的变化率。<br>
-$$f’(x) = lim_{\Delta x\rightarrow 0}\frac{\Delta y}{\Delta x} = lim_{\Delta x\rightarrow 0} \frac{f(x+\Delta x) - f(x)}{ \Delta x}$$<br>
-更直接的来说，导数表示自变量无穷小时，函数值的变化与自变量变化的比值，几何意义是该点的切线。物理意义表示该时刻的瞬时变化率。</p>
-<h2 id="偏导数">偏导数</h2>
-<p>偏导数是多元函数沿着坐标轴的变化率。<br>
-在一元函数中，只有一个自变量，也就是只存在一个方向上的变化率，叫做导数。对于多元函数，有两个及以上的自变量。从导数到偏导数，相当于从曲线到了曲面，曲线上的一点只有一条切线，而曲面上的一点有无数条切线。我们把沿着坐标轴上的切线的斜率叫做偏导数。</p>
-<h2 id="方向导数">方向导数</h2>
-<p>多元函数沿着任意向量的变化率。</p>
-<h2 id="梯度">梯度</h2>
-<p>多元函数取最大变化率时的方向向量。<br>
-对于三元函数，计算公式：<br>
-$$\nabla f  = \frac{\partial f}{\partial x}i+\frac{\partial f}{\partial y}j + \frac{\partial f}{\partial z}j$$<br>
-梯度到底是行向量还是列向量？取决于使用什么layout。<br>
-梯度的公式是$\frac{\partial{y}}{\partial\mathbf{x}}$，<br>
-如果使用numerator layout，梯度是行向量；<br>
-如果使用denominator layout，梯度是列向量。</p>
-<h2 id="全微分">全微分</h2>
-<p>函数从$A$点到离它无穷近的$B$点的变化量。<br>
-对于二元函数，定义为<br>
-$$dz = \frac{\partial f}{\partial x}dx+\frac{\partial f}{\partial y}dy$$</p>
-<h2 id="区别和联系">区别和联系</h2>
-<p>导数，偏导数和方向导数都是个向量，它们其实都是一个概念。偏导数和导数都是方向导数的特殊情况。<br>
-梯度是个向量，它指向最陡峭的上升方向，这个时候方向导数最大。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/36301367/answer/142096153" target="_blank" rel="noopener">https://www.zhihu.com/question/36301367/answer/142096153</a><br>
-2.<a href="https://math.stackexchange.com/questions/661195/what-is-the-difference-between-the-gradient-and-the-directional-derivative" target="_blank" rel="noopener">https://math.stackexchange.com/questions/661195/what-is-the-difference-between-the-gradient-and-the-directional-derivative</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/13/bit_manipulation/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/13/bit_manipulation/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">位运算</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-13 09:53:35" itemprop="dateCreated datePublished" datetime="2019-09-13T09:53:35+08:00">2019-09-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:20:59" itemprop="dateModified" datetime="2019-12-17T15:20:59+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/算法/" itemprop="url" rel="index"><span itemprop="name">算法</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="按位与">按位与</h2>
-<h3 id="定义">定义</h3>
-<p>两个运算对象，相同为$0$，不同为$1$。</p>
-<h3 id="示例">示例</h3>
-<p>十进制的<br>
-$0, 1, 2, 3, 4, 5, 6, 7, 8$<br>
-对应的二进制为<br>
-$0000, 0001, 0010, 0011, 0100, 0101, 0110, 0111, 1000$<br>
-判断十进制数中每一个二进制位是否是$1$。<br>
-$1$分别左移$i=0,1,2,3$位，然后与要判断的二进制数进行按位与，如果不是$0$，则说明第$i$位为$1$。</p>
-<h3 id="应用">应用</h3>
-<ol>
-<li>判断一个数是不是$2$的幂，再进一步就是统计一个数二进制位为$1$的个数。<br>
-$2$的幂有一个特征，就是只有一个二进制是$1$，其余的所有位都是$0$。<br>
-而$2$的幂减去$1$会得到所有的二进制位都是$1$，他们按位与，得到所有的二进制位是$0$，即$(2$ ^ $n)$&amp;$(2$ ^ $n-1) = 0$，实际上，这个公式会消去二进制位最右边的一个$1$。</li>
-<li>按位与实现掩码运算。</li>
-</ol>
-<h2 id="按位异或">按位异或</h2>
-<h3 id="定义-v2">定义</h3>
-<p>两个运算对象，相同为$0$，不同为$1$。</p>
-<h3 id="规则">规则</h3>
-<p>只要谨记这两条规则就好。</p>
-<ul>
-<li>任意两个相等的数亦或都为$0$。</li>
-<li>$0$与任何数亦或都等于那个数。</li>
-<li>两个有符号数异或，如果符号相同，结果大于$0$，否则小于$0$。</li>
-</ul>
-<h4 id="交换律">交换律</h4>
-<p>$a$^$b$ = $b$^$a$</p>
-<h4 id="结合律">结合律</h4>
-<p>$a$ ^ $b$ ^ $c$ = $a$ ^ ($b$ ^ $c$)</p>
-<h3 id="示例-v2">示例</h3>
-<p>$12 ^{} 7 = 11$</p>
-<p>$12 = 1100$<br>
-$7 = 0111$<br>
-按位异或得到<br>
-$1011 = 11$</p>
-<p>$1$ ^ $2$ ^ $3$ ^ $4$ ^ $1$ ^ $2$ ^ $3$ ^ $4$ ^ $5$ = $1$ ^ $1$ ^ $2$ ^ $2$ ^ $3$ ^ $3$ ^ $4$ ^ $4$ ^ $5$<br>
-分别对每一位异或，对于每一位来说，其实他们都是没有顺序的，只需要统计每一位有多少个$0$和$1$即可了，重复偶数次的值都相互抵消了，剩下的就是没有抵消的那些。</p>
-<h2 id="移位">移位</h2>
-<h3 id="左移位">左移位</h3>
-<p>$1 \ll 2 $<br>
-相当于<br>
-$0001 \ll 2 = 0100 = 4$</p>
-<h3 id="右移位">右移位</h3>
-<p>$8 \gg 2$<br>
-相当于<br>
-$1000 \gg 2 = 0010 = 2$</p>
-<h2 id="移位和与">移位和与</h2>
-<p>移位和与结合起来判断某一位二进制位是否是$1$。</p>
-<h3 id="示例-v3">示例</h3>
-<p>判断$13$从右数的的第$3$个二进制位是否为$1$。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="number">13</span> &gt;&gt; <span class="number">1</span> &amp; <span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"true\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/11/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/30/">30</a><a class="extend next" rel="next" href="/page/13/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/11/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/11/">11</a><span class="page-number current">12</span><a class="page-number" href="/page/13/">13</a><span class="space">&hellip;</span><a class="page-number" href="/page/31/">31</a><a class="extend next" rel="next" href="/page/13/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2620,7 +2568,7 @@ $1000 \gg 2 = 0010 = 2$</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">300</span>
+                    <span class="site-state-item-count">302</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2822,9 +2770,7 @@ $1000 \gg 2 = 0010 = 2$</p>
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">68</span>
+                    <span class="site-state-item-count">67</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3075,11 +3021,11 @@ $1000 \gg 2 = 0010 = 2$</p>
   
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
       
