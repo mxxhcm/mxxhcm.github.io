@@ -327,6 +327,266 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/12/C-exit-and-return/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/12/C-exit-and-return/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">C/C++ exit and return</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-12 13:51:20" itemprop="dateCreated datePublished" datetime="2019-11-12T13:51:20+08:00">2019-11-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:01:53" itemprop="dateModified" datetime="2019-12-17T15:01:53+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="进程终止">进程终止</h2>
+<p>总共有八种方式可以让进程终止，包括五种正常终止和三种异常终止，前五种是正常终止，后五种是异常终止：</p>
+<ol>
+<li>从<code>main</code>返回，相当于调用<code>exit</code>。</li>
+<li>调用<code>exit</code>，ISO C定义的，它的操作包括调用各个exit handler，处理所有标准I/O流。</li>
+<li>调用<code>_exit</code>或者<code>_Exit</code>，ISO C定义了<code>_Exit</code>，而POSIX.1说明了<code>_exit</code>。它的目的是提供一种无需运行exit handler或者信号处理程序而终止的方法。是否对标准I/O流进行flush，取决于实现。在UNIX中，<code>_Exit</code>和<code>_exit</code>是同义的，并不flush I/O流。</li>
+<li>最后一个线程从其启动例程返回</li>
+<li>最后一个线程调用<code>pthread_exit</code></li>
+<li>调用<code>abort</code></li>
+<li>接到一个<code>signal</code></li>
+<li>最后一个线程对取消请求做出响应</li>
+</ol>
+<p>不管进程以哪种方式终止，最后都会执行内核中的同一段代码，这段代码为相关进程关闭所有打开的文件描述符，释放它使用的内存。<br>
+为了让终止进程能够通知父进程它是如何终止的。对于3个终止函数(<code>exit</code>, <code>_exit</code>, <code>_Exit</code>)，将它们的<code>exit status</code>作为参数传递给函数。在异常终止的情况下，内核产生一个指示其异常终止原因的terminaiton status（终止状态）。在任意终止情况下，这个终止进程的父进程都能用<code>wait</code>或者<code>waitpid</code>函数获得它的终止状态。<br>
+<strong>如果父进程在子进程之前终止</strong>，那么对于父进程终止的所有进程，它们的父进程都变成<code>init</code>进程，终止状态返回到<code>init</code>进程。具体是怎么操作：对于一个即将终止的进程，内核检查所有活动进程，判断其中是否有待终止进程的子进程，如果有的话，将这些进程的父进程的ID改为<code>init</code>进程的ID 1。<br>
+<strong>如果子进程在父进程之前终止</strong>，那么父进程是无法获取它的终止状态的。内核为每一个终止进程保留了一部分信息，当终止进程的父进程调用<code>wait</code>或者<code>waitpid</code>时，可以获取这些信息，这些信息包含终止进程PID，进程的终止状态，进程占用的CPU时间总量。内核可以释放这些进程的内存，关闭打开的文件。如果一个进程终止了，但是它的父进程没有等待它，它被称为一个zombie（僵尸）进程。如果一个长期运行的进程，<code>fork</code>了很多子进程，除非父进程等到取得子进程的终止状态，要不它们就会变成僵尸进程。<strong>当父进程结束时，僵尸进程就会结束？？？</strong><br>
+<code>init</code>的子进程，不会变成僵尸进程，因为<code>init</code>进程被编写成无论何时只要有一个子进程终止，<code>init</code>就会调用一个<code>wait</code>函数获得其终止状态。</p>
+<h3 id="exit和-exit函数"><code>exit</code>和<code>_Exit</code>函数</h3>
+<h4 id="c11标准定义">C11标准定义</h4>
+<p><code>exit</code>定义在<code>&lt;stdlib.h&gt;</code>头文件中</p>
+<blockquote>
+<p>void exit( int exit_code ); (until C11)<br>
+_Noreturn void exit( int exit_code );(since C11)<br>
+Causes normal program termination to occur.<br>
+Several cleanup steps are performed:</p>
+</blockquote>
+<ul>
+<li>functions passed to atexit are called, in reverse order of registration（调用atexit注册的函数）</li>
+<li>all C streams are flushed and closed （冲洗C的缓冲区，不是不关闭流吗？？？）</li>
+<li>files created by tmpfile are removed  (删除临时文件）</li>
+<li>control is returned to the host environment. If exit_code is zero or EXIT_SUCCESS, an implementation-defined status, indicating successful termination is returned. If exit_code is EXIT_FAILURE, an implementation-defined status, indicating unsuccessful termination is returned. In other cases implementation-defined status value is returned.（将控制权返还给操作系统。）</li>
+</ul>
+<p><code>-Exit</code>定义在<code>&lt;stdlib.h&gt;</code>头文件中</p>
+<blockquote>
+<p>void _Exit( int exit_code ); (since C99) (until C11)<br>
+_Noreturn void _Exit( int exit_code );(since C11)<br>
+Causes normal program termination to occur without completely cleaning the resources.<br>
+Functions passed to at_quick_exit() or atexit() are not called. Whether open streams with unwritten buffered data are flushed, open streams are closed, or temporary files are removed is implementation-defined. （不调用atexit注册的函数，是否冲洗缓冲区，关闭打开的stream和删除临时文件是由实现定义的，UNIX都不做这些操作）<br>
+If exit_code is 0 or EXIT_SUCCESS, an implementation-defined status indicating successful termination is returned to the host environment. If exit_code is EXIT_FAILURE, an implementation-defined status, indicating unsuccessful termination, is returned. In other cases an implementation-defined status value is returned.</p>
+</blockquote>
+<h4 id="性质">性质</h4>
+<ol>
+<li><code>exit</code>和<code>_Exit</code>是ISO C的内容，而<code>_exit</code>是POSIX.1的内容。</li>
+<li>它们都用于正常终止一个程序，<code>_Exit</code>和<code>_exit</code>立刻进入内核，<code>_Exit</code>和<code>_exit</code>是否冲洗缓冲区是由实现定义的，UNIX上选择不冲洗。而<code>exit</code>先执行一些清理操作，然后返回内核，<code>exit</code>函数首先调用<code>atexit</code>函数登记的终止处理程序，然后冲洗标准I/O流，现代的<code>exit</code>实现都不会关闭标准I/O流，之前的一些实现还会关闭标准I/O流，这在调用<code>vfork</code>的时候可能会出现问题，还会删除临时文件。</li>
+<li>三个退出函数都需要一个整形的参数，被称为exit status。</li>
+<li>如果满足以下条件：
+<ul>
+<li>调用这三个函数不带终止状态</li>
+<li><code>main</code>执行了一个不带返回值的<code>return</code>语句</li>
+<li><code>main</code>没有声明返回类型为整形，进程的终止状态是未定义的。<br>
+那么这个进程的终止状态是未定义的。</li>
+</ul>
+</li>
+<li><code>main</code>返回返回一个整型值和用该值调用<code>exit</code>是等价的。对于某些C编译器和UNIX lint(1)程序来说，会产生警告信息，因为这些编译器并不了解<code>main</code>中的<code>return</code>和<code>exit</code>的作用是相同的。避开这种警告信息的一种方法是在<code>main</code>中使用<code>return</code>而不是<code>exit</code>，这样做的结果是UNIX grep命令无法找出程序中所有的<code>exit</code>调用。另一个方法是将<code>main</code>声明为<code>void</code>而不是<code>int</code>，然后调用<code>exit</code>，但是这不并不是标准，ISO C和POSIX.1定义<code>main</code>的返回值应当是带符号整形。</li>
+</ol>
+<h4 id="函数原型">函数原型</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">exit</span><span class="params">(<span class="keyword">int</span> status)</span></span>;</span><br><span class="line"><span class="keyword">void</span> _Exit(<span class="keyword">int</span> status);</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> _exit(<span class="keyword">int</span> status);</span><br></pre></td></tr></table></figure>
+<h3 id="atexit"><code>atexit</code></h3>
+<h4 id="c11标准定义-v2">C11标准定义</h4>
+<blockquote>
+<p>Registers the function pointed to by func to be called on normal program termination (via exit() or returning from main()). The functions will be called in reverse order they were registered, i.e. the function registered last will be executed first.<br>
+The same function may be registered more than once.<br>
+atexit is thread-safe: calling the function from several threads does not induce a data race.<br>
+The implementation is guaranteed to support the registration of at least 32 functions. The exact limit is implementation-defined.</p>
+</blockquote>
+<h4 id="性质-v2">性质</h4>
+<p>每个进程可以通过<code>atexit</code> register至多32个由<code>exit</code>自动调用的函数，这些函数被称为exit handler（终止处理程序）。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">atexit</span><span class="params">(<span class="keyword">void</span> (*function)(<span class="keyword">void</span>))</span></span>;</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li><code>atexit</code>的参数是一个函数地址，不会有返回值</li>
+<li><code>exit</code>调用<code>atexit</code> register的程序的顺序和使用<code>atexit</code>进行register的顺序相反。</li>
+<li>ISO C和POSIX.1标准规定，<code>exit</code>首先调用各个exit handler，然后使用<code>fclose</code>关闭所有标准I/O流。</li>
+<li>POSIX.1对ISO C进行了扩展，如果程序调用了任何<code>exec</code>函数，清除exit handler。</li>
+<li>内核执行一个程序的唯一方法是调用一个<code>exec</code>函数。进程自愿终止的唯一办法是显式或者隐式的（通过<code>exit</code>）调用<code>_exit</code>和<code>_Exit</code>。</li>
+</ol>
+<h2 id="return"><code>return</code></h2>
+<h2 id="return和exit"><code>return</code>和<code>exit</code></h2>
+<ol>
+<li><code>return</code>是C/C++语言的关键字，是语言级别的；而<code>exit()</code>是一个函数，它是对系统调用<code>_exit()</code>的封装，是系统调用层次的。</li>
+<li><code>return</code>结束一个函数的执行；而<code>exit()</code>结束一个进程，删除进程使用的内存空间，并且将应用程序的一个状态返回给OS，这个状态标识了进程的运行信息。</li>
+<li><code>exit(0)</code>表示正常运行程序并退出程序，<code>exit(1)</code>表示非正常运行导致退出程序；<code>return 0</code>和<code>retrun 1</code>能够起类似的作用。</li>
+<li>对于我们自定的函数，可以return给操作系统，交给相关的处理程序调用exit或者程序自身直接调用exit。</li>
+</ol>
+<h3 id="c-中的区别">C++中的区别</h3>
+<p>在C++中，退出程序时，<code>exit</code>并不会调用局部非静态对象的析构函数，而<code>return</code>会调用局部非静态对象的析构函数。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://stackoverflow.com/questions/461449/return-statement-vs-exit-in-main" target="_blank" rel="noopener">https://stackoverflow.com/questions/461449/return-statement-vs-exit-in-main</a><br>
+2.<a href="https://www.geeksforgeeks.org/return-statement-vs-exit-in-main/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/return-statement-vs-exit-in-main/</a><br>
+3.<a href="https://www.zhihu.com/question/26591968/answer/33839473" target="_blank" rel="noopener">https://www.zhihu.com/question/26591968/answer/33839473</a><br>
+4.<a href="https://www.zhihu.com/question/26591968/answer/33330774" target="_blank" rel="noopener">https://www.zhihu.com/question/26591968/answer/33330774</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/12/UNIX-system-call-vs-library-call/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2120,189 +2380,6 @@ malloc(3)是公用函数库中的一个存储分配空间函数，它负责进�
 <h2 id="访问控制和继承">访问控制和继承</h2>
 <h2 id="参考文献">参考文献</h2>
 <p>1.《C++ Primer》第五版</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/10/C-operator-overload/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/10/C-operator-overload/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/6/index.html">C++ operator overload</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-10 12:49:42" itemprop="dateCreated datePublished" datetime="2019-11-10T12:49:42+08:00">2019-11-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:33:25" itemprop="dateModified" datetime="2019-12-17T16:33:25+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="什么是运算符重载">什么是运算符重载</h2>
-<h2 id="输出和输出运算符">输出和输出运算符</h2>
-<h2 id="算术和关系运算符">算术和关系运算符</h2>
-<h2 id="赋值运算符">赋值运算符</h2>
-<h2 id="下标运算符">下标运算符</h2>
-<h2 id="递增和递减运算符">递增和递减运算符</h2>
-<h2 id="成员访问运算符">成员访问运算符</h2>
-<h2 id="函数调用运算符">函数调用运算符</h2>
-<h2 id="参考文献">参考文献</h2>
-<ol>
-<li></li>
-</ol>
 
           
         

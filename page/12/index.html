@@ -327,6 +327,236 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/08/python-mpi4py/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/08/python-mpi4py/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">python mpi4py</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-08 17:25:46" itemprop="dateCreated datePublished" datetime="2019-10-08T17:25:46+08:00">2019-10-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:18:48" itemprop="dateModified" datetime="2019-12-17T15:18:48+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="mpi">MPI</h2>
+<p>MPI全名是Message Passing Interface，它是一个标准，而不是一个实现，专门为进程间通信实现的。它的工作原理很简单，启动一组进程，在同一个通信域中的不同进程有不同的编号，可以给不同编号的进程分配不同的任务，最终实现整个任务。<br>
+MPI4PY就是python中MPI的实现。在python中有很多种方法实现多进程以及进程间通信，比如multiprocessing，但是multiprocessing进程间通信不够方便，mpi4py的效率更高一些。<br>
+mpi4py提供了点对点通信，点对面，面对点通信。点对点通信又包含阻塞和非阻塞等等，通信的内容包含python内置对象，也包含numpy数组等。</p>
+<h2 id="mpi4py简单对象和方法介绍">mpi4py简单对象和方法介绍</h2>
+<p>MPI.COMM_WORLD是一个通信域，在这个通信域中有不同的进程，每个进程的编号以及进程的数量都可以通过这个通信域获得。具体看以下comm_world.py代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 获得多进程通信域</span></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"><span class="comment"># 获得当前进程通信域中进程数量</span></span><br><span class="line">size = comm.Get_size()</span><br><span class="line"><span class="comment"># 获得当前进程在通信域中的编号</span></span><br><span class="line">rank = comm.Get_rank()</span><br></pre></td></tr></table></figure>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>mpiexec -np 3 python comm_world.py</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h2 id="点对点通信">点对点通信</h2>
+<h3 id="阻塞通信">阻塞通信</h3>
+<h4 id="python对象">python对象</h4>
+<h5 id="简介">简介</h5>
+<p>comm.send(data, dest, tag)<br>
+comm.recv(source, tag)<br>
+send和recv都是阻塞方法，即调用这个方法之后，等到该函数调用结束之后再返回。dest是目的process编号，source是发送的process编号。data是要发送的数据，需要是python的内置对象，即可以pickle的对象。</p>
+<h5 id="代码示例">代码示例</h5>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = &#123;<span class="string">'name'</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    comm.send(data, dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = comm.recv(source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="numpy数组">numpy数组</h4>
+<h5 id="简介-v2">简介</h5>
+<p>comm.Send(data, dest, tag)<br>
+comm.Recv(source, tag)<br>
+Send和Recv都是阻塞方法，即调用这个方法之后，等到该函数调用结束之后再返回。dest是目的process编号，source是发送的process编号。data是要发送的数据，需要是numpy对象，和c语言的效率差不多。</p>
+<h5 id="代码示例-v2">代码示例</h5>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"></span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = &#123;<span class="string">'name'</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    comm.isend(data, dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = comm.irecv(source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="非阻塞通信">非阻塞通信</h3>
+<h4 id="简介-v3">简介</h4>
+<p>comm.isend(data, dest, tag)<br>
+comm.irecv(source, tag)<br>
+isend和irecv都是非阻塞方法，即调用这个方法之后，调用该函数之后立即返回，无需等待它执行结束。dest是目的process编号，source是发送的process编号。data要是python对象，可以被pickle处理的。</p>
+<h4 id="代码示例-v3">代码示例</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line"></span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line">size = comm.Get_size()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">0</span>:</span><br><span class="line">    data = np.ones((<span class="number">3</span>, <span class="number">4</span>), dtype=<span class="string">'i'</span>)</span><br><span class="line">    comm.Send([data, MPI.INT], dest=<span class="number">1</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has sent."</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = np.empty((<span class="number">3</span>, <span class="number">4</span>), dtype=<span class="string">'i'</span>)</span><br><span class="line">    data = comm.Recv([data, MPI.INT], source=<span class="number">0</span>, tag=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">"data has been receieved."</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="组通信">组通信</h2>
+<h3 id="bcast">bcast</h3>
+<h4 id="简介-v4">简介</h4>
+<p>将一个process中的数据发送给所有在通信池中的process。<br>
+comm.bcast(data, dest, tag)</p>
+<h4 id="代码示例-v4">代码示例</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">1</span>:</span><br><span class="line">    data = &#123;<span class="string">"name"</span>: <span class="string">"mxx"</span>, <span class="string">"age"</span>: <span class="number">23</span>&#125;</span><br><span class="line">    print(<span class="string">"data bcast to others"</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    data = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">data = comm.bcast(data, root=<span class="number">1</span>)</span><br><span class="line">print(<span class="string">"process &#123;&#125; has received data"</span>.format(rank))</span><br></pre></td></tr></table></figure>
+<h3 id="scatter">scatter</h3>
+<h4 id="简介-v5">简介</h4>
+<p>将一个process的数据拆分成n份，发送给所有在通信池中的process每个一份，和bcast的区别在于，bcast发送的数据对于每一个process都是一样的，而scatter是将一份数据拆分成n份分别发送给每个process。<br>
+comm.scatter(data, dest, tag)</p>
+<h4 id="代码示例-v5">代码示例</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line">recv_data = <span class="literal">None</span></span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">1</span>:</span><br><span class="line">    send_data = range(size) </span><br><span class="line">    print(<span class="string">"data bcast to others"</span>)</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">    send_data = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">recv_data = comm.scatter(send_data, root=<span class="number">1</span>)</span><br><span class="line">print(<span class="string">"process &#123;&#125; has received data &#123;&#125;"</span>.format(rank, recv_data))</span><br></pre></td></tr></table></figure>
+<h3 id="gather">gather</h3>
+<h4 id="简介-v6">简介</h4>
+<p>和comm.bcast相反，将每个process中的数据收集到一个process中。<br>
+comm.gather(data, dest, tag)</p>
+<h4 id="代码示例-v6">代码示例</h4>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mpi4py</span><br><span class="line"><span class="keyword">from</span> mpi4py <span class="keyword">import</span> MPI</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">comm = MPI.COMM_WORLD</span><br><span class="line">size = comm.Get_size()</span><br><span class="line">rank = comm.Get_rank()</span><br><span class="line"></span><br><span class="line">send_data = rank</span><br><span class="line">print(<span class="string">"process &#123;&#125; send data &#123;&#125; to root."</span>.format(rank, send_data))</span><br><span class="line"></span><br><span class="line">recv_data = comm.gather(send_data, root=<span class="number">9</span>)</span><br><span class="line"><span class="keyword">if</span> rank == <span class="number">9</span>:</span><br><span class="line">    print(<span class="string">"process &#123;&#125; gather all data &#123;&#125; to others."</span>.format(rank, recv_data))</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://zhuanlan.zhihu.com/p/25332041" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/25332041</a><br>
+2.<a href="https://www.jianshu.com/p/f497f3a5855f" target="_blank" rel="noopener">https://www.jianshu.com/p/f497f3a5855f</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/06/gradient-method-deep-deterministic-policy-gradient/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2159,366 +2389,6 @@ $$\text{KL}\left[p(x|\theta)||p(x|\theta’)\right] = \int_x p(x|\theta)\log p(x
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/15/gym-retro/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/09/15/gym-retro/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">gym retro</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-15 20:28:55" itemprop="dateCreated datePublished" datetime="2019-09-15T20:28:55+08:00">2019-09-15</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:39:08" itemprop="dateModified" datetime="2019-12-17T15:39:08+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="gym-retro">Gym Retro</h2>
-<h3 id="什么是gym-retro？">什么是Gym Retro？</h3>
-<p>将不同平台的video games都转换成gym environments。Gym-retro包括了RLE和ALE两个环境，可以使用统一的gym接口进行管理，更灵活，更容易扩展。</p>
-<h3 id="创建gym-retro的目的">创建gym retro的目的</h3>
-<p>此前transfer learning in RL，有两种通用的evaluation：</p>
-<ul>
-<li>在人工合成的task上进行evaluation</li>
-<li>在ALE环境上进行evaluation<br>
-这两种方式都有缺陷：前者的话不同的算法之间很难比较，后者的话，效果很差，因为不同的游戏之间差异可能很大。<br>
-本文的提出的gym-retro可以：</li>
-</ul>
-<ol>
-<li>作为few-shot RL的benchmark，从一个single task distribution中sampling许多simlar tasks。</li>
-<li>作为transfer learning的benchmark，提供cross-task的dataset。划分train/test让agent学会在some levels进行explore，迁移到其他levels。</li>
-</ol>
-<h3 id="包含哪些平台">包含哪些平台</h3>
-<ul>
-<li>Atari</li>
-<li>NEC</li>
-<li>Nintndo</li>
-<li>Sega</li>
-</ul>
-<h3 id="包含哪些roms">包含哪些ROMs</h3>
-<ul>
-<li>the 128 sine-dot by Anthrox</li>
-<li>Sega Tween by Ben Ryves</li>
-<li>Happy 10! by Blind IO</li>
-<li>512-Colour Test Demo by Chris Covell</li>
-<li>Dekadrive by Dekadence</li>
-<li>Automaton by Derek Ledbetter</li>
-<li>Fire by dox</li>
-<li>FamiCON intro by dr88</li>
-<li>Airstriker by Electrokinesis</li>
-<li>Lost Marbles by Vantage</li>
-</ul>
-<h2 id="sonic-benchmark">Sonic benchmark</h2>
-<h3 id="gym-retro-v2">Gym Retro</h3>
-<p>Sonich benchmark的底层实现是Gym Retro，它可以提供接口给诸如RLE game将其封装成gym environment。<br>
-每个game由ROM, 一个或者多个save states，一个或者多个scenarios，还有一个data file。</p>
-<ul>
-<li>ROM：组成game的代码和数据。</li>
-<li>Save state：console’s state的截图。</li>
-<li>Data file：描述各种各样的information在console memory的哪个地方存着。</li>
-<li>Scenario：描述done conditions和reward functions。</li>
-</ul>
-<h3 id="sonic-game">Sonic game</h3>
-<p>Sonic benchmark中有三个相似的游戏：$Sonic The Hedgehog^{TM} $, $Sonic The Hedgehog^{T} 2$, $Sonic 3 Knuckles$，这些游戏具有相似的规则，可能有一些差别，但是不大。<br>
-每个Sonic game都有zones，每个zone又被划分成acts。每个zone有独特的纹理和物体；每个zone中的act有相同的问题，但是布局不同。一个(ROM, zone, act)被称为一个level。</p>
-<h3 id="games-and-levels">Games and Levels</h3>
-<p>Sonic benchmark中所有的games总共有$58$个save states，每一个save state对应一个不同的level。<br>
-选取test set的时候随机选取超过$1$个act的zones，然后从中随机选取一个act。这样子，test set中巨大部分的纹理和物体都在training set中出现过，只不过layouts不同。所有的test levels如下：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">ROM</th>
-<th style="text-align:center">Zone</th>
-<th style="text-align:center">Act</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog</td>
-<td style="text-align:center">SpringYardZone</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog</td>
-<td style="text-align:center">GreenHillZone</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog</td>
-<td style="text-align:center">StarLightZone</td>
-<td style="text-align:center">3</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog</td>
-<td style="text-align:center">ScrapBrainZone</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog 2</td>
-<td style="text-align:center">MetropolisZone</td>
-<td style="text-align:center">3</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog 2</td>
-<td style="text-align:center">HillTopZone</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic The Hedgehog 2</td>
-<td style="text-align:center">CasinoNightZone</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
-<td style="text-align:center">LavaReefZone</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
-<td style="text-align:center">FlyingBatteryZone</td>
-<td style="text-align:center">2</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
-<td style="text-align:center">HydrocityZone</td>
-<td style="text-align:center">1</td>
-</tr>
-<tr>
-<td style="text-align:center">Sonic 3 &amp; Knuckles</td>
-<td style="text-align:center">AngelIslandZone</td>
-<td style="text-align:center">2</td>
-</tr>
-</tbody>
-</table>
-<h3 id="frame-skip">Frame skip</h3>
-<p>step()方法的调用频率是$60$hz，dqn中经常使用的frames skip为$4$，Sonic benchmark也用了，用timestep表示使用了frame skip之后一步的时长，也就是$\frac{4}{60}$。<br>
-Sonic benmeark对frame skip做了一些改变，叫做stick frame skip。对于agent的action加了一些随机性：每隔$n$帧之后的那一帧，有$0.25$的概率继续应用之前的那个action。</p>
-<h3 id="episode-boundaries">Episode boundaries</h3>
-<p>游戏中的experience划分为episodes，大概对应有几条命。每一个episode结束，重置到相应的save state。每个episodes结束的条件有以下几种：</p>
-<ul>
-<li>通关，去掉了boss，通过水平方向上一个特定的偏移量就算通关。</li>
-<li>少了一条命</li>
-<li>当前episode累计玩了$4500$个timesteps，大概是$5$分钟。</li>
-</ul>
-<h3 id="observations">Observations</h3>
-<p>24位RBG图像，Sonic是$320 \times 224 $</p>
-<h3 id="actions">Actions</h3>
-<p>所有的Sega Genesis游戏的action space包含：<br>
-B, A, MODE, START, UP, DOWN, LEFT, RIGHT, C, Y, X, Z<br>
-Sonic game中有八个很重要的buttion combinations:<br>
-{ {}, {LEFT},  {RIGHT}, {LEFT, DOWN}, {RIGHT, DOWN}, {DOWN}, {DOWN, B}, {B} }</p>
-<h3 id="rewards">Rewards</h3>
-<p>在一个episode中，cumulative reward和玩家的初始位置到当前位置的偏移是成正比的。也就是说往右走产生正的reward，往左走产生负的reward。<br>
-Reward由horimontal offset和completion bonus构成。Completion bonus是$1000$，在$4500$个timesteps内线性降为$0$。<br>
-但是imediate reward可能是有欺骗性的，有时候为了获得更大的reward往回走是必须的。</p>
-<h3 id="evaluation">Evaluation</h3>
-<p>使用test set中所有levels的mean score作为metric。步骤入如下：</p>
-<ol>
-<li>训练时候，使用任意数量的训练集（你喜欢多少就用多少）训练</li>
-<li>测试的时候，每一个test levels执行$100$万个timesteps。在test每一个level的时候都是分开的。</li>
-<li>对每个level的$100$万个timesteps中所有episode的total rewards进行平均。</li>
-<li>对所有test level的scores进行平均。</li>
-</ol>
-<p>这个$100$万是怎么选出来的？在无限个timestep的场景下，没有证明meta-learning或者transfer-learning是必要的，但是在有限个timestep的场景下，transfer learning对于得到好的performance是很必要的。</p>
-<h2 id="baselines">Baselines</h2>
-<ul>
-<li>Humans：四个玩家，每个玩家在training levels上训练两个小时。然后在每个test level玩一个小时。</li>
-<li>RainBow：设置$V_{max} = 200$，replay buffer从$1M$改成了$0.5$M，直接使用Rainbow的初值。Action space：{ {LEFT}, {RIGHT}, {LEFT, DOWN}, {RIGHT, DOWN}, {DOWN}, {DOWN, B}, {B} }。Agent的reward是基于agent到过的最大$x$，这样子不会惩罚它往回走。</li>
-<li>JERK：并没有使用depp learning，叫JERK(Just Enough Retained Knowledge)。使用一个简单的算法进行explore，然后回放训练过程中的best action。因为环境是stochasitc，不知道哪个action是最好的，因此次他仅仅是一个mean。</li>
-<li>PPO：在每个test levels上，单独的调用PPO。和Rainbow的action，observation spaces一样，CNN架构和ppo论文中一样。超参数：<br>
-Hyper-parameter|Value<br>
-:-😐:-:<br>
-Workers|1<br>
-Horizon|8192<br>
-Epochs|4<br>
-Minibatch size|8192<br>
-Discount ($\gamma$) | 0.99<br>
-GAE parameter ($\lambda$) | 0.95<br>
-Clipping parameter ($\epsilon$)|0.2<br>
-Entropy coeff.|0.001<br>
-Reward scale|0.005</li>
-<li>Joint PPO：从training levels迁移到test levels，在training levels上训练一个policy，然后用它作为test levels的初始化。<br>
-在meta-learning过程中，训练一个single-policy玩training set中的每一个level。具体的，运行$188$个parallel works，每个worker运行training set中的一个level。在每一个gradient step，对所有workers的gradients进行平均，确保policy在整个training set上的训练是平稳的。整个过程需要几百个millions timesteps才会收敛。参数设置和PPO一样。<br>
-在所有training sets上完成训练以后，使用这个网络在作为test set中网络的初始化，除了使用meta-learning的结果进行初始化，所有的其他过程和PPO一样。</li>
-<li>Joint Rainbow：和Joint PPO的训练过程一样。<br>
-没有joint training的Rainbow超过了PPO，但是joint Rainbow没有超过joint PPO。在整个训练集上训练单个Rainbow的时候，使用了$32$个GPUs。每一个GPU对应一个单个的worker，每一个worker有自己的replay buffer和$8$个环境。环境也是joint environments，在每一个episode开始的时候采样一个新的tranining level。<br>
-除了batch size和distributed worker，其他的超参数和常规的Rainbow一样。</li>
-</ul>
-<h2 id="示例">示例</h2>
-<h3 id="安装gym-retro">安装gym retro</h3>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip3 install gym-retro</span><br></pre></td></tr></table></figure>
-<h3 id="创建gym-env">创建Gym Env</h3>
-<p>下面代码创建一个gym环境</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> retro</span><br><span class="line">env = retro.make(game=<span class="string">'Airstriker-Genesis'</span>)</span><br></pre></td></tr></table></figure>
-<p>retro中的environment是从gym.Env类继承而来的。</p>
-<h3 id="默认rom">默认ROM</h3>
-<p>Airstriker-Genesis的ROM是默认包含在gym-retro之中的，其他的一些ROMs需要手动添加。</p>
-<h3 id="所有的games">所有的games</h3>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> retro</span><br><span class="line">retro.data.list_games()</span><br></pre></td></tr></table></figure>
-<p>上述代码会列出所有的游戏，包含那些默认没有集成的ROMS中的。</p>
-<h3 id="手动添加roms">手动添加ROMs</h3>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 -m retor.import /path/to/your/ROMs/directory</span><br></pre></td></tr></table></figure>
-<p>上述代码将存放在某个路径下的ROMs拷贝到Gym Retro的集成目录中去。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://retro.readthedocs.io/en/latest/" target="_blank" rel="noopener">https://retro.readthedocs.io/en/latest/</a><br>
-2.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3025,9 +2895,9 @@ Reward scale|0.005</li>
       
     
       
-        
-      
     
+      
+        
       
     
       
