@@ -110,7 +110,6 @@ ifstream in(ifile);
 // 2.输出文件流并未关联到任何文件。
 ofstream out;
 out.open(ifile+".out");
-
 ```
 
 可以使用`fstream`代替`iostream`，因为`fstream`是`iostream`的子类。
