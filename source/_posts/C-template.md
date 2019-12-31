@@ -20,4 +20,4 @@ categories: C/C++
 
 
 ## 参考文献
-1.
+1.《C++ Primer》第五版中文版
