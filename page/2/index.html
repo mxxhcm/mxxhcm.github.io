@@ -1146,7 +1146,7 @@ $$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 17:08:30" itemprop="dateModified" datetime="2019-12-17T17:08:30+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-28 16:58:41" itemprop="dateModified" datetime="2019-12-28T16:58:41+08:00">2019-12-28</time>
               
             
           </span>
@@ -1206,15 +1206,31 @@ $$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
 <li>加载时(load time)，在程序被加载器加载到内存并执行时。</li>
 <li>运行时(run time)，由应用程序负责加载。</li>
 </ul>
-<p>链接是由链接器程序自动执行的，链接器使得分离编译变得可能。</p>
+<p>早期链接是手动执行的，现代系统中链接是由链接器程序自动执行的，链接器使得分离编译变得可能。</p>
 <h2 id="编译器驱动程序">编译器驱动程序</h2>
 <p>执行将源文件翻译成可执行目标文件过程的<strong>程序</strong>，即预处理器，编译器，汇编器和链接器，构成了<strong>编译系统。</strong><br>
-<strong>编译器驱动程序</strong>负责完成整个编译过程，即在需要时分别调用预处理器，编译器，汇编器和连接器，整个编译过程都是由编译器驱动程序负责的。</p>
-<h2 id="静态链接">静态链接</h2>
+<strong>编译器驱动程序</strong>负责完成整个编译过程，即在需要时分别调用预处理器，编译器，汇编器和连接器，整个编译过程都是由编译器驱动程序负责的。<br>
+可以使用GCC对这些步骤进行实践：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> 1.预处理，生成ASCII码中间文件</span><br><span class="line">cpp main.c main.i</span><br><span class="line">cpp sum.c sum.i</span><br><span class="line"><span class="meta">#</span> 2. 编译，将中间文件翻译成ASCII码汇编文件</span><br><span class="line">cc1 main.i -Og -o main.s</span><br><span class="line">cc1 sum.i -Og -o sum.s</span><br><span class="line"><span class="meta">#</span> 3. 汇编，将汇编文件翻译成可重定位目标文件</span><br><span class="line">as main.s -o main.o</span><br><span class="line">as sum.s -o sum.o</span><br><span class="line"><span class="meta">#</span> 4. 链接，将可重定位目标文件连接成可执行目标文件</span><br><span class="line">ld -o main.o sum.o prog</span><br><span class="line"><span class="meta">#</span> 5.执行</span><br><span class="line">./prog</span><br><span class="line"><span class="meta">#</span> shell调用操作系统的loader function，将可执行目标文件prog的代码和数据复制到内存中，然后将控制转移到这个程序的开头。</span><br></pre></td></tr></table></figure></p>
 <h2 id="目标文件">目标文件</h2>
-<p>C语言中如何读取一个ELF文件的ELF-header。<br>
-shell中直接使用<code>readelf</code>命令。<code>-h</code>, <code>-s</code></p>
+<p>目标文件是字节块的集合，它们按照特定的目标文件格式来组织，代码，数据，还有包含引导链接器和load function的数据结构等。各个系统的目标文件格式都不相同，Linux和UNIX系统下使用的是可执行可连接格式(exceutable and linkable format, ELF)，windows使用的是PE格式，MAC用的是Mach-O格式。<br>
+不管哪个平台，目标文件都可以分为三种：</p>
+<ol>
+<li>可重定位目标文件。包含二进制代码和数据，在编译时可以和其他目标文件合并起来，创建一个可执行目标文件。编译器和汇编器生成可重定位目标文件。</li>
+<li>可执行目标文件。包含二进制代码和数据，可以被直接复制进内存并执行。链接器生成可执行目标文件。</li>
+<li>共享目标文件。一种特殊类型的可重定位目标文件，可以在加载或者运行时动态的加载进内存并链接。</li>
+</ol>
+<p>C语言中如何读取一个ELF文件的ELF-header。shell中直接使用<code>readelf</code>命令。<code>-h</code>, <code>-s</code></p>
+<h2 id="静态链接">静态链接</h2>
+<p>LD是静态链接器，它的<strong>输入</strong>是一组ELF可重定位目标文件和命令行参数，<strong>输出</strong>是一个完全链接的，可以加载和运行的ELF可执行目标文件。<br>
+输入的ELF可重定位目标文件由不同的section组成，每个section存放代码数据等。</p>
+<p>为了构造可执行文件，静态链接器有以下任务：</p>
+<ol>
+<li>符号解析。目标文件定义并且引用<strong>符号</strong>，每一个符号对应于一个函数，一个全部变量，或者一个静态变量。符号解析的目的是将每个符号引用和一个符号定义关联起来。</li>
+<li>重定位。编译器和汇编器生成的section都是从地址0开始的，链接器通过把每个符号定义和一个内存位置关联起来，对这些section进行重定位，然后修改对这些符号的引用，使得它们指向相应的内存位置。链接器使用汇编器产生的重定位条目执行这样的重定位。</li>
+</ol>
 <h2 id="可重定位目标文件">可重定位目标文件</h2>
+<p>一个ELF可重定位目标文件由以下section组成：<br>
+<img src="/2019/12/10/linking-CSAPP/ELF_reloc.png" alt="ELF_reloc"></p>
 <h2 id="符号和符号表">符号和符号表</h2>
 <h2 id="符号解析">符号解析</h2>
 <h2 id="重定位">重定位</h2>
