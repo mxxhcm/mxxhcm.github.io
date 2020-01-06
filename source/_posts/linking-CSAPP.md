@@ -58,11 +58,94 @@ LD是静态链接器，它的**输入**是一组ELF可重定位目标文件和�
 一个ELF可重定位目标文件由以下section组成：
 ![ELF_reloc](ELF_reloc.png)
 
+1. `.text` section，存放的是已编译程序的机器代码。
+2. `.data` section，存放的是已经初始化的全局和静态C变量。
+3. `.bss` section，存放的未初始化的全局和静态C变量，以及所有被初始化为0的全局或者静态变量。它并不占据实际的空间，只是一个占位符。在运行时，通过`exec`函数在内存中将他们初始化为0。
+4. `symtab` section，保存一个符号表，存放的是程序中定义和引用的函数和全局变量的信息。它不包含局部变量的entry。
+5. `debug` section，调试符号表，其中的entry是程序中定义的局部变量和类型定义，程序定义和引用的全局变量，和原始的C源文件。
+6. `.rel.text` section，`.text` section中的位置列表。链接器把这个目标文件和其他目标欧文件组合时，需要修改相应的位置。通常来说，调用外部函数或者引用全局变量的指令都需要修改，调用本地函数的指令不需要修改。通常可执行目标文件中不需要重定位信息。
+7. `.sttrtab` section，保存字符串，主要是和`.symtab`,`.debug` section中entry相关的字符串，以及section headers中的section names。每一项都是以null结尾的字符串。
+
 ## 符号和符号表
+### 符号
+每一个可重定位模块m都有一个ELF符号表（`.symtab`)，它包含m定义和引用的各种符号的信息。在链接器的上下文中，有三种不同的符号：
+1. 模块m定义的，能被其他模块引用的全局符号(global symbols)。Global linker symbols对应于non-static的C函数和global variables。
+2. 其他模块定义的，能够被模块m引用的全局符号，也被称为外部符号(external symbol)，对应其他模块中定义的non-static的C函数和global variables。
+3. 模块m定义的，只能被它自己使用的局部符号(local symbols)。Local linker symbols对应于C的static function和static global variables，static local variables，它们在模块m中的任何地方都可以使用，但是不能被其他模块使用。
+
+Local liker symbols和local variables不是一回事，local linker symbols对应的是当前模块内（在C中就是一个文件）的函数或者变量，而local nonstatic variables对应的是函数内的自动变量。Local nonstatic variables在栈中管理，不是链接器的事情。而local static variables存放在`.data`或者`.bss` section中，并且在符号表中有一个唯一的local linker symbol。
+
+### `.symtab`符号表
+`.symtab` section中包含ELF 符号表，它包含一个entry的数组，每个entry都是一个`struct Elf64_Sym`的结构体：```c
+typedef struct{
+    uint32_t      st_name;
+    unsigned char st_info;
+    unsigned char st_other;
+    uint16_t      st_shndx;
+    Elf64_Addr    st_value;
+    uint64_t      st_size;
+} Elf64_Sym;
+```
+`st_name`中存放的是字符串表中的字节偏移，指向一个字符串的名字，`info`粗放你的是符号类型。value是符号的地址。对于可重定位模块来说，value是离定义目标的section的起始位置的便宜；对于可执行目标文件来说，该值是一个绝对运行地址。
+每一个符号都被分配到目标文件的某个节，由section字段表示，section字段的取值还可以是在seciton header table中没有entry的三个特殊伪节(pseudosection)：UNDER表示未定义的符号, ABS表示不应该重定位的符号和COMMON表示还没有分配位置的未初始化的数据目标；对于COMMON符号，value字段给出对齐要求，size给出最小的大小。
+**COMMON和.bss的区别：COMMON存放的是未初始化的全局变量，而.bss存放的是未初始化的静态变量，以及初始化为0的全局或者静态变量。**
 
 ## 符号解析
+链接器的输入是一组可重定位目标文件（模块），每个模块定义一组符号，有些是局部的，有些是全局的。
+链接器解析符号引用的方法是将每个符号引用和可重定位目标文件符号表中的一个确定的符号定义关联起来。
+
+### 解析多重定义的全局符号
+**函数和已经初始化的全局变量是强符号，未初始化的全局变量是弱符号。**在编译时，编译器向汇编器输出每个全局符号，或者是强或者是弱，汇编器会把这个信息编码在可重定位目标文件的符号表中。处理多重定义的符号的规则：
+1. 不允许有多个重名的强符号。
+2. 如果有一个强符号和多个弱符号，选择强符号。
+3. 如果有多个弱符号同名，从这些弱符号中随机选择一个。
+
+可以使用GCC的`GCC-fno-common`选项设置遇到多重链接时，触发一个错误。
+
+### 和静态库链接
+所有的编译系统都提供**静态库**的机制，一组相关的函数（比如浮点数操作），其中每个函数都被编译成独立的模块，然后封装成一个静态库文件。应用程序可以通过在命令行上指定静态库文件的名字使用这些在库中定义的函数。在链接时，链接器只复制静态库里被应用程序引用的目标模块。对于应用程序员来说，只需要包含远远小于函数个数的库文件的名字即可。
+Linux中的静态库以archive（后缀名为.a）的文件形式存在，它是一组连接起来的可重定位目标文件的集合，有一个头部描述每个目标文件的大小和位置。
+可以使用`ar`命令创建一个静态链接库，比如：``` shell
+ar rcs libvector.a addvec.o mulvec.o
+```
+其中addvec.o和mulvec.o是两个可重定位目标文件，而libvector.a是我们要创建的静态库的名字。
+使用gcc可以链接自定义或者C提供的静态库：``` c
+       gcc [-c|-S|-E] [-std=standard]
+           [-g] [-pg] [-Olevel]
+           [-Wwarn...] [-Wpedantic]
+           [-Idir...] [-Ldir...]
+           [-Dmacro[=defn]...] [-Umacro]
+           [-foption...] [-mmachine-option...]
+           [-o outfile] [@file] infile...
+```
+gcc的`-static`参数告诉编译器驱动程序，链接器应该构建一个完全链接的可执行目标文件，它可以加载到内存并运行，在加载时无序进一步的链接；
+`-lvector`参数是libvector.a的缩写或者可以使用
+`-Ldir libvector.a`告诉链接器在目录dir下查找libvector.a文件。
+
+### 链接器使用静态库解析引用
+在符号解析阶段，链接器从左到右按照它们在编译器驱动程序命令上出现的顺序来扫描可重定位目标文件和存档文件。
+在这个过程中，链接器维护一个可重定位目标文件的集合E，最后这个集合中的文件会被合并起来形成可执行文件；一个未解析符号的结合U，存放的是使用了但是还没有定义的符号；一个前面输入文件中已定义的符号集合D。
+在开始的时候，E,U和D都是空的。
+对于命令行中包含的每个输入文件f，链接器会判断f是一个目标文件还是一个archive文件：
+如果f是一个目标文件，那么链接器把f添加到集合E，修改U和D反应f中定义和使用的符号，并继续下一个输入文件；
+如果f是一个archive文件，链接器就尝试匹配U中的符号和archive文件中定义的符号。如果archive中的某个文件成员m匹配了U中的一个引用，将m添加到E中，修改U和D反应m中定义和引用的符号。对于archive中的每一个文件都进行这个过程，任何不包含在E中的archive中的文件都被丢弃，链接器继续处理下一个文件。
+当链接器处理完命令行中所有输入文件的扫描后，如果U是非空的，那么链接器输出一个错误并终止，否则，它会合并和重定位E中的目标文件，构建输出的可执行目标文件。
+从这个过程中我们可以看出来，命令行上库和目标文件的顺序非常重要，比如下面的两条命令，一个能够链接成功，另一个却会链接失败。``` shell
+gcc -static main2.o -L. libvector.a  -o prog2
+gcc -static  -L. libvector.a main2.o -o prog2 
+```
 
 ## 重定位
+当链接器完成了符号解析之后，代码中的每个符号引用和一个符号定义关联了起来，链接器就知道了它的输入目标模块中的code section和data section的确切大小，就可以进行重定位了。
+重定位中会合并输入模块，并且为每个符号分配运行时地址。重定位分为两个步骤：
+- **重定位section和符号定义。**
+- **重定位section中的符号引用。**
+
+### 重定位entry
+当汇编器生成一个目标模块时，它并不知道数据和代码最终放在内存中的什么位置，它也不知道这个模块引用的任何外部定义的函数或者全局变量的位置。所以，无论何时汇编器遇到对最终位置未知的目标引用，它就会生成一个重定位entry，告诉链接器在将目标文件合成可执行文件时如何修改这个引用。代码的重定位entry定义子啊
+
+### 重定位符号引用
+
 
 ## 可执行目标文件
 

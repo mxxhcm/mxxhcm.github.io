@@ -63,6 +63,11 @@ categories: 计算机系统
 - 编译器，或者编译系统(compile system)。执行将源文件翻译成可执行目标文件过程的**程序**，即预处理器，编译器，汇编器和链接器，构成编译系统。
 - 编译器驱动程序。编译器驱动程序自动的完成整个编译过程，即在需要时分别调用预处理器，编译器，汇编器和连接器，整个编译过程都是由编译器驱动程序负责的。[1,2]。
 - **链接**是将各种代码和数据片段收集并组合成一个单一文件的过程，这个文件可以被加载到内存并执行。
+- **符号和符号表。**每一个可重定位模块m都有一个ELF符号表（`.symtab`)，有三种不同的符号：对应于本模块中定义的non-static的C函数和global variables的全局符号(global symbols)；对应其他模块中定义的non-static的C函数和global variables的外部符号(external symbol)；对应于C的static function和static global variables，static local variables的局部符号(local symbols)。
+每一个符号都被分配到某个section字段表示，section字段的取值还可以是在seciton header table中没有entry的三个特殊伪节(pseudosection)：UNDER表示未定义的符号, ABS表示不应该重定位的符号和COMMON表示还没有分配位置的未初始化的数据目标；对于COMMON符号，value字段给出对齐要求，size给出最小的大小。
+**COMMON和.bss的区别：COMMON存放的是未初始化的全局变量，而.bss存放的是未初始化的静态变量，以及初始化为0的全局或者静态变量。**
+- **强符号和弱符号。**函数和已经初始化的全局变量是强符号，未初始化的全局变量是弱符号。
+
 
 
 
