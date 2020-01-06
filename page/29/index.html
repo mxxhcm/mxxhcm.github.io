@@ -327,6 +327,1484 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/02/rl-dqn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/02/rl-dqn/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">DQN</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-02 19:29:35" itemprop="dateCreated datePublished" datetime="2019-03-02T19:29:35+08:00">2019-03-02</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 16:35:56" itemprop="dateModified" datetime="2019-12-17T16:35:56+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="背景">背景</h2>
+<ol>
+<li>Atari 2600是一个RL benchmark，有2600个游戏，每个agent会得到一个图像输入(60Hz的210 x 160 RGB视频)。本文的目标是设计一个NN架构尽可能学会更多游戏，网络的输入只有视频信息，reward和terminal信号以及可能采取的action，和人类玩游戏时得到的信息是一样的。</li>
+<li>Agent与Atari模拟器不断交互，agent不能观测到模拟器的内部状态，只能得到当前屏幕信息的一个图片。这个task可以认为是部分可观测的，因为仅仅从当前的屏幕图像$x_t$上是不能完全理解整个游戏状况的。所有的序列都认为在有限步骤内是会结束的。</li>
+<li>注意agent当前的得分取决于整个sequence的action和observation。一个action的feedback可能等到好几千个timesteps之后才能得到。</li>
+<li>agent的目标最大化累计reward。定义$t$时刻的回报return为$R_t = \sum^T_{t’=t} \gamma^{t’-t}r_{t’}$，其中$\gamma$是折扣因子，$T$是游戏终止的时间步。</li>
+<li>定义最优的动作值函数$Q^{*}(s,a)$是遵循最优策略在状态$s$处采取动作$a$能获得的最大的期望回报，$Q^{*}(s,a) = \max_{\pi}E[R_t|s_t=s,a_t=a,\pi]$。</li>
+<li>最优的动作值函数遵循Bellman optimal equation。如果在下个时间步的状态$s’$处，对于所有可能的$a’$，$Q^{*}(s’,a’)$的最优值是已知的（这里就是对于每一个$a’$，都会有一个最优的$Q(s’,a’)$，最优的策略就是选择最大化$r+Q^{*}(s’,a’)$的动作$a’$：<br>
+$$Q^{*}(s,a) = E_{s\sim E}[r+ \gamma \max_{a’} Q^{*}(s’,a’)|s,a], \tag{1}$$<br>
+强化学习的一个思路就是使用Bellman optimal equation更新动作值函数，$Q_{i+1}(s,a) = E[r + \gamma Q_i(s’,a’)|s,a]$，当$i\rightarrow \infty$时，$Q_i \rightarrow Q^{*}$。</li>
+<li>上述例子是state-action pair很少的情况，当有无穷多个的时候，是无法精确计算的。这时候可以采用函数来估计动作值函数，$Q(s,a;\theta) \approx Q^{*}(s,a)$。一般来说，通常采用线性函数进行估计，当然可以采用非线性的函数，如神经网络等等。这里采用的是神经网络，用$\theta$表示网络的参数，这个网络叫做Q网络，Q网络通过最小化下列loss进行训练：<br>
+$$L_i(\theta_i) = E_{s,a\sim \rho(\cdot)}\left[(y_i - Q(s,a;\theta_i))^2\right]\tag{2}$$<br>
+其中$y_i = E_{s’\sim E}[r+\gamma \max_{a’}Q(s’,a’;\theta_{i-1})]$是第$i$次迭代的target值，其中$\rho(s,a)$是$(s,a)$服从的概率分布。</li>
+<li>注意在优化$L_i(\theta_i)$时，上一次迭代的$\theta_{i-1}$是不变的，target取决于网络参数，和监督学习作对比，监督学习的target和网络参数无关。</li>
+<li>对Loss函数进行求导，得到下列的gradient信息：<br>
+$$\nabla_{\theta_i}L_i(\theta_i) = E_{s,a\sim \rho(\cdot),s’\sim E}\left[(r+\gamma \max_{a’}Q(s’,a’;\theta_{i-1})-Q(s,a;\theta_i))\nabla_{\theta_i}Q(s,a;\theta_i)\right]\tag{3}$$<br>
+通过SGD优化loss函数。如果权重是每隔几个timestep进行更新，并且用从分布$\rho$和环境$E$中采样得到的样本取代期望，就可以得到熟悉的Q-learning算法[2]。(这个具体为什么是这样，我也不清楚，可以看参考文献2)</li>
+<li>什么是on-polciy算法：</li>
+</ol>
+<blockquote>
+<p>On-policy methods attempt to evaluate or improve the policy that is used to make decisions, whereas  off-policy methods evaluate or improve a policy different from that used to generate the data.</p>
+</blockquote>
+<p>Sarsa和Q-learning的区别在于更新Q值时的target policy和behaviour policy是否相同。我觉的是是policy evaluation和value iteration的区别，policy evaluation使用动态规划算法更新$V(s)$，但是并没有改变行为策略，更新迭代用的数据都是利用之前的行为策略生成的。而值迭代是policy evaluation+policy improvement，每一步都用贪心策略选择出最大的$a$更新$V(s)$，target policy（greedy）和behaviour policy（$\varepsilon$-greedy）是不同的。</p>
+<h2 id="强化学习需要解决的问题">强化学习需要解决的问题</h2>
+<ol>
+<li>大量有标记的训练数据。</li>
+<li>delayed-reward。这个delay存在于action和reward之间，可以达到几千个timesteps那么远，和supervised learnign中输入和输入之间直接的关系相比要复杂的多。</li>
+<li>大多数深度学习算法假设样本之间都是独立的，然而强化学习的一个sequence(序列)通常是高度相关的。</li>
+<li>强化学习算法学习到的policy变化时，数据服从的分布通常会改变，然而深度学习通常假设数据服从一个固定的分布。</li>
+</ol>
+<h2 id="dqn">DQN</h2>
+<p>论文名称<a href="https://arxiv.org/pdf/1312.5602.pdf" target="_blank" rel="noopener">Playing Atari with Deep Reinforcement Learning</a></p>
+<h3 id="概述">概述</h3>
+<p>DQN算法使用卷积神经网络代替Q-learning中tabular的值函数，并提出了几个trick促进收敛。DQN agnet的输入是原始的图片，输出是图片表示的state可能采取的action的$Q$值。</p>
+<ol>
+<li>dqn是Model-Free的，它直接从环境$E$中采样，并没有显式的对环境进行建模。</li>
+<li>dqn是一个online的方法，即训练数据不断增加；offline是训练数据固定。</li>
+<li>dqn是一个off-policy算法，target policy 是greedy policy，behaviour policy是$\varepsilon$-greedy policy，target policy和greedy policy策略不同。</li>
+<li>DQN是不收敛的。</li>
+</ol>
+<h3 id="解决方案">解决方案</h3>
+<h4 id="experience-replay">Experience replay</h4>
+<ol>
+<li>DQN使用了experience replay，将多个episodes中的经验存储到一个大小为$N$的replay buffer中。在更新$Q$值的时候，从replay buffer中进行采样更新。behaviour policy是$\varepsilon$-greedy策略，保持探索。target policy是$\varepsilon$ greedy 算法，因为replay buffer中存放的都是behaviour policy生成的experience，所以是off-policy算法。<br>
+采用experience replay的DQN和Q-learning算法相比有三个好处，第一个是每一个experience可以多次用来更新参数，提高了数据训练效率；第二个是直接从连续的样本中进行学习是低效的，因为样本之间存在强关联性。第三个是on-policy的学习中，当前的参数决定下一次采样的样本，就可能使学习出来的结果发生偏移。</li>
+<li>replay buffer中只存储最近N个experience。</li>
+</ol>
+<h4 id="data-preprocess">Data preprocess</h4>
+<ol>
+<li>原始图像是$210\times 160$的RGB图像，预处理首先将它变为灰度图，并进行下采样得到一个$110\times 84$的图像，然后从这个图像中截取一个$84\times 84$的图像。</li>
+<li>作者使用预处理函数$\phi$处理连续四张的图像而不是一张，然后将这个预处理后的结果输入$Q$函数。</li>
+<li>预处理函数$\phi$是一个卷积神经网络，输入是$84\times 84\times 4$的图像矩阵，经过$16$个stride为$4$的$8\times 8$filter，经过relu激活函数，再经过$32$个stride为$2$的$4\times 4$filter，经过relu激活函数，最后接一个256个单元的全连接层。输出层的大小根据不同游戏的动作个数决定。</li>
+<li>$Q$网络的输入是预处理后的图像state，输出是所有当前state可能采取的action的$Q$值。</li>
+</ol>
+<h3 id="网络结构">网络结构</h3>
+<p>输入：[batch_size, 84, 84, 4]<br>
+第一个隐藏层：16个步长为$4$的$8\times 8$的filters<br>
+第二个隐藏层：32个步长为$2$的$4\times 4$的filters<br>
+全连接层：256个units<br>
+输出层：softmax</p>
+<h3 id="算法">算法</h3>
+<p>算法 1 Deep Q-learning with Experience Replay<br>
+Initialize replay memory D to capacity N<br>
+Initialize action-value function Q with random weights<br>
+for episode = $1, M$ do<br>
+$\ \ \ \ \ \ \ \ $Initialize sequence $s_1 = {x_1}$ and preprocessed sequenced $\phi_1 = \phi(s_1)$<br>
+$\ \ \ \ \ \ \ \ $for $t = 1,T$ do<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $With probability $\varepsilon$ select a random action $a_t$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $otherwise select $a_t = \max_a Q^{∗}(\phi(s_t), a; θ)$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Execute action $a_t$ in emulator and observe reward $r_t$ and image $x_{t+1}$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preprocess $\phi_{t+1} = \phi(s_{t+1})$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Store transition $(\phi_t, a_t, r_t, \phi_{t+1})$ in D<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Sample random minibatch of transitions $(\phi_j, a_j, r_j, \phi_{j+1})$ from D<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $y_j = \begin{cases}r_j&amp;\ \ \ \ for\ terminal\ \phi_{j+1}\\r_j+\gamma \max_{a’}Q(\phi_{j+1},a’|\theta)&amp;\ \ \ \ for\ non-terminal\ \phi_{j+1}\end{cases}$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j|θ))^2$<br>
+$\ \ \ \ \ \ \ \ $end for<br>
+end for</p>
+<h3 id="experiments">Experiments</h3>
+<h4 id="datasets">Datasets</h4>
+<p>七个Atari 2600 games: B.Rider, Breakout, Enduro, Pong, Q bert, Seaquest, S.Invaders。<br>
+在六个游戏上DQN是SOTA，在三个游戏上DQN的表现超过了人类。</p>
+<h4 id="settings">Settings</h4>
+<ol>
+<li>不同游戏的reward变化很大，这里把正的reward全部设置为$1$，把负的reward全部设置为$-1$，reward为$0$的保持不变。这样子在不同游戏中也可以统一学习率。</li>
+<li>采用RMSProp优化算法，batch size为$32$，behaviour policy采用的是$\varepsilon$-greedy，在前$100$万步内，$\varepsilon$从$1$变到$0.1$，接下来保持不变。</li>
+<li>使用了fram-skip技术，每隔$k$步，agent才选择一个action，在中间的$k-1$步中，保持原来的action不变。这里选择了$k=4$，有的游戏设置的为$k=3$。</li>
+<li>超参数设置没有说</li>
+</ol>
+<h4 id="metrics">Metrics</h4>
+<p>每个agent训练$10$ millions帧，replay buffer size是$1$ million。每个epoch进行$50000$个minibatch weight updates或者大约$30$分钟的训练（这里有些不理解）。然后使用$\epsilon$-greedy($\epsilon=0.05$) evaluation $10000$个steps。</p>
+<h5 id="average-total-reward">average total reward</h5>
+<p>第一个metric是在一个episode或者一次游戏内total reward的平均值。这个metric带有很大噪音，因为policy权值一个很小的改变可能就会对policy访问states的分布造成很大的影响。</p>
+<h5 id="action-value-function">action value function</h5>
+<p>第二个metric是估计的action-value function，这里作者的做法是在训练开始前使用random policy收集一个固定的states set，然后track这个set中states最大预测$Q$值的平均。尽管缺乏理论收敛保证，DQN看起来还不错。</p>
+<h4 id="baselines">Baselines</h4>
+<ol>
+<li>Sarsa</li>
+<li>Contingency</li>
+<li>DQN</li>
+<li>Human</li>
+</ol>
+<h3 id="代码">代码</h3>
+<p><a href="https://github.com/devsisters/DQN-tensorflow" target="_blank" rel="noopener">https://github.com/devsisters/DQN-tensorflow</a></p>
+<h2 id="nature-dqn">Nature DQN</h2>
+<h3 id="非线性拟合函数不收敛的原因">非线性拟合函数不收敛的原因</h3>
+<ol>
+<li>序列中状态的高度相关性。</li>
+<li>$Q$值的一点更新就会对policy改变造成很大的影响，从而改变数据的分布。</li>
+<li>待优化的$Q$值和target value(目标Q值)之间的关系，每次优化时的目标Q值都是固定上次的参数得来的，优化目标随着优化过程一直在变。<br>
+前两个问题是通过DQN中提出的replay buffer解决的，第三个问题是Natura DQN中解决的，在一定时间步内，固定target network参数，更新待network的参数，然后每隔固定步数将network的参数拷贝给target network。</li>
+</ol>
+<blockquote>
+<p>This instability has several causes: the correlations present in the sequence of observations, the fact that small updates to Q may significantly change the policy and therefore change the data distribution, and the correlations between the action-values (Q) and the target values $r+\gamma \max_{a’}Q(s’,a’)$.<br>
+We address these instabilities with a novel variant of Q-learning, which uses two key ideas. First, we used a biologically inspired mechanism termed experience replay that randomizes over the data, thereby removing correlations in the observation sequence and smoothing over changes in the data distribution. Second, we used an iterative update that adjusts the action-values (Q) towards target values that are only periodically updated, thereby reducing correlations with the target.</p>
+</blockquote>
+<h3 id="解决方案-v2">解决方案</h3>
+<ol>
+<li>预处理的结构变了,CNN的层数增加了一层，</li>
+<li>加了target network，</li>
+<li>将error限制在$[-1,1]$之间。</li>
+</ol>
+<blockquote>
+<p>clip the error term from the update $r + \gamma \max_{a’} Q(s’,a’;\theta_i^{-} - Q(s,a;\theta_i)$ to be between $-1$ and $1$. Because the absolute value loss function $|x|$ has a derivative of $-1$ for all negative values of $x$ and a derivative of $1$ for all positive values of $x$, clipping the squared error to be between $-1$ and $1$ corresponds to using an absolute value loss function for errors outside of the $(-1,1)$ interval.</p>
+</blockquote>
+<h3 id="框架和网络结构">框架和网络结构</h3>
+<h4 id="框架">框架</h4>
+<p>Nature-DNQ的框架如下所示<br>
+<img src="/2019/03/02/rl-dqn/nature-dqn.png" alt="ndqn"></p>
+<h4 id="网络结构-v2">网络结构</h4>
+<p>输入:[batch_size, 84, 84, 4]<br>
+三个卷积层，两个全连接层（包含输出层）<br>
+第一个隐藏层：$32$个步长为$4$的$8\times 8$filters，以及一个relu<br>
+第二个隐藏层：$64$个步长为$2$的$4\times 4$filters，以及一个relu<br>
+第三个隐藏层：$64$个步长为$1$的$3\times 3$filters，以及一个relu<br>
+第四个隐藏层：$512$个units<br>
+输出层：softmax，输出每个action对应的$Q$值</p>
+<h3 id="算法-v2">算法</h3>
+<p>算法 2 deep Q-learning with experience replay, target network<br>
+Initialize replay memory D to capacity N<br>
+Initialize action-value function Q with random weights $\theta$<br>
+Initialize target action-value function $\hat{Q}$ with weights $\theta^{-}=\theta$<br>
+for episode = $1, M$ do<br>
+$\ \ \ \ \ \ \ \ $Initialize sequence $s_1 = {x_1}$ and preprocessed sequenced $\phi_1 = \phi(s_1)$<br>
+$\ \ \ \ \ \ \ \ $for $t = 1,T$ do<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $With probability $\varepsilon$ select a random action $a_t$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $otherwise select $a_t = \max_a Q^{∗}(\phi(s_t), a; θ)$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Execute action $a_t$ in emulator and observe reward $r_t$ and image $x_{t+1}$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $s_{t+1} = s_t, a_t, x_{t+1}$ and preprocess $\phi_{t+1} = \phi(s_{t+1})$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Store transition $(\phi_t, a_t, r_t, \phi_{t+1})$ in D<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Sample random minibatch of transitions $(\phi_j, a_j, r_j, \phi_{j+1})$ from D<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Set $y_j = \begin{cases}r_j&amp;\ \ \ \ for\ terminal\ \phi_{j+1}\\r_j+\gamma \max_{a’}Q(\phi_{j+1},a’|\theta^{-})&amp;\ \ \ \ for\ non-terminal\ \phi_{j+1}\end{cases}$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Perform a gradient descent step on $(y_j − Q(\phi_j, a_j|θ))^2$ with respect to the network parameters $\theta$<br>
+$\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $Every $C$ steps reset $\hat{Q} = Q$<br>
+$\ \ \ \ \ \ \ \ $end for<br>
+end for</p>
+<h3 id="experiments-v2">Experiments</h3>
+<h4 id="settings-v2">Settings</h4>
+<ul>
+<li>batch-size: 32</li>
+<li>replacy memory size: 1000000 frames</li>
+<li>target network update frequency: 10000</li>
+<li>discount factor: 0.99</li>
+<li>action repeat: 4 # 就是frame skip</li>
+<li>history length: 4 # 使用最近的几帧重叠，实际上是16帧</li>
+<li>paramteter update frequency: 4 # 执行sgd train的frequency</li>
+<li>learning rate: 0.00025</li>
+<li>gradient momentum: 0.95</li>
+<li>squared gradient momentum: 0.95</li>
+<li>min squared gradient: 0.01</li>
+<li>initial exploration: 1</li>
+<li>final exploration 0.1</li>
+<li>final exploration frame: 1000000</li>
+<li>replay start size: 50000</li>
+<li>no-op max: 30</li>
+<li>reward: clipped to [-1, 1]</li>
+<li>total train frames: 50 millons frame（实际上是200 millions emulated frames，因为有设置为$4$ frame skip）。</li>
+<li>选择random作为一个baseline，因为人类的极限是$10$hz，为了公平起见，random baseline以$10$hz的频率随机选择一个action，atari视频的频率是$60$hz，所以每隔$6$帧，随机选择一个action，在选择action中间的帧中保持这一个action。</li>
+</ul>
+<h4 id="experiments-v3">Experiments</h4>
+<ul>
+<li>Average score和average action value<br>
+每个training epoch之后进行一次evaluation，记录evaluation过程中average episode reward。总共train $50$million frames，大概有$200$个epoch，也就是一个epoch是$25$万frames，在每个epoch后使用$\epsilon$-greedy($\epsilon =0.05$)策略evaluate $520k$个frames。</li>
+<li>Main-Evaluation: Compartion between DQN and other baselines<br>
+Baselines有Random play, best linear learner，SARSA，Huamn等。<br>
+DQN总共训练了$50$ million frames，replay buffer存放最近的$1$ million framems。在完成训练后，至多执行$30$次no-op，产生随机初始状态，使用$\epsilon$-greedy($\epsilon=0.05$)玩$5$分钟，对多次结果取平均。<br>
+Human的数据是在玩家首先进行了$2$个小时训练后，然后玩大约20 episodes，每个episode最长5 min的 average reward。<br>
+表格中最后一列还给出了一个百分比，$100\times \frac{\text{DQN score} - \text{random play score}}{\text{human score} - \text{random play score}}$。</li>
+<li>Replay buffer和target network的abalation实验<br>
+在三个不同的learning rate下使用standard hyperparameters训练DQN $10$ million frames。每隔$250,000$ training frames对每个agent进行$135,000$ frames的validation，记录最高的average episode score。 这些valuation episodes并没有在$5$ min的时候截断，这个实验中Enduro得到的score要比main evaluation中高。这个实验中training的帧数($10$ million frames)要比baseline中training的frames($50$ million frames)少。</li>
+<li>DQN和linear function approximator比较<br>
+除了function approximator由CNN变成linear的，其他都没有变。<br>
+在$5$个validation games上，每个agent在三个不同的learning rates使用标准的参数训练了$10$ million frames。每隔$250000$个training frames对agent进行$135,000$ frames的validation，reported 最高的average episode score。 这些valuation episodes并没有在$5$ min的时候截断，这个实验中Enduro得到的score要比main evaluation中高。这个实验中training的帧数($10$ million frames)要比baseline中training的frames($50$ million frames)少。</li>
+</ul>
+<h2 id="gorila-dqn">Gorila DQN</h2>
+<p>论文名称：<br>
+Massively Parallel Methods for Deep Reinforcement Learning<br>
+下载地址：<br>
+<a href="https://arxiv.org/pdf/1507.04296.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1507.04296.pdf</a></p>
+<h3 id="experiments-v4">Experiments</h3>
+<h4 id="settings-v3">Settings</h4>
+<ul>
+<li>网络结构和nature DQN一样。</li>
+<li>使用了frame-skip，设置为$4$。</li>
+<li>Replay memory是$1$M&gt;</li>
+</ul>
+<h4 id="evaluation">Evaluation</h4>
+<p>Evaluation有两种：</p>
+<h5 id="null-op-starts">null op starts</h5>
+<p>每个agent在它训练的游戏上evaluated $30$个episodes，每个episode随机的至多执行$30$次no-op之后，评估$5$min的emulator时间($18000$ frames)。然后取这$100$次的平均值。</p>
+<h5 id="human-starts">human starts</h5>
+<p>Human starts是用来衡量它对于agent可能没有遇到过的state的泛化能力。对于每一个游戏，从一个人类玩家的gameplay中随机取$100$个开始点，使用$\epsilon$-greedy policy玩三十分钟emulator时间（即$108000$frames)。</p>
+<h2 id="double-dqn">Double DQN</h2>
+<h3 id="dqn中的overestimate问题">DQN中的overestimate问题</h3>
+<p>解决overestimate问题，Q-learning中在estimated values上进行了max操作，可能会导致某些更偏爱overestimated value而不是underestimated values。<br>
+本文将Double Q-learning的想法推广到了dqn上形成了double-dqn。实验结果表明了overestimated value对于policy有影响，double 会产生好的action value，同时在一些游戏上会得到更高的scores。</p>
+<h3 id="contributions">Contributions</h3>
+<ol>
+<li>解释了在large scale 问题上，Q-learning被overoptimistic的原因是学习固有的estimation errors。</li>
+<li>overestimation在实践中是很常见，也很严重的。</li>
+<li>Double Q-learning可以减少overoptimism</li>
+<li>提出了double-dqn。</li>
+<li>double-dqn在某些游戏上可以找到更好的policy。</li>
+</ol>
+<h3 id="double-q-learning">Double Q-learning</h3>
+<p>Q-learning算法计算target value $y$的公式如下：<br>
+$$y = r + \gamma \max_a’ Q(s’, a’|\theta_t)\tag{4}$$<br>
+在计算target value的时候，使用同一个网络选择和评估action $a’$，这可能会让网络选择一个overestimated value，最后得到一个overoptimistic value estimate。所有就有了double Q-learning，计算公式如下：<br>
+$$y = r + \gamma Q(s’, \arg\max_a’ Q(s’,a;\theta_t);\theta’_t)\tag{5}$$<br>
+target policy还是greedy policy，通过使用$\theta$对应的网络选择action，然后在计算target value的时候使用$\theta’$对应的网络。<br>
+原有的公式可以写成下式，<br>
+$$y = r + \gamma Q(s’, \arg\max_a’ Q(s’,a;\theta_t);\theta_t)\tag{6}$$<br>
+即选择action和计算target value都是使用的同一个网络。</p>
+<h3 id="double-dqn-v2">Double DQN</h3>
+<p><img src="/2019/03/02/rl-dqn/double-dqn.png" alt="double-dqn"><br>
+Double Q-learnign的做法是分解target action中的max opearation为选择和evaluation。而在Nature-dqn中，提出了target network，所以分别使用network和target network去选择和evaluation action是一个很好的做法，这样子公式就变成了<br>
+$$y = r + \gamma Q(s’, \arg\max_a’ Q(s’,a;\theta_t);\theta^{-}_t)\tag{7}$$<br>
+和Q-learnign相比，将$\theta’$换成了$\theta^{-}$ evaluate action，target network的更新和nature-dqn一样，过一段时间复制network的参数。</p>
+<h3 id="double-q-learning-vs-q-learning">Double Q learning vs Q-learning</h3>
+<p>可以在数学上证明，Q-learning是overestimation的，但是double q leraing是无偏的。。。证明留待以后再说。<br>
+<todo></todo></p>
+<h3 id="网络结构-v3">网络结构</h3>
+<p>网络结构和nature DQN一样。</p>
+<h3 id="算法-v3">算法</h3>
+<p>算法 3: Double DQN Algorithm.<br>
+输入: replay buffer $D$, 初始network参数$\theta$,target network参数$\theta^{-}$<br>
+输入 : replay buffer的大小$N_r$, batch size $N_b$, target network更新频率$N^{-}$<br>
+<strong>for</strong> episode $e \in {1, 2,\cdots, M}$ do<br>
+$\qquad$初始化frame sequence $\mathbf{x} \leftarrow ()$<br>
+$\qquad$<strong>for</strong> $t \in {0, 1, \cdots}$ do<br>
+$\qquad\qquad$设置state $s \leftarrow \mathbf{x}$, 采样 action $a \sim\pi_B$<br>
+$\qquad\qquad$给定$(s, a)$，从环境$E$中采样接下来的frame $x_t$,接收reward $r$,在序列$\mathbf{x}$上拼接$x$<br>
+$\qquad\qquad$<strong>if</strong> $|\mathbf{x}| \gt N_f$<br>
+$\qquad\qquad$<strong>then</strong><br>
+$\qquad\qquad\qquad$从$\mathbf{x}$中删除最老的frame $x_{t_min}$<br>
+$\qquad\qquad$设置$s’ \leftarrow \mathbf{x}$,添加transition tuple (s, a, r, s 0 ) 到buffer D中，如果$|D| \ge N_r$替换最老的tuple<br>
+$\qquad\qquad$采样$N_b$个tuples $(s, a, r, s’) \sim Unif(D)$<br>
+$\qquad\qquad$计算target values, one for each of $N_b$ tuples:<br>
+$\qquad\qquad$定义$a^{\max}(s’; \theta) = \arg \max_{a’} Q(s’, a’;\theta)$<br>
+$\qquad\qquad y_j = \begin{cases}r&amp;\qquad if\ \ s’\ \ is\ \ terminal\\ r+\gamma Q(s’, a^{\max}(s’;\theta);\theta^{-}, &amp;\qquad otherwise\end{cases}$<br>
+$\qquad\qquad$利用loss $||y_j − Q(s, a; \theta)||^2$的梯度更新<br>
+$\qquad\qquad$每隔$N^{-}$个步骤更新一下target network 参数$\theta^{-}$<br>
+$\qquad$<strong>end</strong><br>
+<strong>end</strong></p>
+<h3 id="experiments-v5">Experiments</h3>
+<h4 id="settings-v4">Settings</h4>
+<p>Tunned Double DQN，update frequency从$10000$改成了$30000$，训练时$\epsilon$在$1$ millon内从$0.1$退火到$0.01$。Evaluation时是$0.001$。</p>
+<h4 id="evaluation-v2">Evaluation</h4>
+<p>和Gorila DQN一样，用了两种：no-op和human starts。</p>
+<h4 id="training">Training</h4>
+<p>在每个游戏上，网络都训练了$200$M frames，也就是$50$M steps。每隔$1$M step进行一次evaluation，从evaluations中选出最好的policy作为输出。</p>
+<h4 id="metric">Metric</h4>
+<p>提出了一个指标，normalized score，计算公式如下：<br>
+$$score_{normalized} = \frac{score_{agent}- score_{random}}{score_{human}-score_{random}}\tag{8}$$<br>
+分母是human和random之差，对应$100%$。</p>
+<h2 id="prioritized-dqn-per">Prioritized DQN(PER)</h2>
+<h3 id="contributions-v2">contributions</h3>
+<p>本文提出一种了proritizing experience的框架，在训练过程中多次使用重要的transtions replay进行更新，让训练变得的更有效率。<br>
+使用TD-errors作为prioritization mechanism，给出了两种protitization计算方式，提出了一种stochastic prioritization以及importance sampling方法。</p>
+<h3 id="prioritized-replay">Prioritized replay</h3>
+<p>可以从两个维度上考虑replay memeory的改进，一个是存哪些experiences，一个是使用哪些experiences进行回放。本文是从第二个方向上进行的考虑。</p>
+<p>从buffer中随机抽样的方法中，update steps和memory size是线性关系，作者想找一个update steps和memory size是log关系的oracle，但是很遗憾，这是不现实的，所以作者想要找一种比uniform random replay好尽量接近oracle的方法。</p>
+<h4 id="prioritizion-with-td-error">Prioritizion with TD-error</h4>
+<p>prioritized replay最重要的部分是如何评价每一个transition的重要程度。一个理想的criterion是agent在当前的state可以从某个transition中学到多少。这个measure metric是不确定的，一个替代方案是使用TD error $\delta$，表示how ‘suprising’ 或者upexpected the transition：就是当前的value离next-step bootstrap得到的value相差多少，booststrap就是基于其他估计值进行计算。。这中方法对于incremental,online RL方法，例如SARSA以及Q-learning来说都是很合适的，因为他们会计算TD-error，然后给TD-error一个比例系数用来更新参数。然后当reward是noisy的时候，TD-error效果可能很差。<br>
+作者在一个人工设计的环境中使用了greedy TD-error prioritization算法，算法在每次存transition到replay buffer的时候，同时还会存一下该transition最新的TD-error，然后在更新的时候从memory中选择TD-error最大的transition。最新的transition TD-error没有算出来，就给它一个最大的priority，保证所有的experience都至少被看到过一次。<br>
+采用二叉堆用实现优先队列，查找复杂度是$O(1)$，更新priorities的复杂度是$O(logN)$。</p>
+<h4 id="stochastic-prioritization">Stochastic prioritization</h4>
+<p>上述方法有很多问题。第一，每次都sweep整个replay memory的计算量很大，所以只有被replayed的experiences的TD-errors才会被更新。开始时一个TD error很小的transition可能很长一段事件不会被replayed，这就导致了replay buffer的sliding window不起作用了。第二，TD-error对于noise spike很敏感，还会被bootstrap加剧，估计误差可能会是另一个noise。第三，greedy prioritization集中在experiences的一个subset：errors减小的很慢，尤其是使用function appriximation时，这就意味着初始的高error的transitions会被replayed的很频繁，然后会over-fitting因为缺乏diversity。<br>
+为了解决这些问题，引入了一个介于pure greedy prioritizaiton以及uniform random sampling之间的stochastic采样方法，priority高的transition有更大的概率被采样，而lowest-priority的transition也有概率被选中，具体的定义transition $i$的概率如下：<br>
+$$P(i) = \frac{p_i^{\alpha}}{\sum_kp_k^{\alpha}}\tag{9}$$<br>
+$\alpha$确定prioritizaiton的比重，如果$\alpha=0$就是unifrom。</p>
+<p>有两种$p_i$的计算方法，一种是直接的proportional prioritization，$p_i = |\delta_i| + \varepsilon$，其中$\varepsilon$是一个小的正整数，确定当$p_i=0$时，该transition仍能被replay；第二种是间接的，$p_i = \frac{1}{rank(i)}$，其中$rank(i)$是所有replay memory中的experiences根据$|\delta_i|$排序后的rank。第二种方法的鲁棒性更好。<br>
+在实现上，两种方法都有相应的trick，让复杂度不依赖于memory 大小$N$。Proportional prioritization采用了’sum-tree’数据结构，每一个节点都是它的子节点的children，priorities是leaf nodes。而rank-based方法，使用线性函数估计累计密度函数，具体怎么实现没有细看。</p>
+<h4 id="annealing-the-bias">annealing the bias</h4>
+<p>因为random sample方法，samples之间没有一点联系，选择每一个sample的概率都是相等的，但是如果加上了priority，就有一个bias toward高priority的samples。IS和prioritized replay的组合在non-learn FA中有一个用处，large steps可能会产生不好的影响，因为梯度信息可能是局部reliable，所以需要使用一个小点的step-size。<br>
+在本文中，high-error的样本可能会观测到很多次，使用IS减小gradient的大小，对应于高priority的samples的weight被微调了一下，而对应于低priority的样本基本不变。<br>
+weigth的计算公式如下：<br>
+$$w_i = (\frac{1}{N}\cdot \frac{1}{P(i)})^{\beta}\tag{10}$$<br>
+OK,这里IS的作用有些不明白。。。。<todo></todo></p>
+<h3 id="算法-v4">算法</h3>
+<p>算法 4<br>
+输入: minibatch $k$, 学习率（步长）$\eta$, replay period $K$ and size $N$ , exponents $\alpha$ and $\beta$, budget $T$.<br>
+初始化replay memory $H = \emptyset, \Delta = 0, p_1 = 1$<br>
+根据$S_0$选择 $A_0 \sim \pi_{\theta}|(S_0)$<br>
+<strong>for</strong> $t = 1,\cdots, T$ do<br>
+$\qquad$观测$S_t, R_t, \gamma_t$<br>
+$\qquad$存储transition $(S_{t−1}, A_{t−1}, R_t , \gamma_t, S_t)$ 到replay memory，以及$p_t$的最大priority $p_t = \max {i\lt t} p_i$<br>
+$\qquad$<strong>if</strong> $t ≡ 0$ mod $K$ then<br>
+$\qquad\qquad$<strong>for</strong> j = 1 to k do<br>
+$\qquad\qquad\qquad$Sample transition $j \sim P(j) = \frac{p_j^{\alpha}}{\sum_i p_i^{\alpha}}$<br>
+$\qquad\qquad\qquad$计算importance-sampling weight $w_j = \frac{(N \cdot P(j))^{\beta}}{\max_i w_i}$<br>
+$\qquad\qquad\qquad$计算TD-error $\delta_j = R_j + \gamma_j Q_{target} (S_j$, $arg \max_a Q(S_j, a)) − Q(S_{j−1} , A\ {j−1})$<br>
+$\qquad\qquad\qquad$更新transition的priority $p_j \leftarrow |\delta_j|$<br>
+$\qquad\qquad\qquad$累计weight-change $\Delta \leftarrow \Delta + w_j \cdot \delta_j \cdot \nabla_{\theta} Q(S_{j−1}, A_{j−1})$<br>
+$\qquad\qquad$<strong>end for</strong><br>
+$\qquad\qquad$更新weights $\theta\leftarrow \theta+ \eta\cdot\Delta$, 重置$\Delta = 0$<br>
+$\qquad\qquad$每隔一段时间更新target network $\theta_{target} \leftarrow \theta$<br>
+$\qquad$<strong>end if</strong><br>
+$\qquad$选择action $A_t \sim \pi_{\theta}(S_t)$<br>
+<strong>end for</strong></p>
+<h3 id="experiments-v6">Experiments</h3>
+<p>两组实验，<br>
+一组是DQN和proportional prioritization作比较。<br>
+一组是tuned Double DQN和rank-based以及proportional prioritizaiton。</p>
+<h4 id="metrics-v2">Metrics</h4>
+<p>用的是double dqn提出来的nomalized score，这里在分母上加了绝对值。<br>
+主要用的median scores和mean scores。</p>
+<h2 id="dueling-dqn">Dueling DQN</h2>
+<h3 id="介绍">介绍</h3>
+<p>本文作者提出来将dueling网络框架应用在model-free算法上。The dueling architecture能用一个deep model同时表示$V(s)$和优势函数$A(s,a)$，网络的输出将$V$和$A$结合产生$Q(s,a)$。和advantage不一样的是，这种方式在构建时就将他们进行了解耦，因此，dueling architecture可以应用在各种各样的model free RL算法上。<br>
+本文的架构是对算法创新的补充，它可以对之前已有的各种DQN算法进行结合。</p>
+<h3 id="dueling-network-architecture">dueling network architecture</h3>
+<p>这个新的architecture的核心想法是，没有必要估计所有states的action value。在一些states，需要action value去确定执行哪个action，但是在许多其他states，action values并没有什么用。当然，对于bootstrap算法来说，每一个state的value estimation都很重要。<br>
+<img src="/2019/03/02/rl-dqn/deuling-dqn.png" alt="dueling-dqn"><br>
+作者给出了一个single Q-network的architecture，如图所示。<br>
+网络结构和nature-dqn一样，但是这里加了两个fully connected layers，一个用于输出$V$，一个用于输出$A$。然后$A$和$V$结合在一起，产生$Q$，网络的输出和nature dqn一样，对应于某个state的一系列action value。<br>
+从$Q$函数的定义$Q^{\pi}(s,a) = V^{\pi}(s)+A^{\pi}(s,a)$以及$Q$和$V$之间的关系$V^{\pi}(s) = \mathbb{E}_{a\sim\pi(s)}\left[Q^{\pi}(s,a)\right] = \pi(a|s)Q^{\pi}(s,a)$，所以有$\mathbb{E}_{a\sim\pi(s)}\left[A^{\pi}(s,a)\right]=0$。此外，对于deterministic policy，$a^{*} = \arg \max_{a’\in A}Q(s,a’)$，有$V(s) = Q(s,a^{*})$，即$A(s,a^{*}) = 0$。<br>
+如图所示的network中，一个网络输出scalar $V(s;\theta, \beta)$，一个网络输出一个$|A|$维的vector $A(s,a;\theta, \alpha)$，其中$\theta$是网络参数，$\alpha$和$\beta$是两个全连接层的参数。<br>
+根据advantage的定义，可以直接将他们加起来，即：<br>
+$$Q(s,a;\theta, \alpha, \beta) = V(s;\theta, \beta) + A(s,a;\theta, \alpha) \tag{11}$$<br>
+但是，我们需要知道的一点是，$Q(s, a;\theta, \alpha, \beta)$仅仅是$Q$的一个参数化估计。它由两部分组成，一部分是$V$，一部分是$A$，但是需要注意的是，这里的$V$和$Q$只是我们叫它$V$和$A$，它的实际意义并不是$V$和$A$。给了$Q$，我们可以得到任意的$Q(s, a) = V(s) + A(s,a)$，而$V$和$Q$并不代表value function和advantage functino。<br>
+为了解决这个问题，作者提出了选择让advantage为$0$的action，即：<br>
+$$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alpha) - \max_{a’\in |A|}A(s, a’; \theta, \alpha)\right)\tag{12}$$<br>
+选择$a^{*} = \arg \max_{a’\in A} Q(s, a’; \theta, \alpha, \beta) = \arg \max_{a’\in A}A(s, a’;\theta, \alpha)$，我们得到$Q(s,a^{*}; \theta, \alpha,\beta) = V(s;\theta, \beta)$。这个时候，输出$V$的网络给出的真的是state value的估计$V(s;\theta, \beta)$，另一个网络真的给出的是advantage的估计。<br>
+另一种方法是用mean取代max操作：<br>
+$$Q(s, a; \theta,\alpha, \beta) = V(s; \theta, \beta) + \left(A(s,a;\theta,\alpha)- \frac{1}{|A|}\sum_{a’}A(s, a’; \theta, \alpha)\right)\tag{13}$$<br>
+一方面这种方法失去了$V$和$A$的原始语义，因为它们有一个常数的off-target，但是另一方面它增加了优化的稳定性，因为上式中advantage的改变只需要和mean保持一致即可，不需要optimal action’s advantange一有变化就要改变。</p>
+<h3 id="算法-v5">算法</h3>
+<h2 id="distributed-dqn">Distributed DQN</h2>
+<h2 id="noisy-dqn">Noisy DQN</h2>
+<h3 id="介绍-v2">介绍</h3>
+<p>已有方法的exploration都是通过agent policy的random perturbations，比如常见的$\varepsilon$-greedy等方法。这些方法不能找出环境中efficient exploration的behavioural patterns。常见的方法有以下几种:<br>
+第一种方法是optimism in the face of uncertainty，理论上证明可行，但是通常应用在state-action spaces很小的情况下或者linear FA，很难处理non-linearn FA，而且non-linear情况下收敛性没有保证。<br>
+另一种方法是添加额外的intrinsic motivation term，该方法的问题是将算法的generalisation mechanism和exploration分割开，即有instrinsic reward和environment reward，它们的比例如何去设置，需要认为指定。如果不仔细调整，optimal policy可能会受intrinsic reward影响很大。此外为了增加exploration的鲁邦性，扰动项仍然是需要的。这些算法很具体也能应用在参数化policy上，但是很低效，而且需要很多次policy evaluation。<br>
+本文提出NoisyNet学习网络参数的perturbations，主要想法是参数的一点改变可能会导致policy在很多个timsteps上的consistent，complex, state-dependent的变化，而如$\varepsilon$-greedy的dithering算法中，每一步添加到policy上的noise都是不相关的。pertubations从一个noise分布中进行采样，它的variance可以看成noise的energy，variance的参数和网络参数都是通过loss的梯度进行更新。网络参数中仅仅加入了噪音，没有distribution，可以自动学习。<br>
+在高维度上，本文的算法是一个randomised value function，这个函数是neural network，网络的参数并没有加倍，linear 的参数加倍，而参数是noise的一个简单变换。<br>
+还有人添加constant Gaussian niose到网络参数，而文本的算法添加的noise并不是限制在Gaussion noise distributions。添加noise辅助训练在监督学习等任务中一直都有，但是这些噪音都是不能训练的，而NoisyNet中的噪音是可以梯度下降更新的。</p>
+<h3 id="noisynets">NoisyNets</h3>
+<p><img src="/2019/03/02/rl-dqn/noisy_linear_layer.png" alt="noisy_linear_layer"><br>
+用$\theta$表示noisy net的参数，输入是$x$，输出是$y$，即$y=f_{\theta}(x)$。$\theta$定义为$\theta=\mu+\Sigma\odot\varepsilon$，其中$\zeta=(\mu,\Sigma)$表示可以学习的参数，$\varepsilon$表示服从固定分布的均值为$0$的噪音,$\varepsilon$是random variable。$\odot$表示element-wise乘法。最后的loss函数是关于$\varepsilon$的期望：$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，然后优化相应的$\zeta$，$\varepsilon$不能被优化，因为它是random variable。<br>
+一个有$p$个输入单元，$q$个输出单元的fully-connected layer表示如下：<br>
+$$y=wx+b \tag{14}$$<br>
+其中$w\in \mathbb{R}^{q\times p}$，$x\in \mathbb{R}^{p}$,$b\in \mathbb{R}^{q}$，对应的noisy linear layer定义如下：<br>
+$$y=(\mu^w+\sigma^w\odot\varepsilon^w)x + \mu^b+\sigma^b\odot\varepsilon^b \tag{15}$$<br>
+就是用$\mu^w+\sigma^w\odot\varepsilon^w$取代$w$，用$\mu^b+\sigma^b\odot\varepsilon^b$取代$b$。其中$\mu^w,\sigma^w\in \mathbb{R}^{q\times p} $，而$\mu^b,\sigma^b\in\mathbb{R}^{q}$是可以学习的参数，而$\varepsilon^w\in \mathbb{R}^{p\times q},\varepsilon^b \in \mathbb{R}^{q}$是random variable。<br>
+作者提出了两种添加noise的方式，一种是Independent Gaussian noise，一种是Factorised Gaussion noise。使用Factorised的原因是减少随机变量的计算时间，这些时间对于单线程的任务来说还是很多的。</p>
+<h4 id="independent-gaussian-noise">Independent Gaussian noise</h4>
+<p>应用到每一个weight和bias的noise都是independent的，对于$\varepsilon^w$的每一项$\varepsilon_{i,j}^w$来说，它们的值都是从一个unit Gaussion distribution中采样得到的；$varepsilon^b$同理。所以对于一个$p$个输入,$q$个输出的noisy linear layer总共有$pq+q$个noise 变量。</p>
+<h4 id="factorised-gaussian-noise">Factorised Gaussian noise</h4>
+<p>通过对$\varepsilon_{i,j}^w$来说，可以将其分解成$p$个$\varepsilon_i$用于$p$个输入和$q$个$\varepsilon_j$用于$q$个输出，总共有$p+q$个noiss变量。每一个$\varepsilon_{i,j}^w$和$\varepsilon_{j}^b$可以写成：<br>
+$$\varepsilon_{i,j}^w = f(\varepsilon_i)f(\varepsilon_j) \tag{16}$$<br>
+$$\varepsilon_{j}^b = f(\varepsilon_j)\tag{17}$$<br>
+其中$f$是一个实函数，在第一个式子中$f(x) = sng(x)\sqrt{|x|}$，在第二个式子中可以取$f(x)=x$，这里选择了和第一个式子中一致。<br>
+因为noisy network的loss函数是$\bar{L}(\zeta)=\mathbb{E}\left[L(\theta)\right]$，是关于noise的一个期望，梯度如下：<br>
+$$\nabla\bar{L}(\zeta)=\nabla\mathbb{E}\left[L(\theta)\right]=\mathbb{E}\left[\nabla_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon)\right] \tag{18}$$<br>
+使用Monte Carlo估计上述梯度，在每一个step采样一个sample进行optimization:<br>
+$$\nabla\bar{L}(\zeta)\approx\nabla_{\mu,\Sigma}L(\mu+\Sigma\odot\varepsilon) \tag{19}$$</p>
+<h3 id="noisy-dqn-and-dueling">Noisy DQN and dueling</h3>
+<p>相对于DQN和dueling DQN来说，noisy DQN and dueling主要做了两方面的改进：</p>
+<ol>
+<li>不再使用$\varepsilon$-greedy behaviour policy了，而是使用greedy behaviour policy采样优化randomised action-value function。</li>
+<li>网络中的fully connected layers全都换成了参数化的noisy network，noisy network的参数在每一次replay之后从noise服从的distribution中进行采样。这里使用的nose是factorised Gaussian noise。</li>
+</ol>
+<p>在replay 整个batch的过程中，noisy network parameter sample保持不变。因为DQN和Dueling每执行一个action step之后都会执行一次optimization，每次采样action之前都要重新采样noisy network parameters。</p>
+<h4 id="loss">Loss</h4>
+<p>$Q(s,a,\epsilon;\zeta)$可以看成$\zeta$的一个random variable，NoisyNet-DQN loss如下：<br>
+$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}_{(x,a,r,y)}\sim D\left[r + \gamma \max_{b\in A}Q(y, b, \varepsilon’;\zeta^{-}) - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{20}$$<br>
+其中外层的期望是$\varepsilon$相对于noisy value function $Q(x,a, \varepsilon;\zeta)$和$\varepsilon’$相对于noisy target value function $Q(x,a, \varepsilon’;\zeta^{-}$。对于buffer中的每一个transition，计算loss的无偏估计，只需要计算target value和true value即可，为了让target value和true之间没有关联，target network和online network采用independent noises。<br>
+就double dqn中的action选择来说，采样一个新的independent sample $\varepsilon^{’’}$计算action value，然后使用greedy操作，NoisyNet-Dueling的loss如下：<br>
+$$\bar{L}(\zeta) = \mathbb{E}\left[\mathbb{E}_{(x,a,r,y)}\sim D\left[r + \gamma Q(y, b^{*}(y), \varepsilon’;\zeta^{-} - Q(x,a,\varepsilon;\zeta)\right]^2\right]\tag{21}$$<br>
+$$b^{*}(y) = \arg \max_{b\in A} Q(y, b(y), \varepsilon^{’’};\zeta)\tag{22}$$</p>
+<h3 id="noisy-a3c">Noisy-A3C</h3>
+<p>Noisy-A3C相对于A3C有以下的改进：</p>
+<ol>
+<li>entropy项被去掉了;</li>
+<li>fully-connected layer被替换成了noisy network。</li>
+</ol>
+<p>A3C算法中没有像$\epsilon$-greedy这样进行action exploration，选中的action通常是从current policy中选的，加入entropy是为了鼓励exploration，而不是选择一个deterministic policy。当添加了noisy weights时，对参数进行采样就表示选择不同的current policy，就已经代表了exploration。NoisyNet相当于直接在policy space中进行exploration，而entropy项就可以去掉了。</p>
+<h3 id="noisy-networks的初始化">Noisy Networks的初始化</h3>
+<p>在unfactorised noisy networks中，每个$\mu_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{3}{p}}, \sqrt{\frac{3}{p}}\right]$中采样初始化，其中$p$是对应linear layer的输入个数，$\sigma_{i,j}$设置为一个常数$0.0017$，这是从监督学习的任务中借鉴的。<br>
+在factorised noisy netowrks中，每个$\mu_{i,j}$从独立的均匀分布$U\left[-\sqrt{\frac{1}{p}}, \sqrt{\frac{1}{p}}\right]$中进行采样，$\sigma_{i,j}$设置为$\frac{\sigma_0}{p}$，超参数$\sigma_0$设置为$0.5$。</p>
+<h3 id="算法-v6">算法</h3>
+<p>算法5 NoisyNet-DQN / NoisyNet-Dueling<br>
+输入: Env Environment; $\varepsilon$ random variables of the network的集合<br>
+输入: DUELING Boolean; &quot;true&quot;代表NoisyNet-Dueling and &quot;false&quot;代表 NoisyNet-DQN<br>
+输入: $B$空replay buffer; $\zeta$初始的network parameters; $\zeta^{-}$初始的target network parameters<br>
+输入: replay buffer大小$N_B$; batch size $N_T$; target network更新频率$N^{-}$<br>
+输出: $Q(\cdot, \varepsilon; \zeta)$ action-value function<br>
+<strong>for</strong> episode $e\in  {1,\cdots , M}$ do<br>
+$\qquad$初始化state sequence $x_0 \sim Env$<br>
+$\qquad$<strong>for</strong> $t \in {1,\cdots }$ do<br>
+$\qquad\qquad$设置$x \leftarrow x_0$<br>
+$\qquad\qquad$采样 a noisy network  $\xi\sim \varepsilon$<br>
+$\qquad\qquad$选择an action $a \leftarrow \arg \max_{b\in A} Q(x, b, \xi; \zeta)$<br>
+$\qquad\qquad$采样 next state $y \sim  P (\cdot|x, a)$, 接收 reward $r \leftarrow R(x, a) $以及$x_0 \leftarrow y$<br>
+$\qquad\qquad$将transition (x, a, r, y)添加到replay buffer<br>
+$\qquad\qquad$<strong>if</strong> $|B| \gt N_B$ then<br>
+$\qquad\qquad\qquad$删掉最老的transition<br>
+$\qquad\qquad$<strong>end if</strong><br>
+$\qquad$采样一个大小为$N_T$的batch, transitions $((x_j, a_j, r_j, y_j) \sim D)_{j=1}^{N_T}$<br>
+$\qquad\qquad$采样noisy variables用于online network $\xi \sim\varepsilon$<br>
+$\qquad\qquad$采样noisy variables用于target network $\xi’\sim\varepsilon$<br>
+$\qquad\qquad\qquad$<strong>if</strong> DUELING then<br>
+$\qquad\qquad\qquad$采样noisy variables用于选择action的network $\xi\sim\varepsilon$<br>
+$\qquad\qquad$<strong>end if</strong><br>
+$\qquad\qquad$<strong>for</strong> $j \in {1,\cdots, N_T}$ do<br>
+$\qquad\qquad\qquad$<strong>if</strong> $y_j$ is a terminal state then<br>
+$\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j$<br>
+$\qquad\qquad\qquad$<strong>end if</strong><br>
+$\qquad\qquad\qquad$<strong>if</strong> DUELING then<br>
+$\qquad\qquad\qquad\qquad b^{*}(y_j) = \arg \max_{b\in A} Q(y_j, b, \xi^{’’}; \zeta)$<br>
+$\qquad\qquad\qquad\qquad\qquad \hat{Q}\leftarrow r_j + \gamma Q(y_j, b^{*}(y_j), \xi’;\zeta^{-})$<br>
+$\qquad\qquad\qquad$<strong>else</strong><br>
+$\qquad\qquad\qquad\qquad$$\hat{Q}\leftarrow r_j + \gamma \max_{b\in A} Q(y_j, b, \xi’;\zeta^{-})$<br>
+$\qquad\qquad$<strong>end if</strong><br>
+$\qquad\qquad\qquad$利用loss $(\hat{Q}-Q(x_j,a_j, \xi;\zeta))^2$的梯度更新$\zeta$<br>
+$\qquad\qquad$<strong>end for</strong><br>
+$\qquad\qquad$每隔$N^{-}$步更新target network:$ \zeta^{−}\leftarrow \zeta$<br>
+$\qquad$<strong>end for</strong><br>
+<strong>end for</strong></p>
+<p>算法6 NoisyNet-A3C for each actor-learner thread<br>
+输入: Environment Env, 全局共享参数$(\zeta_{\pi},\zeta_{V})$ , 全局共享counter $T$和maximal time $T_{max}$<br>
+输入: 每个线程的参数 $(\zeta’_{\pi},\zeta’_{V})$, random variables $\varepsilon$的集合, 每个线程的counter $t$和TD-$\gamma$的长度$t_{max}$<br>
+输出: policy $\pi(\cdot; \zeta_{\pi}, \varepsilon)$和value $V(\cdot; \zeta_{V}, \varepsilon)$<br>
+初始化线程counter $t \leftarrow 1$<br>
+<strong>repeat</strong><br>
+$\qquad$重置acumulative gradients: $d\zeta_{\pi}\leftarrow 0$和$d\zeta_V \leftarrow 0$<br>
+$\qquad$Synchronise每个线程的parameters: $\zeta’_{\pi}\leftarrow \zeta_{\pi}$和$\zeta_V\leftarrow \zeta_V$<br>
+$\qquad$counter $\leftarrow 0$<br>
+$\qquad$从Env中得到state $x_t$<br>
+$\qquad$采样noise: $\xi\sim\varepsilon$<br>
+$\qquad r \leftarrow []$<br>
+$\qquad a \leftarrow []$<br>
+$\qquad x \leftarrow []$和$x[0] \leftarrow x_t$<br>
+$\qquad$<strong>repeat</strong><br>
+$\qquad\qquad$采样action: $a_t \sim\pi(\cdot|x_t;\zeta’_{\pi};\xi)$<br>
+$\qquad\qquad$$a[−1]\leftarrow a_t$<br>
+$\qquad\qquad$接收reward $r_t$和next state $x_{t+1}$<br>
+$\qquad\qquad$$r[−1]\leftarrow r_t$和$x[−1]\leftarrow x_t+1$<br>
+$\qquad\qquad$$t\leftarrow t + 1$和 $T\leftarrow T + 1$<br>
+$\qquad\qquad$$counter = counter + 1$<br>
+$\qquad\qquad$<strong>until</strong> $x_t\ \ terminal\ \ or\ \ counter == t_{max} + 1$<br>
+$\qquad$<strong>if</strong> $x_t$ is a terminal state then<br>
+$\qquad\qquad$$Q = 0$<br>
+$\qquad$<strong>else</strong><br>
+$\qquad\qquad$$Q = V(x_t; \zeta’_{V}, \xi)$<br>
+$\qquad$<strong>end if</strong><br>
+$\qquad$<strong>for</strong> $i \in {counter − 1, \cdots, 0}$ do<br>
+$\qquad\qquad$更新Q: $Q\leftarrow r[i] + \gamma Q$<br>
+$\qquad\qquad$累积policy-gradient: $d\zeta_{\pi} \leftarrow d\zeta_{\pi} + \nabla \zeta’_{\pi}log(\pi(a[i]|x[i]; \zeta’_{\pi}, \xi))[Q − V(x[i]; \zeta’_{\pi}V, \xi)]$<br>
+$\qquad\qquad$累积 value-gradient: $d\zeta_V \leftarrow ← d\zeta_V+ \nabla \zeta’_{V}[Q − V(x[i]; \zeta’_{V}, \xi)]^2$<br>
+$\qquad$<strong>end for</strong><br>
+$\qquad$执行$\zeta_{\pi}$的asynchronous update: $\zeta_{\pi}\leftarrow \zeta_{\pi} + \alpha_{\pi}d\zeta_{\pi}$<br>
+$\qquad$执行$\zeta_{V}$的asynchronous update: $\zeta_{V}\leftarrow \zeta_{V} − \alpha_VdV\zeta_{V}$<br>
+<strong>until</strong> $T \gt T_{max}$</p>
+<h2 id="rainbow">Rainbow</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://blog.csdn.net/yangshaokangrushi/article/details/79774031" target="_blank" rel="noopener">https://blog.csdn.net/yangshaokangrushi/article/details/79774031</a><br>
+2.<a href="https://link.springer.com/article/10.1007%2FBF00992698" target="_blank" rel="noopener">https://link.springer.com/article/10.1007%2FBF00992698</a><br>
+3.<a href="https://www.jianshu.com/p/b92dac7a4225" target="_blank" rel="noopener">https://www.jianshu.com/p/b92dac7a4225</a><br>
+4.<a href="https://datascience.stackexchange.com/questions/20535/what-is-experience-replay-and-what-are-its-benefits/20542#20542" target="_blank" rel="noopener">https://datascience.stackexchange.com/questions/20535/what-is-experience-replay-and-what-are-its-benefits/20542#20542</a><br>
+5.<a href="https://stats.stackexchange.com/questions/897/online-vs-offline-learning" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/897/online-vs-offline-learning</a><br>
+6.<a href="https://www.freecodecamp.org/news/improvements-in-deep-q-learning-dueling-double-dqn-prioritized-experience-replay-and-fixed-58b130cc5682/" target="_blank" rel="noopener">https://www.freecodecamp.org/news/improvements-in-deep-q-learning-dueling-double-dqn-prioritized-experience-replay-and-fixed-58b130cc5682/</a><br>
+7.<a href="https://jaromiru.com/2016/11/07/lets-make-a-dqn-double-learning-and-prioritized-experience-replay/" target="_blank" rel="noopener">https://jaromiru.com/2016/11/07/lets-make-a-dqn-double-learning-and-prioritized-experience-replay/</a><br>
+8.<a href="https://datascience.stackexchange.com/questions/32873/prioritized-replay-what-does-importance-sampling-really-do" target="_blank" rel="noopener">https://datascience.stackexchange.com/questions/32873/prioritized-replay-what-does-importance-sampling-really-do</a><br>
+9.<a href="https://papers.nips.cc/paper/5249-weighted-importance-sampling-for-off-policy-learning-with-linear-function-approximation.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/5249-weighted-importance-sampling-for-off-policy-learning-with-linear-function-approximation.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/29/Modeling-Others-using-Oneself-in-Multi-Agent-Reinforcement-Learning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/29/Modeling-Others-using-Oneself-in-Multi-Agent-Reinforcement-Learning/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">Modeling Others using Oneself in Multi-Agent Reinforcement Learning</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-29 13:19:33" itemprop="dateCreated datePublished" datetime="2019-01-29T13:19:33+08:00">2019-01-29</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:43:35" itemprop="dateModified" datetime="2019-12-17T15:43:35+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="摘要">摘要</h2>
+<p>我们考虑使用不完全信息的多智能体强化学习问题，每个智能体的目标是最大化自身的效用。奖励函数取决于两个智能体的隐藏状态（或者目标），每一个智能体必须从它观察到的行为中推断出其他玩家的隐藏目标从而完成任务。我们提出了一种新的方法在这些领域中进行学习：自我其他建模（SOM），智能体使用自己的策略来预测其他智能体的动作并实时更新其他智能体隐藏状态的置信度。我们在三个不同的任务上对该方法进行了评估，结果表明智能体无论在合作还是对抗环境中都能使用他们对其他玩家隐藏状态的估计来学习到更好的策略。</p>
+<h2 id="引言">引言</h2>
+<p>在多智能体系统中推理其他智能体的意图并预测它们的行为是很重要的，这些智能体可能有不同的甚至是竞争的目标集。由于多智能体系统的不稳定性，这仍然是一个非常具有挑战性的问题。<br>
+在本文中，我们介绍了一种从其他智能体的行为中估计对应的未知的目标和并利用这些估计的目标选择动作的新方法。我们证明了在本文提到的任务中，在游戏中显式的对其他玩家进行建模比将其他智能体看做环境的一部分会有更好的性能。我们将问题定义为双人随机游戏，也叫双人马尔可夫游戏，其中环境对于智能体是完全可见的，但是没有关于其他智能体目标的明确知识而且没有沟通信道。每个智能体在回合结束时收到的奖励取决于两个智能体的目标，因此是每个智能体最优的策略都必须考虑到所有智能体的目标。<br>
+认知科学研究表明，人类维持与他们联系的其他人的模型，这些模型用来捕捉那些人的目标，信仰或偏好。在某些情况下，人类利用自己的心理过程来模拟他人的行为。这使他们能够理解其他人的意图或动机，并能在社交场合采取相应的行动。受这些研究的启发，关键想法是要理解游戏中其他玩家正在做什么，智能体应该问自己“如果我扮演另一个玩家的角色，我的目标是什么？”。我们通过使用一个多层循环神经网络参数化智能体的动作和值函数来实现这个想法，该神经网络将状态和目标作为输入。当智能体玩游戏时，它通过直接使用自己的动作函数优化目标来最大化对方行动的可能性，从而推断出其他智能体的未知目标。</p>
+<h2 id="方法">方法</h2>
+<p><strong>背景</strong> 两个智能体的马尔可夫游戏由描述所有智能体的可能配置的一组状态集合$S$，两组动作集合$A_1$，$A_2$和两个智能体的观察$O_1$，$O_2$以及转换函数$\Tau$：$S\times A_1 \times A_2 \rightarrow S$作为当前状态和动作的函数给出下一个状态的概率分布。每个智能体$i$通过从随机策略$\pi_{\theta_i}:S\times A_i\rightarrow [0,1]$中采样选择动作。每个智能体都有一个奖励函数，它取决于智能体的状态和动作：$r_i：S\times A_i\rightarrow R$。每个智能体$i$试图最大化自己的总预期收益$R_i = \sum_{t =0}<sup>T\gamma</sup>tr_i^t$，其中$\gamma$是折扣因子，$T$是时间范围。在本文中，我们考虑了合作以及竞争环境。<br>
+接下来介绍自我其他模型（SOM），这是一种在一个回合内以实时方式推断其他智能体的目标并使用这些估计来选择动作的新方法。为了决定一个动作并估计一个状态的值，我们使用一个神经网络$f$将它自己的目标$z_{self}$，另一个玩家的估计目标$\hat{z}<em>{self}$，并且他自己的角度的观察状态$s</em>{self}$作为输入，输出动作$\pi$的一个概率分布和值估计$V$，即对于每个玩游戏的智能体，有：<br>
+$$\begin{bmatrix}\pi<sup>i\V</sup>i\end{bmatrix}=f<sup>i(s_{self}</sup>i,z_{self}<sup>i,\hat{z}_{other}</sup>i;\theta^i)$$<br>
+其中$\theta_i$是智能体$i$的神经网络$f$的参数，包括一个softmax层输出策略，一个线性层输出值函数，所有非输出层是共享的。动作是从策略$\pi$中采样得到的。观察状态$s_{self}<sup>i$包含$f</sup>i$智能体的位置，以及其他智能体的位置。每个智能体都有两个网络（为了简洁，省略了智能体上标$i$），一个计算它自己的动作和值函数，一个计算其他智能体的估计值，如下：<br>
+\begin{equation}<br>
+f_{self}(s_{self},z_{self},\hat{z}<em>{other};\theta</em>{self})<br>
+\end{equation}<br>
+\begin{equation}<br>
+f_{other}(s_{other},\hat{z}<em>{other},z</em>{self};\theta_{self})<br>
+\end{equation}<br>
+这两个网络使用的方式不同：$f_{self}$用于计算智能体自己的行为和价值，并以前馈方式运行。给出其他智能体观察到的动作，智能体使用$f_{other}$通过优化$\hat{z}<em>{other}$推断其他智能体的目标。<br>
+我们建议每个智能体使用自己的策略模拟其他玩家的行为，这样$f</em>{other}$的参数与$f_{self}$的参数是相同的。但请注意，两个网络的输入$z_{self}$和$\hat{z}<em>{other}$的相对位置不同。另外，由于环境是完全可观测的，两个智能体的观察状态的不同仅通过地图上智能体的身份体现出来（即，每个智能体将能够区分其自己的位置和另一个智能体的位置）。因此，在acting模式下，$f</em>{self}$网络将$s_{self}$作为输入；在推理模式下，$f_{other}$网络将$s_{other}$作为输入。在游戏的每一步，智能体需要推理$\hat{z}<em>{other}$将其作为(1)的输入并选择其动作。为了实现这个目的，在每一步中，智能体观察另一个智能体采取的行动，并且在下一步中，智能体使用先前观察到的另一个智能体的动作作为监督信号，使用式子(2)反向传播并优化其$\hat{z}</em>{other}$，如图1所示。<br>
+推理过程优化器中采取的步数是一个可根据游戏的不同而变化的超参数。因此，在游戏的每一步中其他智能体的目标估计$\hat{z}<em>{other}$会被更新多次。参数$\theta</em>{self}$在每个回合结束时使用和带有智能体获得的奖励信号的Asynchronous Advantage Actor-Critic（A3C）进行更新。<br>
+算法1给出了一个回合内训练SOM智能体的伪代码。这里考虑的所有任务的目标都是离散的，智能体的目标$\hat{z}<em>{self}$被<br>
+表示独热向量，维度是智能体目标所有可能的情况数。另一个玩家的目标嵌入$\hat{z}</em>{other}$有相同的维度。为了估计经过离散而不可微的变量$\hat{z}<em>{other}$的梯度，我们用Gumbel-Softmax分布上的一个可微样本$\hat{z}</em>{other}^G$代替它。这种重新参数化技巧被证明可以有效地产生低方差偏置的梯度。使用该方法在每一步优化过$\hat{z}<em>{other}$之后，$\hat{z}</em>{other}$通常偏离独热向量。在下一步中，$f_{self}$将对应于先前更新的$z_{other}$ argmax的一个独热向量量$\hat{z}<em>{other}^OH$作为输入。<br>
+智能体的策略由长短期记忆（LSTM）单元参数化，以及两个全连接的线性层和指数线性单元（ELU）激活函数。神经网络的权重用半正交矩阵初始化。<br>
+由于$f</em>{other}$的循环性，当推理步数$\gt 1$时必须特别小心。在这种情况下，在游戏的每一步中，我们在推理模式中的第一次前向传播之前保存$f_{other}$的循环状态，并且在每个推理步骤将循环状态初始化为此值。这个过程可以确保在动作和推理模式下$f_{other}$可以展开相同数量的步骤。</p>
+<h2 id="相关工作">相关工作</h2>
+<p>不完全信息的游戏中对手建模一直在被广泛研究。但是，大多数以前的方法都侧重于研究特定领域内的概率先验或参数化策略的模型。相比之下，本文的工作为对手建模提出了一个更通用的框架。给定比赛历史，Davidson使用MLP预测对手的动作，但是智能体无法实时适应对手的行为。Lockett等人设计了一种神经网络结构，通过在给定的一组主要对手上学习权重的值来识别对手类型。然而，游戏并没有在强化学习框架内展开。<br>
+大量多智能体深度强化学习的研究中侧重于部分可见的，完全合作和紧急通信等环境。本文不允许智能体之间进行任何沟通，因此玩家必须利用他们观察到的行为间接推理他们对手的意图。作为对比，Leibo等考虑半合作多智能体环境，智能体根据任务类型和奖励结构制定合作和竞争策略。类似地，Lowe等人提出了一种集中AC框架，用于在具有混合策略的环境中进行高效的训练。 Lerer和Peysakhovich通过将针锋相对的著名游戏理论策略推广到多智能体马尔可夫游戏，设计了能够在复杂社会困境中保持合作的强化学习智能体。最近认知科学方面的工作试图通过使用分层的社会智能体模型来理解人类的决策，它能推断出其他人类智能体的意图，从而决定是否采取合作或竞争策略。然而，这些论文都没有设计出能够显式模拟环境中其他人工智能体或者估计他们意图的算法来改善智能体的决策。<br>
+逆强化学习领域也与本文考虑的问题有关。逆强化学习的目的是通过观察智能体的行为来推断智能体的奖励函数。相反，我们的方法使用观察到其他玩家的行为以在线方式直接推断他们的目标，然后在环境的acting模式中由智能体使用。这避免为了估计奖励函数收集其他智能体状态-动作对离线样本的需要，然后使用它来学习最大化该效用的单独策略。最近Hadfield-Menell等的论文也关注推理他人意图的问题，但他们关注的是人机交互和价值调整。在类似目标的推动下，Chandrasekaran等人考虑建立人工智能理论的问题，以改善人工智能交互和人工智能系统的可解释性。为了这个目标，他们展示了可以使用少量示例训练人们预测视觉问答模型的响应。<br>
+Foerster等人和He等人的工作与我们的工作最接近。Foerster等人设计强化学习智能体在更新自己的策略时同时考虑到环境中其他智能体的学习。这使得智能体能够发现自私而又协作的策略，例如在迭代囚徒困境中的针锋相对策略。虽然我们的工作没有明确地试图塑造其他智能体的学习，但它的优点是智能体可以在一个回合中更新他们的信念并以在线方式更新策略以获得更多奖励。我们的设置也有所不同，它认为每个智能体都有一些其他玩家所需的隐藏信息，以便最大化其回报。<br>
+我们的工作非常符合He等人的工作，作者构建了一个用于在强化学习环境中构建其他智能体的一般框架。He等人提出了一个模型，通过将对手的观察使用DQN进行编码，共同学习一个策略和对手的行为对手。他们的混合专家架构能够在两个纯对抗性任务中发现不同对手的策略模式。我们的工作与He等人的工作之间的一个区别在于，我们的目标不是推断其他智能体的策略，而是专注于显式估计他们在环境中的目标。此外，在这项工作中，智能体不是使用其他智能体动作的人工设计特征，而是根据自己的模型端到端的学习其他智能体模型。另一个区别是，在这项工作中，智能体使用优化推断其他智能体的隐藏状态，而不是通过前馈网络推断其他智能体的隐藏状态。在下面的实验中，我们表明SOM优于He等人的方法。</p>
+<h2 id="实验">实验</h2>
+<p>在本节中，我们在三个任务上评估SOM模型：</p>
+<ul>
+<li>硬币游戏，这是一个完全合作的任务，智能体的角色是对称的。</li>
+<li>配方游戏，它是对抗的，但具有对称角色。</li>
+<li>门禁游戏，它是完全合作的，但是两个玩家拥有不对称的角色。</li>
+</ul>
+<p>我们将SOM与其他三个baselines以及一个可以访问其他智能体目标的ground truth的模型进行比较。所有任务都是在Mazebase gridworld环境中创建的。</p>
+<h3 id="baselines">Baselines</h3>
+<p>TRUE-OTHER-GOAL（TOG）：我们提供了一个给出的模型性能上限的策略网络，该网络将其他智能体的真正目标$z_{other}$，以及状态特征$s_{self}$和自己的目标$z_{self}$作为输入。因为这个模型可以直接访问其他智能体真正的目标，因此不需要单独的网络来模拟其他智能体的行为。 TOG的结构与SOM的一个策略网络$f_{self}$相同。 NO-OTHER-MODEL（NOM）：我们使用的第一个baseline仅使用观察状态$s_{self}$和自身目标$z_{self}$作为输入。NOM与SOM的一个策略网络$f_{self}$有相同的架构。该baseline没有对其他智能体的显式建模或估计它们的目标。<br>
+集成-策略-预测器（IPP）：从NOM的体系结构和输入开始，我们构建了一个更强的baseline IPP，它有一个额外的最终线性层输出另一个智能体下一个动作的概率分布。除了用于训练该网络策略的A3C损失函数，我们还添加交叉熵损失项训练其他智能体的行为的预测。<br>
+分离-策略-预测器（SPP）：He等人提出了一个基于DQN的对手建模框架。在他们的方法中，给定对手特有的人工提取的状态信息，训练一个神经网络预测对手的动作。该网络的中间隐藏表示用作Q网络的输入。<br>
+我们修改了He等人的模型应用到本文的场景中。特别的，我们使用A3C而不是DQN，我们不使用特定领域的特征表示对手的隐藏状态。<br>
+最后产生的SPP模型由两个独立的网络组成，一个策略网络用于决定智能体的动作，一个对手网络用于预测其他智能体的动作。对手网络将世界状态$s$和自己的目标$z_{self}$作为输入，并输出其他智能体在下一步采取动作的概率分布，以及其隐藏状态（由网络的循环给出）。与IPP一样，我们使用其他智能体的真实动作训练对手策略预测器的交叉熵损失。在每一步中，该网络输出的隐藏状态以及智能体观察状态和智能体自身的目标被作为智能体的策略网络的输入。策略网络和对手策略预测器都是与SOM结构相同的LSTM网络。<br>
+与SOM作对比，SPP没有显式推断出其他智能体的目标。相反，它通过预测智能体在每个时间步的动作来隐式的构建对手模型。在SOM中，一个参考的目标作为策略网络的附加输入。而在SPP，类似的参考目标是从对手策略预测器得到的隐藏表示，把它作为策略网络的附加输入。<br>
+<strong>训练细节</strong>。在我们的所有实验中，我们使用系数为$0.01$的熵，价值损失系数为$0.5$，折扣系数为$0.99$的A3C训练智能体的策略。使用Adam优化智能体商策略的参数，其中$\beta_1= 0.9,\beta_2= 0.999,\epsilonn =1\times 10^{-8}$，权重衰减为$0$。学习率为$0.1$的SGD用于推断另一个智能体的目标，$\hat{z}_{other}$。<br>
+硬币和食谱游戏中策略网络的隐藏层维度为$64$，门游戏中为$128$。所有游戏和模型的学习率都是$1\times 10^{-4}$。<br>
+观测状态$s$用一些独热向量表示，包括环境中所有物体的位置，以及智能体和另一个智能体的位置。这个输入状态的维度是$1\times n$特征，其中Coin，Recipe和Door游戏的特征数分别为$384$,$192$和$900$。对于每个实验，我们使用5个不同的随机种子训练模型。除非特殊说明，否则论文中展示的所有游戏结果都是每步进行的10次优化更新的结果。</p>
+<!--
+### 硬币游戏。
+首先，我们在一个完全合作的任务上评估模型，在这个任务中，当智能体使用他们两个的目标而不仅仅是他们自己的目标时，他们可以获得更多的奖励。因此，估计其他玩家的目标并在采取行动时使用该信息符合每个智能体人的最佳利益。如图4的左图所示，游戏在8×8网格上进行，该网格包含12个3种不同颜色的硬币（每种颜色4个硬币）。在每集开始时，智能体被随机分配三种颜色中的一种。动作空间包括：上，下，左，右或通过。一旦智能体人踩到硬币，那个硬币就会从网格中消失。游戏在20个步骤后结束（即每个智能体需要10个步骤）。两名特工在比赛结束时收到的奖励由下面的公式给出：
+2），其他n其他Cself是自我目标颜色的硬币数量，由其他智能体人收集，而n self Cneither是与自己收集的智能体人目标相对应的硬币数量。对于图4中的示例，智能体1具有Cself =橙色和Cother =青色，而智能体2的Cself是青色而Cother是橙色。对于两种药剂，两者都是红色的。
+收集不符合任何智能体人目标的硬币的惩罚的作用是避免收敛到暴力政策，在这种政策中，智能体人可以通过收集其附近的所有硬币而获得不可忽视的奖励金额，而不是关于他们的颜色。为了最大化其回报，每个智能体人需要收集自己的硬币或其合作者的颜色，而不是剩余颜色的硬币。因此，当两个智能体人能够在游戏中尽可能早地高精度地推断其合作者的目标时.
+-->
+<h2 id="讨论">讨论</h2>
+<p>在本文中，我们介绍了一种新方法，用于从其他智能体的行为中推断他们的隐藏状态，并使用这些估计来选择动作。我们证明了智能体能够在合作和竞争环境中估计其他参与者的隐藏目标，这使他们能够收敛到更好的政策并获得更高的回报。在本文提出的任务中，对其他智能体的显式建模比仅仅考虑其他代理成为环境的一部分更好的性能。 	SOM的一个限制是它比其他baseline需要更长的训练时间，因为我们在每一步都进行了反向传播。但是，它的online更新方式对于适应环境中其他智能体的动作变化至关重要。SOM的一些主要优点是简单性和灵活性，它不需要任何额外参数来模拟环境中的其他代理，可以使用任何强化学习算法进行训练，并且可以轻松地与任何策略参数化或网络结构集成。SOM可以适应具有两个以上智能体的环境，因为智能体可以使用自己的策略来模拟任意数量的智能体的动作并推断其目标。而且，它可以很容易地推广到许多不同的环境和任务。<br>
+我们计划通过评估更复杂环境中的模型来扩展这项工作，包括两个以上的参与者，混合策略，更多样化的智能体类型（例如具有不同动作空间的智能体，奖励函数，角色或策略），以及假设其他玩家和自己一样的模型偏差。<br>
+未来研究的其他重要途径是设计能够适应环境中其他智能体非平稳策略的模型，处理具有分层目标的任务，并在测试时遇到新智能体时表现良好。<br>
+最后，许多研究领域可以从拥有其他智能体的模型中受益，这些智能体能够推理其他智能体的意图并预测他们的动作。这些模型可能对人机或师生互动，以及价值对齐问题有恒大帮助。此外，这些方法可用于多智能体任务中基于模型的强化学习，因为前向模型的准确性很大程度上取决于预测其他智能体动作的能力。</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/26/Policy-Gradient-With-Value-Function-Approximation-For-Collective-Multiagent-Planning/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/26/Policy-Gradient-With-Value-Function-Approximation-For-Collective-Multiagent-Planning/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">Policy Gradient With Value Function Approximation For Collective Multiagent Planning</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-26 19:33:50" itemprop="dateCreated datePublished" datetime="2019-01-26T19:33:50+08:00">2019-01-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 16:21:06" itemprop="dateModified" datetime="2019-12-17T16:21:06+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="摘要">摘要</h2>
+<p>分布式的部分可观测马尔科夫决策过程(Dec POMDP)为解决多智能体系统中的序列决策问题提供了一个框架。考虑到POMDP的计算复杂度，最近的研究主要集中在Dec-POMDP中一些易于处理但是比较实用的子问题。本文解决的就是其中的一个子问题叫做CDec-POMDP其中一系列智能体的共同行为影响了它们公共的reward和环境变化。本文的主要贡献是提出了一个actor-critic(AC)强化学习算法优化CDec-POMDP问题的policy。普通的AC算法对于大型问题收敛的很慢，为了解决这个问题，本文展示了如何将智能体的估计动作值函数进行分解从而产生有效的更新以及推导出一个基于局部奖励信号的新的critic训练方式。通过在一个合成的benchmark以及真实的出租车车队优化问题上和其他方法进行对比，结果表明本文的AC方法提供了比之前最好的方法还要高质量的方法。</p>
+<h2 id="引言">引言</h2>
+<p>近些年来，分布式的部分可观测马尔科夫决策过程已经发展成了解决多智能体协作的序列决策问题的一个很有前景的(promising)方法。Dec-POMDP对智能体基于环境和其他智能体的不同部分观测最大化一个全局的目标进行建模。Dec-POMDP的具体应用包括协调行星探测，多机器人协调控制以及无线网络的吞吐量优化。然而，解决分布式的部分马尔科夫决策过程是相当困难的，即使对于只有$2$个智能体的问题呢是NP难的。<br>
+为了增大规模和提高真实问题中的应用，过去的研究已经探索了智能体之间严格的交互，如状态转换和观测独立，事件驱动的的交互以及智能体之间的弱耦合性。最近，一系列工作开始关注于智能体的身份不影响它们之间的交互上，环境的变化主要受到智能体的共同影响，和著名的阻塞游戏很像。一些城市交通中的问题如出租车调度可以用这样的协同规划模型进行建模。<br>
+在本文中，作者着重于集中的Dec-POMDP框架将一类不确定情况下的集中多智能体序列决策问题形式化。Nguyen等人提出了一个采样方法优化CDec-POMDP模型中的policy。之前方法的一个主要缺点是policy是用表格形式展现的，随着智能体的observation spaces改变时，表格形式的policy不能很好的进行扩展。受到最近一些强化学习工作的启发，本文的贡献是一个AC框架的强化学习算法用来优化CDec-POMDP的policy。Policy用函数如神经网络来表示可以避免表格形式的policy的扩展性问题。我们推导出了策略梯度并且基于CDec-POMDP中智能体的交互提出了一个估计的因子动作值函数。普通的AC算法因为学习全局reward的原因，在解决大型多智能体系统问题时收敛的很慢。为了解决这个问题，本文提出了一种新的方式去训练critic，高效利用智能体的局部值函数的估计动作值函数。<br>
+我们在一个合成的多机器人导航领域和现实世界中一个亚洲城市的出租车调度问题上测试了本文的方法，结果展示了本文的方法可以扩展到大型多智能体系统上。根据经验，我们因式AC方法比以前最好的方法给出的解决方案都要好。因式AC方法收敛的也比普通的AC方法快很多，验证了我们提出的critic训练方法的有效性。<br>
+<strong>相关工作</strong> 我们的工作基于具有近似值函数的策略梯度框架。然而，根据以往的经验显示，直接应用原始的策略梯度到多智能体任务中，尤其是CDec-POMDP模型中会产生较高方差。在本文中，我们展示了一个和CDec-POMDP兼容的估计值函数，它能产生高效且低方差的策略梯度更新。Peshkin很早之前就研究过了应用于分布式policy的强化学习，Guestrin还提出使用REINFORCE从协调图中训练一个因子值函数的softmax策略。然而，这些以前的工作中，策略梯度都是从全局的经验回报而不是分解后的critic中估计的。我们在第四章中展示了一个分解后ciritc和基于训练这个critic得到的一个单个值函数对于高效的采样学习是很重要的。我们的实验结果表明了我们提出的critic训练方式比用全局经验回报训练收敛的还要快。</p>
+<h2 id="集中分布式pomdp模型">集中分布式POMDP模型</h2>
+<p>我们首先介绍一下Nguyen提出的CDec-POMDP模型。一个对应于这个模型的$T$步的动态贝叶斯网络如图所示。它由以下几个部分组成：</p>
+<ul>
+<li>一个有限的计划范围$H$</li>
+<li>智能的数量$M$，一个智能体m可能处在state space $S$中的任意一个状态，联合state space是$\times_{m=1}^MS$，我们用$i\in S$表示一个state。</li>
+<li>每一个智能体m都有一个action spaceA，我们用$j\in A$表示一个action。</li>
+<li>用$(s_{1:H},a_{1:H})<sup>m=(s_1</sup>m,a_1<sup>m,\cdots,s_H</sup>m,a_H<sup>m)$表示一个智能体m完整的state-action轨迹。用随机变量$s_t</sup>m,a_t^m$表示智能体$m$在$t$时刻的state和action。不同的指示函数$I_t(\cdot)$如表$1$所示。给定每一个智能体$m\in M$的轨迹，定义以下的计数方式：<br>
+$$n_t(i,j,i’) = \sum_{m=1}^M I_t^m(i,j,i’),\forall i,i’\in S,j\in A.$$<br>
+如表$1$所示，计数器$n_t(i,j,i’)$表示在$t$时刻处于state $i$，采取action $j$，转换到state $i’$的智能体数量。其他计数器$n_t(i)$和$n_t(i,j)$的定义类似。使用这些计数器，我们可以定义$t$时刻的计数表$\bf{n}<em>{s_t}$和$\bf{n}</em>{s_ta_t}$如表$1$所示。</li>
+<li>我们假设一个普遍的部分观测环境，其中智能体基于其他智能体的总体影响可以有不同的ovservation。一个智能体观测到它的局部state $s_t<sup>m$。此外在$t$时刻基于它的局部状态$s_t</sup>m$和计数表$\bf{n}_{s_t}$观测到$o_t^m$。例如，一个智能体m在$t$时刻处于state $i$，可以观测到其他也处在state $i(=n_t(i))$的智能体或者其他处在state $i$临近状态$j$的智能体，即$n_t(j),\forall j\in Nb(i)$。</li>
+<li>状态转换函数是$\Phi_t(s_{t+1}<sup>m=i’|s_t</sup>m=i,a_t^m=j,\bf{N}<em>{s_t})$。所有智能体的状态转换函数是一样的，注意它会受到$\bf{n}</em>{s_t}$的影响，而$\bf{n}_{s_t}$依赖于智能体的共同行为。</li>
+<li>每一个智能体m有一个不平稳的policy $\pi_t<sup>m(j|i,o_t</sup>m(i,\bf{n}<em>{s_t}))$，表示在$t$时刻给定智能体m的observation $(i,o_t^m(i,\bf{n}</em>{s_t})$之后，智能体采取action $j$的概率。我们用$\pi^m=(\pi_1,\cdots,\pi_H)$表示智能体m水平范围的policy。</li>
+<li>一个智能体接收到的reward $r_t^m=r_t(i,j,\bf{n}<em>{s_t}$取决于它的局部state和action，以及计数表$\bf{n}</em>{s_t}$。</li>
+<li>初始的state分布，$b_o=(P(i)\forall i \in S)$，对于所有的智能体都是相同的。</li>
+</ul>
+<p>我们在这里展示了最简单的版本，所有的智能体的类型都相同，并且有相似的state transition，observation和reward模型。模型也可以处理多种类型的智能体，不同类型的智能体有不同的变化。我们还可以引入一个不受智能体action影响的external state，如交通领域的出租车需求。我们的结果也可以扩展到解决类似的问题。<br>
+像CDec-POMDP之类的模型对于解决智能体数量很大或者智能体的身份不影响reward或者transition function之类的问题是很有用的。其中一个应用是出租车车队优化问题，这个问题是计算出出租车调度的policy使得车队的利润最大化。一个出租车的决策过程如下。在时刻$t$时，每个出租车观测到它当前的城市空间$z$，不同的空间构成了state space $S$，以及当前空间和它的相邻空间的其他出租车的计数和当前局部请求的一个估计。这构成了出租车基于计数的observation $o(\cdot)$。基于这个observation，出租车必须决定待在当前空间$z$寻找乘客还是移动到下一个空间。这些决策选择取决于不同的因子，如请求比率和当前空间其他出租车的计数。类似的，环境是随机的，在不同时间出租车请求是变化的。使用出租车车队的的GPS记录可以得到这些历史的请求数据。<br>
+<strong>基于计数的统计数据用于规划</strong> CDec-POMDP模型的一个关键属性是模型的变换取决于智能体的集中交互而不是智能体的身份。在出租车车队优化问题中，智能体数量可以相当大（大约有$8000$个智能体在现实世界的实验中）。给出这么大数量的智能体个数，为每一个智能体计算出独一无二的policy是不可能的。因此，和之前的工作类似，我们的目标是对所有智能体计算出一个相同的policy $\pi$。因为policy $\pi$取决于计数，它代表了一种富有表现力的policy。<br>
+对于一个固定的数量M来说，用${(s_{1:T},a_{1:T})^m\forall m}$表示从图$1$的DBN网络中采样得到的不同智能体的state-action轨迹。用$\mathbf{n}<em>{1:T}={(\mathbf{n}</em>{s_t},\mathbf{n}<em>{s_ta_t},\mathbf{n}</em>{s_ta_ts_{t+1}})\forall t=1:T}$表示每一个时间步$t$的结果计数表的组合向量。Nguyen等人展示了计数器$\mathbf{n}$中拥有足够的统计数据用来规划。也就是说，一个policy $\pi$在水平范围H内的联合值函数可以通过计数器的期望进行计算：<br>
+$$V(\pi) = \sum_{m=1}<sup>M\sum_{T=1}</sup>H E[r_T^m] = \sum_{\mathbf{n}\in \Omega_{1:H}}P(\mathbf{n};\pi) \left[\sum_{T=1}^H\sum_{i\in S,j\in A} n_T(i,j)r_T(i,j,\mathbf{n}<em>T)\right]$$<br>
+集合$\Omega</em>{1:H}$是所有允许的一致计数表的集合，如下所示：<br>
+$$\sum_{i\in S}n_T(i) = M \forall T;$$<br>
+$$\sum_{j\in A}n_T(i,j) = n_T(i) = \forall j \forall T;$$<br>
+$$\sum_{i’\in S}n_T(i,j,i’) = n_T(i,j)\forall i\in S,\forall j \in A, \forall T;$$<br>
+$P(\mathbf{n},\pi)$是计数器的分布。这个结果的一个关键好处是我们可以直接从分布$P(\mathbf{n})$中对计数器$\mathbf{n}$采样而不是对单个不同智能体的轨迹$(s_{1:H},a_{1:H})进行采样来$评估policy $\pi$，这显著节省了计算开销。我们的目标是计算最优的policy $\pi$来最大化$V(\pi)$。我们假设一个集中式学习，分布式执行的强化学习设置。我们假设有一个模拟器可以从$P(\mathbf{n};\pi)$中提供计数器样本。</p>
+<h2 id="cdec-pomdp的策略梯度">CDec-POMDP的策略梯度</h2>
+<p>之前的工作提出了一个基于采样的EM算法来优化policy $\pi$。这个policy被表示成计数器$\mathbf{n}$空间中的一个线性分段表policy，其中每一个线性片段指定了下一个action的分布。然而，这种表格形式的表示限制了它的表达能力，因为片段的数量是固定的先验，并且每个范围都必须手动定义，这可能会对性能产生不利影响。此外，当observation o是多维的时候，即，一个智能体观测到它位置相邻区域的计数器时，需要指数多个片段。为了解决这个问题，我们的目标是优化函数形式（如神经网络）的policy。<br>
+我们首先扩展策略梯度理论到CDec-POMDP上，用$\theta$表示policy参数的向量。我们接下来展示如何计算$\Delta_\theta V(\pi)$。用$\mathbf{s}_t,\mathbf{a}<em>t$表示$t$时刻所有智能体的联合state和联合action。给定一个policy $\pi$，值函数表示形式如下：<br>
+$$V_t(\pi)=\sum</em>{\mathbf{s}_t,\mathbf{a}<em>t}P<sup>{\pi}(\mathbf{s}_t,\mathbf{a}_t|b_o,\pi)Q_t</sup>{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>T)$$<br>
+其中$P<sup>{\pi}(\mathbf{s}_t,\mathbf{a}_t|b_o)=\sum_{\mathbf{s}_{1:t-1},\mathbf{a}_{1:t-1}}P</sup>{\pi}(\mathbf{s}</em>{1:t},\mathbf{a}</em>{1:t}|b_o)$是policy $\pi$下联合state $\mathbf{s}<em>t$，和联合action $\mathbf{a}<em>t$的分布。值函数$Q_t^{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t)$的计算过程如下：<br>
+$$Q_t^{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t) = r_t(\mathbf{s}<em>t,\mathbf{a}<em>t)+\sum</em>{\mathbf{s}</em>{t+1},\mathbf{a}</em>{t+1})}P<sup>{\pi}(\mathbf{s}_{t+1},\mathbf{a}_{t+1}|\mathbf{s}_t,\mathbf{a}_t))Q_{t+1}</sup>{\pi}(\mathbf{s}</em>{t+1},\mathbf{a}</em>{t+1})$$<br>
+接下来介绍以下CDec-POMDP的策略梯度理论：<br>
+<strong>定理1.</strong> 对于任何CDec-POMDP，策略梯度计算公式如下：<br>
+$$\Delta</em>{\theta}V_1(\pi)=\sum</em>{t=1}<sup>HE_{\mathbf{s}_t,\mathbf{a}_t)|b_o,\pi}\left[Q_t</sup>{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t)\sum</em>{i\in S,j\in A}n_t(i,j)\Delta</em>{\theta}log\pi</em>{t}(j|i,o(i,\mathbf{n}</em>{s_t}))\right]$$<br>
+这个定理的证明和其他后续结果在附录中。<br>
+注意由于许多原因利用上述结果计算策略梯度是不切实际的。联合state-action $\mathbf{a}_t,\mathbf{s}_t$空间是组合的。考虑到智能体的个数可能有很多个，对每一个智能体的轨迹进行采样是计算上不可行的。为了补救，我们接下来会展示类似policy评估直接对计数器$\mathbf{n}~P(\mathbf{n};\pi)$进行采样计算梯度。类似的，也可以使用经验回报作为动作值函数$Q_t<sup>{\pi}(\mathbf{s}_t,\mathbf{a}_t)$的一个近似估计。这是标准的REINFORCE算法在CDec-POMDP上的应用。众所周知，REINFORCE可能比其他使用学习的动作值函数的方法学习的慢。因此，我们提出了一个$Q_t</sup>{\pi}$的近似函数，展示了直接采样计数器$\mathbf{n}$来计算策略梯度。</p>
+<h3 id="使用估计动作值函数的策略梯度">使用估计动作值函数的策略梯度</h3>
+<p>估计动作值函数$Q_t^{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t)$有几种不同的方式。我们考虑下列特征形式的近似值函数$f_w$：<br>
+$$Q_t^{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t)\approx f_w(\mathbf{s}<em>t,\mathbf{a}<em>t)=\sum</em>{m=1}<sup>Mf_w</sup>m(s_t<sup>m,o(s_t</sup>m,\mathbf{n</em>{s_t}}),s_t^m)$$<br>
+每一个智能体m都定义了一个$f_w<sup>m$，它的输入是智能体的局部state，action和observation。注意不同的$f_w</sup>m$是相关的，因为它们依赖于公共的计数器表$\mathbf{n}</em>{s_t}$。这样的一种分解方式是很有用的，因为它产生了有效的策略梯度计算方式。此外，CDec-POMDP中一类很重要的这种形式的估计值函数是兼容值函数最后会产生一个无偏的策略梯度。<br>
+<strong>命题1</strong> CDec-POMDP中的兼容值函数可以分解成：<br>
+$$f_w(\mathbf{s}<em>t\mathbf{a}<em>t) = \sum_mf_w<sup>m(s_t</sup>m,o(s_t<sup>m,\mathbf{n}_{s_t}),a</sup>m)$$<br>
+我们可以直接用估计值函数$f_w$取代$Q^{\pi}(\cdot)$。经验上来说，我们发现使用这个估计的方差很大。我们利用$f_w$的结构进一步分解策略梯度会有更好的效果。<br>
+<strong>定理2</strong> 对于任何具有如下的分解的值函数：<br>
+$$f_w(\mathbf{s}<em>t\mathbf{a}<em>t) = \sum_mf_w<sup>m(s_t</sup>m,o(s_t<sup>m,\mathbf{n}_{s_t}),a</sup>m)$$<br>
+策略梯度可以写成：<br>
+$$\Delta</em>{\theta}V_1(\pi)=\sum</em>{t=1}<sup>HE_{\mathbf{s}_t,\mathbf{a}_t)|b_o,\pi}\left[\sum_m\Delta_{\theta}log\pi(a_t</sup>m|s_t<sup>m,o(s_t</sup>m,\mathbf{n}</em>{s_t}))f_w<sup>m(s_t</sup>m,o(s_t<sup>m,\mathbf{n}_{s_t}),a_t</sup>m)\right]$$<br>
+上述结果展示了如果估计值函数被分解了，那么得到的策略梯度也是分解的。上述结果也可以应用到多种类型的智能体上，只要我们假设不同的智能体有不同的函数$f_t^m$。最简单的情况下，所有的智能体都是相同类型的，每一个智能体都有相同的函数$f_w$，推断出下式：<br>
+$$f_w(\mathbf{s}<em>t,\mathbf{a}<em>t) = \sum</em>{i,j}n_t(i,j)f_w(i,j,o(i,\mathbf{n}</em>{s_t}))$$<br>
+使用上式，我们可以将策略梯度简化成：<br>
+$$\Delta</em>{\theta}V_1(\pi) = \sum_tE</em>{\mathbf{s}<em>t,\mathbf{a}<em>t}\left[\sum</em>{i,j}n_t(i,j)\Delta</em>{\theta}log\pi (j|i,o(i,\mathbf{n}</em>{s_t}))f_w(i,j,o(i,\mathbf{n}</em>{s_t}))\right]$$</p>
+<h3 id="基于计数器的策略梯度计算">基于计数器的策略梯度计算</h3>
+<p>注意在上式中，期望仍然和联合state，action，$(\mathbf{s}<em>t,\mathbf{a}<em>t)$相关，当智能体的个数很大时效率很低。为了解决这个问题是<br>
+<strong>定理3</strong> 对于任何拥有形式$f_w(\mathbf{s}<em>t,\mathbf{a}<em>t) = \sum</em>{i,j}n_t(i,j)f_w(i,j,o(i,\mathbf{n}</em>{s_t}))$的值函数，策略梯度都可以用下式计算：<br>
+\begin{equation}<br>
+E</em>{\mathbf{n}</em>{1:H}\in \Omega_{1:H}} \left[\sum_{t=1}^H\sum_{i\in S,j\in A}n_t(i,j) \Delta_{\theta}log\pi (j|i,o(i,\mathbf{n}_t)) f_w(i,j,o(i,\mathbf{n}<em>t))\right]<br>
+\end{equation}<br>
+上述结果展示了策略梯度可以类似于计算policy的值函数一样通过从底层分布$P(\cdot)$中采样计数表向量$\mathbf{n}</em>{1:H}$来计算策略梯度，在智能体数量很大的情况下也是可行的。</p>
+<h2 id="训练动作值函数">训练动作值函数</h2>
+<p>在我们的方法中，在计数器样本$\mathbf{n}<em>{1:H}$生成用来计算策略梯度后，我们还需要调整critic $f_w$的参数。注意对于每一个动作值函数$f_w(\mathbf{s}<em>t,\mathbf{a}<em>t)$只取决于联合state，action $(\mathbf{s}<em>t,\mathbf{a}<em>t)$生成的计数器。训练$f_w$可以通过一个梯度步最下化下列loss函数实现：<br>
+\begin{equation}<br>
+min_w\sum</em>{\xi=1}<sup>K\sum_{t=1}</sup>H\left(f_w(\mathbf{n}<em>t<sup>{\xi})-R_t</sup>{\xi}\right)^2<br>
+\end{equation}<br>
+其中$\mathbf{n}</em>{1:H}<sup>{\xi}$是从分布$P(\mathbf{n};\pi)$中生成的一个计数器样本；$f_w(\mathbf{n}_t</sup>{\xi})$是动作值函数，$R_t^{\xi}$是用式子$(1)$计算的$t$时刻的所有经验回报：<br>
+\begin{equation}<br>
+f_w(\mathbf{n}<em>t^{\xi}) = \sum</em>{i,j}n_t<sup>{\xi}(i,j)f_w(i,j,o(i,\mathbf{n}_t</sup>{\xi});R_t<sup>{\xi}=\sum_{T=t}</sup>H]\sum</em>{i\in S,j\in A}n_T{\xi}(i,j)r_T(i,j,\mathbf{n}<em>T^{\xi})<br>
+\end{equation}<br>
+然而，我们发现公式$(11)$中的loss函数在训练较大问题的critic时表现并不好。需要一定数量的计数器样本可靠的训练$f_w$，这对于拥有较多数量智能体的大问题的扩展有不利影响。已知在多智能体强化学习中单独利用全局reward信号的算法要比利用局部reward信号的方法多用一些样本。受到这些现象的启发，接下来我们提出了一个基于策略的局部reward信号去训练critic $f_w$。<br>
+<strong>单个值函数</strong> 用$\mathbf{n}</em>{1:H}<sup>{\xi}$表示一个计数器样本。给定计数器样本$\mathbf{n}_{1:H}</sup>{\xi}$，用$V_t<sup>{\xi}(i,j)=E\left[\sum_{t’=t}</sup>Hr</em>{t’}<sup>m|s_t</sup>m=i,a_m<sup>t=j,n_{1:H}</sup>{\xi}\right]$表示一个智能体在时刻$t$处于state $i$，采取action $j$，所能得到的所有期望reward。这个单个的值函数可以用动态规划算法来计算。基于这个值函数，我们接下来展示了式子$(12)$中全局经验reward的重新参数化：<br>
+<strong>引理(Lemma)1</strong> 给定计数器样本$\mathbf{1:H}<sup>{\xi}$，$t$时刻的经验回报$R_t</sup>{\xi}$可以被重新参数化为：<br>
+$$R_t^{\xi} = \sum</em>{i\in S,j\in A}n_t<sup>{\xi}(i,j)V_t</sup>{\xi}(i,j).$$<br>
+<strong>基于单个值函数的loss</strong> 给出引理$1$，我们推导出式子$11$中真实loss的上界，它有效利用了单个值函数：<br>
+\begin{align*}<br>
+&amp;\sum</em>{\xi}\sum_t\left(f_w(\mathbf{n}<sup>{\xi})-R_t</sup>{\xi}\right)^2 \<br>
+= &amp;\sum_{\xi}\sum_t\left(\sum_{i,j}n_t<sup>{\xi}(i,j)f_w(i,j,o(i,\mathbf{n}_t</sup>{\xi}))-\sum_{i,j}n_t<sup>{\xi}(i,j)V_t</sup>{\xi}(i,h)\right)^2\<br>
+= &amp;\sum_{\xi}\sum_t\left( \sum_{i,j}n_t<sup>{\xi}(i,j)(f_w(i,j,o(i,\mathbf{n}_t</sup>{\xi}))-V_t<sup>{\xi}(i,h))\right)</sup>2\<br>
+\le &amp;M\sum_{\xi}\sum_{t,i,j}n_t(i,j)\left(f_w(i,j,o(i,\mathbf{n}_t<sup>{\xi}))-V_t</sup>{\xi}(i,j)\right)^2<br>
+\end{align*}<br>
+其中最后一部用了柯西施瓦茨不等式。我们用式子(14)中修改过的loss训练critic。按照经验来说，对于较大的问题，式子(14)中的新loss比式子(13)中的原始loss要收敛的快很多。直观上来说，这是因为式子(14)中的新loss尝试调整每一个critic组件$f_w(i,j,o(i,\mathbf{n}_t<sup>{\xi}))$更接近它的经验回报$V_t</sup>{\xi}(i,j)$。然而，原始的式子(13)中的loss着重于最小化全局loss，而不是调整每一个单个的critic因子$f_w(\cdot)$到相对应的每一个经验回报。<br>
+算法$1$展示了CDec-POMDP中AC算法的大纲。第$7$行和第$8$行展示了两种不同的方式训练critic。第$7$行代表基于局部值函数的critic更新，也可以称为factored cirtic更新(fC)。第$8$行展示了基于全局reward或者全局critic的更新©。第$10$行展示了使用定理$2$(fA)计算的策略梯度。第$11$行展示了直接使用$f_w$计算的梯度。</p>
+<h2 id="实验">实验</h2>
+<p>这一节中比较了我们的AC算法和另外两个解决CDec-POMDP问题的算法，Soft-Max based flow update(SMFU)，和期望最大化方法。SMFU只能优化智能体的action依赖于局部state的policy，$\pi(a_t<sup>m|s_t</sup>m)$，因为它通过计算在规划阶段单个最有可能的计数器向量来估计计数器$\mathbf{n}$的作用。EM方法优化基于计数器的分段线性policy，其中$\pi(a_t<sup>m|s_t</sup>m,\cdot)$是所有可能的计数器observation $o_t$空间上的一个分段函数。<br>
+算法$1$展示了更新critic的两种方式（第$7$行和第$8$行）和更新actor的两种方式（第$10$行和第$11$行），所以就有四种可能的AC方法－fAfC,AC,FfC,fAC。我们也研究了不同actor-critic方法的属性。在附录中有神经网络的结构和其他一些实验设置。<br>
+为了和之前方法公平的进行比较，我们使用了三种不同的模型用于基于计数的observation $o_t$。在$o0$设置中，policy只取决于智能体的局部state $s_t^m$并不需要计数器。在$o1$设置中，policy取决于局部state $s_t^m$和单个计数器observation $n_t(s_t<sup>m)$。也就是说，智能体只能观测到其他也在当前状态$s_t</sup>m$的智能体的计数器。在$oN$设置中，智能体能观测到它的局部state $s_t<sup>m$和当前状态$s_t</sup>m$的局部相邻状态内其他智能体的计数器。$oN$ observation模型提供给智能体最多的信息。然而，它也是最难优化的因为policy有更多的参数。SMFU方法只能在$o0$设置中起作用，EM方法和本文中的AC方法在所有设置中都能起作用。</p>
+<!--
+**出租车调度** 我们在第二节中介绍的现实世界中的域测试了本文的方法。在这个问题中，目标是计算出租车policy优化整个车队的收入。数据包含亚洲一个大城市超过一年的出租车轨迹数据。我们使用了从数据集中提取到的车辆请求信息。平均来说，每天大概有$8000$辆出租车。整个城市被划分为$81$个空间，时间范围是$24$个小时划分为$48$个半小时的区间。
+图$2(a)$中展示了不同方法在不同的观测模型（$'o0','o1','oN'$)上的量化比较。我们测试了$4000$和$8000$辆出租车来验证是否出租车的数量会影响不同方法的性能。$y$轴展示了整个车队每天的利润。在$'o0'$设置下，所有的方法（fAfC-$o0$,SMFU,EM-$o0$）给出质量差不多的解，在$8000$个出租车上fAfC-$o0$和EM-$o0$表现的比SMFU稍微好一些。在$'o1'$设置下，
+-->
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/21/ml-expectatin_maximization/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/21/ml-expectatin_maximization/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">EM(Expectation Maximization)算法</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-21 10:22:45" itemprop="dateCreated datePublished" datetime="2019-01-21T10:22:45+08:00">2019-01-21</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:41:00" itemprop="dateModified" datetime="2019-12-17T15:41:00+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="引言-introduction">引言(Introduction)</h2>
+<h3 id="什么是期望最大化算法">什么是期望最大化算法</h3>
+<p>期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。</p>
+<h3 id="em和mle关系">EM和MLE关系</h3>
+<p>MLE的目标是求解已知分布类型的单个分布的参数。<br>
+EM的目标是求解已知分布类型的多个混合分布的参数。<br>
+一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM算法是用来求解已知分布类型，多个该已知类型分布的混合分布的参数，这句话听起来可能有些拗口，举个最常见的例子，高斯混合分布参数的求解，这个混合分布都是高斯分布，只是每个分布的参数不同而已。如果一个高斯分布，一个卡方分布是没有办法求解的。</p>
+<h3 id="为什么叫它em算法">为什么叫它EM算法</h3>
+<p>因为这个算法总共有两个迭代步骤，E步和M步。第一步是对多个分布求期望，固定每一个分布的参数，计算出混合分布的参数，即E步，第二步是对这个混合分布利用最大似然估计方法进行参数估计，即M步。</p>
+<h2 id="推理过程">推理过程</h2>
+<p>假设我们要求一个混合分布p的参数$\theta$，比如校园内男生和女生的身高参数，显然，男生和女生的身高服从的分布类型是相同的，但是参数是不一样的。这里通过引入一个隐变量$z$，求解出对应不同$z$取值的参数$\theta$的值。<br>
+\begin{align*}<br>
+p(x|\theta) &amp;= \sum_zp(x,z|\theta)\\<br>
+&amp;=\sum_zp(z|\theta)p(x|\theta, z) \tag{0}<br>
+\end{align*}<br>
+如果我们假设男女生的身高分布是一个高斯混合模型，现在要求它的参数$\theta$。混合模型的表达式可以写为：<br>
+\begin{align*}<br>
+p(x|\theta) &amp;= \sum_zw(z)N(x|\mu_z,\sigma_z)\\<br>
+&amp;=\sum_zp(z|\theta)p(x|\theta,z)<br>
+\end{align*}<br>
+其中$\sum_zw(z) = 1,\theta={w, \mu, \sigma}$，如果用最大似然估计来解该问题的话，log函数内有和式，不好优化，所以就要换种方法。<br>
+观测数据：$x=(x_1,\cdots, x_N)$<br>
+对应的隐变量：$z=(z_1,\cdots, z_N)$，$z_i$有$c$种取值。</p>
+<p>\begin{align*}<br>
+l(\theta;x) &amp;= log p(x|\theta) \tag{1}\\<br>
+&amp;= log\prod_{i=1}^N\ p(x_i|\theta) \tag{2}\\<br>
+&amp;= \sum_{i=1}^Nlog\ p(x_i|\theta) \tag{3}\\<br>
+&amp;= \sum_{i=1}^Nlog\sum_zp(x_i,z|\theta) \tag{4}\\<br>
+\end{align*}<br>
+这里式子(4)中$\sum_zp(x,z|\theta)$该怎么变形，因为现在解不出来了。<br>
+最开始我想的是使用条件概率进行展开，即：<br>
+$$\sum_zp(x_i, z|\theta) = \sum_zp(x_i|z, \theta)p(z|\theta)$$<br>
+但是如果展开成这样子，就变成了文章开头给出的式子(0)，并没有什么用，不能继续化简了。<br>
+所以就对式子(4)做个变形<br>
+\begin{align*}<br>
+&amp;\ \ \ \ \sum_{i=1}^Nlog\sum_zp(x_i,z|\theta) \tag{4}\\<br>
+&amp;= \sum_{i=1}^Nlog\sum_zq(z|x_i)\frac{p(x_i,z|\theta)}{q(z|x_i)}, \ \ s.t.\sum_zq(z|x_i)=1 \tag{5}\\<br>
+&amp;\ge \sum_{i=1}^N \underbrace{\sum_zq(z|x_i)log\frac{p(x_i,z|\theta)}{q(z|x_i)}}_{L(q,\theta)},\ \ s.t. \sum_zq(z|x_i)=1 \tag{6}\\<br>
+\end{align*}<br>
+第(4)步到第(5)步引入了一个分布$q(z|x)$，就是给定一个观测数据$x$，隐变量$z$取值的概率分布。注意，$q(z)$是一个函数，但是给定$x$之后，$q(z|x)$是一个变量。然后因为变形之后还是没有求解，就利用杰森不等式做了缩放，将$log(sum())$变成了$sum(log())$，就变成了(6)式。<br>
+这里使用Jensen不等式的目的是使得缩放后的值还能取得和原式相等的值，重要的是等号能够取到。</p>
+<h3 id="jensen不等式">Jensen不等式</h3>
+<p>对于随机变量的Jensen不等式，当函数$f(x)$是凸函数的时候可以用下式表示：<br>
+$$f(E(x)) \le E(f(x))$$<br>
+当$f(x)$是凹函数的时候，有<br>
+$$f(E(x)) \ge E(f(x))$$</p>
+<p>接下来我们就要求解使得式子(6)中杰森不等式等号成立的$q$分布的取值。这里有两种方法可以求解。</p>
+<h3 id="拉格朗日乘子法">拉格朗日乘子法</h3>
+<p>令<br>
+$$L(q,\theta) = \sum_z q(z|x_i)log{\frac{p(x_i,z|\theta)}{q(z|x_i)}}, s.t.\sum q(z|x_i) = 1 \tag{7}$$<br>
+构建拉格朗日目标函数：<br>
+\begin{align*}<br>
+L &amp;= L(q, \theta) + \lambda(\sum_zq(z|x)- 1) \tag{8}\\<br>
+&amp;= \sum_z q(z|x_i)log{\frac{p(x_i,z|\theta)}{q(z|x_i)}} + \lambda(\sum_z q(z|x_i) - 1)  \tag{9}<br>
+\end{align*}</p>
+<p>对$L$求导，得到：<br>
+$$\frac{\partial L}{\partial q(z|x_i)} = log\frac{p(x_i, z|\theta)}{q(z|x_i)} + q(z|x_i)(-\frac{1}{q(z|x_i)}) + \lambda \tag{10}$$<br>
+令$\frac{\partial L}{\partial q(z|x_i)}$等于$0$，得到：$$log\frac{p(x_i, z|\theta)}{q(z|x_i)} = 1 - \lambda$$<br>
+两边同取$e$的对数：<br>
+$$\frac{p(x_i, z|\theta)}{q(z|x_i)} = e^{1-\lambda} \tag{11}$$<br>
+$$q(z|x_i) = e^{\lambda - 1}p(x_i, z|\theta) \tag{12}$$<br>
+两边同时求和得：<br>
+$$1 = e^{\lambda - 1}\sum_z p(x_i, z|\theta) \tag{13}$$<br>
+用$p$表示$e^{\lambda-1}$得到：<br>
+$$e^{\lambda-1} = \frac{1}{\sum_z p(x_i, z|\theta)}$$<br>
+将其代入式子(12)得：<br>
+\begin{align*}<br>
+q(z|x_i) &amp;= \frac{p(x_i, z|\theta)}{\sum_z p(x_i, z|\theta)}\\<br>
+&amp;= \frac{p(z, x_i|\theta)}{p(x_i|\theta)}\\<br>
+&amp;= p(z|x_i, \theta)  \tag{14}<br>
+\end{align*}</p>
+<p>最后求出来$q(z|x_i) = p(z|x_i, \theta)$。</p>
+<h3 id="杰森不等式成立条件">杰森不等式成立条件</h3>
+<p>杰森不等式成立条件是常数，即：<br>
+$$\frac{p(x_i, z|\theta)}{q(z|x_i)} = c,  s.t. \sum q(z|x_i)=1 \tag{15}$$<br>
+则有:<br>
+$$p(x, z_i|\theta) = cq(z_i|x) \tag{16}$$<br>
+同时对式子左右两边求和，得到：<br>
+$$\sum p(x_i, z|\theta) = \sum cq(z|x_i) = c \tag{17}$$<br>
+将$c = \sum p(x_i, z|\theta)$代入式子(14)得：<br>
+\begin{align*}<br>
+q(z|x_i) &amp;= \frac{p(x_i, z|\theta)}{\sum p(x_i,z|\theta)}\\<br>
+&amp;= \frac{p(x_i, z)|\theta}{p(x_i|\theta)}\\<br>
+&amp;= p(z|x_i, \theta) \tag{18}<br>
+\end{align*}</p>
+<h3 id="等号成立证明">等号成立证明</h3>
+<p>上面两个方法都算出来在$q(z|x_i) = p(z|x_i, \theta)$时$L$能取得最大值。接下来证明这个这个$L$的最大值和$l$相等。<br>
+将$q = p(z|x_i, \theta)$代入$L(q, \theta)$得：<br>
+\begin{align*}<br>
+L(q, \theta) &amp;= L(p(z|x_i, \theta^t), \theta^t)\\<br>
+&amp;= \sum_z p(z|x_i, \theta^t) log\frac{p(z, x_i|\theta^t)}{p(z|x_i, \theta^t)} \\<br>
+&amp;= \sum_z p(z|x_i, \theta^t) log p(x_i|\theta^t)\\<br>
+&amp;= 1\cdot log p(x_i|\theta^t)\\<br>
+&amp;= log p(x_i|\theta^t)\\<br>
+&amp;= l(\theta^t; x_i)<br>
+\end{align*}</p>
+<h3 id="另一种等号成立推导">另一种等号成立推导</h3>
+<p>\begin{align*}<br>
+l(\theta; x) - L(q, \theta) &amp;= l(\theta; x_i) - \sum_z q(z|x_i) log{\frac{p(z, x_i|\theta)}{q(z|x_i)}}\\<br>
+&amp;= \sum_z q(z|x_i) log p(x_i|\theta) - \sum_z q(z|x_i) log{\frac{p(z, x_i|\theta)}{q(z|x_i)}}\\<br>
+&amp;= \sum_z q(z|x_i)log {\frac{p(x_i|\theta)q(z|x_i)}{p(z, x_i|\theta)}}\\<br>
+&amp;= \sum_z q(z|x_i)log {\frac{q(z|x_i)}{p(z|x_i, \theta)}}\\<br>
+&amp;= KL(q(z|x_i)||p(z|x_i,\theta))<br>
+\end{align*}<br>
+最后算出来两个函数之差是一个KL散度，是从$p$到$q$的KL散度。当前仅当$p=q$时取等，否则就非负。</p>
+<h3 id="m步">M步</h3>
+<p>\begin{align*}<br>
+L(q, \theta) &amp; = \sum_z q(z|x_i) log\frac{p(z, x_i|\theta)}{q(z|x_i)} \\<br>
+&amp; = \underbrace{\sum_z q(z|x_i)log{p(z, x_i|\theta)}}_{Expected\ complete\ log-likelyhood} - \underbrace{\sum_z q(z|x_i)l{q(z|x_i)}}_{Entropy}<br>
+\end{align*}</p>
+<h2 id="em流程">EM流程</h2>
+<h3 id="计算流程">计算流程</h3>
+<p>（１）首先随机初始化模型的不同隐变量对应的参数，<br>
+（２）对于每一个观测，首先判断它对应的隐变量的分布。<br>
+（３）求期望<br>
+（４）最大似然估计求参数<br>
+用公式来表示如下：<br>
+E步：$q^{t+1} = arg\ max_q L(q, \theta^t)$<br>
+M步：$\theta^{t+1} = arg max_{\theta}L(q^{t+1}, \theta)$<br>
+E步就是根据$t$时刻的$\theta^t$利用概率$q$求出$L$的期望，然后M步使用最大似然估计计算出新的$\theta$，就这样迭代下去。</p>
+<h2 id="em收敛性分析">EM收敛性分析</h2>
+<p>EM算法的收敛性就是要证明$L(q=p(z|x_i, \theta^t) , \theta)$的值一直在增大。<br>
+\begin{align*}<br>
+L(p(z|x_i, \theta^{t+1}) , \theta^{t+1}) - L(p(z|x_i, \theta^{t}) , \theta^{t}) &amp;= log p(x_i|\theta^{t+1}) - log p(x_i|\theta^t)\\<br>
+&amp; \ge 0<br>
+\end{align*}</p>
+<h2 id="例子">例子</h2>
+<p>假如有两个硬币A和B，假设随机从A,B中选一个硬币，掷$10$次，重复$5$次实验，分别求出两个硬币正面向上的概率。假设硬币服从二项分布<br>
+$5$次实验结果如下：<br>
+5H5T<br>
+9H1T<br>
+8H2T<br>
+4H6T<br>
+7H3T</p>
+<p>这个时候有两种情况</p>
+<h3 id="知道每次选的是a还是b">知道每次选的是A还是B</h3>
+<p>这个时候就变成了极大似然估计。</p>
+<h3 id="不知道每次选的是a还是b">不知道每次选的是A还是B</h3>
+<p>这个时候就用EM算法了。<br>
+首先随机初始化$\theta_A = 0.5, \theta_B = 0.5$，<br>
+对于每一个观测，首先判断它对应的隐变量的分布。<br>
+$i={1,2,3,4,5}$，分别代表$5$个实验。<br>
+首先求出$\theta_A$的参数。<br>
+$$P(z = A|x_i, \theta_A, \theta_B) = \frac{P(z = A|x_i, \theta_A)}{P(z = A|x_i, \theta_A) + P(z = B|x_i, \theta_B)}$$<br>
+$$P(z = B|x_i, \theta_A, \theta_B) = 1 - P(z = A|x_i,\theta_A,\theta_B)$$<br>
+然后计算下式：<br>
+\begin{align*}<br>
+L(q,\theta_A) &amp;= \sum_{i=1}^5 \sum_zp(z|x_i, \theta_A, \theta_B)log p(x_i|\theta)\\<br>
+&amp;= \sum_{i=1}^5 (p(z=A|x_i, \theta_A)log p(x_i|\theta_A) + p(z=B|x_i, \theta_B)log p(x_i|\theta_B))<br>
+\end{align*}<br>
+然后利用极大既然估计计算$\theta_A$和$\theta_B$的值。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.zhihu.com/question/27976634/answer/153567695" target="_blank" rel="noopener">https://www.zhihu.com/question/27976634/answer/153567695</a><br>
+2.<a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Jensen's_inequality</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/20/ml-maximum-likelyhood-estimation/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1902,1577 +3380,6 @@ $$A = \sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T + \cdots + \sigma_8 u_8v_8^T$$<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/02/ml-pca/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/02/ml-pca/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">主成分分析(Principal Component Analysis)</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-02 20:51:19" itemprop="dateCreated datePublished" datetime="2019-01-02T20:51:19+08:00">2019-01-02</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:21:19" itemprop="dateModified" datetime="2019-12-17T15:21:19+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="降维">降维</h2>
-<h3 id="降维的目标">降维的目标</h3>
-<p>降维可以看做将$p$维的数据映射到$m$维，其中$p\gt m$。或者可以说将$n$个$p$维空间中的点映射成$n$个$m$维空间中的点。</p>
-<h3 id="降维的目的">降维的目的</h3>
-<ol>
-<li>维度灾难(curse of dimensionity)</li>
-<li>随着维度增加，精确度和效率的退化。</li>
-<li>可视化数据</li>
-<li>数据压缩</li>
-<li>去噪声<br>
-…</li>
-</ol>
-<h3 id="降维的方法">降维的方法</h3>
-<h4 id="无监督的降维">无监督的降维</h4>
-<ol>
-<li>线性的:PCA</li>
-<li>非线性的: GPCA, Kernel PCA, ISOMAP, LLE</li>
-</ol>
-<h4 id="有监督的降维">有监督的降维</h4>
-<ol>
-<li>线性的: LDA</li>
-<li>非线性的: Kernel LDA</li>
-</ol>
-<h2 id="主成分分析-pca">主成分分析(PCA)</h2>
-<p>主成分分析(principal component analysis,PCA)是一个降维工具。PCA使用正交变换(orthogonal transformation)将可能相关的变量的一系列观测值(observation)转换成一系列不相关的变量，这些转换后不相关的变量叫做主成分(principal component)。第一个主成分有着最大的方差，后来的主成分必须和前面的主成分正交，然后最大化方差。或者PCA也可以看成根据数据拟合一个$m$维的椭球体(ellipsoid)，椭球体的每一个轴代表着一个主成分。<br>
-上课的时候，老师给出了五种角度来看待PCA，分别是信息保存，投影，拟合，嵌入(embedding)，mainfold learning。本文首先从保存信息的角度来给出PCA的推理过程，其他的几种方法就随缘了吧。。。</p>
-<h3 id="信息保存-preserve-information">信息保存(preserve information)</h3>
-<h4 id="目标">目标</h4>
-<p>从信息保存的角度来看PCA的目标是用尽可能小的空间去存储尽可能多的信息。一般情况下，信息用信息熵$-\int p lnp$来表示，如果这里使用信息熵的话，不知道信息的概率表示，一般不知道概率分布的情况下就采用高斯分布，带入高斯分布之后得到$\frac{1}{2}log(2\pi e\sigma^2)$，其中$2\pi e$都是常量，只剩下方差。给出一堆数据，直接计算信息熵是行不通的，但是计算方差是可行的，而方差和信息熵是有联系的，所以可以考虑用方差来表示信息。考虑一下降维前的$p$维数据$x$和降维后的$m$维数据$z$方差之间的关系，$var(z)?var(x)$，这里$z$和$x$的方差维度是不同的，所以不能相等，这里我们的目标就是最大化$z$的方差。方差能解释变化，方差越大，数据的变化就越大，越能包含信息。PCA的目标就是让降维后的数据方差最大。</p>
-<h4 id="线性pca过程">线性PCA过程</h4>
-<h5 id="目标函数">目标函数</h5>
-<p>给定$n$个观测数据$x_1,x_2,\cdots,x_n \in \mathbb{R}^p$，形成一个观测矩阵$X,X\in \mathbb{R}^{p\times n}$，即$X = \begin{bmatrix}x_{11}&amp;\cdots &amp;x_{1n}\\ &amp;\cdots&amp;\\ x_{p1}&amp;\cdots &amp;x_{pn}\end{bmatrix}$。我们的目标是将这样一组$p$维的数据转换成$m$维的数据。线性PCA是通过线性变换(matrix)来实现的，也就是我们要求一个$p\times m$的矩阵$V$，将原始的$X$矩阵转换成$Z$矩阵，使得<br>
-$$Z_{m\times n}= V_{p\times m}^{T}X_{p\times n},$$<br>
-其中$V\in \mathbb{R}^{p\times m}$, $v_i=\begin{bmatrix}v_{1i}\\v_{2i}\\ \vdots\\v_{pi}\end{bmatrix}$, $V = \begin{bmatrix}v_{11}&amp;v_{12}&amp;\cdots&amp;v_{1m}\\v_{21}&amp;v_{22}&amp;\cdots&amp;v_{2m}\\ \vdots&amp;\vdots&amp;\cdots&amp;\vdots\\v_{p1}&amp;v_{p2}&amp;\cdots&amp;v_{pm}\end{bmatrix}=\begin{bmatrix}v_1&amp;v_2&amp;\cdots&amp;v_m\end{bmatrix}$, $V^T = \begin{bmatrix}v_{11}&amp;v_{21}&amp;\cdots&amp;v_{p1}\\v_{12}&amp;v_{22}&amp;\cdots&amp;v_{p2}\\ \vdots&amp;\vdots&amp;\cdots&amp;\vdots\\v_{1m}&amp;v_{2m}&amp;\cdots&amp;v_{pm}\end{bmatrix}=\begin{bmatrix}v_1^T \\v_2^T \\ \vdots\\v_m^T \end{bmatrix}$。<br>
-所以就有：<br>
-\begin{align*}<br>
-z_1 &amp;= v_1^Tx_j\\<br>
-&amp;\cdots\\<br>
-z_k &amp;= v_k^Tx_j\\<br>
-&amp;\cdots\\<br>
-z_m &amp;= v_m^Tx_j<br>
-\end{align*}<br>
-其中$z_1,\cdots,z_m$是标量，$v_1^T,\cdots, v_m^T $是$1\times p$的向量，$x_j$是一个$p\times 1$维的观测向量，而我们有$n$个观测向量，所以随机变量$z_k$共有$n$个可能取值：<br>
-$$z_{k} = v_k^Tx_i= \sum_{i=1}^{p}v_{ik}x_{ij}, j = 1,2,\cdots,n$$<br>
-其中$x_i$是观测矩阵$X$的第$i$列，$X\in \mathbb{R}^{p\times n}$。</p>
-<h5 id="协方差矩阵">协方差矩阵</h5>
-<p>离散型随机变量$X$($X$的取值等可能性)方差的计算公式是：<br>
-$$var(X) = E[(X-\mu)^2] = \frac{1}{n}\sum_{i=1}^n (x_i-\mu)^2,$$<br>
-其中$\mu$是X的平均数，即$\mu = \frac{1}{n}\sum_{i=1}^nx_i$。</p>
-<p>让$z_k$的方差最大即最大化：<br>
-\begin{align*}<br>
-var(z_1) &amp;=E(z_1,\bar{z_1})^2 \\<br>
-&amp;=\frac{1}{n}\sum_{i=1}^n (v_1^T x_i - v_1^T \bar{x_i})^2\\<br>
-&amp;=\frac{1}{n}\sum_{i=1}^n (v_1^T x_i - v_1^T \bar{x_i})(v_1^T x_i - v_1^T \bar{x_i})^T\\<br>
-&amp;=\frac{1}{n}\sum_{i=1}^n v_1^T (x_i - \bar{x_i})(x_i - \bar{x_i})^T v_1\\<br>
-\end{align*}<br>
-其中$x_i=\begin{bmatrix}x_{1i}\\x_{2i}\\ \vdots\\x_{pi}\end{bmatrix}$,$\bar{x_i}=\begin{bmatrix}\bar{x_{1i}}\\\bar{x_{2i}}\\ \vdots\\\bar{x_{pi}}\end{bmatrix}$,$x_i$是$p$维的，$x_i^p$也是$p$维的，$(x_i-\bar{x_i})$是$p\times 1$维的，$(x_i -\bar{x_i})^T$是$1\times p$维的。<br>
-令$S=\frac{1}{n}\sum_{i=1}^n(x_i -\bar{x_i})(x_i-\bar{x_i})^T$，$S$是一个$p\times p$的对称矩阵，其实$S$是一个协方差矩阵。这个协方差矩阵可以使用矩阵$X$直接求出来，也可以通过对$X$进行奇异值分解求出来。<br>
-如果使用奇异值分解的话，首先对矩阵$X$进行去中心化，即$\bar{x_i}=0$，则：<br>
-\begin{align*}<br>
-S &amp;= \frac{1}{n}\sum_{i=1}^T x_ix_i^T \\<br>
-&amp;=\frac{1}{n}X_{p\times n}X_{n\times p}^T<br>
-\end{align*}<br>
-$X=U\Sigma V^T $<br>
-$X X^T =U\Sigma V^T V\Sigma U^T = U\Sigma_1^2 U^T $<br>
-$X^T X =V\Sigma U^T U\Sigma V^T = V\Sigma_2^2 V^T $<br>
-$S=\frac{1}{n}XX^T =\frac{1}{n}U\Sigma^2 U^T $</p>
-<h5 id="拉格朗日乘子法">拉格朗日乘子法</h5>
-<p>将$S$代入得：<br>
-$$var(z_1) = v_1^TSv_1,$$<br>
-接下来的目标是最大化$var(z_1)$，这里要给出一个限制条件，就是$v_1^Tv_1 = 1$，否则的话$v_1$无限大，$var(z_1)$就没有最大值了。<br>
-使用拉格朗日乘子法，得到目标函数：<br>
-$$L=v_1^TSv_1 - \lambda (v_1^Tv_1 -1)$$<br>
-求偏导，令偏导数等于零得：<br>
-\begin{align*}<br>
-\frac{\partial{L}}{\partial{v_1}}&amp;=2Sv_1 - 2\lambda v_1\\<br>
-&amp;=2(S-\lambda) v_1\\<br>
-&amp;=0<br>
-\end{align*}<br>
-即$Sv_1 = \lambda v_1$，所以$v_1$是矩阵$S$的一个特征向量(eigenvector)。所以：<br>
-$$var(z_1) = v_1^TSv_1 = v_1^T\lambda v_1 = \lambda v_1^Tv_1 = \lambda,$$<br>
-第一个主成分$v_1$对应矩阵$S$的最大特征值。</p>
-<h5 id="其他主成分">其他主成分</h5>
-<p>对于$z_2$,同理可得：<br>
-$var(z_2) = v_2^TSv_2$，<br>
-但是这里要加一些限制条件$v_2<sup>Tv_2=1$，除此以外，第2个主成分还有和之前的主成分不相关，即$cov[z_1,z_2]=0$,或者说是$v_1</sup>Tv_2=0$，证明如下。<br>
-\begin{align*}<br>
-cov[z_1,z_2] &amp;=\mathbb{E}[(z_1-\bar{z_1})(z_2-\bar{z_2})]\\<br>
-&amp;=\frac{1}{n}(v_1^T x_i - v_1^T \bar{x_i})(v_2^T x_i-v_2^T \bar{x_i})\\<br>
-&amp;=\frac{1}{n}v_1^T (x_i-\bar{x_i})(x_i-\bar{x_i})v_2\\<br>
-&amp;=\frac{1}{n}v_1^T SV_2\\<br>
-&amp;=\frac{1}{n}\lambda v_1^T v_2\\<br>
-&amp;=0<br>
-\end{align*}</p>
-<p>维基百科上是通过将数据减去第一个主成分之后再最大化方差，这两种理解方法都行。<br>
-所以拉格朗日目标函数就成了：<br>
-$$L=v_1^TSv_1 - \lambda (v_1^Tv_1 -1) -\beta v_2^Tv_1$$<br>
-求导，令导数等于零得：<br>
-$$\frac{\partial{L}}{\partial{v_1}}=2Sv_2 - 2\lambda v_2 - \beta v_1 = 0$$<br>
-而$v_1$和$v_2$不相关，所以$\beta=0$，所以$Sv_2 = \lambda v_2$，即$v_2$也是矩阵$S$的特征向量，但是最大的特征值对应的特征向量已经被$v_1$用了，所以$v_2$是第二大的特征值对应的特征向量。<br>
-同理可得第$k$个主成分是$S$的第$k$大特征值对应的特征向量。</p>
-<p>但是这种理解方法没有办法推广到非线性PCA。接下来的集中理解方式可以由线性PCA开始，并且可以推广到非线性PCA。</p>
-<h3 id="函数拟合">函数拟合</h3>
-<h4 id="线性pca过程-v2">线性PCA过程</h4>
-<h4 id="非线性pca过程">非线性PCA过程</h4>
-<h5 id="广义主成分分析-generalized-pca-gpca">广义主成分分析(Generalized PCA,GPCA)</h5>
-<p>刚才讲的PCA是线性PCA，是拟合一个超平面(hyperplane)的过程，但是如果数据不是线性的，比如说是一个曲面$x^2 +y^2 +z=0$，这样子线性PCA就不适用了，可以稍加变化让其依然是可以用的。比如$x+y+1=0$可以看成$\begin{bmatrix}a&amp;b&amp;c\end{bmatrix}\begin{bmatrix}x\\y\\1\end{bmatrix}$，而$x^2 +y^2 +z=0$可以看成$\begin{bmatrix}a&amp;b&amp;c\end{bmatrix}\begin{bmatrix}x^2 \\y^2 \\z\end{bmatrix}$。</p>
-<p>如果原始数据是非线性的，我们可以通过多个特征映射函数$\Phi$从原始数据提取非线性特征（也可看成升维，变成高维空间中数据，在高维中可以看成是线性的），然后利用线性PCA对非线性特征进行降维。例如：<br>
-假设$x=[x_1,x_2,x_3]^T \in \mathbb{R}^3$，按照转换函数$v(x) = [x_1^2 , x_1x_2,x_1x_3,x_2^2 ,x_2x_3,x_3^2 $将其转换成$\mathbb{R}^6$中的特征，接下来使用线性PCA对这些非线性特征进行降维。</p>
-<p>给定一个函数$\Phi$将$p$维数据映射到特征空间$F$中，即$\Phi:\mathbb{R}^p\rightarrow F,\mathbf{x}\rightarrow X$。我们可以通过计算协方差矩阵$C_F = \frac{\Phi\Phi^T }{n}$,即$C_F = \frac{1}{n}\sum_{i=1}<sup>{n}\phi(x_i)\phi(x_i)</sup>T $，然后对协方差矩阵$C_F$进行特征值分解$C_Fx=\lambda x$就可以求解，这里我们假设空间$F$中的数据均值为$0$，即$E[\Phi(x)] = 0$。</p>
-<h3 id="嵌入-embedding-保距离">嵌入(embedding)，保距离</h3>
-<h4 id="核函数技巧-kernel-trick">核函数技巧(Kernel trick)</h4>
-<p>在GPCA中，如果不知道$\Phi$的话，或者$\Phi$将数据映射到了无限维空间中，就没有办法求解了。这里就给出了一个假设，假设低维空间中$x_i,x_j$的点积(dot product)可以通过一个函数计算，将$x_i,x_j$的点积记为$K_{ij}$，则：<br>
-$$K_{ij} = &lt; \phi(x_i),\phi(x_j) &gt; = k(x_i,x_j)$$<br>
-其中$k()$是一个函数，比如可以取高斯函数，$k(x,y) = e^{\frac{(\Vert x-y\Vert)^2 }{2\sigma^2 }}$，我们叫它核函数(kernel function)。<br>
-这样即使我们不知道$\Phi$，也可以计算点积，直接使用核函数计算。</p>
-<h4 id="dot-pca">dot PCA</h4>
-<p>给定原始数据$X_D = [x_1,\cdots,x_n],x_i\in \mathbb{R}^p$，假定$\hat{x}=0$，那么$X_D$的协方差矩阵：<br>
-\begin{align*}<br>
-S&amp;= \frac{\sum_{i=1}^n (x_i-\bar{x})(x_i-\bar{x})^T }{n}\\<br>
-&amp;= \frac{\sum_{i=1}^n (x_i-0)(x_i-0)^T }{n}\\<br>
-&amp;= \frac{\sum_{i=1}^n (x_i)(x_i)^T }{n}\\<br>
-&amp;= \frac{\begin{bmatrix}x_1&amp;\cdots&amp;x_n\end{bmatrix}\begin{bmatrix}x_1\\\vdots\\x_n\end{bmatrix}}{n}\\<br>
-&amp;= \frac{X_DX_D^T}{n}\\<br>
-&amp;= Cov(X_D, X_D)<br>
-\end{align*}<br>
-即$S=\frac{X_DX_D^T}{n}$，而对$X_D$做奇异值分解，有$X_D = V\Sigma U^T$，所以$S = \frac{V\Sigma^2 V^T}{n}$，其中$U$是$S$的特征值矩阵，则：$Z’ = V^T X’$，其中$V\in \mathbb{R}^{p\times m}$，$X’$是新的样本数据。</p>
-<p>这里我们推导一下点积和PCA的关系，即假设我们有$K = Dot(X_D,X_D) = X_D^T X_D$，则$K=U^T \sigma^2U$，而我们根据奇异值分解$X_D = V\Sigma U^T $可以得到$U$和$V$的关系，即$V=X_DU\Sigma^{-1} $，对$K$进行特征值分解，可以求得$U$和$\Sigma$，所以来了一个新的样本$X’$，<br>
-$$Z’ = V^TX’ = D^{-1} U^T X_D^T X’ = D^{-1} U^T &lt; X_D,X’ &gt;.$$<br>
-事实上，这里$X’$是已知的，可以直接计算协方差，但是这里是为了给Kernel PCA做引子，所以，推导的过程中是没有用到$X$的，只用到了$X$的点积，在测试的时候会用到$X’$。</p>
-<h5 id="kernel-pca">Kernel PCA</h5>
-<p>Kernel PCA就是将Kernel trick应用到了dot PCA中，由Kernel trick得$K = \Phi^T \Phi$，$K=U\Sigma^2 U^T $，则<br>
-$$V = \Phi U\Sigma^{-1} = \Phi U diag(1/sqrt(\lambda_1),1/sqrt(\lambda_2),\cdots)$$<br>
-但是我们求不出来$V$，因为$\Phi$不知道，但是可以让$V$中的$\Phi$和样本$X’$中的$\Phi$在一起，就可以计算了，即<br>
-$$Z’ = V^T\phi(X’) = \Sigma^{-1}U\Phi\phi(X’) = \Sigma^{-1}UK(X,X’)$$</p>
-<h3 id="流形学习-manifold">流形学习(manifold)</h3>
-<h4 id="线性">线性</h4>
-<h5 id="pca">PCA</h5>
-<h5 id="mds">MDS</h5>
-<h4 id="非线性">非线性</h4>
-<h5 id="lle">LLE</h5>
-<h5 id="isomap">ISOMAP</h5>
-<h2 id="线性判断分析-fisher-linear-discrimiant-analysis-lda">线性判断分析(Fisher linear discrimiant analysis,LDA)</h2>
-<h3 id="线性lda">线性LDA</h3>
-<h4 id="两类">两类</h4>
-<h5 id="示例">示例</h5>
-<h4 id="c类-c-gt-2">C类(C$\gt 2$)</h4>
-<p>两维的问题是通过将原始数据投影到一维空间进行分类，而$C$维的问题则是将原始数据投影到$C-1$空间进行分类，通过一个投影矩阵$W=\begin{bmatrix}w_1&amp;\cdots&amp;w_{C-1}\end{bmatrix}$将$C$维的$x$投影到$C-1$维，得到$y=\begin{bmatrix}y_1&amp;\cdots&amp;y_{C-1}\end{bmatrix}$，即$y_i = w_i^Tx\Rightarrow y = W^Tx$。</p>
-<h5 id="示例-v2">示例</h5>
-<h3 id="不足">不足</h3>
-<ul>
-<li>最多投影到$C-1$维特征空间。</li>
-<li>LDA是参数化的方法，它假设数据服从单高斯分布，并且所有类的协方差都是等价的。对于多个高斯分布，线性的LDA是无法分开的。</li>
-<li>当数据之间的差异主要通过方差而不是均值体现的话，LDA就会失败(fail)。如下图<br>
-<img src="/2019/01/02/ml-pca/" alt="figure"></li>
-</ul>
-<h3 id="kernel-lda">Kernel LDA</h3>
-<h2 id="pca和lda区别和联系">PCA和LDA区别和联系</h2>
-<p>PCA是一个无监督的降维方法，通过最大化降维后数据的方差实现；LDA是一个有监督的降维方法，通过最大化类可分性实现(class discrimnatory)。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://en.wikipedia.org/wiki/Principal_component_analysis" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Principal_component_analysis</a><br>
-2.<a href="https://en.wikipedia.org/wiki/Variance" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Variance</a><br>
-3.<a href="https://sebastianraschka.com/faq/docs/lda-vs-pca.html" target="_blank" rel="noopener">https://sebastianraschka.com/faq/docs/lda-vs-pca.html</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/28/内积空间、赋范空间和希尔伯特空间/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/28/内积空间、赋范空间和希尔伯特空间/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">内积空间、赋范空间和希尔伯特空间</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-28 15:15:37" itemprop="dateCreated datePublished" datetime="2018-12-28T15:15:37+08:00">2018-12-28</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-11-21 15:19:16" itemprop="dateModified" datetime="2019-11-21T15:19:16+08:00">2019-11-21</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="引言">引言</h2>
-<p>数学的空间是研究工作的对象和遵循的规则。<br>
-线性空间：加法和数乘<br>
-拓扑空间：距离，范数和内积。</p>
-<h2 id="距离">距离</h2>
-<p>距离是用来衡量两个点有多“近”的。</p>
-<h3 id="距离定义">距离定义</h3>
-<p>$X$是一非空集合，任给一对这一集合中的元素$x,y$，都会给定一个实数$d(x,y)$与它们对应，并且这个实数满足以下条件：</p>
-<ol>
-<li>$d(x,y)\ge 0, d(x,y) = 0 \Leftrightarrow x=y$；</li>
-<li>$d(x,y) = d(y,x)$；</li>
-<li>$d(x,y) \le d(x,z) + d(z,y)$。</li>
-</ol>
-<p>则$d(x,y)$为这两点$x$和$y$之间的距离。</p>
-<h3 id="示例">示例</h3>
-<h4 id="向量的距离">向量的距离</h4>
-<p>$d_1(x,y) = \sqrt{(x_1-y_1)<sup>2+\cdots,(x_n-y_n)</sup>n}$<br>
-$d_2(x,y) = max{|x_1-y_1|,\cdots,|x_n,y_n|}$<br>
-$d_3(x,y) = |x_1-y_1|+\cdots+|x_n,y_n|$</p>
-<h4 id="曲线的距离">曲线的距离</h4>
-<p>$d_1(f,g) = \int_a<sup>b(f(x)-g(x))</sup>2 dx$<br>
-$d_2(f,g) = max_{a\le x\le b}|f(x)-f(y)|$<br>
-$d_3(f,g) = \int_a<sup>b(f(x)-g(x))</sup>k dx$</p>
-<h3 id="线性空间">线性空间</h3>
-<p>向量的加法和数乘</p>
-<h3 id="线性空间的八个性质">线性空间的八个性质</h3>
-<p>加法的交换律和结合律，零元，负元，数乘的交换律，单位一，数乘与加法的结合律。</p>
-<h2 id="范数-向量到零点的距离-定义">范数（向量到零点的距离）定义</h2>
-<p>如果$\Vert x\Vert $是$R^n$上的范数（$x$是向量），那么它需要满足以下条件：</p>
-<ol>
-<li>$\Vert x\Vert \ge 0, \forall x\in R, \Vert x\Vert  = 0  \Leftrightarrow x = 0$；</li>
-<li>$\Vert \alpha x\Vert  = |\alpha|\Vert x\Vert, \forall \alpha \in R, x\in R^n$</li>
-<li>$\Vert x+y\Vert  \le \Vert x\Vert  + \Vert y\Vert , \forall x,y\in R$</li>
-</ol>
-<p>可以看成是点到零点距离多了条件2。</p>
-<h3 id="示例-v2">示例</h3>
-<p>$\Vert x\Vert_2  = \sqrt{x_1<sup>2+\cdots,x_n</sup>n}$<br>
-$\Vert x\Vert_{\infty}  = max{|x_1|,\cdots,|x_n|}$<br>
-$\Vert x\Vert_1  = |x_1|+\cdots+|x_n|$</p>
-<h3 id="距离和范数的关系">距离和范数的关系</h3>
-<p>由范数可以定义距离。$d(x,y) = \Vert  x-y\Vert$。<br>
-但是由距离不一定可以定义范数。如$\Vert x\Vert  = d(0,x)$,但是$\Vert \alpha x\Vert  = d(0, \alpha x) \ne |\alpha|\Vert x\Vert $。</p>
-<h3 id="赋范空间和度量空间">赋范空间和度量空间</h3>
-<p>赋予范数的集合称为赋范空间。<br>
-距离的集合称为度量空间。</p>
-<h3 id="线性赋范空间和线性度量空间">线性赋范空间和线性度量空间</h3>
-<p>赋予范数加上线性空间称为线性赋范空间。<br>
-距离加上线性空间称为线性度量空间。</p>
-<h2 id="内积">内积</h2>
-<h3 id="引言-v2">引言</h3>
-<p>赋范空间有向量的模长，即范数。但是范数只有大小，没有夹角，所以就引入了内积。</p>
-<h3 id="定义">定义</h3>
-<p>给定$(x,y)\in R$,如果它满足：</p>
-<ol>
-<li>对称性；</li>
-<li>对第一变元的线性性；</li>
-<li>正定性。</li>
-</ol>
-<p>那么就称$(x,y)$为内积。</p>
-<h3 id="示例-v3">示例</h3>
-<ol>
-<li>$(x,y) = \sum_{n=1}^nx_ny_n$。</li>
-<li>$(f,g) = \int_{-\infty}^{\infty}f(x)g(x)dx$。</li>
-</ol>
-<h3 id="内积和范数的关系">内积和范数的关系</h3>
-<ul>
-<li>内积可以导出范数</li>
-<li>范数不能导出距离</li>
-</ul>
-<h3 id="内积空间">内积空间</h3>
-<p>在线性空间上定义内积，这个空间称为内积空间。<br>
-常见的欧几里得空间就是一个内积空间，内积空间是一个抽象的空间，而欧几里得空间是一个具象化了的内积空间。<br>
-希尔伯特引入了无穷维空间并定义了内积，其空间称为内积空间，再加上完备性，称为希尔伯特空间。完备性是取极限之后还在这个空间内。<br>
-完备的赋范空间称为巴拿赫空间。</p>
-<h2 id="拓扑空间">拓扑空间</h2>
-<p>欧几里得几何学需要定义内积，连续的概念不需要内积，甚至不需要距离。</p>
-<h3 id="定义-v2">定义</h3>
-<p>给定一个集合$X$,$\tau$是$X$的一系列子集，如果$\tau$满足以下条件：</p>
-<ol>
-<li>空集(empty set)和全集X都是$\tau$的元素;</li>
-<li>$\tau$中任意元素的并集(union)仍然是$\tau$的元素;</li>
-<li>$\tau$中任意有限多个元素的交集(intersection)仍然是$\tau$中的元素。<br>
-则称$\tau$是$X$上的一个拓扑。</li>
-</ol>
-<h2 id="距离-范数和内积之间的关系">距离，范数和内积之间的关系</h2>
-<p>距离$\gt$范数$\gt$内积</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/24/convex-optimization-chapter-2-Convex-sets/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/24/convex-optimization-chapter-2-Convex-sets/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">convex optimization chapter 2 Convex sets</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-24 16:28:45" itemprop="dateCreated datePublished" datetime="2018-12-24T16:28:45+08:00">2018-12-24</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:16:59" itemprop="dateModified" datetime="2019-12-17T15:16:59+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/凸优化/" itemprop="url" rel="index"><span itemprop="name">凸优化</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="仿射集-affine-sets-和凸集-convex-sets">仿射集(affine sets)和凸集(convex sets)</h2>
-<h3 id="直线-line-和线段-line-segmens">直线(line)和线段(line segmens)</h3>
-<p>假设$x_1,x_2 \in \mathbb{R}^n $是n维空间中不重合$(x_1 \ne x_2)$的两点，给定：<br>
-$$y = \theta x_1 + (1 - \theta)x_2,$$<br>
-当$\theta\in R$时，$y$是经过点$x_1$和点$x_2$的直线。当$\theta=1$时，$y=x_1$,当$\theta=0$时，$y=x_2$。当$\theta\in[0,1]$时，$y$是$x_1$和$x_2$之间的线段(line segment)。 把$y$改写成如下形式： $$y = x_2 + \theta(x_1 - x_2)$$，可以给出另一种解释，$y$是点$x_2$和方向$x_1 - x_2$(从$x_2$到$x_1$的方向)乘上一个缩放因子$\theta$的和。<br>
-如下图所示，可以将y看成$\theta$的函数。<br>
-<img src="https://ws1.sinaimg.cn/large/006wtfMEly1fyhy7m4llij30mz0alwep.jpg" alt="line_line-segment"></p>
-<h3 id="仿射集-affine-sets">仿射集(affine sets)</h3>
-<h4 id="仿射集的定义">仿射集的定义</h4>
-<p>给定一个集合$C\subset \mathbb{R}^n $,如果经过$C$中任意两个不同点的直线仍然在$C$中，那么$C$就是一个仿射集。即，对于任意$x_1,x_2\in C$和$\theta\in R$，都有$\theta x_1 + (1 - \theta)x_2 \in C$。换句话说，给定线性组合的系数和为$1$，$C$中任意两点的线性组合仍然在$C$中，我们就称这样的集合是仿射的(affine)。</p>
-<h4 id="仿射组合-affine-combination">仿射组合(affine combination)</h4>
-<p>我们可以把两个点的线性组合推广到多个点的线性组合，这里称它为仿射组合。<br>
-仿射组合的定义：给定$\theta_1+\cdots+\theta_k = 1$,则$\theta_1 x_1 + \cdots + \theta_k x_k$是点$x_1,\cdots,x_k$的仿射组合(affine combination)。<br>
-根据仿射集的定义，一个仿射集(affine set)包含集合中任意两个点的仿射（线性）组合，那么可以推导出仿射集包含集合中任意点（大于等于两个）的仿射组合，即：如果$C$是一个仿射集，$x_1,\cdots,x_k\in C$,且$\theta_1 x_1 + \cdots + \theta_k x_k = 1$,那么点$\theta_1 x_1 + \cdots + \theta_k x_k$仍然属于$C$。</p>
-<h4 id="仿射集的子空间-subspce">仿射集的子空间(subspce)</h4>
-<p>如果$C$是一个仿射集，$x_0 \in C$,那么集合<br>
-$$V = C - x_0 = {x - x_0\big|x \in C}$$<br>
-是一个子空间(subspace),因为$V$是加法封闭和数乘封闭的。<br>
-证明：<br>
-假设$v_1, v_2 \in V$，并且$\alpha,\beta \in R$。<br>
-要证明V是一个子空间，那么只需要证明$\alpha v_1 + \beta v_2 \in V$即可。<br>
-因为$v_1, v_2 \in V$，则$v_1+x_0, v_2+x_0 \in C$。<br>
-而$x_0 \in C$，所以有<br>
-$$\alpha(v_1+x_0) + \beta(v_2+x_0) + (1 - \alpha - \beta)x_0 \in C$$<br>
-即：<br>
-\begin{align*}<br>
-\alpha v_1 + \beta v_2 + (\alpha + \beta + 1 - \alpha - \beta)x_0 &amp;\in C\\<br>
-\alpha v_1 + \beta v_2 + x_0 &amp;\in C<br>
-\end{align*}<br>
-所以$\alpha v_1 + \beta v_2 \in V$。<br>
-所以，仿射集$C$可以写成：<br>
-$$C = V + x_0 = { v + x_0\big| v \in V},$$<br>
-即，一个子空间加上一个偏移(offset)。而与仿射集$C$相关的子空间$V$与$x_0$的选择无关，即$x_0$可以为$C$中任意一点。</p>
-<h4 id="示例">示例</h4>
-<p>线性方程组的解。一个线性方程组的解可以表示为一个仿射集:$C={x\big|Ax = b}$,其中 $A\in \mathbb{R}^{m \times n}, b \in \mathbb{R}^m $。<br>
-证明：<br>
-设$x_1, x_2 \in C$,即$Ax_1 = b, Ax_2 = b$。对于任意$\theta \in R$,有:<br>
-\begin{align*}<br>
-A(\theta x_1 + (1-\theta x_2) &amp;= \theta Ax_1 + (1-\theta)Ax_2\\<br>
-&amp;= \theta b + (1 - \theta) b\\<br>
-&amp;= b \end{align*}<br>
-所以线性方程组的解是一个仿射组合：$\theta x_1 + (1 - \theta) x_2$，这个仿射组合在集合$C$中，所以线性方程组的解集$C$是一个仿射集。<br>
-和该仿射集$C$相关的子空间$V$是$A$的零空间(nullspace)。因为仿射集$C$中的任意点都是方程$Ax = b$的解，而$V = C - x_0 = {x - x_0\big|x \in C}$，有$Ax = b, Ax_0 = b$，则$Ax - Ax_0 = A(x - x_0) = b - b = 0$，所以$V$是$A$的零空间。</p>
-<h4 id="仿射包-affine-hull">仿射包(affine hull)</h4>
-<p>给定集合$C\subset \mathbb{R}^n $，集合中点的仿射组合称为集合$C$的仿射包(affine hull),表示为$aff C$:<br>
-$aff C = {\theta_1 x_1 + \cdots + \theta_k x_k\big| x_1,\cdots,x_k \in C, \theta_1 + \cdots + \theta_k = 1}$<br>
-集合$C$可以是任意集合。仿射包是包含集合$C$的最小仿射集（一个集合的仿射包只有一个，是不变的）。即如果$S$是任意仿射集，满足$C\subset S$，那么有$aff C \subset S$。或者说仿射包是所有包含集合$C$的仿射集的交集。</p>
-<h3 id="仿射纬度-affine-dimension-和相对内部-relative-interior">仿射纬度(affine dimension)和相对内部(relative interior)</h3>
-<h4 id="拓扑-topology">拓扑(topology)</h4>
-<p>拓扑(topology)，开集(open sets),闭集(close sets),内部(interior),边界(boundary),闭包(closure),邻域(neighbood),相对内部(relative interior)<br>
-同一个集合可以有很多个不同的拓扑。</p>
-<h5 id="定义">定义</h5>
-<p>给定一个集合$X$,$\tau$是$X$的一系列子集，如果$\tau$满足以下条件：</p>
-<ol>
-<li>空集(empty set)和全集X都是$\tau$的元素;</li>
-<li>$\tau$中任意元素的并集(union)仍然是$\tau$的元素;</li>
-<li>$\tau$中任意有限多个元素的交集(intersection)仍然是$\tau$中的元素。</li>
-</ol>
-<p>则称$\tau$是集合$X$上的一个拓扑。<br>
-如果$\tau$是$X$上的一个拓扑，那么$(X,\tau)$对称为一个拓扑空间(topological space)。<br>
-如果$X$的一个子集在$\tau$中，这个子集被称为开集(open set)。<br>
-如果$X$的一个子集的补集是在$\tau$中，那么这个子集是闭集(closed set)。<br>
-$X$的子集可能是开集，闭集，或者都是，都不是。<br>
-空集和全集是开集，也是闭集（定义）。</p>
-<h5 id="示例-v2">示例</h5>
-<ol>
-<li>给定集合$X={1,2,3,4}$, 集合$\tau = { {},{1,2,3,4} }$就是$X$上的一个拓扑。</li>
-<li>给定集合$X={1,2,3,4}$, 集合$\tau = { {},{1}, {3,4},{1,3,4},{1,2,3,4} }$就是$X$上的另一个拓扑。</li>
-<li>给定集合$X={1,2,3,4}$, $X$的幂集(power set)也是$X$上的另一个拓扑。</li>
-</ol>
-<p><strong>通常如果不说的话，默认是在欧式空间(1维，2维,…,n维欧式空间)的拓扑，即欧式拓扑。以下讲的一些概念是在欧式空间的拓扑（通常拓扑）上的定义和一般拓扑直观上可能不太一样，但实际上意义是相同的。</strong></p>
-<h4 id="epsilon-disc-或-epsilon-邻域">$\epsilon-disc$或$\epsilon$邻域</h4>
-<h5 id="定义-v2">定义</h5>
-<p>给定$x\in \mathbb{R}^n $以及$\epsilon\gt 0$，集合<br>
-$$D(x,\epsilon) = {y\in \mathbb{R}^n \big|d(x,y) \lt \epsilon}$$<br>
-称为关于$x$的$\epsilon-disc$或者$\epsilon$邻域(neighbood)或者$\epsilon$球(ball)。即所有离点$x$距离小于$\epsilon$的点$y$的集合。</p>
-<h4 id="开集-open-sets">开集(open sets)</h4>
-<h5 id="定义-v3">定义</h5>
-<p><strong>给定集合$A\subset \mathbb{R}^n $，对于$A$中的所有元素，即$\forall x\in A$，都存在$\epsilon \gt 0$使得$D(x,\epsilon)\subset A$，那么就称该集合是开的。</strong><br>
-即集合$A$中所有元素的$spsilon$邻域都还在集合$A$中（定理$1$）。<br>
-<strong>注意：必须满足$\epsilon \gt 0$</strong></p>
-<h5 id="定理">定理</h5>
-<h6 id="定理-1-epsilon-邻域是开集">定理$1$ $epsilon$邻域是开集</h6>
-<ul>
-<li>在$\mathbb{R}^n $中，对于一个$\epsilon \gt 0, x\in \mathbb{R}^n $,那么集合$x$的$\epsilon$邻域$D(x,\epsilon)$是开的，给定一个$\epsilon$，能找到一个更小的$epsilon$邻域。</li>
-</ul>
-<h6 id="定理-2">定理$2$</h6>
-<ul>
-<li>$\mathbb{R}^n $中有限个开子集的交集是$\mathbb{R}^n $的开子集。</li>
-<li>$\mathbb{R}^n $中任意个开子集的并集是$\mathbb{R}^n $的开子集。</li>
-</ul>
-<p><strong>注意：任意开集的交可能不是开集，一个点不是开集，但是它是所有包含它的开集的交。</strong></p>
-<h5 id="示例-v3">示例</h5>
-<p><img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/unit_circle.png" alt="unit_circle"></p>
-<ol>
-<li>$\mathbb{R}^2 $中的不包含边界的球是开的，如图。</li>
-<li>考虑一个$\mathbb{R}^1 $中的开区间，如$(0,1)$，它是一个开集，但是如果把它放在二维欧式空间中(是x轴上的一个线段)，它不是开的，不满足定义，所以开集是必须针对于某一个给定的集合$X$。</li>
-<li>$\mathbb{R}^2 $上的包含边界的单位圆$X = {x\in \mathbb{R}^2 \big||x|\le 1}$不是开的。因为边界上的点$x$不满足$\epsilon \gt 0, D(x,\epsilon) \subset X$。</li>
-<li>集合$S={(x,y) \in \mathbb{R}^2 \big|0 \lt x \lt 1}$是开集。对于每个点$(x,y)\in S$,我们可以画出半径$r = min{x,1-x}$的邻域并且其全部含于$S$，所以$S$是开集。</li>
-<li>集合$S={(x,y) \in \mathbb{R}^2 \big|0 \lt x \le 1}$不是开集。因为点$(1,0) \in S$的邻域包含点$(x,0)$,其中$x\gt 1$。</li>
-</ol>
-<h4 id="内部-interior">内部(interior)</h4>
-<h5 id="定义-v4">定义</h5>
-<p><strong>给定集合$A\subset \mathbb{R}^n $,点$x \in A$，如果有一个开集$U$使得$x \in U\subset A$,那么该点就称为$A$的一个内点。或者说对于$x\in A$，有一个$\epsilon \gt 0$使得$D(x,\epsilon)\subset A$。$A$的所有内点组成的集合叫做$A$的内部(interior)，记做$int(A)$。</strong></p>
-<h5 id="属性">属性</h5>
-<ol>
-<li>集合内部可能是空的，单点的内部就是空的。</li>
-<li>单位圆的内部是不包含边界的单位圆。</li>
-<li>事实上$A$的内部是$A$所有开子集的并，由开集的定理得$A$的内部是开的，且$A$的内部是$A$的最大的开集。</li>
-<li>当且仅当$A$的内部等于$A$的时候，$A$是开集（$A$可能是闭集）。</li>
-<li>只需要寻找集合内$\epsilon$邻域还在这个集合内的点即可。</li>
-</ol>
-<h5 id="示例-v4">示例</h5>
-<ol>
-<li>给定集合$S={(x,y)\in \mathbb{R}^2 \big| 0 \lt x \le 1}$，$int(S) = {(x,y)\big|0 \lt x \lt 1}$。因为区间$(0,1)$中的点都满足它们的$\epsilon$邻域在$S$中。</li>
-<li>$int(A) \cup int(B) \ne int(A\cup B)$。在实数轴上，$A=[0,1],B=[1,2]$，那么$int(A) = (0,1),int(B) = (1,2)$，所以$int(A) \cup int(B) = (0,1)\cup (1,2) = (0,2)\backslash {1}$，而$int(A\cup B) = int[0,2] = (0,2)$。</li>
-</ol>
-<h4 id="闭集-closed-set">闭集(closed set)</h4>
-<h5 id="定义-v5">定义</h5>
-<p><strong>对于$\mathbb{R}^n $中的集合$B$，如果它在$\mathbb{R}^n $的补（即集合$\mathbb{R}^n \backslash B$）是开集，那么它是闭集。</strong><br>
-单点是闭集。含有边界的单位圆组成的集合是闭集，因为它的补集不包含边界。一个集合可能既不是开集也不是闭集。例如，在一维欧几里得空间，半开半闭区间（如$(0,1]$）既不是开集也不是闭集。</p>
-<h5 id="定理-v2">定理</h5>
-<ol>
-<li>$\mathbb{R}^n $中有限个闭子集的并是闭集。</li>
-<li>$\mathbb{R}^n $中任意个闭子集的交是闭集。</li>
-</ol>
-<p>这个定理是从开集的定理中得出的，在对开集取补变成闭集时候，并与交相互变换即可。</p>
-<h5 id="示例-v5">示例</h5>
-<ol>
-<li>给定集合$S={(x,y) \in \mathbb{R}^2 \big| 0 \lt x \le 1, 0 \lt y \lt 1}$，$S$不是闭集。因为目标区域的下边界不在S中。</li>
-<li>给定集合$S={(x,y) \in \mathbb{R}^2 \big| x^2 +y^2 \le 1}$，$S$是闭集，因为它的闭集是$\mathbb{R}^2 $中的开集。</li>
-<li>$\mathbb{R}^n $中任何有限集是闭集。因为单点是闭集，有限集可以看成很多个单点的并，由定理$1$可以得出。</li>
-</ol>
-<h4 id="聚点-accumulation-point">聚点(accumulation point)</h4>
-<h5 id="定义-v6">定义</h5>
-<p>对于点$x\in \mathbb{R}^n $，如果包含$x$的每个开集$U$包含不同于$x$但依然属于集合$A$中的点，那么就称$x$是$A$的一个聚点(accumulation points)，也叫聚类点(cluster points)。**注意这里是包含集合$A$中的点，而不是全部是集合$A$中的点，所以集合的聚点不一定必须在集合中。**如，在一维欧式空间中，单点集合没有聚点，开区间$(0,1)$的聚点是$[0,1]$，${0,1}$不在区间内，但是是聚点。<br>
-此外，$x$是聚类点等价于：对于每个$\epsilon \gt 0$，$D(x,\epsilon)$包含$A$中的某点$y$且$y\ne x$。</p>
-<h5 id="定理-v3">定理</h5>
-<p>当且仅当集合$S$的所有聚点属于$S$时，$S\subset \mathbb{R}^n $是闭集。</p>
-<h5 id="示例-v6">示例</h5>
-<ol>
-<li>给定集合$S={x\in R\big|x\in [0,1]且x是有理数}$，$S$的聚点为$[0,1]$中所有点。任何不属于$[0,1]$的点都不是聚点，因为这类点有一个包含它的$\epsilon$邻域与$[0,1]$不相交。</li>
-<li>给定集合$S={(x,y)\in \mathbb{R}^2 \big| 0 \le  x\le 1\ or\ \ x = 2}$, 它的聚点是它本身，因为它是闭集。</li>
-<li>给定集合$S={(x,y)\in \mathbb{R}^2 \big|y \lt x^2 + 1}$，S的聚点为集合${(x,y)\in \mathbb{R}^2 \big|y \le x^2 + 1}$，</li>
-</ol>
-<h4 id="闭包-closure">闭包(closure)</h4>
-<h5 id="定义-v7">定义</h5>
-<p>给定集合$A\subset \mathbb{R}^n $,集合$A$的闭包$cl(A)$定义成所有包含$A$的闭集的交，所以$cl(A)$是一个闭集。定价的定义是给定集合$A$，包含$A$的最小闭集叫做这个集合$X$的闭包(closure)，用$cl(A)$或者${\overline{A}}$表示。</p>
-<h5 id="定理-v4">定理</h5>
-<p>给定$A\subset \mathbb{R}^n $，那么$cl(A)$由$A$和$A$的所有聚点组成。</p>
-<h5 id="示例-v7">示例</h5>
-<ol>
-<li>$R$中$S=[0,1)\cup {2}$的闭包是$[0,1]$和${2}$。$S$的聚点是$[0,1]$，再并上$S$得到$S$的闭包是$[0,1]\cup{2}$。</li>
-<li>对于任意$S\subset \mathbb{R}^n $，$\mathbb{R}^n \backslash cl(S)$是开集。因为$cl(S)$是闭集，所以它的补集是开集。</li>
-<li>$cl(A\cap B) \ne cl(A)\cap cl(B)$。比如$A=(0,1),B(1,2),cl(A)=[0,1],cl(B)=[1,2]$,$A\cap B = \varnothing$,$cl(A\cap B) = \varnothing$,而$cl(A)\cap cl(B) = {1}$。</li>
-</ol>
-<h4 id="边界-boundary">边界(boundary)</h4>
-<h5 id="定义-v8">定义</h5>
-<p>对于$\mathbb{R}^n $中的集合$A$，边界定义为集合：<br>
-$bd(A) = cl(A)\cap cl(\mathbb{R}^n \backslash A)$<br>
-即集合$A$的补集的闭包和$A$的闭包的交集，所以$bd(A)$是闭集。$bd(A)$是$A$与$\mathbb{R}^n \backslash A$之间的边界。</p>
-<h5 id="定理-v5">定理</h5>
-<p>给定$A\subset \mathbb{R}^n $，当且仅当对于每个$\epsilon \gt 0$，$D(x,\epsilon)$包含$A$与$\mathbb{R}^n \backslash A$的点，$x\in bd(A)$。</p>
-<h5 id="示例-v8">示例</h5>
-<ol>
-<li>给定集合$S={x\in R\big|x\in [0,1],x是有理数}$，$bd(S) = [0,1]$。因为对于任意$\epsilon \gt 0, x\in [0,1],D(x,\epsilon) = (x-\epsilon, x+\epsilon)$包含有理数和无理数，即x是有理数和无理数之间的边界。</li>
-<li>给定$x\in bd(S)$，$x$不一定是聚点。给定集合$S = {0} \subset R$，$bd(S) = {0}$，但是单点没有聚点。</li>
-<li>给定集合$S={(x,y)\in \mathbb{R}^2 \big| x^2 -y^2 \gt 1 }$，$bd(S)={(x,y)\big|x^2 - y^2 = 1}$。</li>
-</ol>
-<h4 id="仿射维度-affine-dimension">仿射维度(affine dimension)</h4>
-<h5 id="定义-v9">定义</h5>
-<p>给定一个仿射集$C$，仿射维度是它的仿射包的维度。<br>
-仿射维度和其他维度的定义不总是相同的，具体可以看以下的示例。</p>
-<h5 id="示例-v9">示例</h5>
-<p>给定一个二维欧几里得空间的单位圆，${x\in C\big|x_1^2 +x_2^2 =1}$。它的仿射包是整个$\mathbb{R}^2$，所以二维平面的单位圆仿射维度是$2$。但是在很多定义中，二维平面的单位圆的维度是$1$。</p>
-<h4 id="相对内部-relative-interior">相对内部(relative interior)</h4>
-<p>给定一个集合$C\subset \mathbb{R}^n $，它的仿射维度可能小于$n$，这个时候仿射集$aff\ C \ne \mathbb{R}^n $。</p>
-<h5 id="定义-v10">定义</h5>
-<p>给定集合$C$，相对内部的定义如下：<br>
-$relint\ C = {x\in C\big|(B(x,r)\cup aff\ C) \subset C, \exists \ r \gt 0}.$<br>
-就是集合$C$内所有$\epsilon$球在$C$的仿射集内的点的集合。<br>
-其中$B(x,r)={y \big|\Vert y- x\Vert \le r}$，是以$x$为中心，以$r$为半径的圆。这里的范数可以是任何范数，它们定义的相对内部是相同的。</p>
-<h5 id="示例-v10">示例</h5>
-<p>给定一个$\mathbb{R}^3 $空间中$(x_1,x_2)$平面上的正方形，$C={x\in \mathbb{R}^3 \big|-1 \le x_1 \le 1, -1\le x_2 \le 1, x_3 = 0}$。它的仿射包是$(x_1,x_2)$平面，$aff\ C = {x\in \mathbb{R}^3 \big|x_3=0}$。$C$的内部是空的，但是相对内部是：<br>
-$relint\ C = {x \in \mathbb{R}^3 \big|-1 \le x_1 \le 1, -1\le x_2 \le 1,x_3=0}$。</p>
-<h4 id="相对边界-relative-boundary">相对边界(relative boundary)</h4>
-<h5 id="定义-v11">定义</h5>
-<p>给定集合$C$，相对边界(relative boundary)定义为$cl\ C \backslash relint\ C$，其中$cl\ C$是集合$C$的闭包(closure)。</p>
-<h5 id="示例-v11">示例</h5>
-<p>对于上例（相对内部的示例）来说，它的边界(boundary)是它本身。它的相对内部是边框，${x\in \mathbb{R}^3 \big|max{|x_1|,|x_2|}=1,x_3=0}$。</p>
-<h3 id="凸集-convex-sets">凸集(convex sets)</h3>
-<h4 id="凸集定义">凸集定义</h4>
-<p>给定一个集合$C$，如果集合$C$中经过任意两点的线段仍然在$C$中，这个集合就是一个凸集。<br>
-给定$\forall x_1,x_2 \in C, 0 \le \theta \le 1$，那么我们有$\theta x_1 + (1-\theta)x_2 \in C$。<br>
-每一个仿射集都是凸的，因为它包含经过任意两个不同点的直线，所以肯定就包含过那两个点的线段。</p>
-<h4 id="凸组合-convex-combination">凸组合(convex combination)</h4>
-<p>给定$k$个点$x_1,x_2,\cdots,x_k$，如果具有$\theta_1 x_1 + \cdots, \theta_k x_k$形式且满足$\theta_1 + \cdots + \theta_k=1, \theta_i \ge 0,i=1,\cdots,k$,那么就称这是$x_1,\cdots,x_k$的一个凸组合。<br>
-当且仅当一个集合包含其中所有点的凸组合，这个集合是一个凸集。点的一个凸组合可以看成点的混合或者加权，$\theta_i$是第$i$个点$x_i$的权重。<br>
-凸组合可以推广到无限维求和，积分，概率分布等等。假设$\theta_1,\theta_2,\cdots$满足：<br>
-$$\theta_i \le 0, i = 1,2,\cdots, \sum_{i=1}^{\infty}\theta_i = 1$$<br>
-并且$x_1,x_2,\cdots \in C$，$C\subset \mathbb{R}^n $是凸的，如果(series)$\sum_{i=1}^{\infty} \theta_i x_i$收敛，那么$\sum_{i=1}^{\infty} \theta_i x_i \in C$。<br>
-更一般的，假设概率分布$p$，$\mathbb{R}^n \rightarrow R$满足$p(x)\le 0 for\ all\ x\in C, \int_{C}p(x)dx = 1$,其中$C\subset \mathbb{R}^n $是凸的，如果$\int_{C}p(x)xdx$存在的话，那么$\int_{C}p(x)xdx\in C$。</p>
-<h4 id="凸包-convex-hull">凸包(convex hull)</h4>
-<p>给定一个集合$C$，凸包的定义为包含集合$C$中所有点的凸组合的结合，记为$conv\ C$，公式如下：<br>
-$conv\ C = {\theta_1 x_1 + \cdots + \theta_k x_k\big|x_i \in C, \theta_i \ge 0, i = 1,\cdots,k,\theta_1 +\cdots + \theta_k = 1}$<br>
-任意集合都是有凸包的。一个集合的凸包总是凸的。集合$C$的凸包是包含集合$C$的最小凸集。如果集合$B$是任意包含$C$的凸集，那么$conv\ C \subset B$。</p>
-<h4 id="示例-v12">示例</h4>
-<p><img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_2.png" alt="figure 2.2"><br>
-<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_3.png" alt="figure 2.3"></p>
-<h3 id="锥-cones">锥(cones)</h3>
-<h4 id="锥-cones-和凸锥-convex-cones-的定义">锥(cones)和凸锥(convex cones)的定义</h4>
-<p>给定集合$C$，如果$\forall x \in C, \theta \ge 0$，都有$\theta x\in C$，这样的集合就称为一个锥(cone)，或者非负同质(nonnegative homogeneour)。<br>
-一个集合$C$如果既是锥又是凸的，那这个集合是一个凸锥(convex cone)，即：$\forall x_1,x_2 \in C, \theta_1,\theta_2 \ge 0$,那么有$\theta_1 x_1+\theta_2 x_2 \in C$。几何上可以看成经过顶点为原点，两条边分别经过点$x_1$和$x_2$的$2$维扇形。</p>
-<h4 id="锥组合-conic-combination">锥组合(conic combination)</h4>
-<p>给定$k$个点$x_1,x_2,\cdots,x_k$，如果具有$\theta_1 x_1 + \cdots, \theta_k x_k$形式且满足$\theta_i \ge 0,i=1,\cdots,k$,那么就称这是$x_1,\cdots,x_k$的一个锥组合(conic combination)或者非负线性组合(nonnegative combination)。<br>
-给定集合$C$是凸锥，那么集合$C$中任意点$x_i$的锥组合仍然在集合$C$中。反过来，当且仅当集合$C$包含它的任意元素的凸组合时，这个集合是一个凸锥(convex cone)。</p>
-<h4 id="锥包-conic-hull">锥包(conic hull)</h4>
-<p>给定集合$C$，它的锥包(conic hull)是集合$C$中所有点的锥组合。即：<br>
-$conic\ C = {\theta_1 x_1 + \cdots + \theta_k x_k\big|x_i \in C, \theta_i \ge 0, i = 1,\cdots,k}$<br>
-集合$C$的锥包是包含集合$C$的最小凸锥。</p>
-<h4 id="示例-v13">示例</h4>
-<p><img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_4.png" alt="figure 2.4"><br>
-<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_5.png" alt="figure 2.5"></p>
-<h3 id="一些想法">一些想法</h3>
-<p>在我自己看来，在几何上<br>
-仿射集可以看成是集合中任意两个点的直线的集合。<br>
-凸集可以看成是集合中任意两个点的线段的集合，因为直线一定包含线段，所以仿射集一定是凸集。<br>
-锥集可以看成是集合中任意一个点和原点构成的射线的集合，锥集不一定是连续的（两条射线也是锥集），所以锥集不一定是凸集。<br>
-而凸锥既是凸集又是锥集。<br>
-我在stackexchange看到这样一句话觉得说的挺好的。</p>
-<blockquote>
-<p>What basically distinguishes the definitions of convex, affine and cone, is the domain of the coefficients and the constraints that relate them.</p>
-</blockquote>
-<p>区别凸集，仿射和锥的是系数的取值范围和一些其他限制。仿射集要求$\theta_1+\cdots+\theta_k = 1$，凸集要求$\theta_1 +\cdots +\theta_k = 1, 0\le \theta \le 1$，锥的要求是$\theta \ge 0$，凸锥的要求是$\theta_i \ge 0,i=1,\cdots,k$。<br>
-仿射集不是凸集的子集，凸集也不是仿射集的子集。所有仿射集的集合是所有凸集的集合的子集，一个仿射集是一个凸集。</p>
-<h2 id="示例-v14">示例</h2>
-<ul>
-<li>$\emptyset$，单点(single point)${x_0}$，整个$\mathbb{R}^n $空间都是$\mathbb{R}^n $中的仿射子集，所以也是凸集，点不一定是凸锥（在原点熵是凸锥），空集是凸锥，$\mathbb{R}^n $维空间也是凸锥。<strong>根据定义证明。</strong></li>
-<li>任意一条直线都是仿射的，所以是凸集。如果经过原点，它是一个子空间，也就是一个凸锥，否则不是。</li>
-<li>任意一条线段都是凸集，不是仿射集，当它退化成一点的时候，它是仿射的，线段不是凸锥。</li>
-<li>一条射线${x_0 + \theta v\big| \theta \ge 0}$是凸的，但是不是仿射的，当$x_0=0$时，它是凸锥。</li>
-<li>任意子空间都是仿射的，也是凸锥，所以是凸的。</li>
-</ul>
-<p>补充最后一条，任意子空间都是仿射的，也是凸锥。<br>
-如果$V$是一个子空间，那么$V$中任意两个向量的线性组合还在$V$中。即如果$x_1,x_2\in V$，对于$\theta_1,\theta_2 \in R$，都有$\theta_1 x_1 + \theta_2 x_2 \in V$。正如前面说的，子空间是加法和数乘封闭的。<br>
-而根据仿射集的定义，如果$x_1,x_2$在一个仿射集$C$中，那么对于$\theta_1+\theta_2 = 1$，都有$\theta_1 x_1 + \theta_2 x_2 \in C$。我们可以看出来，如果取子空间中线性组合的系数和为$1$，那么就成了仿射集。如果取子空间中的系数$\theta_1,\theta_2 \in R_+$,那么就成了锥，如果同时满足$\theta_1+\theta_2 = 1$，那么就成凸锥。那么如果加上这些限制条件，即取子空间中线性组合的系数和为$1$，或者取子空间中的系数$\theta_1,\theta_2 \in R_+$,同时满足$\theta_1+\theta_2 = 1$。<br>
-事实上，子空间要求的条件比仿射集和凸锥的条件要更严格。仿射集和凸锥只要求在系数$\theta_i$满足相应的条件时,有$\theta_1 x_1 + \theta_2 x_2 \in \mathbb{R}^n $；而子空间要求的是在系数$\theta_i$取任意值的时候，都有$\theta_1 x_1 + \theta_2 x_2 \in \mathbb{R}^n $，所以子空间一定是仿射集，也一定是凸锥。（拿二维的举个例子，给定$x_1$和$x_2$，仿射集可以看成是$\theta_1$的函数，因为$\theta_2=1-\theta_1$，而子空间可以看成$\theta_1$和$\theta_2$的函数，一个是一元函数，一个是二元函数）</p>
-<h3 id="超平面-hyperplane-和半空间-halfspace">超平面(hyperplane)和半空间(halfspace)</h3>
-<p>超平面是一个仿射集，也是凸集，但不一定是锥集(过原点才是锥集，也是一个子空间)。<br>
-闭的半空间是一个凸集，不是仿射集。</p>
-<h4 id="超平面-hyperplane">超平面(hyperplane)</h4>
-<p>超平面通常具有以下形式：<br>
-$${x\big|a^T x=b},$$<br>
-其中$a\in \mathbb{R}^n ,a\ne 0,b\in R$，它其实是一个平凡(nontrivial)线性方程组的解，因此也是一个仿射集。几何上，超平面可以解释为和一个给定向量$a$具有相同内积(inner product)的点集，或者说是法向量为$a$的一个超平面。常数$b$是超平面和原点之间的距离(offset)。<br>
-几何意义可以被表示成如下形式：<br>
-$${x\big|a^T (x-x_0) = 0},$$<br>
-其中$x_0$是超平面上的一点，即满足$a^T x_0=0$。可以被表示成如下形式：<br>
-$${x\big|a^T (x-x_0)=0} = x_0+a^{\perp},$$<br>
-其中$a^{\perp} $是$a$的正交补，即所有与$a$正交的向量的集合，满足$a^{\perp} ={v\big|a^T v=0}$。所以，超平面的几何解释可以看做一个偏移(原点到这个超平面的距离)加上所有垂直于一个特定向量$a$(正交向量)的向量，即这些垂直于$a$的向量构成了一个过原点的超平面，再加上这个偏移量就是我们要的超平面。几何表示如下图所示。<br>
-<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_6.png" alt="figure 2.6"></p>
-<h4 id="半空间-halfspace">半空间(halfspace)</h4>
-<p>一个超平面将$\mathbb{R}^n $划分为两个半空间(halfspaces)，一个是闭(closed)半空间，一个是开半空间。闭的半空间可以表示成${x\big|a^T x\le b}$，其中$a\ne 0$，半空间是凸的，但不是仿射的。下图便是一个闭的半空间。<br>
-<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_7.png" alt="figure 2.7"><br>
-这个半空间也可以写成：<br>
-$${x\big|a^T (x-x_0)\le 0},$$<br>
-其中$x_0$是划分两个半空间的超平面上的一点，即满足$a^T x_0=b$。一个几何解释是：半空间由一个偏移$x_0$加上所有和一个特定向量$a$(超平面的外(outward)法向量)成钝角(obtuse)或者直角(right)的所有向量组成。<br>
-这个半空间的边界是超平面${x\big|a^T x=b}$。这个半空间${x\big|a^T x\le b}$的内部是${x\big|a^T x\lt b}$，也被称为一个开半平面。</p>
-<h3 id="欧几里得球-euclidean-ball-和椭球-ellipsoid">欧几里得球(Euclidean ball)和椭球(ellipsoid)</h3>
-<h4 id="欧几里得球">欧几里得球</h4>
-<p>$\mathbb{R}^n $空间中的欧几里得球或者叫球，有如下的形式：<br>
-$$B(x_r,r = {x\big|\Vert x-x_c\Vert_2\le r}={x \big|(x-x_c)^T (x-x_c)\le \mathbb{R}^2 },$$<br>
-其中$r\gt 0$,$\Vert \cdot\Vert_2$是欧几里得范数(第二范数)，即$\Vert u\Vert_2=(u^T u)^{\frac{1}{2}} $。向量$x_c$是球心，标量$r$是半径。$B(x_c,r)$包含所有和圆心$x_c$距离小于$r$的球。<br>
-欧几里得球的另一种表示形式是：<br>
-$$B(x_c,r)={x_c + ru\big| \Vert u \Vert_2 \le 1},$$<br>
-一个欧几里得球是凸集，如果$\Vert x_1-x_c\Vert_2 \le r,\Vert x_2-x_c\Vert_2\le r, 0\le\theta\le1$，那么：<br>
-\begin{align*}<br>
-\Vert\theta x_1 + (1-\theta)x_2 - x_c\Vert_2 &amp;= \Vert\theta(x_1-x_c)+(1-\theta)(x_2-x_c)\Vert_2\\<br>
-&amp;\le\theta\Vert x_1-x_c\Vert_2 + (1-\theta)\Vert x_2 - x_c \Vert_2\\<br>
-&amp;\le r<br>
-\end{align*}<br>
-用其次性和三角不等式可证明</p>
-<h4 id="椭球">椭球</h4>
-<p>另一类凸集是椭球，它们有如下的形式：<br>
-$$\varepsilon ={x\big|(x-x_c)^T P^{-1} (x-x_c) \le 1},$$<br>
-其中$P=P^T \succ 0$即$P$是对称和正定的。向量$x_c\in \mathbb{R}^n $是椭球的中心。矩阵$P$决定了椭球从$x_c$向各个方向扩展的距离。椭球$\varepsilon$的半轴由矩阵$P$的特征值$\lambda_i$算出，$\sqrt{\lambda_i}$，球是$P=\mathbb{R}^2 I$的椭球。<br>
-<strong>这里这种表示形式为什么要用$P^{-1} $？</strong><br>
-椭球的另一种表示是：<br>
-$$\varepsilon = {x_c + Au\big| \Vert u \Vert_2 \le 1},$$<br>
-其中$A$是一个非奇异方阵。假设$A$是对称正定的，取$A=P^{\frac{1}{2}} $，这种表示就和上面的表示是一样的。第一次看到这种表示的时候，我在想，椭球的边界上有无数个点，一个方阵$A$是怎么实现对这无数个操作的，后来和球做了对比，发现自己一直都想错了，这无数个点是通过范数实现的而不是通过矩阵$A$实现的，到球心距离为$\Vert u\Vert_2\le 1$的点有无数个，$A$对这无数个点的坐标都做了仿射变换，将一个球变换成了椭球，特殊情况下就是球。当矩阵$A$是对称半正定但是是奇异的时候，这个情况下称为退化椭球(degenerate ellipsoid)，它的仿射维度和矩阵$A$的秩(rank)是相同的。退化椭球也是凸的。</p>
-<h3 id="范数球-norm-ball-和范数锥-norm-cone">范数球(norm ball)和范数锥(norm cone)</h3>
-<h4 id="范数球-norm-ball">范数球(norm ball)</h4>
-<h5 id="定义-v12">定义</h5>
-<p>$\Vert \cdot\Vert$是$\mathbb{R}^n $上的范数。一个范数球(norm ball)可以看成一个以$x_c$为中心，以$r$为半径的集合，但是这个$r$可以是任何范数，即${x\big|\Vert x-x_c \Vert \le r}$，它是凸的。</p>
-<h5 id="示例-v15">示例</h5>
-<p>我们常见的球是二范数（欧几里得范数）对应的范数球。</p>
-<h4 id="范数锥">范数锥</h4>
-<h5 id="定义-v13">定义</h5>
-<p>和范数相关的范数锥是集合：$C = {(x,t)\big|\Vert x\Vert \le t} \subset \mathbb{R}^{n+1} $，它也是凸锥。</p>
-<h5 id="示例-v16">示例</h5>
-<p><img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_10.png" alt="figure 2.10"><br>
-二阶锥(second-order cone)是欧几里得范数对应的范数锥，如图所示，其表达式为：<br>
-\begin{align*}<br>
-C &amp;={(x,t)\in \mathbb{R}^{n+1} \big| \Vert x\Vert_2 \le t}\\<br>
-&amp;= \left{ \begin{bmatrix}x\\t\end{bmatrix} \big| \begin{bmatrix}x\\t\end{bmatrix}^T \begin{bmatrix}I&amp;0\\ 0&amp;-1\end{bmatrix} \begin{bmatrix}x\\t\end{bmatrix}\le 0, t \gt 0 \right}<br>
-\end{align*}<br>
-这个二阶锥也被称为二次锥(quadratic cone)，因为它是通过一个二次不等式定义的，也被叫做Lorentz cone或者冰激凌锥(ice-cream cone)。</p>
-<h4 id="范数锥和范数球的区别">范数锥和范数球的区别</h4>
-<p>范数球是所有点到圆心$x_c$的范数小于一个距离$r$。<br>
-范数锥是很多直线组成的锥。</p>
-<h3 id="多面体-polyhedra">多面体(polyhedra)</h3>
-<h4 id="定义-v14">定义</h4>
-<p>多面体(polyhedron)是有限个线性不等式或者线性方程组的解集的集合：<br>
-$P = {x\big|a_j^T x\le b_j, j=1,\cdots,m,c_j^T x=d_j,j=1,\cdots,p}$<br>
-多面体因此也是有限个半空间或者超平面的交集。仿射集(如，子空间，超平面，直线)，射线，线段，半空间等等都是多面体，多面体也是凸集。有界的polyhedron有时也被称为polytope，一些作者会把它们两个反过来叫。<br>
-上式的紧凑(compact)表示是：<br>
-$$P={x\big|Ax\preceq b, Cx=d}$$<br>
-其中$A=\begin{bmatrix}a_1^T \\ \vdots\\ a_m^T \end{bmatrix},C=\begin{bmatrix}c_1^T \\ \vdots\\c_p^T \end{bmatrix}$，$\preceq$表示$\mathbb{R}^m $空间中的向量不等式(vector ineuqalitied)或者分量大小的不等式，$u\preceq v$代表着$u_i\le v_i, i=1,\cdots,m$。</p>
-<h5 id="simplexes">simplexes</h5>
-<p>simplexes是另一类很重要的多面体。假设$\mathbb{R}^n $空间中的$k+1$个点是仿射独立(affinely independent)，意味着$v_1-v_0, \cdots,v_k-v_0$是线性独立的。由$k+1$个仿射独立的点确定的simplex是：<br>
-$$C = conv{v_0,\cdots,v_k} = {\theta_0v_0+\cdots+\theta_kv_k\big| \theta \succeq 0, \mathcal{1}\theta=1 },$$<br>
-其中$\mathcal{1}$是全为$1$的列向量。这个simplex的仿射维度是$k$，所以它也叫$\mathbb{R}^n $空间中的$k$维simplex。为什么仿射维度是$k$，我的理解是simplex是凸集，而凸集不是子空间，凸集去掉其中任意一个元素才是子空间，所以就是$k$维而不是$k+1$维。<br>
-为了将simplex表达成一个紧凑形式的多面体。定义$y=(\theta_1,\cdots,\theta_k)$和$B=[v_1-v_0\ \cdots\ v_k-v_0]\in \mathbb{R}^{n\times k} $，当且仅当存在$y\succeq 0, \mathcal{1}^T y\le 1$，$x=v_0+By$有$x\in C$，<strong>疑问，这里为什么变成了$\mathcal{1}^T y\le 1$，难道是因为少了个$v_0$吗</strong>。点$v_0,\cdots,v_k$表明矩阵$B$的秩为$k$。因此存在一个非奇异矩阵$A=(A_1,A_2)\in \mathbb{R}^{n\times n} $使得：<br>
-$$AB = \begin{bmatrix}A_1\\A_2\end{bmatrix}B= \begin{bmatrix}I\\0\end{bmatrix}.$$<br>
-对$x = v_0+By$同时左乘$A$，得到：<br>
-$$A_1x = A_1v_0+y, A_2x=A_xv_0.$$<br>
-从中我们可以看出如果$A_2x=A_2v_0$，且向量$y=A_1x-A_1v_0$满足$y\succeq 0, \mathcal{1}^T y\le1$时，$x\in C$。换句话说，当且仅当$x$满足以下等式和不等式时：<br>
-$$A_2x = A_2v_0,A_1x\succeq A_1v_0, \mathcal{1}A_1x\le1+\mathcal{1}^T A_1v_0,$$<br>
-有$x\in C$。</p>
-<h5 id="多面体的凸包描述">多面体的凸包描述</h5>
-<p>一个有限集合${v_1,\cdots,v_k}$的凸包是：<br>
-$$conv{v_1,\cdots,v_k} = {\theta_1 v_1 +\cdots +\theta_k v_k\big| \theta \succeq 0, \mathcal{1}^T \theta = 1}.$$<br>
-这个集合是一个多面体，并且有界。但是它（除了simplex）不容易化成多面体的紧凑表示，即不等式和等式的集合。<br>
-一个一般化的凸包描述是：<br>
-$${\theta_1 v_1 +\cdots +\theta_k v_k\big| \theta_1+\cdots + \theta_m = 1,\theta_i \ge 0,i=1,\cdots,k}.$$<br>
-其中$m\le k$，它可以看做是点$v_1,\cdots,v_m$的凸包加上点$v_{m+1},\cdots,v_{k}$的锥包。这个集合定义了一个多面体，反过来，任意一个多面体可以看做凸包加上锥包。<br>
-一个多面体如何表示是很有技巧的。比如一个$\mathbb{R}^n $空间上的无穷范数单位球$C$：<br>
-$$C={x\big|\ |x_i|\le 1,i = 1,\cdots,n}.$$<br>
-集合$C$可以被表示成$2n$个线性不等式$\pm e_i^T x\le 1$，其中$e_i$是第$i$个单位向量。然而用凸包形式描述这个集合需要用至少$2^n $个点：<br>
-$$C = conv{v_{1},\cdots,v_{2^n }},$$<br>
-其中$v_{1},\cdots,v_{2n}$是$2^n $个向量，每个向量的元素都是$1$或$-1$。因此凸包描述和不等式描述有很大差异，尤其是$n$很大的时候。<br>
-这里为什么是$2^n $个点呢？因为是无穷范数构成的单位圆，在数轴上是区间$[-1,1]$，在$\mathbb{R}^2 $是正方形${(x,)\big|-1 \le x\le 1,-1\le y\le 1}$，对应的四个点是${(1,1),(1,-1),(-1,1),(-1,-1)}$，而在$\mathbb{R}^3 $是立方体${(x,y,z)\big|-1 \le x\le 1,-1\le y\le 1, -1\le z\le 1}$，对应的是立方体的八个顶点${(1,1,1),(1,1,-1),(1,-1,1),(1,-1,-1),(-1,1,1),(-1,1,-1),(-1,-1,1),(-1,-1,-1)}$。</p>
-<h4 id="示例-v17">示例</h4>
-<ol>
-<li>如图所示，是五个半平面的交集定义的多面体。<br>
-<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_11.png" alt="figure 2.11"></li>
-<li>非负象限(nonnegative orthant)是非负点的集合，即：<br>
-$$R_{+}^n = {x\in \mathbb{R}^n \big| x_i\ge 0, i = 1,\cdots,n} = {x\in \mathbb{R}^n \big| x\succeq 0}.$$<br>
-非负象限是一个多面体，也是一个锥，所以也叫多面体锥(polyhedral cone)，也叫非负象限锥。</li>
-<li>一个1维的simplex是一条线段。一个二维的simplex是一个三角形（包含它的内部）。一个三维的simple是一个四面体(tetrahedron)。</li>
-<li>由$\mathbb{R}^n $中的零向量和单位向量确定的simplex是$n$维unit simplex。它是向量集合：<br>
-$$x\succeq 0, \mathcal{1}^T x \le 1.$$</li>
-<li>由$\mathbb{R}^n $中的单位向量确定的simplex是$n-1$维probability simplex。它是向量集合：<br>
-$$x\succeq 0, \mathcal{1}^T x = 1.$$<br>
-Probability simplex是中的向量可以看成具有$n$个元素的集合的概率分布，$x_i$解释为第$i$个元素的概率。</li>
-</ol>
-<h3 id="半正定锥-positive-sefidefinite-cone">半正定锥(positive sefidefinite cone)</h3>
-<h4 id="定义-v15">定义</h4>
-<p>用$S^n $表示$n\times n$的对称矩阵：$S^n ={X\in \mathbb{R}^{n\times n} \big| X = X^T }$，$S^n $是一个$n(n+1)/2$维基的向量空间。比如，三维空间中对称矩阵的一组基是：<br>
-$$\begin{bmatrix}1&amp;0&amp;0\\0&amp;0&amp;0\\0&amp;0&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\1&amp;0&amp;0\\0&amp;0&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\0&amp;1&amp;0\\0&amp;0&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\0&amp;0&amp;0\\1&amp;0&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\0&amp;0&amp;0\\0&amp;1&amp;0\end{bmatrix}\begin{bmatrix}0&amp;0&amp;0\\0&amp;0&amp;0\\0&amp;0&amp;1\end{bmatrix}.$$<br>
-用$S_{+}^n $表示半正定的对称矩阵集合：<br>
-$$S_{+}^n = {X\in S^n \big| X\succeq 0},$$<br>
-用$S_{++}^n $表示正定的对称矩阵集合：<br>
-$$S_{+}^n = {X\in S^n \big| X\succ 0},$$<br>
-集合$S_{+}^n $是凸锥：如果$\theta_1,\theta_2 \ge 0$且$A,B\in S_{+}^n $，那么$\theta_1 A+\theta_{2} B\in S_{+}^n $。这个可以直接从依靠半正定的定义来证明，如果$A,B\in S_{+}^n ,\theta_1,\theta_2\ge 0$，(<strong>这里原书中用的是$A,B\succeq 0$,我觉得应该是写错了吧</strong>)，对任意$\forall x \in \mathbb{R}^n $，都有：<br>
-$$x^T (\theta_1A+\theta_2B)x = \theta_1x^T Ax + \theta_2x^T Bx.$$</p>
-<h4 id="示例-v18">示例</h4>
-<p>对于$S^2 $空间中的半正定锥，有<br>
-$$X=\begin{bmatrix}x&amp;y\\y&amp;z\end{bmatrix}\in S_{+}^2 \Leftrightarrow x\ge 0,z\ge 0, xz\ge y^2 $$<br>
-这个锥的边界如下图所示。<br>
-<img src="/2018/12/24/convex-optimization-chapter-2-Convex-sets/figure2_12.png" alt="figure 2.12"></p>
-<h3 id="常见的几种锥">常见的几种锥</h3>
-<p>范数锥，非负象限锥，半正定锥，它们都过原点。<br>
-想想对应的图像是什么样的。<br>
-范数锥和非负象限锥图像还好理解一些，非负象限锥是$\mathbb{R}^n $空间所有非负半轴围成的锥，范数锥的边界像一个沙漏，但是是无限延伸的。半正定锥怎么理解，还没有太好的类比。</p>
-<h2 id="保凸运算-operations-that-preserve-convexity">保凸运算(operations that preserve convexity)</h2>
-<p>这一小节介绍的是一些保留集合凸性，或者从一些集合中构造凸集的运算。这些运算和simplex形成了凸集的积分去确定或者建立集合的凸性。</p>
-<h3 id="集合交-intersection">集合交(intersection)</h3>
-<p>凸集求交集可以保留凸性：如果$S_1$和$S_2$是凸集，那么$S_1\cup S_2$是凸集。扩展到无限个集合就是：如果$\forall \alpha \in A,S_{\alpha}$都是凸的，那么$\cup_{\alpha\in A S_{\alpha}}$是凸的</p>
-<h3 id="仿射函数-affine-functions">仿射函数(affine functions)</h3>
-<h3 id="线性分式-linear-fractional-和视角函数-perspective-functions">线性分式(linear-fractional)和视角函数(perspective functions)</h3>
-<h4 id="线性分式-linear-fractional">线性分式(linear-fractional)</h4>
-<h4 id="视角函数-perspective-functions">视角函数(perspective functions)</h4>
-<h2 id="广义不等式-generalized-inequalities">广义不等式（Generalized inequalities)</h2>
-<h3 id="真锥-proper-cones-和广义不等式-generalized-inequalities">真锥(Proper cones)和广义不等式（Generalized inequalities)</h3>
-<h3 id="最小-minimum-和最小元素-minimal-elemetns">最小(Minimum)和最小元素(minimal elemetns)</h3>
-<h2 id="separating和supporting-hyperplanes">Separating和supporting hyperplanes</h2>
-<h3 id="separating-hyperplane-theorem">Separating hyperplane theorem</h3>
-<h3 id="supporting-hyperplanes">Supporting Hyperplanes</h3>
-<h2 id="对偶锥-dual-cones-和广义不等式-generalized-inequalities">对偶锥(dual cones)和广义不等式(generalized inequalities)</h2>
-<h3 id="none"></h3>
-<h2 id="符号定义">符号定义</h2>
-<p>$\preceq$表示$\mathbb{R}^m $空间中的向量不等式(vector ineuqalitied)或者element-wise的不等式，$u\preceq v$代表着$u_i\le v_i, i=1,\cdots,m$。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.stephen boyd. Convex optimization<br>
-2.<a href="https://en.wikipedia.org/wiki/Topology" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Topology</a><br>
-3.<a href="https://en.wikipedia.org/wiki/Topological_space" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Topological_space</a><br>
-4.<a href="https://en.wikipedia.org/wiki/Power_set" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Power_set</a><br>
-5.<a href="https://en.wikipedia.org/wiki/Open_set" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Open_set</a><br>
-6.<a href="https://en.wikipedia.org/wiki/Closed_set" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Closed_set</a><br>
-7.<a href="https://en.wikipedia.org/wiki/Clopen_set" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Clopen_set</a><br>
-8.<a href="https://en.wikipedia.org/wiki/Interior_(topology)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Interior_(topology)</a><br>
-9.<a href="https://en.wikipedia.org/wiki/Closure_(topology)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Closure_(topology)</a><br>
-10.<a href="https://en.wikipedia.org/wiki/Boundary_(topology)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Boundary_(topology)</a><br>
-11.<a href="https://en.wikipedia.org/wiki/Ball_(mathematics)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Ball_(mathematics)</a><br>
-12.<a href="https://blog.csdn.net/u010182633/article/details/53792588" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/53792588</a><br>
-13.<a href="https://blog.csdn.net/u010182633/article/details/53819910" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/53819910</a><br>
-14.<a href="https://blog.csdn.net/u010182633/article/details/53983642" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/53983642</a><br>
-15.<a href="https://blog.csdn.net/u010182633/article/details/53997843" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/53997843</a><br>
-16.<a href="https://blog.csdn.net/u010182633/article/details/54093987" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/54093987</a><br>
-17.<a href="https://blog.csdn.net/u010182633/article/details/54139896" target="_blank" rel="noopener">https://blog.csdn.net/u010182633/article/details/54139896</a><br>
-18.<a href="https://math.stackexchange.com/questions/1168898/why-is-any-subspace-a-convex-cone" target="_blank" rel="noopener">https://math.stackexchange.com/questions/1168898/why-is-any-subspace-a-convex-cone</a><br>
-19.<a href="https://www.zhihu.com/question/22799760/answer/139753685" target="_blank" rel="noopener">https://www.zhihu.com/question/22799760/answer/139753685</a><br>
-20.<a href="https://www.zhihu.com/question/22799760/answer/34282205" target="_blank" rel="noopener">https://www.zhihu.com/question/22799760/answer/34282205</a><br>
-21.<a href="https://www.zhihu.com/question/22799760/answer/137768096" target="_blank" rel="noopener">https://www.zhihu.com/question/22799760/answer/137768096</a><br>
-22.<a href="https://en.wikipedia.org/wiki/Positive-definite_matrix" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Positive-definite_matrix</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/12/23/entropy-cross-entropy-kl-divergence/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/12/23/entropy-cross-entropy-kl-divergence/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/29/index.html">entropy, cross entropy, kl divergence，条件熵，互信息</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-12-23 10:54:31" itemprop="dateCreated datePublished" datetime="2018-12-23T10:54:31+08:00">2018-12-23</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:19:33" itemprop="dateModified" datetime="2019-12-17T16:19:33+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="乡农熵-shannon-entropy">乡农熵(Shannon entropy)</h2>
-<p>乡农定义了一个事件的信息量是其发生概率的负对数($-log§$)，即乡农信息量，乡农熵是信息量的期望。</p>
-<h3 id="介绍">介绍</h3>
-<p>这里的熵都是指的信息论中的熵，也叫乡农熵(shannon entropy)。通常，熵是无序或不确定性的度量。<br>
-与每个变量可能的取值相关的信息熵是每个可能取值的概率质量函数的负对数：<br>
-$$S = - \sum_i P_i lnP_i$$<br>
-当事件发生的概率较低时，该事件比高概率事件携带更多“信息”。这种方式定义的每个事件所携带的信息量是一个随机变量，事实上乡农熵定义的一个事件的信息量就是这个事件发生的概率的负对数，这个随机变量（信息量）的期望值是信息熵。信息熵通常以比特(或者称为shannons),自然单位(nats)或十进制数字(dits，bans或hartleys)来测量。具体的单位取决于用于定义熵的对数的基。<br>
-采用概率分布的对数形式作为信息的度量的原因是因为它的可加性。例如，投掷公平硬币的熵是$1$比特，投掷$m$个硬币的熵是$m$比特。以比特为单位的时候，如果$n$是$2$的指数次方，则需要$log_2n$位来表示一个具有$n$个取值的变量。如果该变量的$n$个取值发生的可能性是相等的，则熵等于$log_2n$。<br>
-如果一个事件发生的可能性比其他事件发生的可能性更高，观察到该事件发生的信息量少于观测到一些罕见事件，即观测到更罕见的事件时能提供更多的信息。由于小概率事件发生的可能性更低，因此最终的结果是从非均匀分布的数据接收的熵总是小于或等于$log_2n$。当一个结果一定发生时，熵为零。<br>
-但是熵仅仅量化考虑事件发生的概率，它封装的信息是有关概率分布的信息，事件本身的意义在这种度量方式的定义中无关紧要。<br>
-熵的另一种解释是最短平均编码长度。</p>
-<h3 id="定义">定义</h3>
-<p>乡农定义了entropy, 定义离散型随机变量$X$，其可能取值为${x_1,\cdots,x_n}$，它对应的概率质量函数(probability mass function) P(X)，则熵$H$为：<br>
-$$H(X) = E[I(X)] = E[-log(P(X))]$$<br>
-其中$E$是求期望，$I$是随机变量$X$的信息量, $I(X)$本身是一个随机变量。<br>
-它可以显示写成：<br>
-$$H(X) = \sum_{i=1}^nP(x_i)I(x_i) = -\sum_{i=1}^nP(x_i)log_bP(x_i)$$<br>
-其中b是自然对数的底，$b$常取的值为$2,e,10$，对应的熵的单位是bits, nats，bans。<br>
-当$P(x_i)=0$的时候，对应的$PlogP$的值为$0log_b(0)$, 和极限(limit)是一致的：<br>
-$$lim_{p\rightarrow 0_+}plog§ = 0.$$</p>
-<h4 id="连续型随机变量的熵">连续型随机变量的熵</h4>
-<p>将概率质量函数替换为概率密度函数，即可得到连续性随机变量的熵：<br>
-$$h[f] = E[-ln(f(x))] = - \int_X f(x)ln(f(x))dx.$$</p>
-<h3 id="示例">示例</h3>
-<p>抛一枚硬币，已知其正反两面出现的概率是不相等的，求其正面朝上的概率，该问题可以看做一个伯努利分布问题。<br>
-如果硬币是公平的，此时得到结果的熵是最大的。这是因为此时抛一次抛硬币的结果具有最大的不确定性。每一个抛硬币的结果会占满一整个bit位。因为<br>
-\begin{align*}<br>
-H(X) &amp;= - \sum_{i=1}^n P(x_i)log_bP(x_i)\\<br>
-&amp;= - \sum_{i=1}^2\frac{1}{2}log_2\frac{1}{2}\\<br>
-&amp;= - \sum_{i=1}^2\frac{1}{2}\cdot(-1)\\<br>
-&amp;= 1<br>
-\end{align*}<br>
-如果硬币是不公平的，正面向上的概率是$p$，反面向上的概率是$q$，$p \ne q$, 则结果的不确定性更小。因为每次抛硬币，出现其中一面的可能性要比另一面要大，减小的不确定性就得到了更小的熵：每一次抛硬币得到的信息都会小于$1$bit，比如，$p=0.7$时：<br>
-\begin{align*}<br>
-H(X) &amp;= -plog_2p - qlog_2q\\<br>
-&amp;= -0.7log_20.7 - 0.3log_20.3\\<br>
-&amp;= -0.7\cdot(-0.515) - 0.3\cdot(-1.737)\\<br>
-&amp;= 0.8816\\<br>
-&amp;\le 1<br>
-\end{align*}<br>
-上面的例子证明不确定性跟变量取值的概率有关。<br>
-不确定性也跟变量的取值个数有关，上面例子的极端情况是正反面一样（即只有一种取值），那么熵就是0，没有不确定性。</p>
-<h3 id="解释-rationale">解释(rationale)</h3>
-<p>为什么乡农定义了信息量为$-log§$？$-\sum p_i log(p_i)$的意义是什么？<br>
-首先我们需要想一想信息量需要满足什么条件，然后定义一个信息函数I表示发生概率为$p_i$的事件$i$的信息量，那么这个信息函数需要满足以下条件。</p>
-<ul>
-<li>$I§$是单调下降的；</li>
-<li>$I§ \ge 0$, 即信息是非负的；</li>
-<li>$I(1) = 0$, 一定发生的事件不包含信息；</li>
-<li>$I(p_1p_2) = I(p_1) + I(p_2)$, 独立事件包含的信息是可加的。<br>
-最后一个条件很关键，它指出了两个独立事件的联合分布和两个分开的独立事件所包含的信息是一样多的。例如，$A$事件有$m$个等可能性的结果，$B$事件有$n$个等可能性的结果，$AB$有$mn$个等可能性的结果。$A$事件需要$log_2(m)$bits去编码，$B$事件需要用$log_2(n)$bits去编码，$AB$需要$log_2(mn) = log_2(m) + log_2(n)$bits编码。乡农发现了$log$函数能够保留可加性，即：<br>
-$$I§ = log(\frac{1}{p}) = - log§$$<br>
-事实上，这个函数$I$是唯一的(可以证明),选择$I$当做信息函数。如果一个分布中事件$i$发生的概率是$p_i$,那么采样$N$次，事件$i$发生的次数为$n_i = N p_i$, 所有$n_i$次的信息为$$\sum_in_iI(p_i) = - \sum_iNp_ilog(p_i).$$<br>
-每个事件的平均信息就是：<br>
-$$-\sum_ip_ilog(p_i)$$<br>
-所以$-\sum_ip_ilog(p_i)$就是信息量的期望，即信息熵。<br>
-在信息论中，熵的另一种解释是最短平均编码长度。</li>
-</ul>
-<h2 id="交叉熵-cross-entropy">交叉熵(cross entropy)</h2>
-<h3 id="介绍-v2">介绍</h3>
-<p>交叉熵用于衡量在给定真实分布下，用非真实分布表示真实概率分布需要付出的花费。<br>
-交叉熵是信息熵的推广。假设有两个分布$p$和$q$，$p$是真实分布，$q$是非真实分布。信息熵是用真实分布$p$来衡量识别一个事件所需要的编码长度的期望。而交叉熵是用非真实分布$q$来估计真实分布$p$的期望编码长度，用$q$来编码的事件来自分布$p$，所以期望中使用的概率是$p(i)$，$H(p,q)$称为交叉熵。</p>
-<h3 id="定义-v2">定义</h3>
-<p>给定真实分布$q$，分布p和q在给定集合X的交叉熵定义为：<br>
-$$H(p,q) = E_p[log\frac{1}{q}] = H§ + D_{KL}(p||q)$$<br>
-其中$H§$是$p$的信息熵，$D_{KL}(p||q)$是从$q$到$p$的$K-L$散度，或者说$p$相对于$q$的相对熵。</p>
-<h3 id="示例-v2">示例</h3>
-<p>如含有4个字母$(A,B,C,D)$的数据集中，真实$p=(\frac{1}{2}, \frac{1}{2}, 0, 0)$，即$A$和$B$出现的概率均为$\frac{1}{2}$，$C$和$D$出现的概率都为$0$。使用完美的编码方案进行编码所需要的编码长度是$H§$为$1$，即只需要$1$位编码即可识别$A$和$B$。如果使用非完美编码方案$q=(\frac{1}{4},\frac{1}{4},\frac{1}{4},\frac{1}{4})$编码则得到$H(p,q)=2$，即需要$2$位编码来识别$A$和$B$。</p>
-<h3 id="解释">解释</h3>
-<p>在机器学习中，交叉熵用于衡量估计的概率分布与真实概率分布之间的差异。<br>
-在信息论中，Kraft-McMillan定理建立了任何可直接解码的编码方案，为了识别一个$X$的可能值$x_i$f可以看做服从一个在$X$上的隐式概率分布$q(x_i)=2^{-l_i}$,其中$l_i$是$x_i$的编码长度，单位是bits。因此，交叉熵可以被解释为当数据服从真实分布$p$时，在假设分布$q$下得到的每个信息编码长度的期望。</p>
-<h3 id="性质">性质</h3>
-<ul>
-<li>$H(p,q) \ge H§$,由吉布森不等式可以知道，该式子恒成立，当$q$等于$p$时等号成立。</li>
-</ul>
-<h3 id="to-do-交叉熵损失函数和logistic-regression之间的关系">to do ?交叉熵损失函数和logistic regression之间的关系。</h3>
-<h2 id="k-l-散度-kullback-leibler-divergence">$K-L$散度(Kullback-Leibler divergence)</h2>
-<h3 id="介绍-v3">介绍</h3>
-<p>$K-L$散度也叫相对熵(relative entropy)，是用来衡量估计分布和真实分布之间的差异性。<br>
-$K-L$散度也叫相对熵(relative entropy)，信息熵是用来度量信息量的，信息熵给出了最小熵是多少，但是信息熵并没有给出如何得到最小熵，$K-L$散度也没有给出来如何得到最小熵。但是$K-L$散度可以用来衡量用一个带参数的估计分布来近似真实数据分布时损失了多少信息，可以理解为根据非真实分布$q$得到的平均编码长度比由真实分布$p$得到的平均编码长度多出的长度叫做相对熵。</p>
-<h3 id="定义-v3">定义</h3>
-<h4 id="离散型随机变量">离散型随机变量</h4>
-<p>给定概率分布$P$和$Q$在相同的空间中，它们的$K-L$散度定义为：<br>
-\begin{align*}<br>
-D_{KL}(P||Q) &amp;= -\sum_iP(i)(logQ(i)) - (-\sum_iP(i)logP(i))\\<br>
-D_{KL}(P||Q) &amp;= \sum_iP(i)(logP(i) - logQ(i))\\<br>
-D_{KL}(P||Q) &amp;= -\sum_iP(i)log(\frac{Q(i)}{Q(i)})\\<br>
-D_{KL}(P||Q) &amp;= \sum_iP(i)log(\frac{P(i)}{Q(i)})<br>
-\end{align*}<br>
-可以看出，$K-L$散度是概率分布$P$和$Q$对数差相对于概率分布$P$的期望。需要注意的是$D_{KL}(P||Q) \ne D_{KL}(Q||P),$因为$P$和$Q$的地位是不同的。相对熵的前半部分就是交叉熵，后半部分是相对熵。</p>
-<h4 id="连续型随机变量">连续型随机变量</h4>
-<p>对于连续性随机变量的分布$P$和$Q$，$K-L$散度被定义为积分：<br>
-$$D_{KL}(P||Q) = \int_{-\infty}^{\infty} p(x)log(\frac{p(x)}{q(x)})dx,$$<br>
-其中$p$和$q$代表分布$P$和分布$Q$的概率密度函数。<br>
-更一般的，$P$和$Q$表示是同一个集合$X$的概率分布，$P$相对于$Q$是绝对连续的，从$Q$到$P$的$K-L$散度定义为：<br>
-$$D_{KL}(P||Q) = \int_X log(\frac{dP}{dQ})dP$$<br>
-上式可以被写成：<br>
-$$D_{KL}(P||Q) = \int_X log(\frac{dP}{dQ})\frac{dP}{dQ}dP$$<br>
-可以看成$\frac{P}{Q}$的熵。</p>
-<h3 id="示例-v3">示例</h3>
-<p>$P$是一个二项分布，$P~(2,0.4)$，$Q$是一个离散型均匀分布，$x = 0,1,2$, 每一个取值的概率都是$p=\frac{1}{3}$。</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>0</th>
-<th>1</th>
-<th>2</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>$P$分布</td>
-<td>0.36</td>
-<td>0.48</td>
-<td>0.16</td>
-</tr>
-<tr>
-<td>$Q$分布</td>
-<td>0.333</td>
-<td>0.333</td>
-<td>0.333</td>
-</tr>
-</tbody>
-</table>
-<p>$K-L$散度的计算公式如下（使用自然对数）：<br>
-\begin{align*}<br>
-D_{KL}(Q||P) &amp;= \sum_iQ(i)ln(\frac{Q(i)}{P(i)})\\<br>
-&amp; = 0.333ln(\frac{0.333}{0.36}) + 0.333ln(\frac{0.333}{0.48}) + 0.333ln(\frac{0.333}{0.16})\\<br>
-&amp; = -0.02596 + (-0.12176) + 0.24408\\<br>
-&amp; = 0.09637(nats)<br>
-\end{align*}<br>
-上面计算出来的是从$P$到$Q$的K-L散度，或者$Q$相对于$P$的相对熵。</p>
-<h3 id="解释-v2">解释</h3>
-<p>从$Q$到$P$的$K-L$散度表示为$D_{KL}(P||Q)$。在机器学习中，$D_{KL}(P||Q)$被称为信息增益。<br>
-在信息论中，$K-L$散度也被称为$P$相对于$Q$的相对熵。从信息编码角度来看，$D_{KL}(P||Q)$可以看做用估计分布$q$得到的平均编码长度比用真实分布p得到的平均编码长度多出的长度。</p>
-<h3 id="性质-v2">性质</h3>
-<ul>
-<li>非负性，$D_{KL}(P||Q)\ge 0$,当且仅当$P=Q$时等号成立。</li>
-<li>可加性，如果$P_1,P_2$的分布是独立的，即$P(x,y) = P_1(x)P_2(y)$, $Q,Q_1,Q_2$类似，那么：<br>
-$$D_{KL}(P||Q) = D_{KL}(P_1||Q_1) + D_{KL}(P_2||Q_2)$$</li>
-<li>不对称性，所以K-L散度不是距离，距离需要满足对称性。</li>
-</ul>
-<h2 id="条件熵">条件熵</h2>
-<h3 id="定义-v4">定义</h3>
-<p>给定$X$，$Y$的条件熵定义如下：<br>
-给定离散变量${\displaystyle X}$和${\displaystyle Y}$,给定${\displaystyle X}$以后，${\displaystyle Y}$的条件熵定义为每一个${\displaystyle x}$使用权值${\displaystyle p(x)}$ 的加权和${\displaystyle \mathrm {H} (Y|X=x)}$。<br>
-$$H(Y|X) \equiv \sum_{x\in\boldsymbol{X} } p(x) H(Y|X=x)$$<br>
-可以证明它等价于下式：<br>
-$$H(Y|X) = -\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log{\frac{p(X,Y)}{p(X)}}$$</p>
-<h3 id="证明">证明</h3>
-<p>\begin{align*}<br>
-H(Y|X) &amp;\equiv \sum_{x\in\boldsymbol{X}}p(x)H(Y|X=x)\\<br>
-&amp;=-\sum_{x\in\boldsymbol{X}}p(x)\sum_{y\in \boldsymbol{Y}}p(y|x)logp(y|x)\\<br>
-&amp;=-\sum_{x\in\boldsymbol{X}}\sum_{y\in \boldsymbol{Y}}p(x)p(y|x)logp(y|x)\\<br>
-&amp;=-\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)logp(y|x)\\<br>
-&amp;=-\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)\frac{logp(x,y)}{logp(x)}\\<br>
-&amp;=\sum_{x\in\boldsymbol{X},y\in \boldsymbol{Y}}p(x,y)\frac{logp(x)}{logp(x,y)}\\<br>
-\end{align*}</p>
-<h3 id="属性">属性</h3>
-<ul>
-<li>当且仅当$Y$完全由$X$的值确定时，条件熵为$0$。</li>
-<li>当且仅当$X$和$Y$是独立随机变量的时候，$H(Y|X) = H(Y)$。</li>
-<li>链式法则。假设一个系统由随机变量$X,Y$确定，他们有联合熵$H(X,Y)$，我们需要$H(X,Y)$个比特去表述这个系统，如果我们已经知道了$X$的值，相当于我们已经有了$H(X)$位的信息。一旦$X$已知了，我们只需要$H(X,Y)-H(X)$位去描述整个系统。所以就有了链式法则：$H(Y|X) = H(X,Y) - H(X)$。<br>
-\begin{align*}<br>
-H(Y|X) &amp;= \sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{\frac{p(X)}{p(X,Y)}}\\<br>
-&amp;= - \sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{p(X,Y)}+\sum_{X\in \boldsymbol{X}, Y\in \boldsymbol{Y}}p(X,Y)log{p(X)}\\<br>
-&amp;=H(X,Y) +\sum_{X\in \boldsymbol{X}}p(X)log{p(X)}\\<br>
-&amp;=H(X,Y) - H(X)<br>
-\end{align*}</li>
-<li>贝叶斯公式。$H(Y|X) = H(X|Y) - H(X) + H(Y)$。<br>
-证明：$H(Y|X)=H(X,Y) - H(X),H(X|Y) = H(X,Y) - H(Y)$。两个式子相减就可以得到。</li>
-</ul>
-<h2 id="互信息">互信息</h2>
-<p>决策树中的信息增益指的是互信息不是KL散度。</p>
-<h3 id="定义-v5">定义</h3>
-<p>用$(X,Y)$表示空间$\boldsymbol{X}\times\boldsymbol{Y}$上的一对随机变量，他们的联合分布是$P_{(X,Y)}$，边缘分布是$P_X,P_Y)$，信息熵被定义为：<br>
-$I(X;Y) = D_{KL}(P_{(X,Y)}||P_XP_Y)$<br>
-对于离散变量：<br>
-$I(X;Y)=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})$<br>
-对于随机变量：<br>
-$I(X;Y)=\int_X\int_Y p(X,Y)log(\frac{p(X,Y)}{p(X)p(Y)})dxdy$</p>
-<h2 id="信息熵-相对熵-交叉熵-条件熵-互信息之间的关系">信息熵，相对熵，交叉熵，条件熵，互信息之间的关系</h2>
-<h3 id="信息论">信息论</h3>
-<p>信息熵是对随机事件用真实的概率分布$p$进行编码的长度的期望，是最短平均编码长度。<br>
-交叉熵是对随机事件用估计的概率分布$q$按照其真实概率分布$p$进行编码的长度的期望（随机事件是从真实概率分布$p$中取的，但是用分布$q$进行编码），大于等于最短平均编码长度，只有$q$等于真实分布$q$时，才是最短编码长度。<br>
-而相对熵对随机事件用估计的概率分布$q$比用真实的概率分布$p$进行编码多用的编码长度，如果$p$和$q$相等的话，相对熵为$0$。</p>
-<h3 id="机器学习">机器学习</h3>
-<p>在机器学习中，交叉熵通常作为一个loss函数，用来衡量真实分布$p$和估计分布$q$之间的差异。而$K-L$散度也是用来衡量两个概率分布的差异，但是多了一个信息熵项。$K-L$散度的前半部分是交叉熵，后半部分是真实分布$p$的信息熵。(一个我自己认为的不严谨的说法是相对熵算的是相对值，而交叉熵算的是绝对值)。交叉熵正比于负的对数似然估计，最小化交叉熵等价于最大化对数似然估计。<br>
-如果$p$是固定的，那么随着$q$的增加相对熵也在增加，但是如果$p$是不固定的，很难说相对熵是差异的绝对量度，因为它随着$p$的增长而改变。而在机器学习领域，真实分布$p$是固定的，随着$q$的改变，$H§$是不变的,也就是信息熵是固定的。所以，从优化的角度来说，最小化交叉熵也就是最小化了相对熵。但是在其他领域，$p$可能是变化的，最小化交叉熵和最小化相对熵就不是等价的了。</p>
-<h3 id="互信息和条件熵-相对熵的关系">互信息和条件熵，相对熵的关系</h3>
-<p>互信息可以被等价定义为：<br>
-\begin{align*}<br>
-I(X;Y)&amp; \equiv H(X)-H(X|Y)\\<br>
-&amp;\equiv H(Y) - H(Y|X)\\<br>
-&amp;\equiv H(X)+H(Y)-H(X,Y)\\<br>
-&amp;\equiv H(X,Y)-H(X|Y)-H(Y|X)\\<br>
-\end{align*}</p>
-<p>证明：<br>
-\begin{align*}<br>
-I(X;Y)&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)p(Y)})\\<br>
-&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)}{p(X)})-\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)logp(Y)\\<br>
-&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X)P(Y|X)logp(Y|X)-\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)logp(Y)\\<br>
-&amp;=\sum_{X\in \boldsymbol{X}}p(X)(\sum_{Y\in \boldsymbol{Y}}P(Y|X)logp(Y|X))-\sum_{Y\in \boldsymbol{Y}}(\sum_{X\in \boldsymbol{X}}p(X,Y))logp(Y)\\<br>
-&amp;=\sum_{X\in \boldsymbol{X}}p(X)H(Y|X=x)-\sum_{Y\in \boldsymbol{Y}}p(Y)logp(Y)\\<br>
-&amp;=-H(Y|X)+H(Y)\\<br>
-&amp;=H(Y)-H(Y|X)<br>
-\end{align*}</p>
-<p>互信息和KL散度的联系：<br>
-从联合分布$p(x,y)$到边缘分布$p(X)p(Y)$或者条件分布$p(X|Y)p(X)$的KL散度。</p>
-<h2 id="参考文献-references">参考文献(references)</h2>
-<p>1.<a href="https://en.wikipedia.org/wiki/Entropy_(information_theory)" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Entropy_(information_theory)</a><br>
-2.<a href="https://zh.wikipedia.org/wiki/%E7%86%B5_(%E4%BF%A1%E6%81%AF%E8%AE%BA)" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/熵_(信息论)</a><br>
-3.<a href="https://www.zhihu.com/question/22178202/answer/49929786" target="_blank" rel="noopener">https://www.zhihu.com/question/22178202/answer/49929786</a><br>
-4.<a href="https://en.wikipedia.org/wiki/Cross_entropy" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Cross_entropy</a><br>
-5.<a href="https://en.wikipedia.org/wiki/Kullback-Leibler_divergence" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Kullback-Leibler_divergence</a><br>
-6:<a href="https://www.zhihu.com/question/41252833/answer/108777563" target="_blank" rel="noopener">https://www.zhihu.com/question/41252833/answer/108777563</a><br>
-7.<a href="https://www.zhihu.com/question/41252833/answer/141598211" target="_blank" rel="noopener">https://www.zhihu.com/question/41252833/answer/141598211</a><br>
-8.<a href="https://stats.stackexchange.com/questions/265966/why-do-we-use-kullback-leibler-divergence-rather-than-cross-entropy-in-the-t-sne" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/265966/why-do-we-use-kullback-leibler-divergence-rather-than-cross-entropy-in-the-t-sne</a><br>
-9.<a href="https://en.wikipedia.org/wiki/Conditional_entropy" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Conditional_entropy</a><br>
-10.<a href="https://en.wikipedia.org/wiki/Mutual_information" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Mutual_information</a><br>
-11.<a href="https://zhuanlan.zhihu.com/p/26551798" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/26551798</a><br>
-12.<a href="https://blog.csdn.net/gangyin5071/article/details/82228827#4%E7%9B%B8%E5%AF%B9%E7%86%B5kl%E6%95%A3%E5%BA%A6" target="_blank" rel="noopener">https://blog.csdn.net/gangyin5071/article/details/82228827#4相对熵kl散度</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3522,7 +3429,7 @@ I(X;Y)&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">302</span>
+                    <span class="site-state-item-count">306</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3577,7 +3484,11 @@ I(X;Y)&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)
                     
                       
                     
-                    <span class="site-state-item-count">21</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3724,7 +3635,17 @@ I(X;Y)&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)
                     
                       
                     
-                    <span class="site-state-item-count">67</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">72</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3796,7 +3717,7 @@ I(X;Y)&amp;=\sum_{X\in \boldsymbol{X},Y\in \boldsymbol{Y}}p(X,Y)log(\frac{p(Y,Y)
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>

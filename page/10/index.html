@@ -327,6 +327,830 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/27/ml-bayesian-classifier-naive-baye-classifier/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/27/ml-bayesian-classifier-naive-baye-classifier/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">beyesian classifier naive baye classifier</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-27 21:57:09" itemprop="dateCreated datePublished" datetime="2019-10-27T21:57:09+08:00">2019-10-27</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:48:36" itemprop="dateModified" datetime="2019-12-17T15:48:36+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="朴素贝叶斯分类器">朴素贝叶斯分类器</h2>
+<h3 id="简介">简介</h3>
+<p>朴素贝叶斯法是基于贝叶斯定理和特征条件独立假设的分类方法。对于给定的训练数据，根据特征条件独立假设学习，输入和输出的联合概率分布；然后基于此模型，对于新给定的输入$x$，利用贝叶斯定理求出后验概率最大的输出$y$。<br>
+朴素贝叶斯的一个假设：条件独立假设，拿公式举个例子就是<br>
+$$P(X|Y=y_k)=\prod_{i=1}^m P(x_i|Y=y_k) \tag{1}$$<br>
+其中$X=[x_1, x_2,\cdots, x_m]$即$m$个属性。朴素贝叶斯实际上学习到生成数据的机制，属于生成模型。条件独立假设是说用于分类的特征在类别确定的情况下都是条件独立的，这一假设让朴素贝叶斯变得好计算，但是可能会牺牲一定的精度。</p>
+<h3 id="训练过程">训练过程</h3>
+<p>贝叶斯分类器的流程如下所示：</p>
+<ol>
+<li>给出训练样本集，属性集合$X=[x_1, x_2,\cdots, x_m]$，标签集合$Y=[y_1, y_2,\cdots, y_n]$，计算每个类别$y_j$中出现属性$x_i$的条件概率，即<br>
+$$P(x_i|y_j), 1 \le i \le m, 1 \le j \le n \tag{2}$$</li>
+<li>给出一个新的样本$X$，根据贝叶斯定理以及条件独立假设，计算：<br>
+$$P(y_k|X) = \frac{P(y_k)P(X|y_k)}{P(X)} = \frac{P(y_k) \prod_{i=1}^m P(x_i|y_k) }{P(X)} \tag{3}$$</li>
+<li>从$P(y_k|X)$中选出最大的$P$对应的$y_k$当做label。</li>
+</ol>
+<p>可以看出，朴素贝叶斯分类器的关键就是计算条件概率：</p>
+<ul>
+<li>当属性$X$是离散值时，可以统计样本中各个$P(x_i|y_j)$的频率近似计算概率</li>
+<li>当属性$X$是连续值时，可以假设变量服从某种分布，使用训练数据估计分布的参数。 如高斯分布的均值和方差。</li>
+</ul>
+<h2 id="后验最大化的含义">后验最大化的含义</h2>
+<p>朴素贝叶斯法将实例分到后验概率最大的类中，相当于期望风险最小化。</p>
+<h2 id="参数估计方法">参数估计方法</h2>
+<p>在朴素贝叶斯的训练过程中，我们需要学习先验概率以及条件概率。可以使用<a href="https://mxxhcm.github.io/2019/07/31/probability_basic/">贝叶斯估计</a>，<a href="https://mxxhcm.github.io/2019/01/20/maximum-likelyhood-estimation/">最大似然估计</a>和<a href="https://mxxhcm.github.io/2019/07/31/probability_basic/">最大后验估计</a>求朴素贝叶斯的先验概率和条件概率。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.cnblogs.com/phoenixzq/p/3539619.html" target="_blank" rel="noopener">https://www.cnblogs.com/phoenixzq/p/3539619.html</a><br>
+2.<a href="http://funhacks.net/2015/05/18/Bayesian-classifier/" target="_blank" rel="noopener">http://funhacks.net/2015/05/18/Bayesian-classifier/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/27/C-input-output/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/27/C-input-output/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">C/C++ input and output</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-27 10:00:47" itemprop="dateCreated datePublished" datetime="2019-10-27T10:00:47+08:00">2019-10-27</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-19 22:19:16" itemprop="dateModified" datetime="2019-12-19T22:19:16+08:00">2019-12-19</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="特殊符号的ascii">特殊符号的ASCII</h2>
+<p>'\n’是10。<br>
+EOF是-1。</p>
+<h2 id="输入输出">输入输出</h2>
+<p>C/C++语言中输入输出主要分为两种，一种是文件的输入输出，另一种是标准输入输出即<code>stdin</code>和<code>stdout</code>，从控制台进行输入输出。其实标准输入输出是一种特殊的文件流，这样子文件的输入输出也可以用在标准输入输出。</p>
+<h3 id="文件输入和输出常用函数">文件输入和输出常用函数</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//字符</span><br><span class="line">fgetc() and fputc()</span><br><span class="line">getc() and putc()</span><br><span class="line">// getc()和fgetc()功能功能一样，只不过getc()是宏实现，进行了优化，getc()可以被当做宏调用。而fgetc()只能当做函数被调用，getc()也能读取&apos;\n&apos;字符。</span><br><span class="line"></span><br><span class="line">//n个项</span><br><span class="line">fread() and fwrite()</span><br><span class="line"></span><br><span class="line">//字符串</span><br><span class="line">getline() </span><br><span class="line">fgets() and fputs()</span><br><span class="line">fscanf() and fprintf()</span><br></pre></td></tr></table></figure>
+<h3 id="标准输入和输出常用函数">标准输入和输出常用函数</h3>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//字符</span><br><span class="line">getchar() and putchar()</span><br><span class="line">scanf() and printf()</span><br><span class="line">getche()和getch() //不经过缓冲区</span><br><span class="line"></span><br><span class="line">//字符串</span><br><span class="line">scanf() and printf()</span><br><span class="line">gets() and puts()</span><br></pre></td></tr></table></figure>
+<h3 id="注意事项">注意事项</h3>
+<ol>
+<li>getline()，fgets()都能用于标准输入输出中的读入。</li>
+<li>当用于标准输入输出时：<br>
+getline()，fgets()，scanf()，gets()之间的区别和联系：<br>
+getline()推荐使用，fgets()不推荐，scanf()不推荐，gets()别用。<br>
+因为fgets()和scanf()都有缓冲区溢出的危险，而gets()最容易发生缓冲区溢出。</li>
+<li>fgetc()和getc()都是用于文件中字符操作的。而fgets()是用于文件中字符串操作的，gets()是用于标准输入输出中字符串操作的。</li>
+<li>getc()和fgetc()功能功能一样，只不过getc()是宏实现，进行了优化，getc()可以被当做宏调用。而fgetc()只能当做函数被调用，getc()也能读取’\n’字符。</li>
+</ol>
+<h2 id="缓冲区">缓冲区</h2>
+<p>我们在使用输入输出函数的时候，不管是从文件还是控制台中读取数据，数据都会先存放在缓冲区里面，在需要使用的时候会在缓冲区里面提取，缓冲区是一个队列，遵循先进先出的规则。</p>
+<p>例如：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a, b;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在控制台输入：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">12 23 34 45 56 67 78 89</span><br></pre></td></tr></table></figure>
+<p>控制台输出结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">12 23</span><br><span class="line">34 45</span><br><span class="line">56 67</span><br></pre></td></tr></table></figure>
+<p>由于输入在控制台的数据已经到了缓冲区，所以除了第一次调用scanf()的时候控制台会弹出（缓冲区为空），另两次则不会弹出（缓冲区不为空），直接从缓冲区里面拿取数据。<br>
+如果不想这样做可以选择清空缓冲区，可以使用fclose()函数清空缓冲区并关闭流，但是这样我们就无法继续使用流了。我们还可以选择使用fflush()函数，在不关闭流的情况下清空缓冲区。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fflush</span> <span class="params">( FILE * stream )</span></span>;</span><br></pre></td></tr></table></figure>
+<p>如果给出的文件流是一个输出流,那么fflush()把输出到缓冲区的内容写入文件；如果给出的文件流是输入类型的,结果未定义；<br>
+fflush(NULL)刷新所有的输出流；<br>
+fflush(stdin)刷新标准输入缓冲区，把输入缓冲区里的东西丢弃；但是fflush<a href="https://stackoverflow.com/questions/17318886/fflush-is-not-working-in-linux" target="_blank" rel="noopener">在linux上并不work</a>。<br>
+fflush(stdout)刷新标准输出缓冲区，把输出缓冲区里的东西打印到标准输出设备上。<br>
+例如</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a, b;</span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line">    fflush(<span class="built_in">stdin</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line">    fflush(<span class="built_in">stdin</span>);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;a, &amp;b);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d %d\n"</span>, a, b);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在控制台输入：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">12 23 34 45 56 67 78 89</span><br></pre></td></tr></table></figure>
+<p>控制台输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">12 23</span><br></pre></td></tr></table></figure>
+<p>然后会等待控制台输入。（我在linux上并没有实验成功。）</p>
+<h2 id="文件输入-输出">文件输入/输出</h2>
+<h3 id="打开文件fopen和关闭文件close">打开文件<code>fopen</code>和关闭文件<code>close</code></h3>
+<h4 id="函数原型">函数原型</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment"> * 打开文件，打开成功返回一个FILE指针，打开失败返回NULL</span></span><br><span class="line"><span class="comment"> * type：是文件操作方法，包括'w', 'a', 'rb', 'wb', 'ab', 'r+', 'w+', 'a+', 'rb+', 'wb+', 'ab+'</span></span><br><span class="line"><span class="comment">FILE* fopen(char*filename, char* type);</span></span><br><span class="line"><span class="comment">int fclose(FILE* stream);</span></span><br></pre></td></tr></table></figure>
+<h4 id="示例">示例</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt; </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line">    <span class="keyword">char</span> filename[<span class="number">20</span>] = <span class="string">"data.txt"</span>;</span><br><span class="line">    FILE *fp = fopen(filename, <span class="string">"r"</span>); </span><br><span class="line">    <span class="keyword">if</span> (fp == <span class="literal">NULL</span>) </span><br><span class="line">    &#123; </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Cannot open file.\n"</span>); </span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>); </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Open file %s success.\n"</span>, filename);</span><br><span class="line">    &#125;</span><br><span class="line">    fclose(fp);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="从文件流中读写字符">从文件流中读写字符</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 从文件流中读取单个字符，会读取'\n'字符，</span></span><br><span class="line"><span class="comment"> * File* 读入文件流和输出文件流</span></span><br><span class="line"><span class="comment"> * int ch: 待写入字符</span></span><br><span class="line"><span class="comment"> * fgetc()和getc()返回读取的字符，</span></span><br><span class="line"><span class="comment"> * fputc()和putc()返回输出字符的ascii，否则 返回 EOF .</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"> */</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fgetc</span><span class="params">(FILE* stream)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getc</span><span class="params">(FILE* stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fputc</span><span class="params">(<span class="keyword">int</span> ch, FILE* stream)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">putc</span><span class="params">(<span class="keyword">int</span> ch, FILE* stream)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="从文件流中读取和写入多个数据项">从文件流中读取和写入多个数据项</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 从流指针指定的文件中读取nobj个数据项，每个数据项有size个字节，存入ptr指向的缓冲区。读取的数据项不一定等于nobj，可能读完了或者出错了。</span></span><br><span class="line"><span class="comment"> * ptr:缓冲区指针</span></span><br><span class="line"><span class="comment"> * size_t size: 每个数据项字节</span></span><br><span class="line"><span class="comment"> * size_t nobj: 读取多少个数据</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">size_t</span> fread(<span class="keyword">void</span>* ptr, <span class="keyword">size_t</span> size, <span class="keyword">size_t</span> nobj, FILE* stream);</span><br><span class="line"><span class="keyword">size_t</span> fwrite(<span class="keyword">const</span> <span class="keyword">void</span>* ptr, <span class="keyword">size_t</span> size, <span class="keyword">size_t</span> nobj, FILE* stream);</span><br></pre></td></tr></table></figure>
+<h3 id="从文件流中读写字符串">从文件流中读写字符串</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 从文件中读取一行，getline会读入换行符。</span></span><br><span class="line"><span class="comment"> * *lineptr指向一个动态分配的内存区域。*n是所分配内存的长度。如果*lineptr是NULL的话，getline函数会自动进行动态内存的分配（忽略*n的大小），所以使用这个函数非常注意的就使用要注意自己进行内存的释放。</span></span><br><span class="line"><span class="comment"> * 如果*lineptr分配了内存，但在使用过程中发现所分配的内存不足的话，getline函数会调用realloc函数来重新进行内存的分配，同时更新*lineptr和*n。</span></span><br><span class="line"><span class="comment"> * 注意*lineptr指向的是一个动态分配的内存，由malloc，calloc或realloc分配的，不能是静态分配的数组。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">ssize_t</span> getline(<span class="keyword">char</span> **lineptr, <span class="keyword">size_t</span> *n, FILE *stream);</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * fgets从流文件中n个字符到指定数组中，遇到 "\n"就停止。</span></span><br><span class="line"><span class="comment"> * char* str: 字符数组或者字符串指针，字符串指针一定要配内存空间，否则会出问题</span></span><br><span class="line"><span class="comment"> * int n: 从流指针开始读取n个字符。</span></span><br><span class="line"><span class="comment"> * fgets()返回值：</span></span><br><span class="line"><span class="comment"> *      n &lt;= 0或者读入错误，或者遇到EOF，返回NULL</span></span><br><span class="line"><span class="comment"> *      n = 1返回空串 </span></span><br><span class="line"><span class="comment"> *      读入成功返回缓冲区地址</span></span><br><span class="line"><span class="comment"> * fputs()返回值：</span></span><br><span class="line"><span class="comment"> *      输出成功返回大于$0$的值，否则返回EOF</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">char</span>* <span class="title">fgets</span><span class="params">(<span class="keyword">char</span>* str, <span class="keyword">int</span> n, FILE* stream)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fputs</span><span class="params">(<span class="keyword">char</span>* str, FILE* stream)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fscanf</span><span class="params">(FILE* stream, <span class="keyword">char</span>* format, variable-<span class="built_in">list</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fprintf</span><span class="params">(FILE* stream, <span class="keyword">char</span>* format, variable-<span class="built_in">list</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="标准输入-输出">标准输入/输出</h2>
+<h3 id="读写字符">读写字符</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * scanf函数的格式说明符有几个就要取几次数据，</span></span><br><span class="line"><span class="comment"> * 只要碰到格式说明符就必须把数据取走，没取完</span></span><br><span class="line"><span class="comment"> * 的数据继续留在缓冲区中。</span></span><br><span class="line"><span class="comment"> * scanf()加%c</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">scanf</span>();</span><br><span class="line"><span class="built_in">printf</span>(); </span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 将用户输入的字符输出到标准输出设备，也是按下回车后从缓冲区读取。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">getchar();</span><br><span class="line"><span class="built_in">putchar</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * 不读取缓冲区的字符，只要用户输入字符，getche()函数会立刻读取，而不需等待按回车键，并在屏幕上显示读入的字符。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">getche();</span><br><span class="line"><span class="comment">//它与getche()的区别是，getch()不需将所输入的字符显示到屏幕上</span></span><br><span class="line">getch();</span><br></pre></td></tr></table></figure>
+<h3 id="读写字符串">读写字符串</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * gets</span></span><br><span class="line"><span class="comment"> * /Never use gets(). 别用gets()，因为get()没有指定可以使用的缓冲区大小，它会在遇到换行符或者EOF才能停止，把所有的字符都存在缓冲区中，然而因为不知道要读多少个字符，所以可能会发生溢出。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">gets</span><span class="params">(<span class="keyword">char</span> *s)</span></span>;</span><br><span class="line"><span class="comment">//* 以"\0"作为字符串的结束。</span></span><br><span class="line"><span class="built_in">puts</span>();</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * scanf()加%s，但是%s会在遇到空白符（空格，tab）时自动结束，而gets和fgets()都是以换行或者EOF为结束。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="built_in">scanf</span>();</span><br><span class="line"><span class="built_in">printf</span>();</span><br></pre></td></tr></table></figure>
+<h3 id="其他">其他</h3>
+<p>可以定义文件指针，指向<code>stdin</code>和<code>stdout</code>，文件的读写函数就也可以使用到标准输入输出了。<br>
+如下示例：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> ch;</span><br><span class="line"></span><br><span class="line">    FILE *pfin = <span class="built_in">stdin</span>; <span class="comment">//定义一个文件指针，并指向标准输入设备(键盘)</span></span><br><span class="line">    FILE *pfout = <span class="built_in">stdout</span>; <span class="comment">//定义一个文件指针，并指向标准输出设备(屏幕)</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Enter a string: "</span>);</span><br><span class="line">    </span><br><span class="line">    ch = getc(pfin); <span class="comment">//使用getc()函数获取缓冲区中的第一个字符</span></span><br><span class="line"></span><br><span class="line">    putc(ch, pfout); <span class="comment">//使用putc()函数输出该字符</span></span><br><span class="line">    putc(<span class="string">'\n'</span>, pfout); <span class="comment">//使用putc()函数输出换行字符</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="文件输入示例">文件输入示例</h2>
+<h3 id="从文件中一行一行的读取数字">从文件中一行一行的读取数字</h3>
+<p>有data.txt如下所示：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">13</span><br><span class="line">38</span><br><span class="line">28</span><br></pre></td></tr></table></figure>
+<p>读取程序如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt; </span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">#define N 510</span><br><span class="line"></span><br><span class="line">int main() </span><br><span class="line">&#123; </span><br><span class="line">    char filename[20] = &quot;data.txt&quot;;</span><br><span class="line">    FILE *fp = fopen(filename, &quot;r&quot;); </span><br><span class="line">    if (fp == NULL) </span><br><span class="line">    &#123; </span><br><span class="line">        printf(&quot;Cannot open file \n&quot;); </span><br><span class="line">        exit(0); </span><br><span class="line">    &#125; </span><br><span class="line"></span><br><span class="line">    char chunk[128];</span><br><span class="line">    int array[N] = &#123;0&#125;;</span><br><span class="line">    int count = 0;</span><br><span class="line">    while (fgets(chunk, sizeof(chunk), fp)!=NULL) </span><br><span class="line">    &#123; </span><br><span class="line">        array[count] = atoi(chunk);</span><br><span class="line">        count += 1;</span><br><span class="line">    &#125; </span><br><span class="line">    fclose(fp); </span><br><span class="line">    return 0; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://blog.csdn.net/strongwangjiawei/article/details/7786085" target="_blank" rel="noopener">https://blog.csdn.net/strongwangjiawei/article/details/7786085</a><br>
+2.<a href="https://solarianprogrammer.com/2019/04/03/c-programming-read-file-lines-fgets-getline-implement-portable-getline/" target="_blank" rel="noopener">https://solarianprogrammer.com/2019/04/03/c-programming-read-file-lines-fgets-getline-implement-portable-getline/</a><br>
+3.<a href="https://stackoverflow.com/questions/20378430/reading-numbers-from-a-text-file-into-an-array-in-c" target="_blank" rel="noopener">https://stackoverflow.com/questions/20378430/reading-numbers-from-a-text-file-into-an-array-in-c</a><br>
+4.<a href="http://manpages.ubuntu.com/manpages/bionic/man3/fgetc.3.html" target="_blank" rel="noopener">http://manpages.ubuntu.com/manpages/bionic/man3/fgetc.3.html</a><br>
+5.<a href="https://www.cnblogs.com/JCSU/articles/1306308.html" target="_blank" rel="noopener">https://www.cnblogs.com/JCSU/articles/1306308.html</a><br>
+6.<a href="https://www.cnblogs.com/JCSU/articles/1306308.html" target="_blank" rel="noopener">https://www.cnblogs.com/JCSU/articles/1306308.html</a><br>
+7.<a href="https://blog.csdn.net/baidu_27435045/article/details/53313699" target="_blank" rel="noopener">https://blog.csdn.net/baidu_27435045/article/details/53313699</a><br>
+8.<a href="https://stackoverflow.com/questions/17318886/fflush-is-not-working-in-linux" target="_blank" rel="noopener">https://stackoverflow.com/questions/17318886/fflush-is-not-working-in-linux</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/26/ml-bayesian-decision-theorem-and-bayesian-classifier/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/26/ml-bayesian-decision-theorem-and-bayesian-classifier/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">bayesian decision theorem and bayesian classifier</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-26 20:02:39" itemprop="dateCreated datePublished" datetime="2019-10-26T20:02:39+08:00">2019-10-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 16:26:15" itemprop="dateModified" datetime="2019-12-17T16:26:15+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="关键字">关键字</h2>
+<p>贝叶斯分类器，贝叶斯定理，朴素贝叶斯，贝叶斯错误率</p>
+<h2 id="贝叶斯决策理论">贝叶斯决策理论</h2>
+<p>在<a href="https://mxxhcm.github.io/2019/07/31/probability_basic/">概率论基础中</a>已经简单介绍了频率学派和贝叶斯学派。贝叶斯学派中几个重要的概念：先验，后验。<br>
+贝叶斯决策理论是通过计算后验概率进行决策的，贝叶斯决策理论的实际意义不大，但是具有非常重要的理论意义，尤其是误差上界的计算。</p>
+<h3 id="贝叶斯定理-公式">贝叶斯定理（公式）</h3>
+<p>假设X,Y是一对随机变量，它们的联合概率$P(X=x, Y=y)$是指$X$取值$x$且$Y$取值为$y$的概率，条件概率是指一个随机变量在另一个随机变量取值已知的情况下取某一个特定值的概率。比如$P(Y=y|X=y)$是指在变量$X$取值$x$的情况下，变量$Y$取值$y$的概率。$X$和$Y$的联合概率和条件概率满足如下关系：<br>
+$$P(X,Y) = P(Y|X)\cdot P(X) = P(X|Y)\cdot P(Y) \tag{1}$$<br>
+由上面的公式可以得到下面公式，称为贝叶斯定理：<br>
+$$ P(Y|X) = \frac{P(X|Y)P(Y)}{P(X)} \tag{2}$$</p>
+<p>贝叶斯公式最伟大之处就在于将先验概率转化为了后验概率。使得后验概率变得可以求解了。</p>
+<h3 id="最小错误率贝叶斯决策">最小错误率贝叶斯决策</h3>
+<h3 id="最小风险贝叶斯决策">最小风险贝叶斯决策</h3>
+<h2 id="贝叶斯分类器">贝叶斯分类器</h2>
+<p>根据贝叶斯决策理论得到的分类器，以贝叶斯定理为基础，是一类分类算法的总称，叫做贝叶斯分类器。常见的贝叶斯分类器有<a href="http://mxxhcm.github.io/2019/10/27/bayesian-classifier-naive-baye-classifier/">朴素贝叶斯</a>和<a href="http://mxxhcm.github.io/2019/01/06/bayesian-classifier-bayesian-networks/">贝叶斯信念网络</a>。</p>
+<h3 id="贝叶斯决策边界">贝叶斯决策边界</h3>
+<p>贝叶斯分类器产生最低的错误率，叫做贝叶斯错误率。因为贝叶斯分类器总是选择使式子$(1)$最大化的类，在$X=x_0$处的错误率是$1-\max_j Pr(Y=j|X=x_0)$。<br>
+整个贝叶斯分类器的错误率是：<br>
+$$1-\mathbb{E}\left(\max_j Pr(Y=j|X=x_0)\right) \tag{6}$$<br>
+其中期望表示计算所有$X$的可能取值上的平均错误率。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.cnblogs.com/phoenixzq/p/3539619.html" target="_blank" rel="noopener">https://www.cnblogs.com/phoenixzq/p/3539619.html</a><br>
+2.<a href="http://funhacks.net/2015/05/18/Bayesian-classifier/" target="_blank" rel="noopener">http://funhacks.net/2015/05/18/Bayesian-classifier/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/26/generate-random-numbers-in-a-interval-from-specify-distribution/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/10/26/generate-random-numbers-in-a-interval-from-specify-distribution/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">generate random numbers in a interval from specify distribution</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-10-26 19:28:22" itemprop="dateCreated datePublished" datetime="2019-10-26T19:28:22+08:00">2019-10-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-10-27 19:32:58" itemprop="dateModified" datetime="2019-10-27T19:32:58+08:00">2019-10-27</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论与统计/" itemprop="url" rel="index"><span itemprop="name">概率论与统计</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="问题">问题</h2>
+<p>如何利用一个分布（高斯分布），生成指定区间内的随机数？<br>
+比如在[-100,100]区间内，利用生成分布产生200个随机数，这个其实是叫截断正态分布。<br>
+思路：<br>
+我的想法是先使用正态分布随机生成一个数，然后判断这个数是否是满足区间内，如果不满足，就生成下一个。</p>
+<h2 id="代码实现">代码实现</h2>
+<h3 id="c">C</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line"></span><br><span class="line">##<span class="meta"># python</span></span><br><span class="line">``` python</span><br></pre></td></tr></table></figure>
+<h3 id="matlab">matlab</h3>
+<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line"></span><br><span class="line">### R</span><br><span class="line">``` R</span><br><span class="line">rand_interval = <span class="function"><span class="keyword">function</span><span class="params">(min, max, number)</span></span></span><br><span class="line">&#123;</span><br><span class="line">  sd = (as.numeric(<span class="built_in">max</span>)-as.numeric(<span class="built_in">min</span>))/<span class="number">3</span></span><br><span class="line">  count = <span class="number">0</span></span><br><span class="line">  res = <span class="number">1</span>:number</span><br><span class="line">  <span class="keyword">while</span>(TRUE)</span><br><span class="line">  &#123;</span><br><span class="line">    x = rnorm(<span class="number">1</span>, <span class="built_in">mean</span>=<span class="number">0</span>,sd=sd)</span><br><span class="line">    <span class="keyword">if</span>(x &gt;= <span class="built_in">min</span> &amp;&amp; x &lt;= <span class="built_in">max</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      count = count+<span class="number">1</span></span><br><span class="line">      res[count] = x</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (res)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">min</span> = <span class="number">-100</span></span><br><span class="line"><span class="built_in">max</span> = <span class="number">100</span></span><br><span class="line">number = <span class="number">20</span></span><br><span class="line">x1 = rand_interval(<span class="built_in">min</span>, <span class="built_in">max</span>, number)</span><br><span class="line">x2 = rand_interval(<span class="built_in">min</span>, <span class="built_in">max</span>, number)</span><br><span class="line">x1</span><br><span class="line">x2</span><br></pre></td></tr></table></figure>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.ilovematlab.cn/thread-302139-1-1.html" target="_blank" rel="noopener">https://www.ilovematlab.cn/thread-302139-1-1.html</a><br>
+2.<a href="https://stats.stackexchange.com/questions/113230/generate-random-numbers-following-a-distribution-within-an-interval" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/113230/generate-random-numbers-following-a-distribution-within-an-interval</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/26/generative-model-and-discriminative-model/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1546,1010 +2370,6 @@ qsort是C的快排实现。</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/19/C-program-memory-layout/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/19/C-program-memory-layout/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">C/C++ program memory layout</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-19 20:41:02" itemprop="dateCreated datePublished" datetime="2019-10-19T20:41:02+08:00">2019-10-19</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:49:38" itemprop="dateModified" datetime="2019-12-17T16:49:38+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="c语言程序在内存中的组成部分">C语言程序在内存中的组成部分</h2>
-<p>C语言程序在内存中的构成如下所示：<br>
-<img src="/2019/10/19/C-program-memory-layout/c_in_memory.jpg" alt="c_program_in_memory"><br>
-即一个C语言程序在内存中由text segment, data segment，heap和stack组成。在程序执行的过程中，<a href><code>exec</code></a>从程序文件中读取代码段和初始化数据段相关内容，然后<code>exec</code>负责将未初始化数据(bss)段中的内容初始化为0。<br>
-所有的static和全局变量存放在数据段，所有的自动变量和临时变量都存在stack中，动态变量存放在heap中。<br>
-所有的函数参数存放在stack中，每一个函数都有一个不同的stack frames。<br>
-在栈的最上面，存放的是命令行参数和环境变量，这个空间是不可扩展的，因为它在进程地址空间的最上面所以不能向上扩展，而它下面的所有栈帧是不可移动的，所以也不能向下扩展。</p>
-<h2 id="text-segment-代码段">Text segment （代码段）</h2>
-<p>Text Segment，CPU执行的机器指令部分。通常，正文段是可共享的，所以即使是频繁执行的程序在存储中也只有一个副本。正文段通常是只读的，防止程序由于意外而修改指令。代码段也可能会放在heap或者stack下面，当它们溢出时就会覆盖代码段。</p>
-<h2 id="initialized-data-segment">Initialized Data Segment</h2>
-<p>Initialized data segment（初始化段），通常简称数据段，数据段包含程序员初始化的global变量和static变量。<br>
-这个段也可以被划分成初始只读区域和初始读写区域，例如：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> s[] = <span class="string">"hello world"</span>;   <span class="comment">//s在初始化数据段，存放的是"hello world"</span></span><br><span class="line"><span class="keyword">int</span> debug = <span class="number">1</span>;      <span class="comment">//全局初始化变量</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> i = <span class="number">10</span>;  <span class="comment">//全局静态变量</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *str = <span class="string">"hello world"</span>;    <span class="comment">//字符串常量存放在字符串常量区，str是全局指向常量的指针，存放的是字符串常量"hello world"在内存中的地址。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    statit <span class="keyword">int</span> si;  <span class="comment">//局部static 变量。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="uninitialized-data-segment">Uninitialized Data Segment</h2>
-<p>Uninitizlized data segment（未初始化段），通常被称为bss段，这个名称来自于早期汇编程序的一个操作符，意思是&quot;block started by symbol&quot;。在程序开始执行前，内核将这个段中的数据初始化0或者空指针。<br>
-未初始化段从数据段的结束开始，包含所有初始化为0的global和static变量以及在源代码中没有显式初始化的global和static变量。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> i;   <span class="comment">//static 变量</span></span><br><span class="line"><span class="keyword">int</span> j;      <span class="comment">//global变量</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="heap-堆">Heap （堆）</h2>
-<p>堆是动态分配的内存，从低地址往高地址增长，存放的是用户手动分配的内存，即malloc()和calloc()等函数生成的数据存放地址。位于bss段和栈之间。</p>
-<h2 id="stack-栈">Stack （栈）</h2>
-<p>栈也是动态分配的内存，从高地址向低地址增长，栈中存放的是临时数据：自动变量，函数参数，返回地址，局部变量等等。栈可以用来保存函数调用的现场，在递归调用中，如果调用次数太多，就可能会有stack overflow问题。</p>
-<h2 id="size">size</h2>
-<p>可以使用<code>size(1)</code>命令查看可执行文件的text segmen, initialized data segment(data segment)和uninitialized data segment(bss)段的大小。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.geeksforgeeks.org/memory-layout-of-c-program/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/memory-layout-of-c-program/</a><br>
-2.<a href="https://www.tenouk.com/ModuleZ.html" target="_blank" rel="noopener">https://www.tenouk.com/ModuleZ.html</a><br>
-3.<a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Executable_and_Linkable_Format</a><br>
-4.<a href="https://en.wikipedia.org/wiki/Data_segment" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Data_segment</a><br>
-5.<a href="https://www.tutorialspoint.com/memory-layout-of-c-programs" target="_blank" rel="noopener">https://www.tutorialspoint.com/memory-layout-of-c-programs</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/17/data-structure-tree/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/17/data-structure-tree/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">data structure tree</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-17 09:05:56" itemprop="dateCreated datePublished" datetime="2019-10-17T09:05:56+08:00">2019-10-17</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:14:01" itemprop="dateModified" datetime="2019-12-17T16:14:01+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据结构/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="none"></h2>
-<h2 id="none-v2"></h2>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/16/AI-confereneces-papers-download-site/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/16/AI-confereneces-papers-download-site/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">AI confereneces papers download site</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-16 16:35:19" itemprop="dateCreated datePublished" datetime="2019-10-16T16:35:19+08:00">2019-10-16</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-17 08:42:38" itemprop="dateModified" datetime="2019-10-17T08:42:38+08:00">2019-10-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="iclr">ICLR</h2>
-<h3 id="下载">下载</h3>
-<p>2019:<br>
-<a href="https://iclr.cc/Conferences/2019/Schedule?type=Poster" target="_blank" rel="noopener">https://iclr.cc/Conferences/2019/Schedule?type=Poster</a><br>
-2018:<br>
-<a href="https://openreview.net/group?id=ICLR.cc/2018/Conference#accepted-poster-papers" target="_blank" rel="noopener">https://openreview.net/group?id=ICLR.cc/2018/Conference#accepted-poster-papers</a><br>
-<a href="https://iclr.cc/Conferences/2018/Schedule?type=Poster" target="_blank" rel="noopener">https://iclr.cc/Conferences/2018/Schedule?type=Poster</a><br>
-2017:<br>
-<a href="https://openreview.net/group?id=ICLR.cc/2017/conference" target="_blank" rel="noopener">https://openreview.net/group?id=ICLR.cc/2017/conference</a><br>
-2016:<br>
-<a href="https://iclr.cc/archive/www/doku.php%3Fid=iclr2016:accepted-main.html" target="_blank" rel="noopener">https://iclr.cc/archive/www/doku.php%3Fid=iclr2016:accepted-main.html</a><br>
-2015:<br>
-<a href="https://iclr.cc/archive/www/doku.php%3Fid=iclr2015:accepted-main.html" target="_blank" rel="noopener">https://iclr.cc/archive/www/doku.php%3Fid=iclr2015:accepted-main.html</a><br>
-2014:<br>
-<a href="https://iclr.cc/archive/2014/conference-proceedings/" target="_blank" rel="noopener">https://iclr.cc/archive/2014/conference-proceedings/</a></p>
-<h3 id="查询-不能下载">查询（不能下载）</h3>
-<p><a href="https://dblp.org/db/conf/iclr/iclr2019" target="_blank" rel="noopener">https://dblp.org/db/conf/iclr/iclr2019</a><br>
-<a href="https://dblp.org/db/conf/iclr/iclr2018" target="_blank" rel="noopener">https://dblp.org/db/conf/iclr/iclr2018</a><br>
-<a href="https://dblp.org/db/conf/iclr/iclr2017" target="_blank" rel="noopener">https://dblp.org/db/conf/iclr/iclr2017</a></p>
-<h2 id="nips">NIPS</h2>
-<p>2019:<br>
-<a href="https://nips.cc/Conferences/2019/AcceptedPapersInitial" target="_blank" rel="noopener">https://nips.cc/Conferences/2019/AcceptedPapersInitial</a><br>
-1987-2018:<br>
-<a href="http://papers.nips.cc/" target="_blank" rel="noopener">http://papers.nips.cc/</a></p>
-<h2 id="aamas">AAMAS</h2>
-<p><a href="http://aamas2019.encs.concordia.ca/accp.html" target="_blank" rel="noopener">http://aamas2019.encs.concordia.ca/accp.html</a><br>
-<a href="http://celweb.vuse.vanderbilt.edu/aamas18/acceptedPapers/" target="_blank" rel="noopener">http://celweb.vuse.vanderbilt.edu/aamas18/acceptedPapers/</a><br>
-<a href="http://www.aamas2017.org/accepted-papers-main-track_aamas2017.php" target="_blank" rel="noopener">http://www.aamas2017.org/accepted-papers-main-track_aamas2017.php</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/16/algorithm-sort/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/16/algorithm-sort/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/10/index.html">algorithm-sort</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-16 15:06:10" itemprop="dateCreated datePublished" datetime="2019-10-16T15:06:10+08:00">2019-10-16</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-11-13 18:02:32" itemprop="dateModified" datetime="2019-11-13T18:02:32+08:00">2019-11-13</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据结构/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="排序分类">排序分类</h2>
-<h3 id="内部排序">内部排序</h3>
-<h4 id="基于比较的排序">基于比较的排序</h4>
-<p>交换排序</p>
-<ul>
-<li>冒泡排序</li>
-<li>快速排序</li>
-</ul>
-<p>插入排序</p>
-<ul>
-<li>简单插入排序</li>
-<li>希尔排序</li>
-</ul>
-<p>选择排序</p>
-<ul>
-<li>简单选择排序</li>
-<li>堆排序</li>
-</ul>
-<p>归并排序</p>
-<h4 id="非比较排序">非比较排序</h4>
-<ul>
-<li>计数排序</li>
-<li>桶排序</li>
-<li>基数排序</li>
-</ul>
-<h3 id="外部排序">外部排序</h3>
-<ul>
-<li>多路合并</li>
-<li>置换选择排序</li>
-</ul>
-<h2 id="交换排序">交换排序</h2>
-<h3 id="bubble-sort">bubble sort</h3>
-<h4 id="思路">思路</h4>
-<p>在第$i$趟排序过程中，最后$i-1$个值是有序的，对剩余的$n-i+1$个元素，不断的交换两个相邻位置的值，使得后面的值大于前面的值，最后这$n-i+1$个元素中的最大值跑到了倒数第$i$个位置，就像冒泡一样。。<br>
-核心思想就是只交换两个相邻的值。</p>
-<h4 id="属性">属性</h4>
-<ul>
-<li>稳定</li>
-<li>最坏时间复杂度$O(n^2 )$</li>
-<li>最好时间复杂度$O(n )$，在数组正序的情况下，只进行一轮排序，$n-1$次比较，在数组倒序的情况下，进行$n-1$轮排序，进行很多次比较，是$O(n^2 )$。</li>
-<li>平均时间复杂度$O(n^2 )$</li>
-<li>空间复杂度$O(n)$</li>
-</ul>
-<h4 id="代码">代码</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bubble_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n - <span class="number">1</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n - i - <span class="number">1</span>; j++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(a[j] &gt; a[j+<span class="number">1</span>])</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">int</span> temp = a[j];</span><br><span class="line">                a[j] = a[j+<span class="number">1</span>];</span><br><span class="line">                a[j+<span class="number">1</span>] = temp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="quick-sort">quick sort</h3>
-<h4 id="思路-v2">思路</h4>
-<p>把一个数组分成两部分，然后在将这两部分的每一部分继续分下去，一直分解到每一个部分只有一个元素，这样子就有序了。</p>
-<h4 id="属性-v2">属性</h4>
-<ul>
-<li>不稳定</li>
-<li>最坏时间复杂度$O(n^2 )$，在数组基本有序的情况下退化成冒泡排序了。</li>
-<li>最好时间复杂度$O(n\log n )$</li>
-<li>平均时间复杂度$O(n\log n )$</li>
-<li>最好空间复杂度$O(\log n)$，最差是$O(n)$的空间复杂度。每一次需要$O(1)$常数空间存储pivot的位置，在递归调用保存栈的时候需要空间。至多有$\log n$或者$O(n)$次，所以空间复杂度就是$O(n)$。</li>
-</ul>
-<h4 id="时间复杂度计算">时间复杂度计算</h4>
-<h5 id="最坏情况下">最坏情况下</h5>
-<p>数组有序，扫描一遍将它分解成了N-1和1，N-1分解称了N-2, 1<br>
-对于$N$个元素的数组，partition的时间复杂度是：<br>
-$T(N) = N - 1 + T(N-1)$，即扫描一遍需要比较的次数<br>
-$T(N-1) = N - 2 + T(N-2)$<br>
-$T(N-2) = N - 3 + T(N-3)$<br>
-$\cdots $<br>
-$T(3) = 2 + T(2)$<br>
-$T(2) = 1 + T(1)$<br>
-$T(1) = 0$<br>
-合计就是：$N-1 + N-2 + \cdots + 2 + 1 + 0= O(N^2 )$</p>
-<h5 id="平均情况下">平均情况下</h5>
-<p>$T(N) = 2T(\frac{N}{2}) + N$ 做了近似<br>
-$\frac{T(N)}{N}) = \frac{T(\frac{N}{2})}{\frac{N}{2}} + 1$<br>
-$\frac{T(\frac{N}{2})}{\frac{N}{2}} =\frac{T(\frac{N}{4})}{\frac{N}{4}} + 1 $<br>
-$\cdots$<br>
-$\frac{4}{4} =\frac{T(4)}{4} + 1$<br>
-$\frac{2}{2} =\frac{T(1)}{1} + 1$<br>
-而<br>
-$T(1) = 0$<br>
-$\frac{T(2)}{2} = 1$<br>
-$\frac{T(4)}{4} = T(2) + T(1) = 2$<br>
-$\frac{T(8)}{8} = T(4) + T(2) + T(1) = 3$<br>
-$\frac{T(16)}{16} = T(8) T(4) + T(2) + T(1) = 4$<br>
-所以<br>
-$\frac{T(N)}{N} = \log N$<br>
-$T(N) = N\log N$</p>
-<h4 id="代码-v2">代码</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">partition</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> low, <span class="keyword">int</span> high)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> pivot = a[low];</span><br><span class="line">    <span class="keyword">while</span>(low &lt; high)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">while</span>(low &lt; high &amp;&amp; a[high] &gt;= pivot)</span><br><span class="line">        &#123;</span><br><span class="line">            high --;</span><br><span class="line">        &#125;</span><br><span class="line">        a[low] = a[high];</span><br><span class="line">        <span class="keyword">while</span>(low &lt; high &amp;&amp; a[low] &lt;= pivot)</span><br><span class="line">        &#123;</span><br><span class="line">            low ++;</span><br><span class="line">        &#125;</span><br><span class="line">        a[high] = a[low];</span><br><span class="line">    &#125;</span><br><span class="line">    a[low] =  pivot;</span><br><span class="line">    <span class="keyword">return</span> low;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">qsort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> low, <span class="keyword">int</span> high)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>( low &lt; high)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> pivot = partition(a, low, high);</span><br><span class="line">        qsort(a, low,  pivot - <span class="number">1</span>);</span><br><span class="line">        qsort(a, pivot + <span class="number">1</span>, high);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">quicksort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    qsort(a, <span class="number">0</span>, n<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="性能测试">性能测试</h3>
-<p>自己实现的：<br>
-1万数据，大概是0.004秒<br>
-10万数据，大概是0.013秒<br>
-100万数据，大概是0.13秒</p>
-<p>C语言qsort：<br>
-100万数据，大概是0.03到0.06秒<br>
-1000万数据，大概是0.3秒左右<br>
-1亿数据，大概是3秒左右<br>
-C++sort：<br>
-100万数据，大概是0.13秒左右<br>
-1000万数据，大概是1.4秒左右<br>
-1亿数据，大概是16秒左右</p>
-<h2 id="插入排序">插入排序</h2>
-<h3 id="简单插入排序insert-sort">简单插入排序insert sort</h3>
-<h4 id="思路分析">思路分析</h4>
-<p>在第$i$趟排序过程中，前面$i-1$个值是有序的，将第i个数字插入前面有序的长为$i-1$的序列中，构成长为$i$的有序序列。</p>
-<h4 id="特点">特点</h4>
-<ul>
-<li>稳定</li>
-<li>最坏时间复杂度$O(n^2 )$</li>
-<li>最好时间复杂度$O(n )$，在数组有序的情况下</li>
-<li>平均时间复杂度$O(n^2 )$</li>
-<li>空间复杂度$O(n)$</li>
-</ul>
-<h4 id="代码-v3">代码</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//首先我写了下面的代码，实际上是有问题的，</span></span><br><span class="line"><span class="comment">//错误示例！！！！！！！！！！！！！！！！！！！！！！！</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">insert_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">-1</span>, j = <span class="number">-1</span>, temp = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">1</span>; i &lt; n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        temp = a[i];</span><br><span class="line">        <span class="keyword">for</span>(j = i - <span class="number">1</span>; j &gt;= <span class="number">0</span>; j--)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(a[j] &gt; temp)</span><br><span class="line">            &#123;</span><br><span class="line">                a[j+<span class="number">1</span>] = a[j];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> </span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">//如果第j论插入应该插入在0位置时，会跳过这一步的执行。</span></span><br><span class="line">                a[j+<span class="number">1</span>] = temp;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//正确示例</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">insert_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">-1</span>, j = <span class="number">-1</span>, temp = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span>(i = <span class="number">1</span>; i &lt; n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        temp = a[i];</span><br><span class="line">        <span class="keyword">for</span>(j = i - <span class="number">1</span>; j &gt;= <span class="number">0</span>; j--)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(a[j] &gt; temp)</span><br><span class="line">            &#123;</span><br><span class="line">                a[j+<span class="number">1</span>] = a[j];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> </span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        a[j+<span class="number">1</span>] = temp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="希尔排序">希尔排序</h3>
-<h4 id="思路简介">思路简介</h4>
-<p>希尔排序是对插入排序的扩展。</p>
-<h4 id="属性-v3">属性</h4>
-<ul>
-<li>不稳定</li>
-<li>平均的时间复杂度$O(n^{1.3} )$</li>
-<li>最坏的时间复杂度$O(n^2 )$</li>
-<li>最好的时间复杂度$O(n )$</li>
-<li>空间复杂度是$O(1)$</li>
-</ul>
-<h4 id="代码-v4">代码</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">shell_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">-1</span>, j = <span class="number">-1</span>, temp = <span class="number">-1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> gap = n/<span class="number">2</span>; gap &gt; <span class="number">0</span>; gap/=<span class="number">2</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span>(i = gap; i &lt; n; i++)</span><br><span class="line">        &#123;</span><br><span class="line">            temp = a[i];</span><br><span class="line">            <span class="keyword">for</span>(j = i - gap; j &gt;= <span class="number">0</span>; j -= gap)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span>(temp &lt; a[j])</span><br><span class="line">                &#123;</span><br><span class="line">                    a[j+gap] =  a[j];</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            a[j+gap] = temp;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="选择排序">选择排序</h2>
-<h3 id="简单选择排序">简单选择排序</h3>
-<h4 id="思路简介-v2">思路简介</h4>
-<p>在第$i$趟排序过程中，前面$i-1$个值有序，从后面$n-i+1$个值中选择第$i$小的数，记下下标min_index，如果$i$和min_index不相等的话，交换它们的值。</p>
-<h4 id="属性-v4">属性</h4>
-<ul>
-<li>不稳定</li>
-<li>最坏时间复杂度$O(n^2 )$</li>
-<li>最好时间复杂度$O(n^2 )$</li>
-<li>平均时间复杂度$O(n^2 )$</li>
-<li>空间复杂度$O(n)$</li>
-</ul>
-<h4 id="代码-v5">代码</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">selection_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n - <span class="number">1</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> min_index = i;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> j = i; j &lt; n; j++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(a[j] &lt; a[min_index]) </span><br><span class="line">                min_index = j;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(min_index != i)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">int</span> temp = a[min_index];</span><br><span class="line">            a[min_index] = a[i];</span><br><span class="line">            a[i] = temp;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="heapsort">heapsort</h2>
-<p>1.<a href="https://www.geeksforgeeks.org/heap-sort/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/heap-sort/</a><br>
-2.<a href="http://www.techgeekbuzz.com/heap-sort-in-c/" target="_blank" rel="noopener">http://www.techgeekbuzz.com/heap-sort-in-c/</a><br>
-3.<a href="http://www.techgeekbuzz.com/heap-sort-in-c/" target="_blank" rel="noopener">http://www.techgeekbuzz.com/heap-sort-in-c/</a><br>
-4.<a href="https://www.zentut.com/c-tutorial/c-heapsort/" target="_blank" rel="noopener">https://www.zentut.com/c-tutorial/c-heapsort/</a></p>
-<h2 id="归并排序">归并排序</h2>
-<h3 id="思路-v3">思路</h3>
-<p>将数组分为原来的一半，一直分到每一个都只有一个元素，然后这两个有序数组合并到一块。</p>
-<h3 id="属性-v5">属性</h3>
-<ul>
-<li>稳定</li>
-<li>最坏时间复杂度$O(n\log n)$</li>
-<li>最好时间复杂度$O(n\log n)$</li>
-<li>平均时间复杂度$O(n\log n)$</li>
-<li>空间复杂度$O(n)$</li>
-</ul>
-<h3 id="代码-v6">代码</h3>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">merge_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> l, <span class="keyword">int</span> r)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(l &lt; r)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//int middle = (l+r)/2 may be overflow, use (r-l)/2 + l </span></span><br><span class="line">        <span class="keyword">int</span> m = (r-l)/<span class="number">2</span> + l;</span><br><span class="line">        merge_sort(a, l, m);</span><br><span class="line">        merge_sort(a, m+<span class="number">1</span>, r);</span><br><span class="line">        merge(a, l , m, r);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 这个代码的话，有问题，每次都声明一个N的数组，时间和空间消耗都很大，所以需要进行改善，只需要声明一个r-l+1的临时数组就行了。</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">merge</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> l, <span class="keyword">int</span> m, <span class="keyword">int</span> r)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//!!!错误</span></span><br><span class="line">    <span class="comment">//int res[N] = &#123; 0 &#125;;</span></span><br><span class="line">    <span class="keyword">int</span> res[r-l+<span class="number">1</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">int</span> i = l, j = m+<span class="number">1</span>, k = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// merge</span></span><br><span class="line">    <span class="keyword">while</span>((i &lt;= m) &amp;&amp; (j &lt;= r))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(a[i] &lt; a[j])</span><br><span class="line">        &#123;</span><br><span class="line">            res[k++] = a[i++];</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            res[k++] = a[j++];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// copy left</span></span><br><span class="line">    <span class="keyword">for</span>( ; i &lt;= m; )</span><br><span class="line">    &#123;</span><br><span class="line">        res[k++] = a[i++];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span>( ; j &lt;= r; )</span><br><span class="line">    &#123;</span><br><span class="line">        res[k++] = a[j++];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// copy to a</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> t = l; t &lt;=r; t++)</span><br><span class="line">    &#123;</span><br><span class="line">        a[t] = res[t-l];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="性能">性能</h3>
-<p>100万，0.1秒左右<br>
-10万，0.02左右<br>
-1万，0.003左右</p>
-<h2 id="非比较排序-v2">非比较排序</h2>
-<h3 id="计数排序">计数排序</h3>
-<h4 id="思路-v4">思路</h4>
-<p>假设输入的$n$个数都在$0-k$之间，对于输入的每个元素$x$，统计比它小的值或者和它相等的值的个数，那么这个值在排序后的位置也就确定了。</p>
-<h4 id="排序过程">排序过程</h4>
-<p>输入数组：[2, 5, 3, 0, 2, 3, 0, 3]<br>
-排序后的数组应该是：[0, 0, 2, 2, 3, 3, 3, 5]</p>
-<ol>
-<li>输入待排序数组a：<br>
-0, 1, 2, 3, 4, 5, 6, 7<br>
-a = [2, 5, 3, 0, 2, 3, 0, 3], n=8</li>
-<li>使用数组c统计出现的次数：<br>
-0, 1, 2, 3, 4, 5<br>
-c = [2, 0, 2, 3, 0, 1], k=5</li>
-<li>对c进行操作，计算每个值应该在的位置<br>
-0, 1, 2, 3, 4, 5<br>
-c = [2, 2, 4, 7, 7, 8], k=5</li>
-<li>根据数组c和数组a给出排序后的数组output:<br>
-遍历数组的每一个值，给出他们应该在哪个位置<br>
-a[0] = 2, c[a[0]] = c[2] = 4, c[2]=3, output[4] = a[0] = 2;<br>
-a[1] = 5，c[a[1]] = c[5] = 8, c[5]=7, output[8] = a[1] = 5;<br>
-a[2] = 5，c[a[2]] = c[3] = 7, c[3]=6, output[7] = a[2] = 3; 7中放的是第一个3<br>
-a[3] = 5，c[a[3]] = c[0] = 2, c[0]=1, output[2] = a[3] = 0;<br>
-a[4] = 5，c[a[4]] = c[2] = 3, c[2]=2, output[3] = a[4] = 2;<br>
-a[5] = 5，c[a[5]] = c[3] = 6, c[3]=5, output[6] = a[5] = 3;<br>
-a[6] = 5，c[a[6]] = c[0] = 1, c[0]=0, output[1] = a[6] = 0;<br>
-a[7] = 5，c[a[7]] = c[3] = 5, c[3]=4, output[5] = a[7] = 3;<br>
-<strong>正序遍历是不稳定的，倒序遍历是稳定的。上面就是正序的，可以发现不稳定</strong></li>
-</ol>
-<h4 id="属性-v6">属性</h4>
-<ul>
-<li>稳定</li>
-<li>不基于比较</li>
-<li>时间复杂度是$O(n+k)$</li>
-<li>空间复杂度是$O(n+k)$</li>
-</ul>
-<h4 id="代码-v7">代码</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counting_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n, <span class="keyword">int</span> k)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> output[n];</span><br><span class="line">    <span class="keyword">int</span> freq[k];</span><br><span class="line">    <span class="built_in">memset</span>(freq, <span class="number">0</span>, <span class="keyword">sizeof</span>(freq));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// freq[i] contains the number of elements equal to i</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        freq[a[i]] ++;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// freq[i] contains the number of elements equal or less to i</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= k; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        freq[i] = freq[i] + freq[i<span class="number">-1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = n - <span class="number">1</span>; i &gt;= <span class="number">0</span> ; i--)</span><br><span class="line">    &#123;</span><br><span class="line">        output[freq[a[i]]--] = a[i];</span><br><span class="line">    &#125;</span><br><span class="line">               </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a[i] = output[i+<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="基数排序">基数排序</h3>
-<h4 id="思路-v5">思路</h4>
-<p>借助多关键字排序的思想对单逻辑关键字排序。简单来说，对于十进制数字，依次按照个十百千万上每个位上的数字进行排序，假设有$d$位，需要分别对这$d$位进行排序。对每一位进行排序时，可以使用计数排序，因为$k$不大。</p>
-<h4 id="排序过程-v2">排序过程</h4>
-<p>给出一组待排序数字：[329, 457, 657, 839, 436, 726, 255]<br>
-先按照个位数进行排序，<br>
-再按照十位数进行排序，<br>
-最后按照百位数进行排序</p>
-<h4 id="属性-v7">属性</h4>
-<ul>
-<li>稳定</li>
-<li>时间复杂度$O(d(n+k))$</li>
-<li>空间复杂度$O(n+k)$</li>
-</ul>
-<h4 id="代码-v8">代码</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bucket_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> max = get_max(a, n);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"max=%d\n"</span>, max);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> <span class="built_in">exp</span>=<span class="number">1</span>; max/<span class="built_in">exp</span> &gt; <span class="number">0</span>; <span class="built_in">exp</span>*=<span class="number">10</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        counting_sort(a, n, <span class="built_in">exp</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">get_max</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> max = a[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; n ;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(a[i] &gt; max)</span><br><span class="line">            max = a[i];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> max;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">counting_sort</span><span class="params">(<span class="keyword">int</span> a[], <span class="keyword">int</span> n, <span class="keyword">int</span> <span class="built_in">exp</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> count[<span class="number">10</span>];</span><br><span class="line">    <span class="keyword">int</span> output[n+<span class="number">1</span>];</span><br><span class="line">    <span class="built_in">memset</span>(count, <span class="number">0</span>, <span class="keyword">sizeof</span>(count));</span><br><span class="line"></span><br><span class="line">    <span class="comment">//329, 457, 657, 839, 436, 726, 255</span></span><br><span class="line">    <span class="comment">// 1.count</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i ++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> temp = (a[i] / <span class="built_in">exp</span>) % <span class="number">10</span>;</span><br><span class="line">        count[temp] ++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2.accumulate count</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; <span class="number">10</span>; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        count[i] = count[i] + count[i<span class="number">-1</span>];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3.sort</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = n - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">int</span> temp = (a[i] / <span class="built_in">exp</span>) % <span class="number">10</span>;</span><br><span class="line">        output[count[temp]--] = a[i];</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 4. copy</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        a[i] = output[i+<span class="number">1</span>];</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d, "</span>, a[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="桶排序">桶排序</h3>
-<h4 id="思路-v6">思路</h4>
-<p>计数排序是桶排序的一个特例，计数排序中使用的桶的个数和max-min+1的值相同，而通排序中桶的个数要小于等于max-min+1，等于max-min+1时，桶排序就退化成了计数排序。</p>
-<h4 id="属性-v8">属性</h4>
-<ul>
-<li>稳定</li>
-<li>最好的时间复杂度是$O(n)$</li>
-<li>最坏的时间复杂度是$O(n^2 )$</li>
-<li>平均时间复杂度是$O(n+k)$</li>
-<li>空间复杂度是$O(n+k)$</li>
-</ul>
-<h4 id="代码-v9">代码</h4>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">int get_min(int a[], int n)</span><br><span class="line">&#123;</span><br><span class="line">    int min = a[0];</span><br><span class="line">    for(int i=1; i &lt; n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        if(a[i] &lt; min)</span><br><span class="line">        &#123;</span><br><span class="line">            min = a[i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return min;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int get_max(int a[], int n)</span><br><span class="line">&#123;</span><br><span class="line">    int max = a[0];</span><br><span class="line">    for(int i=1; i &lt; n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        if(a[i] &gt; max)</span><br><span class="line">        &#123;</span><br><span class="line">            max = a[i];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return max;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">void bucket_sort(int a[], int n, int bucket_number)</span><br><span class="line">&#123;</span><br><span class="line">    // 1.创建n个桶</span><br><span class="line">    std::vector&lt;int&gt; b[bucket_number];</span><br><span class="line"></span><br><span class="line">    int max = get_max(a, n);</span><br><span class="line">    int min = get_min(a, n);</span><br><span class="line"></span><br><span class="line">    // 2.每个桶的大小</span><br><span class="line">    int bucket_size = (max - min + 1) / bucket_number;</span><br><span class="line">    for(int i = 0 ; i&lt; n; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        int bucket_index = (a[i] - min) / bucket_size;</span><br><span class="line">        b[bucket_index].push_back(a[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    for(int i = 0; i &lt; bucket_number; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        sort(b[i].begin(), b[i].end());</span><br><span class="line">    &#125;</span><br><span class="line">    int count = 0;</span><br><span class="line">    for(int i = 0; i &lt; bucket_number; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        for(int j = 0; j &lt; b[i].size(); j++)</span><br><span class="line">        &#123;</span><br><span class="line">            a[count++] = b[i][j];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="快速排序vs归并排序">快速排序vs归并排序</h2>
-<ul>
-<li>辅助空间：快排可以使用in-place方法实现，在每一个排序过程中不需要额外的空间，但是快排的递归实现，需要保存栈调用（是常数），平均情况下是$O(\log n)$，最坏情况下是$O(n)$；<a href="https://www.geeksforgeeks.org/quicksort-tail-call-optimization-reducing-worst-case-space-log-n/" target="_blank" rel="noopener">使用尾递归的快排最坏情况下空间复杂度也是$O(\log n)$</a>。而归并排序需要临时数组存储归并后的排序数组，<a href="https://cs.stackexchange.com/a/35510" target="_blank" rel="noopener">需要$O(n)$的空间复杂度</a>。</li>
-<li>时间复杂度：快排在最坏情况下的时间复杂度是$O(n^2 )$，但是可以使用随机选择pivot的方式避免。</li>
-<li>归并排序更适合大的数据结构，mergesore是稳定排序，可以修改成适合链表等数据结构的算法，以及内存和网络上的排序。因为在链表中，插入的时间和空间复杂度都是$O(1)$，因此链表的归并排序可以不需要额外的辅助空间。</li>
-<li>快排和归并的平均时间复杂度都是$O(n\log n)$，但是因为归并排序需要分配以及销毁临时数组，所以要更慢一些。</li>
-<li>快排是cache friendly的，对于数据来说，他有locality of reference。（<a href="https://stackoverflow.com/a/70631/8939281" target="_blank" rel="noopener">即是否很大可能性从cache中读取大量元素</a>）。</li>
-</ul>
-<h2 id="简单排序">简单排序</h2>
-<p>常见的三大简单排序：冒泡排序，简单选择排序，简单插入排序。<br>
-冒泡排序：</p>
-<ul>
-<li>优点:比较简单，空间复杂度较低，是稳定的；</li>
-<li>缺点:时间复杂度太高，效率慢；</li>
-</ul>
-<p>选择排序：</p>
-<ul>
-<li>优点：一轮比较只需要一次交换；</li>
-<li>缺点：效率慢，不稳定（举个例子2，2，1， 假设我们每趟排序都选择第一个元素作为比较值，第一趟排序会交换第一个2和1，两个2的位置已经变了）。</li>
-</ul>
-<p>冒泡排序和简单选择排序的区别和联系：</p>
-<ul>
-<li>冒泡排序每趟都是比较无序序列中相邻位置的两个数，而选择排序每趟都是选择无序序列中的最小数；</li>
-<li>冒泡排序每一轮比较后，位置不对都需要换位置，选择排序每一趟排序都只需要一次交换；</li>
-<li>冒泡排序是通过数去找位置，选择排序是给定位置去找数；</li>
-</ul>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.quora.com/What-is-the-time-complexity-of-quick-sort/answer/Lakshmi-Narayana-217" target="_blank" rel="noopener">https://www.quora.com/What-is-the-time-complexity-of-quick-sort/answer/Lakshmi-Narayana-217</a><br>
-2.<a href="https://www.cnblogs.com/Good-good-stady-day-day-up/p/9055698.html" target="_blank" rel="noopener">https://www.cnblogs.com/Good-good-stady-day-day-up/p/9055698.html</a><br>
-3.<a href="https://www.cnblogs.com/onepixel/p/7674659.html" target="_blank" rel="noopener">https://www.cnblogs.com/onepixel/p/7674659.html</a><br>
-4.<a href="https://www.geeksforgeeks.org/radix-sort/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/radix-sort/</a><br>
-5.<a href="https://www.geeksforgeeks.org/quicksort-better-mergesort/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/quicksort-better-mergesort/</a><br>
-6.<a href="https://cs.stackexchange.com/a/35510" target="_blank" rel="noopener">https://cs.stackexchange.com/a/35510</a><br>
-7.<a href="https://www.geeksforgeeks.org/quicksort-tail-call-optimization-reducing-worst-case-space-log-n/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/quicksort-tail-call-optimization-reducing-worst-case-space-log-n/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2599,7 +2419,7 @@ a[7] = 5，c[a[7]] = c[3] = 5, c[3]=4, output[5] = a[7] = 3;<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">302</span>
+                    <span class="site-state-item-count">306</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2654,7 +2474,11 @@ a[7] = 5，c[a[7]] = c[3] = 5, c[3]=4, output[5] = a[7] = 3;<br>
                     
                       
                     
-                    <span class="site-state-item-count">21</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">23</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -2801,7 +2625,17 @@ a[7] = 5，c[a[7]] = c[3] = 5, c[3]=4, output[5] = a[7] = 3;<br>
                     
                       
                     
-                    <span class="site-state-item-count">67</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">72</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -2873,7 +2707,7 @@ a[7] = 5，c[a[7]] = c[3] = 5, c[3]=4, output[5] = a[7] = 3;<br>
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
@@ -3052,11 +2886,11 @@ a[7] = 5，c[a[7]] = c[3] = 5, c[3]=4, output[5] = a[7] = 3;<br>
   
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
       
