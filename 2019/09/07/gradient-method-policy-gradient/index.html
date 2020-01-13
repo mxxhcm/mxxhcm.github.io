@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
+  <meta name="description" content="Policy Gradient强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic">
 <meta name="keywords" content="强化学习,policy gradient">
 <meta property="og:type" content="article">
 <meta property="og:title" content="gradient method policy gradient">
 <meta property="og:url" content="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
+<meta property="og:description" content="Policy Gradient强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-12-17T07:03:36.384Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="gradient method policy gradient">
-<meta name="twitter:description" content="Policy Gradient 强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-criti">
+<meta name="twitter:description" content="Policy Gradient强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic">
 
 
 
@@ -449,498 +449,114 @@
       
 
       
-        <h2 id="policy-gradient">Policy Gradient</h2>
-<p>强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。<br>
-本文给出了policy gradient theorem的证明，使用近似的action-value function或者advantage函数，梯度可以表示成experience的估计。同时证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。</p>
-<h3 id="值函数方法的缺点">值函数方法的缺点</h3>
-<p>基于值函数的方法，在估计出值函数之后，每次通过greedy算法选择action。这种方法有两个缺点。</p>
+        <h2 id="Policy-Gradient"><a href="#Policy-Gradient" class="headerlink" title="Policy Gradient"></a>Policy Gradient</h2><p>强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。<br>本文给出了policy gradient theorem的证明，使用近似的action-value function或者advantage函数，梯度可以表示成experience的估计。同时证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。</p>
+<h3 id="值函数方法的缺点"><a href="#值函数方法的缺点" class="headerlink" title="值函数方法的缺点"></a>值函数方法的缺点</h3><p>基于值函数的方法，在估计出值函数之后，每次通过greedy算法选择action。这种方法有两个缺点。</p>
 <ul>
 <li>基于值函数的方法会找到一个deterministic的策略，但是很多时候optimal policy可能是stochastic的。</li>
 <li>某个action的估计值函数稍微改变一点就可能导致这个动作被选中或者不被选中，这种不连续是保证值函数收敛的一大障碍。</li>
 </ul>
-<h3 id="用函数表示stochastic-policy">用函数表示stochastic policy</h3>
-<p>Policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：<br>
-$$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{1}$$<br>
-其中$\alpha$是正定的step size，按照式子$(1)$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法相比，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。</p>
-<h3 id="使用值函数辅助学习policy">使用值函数辅助学习policy</h3>
-<p>使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到式子$(1)$的一个无偏估计。REINFORCE方法也找到了式子$(1)$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。</p>
-<h3 id="证明policy-iteration收敛性">证明policy iteration收敛性</h3>
-<p>本文还证明了基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。</p>
-<h2 id="objective-function">Objective Function</h2>
-<h3 id="三种形式">三种形式</h3>
-<p>智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。有三种方式定义智能体的objective：</p>
+<h3 id="用函数表示stochastic-policy"><a href="#用函数表示stochastic-policy" class="headerlink" title="用函数表示stochastic policy"></a>用函数表示stochastic policy</h3><p>Policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：</p>
+<script type="math/tex; mode=display">\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{1}</script><p>其中$\alpha$是正定的step size，按照式子$(1)$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法相比，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。</p>
+<h3 id="使用值函数辅助学习policy"><a href="#使用值函数辅助学习policy" class="headerlink" title="使用值函数辅助学习policy"></a>使用值函数辅助学习policy</h3><p>使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到式子$(1)$的一个无偏估计。REINFORCE方法也找到了式子$(1)$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。</p>
+<h3 id="证明policy-iteration收敛性"><a href="#证明policy-iteration收敛性" class="headerlink" title="证明policy iteration收敛性"></a>证明policy iteration收敛性</h3><p>本文还证明了基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。</p>
+<h2 id="Objective-Function"><a href="#Objective-Function" class="headerlink" title="Objective Function"></a>Objective Function</h2><h3 id="三种形式"><a href="#三种形式" class="headerlink" title="三种形式"></a>三种形式</h3><p>智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。有三种方式定义智能体的objective：</p>
 <ul>
-<li>计算policy $\pi$下从初始状态$s_0$开始的accumulated reward：<br>
-$$J(\theta) = V^{\pi}(s_0) = \mathbb{E}_{\pi}\left[G_0\right] = \mathbb{E}_{\pi} \left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t | s_0 \right] \tag{2}$$<br>
-其中$0 \le \gamma \le 1$，在continuing case中，$0 \le \gamma \lt 1$，而在episodic情况下，$\gamma$能取到$1$，$0 \le \gamma \le 1$。</li>
-<li>计算policy $\pi$每个timestep的immediate reward的均值，即average reward。<br>
-$$J(\theta) = \mathbb{E}_{\pi}\left[R(s, a)\right] = \sum_s d(s) \sum_a\pi(s, a)R(s,a) \tag{3}$$<br>
-在connuting problems情况下，没有episode boundaries，如果不使用discount factor，可以这么做；事实上，我觉得在episodic情况下，也能这么做。</li>
-<li>当没有明确的初始状态时，计算policy $\pi$下所有state value的均值：<br>
-$$J(\theta) = \sum_s d(s) V^{\pi} (s) = \sum_s d(s) \sum_a\pi(s, a) Q^{\pi} (s, a) = \mathbb{E}_{\pi}\left[Q^{\pi}(s, a)\right] \tag{4}$$</li>
+<li>计算policy $\pi$下从初始状态$s_0$开始的accumulated reward：<script type="math/tex; mode=display">J(\theta) = V^{\pi}(s_0) = \mathbb{E}\_{\pi}\left[G_0\right] = \mathbb{E}\_{\pi} \left[\sum\_{t=0}^{\infty} \gamma^{t-1} R_t | s_0 \right] \tag{2}</script>其中$0 \le \gamma \le 1$，在continuing case中，$0 \le \gamma \lt 1$，而在episodic情况下，$\gamma$能取到$1$，$0 \le \gamma \le 1$。</li>
+<li>计算policy $\pi$每个timestep的immediate reward的均值，即average reward。<script type="math/tex; mode=display">J(\theta) = \mathbb{E}\_{\pi}\left[R(s, a)\right] = \sum_s d(s) \sum_a\pi(s, a)R(s,a) \tag{3}</script>在connuting problems情况下，没有episode boundaries，如果不使用discount factor，可以这么做；事实上，我觉得在episodic情况下，也能这么做。</li>
+<li>当没有明确的初始状态时，计算policy $\pi$下所有state value的均值：<script type="math/tex; mode=display">J(\theta) = \sum_s d(s) V^{\pi} (s) = \sum_s d(s) \sum_a\pi(s, a) Q^{\pi} (s, a) = \mathbb{E}\_{\pi}\left[Q^{\pi}(s, a)\right] \tag{4}</script></li>
 </ul>
 <p>其中$R(s,a) = \mathbb{E}\left[R_{t+1}|s_t=s, a_t=a\right]$，$d (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是策略$\pi$下的stationary distribution。<a href="http://mxxhcm.github.io/2019/07/31/markov-matrices/">Stationary distribution</a>的意思是就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。其实这三个目标本质上都是一样的，都是要最大化每个时刻agent得到的reward。</p>
-<h3 id="accumated-reward-from-designated-state-从指定状态开始的累计奖励">Accumated Reward from Designated State(从指定状态开始的累计奖励)</h3>
-<p>我们可以指定一个初始状态$s_0$，计算从这个初始状态开始得到的accumulated reward：<br>
-$$\eta(\pi) = V^{\pi} (s_0) = \mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0\right] = \mathbb{E}_{\pi}\left[G_0 \right]\tag{5}$$<br>
-定义return $G_t$如下：<br>
-$$ G_t = \sum_{k=0}^{\infty} R_{t+k+1} \tag{6}$$<br>
-定义state-action value function和state value function如下：<br>
-\begin{align*}<br>
-Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} R_{t+k+1}|s_t=s,a_t=a\right] \\<br>
-V^{\pi} (s) = \mathbb{E}_{\pi}\left[G_t|s_t=s\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} R_{t+k+1}|s_t=s\right]\\<br>
-\tag{7}<br>
-\end{align*}<br>
-其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。它们之间的关系如下：<br>
-\begin{align*}<br>
-V^{\pi} (s) = \mathbb{E}_{\pi}\left[Q^{\pi} (s,a)|S_t=s\right] &amp; = \sum_a \pi(a|s) Q^{\pi} (s,a) \\<br>
-Q^{\pi} (s, a) = \mathbb{E}_{\pi}\left[R_{t+1} + \gamma V^{\pi}(s)|S_t=s, A_t=a\right] &amp; = \sum_{s’,r}p(s’,r|s,a) (r+\gamma V^{\pi} (s’))\\<br>
-\tag{8}<br>
-\end{align*}<br>
-定义$\rho^{\pi} (s)$是从指定的初始状态$s_0$开始，执行策略$\pi$在$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和：<br>
-$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right]  =  \sum_{t=0}^{\infty} \gamma^{t} p(s_0\rightarrow s, t,\pi) \tag{9}$$<br>
-把$\rho^{\pi} (s) $换一种写法就容易理解了：<br>
-$$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots \tag{10}$$</p>
-<h3 id="average-reward-平均奖励">Average Reward(平均奖励)</h3>
-<p>Average reward是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：<br>
-$$\eta(\pi) = lim_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R_1+R_2+\cdots+R_t|\pi\right] = \int_S d(s) \int_A \pi(s,a) R(s,a)dads \tag{11}$$<br>
-第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。第二个等号后，第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是每一个$s$处对应各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。<br>
-Return的定义和accumulated reward不同：<br>
-$$G_t = \sum_{k=0}^{\infty} \left[R_{t+k+1} - \eta(\pi)\right] \tag{12}$$<br>
-因为$G_t$不同，State-action value $Q^{\pi} (s,a)$以及state value $V^{\pi} (s)$的定义和accumulated reward也就不同了：<br>
-\begin{align*}<br>
-Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty}\left( R_{t+k+1} - \eta(\pi)\right)|s_t=s,a_t=a\right]\\<br>
-V^{\pi} (s) = \mathbb{E}_{\pi}\left[G_t|s_t=s\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} \left(R_{t+k+1} - \eta(\pi) \right)|s_t=s\right] \\<br>
-\tag{13}<br>
-\end{align*}<br>
-$Q^{\pi} (s,a)$和$V^{\pi} (s,a)$之间的关系满足：<br>
-\begin{align*}<br>
-Q^{\pi} (s,a) = \sum_{s’, r}p(s’,r|s,a)(r - \eta(\pi) + V(s’)) \tag{14}<br>
-\end{align*}</p>
-<h3 id="state-value的均值">State value的均值</h3>
-<p>这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s_0)$的期望（均值）：<br>
-$$ \eta(\pi) = \sum_s \rho_0(s_0) V^{\pi} (s) \tag{15}$$<br>
-State action value function和state value function的定义和accumulated reward一样。<br>
-定义$\rho^{\pi} $为从任意初始状态$s_0$经过$t$步之后state $s$出现的概率：<br>
-$$\rho^{\pi} (s) =\int_S \sum_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s_t = s|s_0,\pi\right] ds_0  = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0^{\pi} (s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{16}$$</p>
-<h3 id="policy-gradient-v2">Policy Gradient</h3>
-<p>对于单步的MDP，从分布$\rho^{\pi} (s)$中采样得到$s$，采取action $a$，得到immediate reward $R=R(s,a)$，结束。上面三种目标函数是一样的：<br>
-\begin{align*}<br>
-J(\theta) &amp; = \mathbb{E}_{\pi}\left[R\right]\\<br>
-&amp; = \sum_s d(s) \sum_a \pi(s,a) R(s,a) \tag{17}\\<br>
-\end{align*}<br>
-求导有问题！！！！怎么求导得到的。。。<br>
-\begin{align*}<br>
-\nabla_{\theta} J(\theta) &amp; = \sum_s d(s) \sum_a \nabla_{\theta}\pi(s,a) R(s,a)\\<br>
-&amp; = \sum_s d(s) \sum_a\pi(s,a) \nabla_{\theta}\log \pi(s,a) R(s,a)\\<br>
-&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log \pi(s,a) R(s,a)\right] \tag{18}\\<br>
-\end{align*}<br>
-对于多步的MDP，只需要将$R$换成$Q^{\pi} (s, a)$就行了，上面三种目标函数最后都能够得到：<br>
-$$\nabla_{\theta} J(\theta) = \sum_s d(s) \sum_a\pi(a|s) \nabla_{\theta} \log\pi(s,a) Q^{\pi} (s,a) = \mathbb{E}_{\pi} \left[\nabla_{\theta} \log\pi(s,a) Q^{\pi} (s,a)\right] \tag{19}$$<br>
-其中$Q$是根据不同的目标函数定义的state-action value function，目标函数不同，$Q$定义也不同。在其他论文中，$\nabla_{\theta} \log\pi_{\theta}(s,a)$不变，可以把$Q$换成其他目标函数，GAE这篇论文对不同的目标函数进行了总结。</p>
-<h2 id="policy-gradient-theorem">Policy Gradient Theorem</h2>
-<p>对于任何MDP，不论是average reward还是accumulated reward的形式，都有：<br>
-\begin{align*}<br>
-\nabla_{\theta} \eta &amp; = \sum_s \rho^{\pi} (s)\sum_a{\nabla_{\theta}\pi(s,a)}Q^{\pi} (s,a) \\<br>
-&amp; = \sum_s \rho^{\pi} (s)\sum_a{\pi(s,a)\nabla_{\theta}\log\pi(s,a)}Q^{\pi} (s,a), \tag{20}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log\pi(s,a)Q^{\pi} (s,a)\right], \tag{21}\\<br>
-\end{align*}<br>
-证明：<br>
-\begin{align*}<br>
-\nabla V_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\<br>
-&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)(R+\gamma V_{\pi}(s’))\right]\right] \\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)R +\sum_{s’,r}p(s’,r|s,a)\gamma V_{\pi}(s’)\right]\right] \\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[0 +\sum_{s’,r}p(s’,r|s,a)\gamma\nabla V_{\pi}(s’)\right]\right] \\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’,r}p(s’,r|s,a)\gamma \nabla V_{\pi}(s’))\right] \\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\nabla V_{\pi}(s’) \right] \\<br>
-&amp;= \sum_a\\<br>
-&amp;\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\left( \sum_{a’} \nabla\pi(a’|s’)Q_{\pi}(s’,a’) + \pi(a’|s’)\sum_{s’’}\gamma p(s’’|s’,a’)\nabla V_{\pi}(s’’))\right) \right] \tag{22}\\<br>
-&amp;= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) \tag{23}\\<br>
-&amp;= \sum_{x\in S}\rho^{\pi} (x)\sum_a\nabla \pi(a|x) Q_{\pi}(x,a) \tag{24}\\<br>
-\end{align*}</p>
+<h3 id="Accumated-Reward-from-Designated-State-从指定状态开始的累计奖励"><a href="#Accumated-Reward-from-Designated-State-从指定状态开始的累计奖励" class="headerlink" title="Accumated Reward from Designated State(从指定状态开始的累计奖励)"></a>Accumated Reward from Designated State(从指定状态开始的累计奖励)</h3><p>我们可以指定一个初始状态$s_0$，计算从这个初始状态开始得到的accumulated reward：</p>
+<script type="math/tex; mode=display">\eta(\pi) = V^{\pi} (s_0) = \mathbb{E}\_{\pi}\left[\sum\_{t=0}^{\infty} \gamma^{t-1} R\_t|s\_0\right] = \mathbb{E}\_{\pi}\left[G_0 \right]\tag{5}</script><p>定义return $G_t$如下：</p>
+<script type="math/tex; mode=display">G_t = \sum\_{k=0}^{\infty} R\_{t+k+1} \tag{6}</script><p>定义state-action value function和state value function如下：<br>\begin{align*}<br>Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} R_{t+k+1}|s_t=s,a_t=a\right] \\\\<br>V^{\pi} (s) = \mathbb{E}_{\pi}\left[G_t|s_t=s\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} R_{t+k+1}|s_t=s\right]\\\ <br>\tag{7}<br>\end{align*}<br>其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。它们之间的关系如下：<br>\begin{align*}<br>V^{\pi} (s) = \mathbb{E}_{\pi}\left[Q^{\pi} (s,a)|S_t=s\right] &amp; = \sum_a \pi(a|s) Q^{\pi} (s,a) \\\\<br>Q^{\pi} (s, a) = \mathbb{E}_{\pi}\left[R_{t+1} + \gamma V^{\pi}(s)|S_t=s, A_t=a\right] &amp; = \sum_{s’,r}p(s’,r|s,a) (r+\gamma V^{\pi} (s’))\\\\<br>\tag{8}<br>\end{align*}<br>定义$\rho^{\pi} (s)$是从指定的初始状态$s_0$开始，执行策略$\pi$在$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和：</p>
+<script type="math/tex; mode=display">\rho^{\pi} (s) = \sum\_{t=1}^{\infty} \gamma^t Pr\left[s\_t = s|s\_0,\pi\right]  =  \sum\_{t=0}^{\infty} \gamma^{t} p(s\_0\rightarrow s, t,\pi) \tag{9}</script><p>把$\rho^{\pi} (s) $换一种写法就容易理解了：</p>
+<script type="math/tex; mode=display">\rho^{\pi} (s) = P(s\_0 = s) +\gamma P(s\_1=s) + \gamma^2 P(s\_2 = s)+\cdots \tag{10}</script><h3 id="Average-Reward-平均奖励"><a href="#Average-Reward-平均奖励" class="headerlink" title="Average Reward(平均奖励)"></a>Average Reward(平均奖励)</h3><p>Average reward是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：</p>
+<script type="math/tex; mode=display">\eta(\pi) = lim\_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R\_1+R\_2+\cdots+R\_t|\pi\right] = \int\_S d(s) \int\_A \pi(s,a) R(s,a)dads \tag{11}</script><p>第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。第二个等号后，第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是每一个$s$处对应各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。<br>Return的定义和accumulated reward不同：</p>
+<script type="math/tex; mode=display">G_t = \sum\_{k=0}^{\infty} \left[R_{t+k+1} - \eta(\pi)\right] \tag{12}</script><p>因为$G_t$不同，State-action value $Q^{\pi} (s,a)$以及state value $V^{\pi} (s)$的定义和accumulated reward也就不同了：<br>\begin{align*}<br>Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty}\left( R_{t+k+1} - \eta(\pi)\right)|s_t=s,a_t=a\right]\\\\<br>V^{\pi} (s) = \mathbb{E}_{\pi}\left[G_t|s_t=s\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} \left(R_{t+k+1} - \eta(\pi) \right)|s_t=s\right] \\\\<br>\tag{13}<br>\end{align*}<br>$Q^{\pi} (s,a)$和$V^{\pi} (s,a)$之间的关系满足：<br>\begin{align*}<br>Q^{\pi} (s,a) = \sum_{s’, r}p(s’,r|s,a)(r - \eta(\pi) + V(s’)) \tag{14}<br>\end{align*}</p>
+<h3 id="State-value的均值"><a href="#State-value的均值" class="headerlink" title="State value的均值"></a>State value的均值</h3><p>这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s_0)$的期望（均值）：</p>
+<script type="math/tex; mode=display">\eta(\pi) = \sum_s \rho_0(s_0) V^{\pi} (s) \tag{15}</script><p>State action value function和state value function的定义和accumulated reward一样。<br>定义$\rho^{\pi} $为从任意初始状态$s_0$经过$t$步之后state $s$出现的概率：</p>
+<script type="math/tex; mode=display">\rho^{\pi} (s) =\int_S \sum\_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s\_t = s|s\_0,\pi\right] ds_0  = \int\_S \sum\_{t=0}^{\infty} \gamma^{t} \rho\_0^{\pi} (s\_0)p(s\_0\rightarrow s, t,\pi)ds\_0 \tag{16}</script><h3 id="Policy-Gradient-1"><a href="#Policy-Gradient-1" class="headerlink" title="Policy Gradient"></a>Policy Gradient</h3><p>对于单步的MDP，从分布$\rho^{\pi} (s)$中采样得到$s$，采取action $a$，得到immediate reward $R=R(s,a)$，结束。上面三种目标函数是一样的：<br>\begin{align*}<br>J(\theta) &amp; = \mathbb{E}_{\pi}\left[R\right]\\\\<br>&amp; = \sum_s d(s) \sum_a \pi(s,a) R(s,a) \tag{17}\\\\<br>\end{align*}<br>求导有问题！！！！怎么求导得到的。。。<br>\begin{align*}<br>\nabla_{\theta} J(\theta) &amp; = \sum_s d(s) \sum_a \nabla_{\theta}\pi(s,a) R(s,a)\\\\<br>&amp; = \sum_s d(s) \sum_a\pi(s,a) \nabla_{\theta}\log \pi(s,a) R(s,a)\\\\<br>&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log \pi(s,a) R(s,a)\right] \tag{18}\\\\<br>\end{align*}<br>对于多步的MDP，只需要将$R$换成$Q^{\pi} (s, a)$就行了，上面三种目标函数最后都能够得到：</p>
+<script type="math/tex; mode=display">\nabla\_{\theta} J(\theta) = \sum_s d(s) \sum_a\pi(a|s) \nabla\_{\theta} \log\pi(s,a) Q^{\pi} (s,a) = \mathbb{E}\_{\pi} \left[\nabla\_{\theta} \log\pi(s,a) Q^{\pi} (s,a)\right] \tag{19}</script><p>其中$Q$是根据不同的目标函数定义的state-action value function，目标函数不同，$Q$定义也不同。在其他论文中，$\nabla_{\theta} \log\pi_{\theta}(s,a)$不变，可以把$Q$换成其他目标函数，GAE这篇论文对不同的目标函数进行了总结。</p>
+<h2 id="Policy-Gradient-Theorem"><a href="#Policy-Gradient-Theorem" class="headerlink" title="Policy Gradient Theorem"></a>Policy Gradient Theorem</h2><p>对于任何MDP，不论是average reward还是accumulated reward的形式，都有：<br>\begin{align*}<br>\nabla_{\theta} \eta &amp; = \sum_s \rho^{\pi} (s)\sum_a{\nabla_{\theta}\pi(s,a)}Q^{\pi} (s,a) \\\\<br>&amp; = \sum_s \rho^{\pi} (s)\sum_a{\pi(s,a)\nabla_{\theta}\log\pi(s,a)}Q^{\pi} (s,a), \tag{20}\\\\<br>&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log\pi(s,a)Q^{\pi} (s,a)\right], \tag{21}\\\\<br>\end{align*}<br>证明：<br>\begin{align*}<br>\nabla V_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\<br>&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)(R+\gamma V_{\pi}(s’))\right]\right] \\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)R +\sum_{s’,r}p(s’,r|s,a)\gamma V_{\pi}(s’)\right]\right] \\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[0 +\sum_{s’,r}p(s’,r|s,a)\gamma\nabla V_{\pi}(s’)\right]\right] \\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’,r}p(s’,r|s,a)\gamma \nabla V_{\pi}(s’))\right] \\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\nabla V_{\pi}(s’) \right] \\\\<br>&amp;= \sum_a\\\\<br>&amp;\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\left( \sum_{a’} \nabla\pi(a’|s’)Q_{\pi}(s’,a’) + \pi(a’|s’)\sum_{s’’}\gamma p(s’’|s’,a’)\nabla V_{\pi}(s’’))\right) \right] \tag{22}\\\\<br>&amp;= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) \tag{23}\\\\<br>&amp;= \sum_{x\in S}\rho^{\pi} (x)\sum_a\nabla \pi(a|x) Q_{\pi}(x,a) \tag{24}\\\\<br>\end{align*}</p>
 <p>式子$(23)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(14)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到$x$，概率为$0$就是了。</p>
-<h3 id="指定初始状态-s-0-的accumulated-reward">指定初始状态$s_0$的accumulated reward</h3>
-<p>证明思路，在上面我们已经求得了$V^{\pi} (s)$的梯度，而accumulated reward其实就是$V^{\pi} (s_0)$，取$J(\mathbf{\theta}) = V_{\pi}(s_0)$，则：<br>
-\begin{align*}<br>
-\nabla J(\mathbf{\theta}) &amp;= \nabla_{\theta}V_{\pi}(s_0)\\<br>
-&amp;= \sum_{s\in S}( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) ) \sum_a\nabla{\pi}(a|s)Q_{\pi}(s,a)\qquad\qquad\qquad;\rho(s) = \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \tag{25}\\<br>
-&amp;=\sum_{s\in S}\rho(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\tag{26}\\<br>
-&amp;=\sum_{s’\in S}\rho(s’)\sum_s\frac{\rho(s)}{\sum_{s’}\rho(s’)}\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a) \qquad\qquad\qquad\qquad; \text{normalize } \rho(s) \tag{27}\\<br>
-&amp;=\sum_{s’\in S}\rho(s’)\sum_sd(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a) \tag{28} \qquad\qquad\qquad\qquad\qquad; d(s) = \frac{\rho(s) }{\sum_{s’} \rho(s’)} \text{ is stationary distribution}\\<br>
-&amp;\propto \sum_{s\in S}d(s)\sum_a\nabla\pi(a|s)Q_{\pi}(s,a)\tag{29},\qquad\qquad\qquad\qquad\qquad\qquad\qquad; \sum_s\rho(s)\text{是常数}\\<br>
-&amp; = \sum_{s\in S}d(s)\sum_a\pi(s, a)\nabla\log\pi(a|s)Q_{\pi}(s,a) \tag{30}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[\nabla\log\pi(a|s)Q_{\pi}(s,a)\right] \tag{31}\\<br>
-\end{align*}<br>
-其中$\mathbb{E}_{\pi}$表示$\mathbb{E}_{s\sim d_{\pi}, a\sim \pi}$，即state和action distributions都遵守policy $\pi$。</p>
-<h3 id="average-reward">Average Reward:</h3>
-<p>证明思路，首先求$V$的梯度，带入$Q, V$和$\eta$的关系进行转换，能够得到$\eta$的梯度和$Q,V$梯度之间的关系，最后进行一系列化简即可。<br>
-\begin{align*}<br>
-\nabla V_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \tag{32}\\<br>
-&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \tag{33} \\<br>
-&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \tag{34}\\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)\left(R(s,a)-\eta(\pi)+V_{\pi}(s’)\right)\right]\right] \tag{35}\\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \eta(\pi)+ \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\right]\right], \nabla R(s,a) = 0\tag{36}\\<br>
-&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) - \pi(a|s)\nabla \eta(\pi)+ \pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\right]\tag{37}\\<br>
-&amp;= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) - \sum_a \pi(a|s)\nabla \eta(\pi) + \sum_a \pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’) \tag{38}\\<br>
-&amp;= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) -\nabla \eta(\pi)+ \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a)\nabla V_{\pi}(s’), \sum_s\pi(s,a)=1\tag{39}\\<br>
-\end{align*}<br>
-移项合并同类项得：<br>
-$$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’) - \nabla V_{\pi}(s) \tag{40}$$<br>
-同时在上式两边对$d(s)$进行求和，得到：<br>
-\begin{align*}<br>
-\sum_s d(s)\nabla \eta(\pi) &amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \\<br>
-&amp;\qquad\qquad\qquad + \sum_s d(s) \sum_a\pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\\<br>
-&amp;\qquad\qquad\qquad - \sum_s d(s)\nabla V_{\pi}(s) \tag{41}\\<br>
-\nabla \eta(\pi) &amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) + \sum_s d(s’) \nabla V_{\pi}(s’) - \sum_s d(s)\nabla V_{\pi}(s) \tag{42}\\<br>
-&amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \tag{43}\\<br>
-&amp;= \sum_s d(s)\sum_a \pi(s,a) \nabla\log\pi(a|s)Q_{\pi}(s,a) \tag{44}\\<br>
-&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log\pi(s,a) Q_{\pi}(s,a)\right] \tag{45}\\<br>
-\end{align*}<br>
-式子$(41)$到式子$(42)$其实就是$\sum_s d(s) \sum_a\pi(a|s) \sum_{s’,r}p(s’,r|s,a) = \sum_{s’}d(s’)$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。<br>
-\begin{align*}<br>
-\end{align*}</p>
-<h3 id="state-value的期望">State value的期望</h3>
-<p>还不会证明。</p>
-<h3 id="结论">结论</h3>
-<p>从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G_t = \sum_{k=0}^{\infty} R_{t+k+1}-\rho(\pi)$或者$R_t = \sum_{k=0}^{\infty} \gamma^{t} R_{t+k+1}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。</p>
-<h2 id="policy-gradient-with-approximation-使用近似的策略梯度">Policy Gradient with Approximation(使用近似的策略梯度)</h2>
-<p>因为$Q^{\pi} $是不知道的，我们希望用函数近似式子$(21)$中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:<br>
-$$\Delta w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]^2 \propto \left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w} \tag{67}$$<br>
-$\hat{Q}^{\pi} (s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，当这样一个过程收敛到local optimum，$Q^{\pi} (s,a)$和$f_w(s,a)$的均方误差最小时：<br>
-$$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a|s;\theta)(Q^{\pi} (s,a))^2 - f^{\pi} (s,a;\omega) \tag{68}$$<br>
-即导数等于$0$:<br>
-$$\sum_s \rho^{\pi} (s)\sum_a\pi(a|s;\theta)\left[Q^{\pi} (s,a) -f_w (s,a;w)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{69}$$</p>
-<h3 id="定理2：policy-gradient-with-approximation-theorem">定理2：Policy Gradient with Approximation Theorem</h3>
-<p>如果$f_w$的参数$w$满足式子$(69)$，并且：<br>
-$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)} = \frac{\partial \log \pi(s,a)}{\partial \mathbf{\theta}}\tag{70}$$<br>
-那么使用$f_w(s,a)$计算的gradient和$Q^{\pi} (s,a)$计算的gradient是一样的：<br>
-$$\frac{\partial \rho}{\partial \theta} = \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{71}$$</p>
-<p>证明：<br>
-将式子$(70)$代入$(69)$得到：<br>
-\begin{align*}<br>
-&amp;\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}\\<br>
-= &amp;\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\\<br>
-= &amp;\sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right] \tag{72}\\<br>
-= &amp; 0 \\<br>
-\end{align*}<br>
-将式子$72$带入式子$(21)$：<br>
-\begin{align*}<br>
-\frac{\partial \eta}{\partial \mathbf{\theta}} &amp; = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)\\<br>
-&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) - \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right]\\<br>
-&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} \left[Q^{\pi} (s,a) - Q^{\pi} (s,a) +f_w(s,a)\right]\\<br>
-&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) \tag{73}\\<br>
-\end{align*}<br>
-得证$\sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) $。</p>
-<h2 id="application-to-deriving-algorithms-and-advantages">Application to Deriving Algorithms and Advantages</h2>
-<p>给定一个参数化的policy，可以利用定理2推导出参数化value function的形式。比如，考虑在features上进行线性组合的Gibbs分布构成的policy：<br>
-$$\pi(a|s) = \frac{e^{\theta^T \phi_{sa} } }{\sum_b e^{\theta^T \phi_{sb} }} , \forall s \in S, \forall a \in A \tag{74}$$<br>
-其中$\phi_{s,a}$是state-action pair $s,a$的特征向量。满足式子$(70)$的公式如下：<br>
-$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(a|s)}{\partial \theta}\frac{1}{\pi(a|s)} = \phi_{sa} - \sum_b\pi(b|s)\phi_{sb}\tag{75}$$<br>
-所以：<br>
-$$f_w(s,a) = w^T \left[\phi_{sa} - \sum_b\pi(b|s)\phi_{sb} \right]\tag{76}$$<br>
-也就是说，$f_w$和policy $\pi$都是feature的线性组合，只不过每一个state处$f_w$的均值都为$0$，$\sum_a\pi(a|s)f_w(s,a) = 0,\forall s\in S$。所以，其实我们可以认为$f_w$是对advantage function $A^{\pi} (s,a) = Q^{\pi} (s,a)- V^{\pi} (s)$而不是$Q^{\pi} (s,a)$的一个近似。式子$(70)$中$f_w$其实是一个相对值而不是一个绝对值。事实上，他们都可对以推广变成一个function加上一个value function。比如式子$(71)$可以变成$\frac{\partial\eta}{\partial \theta} = \sum_s\rho^{\pi}(s) \sum_a \frac{\partial \pi(a|s)}{\partial \theta}\left[f_w(s,a) + v(s)\right]$，其中$v$是一个function，$v$的选择不影响理论结果，但是会影响近似梯度的方差。</p>
-<h2 id="convergence-of-policy-iteration-with-function-approximation-使用函数近似的策略迭代的收敛性">Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</h2>
-<h3 id="定理3：policy-iteration-with-function-approximation">定理3：Policy Iteration with Function Approximation</h3>
-<p>用$\pi$和$f_w$表示policy和value function的可导函数，并且满足式子$(70)$。$\max_{\theta,s,a,i,j} \vert\frac{\partial^2 \pi(a|s)}{\partial\theta_i \partial\theta_j} \vert\lt B\lt \infty$，假设$\left[\alpha_k\right]_{k=0}^{\infty}$是步长sequence，$\lim_{k\rightarrow \infty}\alpha_k = 0$，$\sum_k \alpha_k = \infty$。对于任何有界rewards的MDP来说，任意$\theta_0$，$\pi_k=\pi(\cdot, \theta_k)$定义的$\left[\eta(\pi_k)\right]_{k=0}^{\infty}$，并且$w_k = w$满足：<br>
-$$\sum_s\rho^{\pi_k} (s) \sum_a\pi_k(a|s)\left[Q^{\pi_k} (s,a)-f_w(s,a) \right]\frac{\partial f_w(s,a)}{\partial w}=0 \tag{77}$$<br>
-$$\theta_{k+1} = \theta_k + \alpha_k \sum_s\rho^{\pi_k}(s) \sum_a\frac{\partial\pi_k(s,a)}{\partial \theta}f_{w_k}(s,a) \tag{78}$$<br>
-一定收敛：$\lim_{k\rightarrow \infty}\frac{\partial \rho(\pi_k)}{\partial \theta} = 0$。</p>
-<h2 id="policy-gradient-algorithms">Policy Gradient Algorithms</h2>
-<h3 id="reinforce">REINFORCE</h3>
-<p>REINFORCE使用Monte Carlo方法近似return $G_t$，因为$Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right]$使用$G_t$代替policy gradient theorem中的$Q$：<br>
-\begin{align*}<br>
-\nabla_{\theta}J(\theta) &amp; = \mathbb{E}_{\pi}\left[Q^{\pi} (s,a) \nabla_{\theta}\log\pi_{\theta}(a|s)\right]\\<br>
-&amp; = \mathbb{E}_{\pi} \left[G_t\nabla_{\theta}\log\pi_{\theta}(a|s)\right]\\<br>
-\end{align*}<br>
-接下来进行sampling，使用Monte Carlo方法计算$G_t$即可。完整算法如下：<br>
-<strong>REINFORCE 算法</strong><br>
-输入：policy $\pi$的初始化参数$\theta$，step-size $\alpha$<br>
-Loop<br>
-$\qquad$使用$\pi_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$<br>
-$\qquad$for $t=1, 2, \cdots, T$<br>
-$\qquad\qquad$估计$G_t = \sum_{k=t}^T \gamma^{k-t} R_{t+1}$<br>
-$\qquad\qquad$更新$\theta \leftarrow \theta + \alpha \gamma^t G_t \nabla_{\theta}\log\pi_{\theta}(a_t|s_t)$<br>
-$\qquad$end for</p>
-<h3 id="reinforce-with-baseline">REINFORCE with Baseline</h3>
-<p>REINFROCE的一类变种是在$G_t$的基础上减去一个和$\theta$无关的baseline，作用是在不改变bais的前提下减少方差：<br>
-$$\sum_a \nabla_{\theta}\pi(a|s) b(s) = b(s)  \nabla_{\theta}\sum_a\pi(a|s) = b(s) \nabla_{\theta} 1 = 0$$<br>
-即加了一个baseline之后，梯度更新的期望值依然保持不变，但是可以减少方差。具体的证明可以见<a href>why use baselinse in policy gradient</a>。在MDPs中，有的state可能所有的actions都有很高的values，这时候需要一个high baseline，而有的actions可能都有低的values，这时候需要一个low baseline，一个常用的baseline可以选择$V(s)$，可以使用$G_t - V^{\pi} (s,a)$计算梯度。<br>
-直观上来首，RL感兴趣的是那些比平均值好的action。如果returns都是正的$(R(\tau)\ge 0)$，PG总是会提高这个trajectory发生的概率，即使它比其他的trajectory要低。考虑以下两个例子：</p>
+<h3 id="指定初始状态-s-0-的accumulated-reward"><a href="#指定初始状态-s-0-的accumulated-reward" class="headerlink" title="指定初始状态$s_0$的accumulated reward"></a>指定初始状态$s_0$的accumulated reward</h3><p>证明思路，在上面我们已经求得了$V^{\pi} (s)$的梯度，而accumulated reward其实就是$V^{\pi} (s_0)$，取$J(\mathbf{\theta}) = V_{\pi}(s_0)$，则：<br>\begin{align*}<br>\nabla J(\mathbf{\theta}) &amp;= \nabla_{\theta}V_{\pi}(s_0)\\\\<br>&amp;= \sum_{s\in S}( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) ) \sum_a\nabla{\pi}(a|s)Q_{\pi}(s,a)\qquad\qquad\qquad;\rho(s) = \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \tag{25}\\\\<br>&amp;=\sum_{s\in S}\rho(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\tag{26}\\\\<br>&amp;=\sum_{s’\in S}\rho(s’)\sum_s\frac{\rho(s)}{\sum_{s’}\rho(s’)}\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a) \qquad\qquad\qquad\qquad; \text{normalize } \rho(s) \tag{27}\\\\<br>&amp;=\sum_{s’\in S}\rho(s’)\sum_sd(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a) \tag{28} \qquad\qquad\qquad\qquad\qquad; d(s) = \frac{\rho(s) }{\sum_{s’} \rho(s’)} \text{ is stationary distribution}\\\\<br>&amp;\propto \sum_{s\in S}d(s)\sum_a\nabla\pi(a|s)Q_{\pi}(s,a)\tag{29},\qquad\qquad\qquad\qquad\qquad\qquad\qquad; \sum_s\rho(s)\text{是常数}\\\\<br>&amp; = \sum_{s\in S}d(s)\sum_a\pi(s, a)\nabla\log\pi(a|s)Q_{\pi}(s,a) \tag{30}\\\\<br>&amp; = \mathbb{E}_{\pi}\left[\nabla\log\pi(a|s)Q_{\pi}(s,a)\right] \tag{31}\\\\<br>\end{align*}<br>其中$\mathbb{E}_{\pi}$表示$\mathbb{E}_{s\sim d_{\pi}, a\sim \pi}$，即state和action distributions都遵守policy $\pi$。</p>
+<h3 id="Average-Reward"><a href="#Average-Reward" class="headerlink" title="Average Reward:"></a>Average Reward:</h3><p>证明思路，首先求$V$的梯度，带入$Q, V$和$\eta$的关系进行转换，能够得到$\eta$的梯度和$Q,V$梯度之间的关系，最后进行一系列化简即可。<br>\begin{align*}<br>\nabla V_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \tag{32}\\\\<br>&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \tag{33} \\\\<br>&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \tag{34}\\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)\left(R(s,a)-\eta(\pi)+V_{\pi}(s’)\right)\right]\right] \tag{35}\\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \eta(\pi)+ \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\right]\right], \nabla R(s,a) = 0\tag{36}\\\\<br>&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) - \pi(a|s)\nabla \eta(\pi)+ \pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\right]\tag{37}\\\\<br>&amp;= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) - \sum_a \pi(a|s)\nabla \eta(\pi) + \sum_a \pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’) \tag{38}\\\\<br>&amp;= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) -\nabla \eta(\pi)+ \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a)\nabla V_{\pi}(s’), \sum_s\pi(s,a)=1\tag{39}\\\\<br>\end{align*}<br>移项合并同类项得：</p>
+<script type="math/tex; mode=display">\nabla \eta(\pi) = \sum\_a\nabla\pi(a|s)Q\_{\pi}(s,a) + \sum\_a\pi(s,a) \sum\_{s',r}p(s',r|s,a) \nabla V\_{\pi}(s') - \nabla V\_{\pi}(s) \tag{40}</script><p>同时在上式两边对$d(s)$进行求和，得到：<br>\begin{align*}<br>\sum_s d(s)\nabla \eta(\pi) &amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \\\\<br>&amp;\qquad\qquad\qquad + \sum_s d(s) \sum_a\pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\\\\<br>&amp;\qquad\qquad\qquad - \sum_s d(s)\nabla V_{\pi}(s) \tag{41}\\\\<br>\nabla \eta(\pi) &amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) + \sum_s d(s’) \nabla V_{\pi}(s’) - \sum_s d(s)\nabla V_{\pi}(s) \tag{42}\\\\<br>&amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \tag{43}\\\\<br>&amp;= \sum_s d(s)\sum_a \pi(s,a) \nabla\log\pi(a|s)Q_{\pi}(s,a) \tag{44}\\\\<br>&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log\pi(s,a) Q_{\pi}(s,a)\right] \tag{45}\\\\<br>\end{align*}<br>式子$(41)$到式子$(42)$其实就是$\sum_s d(s) \sum_a\pi(a|s) \sum_{s’,r}p(s’,r|s,a) = \sum_{s’}d(s’)$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。<br>\begin{align*}<br>\end{align*}</p>
+<h3 id="State-value的期望"><a href="#State-value的期望" class="headerlink" title="State value的期望"></a>State value的期望</h3><p>还不会证明。</p>
+<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G_t = \sum_{k=0}^{\infty} R_{t+k+1}-\rho(\pi)$或者$R_t = \sum_{k=0}^{\infty} \gamma^{t} R_{t+k+1}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。</p>
+<h2 id="Policy-Gradient-with-Approximation-使用近似的策略梯度"><a href="#Policy-Gradient-with-Approximation-使用近似的策略梯度" class="headerlink" title="Policy Gradient with Approximation(使用近似的策略梯度)"></a>Policy Gradient with Approximation(使用近似的策略梯度)</h2><p>因为$Q^{\pi} $是不知道的，我们希望用函数近似式子$(21)$中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:</p>
+<script type="math/tex; mode=display">\Delta w\_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi} (s\_t,a\_t) - f\_w(s\_t,a\_t)\right]^2 \propto \left[\hat{Q}^{\pi} (s\_t,a\_t) - f\_w(s\_t,a\_t)\right]\frac{\partial f\_w(s\_t,a\_t)}{\partial w} \tag{67}</script><p>$\hat{Q}^{\pi} (s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，当这样一个过程收敛到local optimum，$Q^{\pi} (s,a)$和$f_w(s,a)$的均方误差最小时：</p>
+<script type="math/tex; mode=display">\epsilon(\omega, \pi) = \sum\_{s,a}\rho^{\pi} (s)\pi(a|s;\theta)(Q^{\pi} (s,a))^2 - f^{\pi} (s,a;\omega) \tag{68}</script><p>即导数等于$0$:</p>
+<script type="math/tex; mode=display">\sum\_s \rho^{\pi} (s)\sum\_a\pi(a|s;\theta)\left[Q^{\pi} (s,a) -f\_w (s,a;w)\right]\frac{\partial f\_w(s,a)}{\partial w}  = 0\tag{69}</script><h3 id="定理2：Policy-Gradient-with-Approximation-Theorem"><a href="#定理2：Policy-Gradient-with-Approximation-Theorem" class="headerlink" title="定理2：Policy Gradient with Approximation Theorem"></a>定理2：Policy Gradient with Approximation Theorem</h3><p>如果$f_w$的参数$w$满足式子$(69)$，并且：</p>
+<script type="math/tex; mode=display">\frac{\partial f\_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)} = \frac{\partial \log \pi(s,a)}{\partial \mathbf{\theta}}\tag{70}</script><p>那么使用$f_w(s,a)$计算的gradient和$Q^{\pi} (s,a)$计算的gradient是一样的：</p>
+<script type="math/tex; mode=display">\frac{\partial \rho}{\partial \theta} = \sum\_s\rho^{\pi} (s)\sum\_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f\_w(s,a)\tag{71}</script><p>证明：<br>将式子$(70)$代入$(69)$得到：<br>\begin{align*}<br>&amp;\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}\\\\<br>= &amp;\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\\\\<br>= &amp;\sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right] \tag{72}\\\\<br>= &amp; 0 \\\\<br>\end{align*}<br>将式子$72$带入式子$(21)$：<br>\begin{align*}<br>\frac{\partial \eta}{\partial \mathbf{\theta}} &amp; = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)\\\\<br>&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) - \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right]\\\\<br>&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} \left[Q^{\pi} (s,a) - Q^{\pi} (s,a) +f_w(s,a)\right]\\\\<br>&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) \tag{73}\\\\<br>\end{align*}<br>得证$\sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) $。</p>
+<h2 id="Application-to-Deriving-Algorithms-and-Advantages"><a href="#Application-to-Deriving-Algorithms-and-Advantages" class="headerlink" title="Application to Deriving Algorithms and Advantages"></a>Application to Deriving Algorithms and Advantages</h2><p>给定一个参数化的policy，可以利用定理2推导出参数化value function的形式。比如，考虑在features上进行线性组合的Gibbs分布构成的policy：</p>
+<script type="math/tex; mode=display">\pi(a|s) = \frac{e\^{\theta^T \phi\_{sa} } }{\sum\_b e\^{\theta^T \phi\_{sb} }} , \forall s \in S, \forall a \in A \tag{74}</script><p>其中$\phi_{s,a}$是state-action pair $s,a$的特征向量。满足式子$(70)$的公式如下：</p>
+<script type="math/tex; mode=display">\frac{\partial f\_w(s,a)}{\partial w} = \frac{\partial \pi(a|s)}{\partial \theta}\frac{1}{\pi(a|s)} = \phi\_{sa} - \sum\_b\pi(b|s)\phi\_{sb}\tag{75}</script><p>所以：</p>
+<script type="math/tex; mode=display">f\_w(s,a) = w^T \left[\phi\_{sa} - \sum\_b\pi(b|s)\phi\_{sb} \right]\tag{76}</script><p>也就是说，$f_w$和policy $\pi$都是feature的线性组合，只不过每一个state处$f_w$的均值都为$0$，$\sum_a\pi(a|s)f_w(s,a) = 0,\forall s\in S$。所以，其实我们可以认为$f_w$是对advantage function $A^{\pi} (s,a) = Q^{\pi} (s,a)- V^{\pi} (s)$而不是$Q^{\pi} (s,a)$的一个近似。式子$(70)$中$f_w$其实是一个相对值而不是一个绝对值。事实上，他们都可对以推广变成一个function加上一个value function。比如式子$(71)$可以变成$\frac{\partial\eta}{\partial \theta} = \sum_s\rho^{\pi}(s) \sum_a \frac{\partial \pi(a|s)}{\partial \theta}\left[f_w(s,a) + v(s)\right]$，其中$v$是一个function，$v$的选择不影响理论结果，但是会影响近似梯度的方差。</p>
+<h2 id="Convergence-of-Policy-Iteration-with-Function-Approximation-使用函数近似的策略迭代的收敛性"><a href="#Convergence-of-Policy-Iteration-with-Function-Approximation-使用函数近似的策略迭代的收敛性" class="headerlink" title="Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)"></a>Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</h2><h3 id="定理3：Policy-Iteration-with-Function-Approximation"><a href="#定理3：Policy-Iteration-with-Function-Approximation" class="headerlink" title="定理3：Policy Iteration with Function Approximation"></a>定理3：Policy Iteration with Function Approximation</h3><p>用$\pi$和$f_w$表示policy和value function的可导函数，并且满足式子$(70)$。$\max_{\theta,s,a,i,j} \vert\frac{\partial^2 \pi(a|s)}{\partial\theta_i \partial\theta_j} \vert\lt B\lt \infty$，假设$\left[\alpha_k\right]_{k=0}^{\infty}$是步长sequence，$\lim_{k\rightarrow \infty}\alpha_k = 0$，$\sum_k \alpha_k = \infty$。对于任何有界rewards的MDP来说，任意$\theta_0$，$\pi_k=\pi(\cdot, \theta_k)$定义的$\left[\eta(\pi_k)\right]_{k=0}^{\infty}$，并且$w_k = w$满足：</p>
+<script type="math/tex; mode=display">\sum\_s\rho^{\pi\_k} (s) \sum\_a\pi\_k(a|s)\left[Q^{\pi\_k} (s,a)-f\_w(s,a) \right]\frac{\partial f\_w(s,a)}{\partial w}=0 \tag{77}</script><script type="math/tex; mode=display">\theta\_{k+1} = \theta\_k + \alpha\_k \sum\_s\rho^{\pi\_k}(s) \sum\_a\frac{\partial\pi\_k(s,a)}{\partial \theta}f\_{w\_k}(s,a) \tag{78}</script><p>一定收敛：$\lim_{k\rightarrow \infty}\frac{\partial \rho(\pi_k)}{\partial \theta} = 0$。</p>
+<h2 id="Policy-Gradient-Algorithms"><a href="#Policy-Gradient-Algorithms" class="headerlink" title="Policy Gradient Algorithms"></a>Policy Gradient Algorithms</h2><h3 id="REINFORCE"><a href="#REINFORCE" class="headerlink" title="REINFORCE"></a>REINFORCE</h3><p>REINFORCE使用Monte Carlo方法近似return $G_t$，因为$Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right]$使用$G_t$代替policy gradient theorem中的$Q$：<br>\begin{align*}<br>\nabla_{\theta}J(\theta) &amp; = \mathbb{E}_{\pi}\left[Q^{\pi} (s,a) \nabla_{\theta}\log\pi_{\theta}(a|s)\right]\\\\<br>&amp; = \mathbb{E}_{\pi} \left[G_t\nabla_{\theta}\log\pi_{\theta}(a|s)\right]\\\\<br>\end{align*}<br>接下来进行sampling，使用Monte Carlo方法计算$G_t$即可。完整算法如下：<br><strong>REINFORCE 算法</strong><br>输入：policy $\pi$的初始化参数$\theta$，step-size $\alpha$<br>Loop<br>$\qquad$使用$\pi_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$<br>$\qquad$for $t=1, 2, \cdots, T$<br>$\qquad\qquad$估计$G_t = \sum_{k=t}^T \gamma^{k-t} R_{t+1}$<br>$\qquad\qquad$更新$\theta \leftarrow \theta + \alpha \gamma^t G_t \nabla_{\theta}\log\pi_{\theta}(a_t|s_t)$<br>$\qquad$end for</p>
+<h3 id="REINFORCE-with-Baseline"><a href="#REINFORCE-with-Baseline" class="headerlink" title="REINFORCE with Baseline"></a>REINFORCE with Baseline</h3><p>REINFROCE的一类变种是在$G_t$的基础上减去一个和$\theta$无关的baseline，作用是在不改变bais的前提下减少方差：</p>
+<script type="math/tex; mode=display">\sum_a \nabla\_{\theta}\pi(a|s) b(s) = b(s)  \nabla\_{\theta}\sum_a\pi(a|s) = b(s) \nabla\_{\theta} 1 = 0</script><p>即加了一个baseline之后，梯度更新的期望值依然保持不变，但是可以减少方差。具体的证明可以见<a href>why use baselinse in policy gradient</a>。在MDPs中，有的state可能所有的actions都有很高的values，这时候需要一个high baseline，而有的actions可能都有低的values，这时候需要一个low baseline，一个常用的baseline可以选择$V(s)$，可以使用$G_t - V^{\pi} (s,a)$计算梯度。<br>直观上来首，RL感兴趣的是那些比平均值好的action。如果returns都是正的$(R(\tau)\ge 0)$，PG总是会提高这个trajectory发生的概率，即使它比其他的trajectory要低。考虑以下两个例子：</p>
 <ul>
 <li>Trajectory $A$的return是$10$，trajectory $B$的reward是$-10$</li>
 <li>Trajectory $A$的return是$10$，trajectory $B$的reward是$1$</li>
 </ul>
-<p>在第一个例子中，PG会提高$A$发生的概率，降低$B$发生的概率。在第二个例子中，PG会提高$A$和$B$的概率。然而，对于我们来说，在两个例子中，我们都想要降低$B$发生的概率，提高$A$发生的概率。通过引入一个baseline，比如$V$，我们就可以实现这样的目的。<br>
-完整算法如下：<br>
-<strong>REINFORCE with Baseline 算法</strong><br>
-输入：可导的policy $\pi$的初始化参数$\theta$，可导的state value function $\hat{v}(s, \mathbf{w})$，step-size $\alpha^{\theta} \gt 0, \alpha^{w} \gt 0 $<br>
-Loop<br>
-$\qquad$使用$\pi_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$<br>
-$\qquad$for $t=1, 2, \cdots, T$<br>
-$\qquad\qquad$近似$G_t = \sum_{k=t}^T \gamma^{k-t} R_{t+1}$<br>
-$\qquad\qquad$近似$\delta \leftarrow G-\hat{v}(s_t, w)$<br>
-$\qquad\qquad$更新$w\leftarrow w + \alpha^{w} \delta \nabla\hat{v}(s_t, w)$<br>
-$\qquad\qquad$更新$\theta \leftarrow \theta + \alpha^{\theta} \gamma^t\delta\log\pi_{\theta}(a_t|s_t)$<br>
-$\qquad$end for<br>
-和介绍的原理不同的是，REINFORCE with Baselien使用了近似的$\hat{v}(s, \mathbf{w}) \approx V(s)$，因为我们不知道真实的$Q$，前面也已经证明了。。</p>
-<h3 id="actor-critic">Actor-Critic</h3>
-<p>Policy gradient中两个常用的components是policy和value function，在学习policy的同时学习一个value function是非常有用的，value function可以辅助policy进行更新，比如vanilla policy gradient使用value function辅助policy减小方差，我们把这类方法统称为actor-critic方法。Value function和policy可以共享参数：</p>
+<p>在第一个例子中，PG会提高$A$发生的概率，降低$B$发生的概率。在第二个例子中，PG会提高$A$和$B$的概率。然而，对于我们来说，在两个例子中，我们都想要降低$B$发生的概率，提高$A$发生的概率。通过引入一个baseline，比如$V$，我们就可以实现这样的目的。<br>完整算法如下：<br><strong>REINFORCE with Baseline 算法</strong><br>输入：可导的policy $\pi$的初始化参数$\theta$，可导的state value function $\hat{v}(s, \mathbf{w})$，step-size $\alpha^{\theta} \gt 0, \alpha^{w} \gt 0 $<br>Loop<br>$\qquad$使用$\pi_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$<br>$\qquad$for $t=1, 2, \cdots, T$<br>$\qquad\qquad$近似$G_t = \sum_{k=t}^T \gamma^{k-t} R_{t+1}$<br>$\qquad\qquad$近似$\delta \leftarrow G-\hat{v}(s_t, w)$<br>$\qquad\qquad$更新$w\leftarrow w + \alpha^{w} \delta \nabla\hat{v}(s_t, w)$<br>$\qquad\qquad$更新$\theta \leftarrow \theta + \alpha^{\theta} \gamma^t\delta\log\pi_{\theta}(a_t|s_t)$<br>$\qquad$end for<br>和介绍的原理不同的是，REINFORCE with Baselien使用了近似的$\hat{v}(s, \mathbf{w}) \approx V(s)$，因为我们不知道真实的$Q$，前面也已经证明了。。</p>
+<h3 id="Actor-Critic"><a href="#Actor-Critic" class="headerlink" title="Actor-Critic"></a>Actor-Critic</h3><p>Policy gradient中两个常用的components是policy和value function，在学习policy的同时学习一个value function是非常有用的，value function可以辅助policy进行更新，比如vanilla policy gradient使用value function辅助policy减小方差，我们把这类方法统称为actor-critic方法。Value function和policy可以共享参数：</p>
 <ul>
 <li>Critic利用mean squared error更新value function $Q_w(s,a)$或者$V_w(s)$的参数$w$；</li>
 <li>Actor根据critic给出的更新方向更新policy $\pi_{\theta}(a|s)$的参数$\theta$。</li>
 </ul>
-<p>One-step actor-critic方法使用one-step return代替了full return。完整的算法按如下：<br>
-<strong>One-step actor critic 算法</strong><br>
-输入：policy $\pi$的参数$\theta$，初始化state $s_0$<br>
-采样$a\sim \pi(a|s)$<br>
-Loop<br>
-$\qquad$for $t= 1,\cdots, T$:<br>
-$\qquad\qquad$采样reward $r_t \sum R(s,a)$和next state $s’\sim P(s’|s,a)$<br>
-$\qquad\qquad$采样next action $s’\sim \pi(a’|s’)$<br>
-$\qquad\qquad$更新policy参数$\theta \leftarrow \theta + \alpha_{\theta} Q_w(s,a) \nabla_{\theta}\log\pi_{\theta}(a|s)$<br>
-$\qquad\qquad$计算timestep $t$时刻的TD-error：<br>
-$\qquad\qquad\qquad \delta_t = r_t + \gamma Q_w(s’, a’) - Q_w(s,a)$<br>
-$\qquad\qquad\qquad$使用mean squared error更新$Q$函数：<br>
-$\qquad\qquad\qquad w\leftarrow w + \alpha_w \delta_t \nabla_w Q_w(s, a)$<br>
-$\qquad\qquad\qquad a\leftarrow a’, s\leftarrow s’$<br>
-$\qquad$end for</p>
+<p>One-step actor-critic方法使用one-step return代替了full return。完整的算法按如下：<br><strong>One-step actor critic 算法</strong><br>输入：policy $\pi$的参数$\theta$，初始化state $s_0$<br>采样$a\sim \pi(a|s)$<br>Loop<br>$\qquad$for $t= 1,\cdots, T$:<br>$\qquad\qquad$采样reward $r_t \sum R(s,a)$和next state $s’\sim P(s’|s,a)$<br>$\qquad\qquad$采样next action $s’\sim \pi(a’|s’)$<br>$\qquad\qquad$更新policy参数$\theta \leftarrow \theta + \alpha_{\theta} Q_w(s,a) \nabla_{\theta}\log\pi_{\theta}(a|s)$<br>$\qquad\qquad$计算timestep $t$时刻的TD-error：<br>$\qquad\qquad\qquad \delta_t = r_t + \gamma Q_w(s’, a’) - Q_w(s,a)$<br>$\qquad\qquad\qquad$使用mean squared error更新$Q$函数：<br>$\qquad\qquad\qquad w\leftarrow w + \alpha_w \delta_t \nabla_w Q_w(s, a)$<br>$\qquad\qquad\qquad a\leftarrow a’, s\leftarrow s’$<br>$\qquad$end for</p>
 <p>REINFORCE with baseline的方法同时学习了policy $\pi$和state value function $V$，但是我们一般不把它叫做actor-critic方法，因为$V$在这里是一个baseline而不是一个critic。它没有被用作bootstraping，只是用作待更新state的一个baseline。bootstraping和state representation引入了bias，但是能减小方差和加快学习速度。REINFORCE with baseline是无偏的，并且收敛到local minimum，但是像所有的MC方法一样，它都收敛的很慢，也有很大的方差，并且很难应用到online和continuing问题。使用TD方法可以解决这个问题，并且通过multi-step可以控制boostrapping的度。为了得到policy gradient的方法，可以使用boostrapping critic的actor critic方法。</p>
-<h3 id="off-policy-policy-gradient">Off-Policy Policy Gradient</h3>
-<p>REINFORCE和one-step actor-critic都是on-policy的，behaviour policy和target policy是相同的，很低效。Off-polciy相对于on-policy有几个好处：</p>
+<h3 id="Off-Policy-Policy-Gradient"><a href="#Off-Policy-Policy-Gradient" class="headerlink" title="Off-Policy Policy Gradient"></a>Off-Policy Policy Gradient</h3><p>REINFORCE和one-step actor-critic都是on-policy的，behaviour policy和target policy是相同的，很低效。Off-polciy相对于on-policy有几个好处：</p>
 <ul>
 <li>可以使用过去的experience，即experience replay提高采样效率；</li>
 <li>behaviour policy和target policy不同，能够更好的进行exploration。</li>
 </ul>
-<p>如何使用计算off policy graadient，这就牵涉到了<a href>importance sampling</a>。用$\beta(a|s)$表示behaviour oplicy，目标函数为：<br>
-$$J(\theta) = \sum_s d^{\beta} (s) \sum_a Q^{\pi} (s,a) \pi(a|s) = \mathbb{E}_{s\sim d^{\beta} } \left[\sum_a Q^{\pi} (s,a) \pi(a|s)\right]$$<br>
-其中$d^{\beta} (s)$是behaviour policy $\beta$的stationary distrbution， $\pi$是target policy。<br>
-实际上$a\sim \beta(a|s)$，对$J(\theta)$求偏导得到：<br>
-\begin{align*}<br>
-\nabla_{\theta}J(\theta) &amp; = \nabla_{\theta} \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a Q^{\pi} (s, a) \pi_{\theta} (a|s)\right]\\<br>
-&amp; = \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a\left(\nabla_{\theta} Q^{\pi} (s, a) \pi_{\theta} (a|s) + Q^{\pi} (s, a) \nabla_{\theta}\pi_{\theta} (a|s)\right)\right]\\<br>
-&amp; \approx \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a Q^{\pi} (s, a) \nabla_{\theta}\pi_{\theta} (a|s)\right]\\<br>
-&amp; \approx \mathbb{E}_{s\sim d^{\beta} }\left[\sum_a \beta(a|s)\frac{ \pi(a|s)}{\beta(a|s)} Q^{\pi} (s, a) \frac{\nabla_{\theta}\pi_{\theta} (a|s)}{\pi_{\theta}(a|s)}\right]\\<br>
-&amp; \approx \mathbb{E}_{\beta}\left[\sum_a \frac{ \pi(a|s)}{\beta(a|s)} Q^{\pi} (s, a) \nabla_{\theta}\log\pi_{\theta} (a|s)\right]\\<br>
-\end{align*}<br>
-其中$\frac{ \pi(a|s)}{\beta(a|s)}$称作importance sampling ratio。式子$(55)$到式子$(44)$忽略了第二项，有人狰狞了即使忽略了这一项，最终结果还会收敛到局部最优。<br>
-即通过importance sampling可以将过去policy的experience用于新policy的训练。</p>
-<h3 id="a3c">A3C</h3>
-<p>详细的解释可以见<a href="http://mxxhcm.github.io/2019/04/19/a3c/">A3C</a>。<br>
-A3C是Asynchronous advantage actor-critic，是并行的policy gardient，就是为并行训练设计的。在A3C中，多个actors并行采样进行训练，一个critic学习value function。<br>
-A3C算法的实质就是使用多个线程同步训练。分为主网络和线程中的网络，主网络不需要训练，主要用来存储和传递参数，每个线程中的网络用来训练参数。总的来说，多个线程同时训练提高了效率，另一方面，减小了数据之间的相关性，比如，线程$1$和$2$中都用主网络复制来的参数计算梯度，但是同一时刻只能有一个线程更新主网络的参数，比如线程$1$更新主网络的参数，那么线程$2$利用原来主网络参数计算的梯度会更新在线程$1$更新完之后的主网络参数上。</p>
-<p><strong>A3C算法－－每个actor-learn线程的伪代码</strong><br>
-用$\theta, w$表示全局共享参数，用$T=0$表示全局共享计数器，<br>
-用$\theta’,w’$表示每个线程中的参数<br>
-初始化线程步计数器$t\leftarrow 1$，<br>
-<strong>while</strong> $T\le T_{max}$<br>
-$\qquad$重置梯度$d\theta\leftarrow 0, dw\leftarrow 0$，<br>
-$\qquad$同步线程参数$\theta’=\theta,w’=w$<br>
-$\qquad t_{start}=t$<br>
-$\qquad$采样初始状态$s_t$，<br>
-$\qquad$ <strong>while</strong> $s_t \neq$ terminal且$t-t_{start} \le t_{max}$<br>
-$\qquad\qquad$根据策略选择action$a_t \sim \pi_{\theta’}(a_t|s_t;\theta’)$，<br>
-$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_{t+1}$，<br>
-$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>
-$\qquad$设置奖励$R=\begin{cases}0,&amp;for\ terminal\ s_t\\ V(s_t,\theta’_v), &amp;for\ non-terminal\ s_t\end{cases}$<br>
-$\qquad$<strong>for</strong> $i\in{t-1,\cdots,t_{start}}$ do<br>
-$\qquad\qquad R\leftarrow r_i+\gamma R$<br>
-$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$<br>
-$\qquad\qquad$累计和$\theta’_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta’_v))^2}{\partial \theta’_v}$<br>
-$\qquad$<strong>end for</strong><br>
-$\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.</p>
+<p>如何使用计算off policy graadient，这就牵涉到了<a href>importance sampling</a>。用$\beta(a|s)$表示behaviour oplicy，目标函数为：</p>
+<script type="math/tex; mode=display">J(\theta) = \sum_s d^{\beta} (s) \sum_a Q^{\pi} (s,a) \pi(a|s) = \mathbb{E}\_{s\sim d^{\beta} } \left[\sum_a Q^{\pi} (s,a) \pi(a|s)\right]</script><p>其中$d^{\beta} (s)$是behaviour policy $\beta$的stationary distrbution， $\pi$是target policy。<br>实际上$a\sim \beta(a|s)$，对$J(\theta)$求偏导得到：<br>\begin{align*}<br>\nabla_{\theta}J(\theta) &amp; = \nabla_{\theta} \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a Q^{\pi} (s, a) \pi_{\theta} (a|s)\right]\\\\<br>&amp; = \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a\left(\nabla_{\theta} Q^{\pi} (s, a) \pi_{\theta} (a|s) + Q^{\pi} (s, a) \nabla_{\theta}\pi_{\theta} (a|s)\right)\right]\\\\<br>&amp; \approx \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a Q^{\pi} (s, a) \nabla_{\theta}\pi_{\theta} (a|s)\right]\\\\<br>&amp; \approx \mathbb{E}_{s\sim d^{\beta} }\left[\sum_a \beta(a|s)\frac{ \pi(a|s)}{\beta(a|s)} Q^{\pi} (s, a) \frac{\nabla_{\theta}\pi_{\theta} (a|s)}{\pi_{\theta}(a|s)}\right]\\\\<br>&amp; \approx \mathbb{E}_{\beta}\left[\sum_a \frac{ \pi(a|s)}{\beta(a|s)} Q^{\pi} (s, a) \nabla_{\theta}\log\pi_{\theta} (a|s)\right]\\\\<br>\end{align*}<br>其中$\frac{ \pi(a|s)}{\beta(a|s)}$称作importance sampling ratio。式子$(55)$到式子$(44)$忽略了第二项，有人狰狞了即使忽略了这一项，最终结果还会收敛到局部最优。<br>即通过importance sampling可以将过去policy的experience用于新policy的训练。</p>
+<h3 id="A3C"><a href="#A3C" class="headerlink" title="A3C"></a>A3C</h3><p>详细的解释可以见<a href="http://mxxhcm.github.io/2019/04/19/a3c/">A3C</a>。<br>A3C是Asynchronous advantage actor-critic，是并行的policy gardient，就是为并行训练设计的。在A3C中，多个actors并行采样进行训练，一个critic学习value function。<br>A3C算法的实质就是使用多个线程同步训练。分为主网络和线程中的网络，主网络不需要训练，主要用来存储和传递参数，每个线程中的网络用来训练参数。总的来说，多个线程同时训练提高了效率，另一方面，减小了数据之间的相关性，比如，线程$1$和$2$中都用主网络复制来的参数计算梯度，但是同一时刻只能有一个线程更新主网络的参数，比如线程$1$更新主网络的参数，那么线程$2$利用原来主网络参数计算的梯度会更新在线程$1$更新完之后的主网络参数上。</p>
+<p><strong>A3C算法－－每个actor-learn线程的伪代码</strong><br>用$\theta, w$表示全局共享参数，用$T=0$表示全局共享计数器，<br>用$\theta’,w’$表示每个线程中的参数<br>初始化线程步计数器$t\leftarrow 1$，<br><strong>while</strong> $T\le T_{max}$<br>$\qquad$重置梯度$d\theta\leftarrow 0, dw\leftarrow 0$，<br>$\qquad$同步线程参数$\theta’=\theta,w’=w$<br>$\qquad t_{start}=t$<br>$\qquad$采样初始状态$s_t$，<br>$\qquad$ <strong>while</strong> $s_t \neq$ terminal且$t-t_{start} \le t_{max}$<br>$\qquad\qquad$根据策略选择action$a_t \sim \pi_{\theta’}(a_t|s_t;\theta’)$，<br>$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_{t+1}$，<br>$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>$\qquad$设置奖励$R=\begin{cases}0,&amp;for terminal s_t\\\ V(s_t,\theta’_v), &amp;for non-terminal s_t\end{cases}$<br>$\qquad$<strong>for</strong> $i\in\{t-1,\cdots,t_{start}\}$ do<br>$\qquad\qquad R\leftarrow r_i+\gamma R$<br>$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))\^2}{\partial \theta}$<br>$\qquad\qquad$累计和$\theta’_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta’_v))\^2}{\partial \theta’_v}$<br>$\qquad$<strong>end for</strong><br>$\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.</p>
 <p>累计梯度$dw$和$d\theta$其实可以看成是mini-batch的sgd。</p>
-<h3 id="a2c">A2C</h3>
-<p>A2C是A3C的同步版本。在A3C中每一个agent独立的和global parameters进行沟通，所以可能在某些时候，不同的thread使用的policy可能都会不同，thread1从global拿了参数，计算梯度，thread2从global拿了参数，计算梯度，thread1更新了global，而这个时候thread2还在计算梯度，thread1就拿到了新的global参数，计算梯度，更新。这时候thread2还没计算完，就产生了不一致。<br>
-A2C就是为了解决这个问题的，A2C使用一个调度器，等待所有的actors完成相应的工作，然后更新global的参数，保证在下一次更新的时候每一个actor使用的都是相同的policy。</p>
-<h3 id="dpg">DPG</h3>
-<p>完整解释见<a href="http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/" target="_blank" rel="noopener">deterministic policy gardient</a>。<br>
-Deterministic policy gradient theorem：<br>
-\begin{align*}<br>
-J(\mu_{\theta}) &amp; = \int_S\rho^{\mu} (s) R(s, \mu_{\theta}(s)) da ds\tag{48}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^{\mu} } \left[R(s, \mu_{\theta}(s) \right]\tag{49}\\<br>
-\end{align*}</p>
-<p>\begin{align*}<br>
-\nabla_{\theta} J(\mu_\theta) &amp; = \int_S\rho^{\mu} (s)\nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} da ds\tag{50}\\<br>
-&amp; = \mathbb{E}_{s\sim \rho^{\mu} (s)} \left[ \nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} \right]\tag{51}\\<br>
-\end{align*}</p>
-<h3 id="ddpg">DDPG</h3>
-<p>DDPG是一个model-free off-plicy actor critic方法，将DPG和DQN的思想相结合。DQN使用replay buffer和target network稳定学习过程，但是DQN只有在discrete space空间中起作用，DDPG将actor-critic框架扩展到了continous空间，学习deterministic policy。为了更好的exploration，使用$\mu$和noise $\mathbf{N}$构造exploration policy $\mu’$：<br>
-$$\mu’(s) = \mu(s) + \mathbf{N} \tag{}$$<br>
-此外，DDPG对actor和critic实行soft update，即$\theta’ \leftarrow \tau \theta+(1-\tau) \theta’$。同时使用batch normalizion对每层的输入进行处理，完整的算法如下：<br>
-<strong>DDPG算法</strong><br>
-使用$\theta^Q $和$\theta^\mu $ 随机初始化critic网络$Q(s,a|\theta^Q )$和actor网络$\mu(s|\theta^\mu )$。<br>
-使用$\theta^ Q$和$\theta^\mu $初始化target network参数$\theta^{Q’} \leftarrow \theta^Q, \theta^{\mu’} \leftarrow \theta^\mu$。<br>
-初始化replay buffer<br>
-for episode $= 1, \cdots, M$ do<br>
-$\qquad$初始化随机过程$\mathbf{N}$用于exploration<br>
-$\qquad$获得初始状态$s_0$<br>
-$\qquad$for $t=0, \cdots, T$ do<br>
-$\qquad\qquad$选择action $a_t = \mu(s_t|\theta^\mu ) + \mathbf{N}_t$<br>
-$\qquad\qquad$执行$a_t$，获得$r_{t+1}, s_{t+1}$<br>
-$\qquad\qquad$将$(s_t, a_t, r_{t+1}, s_{t+1})$存入buffer<br>
-$\qquad\qquad$从buffer中获取一个大小为$N$的batch，$(s_i, a_i, r_{i+1}，s_{i+1})$<br>
-$\qquad\qquad$使用target network计算TD target：$y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta^{\mu’} ) | \theta^{Q’} )$<br>
-$\qquad\qquad$使用TD-error loss更新critic： $L=\frac{1}{N} \sum_i (y_i - Q(s_i,a_i|\theta^Q ) )^2 $<br>
-$\qquad\qquad$使用样本计算policy gradient更新actor：<br>
-$$\nabla_{\theta^{\mu} } J \approx \frac{1}{N} \sum_i \nabla_a Q(s, a|\theta^Q ) |_{s=s_i,a=\mu(s_i)} \nabla_{\theta^{\mu} }\mu(s|\theta^{\mu} )$$<br>
-$\qquad\qquad$更新target networks:<br>
-$$\theta^{Q’} \leftarrow \tau \theta^Q + (1 - \tau) \theta^{Q’} $$<br>
-$$\theta^{\mu’} \leftarrow \tau \theta^\mu + (1 - \tau) \theta^{\mu’} $$<br>
-$\qquad$end for<br>
-end for</p>
-<h3 id="maddpg">MADDPG</h3>
-<p>MADDPG将DDPG扩展到multi agents问题上。多个只有local informaction的agents合作完成任务，从单个agent来看，环境是non-stationary，因为其他agents的polices是未知的。MADDPG就是解决这样一类问题的方法。<br>
-对于$N$个agetns的MADDPG算法，每一个agent都有一个decentralized actor和一个centralized critic。每一个decentralized actor输入为当前agent的observation，输出为它的action，每一个centralized critic输入为所有agents的observation，输出为当前agent的$Q$值，和每个智能体的reward相关。</p>
-<p>完整的算法如下：<br>
-<strong>N个agents的MADDPG算法</strong><br>
-for episode $= 1, \cdots, M$ do<br>
-$\qquad$初始化随机过程$\mathbf{N}$用来exploration<br>
-$\qquad$获得初始状态$\mathbf{s}$<br>
-$\qquad$for $t=1, \cdots , T$ do<br>
-$\qquad\qquad$for $i = 1, \cdots, N$<br>
-$\qquad\qquad\qquad a_i = \mu_{\theta_i}(o_i) +\mathbf{N}_t$<br>
-$\qquad\qquad$end for<br>
-$\qquad\qquad$执行actions $\mathbf{a} = (a_1, \cdots, a_N)$，获得$\mathbf{r}$和$\mathbf{s’}$<br>
-$\qquad\qquad$将$(\mathbf{s},\mathbf{a},\mathbf{r},\mathbf{s’})$存入buffer<br>
-$\qquad\qquad \mathbf{s}\leftarrow \mathbf{s’}$<br>
-$\qquad\qquad$for $i= 1, \cdots, N$ do<br>
-$\qquad\qquad\qquad$从buffer中采样$S$个samples $(\mathbf{s}^j ,\mathbf{a}^j ,\mathbf{r}^j ,\mathbf{s’}^j )$<br>
-$\qquad\qquad\qquad$计算TD target $\mathbf{y}^j_i = \mathbf{r}^j_i + \gamma Q^{\mu’}_i (\mathbf{x’}^j, a_1^{’},\cdots, a_N^{’} )|_{a_k^{’} = \mu_k^{’} (o_k^j ) }$<br>
-$\qquad\qquad\qquad$使用均方误差更新critic：<br>
-$$L(\theta_i) = \frac{1}{S} \sum_j \left( y^j - Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_N^j ) \right)^2 $$<br>
-$\qquad\qquad\qquad$使用样本近似计算policy gradient：<br>
-$$\nabla_{\theta_i} J\approx \frac{1}{S} \sum_j\nabla_{\theta_i}\mu_i(o_i^j ) Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_i^j, a_N^j)|_{a_i = \mu_i(o_i^j)} $$<br>
-$\qquad\qquad$end for<br>
-$\qquad\qquad$更新每个agent $i$的target network<br>
-$$\qquad\qquad \theta_i^{’} \leftarrow \tau\theta_i + (1- \tau) \theta_i^{’}$$<br>
-$\qquad$end for<br>
-end for</p>
-<h3 id="d4pg">D4PG</h3>
-<h3 id="natural-pg">Natural PG</h3>
-<h3 id="trpo">TRPO</h3>
-<p>详细介绍可以查看<a href="http://mxxhcmg.github.io/2019/09/08/gradient-method-trust-region-policy-optimization/" target="_blank" rel="noopener">trust region policy optimization</a>。<br>
-TRPO将policy的更新表示为两个policy的performance的一个公式：<br>
-\begin{align*}<br>
-\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right] &amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi_{old}} (s_t,a_t) - V^{\pi_{old}} (s_t))\right]  \\<br>
-&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t ( R_{t+1} + \gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
-&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} + \sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
-&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} \right]+ \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
-&amp;=\eta(\pi_{new}) + \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[ -  V^{\pi_{old}} (s_0))\right]  \\<br>
-&amp;=\eta(\pi_{new}) - \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[ V^{\pi_{old}} (s_0))\right]  \\<br>
-&amp;=\eta(\pi_{new}) - \eta(\pi_{old})\\<br>
-\end{align*}<br>
-我们的目标就是想要最大化<br>
-$$\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right]$$<br>
-用$\rho_{\pi_{old}}(s)$近似$\rho_{\pi_{new}}(s)$得到<br>
-$$\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right]$$</p>
-<p>最后得到目标函数：<br>
-$$J = \mathbb{E}_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}$$</p>
-<p>为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。<br>
-$$s.t. \mathbb{E}_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{}$$</p>
-<h3 id="ppo">PPO</h3>
-<h3 id="acer">ACER</h3>
-<h3 id="actkr">ACTKR</h3>
-<h3 id="sac">SAC</h3>
-<h3 id="sac-with-automatically-adjusted-temperature">SAC with Automatically Adjusted Temperature</h3>
-<h3 id="td3">TD3</h3>
-<h3 id="svpg">SVPG</h3>
-<h2 id="另一种policy-gradient的方法">另一种policy gradient的方法</h2>
-<p>这是CS294上的方法，感觉和前面的有一些不成体系，而且有一些地方的证明让我不能接受。<br>
-目标函数$J$如下：<br>
-\begin{align*}<br>
-J(\theta) &amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[R(\tau)\right] \tag{46}\\<br>
-&amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[\sum_t R(s_t, a_t)\right] \tag{47}\\<br>
-&amp; = \int \pi_{\theta}(\tau) R(\tau) d\tau \tag{48}\\<br>
-&amp; = \int \pi_{\theta}(\tau)\sum_t R(s_t, a_t) d\tau \tag{49}\\<br>
-&amp; \approx \frac{1}{N}\sum_i \sum_t R(s_{i,t}, a_{i,t}) \tag{50}\\<br>
-\end{align*}<br>
-其中$\tau = s_0, a_0, s_1, a_1,\cdots \sim \pi_{\theta}$表示一个episode的trajectory，$R(\tau)$表示这个trajectory的returns($G_0$)。Policy gradient变成下式，（为什么？？？还是不懂！！CS294上面的推导！！！为什么$\nabla$可以写进积分号里面，$R(\tau)$不也和$\pi_{\theta}$有关？？？）<br>
-\begin{align*}<br>
-\nabla_{\theta}J(\theta) &amp; = \int \nabla_{\theta} \pi_{\theta}(\tau) R(\tau)d\tau\\<br>
-&amp; = \int \pi_{\theta}(\tau) \nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau)d\tau\\<br>
-&amp; = \mathbb{E}_{\tau\sim \pi_{\theta}(\tau)} \left[\nabla_{\theta} \log\pi_{\theta}(\tau) R(\tau) d\tau\right] \tag{51}<br>
-\end{align*}<br>
-可以将policy gradient表示成期望的形式，然后就可以采样进行估计。对$R(\tau)$进行采样，但是不进行求导。Returns不直接受$\pi_{\theta}$的影响，$\tau$受$\pi_{\theta}$的影响，下面是$\log\pi(\tau)$的偏导数计算。<br>
-$\pi(\tau)$定义为：<br>
-$$\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = p(s_0) \prod_{t=0}^T \pi_{\theta}(a_t|s_t)p(s_{t+1}|s_t,a_t) \tag{52}$$<br>
-取$\log$：<br>
-$$\log\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = \log p(s_0) + \sum_{t=0}^T\log \pi_{\theta}(a_t|s_t) + \log p(s_{t+1}|s_t,a_t) \tag{53}$$<br>
-对$\theta$求偏导，得到：<br>
-$$\nabla_{\theta} \log\pi(\tau) = \nabla_{\theta}\left[\sum_{t=0}^T \log\pi_{\theta}(a_t|s_t) \right] = \left[\sum_{t=0}^T \nabla_{\theta} \log\pi_{\theta}(a_t|s_t) \right]\tag{54}$$<br>
-所以，policy gradient：<br>
-\begin{align*}<br>
-\nabla_{\theta}J(\theta) &amp;= \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)}\left[\nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau) \right]\tag{55}\\<br>
-&amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[ \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right) \right] \tag{56}\\<br>
-&amp; \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)\tag{57}\\<br>
-\end{align*}<br>
-$$ \theta \leftarrow \theta + \alpha \nabla_{\theta} J(\theta)\tag{58}$$<br>
-即用多个trajectories近似计算policy gradietn，更新$\theta$。</p>
-<h3 id="reinforce-policy-gradient-with-monte-carlo-rollouts">REINFORCE: Policy Gradient with Monte Carlo rollouts</h3>
-<p>REINFROCE使用Monte Carlo近似returns，$\nabla_{\theta}J(\theta)$近似为：</p>
-<p>$$\nabla_{\theta} J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)$$<br>
-完整的算法如下：<br>
-REINFORCE 算法<br>
-Loop<br>
-$\qquad 1.$使用policy $\pi_{\theta}(a_t|s_t)$生成一个trajectory $\left[\tau^i \right]$<br>
-$\qquad$估计$\nabla_{\theta}J(\theta) \approx \sum_i (\sum_t \nabla_{\theta} \log\pi_{\theta}(a_t^i |s_t^i )) (\sum_t R(s_t^i , a_t^i ))$<br>
-$\qquad \theta\leftarrow \theta+\alpha\nabla_{\theta}J(\theta)$<br>
-Until 收敛</p>
-<h3 id="intution">Intution</h3>
-<p>$\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})$是最大对数似然，表示的是对应的trajectory在当前的policy下发生的可能性。将它和returns相乘，如果产生high positive reward，增加policy的可能性，如果是high negetive reward，减少policy的可能性。在一个trajectory中的states具有很强的相关性，这个trajectory发生的概率定义为：<br>
-$$\pi(\tau) = p(s_0) \prod_{t=0}^T \pi_{\theta}(a_t|s_t)p(s_{t+1}|s_t,a_t) \tag{59}$$<br>
-但是连续的乘法可能会产生梯度消失或者梯度爆炸问题。policy gradient将连乘变成了连加。</p>
-<h3 id="policy-gradients-improvements">Policy Gradients Improvements</h3>
-<p>Policy gradient的方差很大，而且很难收敛，这是一大问题。<br>
-MC方法根据整个trajectory计算exact rewards，但是stochastic policy可能会在不同的episode采取不同的actions，一个小的改变可能会完全改变结果，MC方法没有bias但是有很大的方差。方差会影响深度学习的优化，一个采样的reward可能想要增加似然，另一个样本rewards可能想要减少似然，给出了冲突的梯度方向，影响收敛性。为了减少选择action造成的方差，我们需要减少样本rewards的方差：<br>
-$$\left( \sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)\tag{60}$$<br>
-增大PG中的batch size会减少方差。<br>
-但是增大batch size会降低sample efficiency。所以batch size不能增加太多，我们需要想其他的方法减少方差：</p>
-<h4 id="causality">Causality</h4>
-<p>未来的action不应该改变过去的decisions：<br>
-$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) \left(\sum_{t’=t}^T R(s_{i,t’};a_{i,t’})\right)\tag{61}$$<br>
-可以用$Q$代替$\sum_t R(s,a)$，<br>
-$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) Q_{i,t}\tag{62}$$<br>
-为什么会减少方差？</p>
-<h4 id="baseline">Baseline</h4>
-<p>$$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)\tag{63}$$<br>
-中$\sum_{t=1}^T R(s_{i,t}, a_{i,t})$其实就是$Q(s,a)$，我们可以在上面减去一项，只要这一项和$\theta$无关就好，所以我们可以减去$V(s)$：<br>
-\begin{align*}<br>
-\nabla_{\theta} J(\theta) &amp; \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(Q(s_{i,t}, a_{i,t}) - V(s_{i,t})\right)\\<br>
-&amp; = \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(A(s_{i,t}, a_{i,t})\right)\\<br>
-\end{align*}</p>
-<h4 id="vanilla-policy-gradient">Vanilla Policy Gradient</h4>
-<p>给出一个使用baseline $b$的通用算法：<br>
-$$ \nabla\approx \hat{g} = \frac{1}{m} \sum_{i=1}^m \nabla_{\theta}\log P(\tau^{(i)} ;\theta)(R(\tau^{(i)} )-b)\tag{64}$$<br>
-Vanilla policy gradient算法<br>
-初始化policy 参数$\theta$，baselien $b$<br>
-for $i = 1, 2, \cdots$ do<br>
-$\qquad$使用当前policy $\pi_{\theta}$收集trajectories<br>
-$\qquad$在每个trajectory的每一个timestep，计算<br>
-$\qquad\qquad$return $G_t = \sum_{t’=t}^{T-1} \gamma^{t’-t} R_{t’}$<br>
-$\qquad\qquad$advantage的估计值$\hat{A}_t = R_t - b(s_t)$<br>
-$\qquad$重新拟合baseline，最小化$\vert b(s_t) - G_t\vert^2 $<br>
-$\qquad$在所有trajectories和timesteps上求和估计$\hat{g}$<br>
-$\qquad$使用policy gradient estimate $\hat{g}$的估计$\hat{g}$更新policy 参数<br>
-end for</p>
-<h4 id="reward-discount">Reward discount</h4>
-<p>加上折扣因子：<br>
-$$Q^{\pi,\gamma}(s, a) \leftarrow r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots|s_0 = s, a_0 = a \tag{65}$$<br>
-得到：<br>
-$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) \right) \left(\sum_{t’=t}^T \gamma^{t’-t} R(s_{i,t’};a_{i,t’})\right)\tag{66}$$</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf</a><br>
-2.<a href="https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf</a><br>
-3.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146</a><br>
-4.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b</a><br>
-5.<a href="https://www.jianshu.com/p/af668c5d783d" target="_blank" rel="noopener">https://www.jianshu.com/p/af668c5d783d</a><br>
-6.<a href="https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html#what-is-policy-gradient" target="_blank" rel="noopener">https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html#what-is-policy-gradient</a><br>
-7.<a href="https://drive.google.com/file/d/0BxXI_RttTZAhY216RTMtanBpUnc/view" target="_blank" rel="noopener">https://drive.google.com/file/d/0BxXI_RttTZAhY216RTMtanBpUnc/view</a><br>
-8.<a href="https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/" target="_blank" rel="noopener">https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/</a><br>
-9.<a href="https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/" target="_blank" rel="noopener">https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/</a><br>
-10.<a href="http://www.tuananhle.co.uk/notes/reinforce.html" target="_blank" rel="noopener">http://www.tuananhle.co.uk/notes/reinforce.html</a><br>
-11.<a href="http://kvfrans.com/simple-algoritms-for-solving-cartpole/" target="_blank" rel="noopener">http://kvfrans.com/simple-algoritms-for-solving-cartpole/</a></p>
+<h3 id="A2C"><a href="#A2C" class="headerlink" title="A2C"></a>A2C</h3><p>A2C是A3C的同步版本。在A3C中每一个agent独立的和global parameters进行沟通，所以可能在某些时候，不同的thread使用的policy可能都会不同，thread1从global拿了参数，计算梯度，thread2从global拿了参数，计算梯度，thread1更新了global，而这个时候thread2还在计算梯度，thread1就拿到了新的global参数，计算梯度，更新。这时候thread2还没计算完，就产生了不一致。<br>A2C就是为了解决这个问题的，A2C使用一个调度器，等待所有的actors完成相应的工作，然后更新global的参数，保证在下一次更新的时候每一个actor使用的都是相同的policy。</p>
+<h3 id="DPG"><a href="#DPG" class="headerlink" title="DPG"></a>DPG</h3><p>完整解释见<a href="http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/" target="_blank" rel="noopener">deterministic policy gardient</a>。<br>Deterministic policy gradient theorem：<br>\begin{align*}<br>J(\mu_{\theta}) &amp; = \int_S\rho^{\mu} (s) R(s, \mu_{\theta}(s)) da ds\tag{48}\\\\<br>&amp; = \mathbb{E}_{s\sim \rho^{\mu} } \left[R(s, \mu_{\theta}(s) \right]\tag{49}\\\\<br>\end{align*}</p>
+<p>\begin{align*}<br>\nabla_{\theta} J(\mu_\theta) &amp; = \int_S\rho^{\mu} (s)\nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} da ds\tag{50}\\\\<br>&amp; = \mathbb{E}_{s\sim \rho^{\mu} (s)} \left[ \nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} \right]\tag{51}\\\\<br>\end{align*}</p>
+<h3 id="DDPG"><a href="#DDPG" class="headerlink" title="DDPG"></a>DDPG</h3><p>DDPG是一个model-free off-plicy actor critic方法，将DPG和DQN的思想相结合。DQN使用replay buffer和target network稳定学习过程，但是DQN只有在discrete space空间中起作用，DDPG将actor-critic框架扩展到了continous空间，学习deterministic policy。为了更好的exploration，使用$\mu$和noise $\mathbf{N}$构造exploration policy $\mu’$：</p>
+<script type="math/tex; mode=display">\mu'(s) = \mu(s) + \mathbf{N} \tag{}</script><p>此外，DDPG对actor和critic实行soft update，即$\theta’ \leftarrow \tau \theta+(1-\tau) \theta’$。同时使用batch normalizion对每层的输入进行处理，完整的算法如下：<br><strong>DDPG算法</strong><br>使用$\theta^Q $和$\theta^\mu $ 随机初始化critic网络$Q(s,a|\theta^Q )$和actor网络$\mu(s|\theta^\mu )$。<br>使用$\theta^ Q$和$\theta^\mu $初始化target network参数$\theta^{Q’} \leftarrow \theta^Q, \theta^{\mu’} \leftarrow \theta^\mu$。<br>初始化replay buffer<br>for episode $= 1, \cdots, M$ do<br>$\qquad$初始化随机过程$\mathbf{N}$用于exploration<br>$\qquad$获得初始状态$s_0$<br>$\qquad$for $t=0, \cdots, T$ do<br>$\qquad\qquad$选择action $a_t = \mu(s_t|\theta^\mu ) + \mathbf{N}_t$<br>$\qquad\qquad$执行$a_t$，获得$r_{t+1}, s_{t+1}$<br>$\qquad\qquad$将$(s_t, a_t, r_{t+1}, s_{t+1})$存入buffer<br>$\qquad\qquad$从buffer中获取一个大小为$N$的batch，$(s_i, a_i, r_{i+1}，s_{i+1})$<br>$\qquad\qquad$使用target network计算TD target：$y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta^{\mu’} ) | \theta^{Q’} )$<br>$\qquad\qquad$使用TD-error loss更新critic： $L=\frac{1}{N} \sum_i (y_i - Q(s_i,a_i|\theta^Q ) )^2 $<br>$\qquad\qquad$使用样本计算policy gradient更新actor：</p>
+<script type="math/tex; mode=display">\nabla\_{\theta^{\mu} } J \approx \frac{1}{N} \sum_i \nabla_a Q(s, a|\theta^Q ) |\_{s=s_i,a=\mu(s_i)} \nabla\_{\theta^{\mu} }\mu(s|\theta^{\mu} )</script><p>$\qquad\qquad$更新target networks:</p>
+<script type="math/tex; mode=display">\theta^{Q'} \leftarrow \tau \theta^Q + (1 - \tau) \theta^{Q'}</script><script type="math/tex; mode=display">\theta^{\mu'} \leftarrow \tau \theta^\mu + (1 - \tau) \theta^{\mu'}</script><p>$\qquad$end for<br>end for</p>
+<h3 id="MADDPG"><a href="#MADDPG" class="headerlink" title="MADDPG"></a>MADDPG</h3><p>MADDPG将DDPG扩展到multi agents问题上。多个只有local informaction的agents合作完成任务，从单个agent来看，环境是non-stationary，因为其他agents的polices是未知的。MADDPG就是解决这样一类问题的方法。<br>对于$N$个agetns的MADDPG算法，每一个agent都有一个decentralized actor和一个centralized critic。每一个decentralized actor输入为当前agent的observation，输出为它的action，每一个centralized critic输入为所有agents的observation，输出为当前agent的$Q$值，和每个智能体的reward相关。</p>
+<p>完整的算法如下：<br><strong>N个agents的MADDPG算法</strong><br>for episode $= 1, \cdots, M$ do<br>$\qquad$初始化随机过程$\mathbf{N}$用来exploration<br>$\qquad$获得初始状态$\mathbf{s}$<br>$\qquad$for $t=1, \cdots , T$ do<br>$\qquad\qquad$for $i = 1, \cdots, N$<br>$\qquad\qquad\qquad a_i = \mu_{\theta_i}(o_i) +\mathbf{N}_t$<br>$\qquad\qquad$end for<br>$\qquad\qquad$执行actions $\mathbf{a} = (a_1, \cdots, a_N)$，获得$\mathbf{r}$和$\mathbf{s’}$<br>$\qquad\qquad$将$(\mathbf{s},\mathbf{a},\mathbf{r},\mathbf{s’})$存入buffer<br>$\qquad\qquad \mathbf{s}\leftarrow \mathbf{s’}$<br>$\qquad\qquad$for $i= 1, \cdots, N$ do<br>$\qquad\qquad\qquad$从buffer中采样$S$个samples $(\mathbf{s}^j ,\mathbf{a}^j ,\mathbf{r}^j ,\mathbf{s’}^j )$<br>$\qquad\qquad\qquad$计算TD target $\mathbf{y}^j_i = \mathbf{r}^j_i + \gamma Q^{\mu’}_i (\mathbf{x’}^j, a_1^{‘},\cdots, a_N^{‘} )|_{a_k^{‘} = \mu_k^{‘} (o_k^j ) }$<br>$\qquad\qquad\qquad$使用均方误差更新critic：</p>
+<script type="math/tex; mode=display">L(\theta_i) = \frac{1}{S} \sum_j \left( y^j - Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_N^j ) \right)^2</script><p>$\qquad\qquad\qquad$使用样本近似计算policy gradient：</p>
+<script type="math/tex; mode=display">\nabla\_{\theta_i} J\approx \frac{1}{S} \sum_j\nabla\_{\theta_i}\mu_i(o_i^j ) Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_i^j, a_N^j)|\_{a_i = \mu_i(o_i^j)} \</script><p>$\qquad\qquad$end for<br>$\qquad\qquad$更新每个agent $i$的target network</p>
+<script type="math/tex; mode=display">\qquad\qquad \theta_i^{'} \leftarrow \tau\theta_i + (1- \tau) \theta_i^{'}</script><p>$\qquad$end for<br>end for</p>
+<h3 id="D4PG"><a href="#D4PG" class="headerlink" title="D4PG"></a>D4PG</h3><h3 id="Natural-PG"><a href="#Natural-PG" class="headerlink" title="Natural PG"></a>Natural PG</h3><h3 id="TRPO"><a href="#TRPO" class="headerlink" title="TRPO"></a>TRPO</h3><p>详细介绍可以查看<a href="http://mxxhcmg.github.io/2019/09/08/gradient-method-trust-region-policy-optimization/" target="_blank" rel="noopener">trust region policy optimization</a>。<br>TRPO将policy的更新表示为两个policy的performance的一个公式：<br>\begin{align*}<br>\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right] &amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi_{old}} (s_t,a_t) - V^{\pi_{old}} (s_t))\right]  \\\\<br>&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t ( R_{t+1} + \gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\\\<br>&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} + \sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\\\<br>&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} \right]+ \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\\\<br>&amp;=\eta(\pi_{new}) + \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[ -  V^{\pi_{old}} (s_0))\right]  \\\\<br>&amp;=\eta(\pi_{new}) - \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[ V^{\pi_{old}} (s_0))\right]  \\\\<br>&amp;=\eta(\pi_{new}) - \eta(\pi_{old})\\\\<br>\end{align*}<br>我们的目标就是想要最大化</p>
+<script type="math/tex; mode=display">\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new} }\left[\sum\_{t=0}^{\infty} \gamma^t A^{\pi\_{old}} (s\_t,a\_t) \right]</script><p>用$\rho_{\pi_{old}}(s)$近似$\rho_{\pi_{new}}(s)$得到</p>
+<script type="math/tex; mode=display">\mathbb{E}\_{s\_0, a\_0,\cdots\sim \pi\_{new} }\left[\sum\_{t=0}^{\infty} \gamma^t A^{\pi\_{old}} (s\_t,a\_t) \right]</script><p>最后得到目标函数：</p>
+<script type="math/tex; mode=display">J = \mathbb{E}\_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}</script><p>为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。</p>
+<script type="math/tex; mode=display">s.t. \mathbb{E}\_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{}</script><h3 id="PPO"><a href="#PPO" class="headerlink" title="PPO"></a>PPO</h3><h3 id="ACER"><a href="#ACER" class="headerlink" title="ACER"></a>ACER</h3><h3 id="ACTKR"><a href="#ACTKR" class="headerlink" title="ACTKR"></a>ACTKR</h3><h3 id="SAC"><a href="#SAC" class="headerlink" title="SAC"></a>SAC</h3><h3 id="SAC-with-Automatically-Adjusted-Temperature"><a href="#SAC-with-Automatically-Adjusted-Temperature" class="headerlink" title="SAC with Automatically Adjusted Temperature"></a>SAC with Automatically Adjusted Temperature</h3><h3 id="TD3"><a href="#TD3" class="headerlink" title="TD3"></a>TD3</h3><h3 id="SVPG"><a href="#SVPG" class="headerlink" title="SVPG"></a>SVPG</h3><h2 id="另一种policy-gradient的方法"><a href="#另一种policy-gradient的方法" class="headerlink" title="另一种policy gradient的方法"></a>另一种policy gradient的方法</h2><p>这是CS294上的方法，感觉和前面的有一些不成体系，而且有一些地方的证明让我不能接受。<br>目标函数$J$如下：<br>\begin{align*}<br>J(\theta) &amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[R(\tau)\right] \tag{46}\\\\<br>&amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[\sum_t R(s_t, a_t)\right] \tag{47}\\\\<br>&amp; = \int \pi_{\theta}(\tau) R(\tau) d\tau \tag{48}\\\\<br>&amp; = \int \pi_{\theta}(\tau)\sum_t R(s_t, a_t) d\tau \tag{49}\\\\<br>&amp; \approx \frac{1}{N}\sum_i \sum_t R(s_{i,t}, a_{i,t}) \tag{50}\\\\<br>\end{align*}<br>其中$\tau = s_0, a_0, s_1, a_1,\cdots \sim \pi_{\theta}$表示一个episode的trajectory，$R(\tau)$表示这个trajectory的returns($G_0$)。Policy gradient变成下式，（为什么？？？还是不懂！！CS294上面的推导！！！为什么$\nabla$可以写进积分号里面，$R(\tau)$不也和$\pi_{\theta}$有关？？？）<br>\begin{align*}<br>\nabla_{\theta}J(\theta) &amp; = \int \nabla_{\theta} \pi_{\theta}(\tau) R(\tau)d\tau\\\\<br>&amp; = \int \pi_{\theta}(\tau) \nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau)d\tau\\\\<br>&amp; = \mathbb{E}_{\tau\sim \pi_{\theta}(\tau)} \left[\nabla_{\theta} \log\pi_{\theta}(\tau) R(\tau) d\tau\right] \tag{51}<br>\end{align*}<br>可以将policy gradient表示成期望的形式，然后就可以采样进行估计。对$R(\tau)$进行采样，但是不进行求导。Returns不直接受$\pi_{\theta}$的影响，$\tau$受$\pi_{\theta}$的影响，下面是$\log\pi(\tau)$的偏导数计算。<br>$\pi(\tau)$定义为：</p>
+<script type="math/tex; mode=display">\pi\_{\theta}(s\_0,a\_0,\cdots, s\_T,a\_T) = p(s\_0) \prod\_{t=0}^T \pi\_{\theta}(a\_t|s\_t)p(s\_{t+1}|s\_t,a\_t) \tag{52}</script><p>取$\log$：</p>
+<script type="math/tex; mode=display">\log\pi\_{\theta}(s\_0,a\_0,\cdots, s\_T,a\_T) = \log p(s\_0) + \sum\_{t=0}^T\log \pi\_{\theta}(a\_t|s\_t) + \log p(s\_{t+1}|s\_t,a\_t) \tag{53}</script><p>对$\theta$求偏导，得到：</p>
+<script type="math/tex; mode=display">\nabla_{\theta} \log\pi(\tau) = \nabla\_{\theta}\left[\sum\_{t=0}^T \log\pi\_{\theta}(a\_t|s\_t) \right] = \left[\sum\_{t=0}^T \nabla\_{\theta} \log\pi\_{\theta}(a\_t|s\_t) \right]\tag{54}</script><p>所以，policy gradient：<br>\begin{align*}<br>\nabla_{\theta}J(\theta) &amp;= \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)}\left[\nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau) \right]\tag{55}\\\\<br>&amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[ \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right) \right] \tag{56}\\\\<br>&amp; \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)\tag{57}\\\\<br>\end{align*}</p>
+<script type="math/tex; mode=display">\theta \leftarrow \theta + \alpha \nabla\_{\theta} J(\theta)\tag{58}</script><p>即用多个trajectories近似计算policy gradietn，更新$\theta$。</p>
+<h3 id="REINFORCE-Policy-Gradient-with-Monte-Carlo-rollouts"><a href="#REINFORCE-Policy-Gradient-with-Monte-Carlo-rollouts" class="headerlink" title="REINFORCE: Policy Gradient with Monte Carlo rollouts"></a>REINFORCE: Policy Gradient with Monte Carlo rollouts</h3><p>REINFROCE使用Monte Carlo近似returns，$\nabla_{\theta}J(\theta)$近似为：</p>
+<script type="math/tex; mode=display">\nabla\_{\theta} J(\theta) \approx \frac{1}{N}\sum\_{i=1}^N \left(\sum\_{t=1}^T\nabla\_{\theta} \log\pi\_{\theta}(a\_{i,t}|s\_{i,t})\right) \left(\sum\_{t=1}^T R(s\_{i,t}, a\_{i,t})\right)</script><p>完整的算法如下：<br>REINFORCE 算法<br>Loop<br>$\qquad 1.$使用policy $\pi_{\theta}(a_t|s_t)$生成一个trajectory $\left[\tau^i \right]$<br>$\qquad$估计$\nabla_{\theta}J(\theta) \approx \sum_i (\sum_t \nabla_{\theta} \log\pi_{\theta}(a_t^i |s_t^i )) (\sum_t R(s_t^i , a_t^i ))$<br>$\qquad \theta\leftarrow \theta+\alpha\nabla_{\theta}J(\theta)$<br>Until 收敛</p>
+<h3 id="Intution"><a href="#Intution" class="headerlink" title="Intution"></a>Intution</h3><p>$\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})$是最大对数似然，表示的是对应的trajectory在当前的policy下发生的可能性。将它和returns相乘，如果产生high positive reward，增加policy的可能性，如果是high negetive reward，减少policy的可能性。在一个trajectory中的states具有很强的相关性，这个trajectory发生的概率定义为：</p>
+<script type="math/tex; mode=display">\pi(\tau) = p(s\_0) \prod\_{t=0}^T \pi\_{\theta}(a\_t|s\_t)p(s\_{t+1}|s\_t,a\_t) \tag{59}</script><p>但是连续的乘法可能会产生梯度消失或者梯度爆炸问题。policy gradient将连乘变成了连加。</p>
+<h3 id="Policy-Gradients-Improvements"><a href="#Policy-Gradients-Improvements" class="headerlink" title="Policy Gradients Improvements"></a>Policy Gradients Improvements</h3><p>Policy gradient的方差很大，而且很难收敛，这是一大问题。<br>MC方法根据整个trajectory计算exact rewards，但是stochastic policy可能会在不同的episode采取不同的actions，一个小的改变可能会完全改变结果，MC方法没有bias但是有很大的方差。方差会影响深度学习的优化，一个采样的reward可能想要增加似然，另一个样本rewards可能想要减少似然，给出了冲突的梯度方向，影响收敛性。为了减少选择action造成的方差，我们需要减少样本rewards的方差：</p>
+<script type="math/tex; mode=display">\left( \sum\_{t=1}^T R(s\_{i,t}, a\_{i,t})\right)\tag{60}</script><p>增大PG中的batch size会减少方差。<br>但是增大batch size会降低sample efficiency。所以batch size不能增加太多，我们需要想其他的方法减少方差：</p>
+<h4 id="Causality"><a href="#Causality" class="headerlink" title="Causality"></a>Causality</h4><p>未来的action不应该改变过去的decisions：</p>
+<script type="math/tex; mode=display">\nabla\_{\theta}J(\theta) \approx \frac{1}{N} \sum\_{i=1}^N \sum\_{t=1}^T \nabla\_{\theta}\log\pi\_{\theta}(a\_{i,t}|s\_{i,t}) \left(\sum\_{t'=t}^T R(s\_{i,t'};a\_{i,t'})\right)\tag{61}</script><p>可以用$Q$代替$\sum_t R(s,a)$，</p>
+<script type="math/tex; mode=display">\nabla\_{\theta}J(\theta) \approx \frac{1}{N} \sum\_{i=1}^N \sum\_{t=1}^T \nabla\_{\theta}\log\pi\_{\theta}(a\_{i,t}|s\_{i,t}) Q\_{i,t}\tag{62}</script><p>为什么会减少方差？</p>
+<h4 id="Baseline"><a href="#Baseline" class="headerlink" title="Baseline"></a>Baseline</h4><script type="math/tex; mode=display">\nabla\_{\theta}J(\theta) \approx \frac{1}{N}\sum\_{i=1}^N \left(\sum\_{t=1}^T\nabla\_{\theta} \log\pi\_{\theta}(a\_{i,t}|s\_{i,t}\right) \left(\sum\_{t=1}^T R(s\_{i,t}, a\_{i,t})\right)\tag{63}</script><p>中$\sum_{t=1}^T R(s_{i,t}, a_{i,t})$其实就是$Q(s,a)$，我们可以在上面减去一项，只要这一项和$\theta$无关就好，所以我们可以减去$V(s)$：<br>\begin{align*}<br>\nabla_{\theta} J(\theta) &amp; \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(Q(s_{i,t}, a_{i,t}) - V(s_{i,t})\right)\\\\<br>&amp; = \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(A(s_{i,t}, a_{i,t})\right)\\\\<br>\end{align*}</p>
+<h4 id="Vanilla-Policy-Gradient"><a href="#Vanilla-Policy-Gradient" class="headerlink" title="Vanilla Policy Gradient"></a>Vanilla Policy Gradient</h4><p>给出一个使用baseline $b$的通用算法：</p>
+<script type="math/tex; mode=display">\nabla\approx \hat{g} = \frac{1}{m} \sum\_{i=1}^m \nabla\_{\theta}\log P(\tau^{(i)} ;\theta)(R(\tau^{(i)} )-b)\tag{64}</script><p>Vanilla policy gradient算法<br>初始化policy 参数$\theta$，baselien $b$<br>for $i = 1, 2, \cdots$ do<br>$\qquad$使用当前policy $\pi_{\theta}$收集trajectories<br>$\qquad$在每个trajectory的每一个timestep，计算<br>$\qquad\qquad$return $G_t = \sum_{t’=t}^{T-1} \gamma^{t’-t} R_{t’}$<br>$\qquad\qquad$advantage的估计值$\hat{A}_t = R_t - b(s_t)$<br>$\qquad$重新拟合baseline，最小化$\vert b(s_t) - G_t\vert^2 $<br>$\qquad$在所有trajectories和timesteps上求和估计$\hat{g}$<br>$\qquad$使用policy gradient estimate $\hat{g}$的估计$\hat{g}$更新policy 参数<br>end for</p>
+<h4 id="Reward-discount"><a href="#Reward-discount" class="headerlink" title="Reward discount"></a>Reward discount</h4><p>加上折扣因子：</p>
+<script type="math/tex; mode=display">Q^{\pi,\gamma}(s, a) \leftarrow r\_0 + \gamma r\_1 + \gamma^2 r\_2 + \cdots|s\_0 = s, a\_0 = a \tag{65}</script><p>得到：</p>
+<script type="math/tex; mode=display">\nabla\_{\theta}J(\theta) \approx \frac{1}{N} \sum\_{i=1}^N \left(\sum\_{t=1}^T \nabla\_{\theta}\log\pi\_{\theta}(a\_{i,t}|s\_{i,t}) \right) \left(\sum\_{t'=t}^T \gamma^{t'-t} R(s\_{i,t'};a\_{i,t'})\right)\tag{66}</script><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf</a><br>2.<a href="https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf</a><br>3.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146</a><br>4.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b</a><br>5.<a href="https://www.jianshu.com/p/af668c5d783d" target="_blank" rel="noopener">https://www.jianshu.com/p/af668c5d783d</a><br>6.<a href="https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html#what-is-policy-gradient" target="_blank" rel="noopener">https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html#what-is-policy-gradient</a><br>7.<a href="https://drive.google.com/file/d/0BxXI_RttTZAhY216RTMtanBpUnc/view" target="_blank" rel="noopener">https://drive.google.com/file/d/0BxXI_RttTZAhY216RTMtanBpUnc/view</a><br>8.<a href="https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/" target="_blank" rel="noopener">https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/</a><br>9.<a href="https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/" target="_blank" rel="noopener">https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/</a><br>10.<a href="http://www.tuananhle.co.uk/notes/reinforce.html" target="_blank" rel="noopener">http://www.tuananhle.co.uk/notes/reinforce.html</a><br>11.<a href="http://kvfrans.com/simple-algoritms-for-solving-cartpole/" target="_blank" rel="noopener">http://kvfrans.com/simple-algoritms-for-solving-cartpole/</a></p>
 
       
     </div>
@@ -1070,7 +686,7 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">306</span>
+                    <span class="site-state-item-count">312</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1129,7 +745,9 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
                     
                       
                     
-                    <span class="site-state-item-count">23</span>
+                      
+                    
+                    <span class="site-state-item-count">24</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -1286,7 +904,11 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
                     
                       
                     
-                    <span class="site-state-item-count">72</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">74</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1354,7 +976,7 @@ $$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#policy-gradient"><span class="nav-number">1.</span> <span class="nav-text">Policy Gradient</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#值函数方法的缺点"><span class="nav-number">1.1.</span> <span class="nav-text">值函数方法的缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用函数表示stochastic-policy"><span class="nav-number">1.2.</span> <span class="nav-text">用函数表示stochastic policy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用值函数辅助学习policy"><span class="nav-number">1.3.</span> <span class="nav-text">使用值函数辅助学习policy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#证明policy-iteration收敛性"><span class="nav-number">1.4.</span> <span class="nav-text">证明policy iteration收敛性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#objective-function"><span class="nav-number">2.</span> <span class="nav-text">Objective Function</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#三种形式"><span class="nav-number">2.1.</span> <span class="nav-text">三种形式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#accumated-reward-from-designated-state-从指定状态开始的累计奖励"><span class="nav-number">2.2.</span> <span class="nav-text">Accumated Reward from Designated State(从指定状态开始的累计奖励)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#average-reward-平均奖励"><span class="nav-number">2.3.</span> <span class="nav-text">Average Reward(平均奖励)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#state-value的均值"><span class="nav-number">2.4.</span> <span class="nav-text">State value的均值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#policy-gradient-v2"><span class="nav-number">2.5.</span> <span class="nav-text">Policy Gradient</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#policy-gradient-theorem"><span class="nav-number">3.</span> <span class="nav-text">Policy Gradient Theorem</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#指定初始状态-s-0-的accumulated-reward"><span class="nav-number">3.1.</span> <span class="nav-text">指定初始状态$s_0$的accumulated reward</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#average-reward"><span class="nav-number">3.2.</span> <span class="nav-text">Average Reward:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#state-value的期望"><span class="nav-number">3.3.</span> <span class="nav-text">State value的期望</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结论"><span class="nav-number">3.4.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#policy-gradient-with-approximation-使用近似的策略梯度"><span class="nav-number">4.</span> <span class="nav-text">Policy Gradient with Approximation(使用近似的策略梯度)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定理2：policy-gradient-with-approximation-theorem"><span class="nav-number">4.1.</span> <span class="nav-text">定理2：Policy Gradient with Approximation Theorem</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#application-to-deriving-algorithms-and-advantages"><span class="nav-number">5.</span> <span class="nav-text">Application to Deriving Algorithms and Advantages</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#convergence-of-policy-iteration-with-function-approximation-使用函数近似的策略迭代的收敛性"><span class="nav-number">6.</span> <span class="nav-text">Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定理3：policy-iteration-with-function-approximation"><span class="nav-number">6.1.</span> <span class="nav-text">定理3：Policy Iteration with Function Approximation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#policy-gradient-algorithms"><span class="nav-number">7.</span> <span class="nav-text">Policy Gradient Algorithms</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#reinforce"><span class="nav-number">7.1.</span> <span class="nav-text">REINFORCE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reinforce-with-baseline"><span class="nav-number">7.2.</span> <span class="nav-text">REINFORCE with Baseline</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#actor-critic"><span class="nav-number">7.3.</span> <span class="nav-text">Actor-Critic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#off-policy-policy-gradient"><span class="nav-number">7.4.</span> <span class="nav-text">Off-Policy Policy Gradient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#a3c"><span class="nav-number">7.5.</span> <span class="nav-text">A3C</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#a2c"><span class="nav-number">7.6.</span> <span class="nav-text">A2C</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#dpg"><span class="nav-number">7.7.</span> <span class="nav-text">DPG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ddpg"><span class="nav-number">7.8.</span> <span class="nav-text">DDPG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#maddpg"><span class="nav-number">7.9.</span> <span class="nav-text">MADDPG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#d4pg"><span class="nav-number">7.10.</span> <span class="nav-text">D4PG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#natural-pg"><span class="nav-number">7.11.</span> <span class="nav-text">Natural PG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#trpo"><span class="nav-number">7.12.</span> <span class="nav-text">TRPO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ppo"><span class="nav-number">7.13.</span> <span class="nav-text">PPO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#acer"><span class="nav-number">7.14.</span> <span class="nav-text">ACER</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#actkr"><span class="nav-number">7.15.</span> <span class="nav-text">ACTKR</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sac"><span class="nav-number">7.16.</span> <span class="nav-text">SAC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#sac-with-automatically-adjusted-temperature"><span class="nav-number">7.17.</span> <span class="nav-text">SAC with Automatically Adjusted Temperature</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#td3"><span class="nav-number">7.18.</span> <span class="nav-text">TD3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#svpg"><span class="nav-number">7.19.</span> <span class="nav-text">SVPG</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一种policy-gradient的方法"><span class="nav-number">8.</span> <span class="nav-text">另一种policy gradient的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#reinforce-policy-gradient-with-monte-carlo-rollouts"><span class="nav-number">8.1.</span> <span class="nav-text">REINFORCE: Policy Gradient with Monte Carlo rollouts</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#intution"><span class="nav-number">8.2.</span> <span class="nav-text">Intution</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#policy-gradients-improvements"><span class="nav-number">8.3.</span> <span class="nav-text">Policy Gradients Improvements</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#causality"><span class="nav-number">8.3.1.</span> <span class="nav-text">Causality</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#baseline"><span class="nav-number">8.3.2.</span> <span class="nav-text">Baseline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#vanilla-policy-gradient"><span class="nav-number">8.3.3.</span> <span class="nav-text">Vanilla Policy Gradient</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#reward-discount"><span class="nav-number">8.3.4.</span> <span class="nav-text">Reward discount</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Policy-Gradient"><span class="nav-number">1.</span> <span class="nav-text">Policy Gradient</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#值函数方法的缺点"><span class="nav-number">1.1.</span> <span class="nav-text">值函数方法的缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用函数表示stochastic-policy"><span class="nav-number">1.2.</span> <span class="nav-text">用函数表示stochastic policy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用值函数辅助学习policy"><span class="nav-number">1.3.</span> <span class="nav-text">使用值函数辅助学习policy</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#证明policy-iteration收敛性"><span class="nav-number">1.4.</span> <span class="nav-text">证明policy iteration收敛性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Objective-Function"><span class="nav-number">2.</span> <span class="nav-text">Objective Function</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#三种形式"><span class="nav-number">2.1.</span> <span class="nav-text">三种形式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Accumated-Reward-from-Designated-State-从指定状态开始的累计奖励"><span class="nav-number">2.2.</span> <span class="nav-text">Accumated Reward from Designated State(从指定状态开始的累计奖励)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Average-Reward-平均奖励"><span class="nav-number">2.3.</span> <span class="nav-text">Average Reward(平均奖励)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#State-value的均值"><span class="nav-number">2.4.</span> <span class="nav-text">State value的均值</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Policy-Gradient-1"><span class="nav-number">2.5.</span> <span class="nav-text">Policy Gradient</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Policy-Gradient-Theorem"><span class="nav-number">3.</span> <span class="nav-text">Policy Gradient Theorem</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#指定初始状态-s-0-的accumulated-reward"><span class="nav-number">3.1.</span> <span class="nav-text">指定初始状态$s_0$的accumulated reward</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Average-Reward"><span class="nav-number">3.2.</span> <span class="nav-text">Average Reward:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#State-value的期望"><span class="nav-number">3.3.</span> <span class="nav-text">State value的期望</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结论"><span class="nav-number">3.4.</span> <span class="nav-text">结论</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Policy-Gradient-with-Approximation-使用近似的策略梯度"><span class="nav-number">4.</span> <span class="nav-text">Policy Gradient with Approximation(使用近似的策略梯度)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定理2：Policy-Gradient-with-Approximation-Theorem"><span class="nav-number">4.1.</span> <span class="nav-text">定理2：Policy Gradient with Approximation Theorem</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Application-to-Deriving-Algorithms-and-Advantages"><span class="nav-number">5.</span> <span class="nav-text">Application to Deriving Algorithms and Advantages</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Convergence-of-Policy-Iteration-with-Function-Approximation-使用函数近似的策略迭代的收敛性"><span class="nav-number">6.</span> <span class="nav-text">Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#定理3：Policy-Iteration-with-Function-Approximation"><span class="nav-number">6.1.</span> <span class="nav-text">定理3：Policy Iteration with Function Approximation</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Policy-Gradient-Algorithms"><span class="nav-number">7.</span> <span class="nav-text">Policy Gradient Algorithms</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#REINFORCE"><span class="nav-number">7.1.</span> <span class="nav-text">REINFORCE</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REINFORCE-with-Baseline"><span class="nav-number">7.2.</span> <span class="nav-text">REINFORCE with Baseline</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Actor-Critic"><span class="nav-number">7.3.</span> <span class="nav-text">Actor-Critic</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Off-Policy-Policy-Gradient"><span class="nav-number">7.4.</span> <span class="nav-text">Off-Policy Policy Gradient</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#A3C"><span class="nav-number">7.5.</span> <span class="nav-text">A3C</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#A2C"><span class="nav-number">7.6.</span> <span class="nav-text">A2C</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DPG"><span class="nav-number">7.7.</span> <span class="nav-text">DPG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DDPG"><span class="nav-number">7.8.</span> <span class="nav-text">DDPG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MADDPG"><span class="nav-number">7.9.</span> <span class="nav-text">MADDPG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#D4PG"><span class="nav-number">7.10.</span> <span class="nav-text">D4PG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Natural-PG"><span class="nav-number">7.11.</span> <span class="nav-text">Natural PG</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TRPO"><span class="nav-number">7.12.</span> <span class="nav-text">TRPO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PPO"><span class="nav-number">7.13.</span> <span class="nav-text">PPO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ACER"><span class="nav-number">7.14.</span> <span class="nav-text">ACER</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ACTKR"><span class="nav-number">7.15.</span> <span class="nav-text">ACTKR</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SAC"><span class="nav-number">7.16.</span> <span class="nav-text">SAC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SAC-with-Automatically-Adjusted-Temperature"><span class="nav-number">7.17.</span> <span class="nav-text">SAC with Automatically Adjusted Temperature</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TD3"><span class="nav-number">7.18.</span> <span class="nav-text">TD3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SVPG"><span class="nav-number">7.19.</span> <span class="nav-text">SVPG</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#另一种policy-gradient的方法"><span class="nav-number">8.</span> <span class="nav-text">另一种policy gradient的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#REINFORCE-Policy-Gradient-with-Monte-Carlo-rollouts"><span class="nav-number">8.1.</span> <span class="nav-text">REINFORCE: Policy Gradient with Monte Carlo rollouts</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Intution"><span class="nav-number">8.2.</span> <span class="nav-text">Intution</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Policy-Gradients-Improvements"><span class="nav-number">8.3.</span> <span class="nav-text">Policy Gradients Improvements</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Causality"><span class="nav-number">8.3.1.</span> <span class="nav-text">Causality</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Baseline"><span class="nav-number">8.3.2.</span> <span class="nav-text">Baseline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Vanilla-Policy-Gradient"><span class="nav-number">8.3.3.</span> <span class="nav-text">Vanilla Policy Gradient</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Reward-discount"><span class="nav-number">8.3.4.</span> <span class="nav-text">Reward discount</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
