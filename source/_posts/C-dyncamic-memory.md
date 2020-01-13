@@ -6,8 +6,6 @@ tags:
 categories: C/C++
 ---
 
-## 概念
-
 ## 概述
 每一个C程序都把内存划分成静态内存，栈内存，堆内存（自由空间）。静态内存存放局部static对象，类的static数据成员以及定义在任何函数之外的变量。栈存放函数内的非static对象。堆内存是由程序员自己负责管理（申请和释放）的内存。
 
@@ -22,6 +20,18 @@ C++ 提供了两种智能指针，`shared_ptr`和`unique_ptr`管理动态对象�
 
 ## `shared_ptr`
 ![shared_ptr](shared_pointer.png)
+
+1. `shared_ptr`的声明和创建
+2. `make_shared`创建一个指针。
+3. `shared_ptr`的拷贝和赋值，引用计数。修改引用计数的几种情况：
+    - 拷贝一个`shared_ptr`，比如用一个`shared_ptr`初始化另一个，值传参，返回值等情况，引用计数增加。
+    - 给`shared_ptr`赋一个新值，引用计数减少。
+    - shared_ptr被销毁时，引用计数减少。
+4. 通过析构函数自动销毁它管理的对象。
+
+## `new`
+
+## `shared_ptr`和`new`
 
 ## `unique_ptr`
 ![unique_ptr](unique_pointer.png)
