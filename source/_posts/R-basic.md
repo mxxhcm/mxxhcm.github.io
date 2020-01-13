@@ -261,5 +261,16 @@ data = matrix = c()
 write.xlsx(data, file = "myworkbook.xlsx", append = FALSE)
 ```
 
+
+##
+
+qqplot
+ggplot2
+lm
+
+
+
+
+
 ## 参考文献
 1.https://www.datamentor.io/r-programming/for-loop/
