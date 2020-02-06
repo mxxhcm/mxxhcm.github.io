@@ -151,6 +151,7 @@ const string *p4 = const_cast<const string*>(p1);   //将非底层const转换成
 3. 通常用于有函数重载的上下文。
 
 ### `reinterpret_cast`
+通常用来进行指针类型的转换。
 `reinterpret_cast`。尽量不使用强制类型转换，它干扰了正常的类型检查。在有重载的上下文中使用`const cast`无可厚非。但是在其他情况下使用`const_cast`也就意味着程序存在某种缺陷。其他的强制类型转换也不应该频繁使用。
 
 ### 旧式的类型转换。

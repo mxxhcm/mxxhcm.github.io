@@ -269,8 +269,5 @@ ggplot2
 lm
 
 
-
-
-
 ## 参考文献
 1.https://www.datamentor.io/r-programming/for-loop/

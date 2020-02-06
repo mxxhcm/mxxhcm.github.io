@@ -79,6 +79,17 @@ free(pi);
 4. `free`一个已经释放了的块，`free`的不是`alloc`函数的返回值，没有进行`free`等等，都是未定义的结果。为什么？？？
 
 ## `new`
+对于自定义类型而言，`new`操作符首先调用operator new()函数申请内存，其内部调用的是malloc函数，返回一个`void*`类型的指针；`new`还会负责把它转换成自定义对象的指针；然后调用类的构造函数初始化对象；最后返回自定义对象的指针。`malloc`只负责内存的分配而不会调用类的构造函数数。举个例子：``` c++
+Complex *pc = new Complex(1, 2);
+//等价于
+// 1.内部调用malloc
+void *mem = operator new(sizeof(Complex));
+// 2.将void *类型指针转换为Complex*类型的
+pc = static_cast<Complex*> (mem);
+// 3.调用Complex的构造函数
+pc->Complex::Complex(1, 2);
+```
+
 1. 默认初始化。`new`后面加类型，没有小括号，也没有花括号。
 默认情况下，new分配的对象，不管是单个分配的还是数组中的，都是默认初始化的。这意味着内置类型或组合类型的对象的值是无定义的，而类类型对象将用默认构造函数进行初始化。
 2. 值初始化。类型名字后加()即可，对于内置类型的变量，初始化为0，对于类类型的变量，调用默认构造函数。
@@ -93,16 +104,6 @@ free(pi);
 ## `malloc` vs `new`
 1. `malloc`是C语言中的函数，而`new`是C++的操作符；
 2. `malloc`返回的是`void*`类型的指针，需要我们手动进行强制类型转换转换成我们需要的类型，而`new`返回的是对象类型的指针，类型和对象严格匹配，`new`是类型安全型操作符。
-对于自定义类型而言，`new`操作符首先调用operator new()函数申请内存，其内部调用的是malloc函数，返回一个`void*`类型的指针；`new`还会负责把它转换成自定义对象的指针；然后调用类的构造函数初始化对象；最后返回自定义对象的指针。`malloc`只负责内存的分配而不会调用类的构造函数数。举个例子：``` c++
-Complex *pc = new Complex(1, 2);
-//等价于
-// 1.内部调用malloc
-void *mem = operator new(sizeof(Complex));
-// 2.将void *类型指针转换为Complex*类型的
-pc = static_cast<Complex*> (mem);
-// 3.调用Complex的构造函数
-pc->Complex::Complex(1, 2);
-```
 3. 在分配内存失败时，`malloc`会返回NULL，而`new`会throw on failure。
 4. `malloc`需要指定申请的内存占多少个字节，而`new`不需要指定申请内存块的大小，编译器会根据类型计算需要的内存大小；
 5. `malloc`和`new`都是申请heap上的内存；
@@ -112,7 +113,6 @@ pc->Complex::Complex(1, 2);
 几个问题：
 1. 什么时候`malloc`和`new`会申请内存失败。
 2. `new`操作符的两个步骤，一个是申请内存，一个是调用构造函数，`new`的申请内存和`malloc`的申请内存有什么区别。
-
 
 
 ## 参考文献
