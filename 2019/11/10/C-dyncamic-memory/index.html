@@ -111,7 +111,8 @@
 <meta property="og:image" content="http://mxxhcm.github.io/2019/11/10/C-dyncamic-memory/smart_pointer.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/11/10/C-dyncamic-memory/shared_pointer.png">
 <meta property="og:image" content="http://mxxhcm.github.io/2019/11/10/C-dyncamic-memory/unique_pointer.png">
-<meta property="og:updated_time" content="2020-01-13T06:27:38.483Z">
+<meta property="og:image" content="http://mxxhcm.github.io/2019/11/10/C-dyncamic-memory/weak_ptr.png">
+<meta property="og:updated_time" content="2020-01-15T13:39:57.829Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++ dyncamic memory">
 <meta name="twitter:description" content="概述 每一个C程序都把内存划分成静态内存，栈内存，堆内存（自由空间）。静态内存存放局部static对象，类的static数据成员以及定义在任何函数之外的变量。栈存放函数内的非static对象。堆内存是由程序员自己负责管理（申请和释放）的内存。 动态内存和智能指针 C++ 中动态内存的管理是通过一对运算符new和delete实现的。new在动态内存中为对象分配空间，并且返回一个指向该对象的指针，可以">
@@ -392,7 +393,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2020-01-13 14:27:38" itemprop="dateModified" datetime="2020-01-13T14:27:38+08:00">2020-01-13</time>
+                <time title="修改时间：2020-01-15 21:39:57" itemprop="dateModified" datetime="2020-01-15T21:39:57+08:00">2020-01-15</time>
               
             
           </span>
@@ -477,13 +478,49 @@ C++ 提供了两种智能指针，<code>shared_ptr</code>和<code>unique_ptr</co
 <li>通过析构函数自动销毁它管理的对象。</li>
 </ol>
 <h2 id="new"><code>new</code></h2>
+<h3 id="初始化">初始化</h3>
+<ol>
+<li>默认初始化。<code>new</code>后面加类型，没有小括号，也没有花括号。<br>
+默认情况下，new分配的对象，不管是单个分配的还是数组中的，都是默认初始化的。这意味着内置类型或组合类型的对象的值是无定义的，而类类型对象将用默认构造函数进行初始化。</li>
+<li>值初始化。类型名字后加()即可，对于内置类型的变量，初始化为0，对于类类型的变量，调用默认构造函数。</li>
+<li>直接初始化。使用初始化列表加对象值，或者小括号加对象值。</li>
+</ol>
+<p>对于自定义类型而言，只要一调用new，无论后面有没有加()，那么编译器不仅仅给它分配内存，还调用它的默认构造函数初始化。</p>
+<p>还有auto初始化器。</p>
+<h3 id="内存耗尽">内存耗尽</h3>
+<p>使用placement new（定位new），当内存耗尽时，防止new抛出bad_alloc异常。</p>
 <h2 id="shared-ptr和new"><code>shared_ptr</code>和<code>new</code></h2>
+<ol>
+<li>定义和改变shared_ptr的其他方法，shared_ptr对象还有其他几个构造函数，分别接收内置指针，unique_ptr，以及内置指针和内置指针的删除器，shared_ptr对象和它的删除器这几类参数。<strong>接收内置指针参数的shared_ptr的构造函数是explict的，也就是必须显式调用构造函数，不能使用隐式转换将一个内置指针转换成shared_ptr。</strong></li>
+<li><strong>当把一个shared_ptr指针绑定到一个普通指针时，接下来不应该再使用内置指针访问这部分内存了。</strong></li>
+<li><strong>也不要使用shared_ptr的get()函数返回的指针初始化另一个智能指针或者为智能指针赋值。同时也不能使用delete删除get()返回的指针，否则会发生二次delete。</strong></li>
+<li>p.reset()函数可以用来重置指针p，如果p是指向shared_ptr的唯一对象，会将p原本指向的对象释放；如果没有传入参数，p置为空；如果传入了参数q，让p指向q；还可以传递一个d，表示调用d而不是delete释放q。</li>
+<li>copy on write可以通过shared_ptr实现？？？使用unique()函数检测是否自己是当前的shared_ptr的唯一用户，不是的话，调用reset()函数拷贝一个新的。</li>
+</ol>
+<h2 id="智能指针和异常">智能指针和异常</h2>
+<h3 id="智能指针和哑类">智能指针和哑类</h3>
+<h3 id="使用自己的释放操作">使用自己的释放操作</h3>
+<p>shared_ptr假设它们指向的内容是动态内存，当它被销毁时，调用delete。我们可以自己定义一个删除器，取代delete的调用。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">end_connection</span><span class="params">(connection *p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    disconnect(*p);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    connection c = connect(&amp;d);</span><br><span class="line">    <span class="built_in">shared_ptr</span>&lt;connection&gt; p(&amp;c, end_connection);</span><br><span class="line">    <span class="comment">// 创建一个connection类型的智能指针，构造函数的参数是一个内置的指针类型和一个调用函数。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h2 id="unique-ptr"><code>unique_ptr</code></h2>
 <p><img src="/2019/11/10/C-dyncamic-memory/unique_pointer.png" alt="unique_ptr"></p>
-<h2 id="动态数组">动态数组</h2>
-<h3 id="new-v2"><code>new</code></h3>
-<h3 id="allocate类">allocate类</h3>
+<h2 id="weak-ptr"><code>weak_ptr</code></h2>
+<p><code>weak_ptr</code>不控制指向对象的生存周期，它指向一个shared_ptr管理的对象，将一个weak_ptr绑定到shared_ptr不增加引用计数。<br>
+<img src="/2019/11/10/C-dyncamic-memory/weak_ptr.png" alt="weak_ptr"></p>
+<h2 id="new和数组"><code>new</code>和数组</h2>
+<h3 id="初始化-v2">初始化</h3>
+<ol>
+<li><code>new int[]</code>，默认初始化。</li>
+<li><code>new int[]()</code>，值初始化。但是不能在括号中给出初始化器，也就是不能用auto分配数组。</li>
+<li><code>new int[10]{1, 2, 3}</code>，列表初始化。</li>
+</ol>
+<h3 id="动态分配空数组">动态分配空数组</h3>
+<p>动态分配一个空数组是允许的，但是不能解引用。<br>
+而定义一个长度为0的数组是不允许的。</p>
+<h3 id="智能指针和动态数组">智能指针和动态数组</h3>
+<p><code>unique_ptr</code>有一个可以管理new分配的数组的版本。而shared_ptr没有相应的版本，如果想要使用<code>shared_ptr</code>管理数组，需要提供自己定义的删除器。</p>
+<h2 id="allocate类">allocate类</h2>
 <h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》第五版</p>
 
       
     </div>
@@ -611,7 +648,7 @@ C++ 提供了两种智能指针，<code>shared_ptr</code>和<code>unique_ptr</co
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">312</span>
+                    <span class="site-state-item-count">313</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -901,7 +938,7 @@ C++ 提供了两种智能指针，<code>shared_ptr</code>和<code>unique_ptr</co
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态内存和智能指针"><span class="nav-number">2.</span> <span class="nav-text">动态内存和智能指针</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shared-ptr"><span class="nav-number">3.</span> <span class="nav-text">shared_ptr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#new"><span class="nav-number">4.</span> <span class="nav-text">new</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shared-ptr和new"><span class="nav-number">5.</span> <span class="nav-text">shared_ptr和new</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#unique-ptr"><span class="nav-number">6.</span> <span class="nav-text">unique_ptr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态数组"><span class="nav-number">7.</span> <span class="nav-text">动态数组</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#new-v2"><span class="nav-number">7.1.</span> <span class="nav-text">new</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#allocate类"><span class="nav-number">7.2.</span> <span class="nav-text">allocate类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">8.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态内存和智能指针"><span class="nav-number">2.</span> <span class="nav-text">动态内存和智能指针</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shared-ptr"><span class="nav-number">3.</span> <span class="nav-text">shared_ptr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#new"><span class="nav-number">4.</span> <span class="nav-text">new</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化"><span class="nav-number">4.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存耗尽"><span class="nav-number">4.2.</span> <span class="nav-text">内存耗尽</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#shared-ptr和new"><span class="nav-number">5.</span> <span class="nav-text">shared_ptr和new</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#智能指针和异常"><span class="nav-number">6.</span> <span class="nav-text">智能指针和异常</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#智能指针和哑类"><span class="nav-number">6.1.</span> <span class="nav-text">智能指针和哑类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用自己的释放操作"><span class="nav-number">6.2.</span> <span class="nav-text">使用自己的释放操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#unique-ptr"><span class="nav-number">7.</span> <span class="nav-text">unique_ptr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#weak-ptr"><span class="nav-number">8.</span> <span class="nav-text">weak_ptr</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#new和数组"><span class="nav-number">9.</span> <span class="nav-text">new和数组</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化-v2"><span class="nav-number">9.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态分配空数组"><span class="nav-number">9.2.</span> <span class="nav-text">动态分配空数组</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#智能指针和动态数组"><span class="nav-number">9.3.</span> <span class="nav-text">智能指针和动态数组</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#allocate类"><span class="nav-number">10.</span> <span class="nav-text">allocate类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">11.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>

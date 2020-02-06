@@ -327,6 +327,235 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/05/rl-coinrun/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/09/05/rl-coinrun/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/15/index.html">CoinRun</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-05 12:25:40" itemprop="dateCreated datePublished" datetime="2019-09-05T12:25:40+08:00">2019-09-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 16:46:07" itemprop="dateModified" datetime="2019-12-17T16:46:07+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="quantifying-generalization-in-reinforcement-learning">Quantifying Generalization in Reinforcement Learning</h2>
+<h3 id="下载地址">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>这篇文章研究的是drl中的overfitting问题。在绝大多数的RL benchmark中，训练和测试都习惯性的在相同环境中，这就让agent’s的泛化能力不够优秀。本文通过程序生成环境构建不同的training set和testing set解决这个问题，设计了一个新的CoinRun环境用于RL的generalization。<br>
+实验证明更深的cnn能够改善generalization，监督学习中常用的一些方法，如$L2$正则化，dropout，data augmentation以及batch normalization。<br>
+这篇文章的贡献：</p>
+<ol>
+<li>transfer需要的训练环境数量要远远高于之前的工作中使用到的。</li>
+<li>使用CoinRun benchmark提出了一个generalization metric。</li>
+<li>找到了不同网络结构和正则化项中最好的那些设置。</li>
+</ol>
+<h3 id="related-work">Related Work</h3>
+<p>这篇文章是从Sonic benchmark中得到的idea，agents可以在training set上训练任意的长度，在test时候执行$1$ million timesteps进行fine-tuning，sonic benchmark的目标是解决&quot;training on the test set&quot;的问题。</p>
+<h3 id="简介">简介</h3>
+<p>尽管RL agents能解决很复杂的任务，将experience迁移到新环境，或者在不同的RL tasks之间进行泛化是很困难的。即使已经掌握了$10$ video game的agents，在初次遇到第$11$级时也会失败，agents在训练的时候只学习到了和这个环境相关的知识。<br>
+RL agents的训练其实是过拟合的，但是绝大多数的benchmark还是鼓励在相同的环境中进行train和evaluation。和Sonic Benchmark一样，作者认为分train和test集是必要的，同时作者认为量化agent的泛化能力也是很有用的。<br>
+Sonic Benchmark通过对环境划分训练集和测试集，解决了在测试集上训练的问题。而Farebrother认识到，没有划分训练集和测试集，使得RL训练中缺乏正则化手段，通过使用监督学习中的$L2$正则化和dropout，使得agents能够学习更多泛化特征。<br>
+Zhang等利用程序生成划分train和test环境，他们在gridworld mase上进行实验，得出了许多RL agents为什么过拟合的结论。通过让agents记住在训练集中具体的levels，以及stick actions，random starts，可以减少过拟合的发生。</p>
+<h3 id="quantifying-generalization">Quantifying Generalization</h3>
+<h4 id="coinrun">CoinRun</h4>
+<p>CoinRun环境很简单，一个智能体，从最左边，一直往右走，收集在最右边的金币，中间或均匀或随机的散布着一些障碍，只有得到金币后有一个常数的reward。一个episode结束有以下三种可能性：</p>
+<ul>
+<li>当agent死亡，</li>
+<li>或者采集到coin，</li>
+<li>或者$1000$个timesteps后自动结束。</li>
+</ul>
+<p>CoinRun和Sonic很像，但是更简单，更容易泛化。给定足够数量的training levels和足够的training time，算法能够学习一个接近最优的optimal policy for all CointRun levels。每一个level都是从一个给定的seed中顺序生成的，能够给智能体相当多并且易于量化提供的training data。</p>
+<h4 id="coinrun泛化曲线">CoinRun泛化曲线</h4>
+<p>使用CoinRun可以衡量agents从给定的training level中训练迁移到没有见过的test levels上的效果。随着training中使用的levels数量增多，即使是训练固定的timesteps时，我们期望在test set上的性能变好。test时，作者在test set上进行了zero-shot performance评估，即没有在test set上进行fine-tuning。<br>
+作者训练了$9$个agents 运行CoinRun，每一个都在具有不同levels数量的训练集上运行。训练过程中，每一个episode从相应的set中随机采样一个level。前$8$个agents使用的train sets中level的数量从$100$到$16000$，最后一个agent在无限个levels的训练集上。Level的seed是$2^32$，所以几乎不可能发生冲突。训练集包含$2$M个独一无二的levels，在test的时候仍然不会遇到已经遇到过的level。整个实验进行了$5$次，每次重新生成training sets。<br>
+使用nature-dqn中的三层CNN进行训练，然后使用$8$个workers的PPO总共训练了$256M$步。每个agents都训练相同的timesteps，然后在每个mini-batch的$8$个works上取gradients的均值。<br>
+最后的结果中，对$10000$个episodes的final performance进行平均，我们可以看出来，在$4000$个levels以内，过拟合很严重，即使是$1600$个training levels，过拟合也是很多的。当agents遇到的都是新的levels时，表现最好。</p>
+<h3 id="evaluating-architectures">Evaluating Architectures</h3>
+<p>比较Nature-CNN和IMPALA-CNN，结果证明IMPALA-CNN要好一些。为了评估generalization performance，可以直接在无限个levels的train set上训练agents，然后比较learning curves。在这个settings中，智能体不可能过拟合某一些levels的子集，每一个level都是新的。因为Impala-cnn的记过更好，所以作者尝试了更深的网络，发现效果更好，新的网络使用了$5$个residual blocks，每层的channels数量是原来的两倍。再进一步增加网络深度的时候，发现了returns逐渐变小，同时花费的时间也更多了。<br>
+当然，使用无限的training set并不会总是会带来性能的提升。选择好的超参数能够加快训练速度，但是并不一定会改善generalization的性能。通常来讲，在固定levels的训练集上训练，能产生一个更有用的metric。</p>
+<h3 id="evaluating-regularization">Evaluating Regularization</h3>
+<p>正则化在监督学习中有很重要的作用，因为监督学习更关心的是generalization。监督学习的数据集通常分为训练集和数据集，有很多正则化技巧可以用来减少generalization gap。但是因为RL中训练集和测试集通常是同一个，所以正则化技术就没什么效果。<br>
+现在既然RL中要衡量generalization，可能正则化技术就能起到作用。作者分别在CoinRun environment中试了$L2$正则化，dropout，data augmentation以及batch normalization。<br>
+这一节中，所有的agents都是在$500$个levels的CoinRun环境中进行的。我们可以看到有过拟合发生，所以就希望这个setting能够evaluating出不同正则化技术的效果。所有接下来实验的均值和方差都是runs$3$次得到的。使用的是有$3$个残差块的IMPALA-CNN。</p>
+<h4 id="dropout和l2正则化">Dropout和L2正则化</h4>
+<p>作者分别试了dropout为$p\in [0, 0.05, 0.10, 0.15, 0.20, 0.25]$，以及L2正则化权重$w\in [0, 0.5, 1.0, 1.5, 2.0, 2.5]\times 10^{-1} $，一次只试了一个。最终找到了$p=0.1$以及$w=10^{-4} $。使用$L2$正则化训练了$256M$ timesteps，使用dropout训练了$512M$ timesteps，dropout更难收敛，而且效果没有$L2$正则化好用。</p>
+<h4 id="data-augmentation">Data Augmentation</h4>
+<p>监督学习中，数据增强的手段主要用于图像，包括变换，旋转，亮度调整，锐化等等。不同的数据集可能需要使用不同的augmentations。这里作用使用的是Cutout的一个变形。对于每一个observation，可变大小的矩阵区别被masked掉，这些masked的区域给一个随机的颜色，这个和domain randomization非常相似，用于机器人从仿真到真实世界的transfer。</p>
+<h4 id="batch-normalization">Batch Normalization</h4>
+<p>在IMPALA-CNN架构中每层CNN之后使用batch normalization。</p>
+<h4 id="stochasticity">Stochasticity</h4>
+<p>这个随机性很有意思哦。作者考虑了两种方法，一种是改变环境的stochasticity，另一个是改变policy的stochasticity。首先，使用$\epsilon$-greedy action selection算法向环境中加入stochasticity，在每一个timestep中，有$\epsilon$的概率，使用random action代替policy的action。在之前的一些研究中，$\epsilon$-greedy用来鼓励exploration和防止overfitting。然后，通过改变PPO中的entropy bonus控制policy stochasticity。Baseline中使用的entropy bonus是$k_H = 0.01$。<br>
+同时增加训练时间步到$512M$个timesteps。单独向环境或者policy加入stochasticity都能改善generalization。</p>
+<h4 id="combining-regularization-methods">Combining Regularization Methods</h4>
+<p>作者尝试将data augmentation,batch normalization和L2结合起来，结果表明比任意单独的一种都要好，但是提升的大小并不是很大，可以说这三种方法解决的过拟合问题差不多。<br>
+由于某些未知的原因，将stochastic和正则化手段结合起来的效果不理想。</p>
+<h2 id="其他环境">其他环境</h2>
+<h3 id="cointrun-platforms">CointRun-Platforms</h3>
+<h3 id="randommazes">RandomMazes</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a><br>
+2.<a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/04/convex-optimization-chapter-3-convex-functions/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2366,323 +2595,6 @@ $\alpha x + (1 - \alpha) y$也一定是$Ax=b$的解。<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/08/mean-variance-covariance-dependent-independent/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/08/08/mean-variance-covariance-dependent-independent/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/15/index.html">mean, variance, covarance, dependent and independent</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-08-08 19:01:15" itemprop="dateCreated datePublished" datetime="2019-08-08T19:01:15+08:00">2019-08-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:29:52" itemprop="dateModified" datetime="2019-12-17T16:29:52+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论与统计/" itemprop="url" rel="index"><span itemprop="name">概率论与统计</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="均值-期望">均值（期望）</h2>
-<h3 id="简单介绍">简单介绍</h3>
-<p>在概率论和统计学中，一个离散型随机变量的期望值是试验中每次可能的结果乘以相应概率的加和。<br>
-换句话说，期望值是变量取值的加权平均。期望并不一定包含于变量的值域内。</p>
-<h3 id="定义">定义</h3>
-<p>如果$X$是概率空间$(\Omega, F,P)$中的随机变量，它的期望值$\mathbb{E}(X)$定义为：<br>
-$$\mathbb{E}(X) = \int_{\Omega} XdP$$<br>
-如果$X$是离散的随机变量，取值$x_1,x_2,\cdots$的概率分别为$p_1, p_2, \cdots, p_1+p_2+\cdots = 1$，它的期望定义为：<br>
-$$\mathbb{E}(X) = \sum_i x_ip_i$$</p>
-<h3 id="性质">性质</h3>
-<ul>
-<li>$\mathbb{E}(cX) = c\mathbb{E}(X)$</li>
-<li>$\mathbb{E}(X+c) = \mathbb{E}(X) + c$</li>
-<li>$\mathbb{E}(X+Y) = \mathbb{E}(X) + \mathbb{E}(Y)$</li>
-<li>$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，（$X,Y$独立）</li>
-<li>$\mathbb{E}(aX+bY) = a\mathbb{E}(X) + b\mathbb{E}(Y)$</li>
-</ul>
-<h2 id="方差">方差</h2>
-<h3 id="简单介绍-v2">简单介绍</h3>
-<p>方差描述的是一个随机变量的离散程度。</p>
-<h3 id="定义-v2">定义</h3>
-<p>假设$X$是服从分布$F$的随机变量，用$\mu=\mathbb{E}(X)$表示随机变量$X$的期望。<br>
-随机变量$X$的方差为：<br>
-$$Var(X) = \mathbb{E}\left[(X-\mu)^2\right]$$</p>
-<h3 id="性质-v2">性质</h3>
-<ol>
-<li>方差总是大于等于$0$的<br>
-$$Var(X)\ge 0$$</li>
-<li>常数的方差为$0$<br>
-$$Var ( c ) = 0$$</li>
-<li>随机变量$X$加上一个常数$c$，它的方差不变<br>
-\begin{align*}<br>
-Var(X+c) &amp;= \mathbb{E}\left[(X+c - \mathbb{E}(X+c))^2\right]\\<br>
-&amp;= \mathbb{E}\left[(X-\mathbb{E}(X))^2\right]\\<br>
-&amp;=Var(X)<br>
-\end{align*}</li>
-<li>随机变量$X$乘上一个常数$c$，它的方差变为原来的$c^2$倍。<br>
-\begin{align*}<br>
-Var(cX) &amp;= \mathbb{E}\left[(cX - \mathbb{E}(cX))^2\right]\\<br>
-&amp;= \mathbb{E}\left[c^2 X^2 - 2c^2 X \mathbb{E}(X) + (\mathbb{E}(cX))^2\right]\\<br>
-&amp; = c^2 \mathbb{E}\left[X^2 - 2X \mathbb{E}(X) + \mathbb{E}(X)\cdot \mathbb{E}(X)\right]\\<br>
-&amp;=c^2 Var(x)<br>
-\end{align*}</li>
-</ol>
-<h2 id="期望和方差关系">期望和方差关系</h2>
-<p>\begin{align*}<br>
-Var(X) &amp;= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])^2\right]\\<br>
-&amp;= \mathbb{E}\left[(X^2 - 2X \mathbb{E} \cdot \left[X\right]+\mathbb{E}\left[X\right] \cdot \mathbb{E}\left[X\right] )\right]\\<br>
-&amp;= \mathbb{E}\left[(X^2) \right] - 2\mathbb{E}\left[(X \cdot \mathbb{E}\left[ X \right]) \right]+\mathbb{E}\left[(\mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right])\right]\\<br>
-&amp;= \mathbb{E}    \left[(X^2) \right] -     \mathbb{E}\left[(\mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right])\right]\\<br>
-&amp;= \mathbb{E}    \left[(X^2) \right] -  \mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right]\\<br>
-\end{align*}</p>
-<h2 id="均值和样本均值">均值和样本均值</h2>
-<p>样本均值是均值的无偏估计。<br>
-假设用随机变量$X$表示所有男性的身高，得到一组样本值为$x_1, x_2, \cdots, x_n$，样本均值的计算方式如下：<br>
-$$\bar{X} = \frac{x_1 + \cdots +x_n}{n}$$<br>
-$\bar{X}$是对$\mu$的一个估计，真实的$\mu$我们不知道，但是我们能根据多个样本计算出来多个样本均值，这些样本均值的均值会收敛于均值。所以叫它无偏估计。</p>
-<h2 id="方差和样本方差">方差和样本方差</h2>
-<p>样本方差的分母如果是$n$的话，是方差的有偏估计，如果分母是$n-1$的话，是方差的无偏估计。<br>
-随机变量$X$方差的计算公式为：<br>
-$$Var(X) = \mathbb{E}\left[(X-\mu)^2\right]$$<br>
-但是我们往往不知道$X$的真实分布，所以经常用样本方差$S^2$来估计真实方差$Var(X)$：<br>
-$$S^2 = \frac{\sum_{i=1}^n (X_i - \mu)^2}{n}$$<br>
-而均值$\mu$往往也是不知道的，用样本均值$\bar{X}$代替均值$\mu$，得到<br>
-$$S^2 = \frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2$$<br>
-为什么是$\frac{1}{n-1}$呢？<br>
-这里先给出几个辅助计算：</p>
-<ol>
-<li>样本均值的方差是样本方差的$\frac{1}{n}$<br>
-\begin{align*}<br>
-Var(\bar{X}) &amp;= Var(\frac{\sum_{i=1}^n X_i}{n})\\<br>
-&amp; = \frac{1}{n^2} Var(\sum_{i=1}^n X_i)\\<br>
-&amp; =  \frac{1}{n^2} \sum_{i=1}^n Var(X_i)\\<br>
-&amp; = \frac{n\sigma^2 }{n^2 }\\<br>
-&amp;=\frac{\sigma^2 }{n}<br>
-\end{align*}</li>
-</ol>
-<p>如果使用$\frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2$进行计算<br>
-\begin{align*}<br>
-\mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2\right]&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}+\mu-\mu\right)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\mu - (\bar{X} - \mu)\right)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left((X_i-\mu)^2 - 2(X_i-\mu)(\bar{X} - \mu) + (\bar{X} - \mu)^2 \right)\right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - \frac{2}{n}\sum_{i=1}^n (X_i-\mu)(\bar{X} - \mu) + \frac{1}{n}\sum_{i=1}^n (\bar{X} - \mu)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - 2(\bar{X}-\mu)(\bar{X} - \mu) + \frac{1}{n}\sum_{i=1}^n (\bar{X} - \mu)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - 2(\bar{X}-\mu)^2 +  (\bar{X} - \mu)^2 \right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - (\bar{X}-\mu)^2\right]\\<br>
-&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 \right]-\mathbb{E}\left[ (\bar{X}-\mu)^2\right]\\<br>
-&amp;= Var(X) - Var(\bar{X})\\<br>
-&amp;= \sigma^2 - \frac{\sigma^2}{n}\\<br>
-&amp;= \frac{n-1}{n}\sigma^2<br>
-\end{align*}<br>
-最后得到$\mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2  \right] = \frac{n-1}{n}\sigma^2 $，少算了$\frac{1}{n}\sigma^2 $，<br>
-所以，如果取$\mathbb{E}\left[S^2 \right] =\mathbb{E}\left[\frac{1}{n-1}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2 \right]$，最后能得到$\mathbb{E}\left[S^2 \right] =\sigma^2$，是无偏估计。</p>
-<h2 id="矩">矩</h2>
-<p>设$X$为随机变量，$c$为常数，$k$为正整数，称$\mathbb{E}\left[(X-c)^k\right] = \int_{-\infty}^{\infty} (X-c)^k f(X) dX $ 为$X$关于$c$的$k$阶矩。</p>
-<ol>
-<li>$c=0, \alpha_k=\mathbb{E}\left[X^k\right] = \int_{-\infty}^{\infty} X^k f(X) dX  $称为$X$的$k$阶原点矩。</li>
-<li>$c=\mathbb{E}\left[X\right],\mu_k=\mathbb{E}\left[(X-\mathbb{E}(X))^k \right] = \int_{-\infty}^{\infty}( X^k - \mathbb{E}(X))^k f(X)dX $称为$X$的$k$阶中心矩。</li>
-</ol>
-<p>一阶原点矩为期望，任意随机变量的一阶中心距为$0$，二阶中心矩为方差。三阶中心矩表示偏度，任何对称分布的偏度为$0$，分布尾部在左侧比较长具有负偏度，分布尾部在右侧较长具有正偏度。四阶中心距表示峰度，俗称方差的方差。</p>
-<h2 id="协方差">协方差</h2>
-<p>方差和标准差通常是用来描述一维随机变量的特性。那么对于多维随机变量来说，怎么衡量它们之间的关系呢？引入了协方差衡量两维随机变量之间的关系。</p>
-<h3 id="定义-v3">定义</h3>
-<p>$\mathbb{E}\left[(X-\mathbb{E}(X))(Y-\mathbb{E}(Y)\right]$称为$X,Y$的协方差，记为$Cov(X,Y)$。<br>
-当$X=Y$时，其实就是方差的定义。</p>
-<h3 id="属性">属性</h3>
-<ol>
-<li>\begin{align*}<br>
-Cov(c_1X+c_2, c_3Y + c_4) &amp;= \mathbb{E}\left[(c_1X +c_2 - \mathbb{E}(c_1X+c_2))(c_3Y +c_4 - \mathbb{E}(c_3Y+c_4))\right]\\<br>
-&amp;= \mathbb{E}\left[(c_1X - c_1\mathbb{E}\left[X\right])(c_3Y - c_3\mathbb{E}\left[Y\right])\right]\\<br>
-&amp;= c_1c_3\mathbb{E}\left[(X - \mathbb{E}\left[X\right])(Y - \mathbb{E}\left[Y\right])\right]\\<br>
-&amp;= c_1c_3Cov(X,Y)\\<br>
-\end{align*}</li>
-<li>\begin{align*}<br>
-Cov(X,Y) &amp;= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])(Y-\mathbb{E}\left[Y\right])\right]\\<br>
-&amp;= \mathbb{E}\left[XY - \mathbb{E}\left[Y\right]X - \mathbb{E}\left[X\right]Y + \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\right]\\<br>
-&amp;= \mathbb{E}\left[XY\right] - \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\\<br>
-\end{align*}</li>
-</ol>
-<h3 id="独立与协方差之间的关系">独立与协方差之间的关系</h3>
-<p>若$X,Y$独立，则$Cov(X,Y) = 0$，因为独立变量有$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，所以：<br>
-$$\mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y) = Cov(X,Y) = 0$$</p>
-<h3 id="协方差矩阵">协方差矩阵</h3>
-<p>用一个矩阵表示多维随机变量之间的关系，比如三个维度的随机变量。可以两两求出它们之间的协方差，因为协方差是对称的，所以这个矩阵是对称矩阵，对角线元素是方差。<br>
-协方差矩阵一般记为$\Sigma$，计算公式如下：<br>
-$$\sigma = \mathbb{E}\left[(\mathbf{X} - \mathbb{E}\left[\mathbf{X}\right])(\mathbf{X} - \mathbb{E}\left[\mathbf{X}\right])^T \right]$$<br>
-这里的$\mathbf{X}$是多维的随机向量，而方差和期望中的$\mathbf{X}$是一维的随机变量。</p>
-<h2 id="相关系数">相关系数</h2>
-<h3 id="定义-v4">定义</h3>
-<p>称$Cov(X,Y)/(\sigma_1,\sigma_2)$为$X,Y$的相关系数，记为$Corr(X,Y)$。</p>
-<h3 id="性质-v3">性质</h3>
-<ol>
-<li>若$X,Y$独立，则$Covv(X,Y) = 0$</li>
-<li>$\Vert Corr(X,Y)\Vert \le 1$，等号当且仅当$X$和$Y$有严格线性关系时取到</li>
-<li>当$Corr(X,Y)= 0$或者$Cov(X,Y) = 0$时，称$X,Y$不相关。</li>
-</ol>
-<h2 id="独立和相关">独立和相关</h2>
-<p>$X,Y$独立能够推出他们不相关，因为$Corr(X,Y) = 0$，满足不相关的定义。而$Corr(X,Y) = 0$不一定能推出$X,Y$独立。<br>
-即独立一定相关，但是相关不一定独立。有一个特例是正太分布，独立和相关互为充要条件。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://zh.wikipedia.org/wiki/%E6%9C%9F%E6%9C%9B%E5%80%BC" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/期望值</a><br>
-2.<a href="https://zh.wikipedia.org/wiki/%E6%96%B9%E5%B7%AE" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/方差</a><br>
-3.<a href="https://www.zhihu.com/question/22983179/answer/404391738" target="_blank" rel="noopener">https://www.zhihu.com/question/22983179/answer/404391738</a><br>
-4.<a href="https://www.matongxue.com/madocs/607.html" target="_blank" rel="noopener">https://www.matongxue.com/madocs/607.html</a><br>
-5.<a href="https://math.stackexchange.com/a/2113753/629287" target="_blank" rel="noopener">https://math.stackexchange.com/a/2113753/629287</a><br>
-6.<a href="https://blog.csdn.net/yangdashi888/article/details/52397990" target="_blank" rel="noopener">https://blog.csdn.net/yangdashi888/article/details/52397990</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2732,7 +2644,7 @@ $$\sigma = \mathbb{E}\left[(\mathbf{X} - \mathbb{E}\left[\mathbf{X}\right])(\mat
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">312</span>
+                    <span class="site-state-item-count">313</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3205,9 +3117,9 @@ $$\sigma = \mathbb{E}\left[(\mathbf{X} - \mathbb{E}\left[\mathbf{X}\right])(\mat
   
     
       
-        
-      
     
+      
+        
       
     
       

@@ -327,6 +327,318 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/28/UNIX-Process-Relationships/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/28/UNIX-Process-Relationships/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">Process Relationships</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-28 00:06:11" itemprop="dateCreated datePublished" datetime="2019-11-28T00:06:11+08:00">2019-11-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-01-04 12:30:45" itemprop="dateModified" datetime="2020-01-04T12:30:45+08:00">2020-01-04</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述">概述</h2>
+<p>在UNIX Process Control中，介绍了：</p>
+<ol>
+<li>每一个进程都有一个父进程，初始的kernel-level的进程通常是它自己。</li>
+<li>当子进程终止的时候，父进程可以获得子进程的exit status。</li>
+<li>同时在介绍<code>waitpid</code>的时候`提到了process groups，并且解释了我们可以等待一个进程组中任意进程的终止。</li>
+</ol>
+<p>这一篇文章更详细的介绍了process groups，以及POSIX.1中引入的session的概念。同时还介绍了用于登录的login shell和所有从login shell中启动的进程的关系。</p>
+<h2 id="终端登录">终端登录</h2>
+<h3 id="bsd登录">BSD登录</h3>
+<p>系统bootstrap时，内核创建进程号为1的init进程。init进程使系统进行入多用户模式，init读取文件<code>/etc/tty</code>，对每一个允许登录的终端设备，init调用一次<code>fork</code>，它所生成的子程序<code>exec getty</code>程序。<br>
+<code>getty</code>对终端设备调用<code>open</code>函数，以读写方式打开终端。一旦终端被打开，文件描述符0,1,2就被关联到该设备。然后<code>getty</code>输出<code>login</code>等字样，等待用户输入。当用户输入username之后，<code>getty</code>工作就结束了，接下来通过类似于以下的方式调用<code>login</code>：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">execle(&quot;/bin/login&quot;, &quot;login&quot;, &quot;-p&quot;, username, (char*)0, envp);</span><br></pre></td></tr></table></figure></p>
+<p><code>login</code>得到了用户名，接下来调用<code>getpasswd</code>提示用户键入密码，然后调用<code>crypt</code>将用户键入的口令和shadow中的pwsswd比较，判断密码是否正确。如果密码正确的话，<code>login</code>还会进行以下工作：</p>
+<ol>
+<li>将当前工作目录改为用户的主目录。</li>
+<li>调用<code>chown</code>更改终端的控制权，使登录用户成为它的所有者。</li>
+<li>对终端设备的权限改成用户读和写。</li>
+<li>用<code>login</code>得到的所有参数进行初始化</li>
+<li><code>login</code>进程更改登录用户的<code>uid</code>并调用该用户的登录shell。</li>
+</ol>
+<p>当然现代的<code>login</code>不仅仅进行这些工作，还会根据启动文件更改或者增加用户的环境变量等等。</p>
+<h2 id="网络登录">网络登录</h2>
+<h3 id="bsd登录-v2">BSD登录</h3>
+<p>网络登录的话，BSD中有一个inetd进程，等待绝大多数互联想链接。作为系统启动的一部分，<code>init</code>调用一个shell，使其执行shell脚本/etc/rc，shell脚本启动一个守护进程inetd。当这个shell脚本终止时，inetd的进程变成init。inetd等待TCP/IP连接，每当有一个连接到达时，就执行一次<code>fork</code>，然后使用<code>exec</code>执行相应的子程序。<br>
+比如一个TELNET服务请求。客服进程打开一个到服务主机的TCP连接，客户机运行TELNET服务进程（用telnetd表示）。它们之间使用TELNET应用协议通过TCP交换数据。客服进程的用户登录到服务进程所在的主机。<br>
+然后telnetd进程打开一个伪终端设备，并且使用<code>fork</code>将它们分成两个进程。父进程处理通过网络的通信，子进程执行login程序。父进程和子进程之间通过伪终端相连接。在调用<code>exec</code>之前，子进程使其文件描述符0,1,2和伪终端相连。登录成功的话，执行和终端操作类似的设置。</p>
+<p>当通过终端或者网络登录时，我们得到一个登录shell，它的标准输入，标准输出和标准错误要么连接到一个终端设备，要么连接到一个伪终端设备。</p>
+<h2 id="进程组">进程组</h2>
+<p>除了pid，每一个进程还属于一个process group。进程组是一个或者一组进程的集合。他们都是同一个job的进程，每一个进程组都有一个唯一的进程组id，和pid类似，可以存放在pid_t中。函数<code>getpgrp</code>获得process group的ID，<code>getpgid</code>获得指定进程的进程组ID，它们都是SUS定义的。<br>
+每个进程组有一个组长进程，组长进程的进程组ID和它的进程ID一样。进程组组长可以创建一个进程组，创建该组中的进程，然后终止。只要在某个进程组中有一个进程存在，那么该进程组就存在，跟其组长是否终止无关。<br>
+可以调用<code>setpgid</code>创建一个新的进程组后者加入一个现有的进程组。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setpgid</span><span class="params">(<span class="keyword">pid_t</span> pid, <span class="keyword">pid_t</span> pgid)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p><code>setpgid</code>将pid号为pid的进程的进程组ID设置为pgid。当子进程调用了<code>exec</code>之后，父进程就不能修改子进程的进程组ID了。<br>
+通常在job control shell中，在fork之后调用此函数，父进程设置子进程的进程组ID，子进程也设置子进程的进程组ID，这两个调用总有一个是重复的，但是可以确保子进程的组ID被正确设置了。</p>
+<h2 id="session">Session</h2>
+<p>Session是一个或者多个进程组的集合。比如一个session可以有三个进程组：<br>
+进程组1：登录shell，<br>
+进程组2：proc1, proc2<br>
+进程组3：proc3, proc4, proc5<br>
+等等。通常一个进程组的进程是由一个shell pipeline生成的。比如上面的进程组可能是通过以下shell命令实现的：<br>
+proc1 | proc2 &amp;<br>
+proc3 | proc4 | proc5</p>
+<p>可以调用<code>setsid</code>创建一个新的session：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">pid_t</span> setsid(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure></p>
+<p>这个函数具有以下性质：<br>
+如果调用这个函数的进程不是一个进程组的组长，就创建一个新的session：</p>
+<ol>
+<li>该进程变成新的session的session leader，这个session leader是创建该session的进程。注意SUS只说明了session leader，而没有像pid和process gid之类的session id。也就是说session leader是有唯一PID的单个进程，可以将session leader的ID当做session ID。<strong>注意什么是session leader，它是一个进程，而session ID是session leader的PID，或者也把session ID较为session leader的process group ID</strong>。</li>
+<li>调用进程是新进程组和新session中的唯一一个进程。</li>
+<li>新的session没有controlling terminal。</li>
+</ol>
+<h2 id="控制终端">控制终端</h2>
+<p>session和process group的一些其他属性：</p>
+<ul>
+<li>一个session通常会有一个controlling terminal，通常是终端设备或者伪终端设备。</li>
+<li>建立和控制终端连接的session leader被称为controlling process（控制进程）。</li>
+<li>一个session中的几个process group可以被分为一个foreground process group（前台进程组）和多个background process group（后台进程组）。</li>
+<li>如果一个session有一个controlling terminal，那么它有一个前台进程组，其它进程组为后台进程组。</li>
+<li>无论何时键入终端的中断键，ctrl+C，都会将中断信号发送至前台进程组的所有进程。</li>
+<li>无论何时键入终端的退出键，ctrl+\，都会将退出信号发送到前台进程组的所有进程。</li>
+<li>如果终端接口检测到网络已经断开，将挂断信号发送到session leader。</li>
+</ul>
+<p>登录shell属于后台进程组，它是session leader，也就是controlling process。登录时，会自动建立controlling terminal。有时候不管标准输入，标准输出是否重定向，程序都要和控制终端交互，可以open文件/dev/tty。在内核中，/dev/tty是controlling terminal的同义词，如果没有controlling terminal，对于这个设备的open失败。</p>
+<h2 id="tcgetpgrp-tcsetpgrp和tcgetsid"><code>tcgetpgrp</code>, <code>tcsetpgrp</code>和<code>tcgetsid</code></h2>
+<h3 id="函数原型">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">pid_t</span> tcgetpgrp(<span class="keyword">int</span> fd);</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">tcsetpgrp</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">pid_t</span> pgrp)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;termios.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">pid_t</span> tcgetsid(<span class="keyword">int</span> fd);</span><br></pre></td></tr></table></figure>
+<h3 id="属性">属性</h3>
+<ol>
+<li><code>tcgetpgrp</code>返回前台进程组ID，它与在fd上打开的终端相关联。</li>
+<li>如果进程有一个controlling terminal，这个进程可以调用<code>tcsetpgrp</code>将前台进程组ID设置为pgrpid，fd必须引用该session的controlling terminal。</li>
+<li>可以通过<code>tcgetsid</code>函数获得session leader的进程组ID。</li>
+</ol>
+<h2 id="job-control">job control</h2>
+<p>可以在一个终端上启动多个jobs（groups of process），它控制哪个job可以访问终端，哪个job应该在后台运行，job control需要满足以下三个条件：</p>
+<ol>
+<li>支持job control的shell</li>
+<li>内核的终端驱动程序必须支持job contrl</li>
+<li>内核必须支持某些特定的job-control signals。</li>
+</ol>
+<p>在shell中使用job contrl，我们可以创建前台的job，也可以创建后台的job，一个job是进程的集合，通常是进程的pipeline，可以在后台运行多个job。<br>
+可以通过键入几个特殊字符和终端驱动程序进行交互作用，控制前台进程组的所有进程：</p>
+<ul>
+<li>中断，ctrl+C，产生SIGINT</li>
+<li>退出，ctrl+\，产生SIGQUIT</li>
+<li>挂起，ctrl+Z，产生SIGSTRP</li>
+</ul>
+<p>终端驱动程序还需要处理一些情况：</p>
+<ol>
+<li>当后台job试图读取终端时<br>
+如果有一个前台job和多个后台jobs。一般情况下，只有前台job接收终端输入，当后台job试图从终端读取，并不会报错，终端驱动程序会检测这种情况，并且向后台job发出一个SIGTTIN signal。这个signal会停止后台job，shell向有关用户发出通知说你的后台job停止啦！然后用户可以用shell命令将它转换后前台job，从终端读取。<br>
+如果</li>
+<li>当后台job试图写终端时<br>
+当用户禁止后台job向controlling terminal写后，当后台job试图写向标准输出，终端驱动程序识别出这个写操作来自于后台job，向该job发出SIGTTOU signal，阻塞相应的job。当用户使用fg将后台job转换为前台job时，job继续执行。</li>
+</ol>
+<h2 id="shell执行过程">shell执行过程</h2>
+<p>有些shell支持job control，比如bash，有些不支持，比如Bourne shell。</p>
+<p>执行以下命令：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps -o pid,ppid,pgid,sid,comm | cat      // 后台job</span><br><span class="line">ps -o pid,ppid,pgid,sid,comm | cat &amp;    // 前台job</span><br></pre></td></tr></table></figure></p>
+<h3 id="不支持job-control的shell">不支持job control的shell</h3>
+<p>在不支持job control的shell中，管道的最后一个进程是shell的子进程，而执行管道中其他命令的进程是该最后进程的子进程。当最后一个进程终止时，shell得到通知。<br>
+所有的job的process group id和shell的都一样。<br>
+<img src="/2019/11/28/UNIX-Process-Relationships/shell_no_job_control.png" alt="shell_no_job_control"></p>
+<h3 id="支持job-control的shell">支持job control的shell</h3>
+<p>而在支持job control的shell中<br>
+每一个job都有一个自己的process group id，和shell的不一样。<br>
+shell是两个job的父进程。</p>
+<h2 id="孤儿进程组">孤儿进程组</h2>
+<p>当一个进程的父进程退出之后，而子进程还没有结束，这个进程就成了孤儿进程。进程组也可以是孤儿进程组。<br>
+什么是孤儿进程组：<br>
+进程组中每个成员的父进程要么是它组内的一个成员，要么不是这个进程组所在session的成员。</p>
+<h2 id="freebsd实现">FreeBSD实现</h2>
+<p>每个session都会有一个seesion结构，它包含：</p>
+<ul>
+<li><code>s_count</code></li>
+<li><code>s_leader</code></li>
+<li><code>s_ttyvp</code></li>
+<li><code>s_ttyp</code></li>
+<li><code>s_sid</code>，这一部分不是SUS的组成，只有FreeBSD有。</li>
+</ul>
+<p>每个终端或者伪终端会在内核中分配一个tty结构，它包含：</p>
+<ul>
+<li><code>t_session</code></li>
+<li><code>t_pgrp</code></li>
+<li><code>t_termios</code></li>
+<li><code>t_winsize</code></li>
+</ul>
+<p>每个进程组都包含一个pgrp结构，它包含：</p>
+<ul>
+<li><code>pg_id</code></li>
+<li><code>pg_session</code></li>
+<li><code>pg_memebers</code></li>
+</ul>
+<p>每个进程都有一个<code>proc</code>结构，它包含：</p>
+<ul>
+<li><code>p_pid</code></li>
+<li><code>p_ptr</code></li>
+<li><code>p_grp</code></li>
+<li><code>p_pglist</code></li>
+</ul>
+<p>进程通过v_node结构体访问/dev/tty。</p>
+<p>它们之间的关系如下图所示：<br>
+<img src="/2019/11/28/UNIX-Process-Relationships/" alt="session_and_process_group"></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/27/assembly-languages/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3039,180 +3351,6 @@ S_IRWXO = S_IROTH|S_IWOTH|S_IXOTH</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/20/data-structure-bineary-search-trees-vs-binary-heaps/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/20/data-structure-bineary-search-trees-vs-binary-heaps/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">data structure bineary search trees vs binary heaps</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-20 09:37:58" itemprop="dateCreated datePublished" datetime="2019-11-20T09:37:58+08:00">2019-11-20</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:13:35" itemprop="dateModified" datetime="2019-12-17T16:13:35+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据结构/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/6147242/heap-vs-binary-search-tree-bst" target="_blank" rel="noopener">https://stackoverflow.com/questions/6147242/heap-vs-binary-search-tree-bst</a><br>
-2.<a href="https://cs.stackexchange.com/questions/27860/whats-the-difference-between-a-binary-search-tree-and-a-binary-heap" target="_blank" rel="noopener">https://cs.stackexchange.com/questions/27860/whats-the-difference-between-a-binary-search-tree-and-a-binary-heap</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3262,7 +3400,7 @@ S_IRWXO = S_IROTH|S_IWOTH|S_IXOTH</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">312</span>
+                    <span class="site-state-item-count">313</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
