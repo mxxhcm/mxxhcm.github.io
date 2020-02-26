@@ -327,7 +327,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/08/mean-variance-covariance-dependent-independent/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/07/gradient-method-policy-gradient/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -347,7 +347,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/08/08/mean-variance-covariance-dependent-independent/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">mean, variance, covarance, dependent and independent</a>
+                <a href="/2019/09/07/gradient-method-policy-gradient/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">gradient method policy gradient</a>
               
             
           </h1>
@@ -372,7 +372,7 @@
                 
               
 
-              <time title="创建时间：2019-08-08 19:01:15" itemprop="dateCreated datePublished" datetime="2019-08-08T19:01:15+08:00">2019-08-08</time>
+              <time title="创建时间：2019-09-07 19:37:52" itemprop="dateCreated datePublished" datetime="2019-09-07T19:37:52+08:00">2019-09-07</time>
             
 
             
@@ -389,7 +389,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 16:29:52" itemprop="dateModified" datetime="2019-12-17T16:29:52+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-17 15:03:36" itemprop="dateModified" datetime="2019-12-17T15:03:36+08:00">2019-12-17</time>
               
             
           </span>
@@ -406,7 +406,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论与统计/" itemprop="url" rel="index"><span itemprop="name">概率论与统计</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
 
                 
                 
@@ -442,58 +442,498 @@
       
         
           
-            <h2 id="均值（期望）"><a href="#均值（期望）" class="headerlink" title="均值（期望）"></a>均值（期望）</h2><h3 id="简单介绍"><a href="#简单介绍" class="headerlink" title="简单介绍"></a>简单介绍</h3><p>在概率论和统计学中，一个离散型随机变量的期望值是试验中每次可能的结果乘以相应概率的加和。<br>换句话说，期望值是变量取值的加权平均。期望并不一定包含于变量的值域内。</p>
-<h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>如果$X$是概率空间$(\Omega, F,P)$中的随机变量，它的期望值$\mathbb{E}(X)$定义为：</p>
-<script type="math/tex; mode=display">\mathbb{E}(X) = \int_{\Omega} XdP</script><p>如果$X$是离散的随机变量，取值$x_1,x_2,\cdots$的概率分别为$p_1, p_2, \cdots, p_1+p_2+\cdots = 1$，它的期望定义为：</p>
-<script type="math/tex; mode=display">\mathbb{E}(X) = \sum_i x_ip_i</script><h3 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h3><ul>
-<li>$\mathbb{E}(cX) = c\mathbb{E}(X)$</li>
-<li>$\mathbb{E}(X+c) = \mathbb{E}(X) + c$</li>
-<li>$\mathbb{E}(X+Y) = \mathbb{E}(X) + \mathbb{E}(Y)$</li>
-<li>$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，（$X,Y$独立）</li>
-<li>$\mathbb{E}(aX+bY) = a\mathbb{E}(X) + b\mathbb{E}(Y)$</li>
+            <h2 id="policy-gradient">Policy Gradient</h2>
+<p>强化学习有三种常用的方法，第一种是基于值函数的，第二种是policy gradient，第三种是derivative-free的方法，即不利用导数的方法。基于值函数的方法在理论上证明是很难的。这篇论文提出了policy gradient的方法，直接用函数去表示策略，根据expected reward对策略参数的梯度进行更新，REINFORCE和actor-critic都是policy gradient的方法。<br>
+本文给出了policy gradient theorem的证明，使用近似的action-value function或者advantage函数，梯度可以表示成experience的估计。同时证明了任意可导的函数表示的policy通过policy iteration都可以收敛到locl optimal policy。</p>
+<h3 id="值函数方法的缺点">值函数方法的缺点</h3>
+<p>基于值函数的方法，在估计出值函数之后，每次通过greedy算法选择action。这种方法有两个缺点。</p>
+<ul>
+<li>基于值函数的方法会找到一个deterministic的策略，但是很多时候optimal policy可能是stochastic的。</li>
+<li>某个action的估计值函数稍微改变一点就可能导致这个动作被选中或者不被选中，这种不连续是保证值函数收敛的一大障碍。</li>
 </ul>
-<h2 id="方差"><a href="#方差" class="headerlink" title="方差"></a>方差</h2><h3 id="简单介绍-1"><a href="#简单介绍-1" class="headerlink" title="简单介绍"></a>简单介绍</h3><p>方差描述的是一个随机变量的离散程度。</p>
-<h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>假设$X$是服从分布$F$的随机变量，用$\mu=\mathbb{E}(X)$表示随机变量$X$的期望。<br>随机变量$X$的方差为：</p>
-<script type="math/tex; mode=display">Var(X) = \mathbb{E}\left[(X-\mu)^2\right]</script><h3 id="性质-1"><a href="#性质-1" class="headerlink" title="性质"></a>性质</h3><ol>
-<li>方差总是大于等于$0$的<script type="math/tex; mode=display">Var(X)\ge 0</script></li>
-<li>常数的方差为$0$<script type="math/tex; mode=display">Var ( c ) = 0</script></li>
-<li>随机变量$X$加上一个常数$c$，它的方差不变<br>\begin{align*}<br>Var(X+c) &amp;= \mathbb{E}\left[(X+c - \mathbb{E}(X+c))^2\right]\\\\<br>&amp;= \mathbb{E}\left[(X-\mathbb{E}(X))^2\right]\\\\<br>&amp;=Var(X)<br>\end{align*}</li>
-<li>随机变量$X$乘上一个常数$c$，它的方差变为原来的$c^2$倍。<br>\begin{align*}<br>Var(cX) &amp;= \mathbb{E}\left[(cX - \mathbb{E}(cX))^2\right]\\\\<br>&amp;= \mathbb{E}\left[c^2 X^2 - 2c^2 X \mathbb{E}(X) + (\mathbb{E}(cX))^2\right]\\\\<br>&amp; = c^2 \mathbb{E}\left[X^2 - 2X \mathbb{E}(X) + \mathbb{E}(X)\cdot \mathbb{E}(X)\right]\\\\<br>&amp;=c^2 Var(x)<br>\end{align*}</li>
-</ol>
-<h2 id="期望和方差关系"><a href="#期望和方差关系" class="headerlink" title="期望和方差关系"></a>期望和方差关系</h2><p>\begin{align*}<br>Var(X) &amp;= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])^2\right]\\\\<br>&amp;= \mathbb{E}\left[(X^2 - 2X \mathbb{E} \cdot \left[X\right]+\mathbb{E}\left[X\right] \cdot \mathbb{E}\left[X\right] )\right]\\\\<br>&amp;= \mathbb{E}\left[(X^2) \right] - 2\mathbb{E}\left[(X \cdot \mathbb{E}\left[ X \right]) \right]+\mathbb{E}\left[(\mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right])\right]\\\\<br>&amp;= \mathbb{E}    \left[(X^2) \right] -     \mathbb{E}\left[(\mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right])\right]\\\\<br>&amp;= \mathbb{E}    \left[(X^2) \right] -  \mathbb{E}\left[X \right] \cdot \mathbb{E}\left[ X \right]\\\\<br>\end{align*}</p>
-<h2 id="均值和样本均值"><a href="#均值和样本均值" class="headerlink" title="均值和样本均值"></a>均值和样本均值</h2><p>样本均值是均值的无偏估计。<br>假设用随机变量$X$表示所有男性的身高，得到一组样本值为$x_1, x_2, \cdots, x_n$，样本均值的计算方式如下：</p>
-<script type="math/tex; mode=display">\bar{X} = \frac{x_1 + \cdots +x_n}{n}</script><p>$\bar{X}$是对$\mu$的一个估计，真实的$\mu$我们不知道，但是我们能根据多个样本计算出来多个样本均值，这些样本均值的均值会收敛于均值。所以叫它无偏估计。</p>
-<h2 id="方差和样本方差"><a href="#方差和样本方差" class="headerlink" title="方差和样本方差"></a>方差和样本方差</h2><p>样本方差的分母如果是$n$的话，是方差的有偏估计，如果分母是$n-1$的话，是方差的无偏估计。<br>随机变量$X$方差的计算公式为：</p>
-<script type="math/tex; mode=display">Var(X) = \mathbb{E}\left[(X-\mu)^2\right]</script><p>但是我们往往不知道$X$的真实分布，所以经常用样本方差$S^2$来估计真实方差$Var(X)$：</p>
-<script type="math/tex; mode=display">S^2 = \frac{\sum_{i=1}^n (X_i - \mu)^2}{n}</script><p>而均值$\mu$往往也是不知道的，用样本均值$\bar{X}$代替均值$\mu$，得到</p>
-<script type="math/tex; mode=display">S^2 = \frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2</script><p>为什么是$\frac{1}{n-1}$呢？<br>这里先给出几个辅助计算：</p>
-<ol>
-<li>样本均值的方差是样本方差的$\frac{1}{n}$<br>\begin{align*}<br>Var(\bar{X}) &amp;= Var(\frac{\sum_{i=1}^n X_i}{n})\\\\<br>&amp; = \frac{1}{n^2} Var(\sum_{i=1}^n X_i)\\\\<br>&amp; =  \frac{1}{n^2} \sum_{i=1}^n Var(X_i)\\\\<br>&amp; = \frac{n\sigma^2 }{n^2 }\\\ <br>&amp;=\frac{\sigma^2 }{n}<br>\end{align*}</li>
-</ol>
-<p>如果使用$\frac{1}{n-1}\sum_{i=1}^n (X_i - \bar{X})^2$进行计算<br>\begin{align*}<br>\mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2\right]&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}+\mu-\mu\right)^2 \right]\\\\<br>&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\mu - (\bar{X} - \mu)\right)^2 \right]\\\\<br>&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left((X_i-\mu)^2 - 2(X_i-\mu)(\bar{X} - \mu) + (\bar{X} - \mu)^2 \right)\right]\\\\<br>&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - \frac{2}{n}\sum_{i=1}^n (X_i-\mu)(\bar{X} - \mu) + \frac{1}{n}\sum_{i=1}^n (\bar{X} - \mu)^2 \right]\\\\<br>&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - 2(\bar{X}-\mu)(\bar{X} - \mu) + \frac{1}{n}\sum_{i=1}^n (\bar{X} - \mu)^2 \right]\\\\<br>&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - 2(\bar{X}-\mu)^2 +  (\bar{X} - \mu)^2 \right]\\\\<br>&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 - (\bar{X}-\mu)^2\right]\\\\<br>&amp;= \mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n (X_i-\mu)^2 \right]-\mathbb{E}\left[ (\bar{X}-\mu)^2\right]\\\\<br>&amp;= Var(X) - Var(\bar{X})\\\\<br>&amp;= \sigma^2 - \frac{\sigma^2}{n}\\\\<br>&amp;= \frac{n-1}{n}\sigma^2<br>\end{align*}<br>最后得到$\mathbb{E}\left[\frac{1}{n}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2  \right] = \frac{n-1}{n}\sigma^2 $，少算了$\frac{1}{n}\sigma^2 $，<br>所以，如果取$\mathbb{E}\left[S^2 \right] =\mathbb{E}\left[\frac{1}{n-1}\sum_{i=1}^n \left(X_i-\bar{X}\right)^2 \right]$，最后能得到$\mathbb{E}\left[S^2 \right] =\sigma^2$，是无偏估计。</p>
-<h2 id="矩"><a href="#矩" class="headerlink" title="矩"></a>矩</h2><p>设$X$为随机变量，$c$为常数，$k$为正整数，称$\mathbb{E}\left[(X-c)^k\right] = \int_{-\infty}^{\infty} (X-c)^k f(X) dX $ 为$X$关于$c$的$k$阶矩。</p>
-<ol>
-<li>$c=0, \alpha_k=\mathbb{E}\left[X^k\right] = \int_{-\infty}^{\infty} X^k f(X) dX  $称为$X$的$k$阶原点矩。</li>
-<li>$c=\mathbb{E}\left[X\right],\mu_k=\mathbb{E}\left[(X-\mathbb{E}(X))^k \right] = \int_{-\infty}^{\infty}( X^k - \mathbb{E}(X))^k f(X)dX $称为$X$的$k$阶中心矩。</li>
-</ol>
-<p>一阶原点矩为期望，任意随机变量的一阶中心距为$0$，二阶中心矩为方差。三阶中心矩表示偏度，任何对称分布的偏度为$0$，分布尾部在左侧比较长具有负偏度，分布尾部在右侧较长具有正偏度。四阶中心距表示峰度，俗称方差的方差。</p>
-<h2 id="协方差"><a href="#协方差" class="headerlink" title="协方差"></a>协方差</h2><p>方差和标准差通常是用来描述一维随机变量的特性。那么对于多维随机变量来说，怎么衡量它们之间的关系呢？引入了协方差衡量两维随机变量之间的关系。</p>
-<h3 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h3><p>$\mathbb{E}\left[(X-\mathbb{E}(X))(Y-\mathbb{E}(Y)\right]$称为$X,Y$的协方差，记为$Cov(X,Y)$。<br>当$X=Y$时，其实就是方差的定义。</p>
-<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><ol>
-<li>\begin{align*}<br>Cov(c_1X+c_2, c_3Y + c_4) &amp;= \mathbb{E}\left[(c_1X +c_2 - \mathbb{E}(c_1X+c_2))(c_3Y +c_4 - \mathbb{E}(c_3Y+c_4))\right]\\\\<br>&amp;= \mathbb{E}\left[(c_1X - c_1\mathbb{E}\left[X\right])(c_3Y - c_3\mathbb{E}\left[Y\right])\right]\\\\<br>&amp;= c_1c_3\mathbb{E}\left[(X - \mathbb{E}\left[X\right])(Y - \mathbb{E}\left[Y\right])\right]\\\\<br>&amp;= c_1c_3Cov(X,Y)\\\\<br>\end{align*}</li>
-<li>\begin{align*}<br>Cov(X,Y) &amp;= \mathbb{E}\left[(X-\mathbb{E}\left[X\right])(Y-\mathbb{E}\left[Y\right])\right]\\\\<br>&amp;= \mathbb{E}\left[XY - \mathbb{E}\left[Y\right]X - \mathbb{E}\left[X\right]Y + \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\right]\\\\<br>&amp;= \mathbb{E}\left[XY\right] - \mathbb{E}\left[X\right]\mathbb{E}\left[Y\right]\\\\<br>\end{align*}</li>
-</ol>
-<h3 id="独立与协方差之间的关系"><a href="#独立与协方差之间的关系" class="headerlink" title="独立与协方差之间的关系"></a>独立与协方差之间的关系</h3><p>若$X,Y$独立，则$Cov(X,Y) = 0$，因为独立变量有$\mathbb{E}(XY) = \mathbb{E}(X)\mathbb{E}(Y)$，所以：</p>
-<script type="math/tex; mode=display">\mathbb{E}(XY) - \mathbb{E}(X)\mathbb{E}(Y) = Cov(X,Y) = 0</script><h3 id="协方差矩阵"><a href="#协方差矩阵" class="headerlink" title="协方差矩阵"></a>协方差矩阵</h3><p>用一个矩阵表示多维随机变量之间的关系，比如三个维度的随机变量。可以两两求出它们之间的协方差，因为协方差是对称的，所以这个矩阵是对称矩阵，对角线元素是方差。<br>协方差矩阵一般记为$\Sigma$，计算公式如下：</p>
-<script type="math/tex; mode=display">\sigma = \mathbb{E}\left[(\mathbf{X} - \mathbb{E}\left[\mathbf{X}\right])(\mathbf{X} - \mathbb{E}\left[\mathbf{X}\right])^T \right]</script><p>这里的$\mathbf{X}$是多维的随机向量，而方差和期望中的$\mathbf{X}$是一维的随机变量。</p>
-<h2 id="相关系数"><a href="#相关系数" class="headerlink" title="相关系数"></a>相关系数</h2><h3 id="定义-3"><a href="#定义-3" class="headerlink" title="定义"></a>定义</h3><p>称$Cov(X,Y)/(\sigma_1,\sigma_2)$为$X,Y$的相关系数，记为$Corr(X,Y)$。</p>
-<h3 id="性质-2"><a href="#性质-2" class="headerlink" title="性质"></a>性质</h3><ol>
-<li>若$X,Y$独立，则$Covv(X,Y) = 0$</li>
-<li>$\Vert Corr(X,Y)\Vert \le 1$，等号当且仅当$X$和$Y$有严格线性关系时取到</li>
-<li>当$Corr(X,Y)= 0$或者$Cov(X,Y) = 0$时，称$X,Y$不相关。</li>
-</ol>
-<h2 id="独立和相关"><a href="#独立和相关" class="headerlink" title="独立和相关"></a>独立和相关</h2><p>$X,Y$独立能够推出他们不相关，因为$Corr(X,Y) = 0$，满足不相关的定义。而$Corr(X,Y) = 0$不一定能推出$X,Y$独立。<br>即独立一定相关，但是相关不一定独立。有一个特例是正太分布，独立和相关互为充要条件。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://zh.wikipedia.org/wiki/%E6%9C%9F%E6%9C%9B%E5%80%BC" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/%E6%9C%9F%E6%9C%9B%E5%80%BC</a><br>2.<a href="https://zh.wikipedia.org/wiki/%E6%96%B9%E5%B7%AE" target="_blank" rel="noopener">https://zh.wikipedia.org/wiki/%E6%96%B9%E5%B7%AE</a><br>3.<a href="https://www.zhihu.com/question/22983179/answer/404391738" target="_blank" rel="noopener">https://www.zhihu.com/question/22983179/answer/404391738</a><br>4.<a href="https://www.matongxue.com/madocs/607.html" target="_blank" rel="noopener">https://www.matongxue.com/madocs/607.html</a><br>5.<a href="https://math.stackexchange.com/a/2113753/629287" target="_blank" rel="noopener">https://math.stackexchange.com/a/2113753/629287</a><br>6.<a href="https://blog.csdn.net/yangdashi888/article/details/52397990" target="_blank" rel="noopener">https://blog.csdn.net/yangdashi888/article/details/52397990</a></p>
+<h3 id="用函数表示stochastic-policy">用函数表示stochastic policy</h3>
+<p>Policy gradient用函数表示stochastic policy。比如用神经网络表示的一个policy，输入是state，输出是每个action选择的概率，神经网络的参数是policy的参数。用$\mathbf{\theta}$表示policy参数，用$J$表示该策略的performance measure。然后参数$\mathbf{\theta}$的更新正比于以下梯度：<br>
+$$\nabla\mathbf{\theta} \approx \alpha \frac{\partial J}{\partial \mathbf{\theta}} \tag{1}$$<br>
+其中$\alpha$是正定的step size，按照式子$(1)$进行更新，可以确保$\theta$收敛到$J$的局部最优值对应的local optimal policy。和value based方法相比，$\mathbf{\theta}$的微小改变只能造成policy和state分布的微小改变。</p>
+<h3 id="使用值函数辅助学习policy">使用值函数辅助学习policy</h3>
+<p>使用满足特定属性的辅助近似值函数，利用之前的experience就可以得到式子$(1)$的一个无偏估计。REINFORCE方法也找到了式子$(1)$的一个无偏估计，但没有使用辅助值函数，此外它的速度要比使用值函数的方法慢很多。学习一个值函数，并用它取减少方差对快速学习是很重要的。</p>
+<h3 id="证明policy-iteration收敛性">证明policy iteration收敛性</h3>
+<p>本文还证明了基于actor-critic和policy-iteration架构方法的收敛性。在这篇文章中，他们只证明了使用通用函数逼近的policy iteration可以收敛到local optimal policy。</p>
+<h2 id="objective-function">Objective Function</h2>
+<h3 id="三种形式">三种形式</h3>
+<p>智能体每一步的action由policy $\pi$决定：$\pi(s,a,\mathbf{\theta})=Pr\left[a_t=a|s_t=s,\mathbf{\theta}\right],\forall s\in S, \forall a\in A,\mathbf{\theta}\in \mathbb{R}^l $。为了方便，通常把$\pi(s,a,\mathbf{\theta})$简写为$\pi(s,a)$。假设$\pi$是可导的，即$\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}$存在。有三种方式定义智能体的objective：</p>
+<ul>
+<li>计算policy $\pi$下从初始状态$s_0$开始的accumulated reward：<br>
+$$J(\theta) = V^{\pi}(s_0) = \mathbb{E}_{\pi}\left[G_0\right] = \mathbb{E}_{\pi} \left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t | s_0 \right] \tag{2}$$<br>
+其中$0 \le \gamma \le 1$，在continuing case中，$0 \le \gamma \lt 1$，而在episodic情况下，$\gamma$能取到$1$，$0 \le \gamma \le 1$。</li>
+<li>计算policy $\pi$每个timestep的immediate reward的均值，即average reward。<br>
+$$J(\theta) = \mathbb{E}_{\pi}\left[R(s, a)\right] = \sum_s d(s) \sum_a\pi(s, a)R(s,a) \tag{3}$$<br>
+在connuting problems情况下，没有episode boundaries，如果不使用discount factor，可以这么做；事实上，我觉得在episodic情况下，也能这么做。</li>
+<li>当没有明确的初始状态时，计算policy $\pi$下所有state value的均值：<br>
+$$J(\theta) = \sum_s d(s) V^{\pi} (s) = \sum_s d(s) \sum_a\pi(s, a) Q^{\pi} (s, a) = \mathbb{E}_{\pi}\left[Q^{\pi}(s, a)\right] \tag{4}$$</li>
+</ul>
+<p>其中$R(s,a) = \mathbb{E}\left[R_{t+1}|s_t=s, a_t=a\right]$，$d (s) = lim_{t\rightarrow \infty} Pr\left[s_t=s|s_0,\pi\right]$是策略$\pi$下的stationary distribution。<a href="http://mxxhcm.github.io/2019/07/31/markov-matrices/">Stationary distribution</a>的意思是就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。其实这三个目标本质上都是一样的，都是要最大化每个时刻agent得到的reward。</p>
+<h3 id="accumated-reward-from-designated-state-从指定状态开始的累计奖励">Accumated Reward from Designated State(从指定状态开始的累计奖励)</h3>
+<p>我们可以指定一个初始状态$s_0$，计算从这个初始状态开始得到的accumulated reward：<br>
+$$\eta(\pi) = V^{\pi} (s_0) = \mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty} \gamma^{t-1} R_t|s_0\right] = \mathbb{E}_{\pi}\left[G_0 \right]\tag{5}$$<br>
+定义return $G_t$如下：<br>
+$$ G_t = \sum_{k=0}^{\infty} R_{t+k+1} \tag{6}$$<br>
+定义state-action value function和state value function如下：<br>
+\begin{align*}<br>
+Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} R_{t+k+1}|s_t=s,a_t=a\right] \\<br>
+V^{\pi} (s) = \mathbb{E}_{\pi}\left[G_t|s_t=s\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} R_{t+k+1}|s_t=s\right]\\<br>
+\tag{7}<br>
+\end{align*}<br>
+其中$\gamma\in[0,1]$是折扣因子，只有在episodic任务中才允许取$\gamma=1$。它们之间的关系如下：<br>
+\begin{align*}<br>
+V^{\pi} (s) = \mathbb{E}_{\pi}\left[Q^{\pi} (s,a)|S_t=s\right] &amp; = \sum_a \pi(a|s) Q^{\pi} (s,a) \\<br>
+Q^{\pi} (s, a) = \mathbb{E}_{\pi}\left[R_{t+1} + \gamma V^{\pi}(s)|S_t=s, A_t=a\right] &amp; = \sum_{s’,r}p(s’,r|s,a) (r+\gamma V^{\pi} (s’))\\<br>
+\tag{8}<br>
+\end{align*}<br>
+定义$\rho^{\pi} (s)$是从指定的初始状态$s_0$开始，执行策略$\pi$在$t=\infty$之间的任意时刻所有能到达state $s$的折扣概率之和：<br>
+$$\rho^{\pi} (s) = \sum_{t=1}^{\infty} \gamma^t Pr\left[s_t = s|s_0,\pi\right]  =  \sum_{t=0}^{\infty} \gamma^{t} p(s_0\rightarrow s, t,\pi) \tag{9}$$<br>
+把$\rho^{\pi} (s) $换一种写法就容易理解了：<br>
+$$\rho^{\pi} (s) = P(s_0 = s) +\gamma P(s_1=s) + \gamma^2 P(s_2 = s)+\cdots \tag{10}$$</p>
+<h3 id="average-reward-平均奖励">Average Reward(平均奖励)</h3>
+<p>Average reward是根据每一个step的的expected reward $\eta(\pi)$对不同的policy进行排名：<br>
+$$\eta(\pi) = lim_{t\rightarrow \infty}\frac{1}{t}\mathbb{E}\left[R_1+R_2+\cdots+R_t|\pi\right] = \int_S d(s) \int_A \pi(s,a) R(s,a)dads \tag{11}$$<br>
+第一个等号中，$R_t$表示$t$时刻的immediate reward，所以第一个等号表示的是在策略$\pi$下$t$个时间步的imediate reward平均值的期望。第二个等号后，第一个积分是对$s$积分，相当于求的是$s$的期望；然后对$a$的积分，求的是每一个$s$处对应各个动作$a$出现概率的期望，所以第二个等式后面求的其实就是每一步$R(s,a)$平均值的期望。<br>
+Return的定义和accumulated reward不同：<br>
+$$G_t = \sum_{k=0}^{\infty} \left[R_{t+k+1} - \eta(\pi)\right] \tag{12}$$<br>
+因为$G_t$不同，State-action value $Q^{\pi} (s,a)$以及state value $V^{\pi} (s)$的定义和accumulated reward也就不同了：<br>
+\begin{align*}<br>
+Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty}\left( R_{t+k+1} - \eta(\pi)\right)|s_t=s,a_t=a\right]\\<br>
+V^{\pi} (s) = \mathbb{E}_{\pi}\left[G_t|s_t=s\right] &amp; = \mathbb{E}_{\pi}\left[\sum_{k=0}^{\infty} \left(R_{t+k+1} - \eta(\pi) \right)|s_t=s\right] \\<br>
+\tag{13}<br>
+\end{align*}<br>
+$Q^{\pi} (s,a)$和$V^{\pi} (s,a)$之间的关系满足：<br>
+\begin{align*}<br>
+Q^{\pi} (s,a) = \sum_{s’, r}p(s’,r|s,a)(r - \eta(\pi) + V(s’)) \tag{14}<br>
+\end{align*}</p>
+<h3 id="state-value的均值">State value的均值</h3>
+<p>这个和上面的accumulated reward有一定关联，accumulated计算的是$V^{\pi} (s_0)$，而这里计算的是$V^{\pi} (s_0)$的期望（均值）：<br>
+$$ \eta(\pi) = \sum_s \rho_0(s_0) V^{\pi} (s) \tag{15}$$<br>
+State action value function和state value function的定义和accumulated reward一样。<br>
+定义$\rho^{\pi} $为从任意初始状态$s_0$经过$t$步之后state $s$出现的概率：<br>
+$$\rho^{\pi} (s) =\int_S \sum_{t=0}^{\infty} \gamma^t \rho_0^{\pi} (s_0) Pr\left[s_t = s|s_0,\pi\right] ds_0  = \int_S \sum_{t=0}^{\infty} \gamma^{t} \rho_0^{\pi} (s_0)p(s_0\rightarrow s, t,\pi)ds_0 \tag{16}$$</p>
+<h3 id="policy-gradient-v2">Policy Gradient</h3>
+<p>对于单步的MDP，从分布$\rho^{\pi} (s)$中采样得到$s$，采取action $a$，得到immediate reward $R=R(s,a)$，结束。上面三种目标函数是一样的：<br>
+\begin{align*}<br>
+J(\theta) &amp; = \mathbb{E}_{\pi}\left[R\right]\\<br>
+&amp; = \sum_s d(s) \sum_a \pi(s,a) R(s,a) \tag{17}\\<br>
+\end{align*}<br>
+求导有问题！！！！怎么求导得到的。。。<br>
+\begin{align*}<br>
+\nabla_{\theta} J(\theta) &amp; = \sum_s d(s) \sum_a \nabla_{\theta}\pi(s,a) R(s,a)\\<br>
+&amp; = \sum_s d(s) \sum_a\pi(s,a) \nabla_{\theta}\log \pi(s,a) R(s,a)\\<br>
+&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log \pi(s,a) R(s,a)\right] \tag{18}\\<br>
+\end{align*}<br>
+对于多步的MDP，只需要将$R$换成$Q^{\pi} (s, a)$就行了，上面三种目标函数最后都能够得到：<br>
+$$\nabla_{\theta} J(\theta) = \sum_s d(s) \sum_a\pi(a|s) \nabla_{\theta} \log\pi(s,a) Q^{\pi} (s,a) = \mathbb{E}_{\pi} \left[\nabla_{\theta} \log\pi(s,a) Q^{\pi} (s,a)\right] \tag{19}$$<br>
+其中$Q$是根据不同的目标函数定义的state-action value function，目标函数不同，$Q$定义也不同。在其他论文中，$\nabla_{\theta} \log\pi_{\theta}(s,a)$不变，可以把$Q$换成其他目标函数，GAE这篇论文对不同的目标函数进行了总结。</p>
+<h2 id="policy-gradient-theorem">Policy Gradient Theorem</h2>
+<p>对于任何MDP，不论是average reward还是accumulated reward的形式，都有：<br>
+\begin{align*}<br>
+\nabla_{\theta} \eta &amp; = \sum_s \rho^{\pi} (s)\sum_a{\nabla_{\theta}\pi(s,a)}Q^{\pi} (s,a) \\<br>
+&amp; = \sum_s \rho^{\pi} (s)\sum_a{\pi(s,a)\nabla_{\theta}\log\pi(s,a)}Q^{\pi} (s,a), \tag{20}\\<br>
+&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log\pi(s,a)Q^{\pi} (s,a)\right], \tag{21}\\<br>
+\end{align*}<br>
+证明：<br>
+\begin{align*}<br>
+\nabla V_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\<br>
+&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)(R+\gamma V_{\pi}(s’))\right]\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)R +\sum_{s’,r}p(s’,r|s,a)\gamma V_{\pi}(s’)\right]\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[0 +\sum_{s’,r}p(s’,r|s,a)\gamma\nabla V_{\pi}(s’)\right]\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’,r}p(s’,r|s,a)\gamma \nabla V_{\pi}(s’))\right] \\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\nabla V_{\pi}(s’) \right] \\<br>
+&amp;= \sum_a\\<br>
+&amp;\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\sum_{s’}\gamma p(s’|s,a)\left( \sum_{a’} \nabla\pi(a’|s’)Q_{\pi}(s’,a’) + \pi(a’|s’)\sum_{s’’}\gamma p(s’’|s’,a’)\nabla V_{\pi}(s’’))\right) \right] \tag{22}\\<br>
+&amp;= \sum_{x\in S}\sum_{k=0}^{\infty} Pr(s\rightarrow x, k,\pi)\sum_a\nabla\pi(a|x)Q_{\pi}(x,a) \tag{23}\\<br>
+&amp;= \sum_{x\in S}\rho^{\pi} (x)\sum_a\nabla \pi(a|x) Q_{\pi}(x,a) \tag{24}\\<br>
+\end{align*}</p>
+<p>式子$(23)$中的$Pr(s\rightarrow x, k, \pi)$是在策略$\pi$下从state $s$经过$k$步转换到state $x$的概率，对第$(14)$步进行展开以后，从状态$s$开始，在每一个$k$都有可能到达状态$x$，如果不能到$x$，概率为$0$就是了。</p>
+<h3 id="指定初始状态-s-0-的accumulated-reward">指定初始状态$s_0$的accumulated reward</h3>
+<p>证明思路，在上面我们已经求得了$V^{\pi} (s)$的梯度，而accumulated reward其实就是$V^{\pi} (s_0)$，取$J(\mathbf{\theta}) = V_{\pi}(s_0)$，则：<br>
+\begin{align*}<br>
+\nabla J(\mathbf{\theta}) &amp;= \nabla_{\theta}V_{\pi}(s_0)\\<br>
+&amp;= \sum_{s\in S}( \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) ) \sum_a\nabla{\pi}(a|s)Q_{\pi}(s,a)\qquad\qquad\qquad;\rho(s) = \sum_{k=0}^{\infty} Pr(s_0\rightarrow s,k,\pi) \tag{25}\\<br>
+&amp;=\sum_{s\in S}\rho(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a)\tag{26}\\<br>
+&amp;=\sum_{s’\in S}\rho(s’)\sum_s\frac{\rho(s)}{\sum_{s’}\rho(s’)}\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a) \qquad\qquad\qquad\qquad; \text{normalize } \rho(s) \tag{27}\\<br>
+&amp;=\sum_{s’\in S}\rho(s’)\sum_sd(s)\sum_a \nabla{\pi}(a|s)Q_{\pi}(s,a) \tag{28} \qquad\qquad\qquad\qquad\qquad; d(s) = \frac{\rho(s) }{\sum_{s’} \rho(s’)} \text{ is stationary distribution}\\<br>
+&amp;\propto \sum_{s\in S}d(s)\sum_a\nabla\pi(a|s)Q_{\pi}(s,a)\tag{29},\qquad\qquad\qquad\qquad\qquad\qquad\qquad; \sum_s\rho(s)\text{是常数}\\<br>
+&amp; = \sum_{s\in S}d(s)\sum_a\pi(s, a)\nabla\log\pi(a|s)Q_{\pi}(s,a) \tag{30}\\<br>
+&amp; = \mathbb{E}_{\pi}\left[\nabla\log\pi(a|s)Q_{\pi}(s,a)\right] \tag{31}\\<br>
+\end{align*}<br>
+其中$\mathbb{E}_{\pi}$表示$\mathbb{E}_{s\sim d_{\pi}, a\sim \pi}$，即state和action distributions都遵守policy $\pi$。</p>
+<h3 id="average-reward">Average Reward:</h3>
+<p>证明思路，首先求$V$的梯度，带入$Q, V$和$\eta$的关系进行转换，能够得到$\eta$的梯度和$Q,V$梯度之间的关系，最后进行一系列化简即可。<br>
+\begin{align*}<br>
+\nabla V_{\pi}(s) &amp;= \nabla \left[ \sum_a \pi(a|s)Q_{\pi}(s,a)\right], \forall s\in S \tag{32}\\<br>
+&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a)\right], \tag{33} \\<br>
+&amp;= \sum_a \left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla Q_{\pi}(s,a)\right] \tag{34}\\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\nabla \left[\sum_{s’,r}p(s’,r|s,a)\left(R(s,a)-\eta(\pi)+V_{\pi}(s’)\right)\right]\right] \tag{35}\\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) + \pi(a|s)\left[-\nabla \eta(\pi)+ \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\right]\right], \nabla R(s,a) = 0\tag{36}\\<br>
+&amp;= \sum_a\left[\nabla\pi(a|s)Q_{\pi}(s,a) - \pi(a|s)\nabla \eta(\pi)+ \pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\right]\tag{37}\\<br>
+&amp;= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) - \sum_a \pi(a|s)\nabla \eta(\pi) + \sum_a \pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’) \tag{38}\\<br>
+&amp;= \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) -\nabla \eta(\pi)+ \sum_a \pi(a|s)\sum_{s’,r}p(s’,r|s,a)\nabla V_{\pi}(s’), \sum_s\pi(s,a)=1\tag{39}\\<br>
+\end{align*}<br>
+移项合并同类项得：<br>
+$$\nabla \eta(\pi) = \sum_a\nabla\pi(a|s)Q_{\pi}(s,a) + \sum_a\pi(s,a) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’) - \nabla V_{\pi}(s) \tag{40}$$<br>
+同时在上式两边对$d(s)$进行求和，得到：<br>
+\begin{align*}<br>
+\sum_s d(s)\nabla \eta(\pi) &amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \\<br>
+&amp;\qquad\qquad\qquad + \sum_s d(s) \sum_a\pi(a|s) \sum_{s’,r}p(s’,r|s,a) \nabla V_{\pi}(s’)\\<br>
+&amp;\qquad\qquad\qquad - \sum_s d(s)\nabla V_{\pi}(s) \tag{41}\\<br>
+\nabla \eta(\pi) &amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) + \sum_s d(s’) \nabla V_{\pi}(s’) - \sum_s d(s)\nabla V_{\pi}(s) \tag{42}\\<br>
+&amp;= \sum_s d(s)\sum_a \nabla\pi(a|s)Q_{\pi}(s,a) \tag{43}\\<br>
+&amp;= \sum_s d(s)\sum_a \pi(s,a) \nabla\log\pi(a|s)Q_{\pi}(s,a) \tag{44}\\<br>
+&amp; = \mathbb{E}_{\pi}\left[\nabla_{\theta}\log\pi(s,a) Q_{\pi}(s,a)\right] \tag{45}\\<br>
+\end{align*}<br>
+式子$(41)$到式子$(42)$其实就是$\sum_s d(s) \sum_a\pi(a|s) \sum_{s’,r}p(s’,r|s,a) = \sum_{s’}d(s’)$，根据$\rho^{\pi} (s)$表示的意义，显然这是成立的。<br>
+\begin{align*}<br>
+\end{align*}</p>
+<h3 id="state-value的期望">State value的期望</h3>
+<p>还不会证明。</p>
+<h3 id="结论">结论</h3>
+<p>从这两种情况的证明可以看出来，policy gradient和$\frac{\partial \rho^{\pi} (s)}{\partial\mathbf{\theta}}$无关：即可以通过计算，让policy的改变不影响states distributions，这非常有利于使用采样来估计梯度。举个例子来说，如果$s$是根据policy $\pi$的从$\rho$中采样得到的，那么$\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)$就是$\frac{\partial{\rho}}{\partial\mathbf{\theta}}$的一个无偏估计。通常$Q^{\pi}(s,a)$也是不知道的，需要估计。一种方法是使用returns近似，即$G_t = \sum_{k=0}^{\infty} R_{t+k+1}-\rho(\pi)$或者$R_t = \sum_{k=0}^{\infty} \gamma^{t} R_{t+k+1}$（在指定初始状态条件下），这就是REINFROCE方法。$\nabla\mathbf{\theta}\propto\frac{\partial\pi(s_t,a_t)}{\partial\mathbf{\theta}}R_t\frac{1}{\pi(s_t,a_t)}$,$\frac{1}{\pi(s_t,a_t)}$纠正了$\pi$的oversampling）。</p>
+<h2 id="policy-gradient-with-approximation-使用近似的策略梯度">Policy Gradient with Approximation(使用近似的策略梯度)</h2>
+<p>因为$Q^{\pi} $是不知道的，我们希望用函数近似式子$(21)$中的$Q^{\pi} $，大致求出梯度的方向。用$f_w:S\times A \rightarrow \mathbb{R}$表示$Q^{\pi} $的估计值。在策略$\pi$下，更新$w$的值:<br>
+$$\Delta w_t\propto \frac{\partial}{\partial w}\left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]^2 \propto \left[\hat{Q}^{\pi} (s_t,a_t) - f_w(s_t,a_t)\right]\frac{\partial f_w(s_t,a_t)}{\partial w} \tag{67}$$<br>
+$\hat{Q}^{\pi} (s_t,a_t)$是$Q^{\pi} (s_t,a_t)$的一个无偏估计，当这样一个过程收敛到local optimum，$Q^{\pi} (s,a)$和$f_w(s,a)$的均方误差最小时：<br>
+$$\epsilon(\omega, \pi) = \sum_{s,a}\rho^{\pi} (s)\pi(a|s;\theta)(Q^{\pi} (s,a))^2 - f^{\pi} (s,a;\omega) \tag{68}$$<br>
+即导数等于$0$:<br>
+$$\sum_s \rho^{\pi} (s)\sum_a\pi(a|s;\theta)\left[Q^{\pi} (s,a) -f_w (s,a;w)\right]\frac{\partial f_w(s,a)}{\partial w}  = 0\tag{69}$$</p>
+<h3 id="定理2：policy-gradient-with-approximation-theorem">定理2：Policy Gradient with Approximation Theorem</h3>
+<p>如果$f_w$的参数$w$满足式子$(69)$，并且：<br>
+$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)} = \frac{\partial \log \pi(s,a)}{\partial \mathbf{\theta}}\tag{70}$$<br>
+那么使用$f_w(s,a)$计算的gradient和$Q^{\pi} (s,a)$计算的gradient是一样的：<br>
+$$\frac{\partial \rho}{\partial \theta} = \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}f_w(s,a)\tag{71}$$</p>
+<p>证明：<br>
+将式子$(70)$代入$(69)$得到：<br>
+\begin{align*}<br>
+&amp;\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial f_w(s,a)}{\partial w}\\<br>
+= &amp;\sum_s\rho^{\pi} (s)\sum_a\pi(s,a)\left[Q^{\pi} (s,a) -f_w(s,a)\right]\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\frac{1}{\pi(s,a)}\\<br>
+= &amp;\sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right] \tag{72}\\<br>
+= &amp; 0 \\<br>
+\end{align*}<br>
+将式子$72$带入式子$(21)$：<br>
+\begin{align*}<br>
+\frac{\partial \eta}{\partial \mathbf{\theta}} &amp; = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a)\\<br>
+&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) - \sum_s\rho^{\pi} (s)\sum_a\frac{\partial \pi(s,a)}{\partial \mathbf{\theta}}\left[Q^{\pi} (s,a) -f_w(s,a)\right]\\<br>
+&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} \left[Q^{\pi} (s,a) - Q^{\pi} (s,a) +f_w(s,a)\right]\\<br>
+&amp;= \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) \tag{73}\\<br>
+\end{align*}<br>
+得证$\sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}}Q^{\pi} (s,a) = \sum_a \rho^{\pi} (s)\sum_a\frac{\partial\pi(s,a)}{\partial\mathbf{\theta}} f_w(s,a) $。</p>
+<h2 id="application-to-deriving-algorithms-and-advantages">Application to Deriving Algorithms and Advantages</h2>
+<p>给定一个参数化的policy，可以利用定理2推导出参数化value function的形式。比如，考虑在features上进行线性组合的Gibbs分布构成的policy：<br>
+$$\pi(a|s) = \frac{e^{\theta^T \phi_{sa} } }{\sum_b e^{\theta^T \phi_{sb} }} , \forall s \in S, \forall a \in A \tag{74}$$<br>
+其中$\phi_{s,a}$是state-action pair $s,a$的特征向量。满足式子$(70)$的公式如下：<br>
+$$\frac{\partial f_w(s,a)}{\partial w} = \frac{\partial \pi(a|s)}{\partial \theta}\frac{1}{\pi(a|s)} = \phi_{sa} - \sum_b\pi(b|s)\phi_{sb}\tag{75}$$<br>
+所以：<br>
+$$f_w(s,a) = w^T \left[\phi_{sa} - \sum_b\pi(b|s)\phi_{sb} \right]\tag{76}$$<br>
+也就是说，$f_w$和policy $\pi$都是feature的线性组合，只不过每一个state处$f_w$的均值都为$0$，$\sum_a\pi(a|s)f_w(s,a) = 0,\forall s\in S$。所以，其实我们可以认为$f_w$是对advantage function $A^{\pi} (s,a) = Q^{\pi} (s,a)- V^{\pi} (s)$而不是$Q^{\pi} (s,a)$的一个近似。式子$(70)$中$f_w$其实是一个相对值而不是一个绝对值。事实上，他们都可对以推广变成一个function加上一个value function。比如式子$(71)$可以变成$\frac{\partial\eta}{\partial \theta} = \sum_s\rho^{\pi}(s) \sum_a \frac{\partial \pi(a|s)}{\partial \theta}\left[f_w(s,a) + v(s)\right]$，其中$v$是一个function，$v$的选择不影响理论结果，但是会影响近似梯度的方差。</p>
+<h2 id="convergence-of-policy-iteration-with-function-approximation-使用函数近似的策略迭代的收敛性">Convergence of Policy Iteration with Function Approximation(使用函数近似的策略迭代的收敛性)</h2>
+<h3 id="定理3：policy-iteration-with-function-approximation">定理3：Policy Iteration with Function Approximation</h3>
+<p>用$\pi$和$f_w$表示policy和value function的可导函数，并且满足式子$(70)$。$\max_{\theta,s,a,i,j} \vert\frac{\partial^2 \pi(a|s)}{\partial\theta_i \partial\theta_j} \vert\lt B\lt \infty$，假设$\left[\alpha_k\right]_{k=0}^{\infty}$是步长sequence，$\lim_{k\rightarrow \infty}\alpha_k = 0$，$\sum_k \alpha_k = \infty$。对于任何有界rewards的MDP来说，任意$\theta_0$，$\pi_k=\pi(\cdot, \theta_k)$定义的$\left[\eta(\pi_k)\right]_{k=0}^{\infty}$，并且$w_k = w$满足：<br>
+$$\sum_s\rho^{\pi_k} (s) \sum_a\pi_k(a|s)\left[Q^{\pi_k} (s,a)-f_w(s,a) \right]\frac{\partial f_w(s,a)}{\partial w}=0 \tag{77}$$<br>
+$$\theta_{k+1} = \theta_k + \alpha_k \sum_s\rho^{\pi_k}(s) \sum_a\frac{\partial\pi_k(s,a)}{\partial \theta}f_{w_k}(s,a) \tag{78}$$<br>
+一定收敛：$\lim_{k\rightarrow \infty}\frac{\partial \rho(\pi_k)}{\partial \theta} = 0$。</p>
+<h2 id="policy-gradient-algorithms">Policy Gradient Algorithms</h2>
+<h3 id="reinforce">REINFORCE</h3>
+<p>REINFORCE使用Monte Carlo方法近似return $G_t$，因为$Q^{\pi} (s,a) = \mathbb{E}_{\pi}\left[G_t|s_t=s, a_t=a\right]$使用$G_t$代替policy gradient theorem中的$Q$：<br>
+\begin{align*}<br>
+\nabla_{\theta}J(\theta) &amp; = \mathbb{E}_{\pi}\left[Q^{\pi} (s,a) \nabla_{\theta}\log\pi_{\theta}(a|s)\right]\\<br>
+&amp; = \mathbb{E}_{\pi} \left[G_t\nabla_{\theta}\log\pi_{\theta}(a|s)\right]\\<br>
+\end{align*}<br>
+接下来进行sampling，使用Monte Carlo方法计算$G_t$即可。完整算法如下：<br>
+<strong>REINFORCE 算法</strong><br>
+输入：policy $\pi$的初始化参数$\theta$，step-size $\alpha$<br>
+Loop<br>
+$\qquad$使用$\pi_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$<br>
+$\qquad$for $t=1, 2, \cdots, T$<br>
+$\qquad\qquad$估计$G_t = \sum_{k=t}^T \gamma^{k-t} R_{t+1}$<br>
+$\qquad\qquad$更新$\theta \leftarrow \theta + \alpha \gamma^t G_t \nabla_{\theta}\log\pi_{\theta}(a_t|s_t)$<br>
+$\qquad$end for</p>
+<h3 id="reinforce-with-baseline">REINFORCE with Baseline</h3>
+<p>REINFROCE的一类变种是在$G_t$的基础上减去一个和$\theta$无关的baseline，作用是在不改变bais的前提下减少方差：<br>
+$$\sum_a \nabla_{\theta}\pi(a|s) b(s) = b(s)  \nabla_{\theta}\sum_a\pi(a|s) = b(s) \nabla_{\theta} 1 = 0$$<br>
+即加了一个baseline之后，梯度更新的期望值依然保持不变，但是可以减少方差。具体的证明可以见<a href>why use baselinse in policy gradient</a>。在MDPs中，有的state可能所有的actions都有很高的values，这时候需要一个high baseline，而有的actions可能都有低的values，这时候需要一个low baseline，一个常用的baseline可以选择$V(s)$，可以使用$G_t - V^{\pi} (s,a)$计算梯度。<br>
+直观上来首，RL感兴趣的是那些比平均值好的action。如果returns都是正的$(R(\tau)\ge 0)$，PG总是会提高这个trajectory发生的概率，即使它比其他的trajectory要低。考虑以下两个例子：</p>
+<ul>
+<li>Trajectory $A$的return是$10$，trajectory $B$的reward是$-10$</li>
+<li>Trajectory $A$的return是$10$，trajectory $B$的reward是$1$</li>
+</ul>
+<p>在第一个例子中，PG会提高$A$发生的概率，降低$B$发生的概率。在第二个例子中，PG会提高$A$和$B$的概率。然而，对于我们来说，在两个例子中，我们都想要降低$B$发生的概率，提高$A$发生的概率。通过引入一个baseline，比如$V$，我们就可以实现这样的目的。<br>
+完整算法如下：<br>
+<strong>REINFORCE with Baseline 算法</strong><br>
+输入：可导的policy $\pi$的初始化参数$\theta$，可导的state value function $\hat{v}(s, \mathbf{w})$，step-size $\alpha^{\theta} \gt 0, \alpha^{w} \gt 0 $<br>
+Loop<br>
+$\qquad$使用$\pi_{\theta}$生成一个trajectory $S_0, A_0, R_1, S_1, A_1, \cdots$<br>
+$\qquad$for $t=1, 2, \cdots, T$<br>
+$\qquad\qquad$近似$G_t = \sum_{k=t}^T \gamma^{k-t} R_{t+1}$<br>
+$\qquad\qquad$近似$\delta \leftarrow G-\hat{v}(s_t, w)$<br>
+$\qquad\qquad$更新$w\leftarrow w + \alpha^{w} \delta \nabla\hat{v}(s_t, w)$<br>
+$\qquad\qquad$更新$\theta \leftarrow \theta + \alpha^{\theta} \gamma^t\delta\log\pi_{\theta}(a_t|s_t)$<br>
+$\qquad$end for<br>
+和介绍的原理不同的是，REINFORCE with Baselien使用了近似的$\hat{v}(s, \mathbf{w}) \approx V(s)$，因为我们不知道真实的$Q$，前面也已经证明了。。</p>
+<h3 id="actor-critic">Actor-Critic</h3>
+<p>Policy gradient中两个常用的components是policy和value function，在学习policy的同时学习一个value function是非常有用的，value function可以辅助policy进行更新，比如vanilla policy gradient使用value function辅助policy减小方差，我们把这类方法统称为actor-critic方法。Value function和policy可以共享参数：</p>
+<ul>
+<li>Critic利用mean squared error更新value function $Q_w(s,a)$或者$V_w(s)$的参数$w$；</li>
+<li>Actor根据critic给出的更新方向更新policy $\pi_{\theta}(a|s)$的参数$\theta$。</li>
+</ul>
+<p>One-step actor-critic方法使用one-step return代替了full return。完整的算法按如下：<br>
+<strong>One-step actor critic 算法</strong><br>
+输入：policy $\pi$的参数$\theta$，初始化state $s_0$<br>
+采样$a\sim \pi(a|s)$<br>
+Loop<br>
+$\qquad$for $t= 1,\cdots, T$:<br>
+$\qquad\qquad$采样reward $r_t \sum R(s,a)$和next state $s’\sim P(s’|s,a)$<br>
+$\qquad\qquad$采样next action $s’\sim \pi(a’|s’)$<br>
+$\qquad\qquad$更新policy参数$\theta \leftarrow \theta + \alpha_{\theta} Q_w(s,a) \nabla_{\theta}\log\pi_{\theta}(a|s)$<br>
+$\qquad\qquad$计算timestep $t$时刻的TD-error：<br>
+$\qquad\qquad\qquad \delta_t = r_t + \gamma Q_w(s’, a’) - Q_w(s,a)$<br>
+$\qquad\qquad\qquad$使用mean squared error更新$Q$函数：<br>
+$\qquad\qquad\qquad w\leftarrow w + \alpha_w \delta_t \nabla_w Q_w(s, a)$<br>
+$\qquad\qquad\qquad a\leftarrow a’, s\leftarrow s’$<br>
+$\qquad$end for</p>
+<p>REINFORCE with baseline的方法同时学习了policy $\pi$和state value function $V$，但是我们一般不把它叫做actor-critic方法，因为$V$在这里是一个baseline而不是一个critic。它没有被用作bootstraping，只是用作待更新state的一个baseline。bootstraping和state representation引入了bias，但是能减小方差和加快学习速度。REINFORCE with baseline是无偏的，并且收敛到local minimum，但是像所有的MC方法一样，它都收敛的很慢，也有很大的方差，并且很难应用到online和continuing问题。使用TD方法可以解决这个问题，并且通过multi-step可以控制boostrapping的度。为了得到policy gradient的方法，可以使用boostrapping critic的actor critic方法。</p>
+<h3 id="off-policy-policy-gradient">Off-Policy Policy Gradient</h3>
+<p>REINFORCE和one-step actor-critic都是on-policy的，behaviour policy和target policy是相同的，很低效。Off-polciy相对于on-policy有几个好处：</p>
+<ul>
+<li>可以使用过去的experience，即experience replay提高采样效率；</li>
+<li>behaviour policy和target policy不同，能够更好的进行exploration。</li>
+</ul>
+<p>如何使用计算off policy graadient，这就牵涉到了<a href>importance sampling</a>。用$\beta(a|s)$表示behaviour oplicy，目标函数为：<br>
+$$J(\theta) = \sum_s d^{\beta} (s) \sum_a Q^{\pi} (s,a) \pi(a|s) = \mathbb{E}_{s\sim d^{\beta} } \left[\sum_a Q^{\pi} (s,a) \pi(a|s)\right]$$<br>
+其中$d^{\beta} (s)$是behaviour policy $\beta$的stationary distrbution， $\pi$是target policy。<br>
+实际上$a\sim \beta(a|s)$，对$J(\theta)$求偏导得到：<br>
+\begin{align*}<br>
+\nabla_{\theta}J(\theta) &amp; = \nabla_{\theta} \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a Q^{\pi} (s, a) \pi_{\theta} (a|s)\right]\\<br>
+&amp; = \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a\left(\nabla_{\theta} Q^{\pi} (s, a) \pi_{\theta} (a|s) + Q^{\pi} (s, a) \nabla_{\theta}\pi_{\theta} (a|s)\right)\right]\\<br>
+&amp; \approx \mathbb{E}_{s\sim d^{\beta} }\left[ \sum_a Q^{\pi} (s, a) \nabla_{\theta}\pi_{\theta} (a|s)\right]\\<br>
+&amp; \approx \mathbb{E}_{s\sim d^{\beta} }\left[\sum_a \beta(a|s)\frac{ \pi(a|s)}{\beta(a|s)} Q^{\pi} (s, a) \frac{\nabla_{\theta}\pi_{\theta} (a|s)}{\pi_{\theta}(a|s)}\right]\\<br>
+&amp; \approx \mathbb{E}_{\beta}\left[\sum_a \frac{ \pi(a|s)}{\beta(a|s)} Q^{\pi} (s, a) \nabla_{\theta}\log\pi_{\theta} (a|s)\right]\\<br>
+\end{align*}<br>
+其中$\frac{ \pi(a|s)}{\beta(a|s)}$称作importance sampling ratio。式子$(55)$到式子$(44)$忽略了第二项，有人狰狞了即使忽略了这一项，最终结果还会收敛到局部最优。<br>
+即通过importance sampling可以将过去policy的experience用于新policy的训练。</p>
+<h3 id="a3c">A3C</h3>
+<p>详细的解释可以见<a href="http://mxxhcm.github.io/2019/04/19/a3c/">A3C</a>。<br>
+A3C是Asynchronous advantage actor-critic，是并行的policy gardient，就是为并行训练设计的。在A3C中，多个actors并行采样进行训练，一个critic学习value function。<br>
+A3C算法的实质就是使用多个线程同步训练。分为主网络和线程中的网络，主网络不需要训练，主要用来存储和传递参数，每个线程中的网络用来训练参数。总的来说，多个线程同时训练提高了效率，另一方面，减小了数据之间的相关性，比如，线程$1$和$2$中都用主网络复制来的参数计算梯度，但是同一时刻只能有一个线程更新主网络的参数，比如线程$1$更新主网络的参数，那么线程$2$利用原来主网络参数计算的梯度会更新在线程$1$更新完之后的主网络参数上。</p>
+<p><strong>A3C算法－－每个actor-learn线程的伪代码</strong><br>
+用$\theta, w$表示全局共享参数，用$T=0$表示全局共享计数器，<br>
+用$\theta’,w’$表示每个线程中的参数<br>
+初始化线程步计数器$t\leftarrow 1$，<br>
+<strong>while</strong> $T\le T_{max}$<br>
+$\qquad$重置梯度$d\theta\leftarrow 0, dw\leftarrow 0$，<br>
+$\qquad$同步线程参数$\theta’=\theta,w’=w$<br>
+$\qquad t_{start}=t$<br>
+$\qquad$采样初始状态$s_t$，<br>
+$\qquad$ <strong>while</strong> $s_t \neq$ terminal且$t-t_{start} \le t_{max}$<br>
+$\qquad\qquad$根据策略选择action$a_t \sim \pi_{\theta’}(a_t|s_t;\theta’)$，<br>
+$\qquad\qquad$接收下一个状态$s_{t+1}$和reward $r_{t+1}$，<br>
+$\qquad\qquad T\leftarrow T+1, t\leftarrow t+1$<br>
+$\qquad$设置奖励$R=\begin{cases}0,&amp;for\ terminal\ s_t\\ V(s_t,\theta’_v), &amp;for\ non-terminal\ s_t\end{cases}$<br>
+$\qquad$<strong>for</strong> $i\in{t-1,\cdots,t_{start}}$ do<br>
+$\qquad\qquad R\leftarrow r_i+\gamma R$<br>
+$\qquad\qquad$累计和$\theta’$相关的梯度：$d\theta \leftarrow d\theta+\frac{\partial (y-Q(s,a;\theta))^2}{\partial \theta}$<br>
+$\qquad\qquad$累计和$\theta’_v$相关的梯度：$d\theta_v \leftarrow d\theta_v+\frac{\partial (R-V(s_i;\theta’_v))^2}{\partial \theta’_v}$<br>
+$\qquad$<strong>end for</strong><br>
+$\qquad$使用$d\theta$异步更新$\theta$，使用$d\theta_v$异步更新$\theta_v$.</p>
+<p>累计梯度$dw$和$d\theta$其实可以看成是mini-batch的sgd。</p>
+<h3 id="a2c">A2C</h3>
+<p>A2C是A3C的同步版本。在A3C中每一个agent独立的和global parameters进行沟通，所以可能在某些时候，不同的thread使用的policy可能都会不同，thread1从global拿了参数，计算梯度，thread2从global拿了参数，计算梯度，thread1更新了global，而这个时候thread2还在计算梯度，thread1就拿到了新的global参数，计算梯度，更新。这时候thread2还没计算完，就产生了不一致。<br>
+A2C就是为了解决这个问题的，A2C使用一个调度器，等待所有的actors完成相应的工作，然后更新global的参数，保证在下一次更新的时候每一个actor使用的都是相同的policy。</p>
+<h3 id="dpg">DPG</h3>
+<p>完整解释见<a href="http://localhost:4000/2019/07/16/gradient-method-deterministic-policy-gradient/" target="_blank" rel="noopener">deterministic policy gardient</a>。<br>
+Deterministic policy gradient theorem：<br>
+\begin{align*}<br>
+J(\mu_{\theta}) &amp; = \int_S\rho^{\mu} (s) R(s, \mu_{\theta}(s)) da ds\tag{48}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} } \left[R(s, \mu_{\theta}(s) \right]\tag{49}\\<br>
+\end{align*}</p>
+<p>\begin{align*}<br>
+\nabla_{\theta} J(\mu_\theta) &amp; = \int_S\rho^{\mu} (s)\nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} da ds\tag{50}\\<br>
+&amp; = \mathbb{E}_{s\sim \rho^{\mu} (s)} \left[ \nabla_{\theta}\mu_{\theta}(s) \nabla_a Q^{\mu} (s, a)|_{\mu_{\theta}(s)} \right]\tag{51}\\<br>
+\end{align*}</p>
+<h3 id="ddpg">DDPG</h3>
+<p>DDPG是一个model-free off-plicy actor critic方法，将DPG和DQN的思想相结合。DQN使用replay buffer和target network稳定学习过程，但是DQN只有在discrete space空间中起作用，DDPG将actor-critic框架扩展到了continous空间，学习deterministic policy。为了更好的exploration，使用$\mu$和noise $\mathbf{N}$构造exploration policy $\mu’$：<br>
+$$\mu’(s) = \mu(s) + \mathbf{N} \tag{}$$<br>
+此外，DDPG对actor和critic实行soft update，即$\theta’ \leftarrow \tau \theta+(1-\tau) \theta’$。同时使用batch normalizion对每层的输入进行处理，完整的算法如下：<br>
+<strong>DDPG算法</strong><br>
+使用$\theta^Q $和$\theta^\mu $ 随机初始化critic网络$Q(s,a|\theta^Q )$和actor网络$\mu(s|\theta^\mu )$。<br>
+使用$\theta^ Q$和$\theta^\mu $初始化target network参数$\theta^{Q’} \leftarrow \theta^Q, \theta^{\mu’} \leftarrow \theta^\mu$。<br>
+初始化replay buffer<br>
+for episode $= 1, \cdots, M$ do<br>
+$\qquad$初始化随机过程$\mathbf{N}$用于exploration<br>
+$\qquad$获得初始状态$s_0$<br>
+$\qquad$for $t=0, \cdots, T$ do<br>
+$\qquad\qquad$选择action $a_t = \mu(s_t|\theta^\mu ) + \mathbf{N}_t$<br>
+$\qquad\qquad$执行$a_t$，获得$r_{t+1}, s_{t+1}$<br>
+$\qquad\qquad$将$(s_t, a_t, r_{t+1}, s_{t+1})$存入buffer<br>
+$\qquad\qquad$从buffer中获取一个大小为$N$的batch，$(s_i, a_i, r_{i+1}，s_{i+1})$<br>
+$\qquad\qquad$使用target network计算TD target：$y_i = r_i + \gamma Q’(s_{i+1}, \mu’(s_{i+1}|\theta^{\mu’} ) | \theta^{Q’} )$<br>
+$\qquad\qquad$使用TD-error loss更新critic： $L=\frac{1}{N} \sum_i (y_i - Q(s_i,a_i|\theta^Q ) )^2 $<br>
+$\qquad\qquad$使用样本计算policy gradient更新actor：<br>
+$$\nabla_{\theta^{\mu} } J \approx \frac{1}{N} \sum_i \nabla_a Q(s, a|\theta^Q ) |_{s=s_i,a=\mu(s_i)} \nabla_{\theta^{\mu} }\mu(s|\theta^{\mu} )$$<br>
+$\qquad\qquad$更新target networks:<br>
+$$\theta^{Q’} \leftarrow \tau \theta^Q + (1 - \tau) \theta^{Q’} $$<br>
+$$\theta^{\mu’} \leftarrow \tau \theta^\mu + (1 - \tau) \theta^{\mu’} $$<br>
+$\qquad$end for<br>
+end for</p>
+<h3 id="maddpg">MADDPG</h3>
+<p>MADDPG将DDPG扩展到multi agents问题上。多个只有local informaction的agents合作完成任务，从单个agent来看，环境是non-stationary，因为其他agents的polices是未知的。MADDPG就是解决这样一类问题的方法。<br>
+对于$N$个agetns的MADDPG算法，每一个agent都有一个decentralized actor和一个centralized critic。每一个decentralized actor输入为当前agent的observation，输出为它的action，每一个centralized critic输入为所有agents的observation，输出为当前agent的$Q$值，和每个智能体的reward相关。</p>
+<p>完整的算法如下：<br>
+<strong>N个agents的MADDPG算法</strong><br>
+for episode $= 1, \cdots, M$ do<br>
+$\qquad$初始化随机过程$\mathbf{N}$用来exploration<br>
+$\qquad$获得初始状态$\mathbf{s}$<br>
+$\qquad$for $t=1, \cdots , T$ do<br>
+$\qquad\qquad$for $i = 1, \cdots, N$<br>
+$\qquad\qquad\qquad a_i = \mu_{\theta_i}(o_i) +\mathbf{N}_t$<br>
+$\qquad\qquad$end for<br>
+$\qquad\qquad$执行actions $\mathbf{a} = (a_1, \cdots, a_N)$，获得$\mathbf{r}$和$\mathbf{s’}$<br>
+$\qquad\qquad$将$(\mathbf{s},\mathbf{a},\mathbf{r},\mathbf{s’})$存入buffer<br>
+$\qquad\qquad \mathbf{s}\leftarrow \mathbf{s’}$<br>
+$\qquad\qquad$for $i= 1, \cdots, N$ do<br>
+$\qquad\qquad\qquad$从buffer中采样$S$个samples $(\mathbf{s}^j ,\mathbf{a}^j ,\mathbf{r}^j ,\mathbf{s’}^j )$<br>
+$\qquad\qquad\qquad$计算TD target $\mathbf{y}^j_i = \mathbf{r}^j_i + \gamma Q^{\mu’}_i (\mathbf{x’}^j, a_1^{’},\cdots, a_N^{’} )|_{a_k^{’} = \mu_k^{’} (o_k^j ) }$<br>
+$\qquad\qquad\qquad$使用均方误差更新critic：<br>
+$$L(\theta_i) = \frac{1}{S} \sum_j \left( y^j - Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_N^j ) \right)^2 $$<br>
+$\qquad\qquad\qquad$使用样本近似计算policy gradient：<br>
+$$\nabla_{\theta_i} J\approx \frac{1}{S} \sum_j\nabla_{\theta_i}\mu_i(o_i^j ) Q_i^{\mu} (\mathbf{x}^j , a_1^j ,\cdots, a_i^j, a_N^j)|_{a_i = \mu_i(o_i^j)} $$<br>
+$\qquad\qquad$end for<br>
+$\qquad\qquad$更新每个agent $i$的target network<br>
+$$\qquad\qquad \theta_i^{’} \leftarrow \tau\theta_i + (1- \tau) \theta_i^{’}$$<br>
+$\qquad$end for<br>
+end for</p>
+<h3 id="d4pg">D4PG</h3>
+<h3 id="natural-pg">Natural PG</h3>
+<h3 id="trpo">TRPO</h3>
+<p>详细介绍可以查看<a href="http://mxxhcmg.github.io/2019/09/08/gradient-method-trust-region-policy-optimization/" target="_blank" rel="noopener">trust region policy optimization</a>。<br>
+TRPO将policy的更新表示为两个policy的performance的一个公式：<br>
+\begin{align*}<br>
+\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right] &amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}}\left[\sum_{t=0}^{\infty} \gamma^t (Q^{\pi_{old}} (s_t,a_t) - V^{\pi_{old}} (s_t))\right]  \\<br>
+&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t ( R_{t+1} + \gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
+&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} + \sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
+&amp;=\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t R_{t+1} \right]+ \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[\sum_{t=0}^{\infty} \gamma^t (\gamma V^{\pi_{old}} (s_{t+1}) -  V^{\pi_{old}} (s_t))\right]  \\<br>
+&amp;=\eta(\pi_{new}) + \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[ -  V^{\pi_{old}} (s_0))\right]  \\<br>
+&amp;=\eta(\pi_{new}) - \mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new}} \left[ V^{\pi_{old}} (s_0))\right]  \\<br>
+&amp;=\eta(\pi_{new}) - \eta(\pi_{old})\\<br>
+\end{align*}<br>
+我们的目标就是想要最大化<br>
+$$\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right]$$<br>
+用$\rho_{\pi_{old}}(s)$近似$\rho_{\pi_{new}}(s)$得到<br>
+$$\mathbb{E}_{s_0, a_0,\cdots\sim \pi_{new} }\left[\sum_{t=0}^{\infty} \gamma^t A^{\pi_{old}} (s_t,a_t) \right]$$</p>
+<p>最后得到目标函数：<br>
+$$J = \mathbb{E}_{s\sim\rho_{\theta_{old}}, a\sim q}\left[\frac{\pi_{\theta} (a|s) }{q(a|s)}Q_{\theta_{old}}(s,a)\right] \tag{}$$</p>
+<p>为了训练的稳定性，我们应该避免在一个step内policy改变太大。TRPO通过添加一个KL散度约束每一次迭代中，policy改变的大小。<br>
+$$s.t. \mathbb{E}_{s\sim \rho_{\theta_{old}}}\left[D_{KL}(\pi_{\theta_{old}}(\cdot|s)||\pi_{\theta}(\cdot|s))\right]\le \delta \tag{}$$</p>
+<h3 id="ppo">PPO</h3>
+<h3 id="acer">ACER</h3>
+<h3 id="actkr">ACTKR</h3>
+<h3 id="sac">SAC</h3>
+<h3 id="sac-with-automatically-adjusted-temperature">SAC with Automatically Adjusted Temperature</h3>
+<h3 id="td3">TD3</h3>
+<h3 id="svpg">SVPG</h3>
+<h2 id="另一种policy-gradient的方法">另一种policy gradient的方法</h2>
+<p>这是CS294上的方法，感觉和前面的有一些不成体系，而且有一些地方的证明让我不能接受。<br>
+目标函数$J$如下：<br>
+\begin{align*}<br>
+J(\theta) &amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[R(\tau)\right] \tag{46}\\<br>
+&amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[\sum_t R(s_t, a_t)\right] \tag{47}\\<br>
+&amp; = \int \pi_{\theta}(\tau) R(\tau) d\tau \tag{48}\\<br>
+&amp; = \int \pi_{\theta}(\tau)\sum_t R(s_t, a_t) d\tau \tag{49}\\<br>
+&amp; \approx \frac{1}{N}\sum_i \sum_t R(s_{i,t}, a_{i,t}) \tag{50}\\<br>
+\end{align*}<br>
+其中$\tau = s_0, a_0, s_1, a_1,\cdots \sim \pi_{\theta}$表示一个episode的trajectory，$R(\tau)$表示这个trajectory的returns($G_0$)。Policy gradient变成下式，（为什么？？？还是不懂！！CS294上面的推导！！！为什么$\nabla$可以写进积分号里面，$R(\tau)$不也和$\pi_{\theta}$有关？？？）<br>
+\begin{align*}<br>
+\nabla_{\theta}J(\theta) &amp; = \int \nabla_{\theta} \pi_{\theta}(\tau) R(\tau)d\tau\\<br>
+&amp; = \int \pi_{\theta}(\tau) \nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau)d\tau\\<br>
+&amp; = \mathbb{E}_{\tau\sim \pi_{\theta}(\tau)} \left[\nabla_{\theta} \log\pi_{\theta}(\tau) R(\tau) d\tau\right] \tag{51}<br>
+\end{align*}<br>
+可以将policy gradient表示成期望的形式，然后就可以采样进行估计。对$R(\tau)$进行采样，但是不进行求导。Returns不直接受$\pi_{\theta}$的影响，$\tau$受$\pi_{\theta}$的影响，下面是$\log\pi(\tau)$的偏导数计算。<br>
+$\pi(\tau)$定义为：<br>
+$$\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = p(s_0) \prod_{t=0}^T \pi_{\theta}(a_t|s_t)p(s_{t+1}|s_t,a_t) \tag{52}$$<br>
+取$\log$：<br>
+$$\log\pi_{\theta}(s_0,a_0,\cdots, s_T,a_T) = \log p(s_0) + \sum_{t=0}^T\log \pi_{\theta}(a_t|s_t) + \log p(s_{t+1}|s_t,a_t) \tag{53}$$<br>
+对$\theta$求偏导，得到：<br>
+$$\nabla_{\theta} \log\pi(\tau) = \nabla_{\theta}\left[\sum_{t=0}^T \log\pi_{\theta}(a_t|s_t) \right] = \left[\sum_{t=0}^T \nabla_{\theta} \log\pi_{\theta}(a_t|s_t) \right]\tag{54}$$<br>
+所以，policy gradient：<br>
+\begin{align*}<br>
+\nabla_{\theta}J(\theta) &amp;= \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)}\left[\nabla_{\theta}\log\pi_{\theta}(\tau) R(\tau) \right]\tag{55}\\<br>
+&amp; = \mathbb{E}_{\tau \sim \pi_{\theta}(\tau)} \left[ \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right) \right] \tag{56}\\<br>
+&amp; \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)\tag{57}\\<br>
+\end{align*}<br>
+$$ \theta \leftarrow \theta + \alpha \nabla_{\theta} J(\theta)\tag{58}$$<br>
+即用多个trajectories近似计算policy gradietn，更新$\theta$。</p>
+<h3 id="reinforce-policy-gradient-with-monte-carlo-rollouts">REINFORCE: Policy Gradient with Monte Carlo rollouts</h3>
+<p>REINFROCE使用Monte Carlo近似returns，$\nabla_{\theta}J(\theta)$近似为：</p>
+<p>$$\nabla_{\theta} J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)$$<br>
+完整的算法如下：<br>
+REINFORCE 算法<br>
+Loop<br>
+$\qquad 1.$使用policy $\pi_{\theta}(a_t|s_t)$生成一个trajectory $\left[\tau^i \right]$<br>
+$\qquad$估计$\nabla_{\theta}J(\theta) \approx \sum_i (\sum_t \nabla_{\theta} \log\pi_{\theta}(a_t^i |s_t^i )) (\sum_t R(s_t^i , a_t^i ))$<br>
+$\qquad \theta\leftarrow \theta+\alpha\nabla_{\theta}J(\theta)$<br>
+Until 收敛</p>
+<h3 id="intution">Intution</h3>
+<p>$\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t})$是最大对数似然，表示的是对应的trajectory在当前的policy下发生的可能性。将它和returns相乘，如果产生high positive reward，增加policy的可能性，如果是high negetive reward，减少policy的可能性。在一个trajectory中的states具有很强的相关性，这个trajectory发生的概率定义为：<br>
+$$\pi(\tau) = p(s_0) \prod_{t=0}^T \pi_{\theta}(a_t|s_t)p(s_{t+1}|s_t,a_t) \tag{59}$$<br>
+但是连续的乘法可能会产生梯度消失或者梯度爆炸问题。policy gradient将连乘变成了连加。</p>
+<h3 id="policy-gradients-improvements">Policy Gradients Improvements</h3>
+<p>Policy gradient的方差很大，而且很难收敛，这是一大问题。<br>
+MC方法根据整个trajectory计算exact rewards，但是stochastic policy可能会在不同的episode采取不同的actions，一个小的改变可能会完全改变结果，MC方法没有bias但是有很大的方差。方差会影响深度学习的优化，一个采样的reward可能想要增加似然，另一个样本rewards可能想要减少似然，给出了冲突的梯度方向，影响收敛性。为了减少选择action造成的方差，我们需要减少样本rewards的方差：<br>
+$$\left( \sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)\tag{60}$$<br>
+增大PG中的batch size会减少方差。<br>
+但是增大batch size会降低sample efficiency。所以batch size不能增加太多，我们需要想其他的方法减少方差：</p>
+<h4 id="causality">Causality</h4>
+<p>未来的action不应该改变过去的decisions：<br>
+$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) \left(\sum_{t’=t}^T R(s_{i,t’};a_{i,t’})\right)\tag{61}$$<br>
+可以用$Q$代替$\sum_t R(s,a)$，<br>
+$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) Q_{i,t}\tag{62}$$<br>
+为什么会减少方差？</p>
+<h4 id="baseline">Baseline</h4>
+<p>$$\nabla_{\theta}J(\theta) \approx \frac{1}{N}\sum_{i=1}^N \left(\sum_{t=1}^T\nabla_{\theta} \log\pi_{\theta}(a_{i,t}|s_{i,t}\right) \left(\sum_{t=1}^T R(s_{i,t}, a_{i,t})\right)\tag{63}$$<br>
+中$\sum_{t=1}^T R(s_{i,t}, a_{i,t})$其实就是$Q(s,a)$，我们可以在上面减去一项，只要这一项和$\theta$无关就好，所以我们可以减去$V(s)$：<br>
+\begin{align*}<br>
+\nabla_{\theta} J(\theta) &amp; \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(Q(s_{i,t}, a_{i,t}) - V(s_{i,t})\right)\\<br>
+&amp; = \frac{1}{N} \sum_{i=1}^N \sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t})\left(A(s_{i,t}, a_{i,t})\right)\\<br>
+\end{align*}</p>
+<h4 id="vanilla-policy-gradient">Vanilla Policy Gradient</h4>
+<p>给出一个使用baseline $b$的通用算法：<br>
+$$ \nabla\approx \hat{g} = \frac{1}{m} \sum_{i=1}^m \nabla_{\theta}\log P(\tau^{(i)} ;\theta)(R(\tau^{(i)} )-b)\tag{64}$$<br>
+Vanilla policy gradient算法<br>
+初始化policy 参数$\theta$，baselien $b$<br>
+for $i = 1, 2, \cdots$ do<br>
+$\qquad$使用当前policy $\pi_{\theta}$收集trajectories<br>
+$\qquad$在每个trajectory的每一个timestep，计算<br>
+$\qquad\qquad$return $G_t = \sum_{t’=t}^{T-1} \gamma^{t’-t} R_{t’}$<br>
+$\qquad\qquad$advantage的估计值$\hat{A}_t = R_t - b(s_t)$<br>
+$\qquad$重新拟合baseline，最小化$\vert b(s_t) - G_t\vert^2 $<br>
+$\qquad$在所有trajectories和timesteps上求和估计$\hat{g}$<br>
+$\qquad$使用policy gradient estimate $\hat{g}$的估计$\hat{g}$更新policy 参数<br>
+end for</p>
+<h4 id="reward-discount">Reward discount</h4>
+<p>加上折扣因子：<br>
+$$Q^{\pi,\gamma}(s, a) \leftarrow r_0 + \gamma r_1 + \gamma^2 r_2 + \cdots|s_0 = s, a_0 = a \tag{65}$$<br>
+得到：<br>
+$$\nabla_{\theta}J(\theta) \approx \frac{1}{N} \sum_{i=1}^N \left(\sum_{t=1}^T \nabla_{\theta}\log\pi_{\theta}(a_{i,t}|s_{i,t}) \right) \left(\sum_{t’=t}^T \gamma^{t’-t} R(s_{i,t’};a_{i,t’})\right)\tag{66}$$</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/1713-policy-gradient-methods-for-reinforcement-learning-with-function-approximation.pdf</a><br>
+2.<a href="https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf" target="_blank" rel="noopener">https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf</a><br>
+3.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-9b13b688b146</a><br>
+4.<a href="https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b" target="_blank" rel="noopener">https://medium.com/@jonathan_hui/rl-policy-gradients-explained-advanced-topic-20c2b81a9a8b</a><br>
+5.<a href="https://www.jianshu.com/p/af668c5d783d" target="_blank" rel="noopener">https://www.jianshu.com/p/af668c5d783d</a><br>
+6.<a href="https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html#what-is-policy-gradient" target="_blank" rel="noopener">https://lilianweng.github.io/lil-log/2018/04/08/policy-gradient-algorithms.html#what-is-policy-gradient</a><br>
+7.<a href="https://drive.google.com/file/d/0BxXI_RttTZAhY216RTMtanBpUnc/view" target="_blank" rel="noopener">https://drive.google.com/file/d/0BxXI_RttTZAhY216RTMtanBpUnc/view</a><br>
+8.<a href="https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/" target="_blank" rel="noopener">https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/</a><br>
+9.<a href="https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/" target="_blank" rel="noopener">https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/</a><br>
+10.<a href="http://www.tuananhle.co.uk/notes/reinforce.html" target="_blank" rel="noopener">http://www.tuananhle.co.uk/notes/reinforce.html</a><br>
+11.<a href="http://kvfrans.com/simple-algoritms-for-solving-cartpole/" target="_blank" rel="noopener">http://kvfrans.com/simple-algoritms-for-solving-cartpole/</a></p>
 
           
         
@@ -550,7 +990,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/05/rl-coinrun/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -570,7 +1010,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">reinforcement learning an introduction 第8章笔记</a>
+                <a href="/2019/09/05/rl-coinrun/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">CoinRun</a>
               
             
           </h1>
@@ -595,7 +1035,7 @@
                 
               
 
-              <time title="创建时间：2019-08-07 16:32:52" itemprop="dateCreated datePublished" datetime="2019-08-07T16:32:52+08:00">2019-08-07</time>
+              <time title="创建时间：2019-09-05 12:25:40" itemprop="dateCreated datePublished" datetime="2019-09-05T12:25:40+08:00">2019-09-05</time>
             
 
             
@@ -612,7 +1052,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 14:59:34" itemprop="dateModified" datetime="2019-12-17T14:59:34+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-17 16:46:07" itemprop="dateModified" datetime="2019-12-17T16:46:07+08:00">2019-12-17</time>
               
             
           </span>
@@ -665,52 +1105,64 @@
       
         
           
-            <h2 id="Planning-and-Learning-with-Tabular-Methods"><a href="#Planning-and-Learning-with-Tabular-Methods" class="headerlink" title="Planning and Learning with Tabular Methods"></a>Planning and Learning with Tabular Methods</h2><p>前面几章，介绍了MC算法，TD算法，再用$n$-step TD框架把它们统一了起来，此外，这些算法都属于model free的方法。这一章要介绍model based方法，model based方法主要用于planning，而model free的方法主要用于learning。</p>
-<h2 id="Models和Planning"><a href="#Models和Planning" class="headerlink" title="Models和Planning"></a>Models和Planning</h2><h3 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h3><h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>Environment的model是agents用来预测environment会如何对agent的action做出响应的任何东西。给定一个state和一个action，model可以预测下一个state和action。如果model是stochastic的话，有多个可能的next states和rewards，每一个都有一定概率。Distribution models计算所有可能性以及相应概率，sample models根据概率进行采样，只计算采样的结果。</p>
-<h4 id="用处"><a href="#用处" class="headerlink" title="用处"></a>用处</h4><p>Model可以用来模仿或者仿真。给定一个start state和action，sample model产生一个transition，distribution model产生所有可能的transitions，并使用概率进行加权。给定start state和一个policy，sample model产生一个episode，distribution model产生所有可能的episodes以及相应的概率。Model被用来模拟environment或者产生simulated experience。</p>
-<h4 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h4><p>DP中使用的$p(s’, r|s,a)$就是distribution model，第五章中blackjack例子中使用的模型是sample model。Distribution model可以用来产生samples，但是sample model要比distribution models好获得。考虑投掷很多骰子的和，distribution models计算所有可能值和相应的概率，而sample model只计算根据概率产生的一个样本。</p>
-<h3 id="Planning"><a href="#Planning" class="headerlink" title="Planning"></a>Planning</h3><h4 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h4><p>Planning的定义是给定model，不断的与environment交互生成或者改进poilcy的过程。有两种planning的方法，state space在state space中寻找一个optimal policy或者optimal path，这本书中介绍的方法都是这类。Plan-space planning在plans space中search。Plan-sapce 方法很难高效的应用到stochastic sequential decision problems，在这本书中不做过多介绍。<br>这一章要介绍的state-space planning方法具有相同的结构，这个结构在learing和planning中都有。基本的想法是：计算value funtions，通过应用simulated experience的update以及backup操作计算value functions。</p>
-<h4 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h4><p>如DP方法，扫描整个state space，然后生成每一个state可能的transitions的distribution，用于计算update target，更新state’s estimated value。这一章介绍的其他方法，也满足这个结构，只不过计算target的方式顺序以及长度不同而已。</p>
-<h4 id="planning和learning的关系"><a href="#planning和learning的关系" class="headerlink" title="planning和learning的关系"></a>planning和learning的关系</h4><p>将planning方法表示成这种形式主要是为了强调planning方法和learning方法之间的联系。learning和planning的重点都是使用backup update op更新estimations of value functions。区别在于plannning使用了model生成的simulate experience，而learning使用environment生成的real experience。同时perfomance measure以及experience的灵活性也不同，但是由于相同的结构，许多learning的方法可以直接应用到planning上去，使用simulated experience代替real experience即可。<br>给出一个利用sample model和Q-learning结合起来的planning算法：</p>
-<h3 id="learning算法示例"><a href="#learning算法示例" class="headerlink" title="learning算法示例"></a>learning算法示例</h3><p>Random-sample one-step tabular Q-planning<br>Loop forever<br>$\qquad 1.$随机选择初始state $S\in \mathbb{S}, A\in \mathbb{A}$<br>$\qquad 2.$将$S,A$发送给sample model，得到next state和reward $S’, R$<br>$\qquad 3.$应用one-step Q-learning更新公式：<br>$\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha \left[R+\gamma mx_a Q(S’, a) - Q(S, A)\right]$</p>
-<h2 id="Dyna"><a href="#Dyna" class="headerlink" title="Dyna"></a>Dyna</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>Online的planning更新需要不断的与environment交互，从交互中获得的information可能会改变model，以及与environment的交互，所以可能model也需要不断的学习。这一节主要介绍Dyna-Q，将online planning需要的内容都整合了起来，Dyna算法中包含了planning, acting以及learning。<br>Planning中real experience至少有两个作用，一个是改进model，叫做model-learning，另一个是使用learning的方法直接改进value function和policy，叫做direct reinforcement learning。相应的关系如下图所示：<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/model_learning.png" alt="model_learning"><br>如图所示，experience可以直接改进value function，也可以通过model间接改进value fucntion，叫做indirect reinforcement learning。Direct learning和indirect learning各有优势，indirect方法能够充分利用有限的experience，得到一个更好的policy；direct方法更简单，不会受到model bias的影响。</p>
-<h3 id="Dyna-Q-简介"><a href="#Dyna-Q-简介" class="headerlink" title="Dyna-$Q$简介"></a>Dyna-$Q$简介</h3><p>Dyna-$Q$包含planning, acting, model-learning和direct RL。planning是random-sample one-step tabular Q-planning；direct RL就是one-step tabular Q-learning，model-learning是table-based并且假设environment是deterministic，对于每一个transition $S_t,A_t\rightarrow R_{t+1}, S_{t+1}$，model用表格的形式记录下$S_t,A_t$的prediction值是$R_{t+1}, S_{t+1}$。如下图是Dyna算法的整体框架图（Dyna-Q是一个示例）。<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/dyna.png" alt="dyna_q"><br>左边使用real experience进行direct RL，右边是model-based的方法，从real experience中学习出model，然后利用model生成simulated experience。search control指的是从model生成的simulated experiences中选择指定starting state和actions的experience。最后，planning使用simulated experience更新value function。从概念上来讲，Dyna agents中planning, acting, model-learning以及direct RL几乎同时发生。但是在实现的时候，还是需要串行的进行。Dyna-$Q$中，计算量主要集中在planning上。具体的算法如下：</p>
-<h3 id="Tabular-Dyna-Q"><a href="#Tabular-Dyna-Q" class="headerlink" title="Tabular Dyna-Q"></a>Tabular Dyna-Q</h3><p>初始化$Q(s,a), Model(s,a), s\in \mathbb{S}, a\in \mathbb{A}$<br>Loop forever<br>$\qquad (a)S\leftarrow$ current state<br>$\qquad (b)A\leftarrow \epsilon$-greedy$(S,Q)$<br>$\qquad ( c )$采取action $A$，得到下一时刻的state $S’$和reward $R$<br>$\qquad (d)Q(S,A) \leftarrow Q(S,A) + \alpha\left[R+\gamma max_a Q(S’, a) -Q(S,A)\right]$<br>$\qquad (e)Model(S,A)\leftarrow R,S’$（假设deterministic environment)<br>$\qquad (f)$Loop repeat $n$ 次<br>$\qquad\qquad S\leftarrow$ 任意之前的观测状态<br>$\qquad\qquad A\leftarrow$ 在$S$处采取的任意action $A$<br>$\qquad\qquad R,S’\leftarrow Model(S,A)$<br>$\qquad\qquad Q(S,A) \leftarrow Q(S,A) + \alpha\left[R+\gamma max_a Q(S’, a) -Q(S,A)\right]$</p>
-<p>其中$Model(s,a)$表示预测$(s,a)$的next state。(d)是direct RL，(e)是model-learning，(f)是planning。如果忽略了(e,f)，就是one-step tabular Q-learning。</p>
-<h2 id="如果model出错"><a href="#如果model出错" class="headerlink" title="如果model出错"></a>如果model出错</h2><p>前面给的例子很简单，model是不会错的。但是如果environment是stochastic的，或者samples很少的话，或者function approximation效果不好，或者environment刚刚改变，新的behaviour还没有被观测到，model就可能会出错。当model是错的话，就可能会产生suboptimal policy。在一些情况下，suboptimal会发现并且纠正model的error。当模型预测的结果比真实的结果好的时候就会发生这种情况。这里给出两个例子。一个environment变坏，一个environment变好。<br>第一个例子，有一个迷宫，如图所示。<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/blocking_maze.png" alt="blocking mase"><br>刚开始，路在右边，1000步之后，右边的路被堵上了，左边有一条新的路。<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/shortcut_maze.png" alt="blocking mase"><br>第二个例子，刚开始路在左边，3000步之后，右边有一条新的路，左边的路也被保留。<br>这又是一个exploration和exploitation问题。在planning中，exploration意味着尝试那些让model变得更好的actions，而exploitation意味着给定当前的model，选择optimal action。我们想要agents能够explore environment的变化，但是不影响performance。</p>
-<h3 id="启发式搜索"><a href="#启发式搜索" class="headerlink" title="启发式搜索"></a>启发式搜索</h3><p>Dyna-Q+ 使用了一个简单有效的heuristics，agent记录每一个state-action pair 在real environment中从上次使用到现在经历了多少个time steps，累计的时间步越多，说明这个pair改变的可能性越大，model不对的可能性越大。为了鼓励使用很久没有用的action，这里加了一个bonus reward，如果一个transition的reward是$r$，这个transition已经有$\tau$步没有试过，在planning进行update的时候，用一个新的reward $r + k\sqrt{\tau}$，$k$很小。不过新添加的bonus会有一定的cost，而且会对value function造成影响，但是在上面的两个例子中，这个cost比performance的提升要好。</p>
-<h2 id="优先级"><a href="#优先级" class="headerlink" title="优先级"></a>优先级</h2><p>在Dyna进行planning时，所有的state-action pair被选中的概率是一样的，显然是不合理的，planning的效率太低，可以有效的集中在某些state-action pair中。举个例子，在dyna_maze例子中，在第二个episode开始的时候，只有goal state前的那个state会产生正的reward，其余的都仍然是$0$，这里意味着很多updates都是无意义的。从一个value为$0$的state转移到另一个value为$0$的state，这个updates是没有意义的。只有那些在goal前面的state才会被更新，或者，那些value不为$0$的state的前面的state的value的更新才有意义。在planning过程中，有用的更新变多了，但是离effcient还差得多。在真实应用中，states可能相当大，这种没有重点的更新是非常低效的。。</p>
-<h3 id="backward-focusing"><a href="#backward-focusing" class="headerlink" title="backward focusing"></a>backward focusing</h3><p>Dyna maze的例子给了我们一个提示，从goal state backward的进行更新。这里的goal state不是一个具体的goal state，指的是抽象的goal state。一般来说，包括goal state以及value改变的state。假设model的value都是正确的，如果agent发现了environment的一个变化以及相应state value的变化，首先更新这个state的predecessor states value，然后一直往前利用value改变的state进行更新就行了。这种想法叫做backward focusing。对于那些低效的state，不更新就是了。<br>Backward过程很快，会有很多state-action被更新，但并不是所有的pair是等价的。有的state value变化很大，有的变化很小。在stochastic环境中，对transiton probability变化的估计也会导致change大小的变化和紧急性的变化。所以，根据紧急性对不同的pair排一个优先级，然后根据这个优先级进行更新。用一个queue记录如果更新某个state-action pair的话，它的estimated value会变多少，根据这个值的大小排优先级。队头的元素取出来进行更新以后，计算它的predecessor pair变化大小。如果这个大小大于某个阈值，就使用新的优先级，把它加入队列，如果queue中有这个pair了，queue中保存大的优先级。完整的算法如下所示：</p>
-<h3 id="deteriministic-environment下的优先级"><a href="#deteriministic-environment下的优先级" class="headerlink" title="deteriministic environment下的优先级"></a>deteriministic environment下的优先级</h3><p>初始化$Q(s,a), Model(s,a), \forall s, a$，置$PQueue$为空<br>Loop forever<br>$\qquad(a) S\leftarrow$ currnet state<br>$\qquad(b) A\leftarrow policy(S,Q)$<br>$\qquad( c )$采取action $A$；得到下一个reward $R$和state $S’$<br>$\qquad(d)Model(S,A) \leftarrow R, S’$<br>$\qquad(e) P\leftarrow |R+\gamma max_aQ(S’,a) - Q(S,A)|$<br>$\qquad$(f)如果$P\gt \theta$，将$S,A$以$P$的优先级插入$PQueue$<br>$\qquad$(g) Loop repeat $n$次，当$PQueue$非空的时候<br>$\qquad S, A\leftarrow fisrt(PQueue)$<br>$\qquad R,S’\leftarrow Model(S,A)$<br>$\qquad Q(S,A) \leftarrow Q(S,A) +\alpha \left[R+\gamma max_a Q(S’,a) -Q(S,A)\right]$<br>$\qquad$Loop for all 预计能到$S$的$\bar{S}, \bar{A} $<br>$\qquad\qquad \bar{R} \leftarrow $predicted reward for $\bar{S}, \bar{A}, S$<br>$\qquad\qquad P\leftarrow |\bar{R}+\gamma max_aQ(S,a) -Q(\bar{S}, \bar{A})$<br>$\qquad\qquad$如果$P\gt \theta$，将$\bar{S},\bar{A}$以$P$的优先级插入到$PQueue$</p>
-<p>推广到stochastic environment上，用model记录state-action pair experience的次数，以及next state，计算出概率，然后进行expected update。Expected update会计算许多低概率transition上，浪费资源，所以可以使用sample update。<br>Sample update相对于expected update的好处，相当于将完整的backup分解成单个更小的transition。这个idea是从van Seijen和Sutton(2013)的一篇论文中得到的，叫做”small backups”，使用单个的transition进行更新，像sample update，但是使用的是这个transition的概率，而不是sampling的$1$。</p>
-<h2 id="Expected-updates和Sample-updates"><a href="#Expected-updates和Sample-updates" class="headerlink" title="Expected updates和Sample updates"></a>Expected updates和Sample updates</h2><p>这本书介绍了不同的value function updates，就one-step方法来说，主要有三个binary dimensions。第一个是估计state values还是action values；第二个是估计optimal policy还是random policy的value，对应四种组合:$q_{*}, v_{*}, q_{\pi}, v_{\pi}$；第三个是使用expected updates还是sample updates，也是这节的内容。总共有八种组合，其中七种对应具体的算法，如下图所示：<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/seven_backup.png" alt="seven_bakcup"><br>这些算法都可以用来planning，之前介绍的Dyna-$Q$使用的是$q_{*}$ sample update，也可以用$q_{*}$ expected update，还可以用$q_{\pi}$ sample updates。</p>
-<h3 id="简介和比较"><a href="#简介和比较" class="headerlink" title="简介和比较"></a>简介和比较</h3><p>Expected update对于每一个$(s,a)$ pair，考虑所有可能的next state和next action $(s’,a’)$，需要distributions model进行精确计算；而sample update仅仅需要sample model，考虑一个next state，会有采样误差。所以expected upadte一定要比sample update好，但是需要的计算量也大。当环境是deteriministic的话，expected udpaet和sample update其实是一样的，只有在stochastic环境下才有区别。<br>假设每一个state有$b$个next state，expected upadte要比sample update的计算量大$b$倍。如果有足够的时间进行完全的expected update，进行一次完全的expected update一定比进行$b$次sample update好，因为虽然计算次数相等，但是sample update有sampling error；如果没有足够的时间的话，在计算次数小于$b$次的时候，sample update要比expected update好，sample update至少进行了一部分improvement，而sample update只有完全进行$b$次计算后才会得到正确的value function。而当state-action pairs很多的情况下，进行完全的expected update是不可能的，sample update是一个可行的方案。<br>给定一个state-action pair，到底是进行一些（小于$b$次）expected update好呢，还是进行$b$次sample updates好呢？如下图所示，展示了expected update和sample update在不同的$b$下，estimation error关于计算次数的函数。<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/fig_8_7.png" alt="fig_8_7"><br>在这个例子中，所有$b$个后继状态出现的可能性相等，开始的error为$1$。假设所有的next state value都是正确的，expected update完成之后，error从$1$变成了$0$。而sample updates根据$\sqrt{\frac{b-1}{bt}}$减少error。对于$b$很大的值来说，进行$b$的很小比例次数的更新，error就会下降很快。</p>
-<h3 id="Sample-updates的好处"><a href="#Sample-updates的好处" class="headerlink" title="Sample updates的好处"></a>Sample updates的好处</h3><p>上图中，sample update的结果可能要比实际结果差一些。在实际问题中，后继状态的value会被它们自身更新。他们的estimate value会更精确，从后继状态进行backup也会更精确。</p>
-<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>在stochastic环境下，如果每个state处可能的next state数量非常多，并且有很多个states，那么sample update可能要比expected update好。</p>
-<h2 id="Trajectory-Sampling"><a href="#Trajectory-Sampling" class="headerlink" title="Trajectory Sampling"></a>Trajectory Sampling</h2><p>这里比较两种distributing updates。<br>DP进行update的时候，每一次扫描整个state spaces，很多state其实是没有用的，没有focus，所有的states地位一样。原则上，只要确保收敛，任何distributed方法都行，然而在实际上常用的是exhaustive sweep。<br>第二种是根据一些distributions从state space或者state action space中进行采样。Dyna-$Q$使用均匀分布采样，和exhaustive sweep问题一样，没有focus。使用on-policy distribution是一种很不错的想法，根据当前的policy不断的与model交互，产生一个trajectory。Sample state transitions以及reward是model给出来的，sample action是当前的policy给出来的。这种方法叫做generating experience和update trajectory sampling。</p>
-<h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><p>如果on-policy的distribution是已知的，可以根据这个distribution对所有的states进行加权，但是这和exhaustive sweeps的计算量差不多。或者从distribution中采样state-action paris，这比simulating trajectories好在哪里呢？事实上我们不知道distribution，当policy改变，计算distribution的计算量和policy evaluation相等。</p>
-<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><p>使用on-policy distribution可以去掉很多我们不感兴趣的内容，或者一遍又一遍的进行无用的重复更新。通过一个小例子分析它的效果。使用one-step expected updates，公式如下：</p>
-<script type="math/tex; mode=display">Q(s,a) \leftarrow \sum_{s',r} \hat{p}(s',r|s,a)\left[r+\gamma max_{a'}Q(s',a')\right]</script><p>使用均匀分布的时候，对所有的state-action pair进行in place的expected update更新；使用on-policy的时候，使用当前$\epsilon$-greedy policy（$\epsilon=0.1$）直接生成episodes，对episodes中出现的state-action pair进行expected update。也就是说一个是随机选的，一个是on-policy中出现的，选择的方式不一样，但是都是进行expected update。<br>简单介绍一下environment。每个state都有两个action，等可能性的到达$b$个next states，$b$对于所有state-action pair都是一样的，所有的transition都有$0.1$的概率到达terminal state。Expected reward服从均值为$0$,方差为$1$的高斯分布。<br>在planning过程中的任何一步都可以停止，根据当前估计的action value，计算greedy policy $\hat{\pi}$下start state的value $v_{\hat{\pi}}(s_0)$，也就是说告诉我们使用greedy重新开始一个新的episodes，agent的表现会怎么样。（假设model是正确的）。<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/fig_8_8.png" alt="fig_8_8"><br>上半部分是进行了$200$次sample任务，$1000$个states，$b$分别为$1,3,10$的结果。在图中根据on-policy 采样更新的方法，一开始很快，时间一长，就慢下来了。当$b$越小的时候，效果越好，越快。另一个实验中表明，随着states数量的增加，on-policy distribution采样的效果也在变好。<br>使用on-policy distribtion进行采样，能够帮助我们关注start state的后继状态。如果states很多，并且$b$很小，这个效果很好并且会持续很久。在长时间的计算中，使用on-policy distribution采样可能会有副作用，因为一直在更新那些value已经正确的states。对它们进行采样没用了，还不如采样一些其他的states。这就是为什么在长时间的运行中使用均匀分布进行采样的效果更好。</p>
-<h2 id="Real-time-DP"><a href="#Real-time-DP" class="headerlink" title="Real-time DP"></a>Real-time DP</h2><p>Real time DP是DP的on-policy trajectory sampling版本。RLDP和上一节介绍的on-policy expected update的区别在update的方式不同，上一届实际上使用的是state-action pair，而这一节DP用的是state，它的更新公式是：</p>
-<script type="math/tex; mode=display">v_{k+1}(s) = \max_a \sum_{s',r}p(s',r|s,a) \left[r+\gamma v_k(s')\right]</script><p>一个是更新action value function，一个是更新state valut function。</p>
-<h3 id="irrelevant-states"><a href="#irrelevant-states" class="headerlink" title="irrelevant states"></a>irrelevant states</h3><p>如果trajectories可以仅仅从指定的states开始，我们感兴趣的仅仅是给定policy下states的value，on-policy trajectory sampling可以完全跳过给定policy下不能到达的states。这些states跟prediction问题无关。对于control问题，目标是找到optimal policy而不是evaluating一个给定的policy，可能存在无论从哪个start states开始都无法到达的states，所以就没有必要给出这些无关states的action。我们需要的是一个optimal partial policy，对于relevant states，给出optimal policy，而对于irrelevant states，给出任意的actions。<br>找到这样一个policy，按道理来说需要访问所有的state-action pairs无数次，包括那些无关状态。<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.137.1955&amp;rep=rep1&amp;type=pdf" target="_blank" rel="noopener">Korf</a>证明了在满足以下条件的时候，能够在很少访问relevant states甚至不访问的时候，找到这样一个policy。</p>
+            <h2 id="quantifying-generalization-in-reinforcement-learning">Quantifying Generalization in Reinforcement Learning</h2>
+<h3 id="下载地址">下载地址</h3>
+<p><a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
+<h3 id="摘要">摘要</h3>
+<p>这篇文章研究的是drl中的overfitting问题。在绝大多数的RL benchmark中，训练和测试都习惯性的在相同环境中，这就让agent’s的泛化能力不够优秀。本文通过程序生成环境构建不同的training set和testing set解决这个问题，设计了一个新的CoinRun环境用于RL的generalization。<br>
+实验证明更深的cnn能够改善generalization，监督学习中常用的一些方法，如$L2$正则化，dropout，data augmentation以及batch normalization。<br>
+这篇文章的贡献：</p>
 <ol>
-<li>goal state的初始value为$0$</li>
-<li>存在至少一个policy保证从任何start state都能到达goal state</li>
-<li>所有到达的非goal states的reward是严格为负的</li>
-<li>所有states的初始value要大于等于optimal values（可以设置为$0$，一定比负值大）</li>
+<li>transfer需要的训练环境数量要远远高于之前的工作中使用到的。</li>
+<li>使用CoinRun benchmark提出了一个generalization metric。</li>
+<li>找到了不同网络结构和正则化项中最好的那些设置。</li>
 </ol>
-<p>如果满足这些条件，RTDP一定会收敛到relevant states的optimal policy。</p>
-<h2 id="决策时进行planning"><a href="#决策时进行planning" class="headerlink" title="决策时进行planning"></a>决策时进行planning</h2><h3 id="backgroud-planning"><a href="#backgroud-planning" class="headerlink" title="backgroud planning"></a>backgroud planning</h3><p>进行planning至少有两种方法。第一种是已经介绍的DP和Dyna这些算法，使用planning基于从model得到的simulated experience不断的改进policy和value function。通过比较某一个state处不同state-action pairs value值的大小选择action。在action被选择之前，planning更新所有的$Q$值。这里planning的结果被很多个states用来选择action。这种planning叫做background planning。</p>
-<h3 id="decision-time-planning"><a href="#decision-time-planning" class="headerlink" title="decision-time planning"></a>decision-time planning</h3><p>第二种方法是使用planning输出单个state的action，遇到一个新的state $S_t$，输出是单个的action $A_t$，然后再下一个时间步根据$S_{t+1}$继续计算$A_{t+1}$。最简单的一个例子是当只有states value可以使用的时候，通过比较model预测每一个action能够到达的后继state的value（也就是使用after state value）选择相应的action，。这种方法叫做decision-time planning。<br>事实上，decision-time planning和background planning的流程是一样的，都是使用simulated experience到backup values再到policy。只不过decision-time planning只是对当前可访问的单个state和action的value和policy进行planning。在许多decision-time planning的过程中，用于选择当前state对应的action时，使用到的value和policy用过以后都被丢弃了，这并不会造成太大的计算损失，因为在大部分任务中很多states在短时间内都不会被再次访问到。</p>
-<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><p>decision-time planning适用于不需要快速实时相应的场景，比如各种下棋。如果需要快速响应的，那么最好使用backgroud planning计算一个policy可以快速应用到新的states。</p>
-<h2 id="启发式搜索-1"><a href="#启发式搜索-1" class="headerlink" title="启发式搜索"></a>启发式搜索</h2><p>AI中经典的state-space方法都是decision-time planning方法，统称为heuristic search。在启发式搜索中，会使用树进行搜索，近似的value function应用到叶子节点，进行backup到根节点（当前state），相应的backup diagram和optimal的expected updates类似。根据计算的backed-up值，选择相应的action之后，丢弃这些值。<br>传统的启发式搜索并不保存backup value，它更像是多步的greedy policy，目的是更好的选择actions。如果我们有一个perfect model以及imperfect action value function，搜索的越深结果越好。如果search沿着所有可能的路一直到episode结束，那么imperfect value function的结果被抵消了，选出来的action也是optimal。如果搜索的深度$k$足够深，$\gamma^k$接近于$0$,那么找到的action也是近乎于最优的。当然，搜索的深度越深，需要的计算资源就越多。<br>启发式搜索的的updates集中在current state，它的search tree集中在接下来可能的states和actions，这也是它的结果为什么很好的原因。在某些特殊的情况下，我们可以将具体的启发式搜索算法构建出一个tree，自底向上的执行one-step update，如下图所示：<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/heuristic_search_tree.png" alt="heuristic_search_tree"><br>如果update是有序的，并且使用tabular representation，整个updates可以看成深搜，所有的state-space搜索可以看成很多个one-step updates的组合。我们得出了一个结论，搜索深度越深，性能越好的原因不是multistep updates的使用，因为它实际上使用的是多个one-step update。真正的原因是更新都集中在current state downstream的states和actions上，所有的计算都集中在candidate actions相关的states和actions上。</p>
-<h2 id="Rollout算法"><a href="#Rollout算法" class="headerlink" title="Rollout算法"></a>Rollout算法</h2><h3 id="什么是Rollout算法"><a href="#什么是Rollout算法" class="headerlink" title="什么是Rollout算法"></a>什么是Rollout算法</h3><p>Rollout算法是将Monte Carlo Control应用到从current state开始的simulate trajectories上的decision-time planning算法。Rollout算法根据给定的policy，这个policy叫做rolloutpolicy，从当前state可能采取的所有action开始生成很多simulated trajectories，对得到的returns进行平均估计aciton values。当action value估计的足够精确的时候，选择最大的那个action执行。<br>和MC Control的区别在于，MC Control的目的是估计整个action value function $q_{\pi}$或者$q_{*}$，而Rollout算法的目的是对于每一个current state，在一个给定policy下估计每一个可能的action的value。Rollout是decision-time planning算法，计算完相应的estimate action value之后，就丢弃它们。</p>
-<h3 id="Rollout算法做了什么"><a href="#Rollout算法做了什么" class="headerlink" title="Rollout算法做了什么"></a>Rollout算法做了什么</h3><p>Rollout算法和policy iteration差不多。在policy improvement theorem理论中，如果在一个state处采取新的action，它的value要比原来的value高，那么就说这个新的policy要比老的policy好。Rollout算法在每个current state处，估计不同的state action value，然后选择最好的，其实就相当于one-step的policy iteration，或者更像on-step的asynchronous value iteration。<br>也就是说，rollout算法的目的是改进rollout policy，而不是寻找最优的policy。Rollout算法非常有效，但是它的效果也取决于rollout policy，roloout policy越好，最后算法生成的policy就越好。</p>
-<h3 id="如何选择好的rollout-policy"><a href="#如何选择好的rollout-policy" class="headerlink" title="如何选择好的rollout policy"></a>如何选择好的rollout policy</h3><p>更好的rollout policy也就需要更多的资源，因为是decision-time算法，时间约束一定要满足，rollout算法的计算时间取决于每一个decision需要选择的action数量，sample trajectories的长度，rollout policy做决策的事件，以及足够的sample trajectories的数量。接下来给出几种方法去权衡这些影响因素：<br>第一个方法，MC trials都是独立的，所以可以使用多个分开的处理器运行多个trials。第二个方法是在simulated trajectories结束之前截断，通过一个分类评估函数对truncated returns进行修正。第三个方法是剪枝，剪掉那些不可能是最优的actions，或者那些和当前最优结果没啥差别的acitons。</p>
-<h3 id="rollout算法和learning算法的关系"><a href="#rollout算法和learning算法的关系" class="headerlink" title="rollout算法和learning算法的关系"></a>rollout算法和learning算法的关系</h3><p>Rollout算法并不是learning算法，因为它没有保存values和polices。但是rollout算法具有rl很多好的特征。作为MC Control的应用，他们使用sample trajectories，避免了DP的exhausstive sweeps，同时不需要使用distributin models，使用sample models。最后，rollout算法还使用了policy improvement property，即选择当前estimate action values最大的action。</p>
-<h2 id="Monte-Carlo-Tree-Search"><a href="#Monte-Carlo-Tree-Search" class="headerlink" title="Monte Carlo Tree Search"></a>Monte Carlo Tree Search</h2><p>MCTS是decision-time planning算法，实际上，MCTS是一个rollout算法，它在上一节介绍的rollout算法上，加上了acucumulating value estimates的均值。MCTS是AlphaGO的基础算法。<br>每到达一个新的state，MCTS根据state选择action，到达新的state，再选择action，持续下去。在大多数情况下，simulated trajectories使用rollout policy生成actions。当model和rollout policy都不需要大量计算的时候，可以在短时间内生成大量simulated trajectories。只保留在接下来的几步内最后可能访问到的state-action pairs的子集，形成一棵树，如下图所示。任意simulated trajectory都会经过这棵树，并且从叶子节点退出。在tree的外边，使用rollout policy选择actions，在tree的内部使用一个新的policy，称为tree policy，平衡exploration和exploitation。Tree policy可以使用$\epsilon$-greedy算法。<br><img src="/2019/08/07/reinforcement-learning-an-introduction-第8章笔记/mcts.png" alt="mcts"><br>MCTS总共有四个部分，一直在迭代进行，第一步是Selection，根据tree policy生成一个episode的前半部分；第二步是expansion，从选中的叶子节点处的上一个节点探索其他没有探索过的节点；第三步是simulation，从选中节点，或者第二步中增加的节点处，使用rollout policy生成一个episode的后半部分；第四步是backup，从第一二三步得到的episode进行backup。这四步一直迭代下去，等到资源耗尽，或者没有time的时候，就退出，然后根据生成的tree中的信息选择相应的aciton，比如可以选择root node处action value最大的action，也可以选择最经常访问的action。<br>MCTS是一种rollout算法，所以它拥有online，incremental，sample-based和policy improvement等优点。同时，它保存了tree边上的estimate action value，并且使用sample update进行更新。优势是让trivals的初始部分集中在之前simulated的high-return trajectories的公共部分。然后不断的expanding这个tree，高效增长相关的action value table，通过这样子，MCTS避免了全局近似value funciton，同时又能够利用过去的experience指定exploraion。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《reinforcement learning an introduction》第二版</p>
+<h3 id="related-work">Related Work</h3>
+<p>这篇文章是从Sonic benchmark中得到的idea，agents可以在training set上训练任意的长度，在test时候执行$1$ million timesteps进行fine-tuning，sonic benchmark的目标是解决&quot;training on the test set&quot;的问题。</p>
+<h3 id="简介">简介</h3>
+<p>尽管RL agents能解决很复杂的任务，将experience迁移到新环境，或者在不同的RL tasks之间进行泛化是很困难的。即使已经掌握了$10$ video game的agents，在初次遇到第$11$级时也会失败，agents在训练的时候只学习到了和这个环境相关的知识。<br>
+RL agents的训练其实是过拟合的，但是绝大多数的benchmark还是鼓励在相同的环境中进行train和evaluation。和Sonic Benchmark一样，作者认为分train和test集是必要的，同时作者认为量化agent的泛化能力也是很有用的。<br>
+Sonic Benchmark通过对环境划分训练集和测试集，解决了在测试集上训练的问题。而Farebrother认识到，没有划分训练集和测试集，使得RL训练中缺乏正则化手段，通过使用监督学习中的$L2$正则化和dropout，使得agents能够学习更多泛化特征。<br>
+Zhang等利用程序生成划分train和test环境，他们在gridworld mase上进行实验，得出了许多RL agents为什么过拟合的结论。通过让agents记住在训练集中具体的levels，以及stick actions，random starts，可以减少过拟合的发生。</p>
+<h3 id="quantifying-generalization">Quantifying Generalization</h3>
+<h4 id="coinrun">CoinRun</h4>
+<p>CoinRun环境很简单，一个智能体，从最左边，一直往右走，收集在最右边的金币，中间或均匀或随机的散布着一些障碍，只有得到金币后有一个常数的reward。一个episode结束有以下三种可能性：</p>
+<ul>
+<li>当agent死亡，</li>
+<li>或者采集到coin，</li>
+<li>或者$1000$个timesteps后自动结束。</li>
+</ul>
+<p>CoinRun和Sonic很像，但是更简单，更容易泛化。给定足够数量的training levels和足够的training time，算法能够学习一个接近最优的optimal policy for all CointRun levels。每一个level都是从一个给定的seed中顺序生成的，能够给智能体相当多并且易于量化提供的training data。</p>
+<h4 id="coinrun泛化曲线">CoinRun泛化曲线</h4>
+<p>使用CoinRun可以衡量agents从给定的training level中训练迁移到没有见过的test levels上的效果。随着training中使用的levels数量增多，即使是训练固定的timesteps时，我们期望在test set上的性能变好。test时，作者在test set上进行了zero-shot performance评估，即没有在test set上进行fine-tuning。<br>
+作者训练了$9$个agents 运行CoinRun，每一个都在具有不同levels数量的训练集上运行。训练过程中，每一个episode从相应的set中随机采样一个level。前$8$个agents使用的train sets中level的数量从$100$到$16000$，最后一个agent在无限个levels的训练集上。Level的seed是$2^32$，所以几乎不可能发生冲突。训练集包含$2$M个独一无二的levels，在test的时候仍然不会遇到已经遇到过的level。整个实验进行了$5$次，每次重新生成training sets。<br>
+使用nature-dqn中的三层CNN进行训练，然后使用$8$个workers的PPO总共训练了$256M$步。每个agents都训练相同的timesteps，然后在每个mini-batch的$8$个works上取gradients的均值。<br>
+最后的结果中，对$10000$个episodes的final performance进行平均，我们可以看出来，在$4000$个levels以内，过拟合很严重，即使是$1600$个training levels，过拟合也是很多的。当agents遇到的都是新的levels时，表现最好。</p>
+<h3 id="evaluating-architectures">Evaluating Architectures</h3>
+<p>比较Nature-CNN和IMPALA-CNN，结果证明IMPALA-CNN要好一些。为了评估generalization performance，可以直接在无限个levels的train set上训练agents，然后比较learning curves。在这个settings中，智能体不可能过拟合某一些levels的子集，每一个level都是新的。因为Impala-cnn的记过更好，所以作者尝试了更深的网络，发现效果更好，新的网络使用了$5$个residual blocks，每层的channels数量是原来的两倍。再进一步增加网络深度的时候，发现了returns逐渐变小，同时花费的时间也更多了。<br>
+当然，使用无限的training set并不会总是会带来性能的提升。选择好的超参数能够加快训练速度，但是并不一定会改善generalization的性能。通常来讲，在固定levels的训练集上训练，能产生一个更有用的metric。</p>
+<h3 id="evaluating-regularization">Evaluating Regularization</h3>
+<p>正则化在监督学习中有很重要的作用，因为监督学习更关心的是generalization。监督学习的数据集通常分为训练集和数据集，有很多正则化技巧可以用来减少generalization gap。但是因为RL中训练集和测试集通常是同一个，所以正则化技术就没什么效果。<br>
+现在既然RL中要衡量generalization，可能正则化技术就能起到作用。作者分别在CoinRun environment中试了$L2$正则化，dropout，data augmentation以及batch normalization。<br>
+这一节中，所有的agents都是在$500$个levels的CoinRun环境中进行的。我们可以看到有过拟合发生，所以就希望这个setting能够evaluating出不同正则化技术的效果。所有接下来实验的均值和方差都是runs$3$次得到的。使用的是有$3$个残差块的IMPALA-CNN。</p>
+<h4 id="dropout和l2正则化">Dropout和L2正则化</h4>
+<p>作者分别试了dropout为$p\in [0, 0.05, 0.10, 0.15, 0.20, 0.25]$，以及L2正则化权重$w\in [0, 0.5, 1.0, 1.5, 2.0, 2.5]\times 10^{-1} $，一次只试了一个。最终找到了$p=0.1$以及$w=10^{-4} $。使用$L2$正则化训练了$256M$ timesteps，使用dropout训练了$512M$ timesteps，dropout更难收敛，而且效果没有$L2$正则化好用。</p>
+<h4 id="data-augmentation">Data Augmentation</h4>
+<p>监督学习中，数据增强的手段主要用于图像，包括变换，旋转，亮度调整，锐化等等。不同的数据集可能需要使用不同的augmentations。这里作用使用的是Cutout的一个变形。对于每一个observation，可变大小的矩阵区别被masked掉，这些masked的区域给一个随机的颜色，这个和domain randomization非常相似，用于机器人从仿真到真实世界的transfer。</p>
+<h4 id="batch-normalization">Batch Normalization</h4>
+<p>在IMPALA-CNN架构中每层CNN之后使用batch normalization。</p>
+<h4 id="stochasticity">Stochasticity</h4>
+<p>这个随机性很有意思哦。作者考虑了两种方法，一种是改变环境的stochasticity，另一个是改变policy的stochasticity。首先，使用$\epsilon$-greedy action selection算法向环境中加入stochasticity，在每一个timestep中，有$\epsilon$的概率，使用random action代替policy的action。在之前的一些研究中，$\epsilon$-greedy用来鼓励exploration和防止overfitting。然后，通过改变PPO中的entropy bonus控制policy stochasticity。Baseline中使用的entropy bonus是$k_H = 0.01$。<br>
+同时增加训练时间步到$512M$个timesteps。单独向环境或者policy加入stochasticity都能改善generalization。</p>
+<h4 id="combining-regularization-methods">Combining Regularization Methods</h4>
+<p>作者尝试将data augmentation,batch normalization和L2结合起来，结果表明比任意单独的一种都要好，但是提升的大小并不是很大，可以说这三种方法解决的过拟合问题差不多。<br>
+由于某些未知的原因，将stochastic和正则化手段结合起来的效果不理想。</p>
+<h2 id="其他环境">其他环境</h2>
+<h3 id="cointrun-platforms">CointRun-Platforms</h3>
+<h3 id="randommazes">RandomMazes</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://arxiv.org/pdf/1804.03720.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1804.03720.pdf</a><br>
+2.<a href="https://arxiv.org/pdf/1812.02341.pdf" target="_blank" rel="noopener">https://arxiv.org/pdf/1812.02341.pdf</a></p>
 
           
         
@@ -767,7 +1219,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/06/python-selenium安装/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/09/04/convex-optimization-chapter-3-convex-functions/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -787,7 +1239,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/08/06/python-selenium安装/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">python selenium</a>
+                <a href="/2019/09/04/convex-optimization-chapter-3-convex-functions/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">convex optimization chapter 3 convex functions</a>
               
             
           </h1>
@@ -812,7 +1264,7 @@
                 
               
 
-              <time title="创建时间：2019-08-06 11:24:09" itemprop="dateCreated datePublished" datetime="2019-08-06T11:24:09+08:00">2019-08-06</time>
+              <time title="创建时间：2019-09-04 20:49:37" itemprop="dateCreated datePublished" datetime="2019-09-04T20:49:37+08:00">2019-09-04</time>
             
 
             
@@ -829,7 +1281,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 16:23:09" itemprop="dateModified" datetime="2019-12-17T16:23:09+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-17 15:16:42" itemprop="dateModified" datetime="2019-12-17T15:16:42+08:00">2019-12-17</time>
               
             
           </span>
@@ -846,7 +1298,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/凸优化/" itemprop="url" rel="index"><span itemprop="name">凸优化</span></a></span>
 
                 
                 
@@ -882,11 +1334,9 @@
       
         
           
-            <h2 id="ubuntu-安装chrome-driver"><a href="#ubuntu-安装chrome-driver" class="headerlink" title="ubuntu 安装chrome driver"></a>ubuntu 安装chrome driver</h2><ol>
-<li>下载chrome driver<br><a href="http://chromedriver.chromium.org/downloads" target="_blank" rel="noopener">http://chromedriver.chromium.org/downloads</a><br>根据自己的操作系统和chrome下载相应的chrome driver</li>
-<li>解压<br>将解压后的chromedriver放置在PATH环境变量中的任意目录即可，我是放置在了/usr/local/bin</li>
-</ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.jianshu.com/p/dd848e40c7ad" target="_blank" rel="noopener">https://www.jianshu.com/p/dd848e40c7ad</a></p>
+            <h2 id="凸函数-convex-functions">凸函数(convex functions)</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.stephen boyd. Convex optimization</p>
 
           
         
@@ -943,7 +1393,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/06/python-spider/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/30/gcc/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -963,7 +1413,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/08/06/python-spider/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">python-spider</a>
+                <a href="/2019/08/30/gcc/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">linux gcc</a>
               
             
           </h1>
@@ -988,7 +1438,7 @@
                 
               
 
-              <time title="创建时间：2019-08-06 10:53:56" itemprop="dateCreated datePublished" datetime="2019-08-06T10:53:56+08:00">2019-08-06</time>
+              <time title="创建时间：2019-08-30 23:35:20" itemprop="dateCreated datePublished" datetime="2019-08-30T23:35:20+08:00">2019-08-30</time>
             
 
             
@@ -1005,7 +1455,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 15:52:12" itemprop="dateModified" datetime="2019-12-17T15:52:12+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-23 12:58:23" itemprop="dateModified" datetime="2019-12-23T12:58:23+08:00">2019-12-23</time>
               
             
           </span>
@@ -1022,7 +1472,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python/" itemprop="url" rel="index"><span itemprop="name">python</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/linux/" itemprop="url" rel="index"><span itemprop="name">linux</span></a></span>
 
                 
                 
@@ -1058,226 +1508,37 @@
       
         
           
-            <h2 id="requests"><a href="#requests" class="headerlink" title="requests"></a>requests</h2><p>获取网页<br>response = requests.post(url, headers)<br>返回的response包含有网页返回的内容。<br>response.text以文字方式访问。</p>
-<h2 id="beautiful-soup"><a href="#beautiful-soup" class="headerlink" title="beautiful soup"></a>beautiful soup</h2><p>soup.find_all()</p>
-<h2 id="selenium"><a href="#selenium" class="headerlink" title="selenium"></a>selenium</h2><ol>
-<li><p>xpath查找<br>查找class为”wos-style-checkbox”，type为”checkbox”的任意elements。可以把*号换成input，就变成查找满足上述条件的input elemetns。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">driver.find_elements_by_xpath(<span class="string">"//*[@type='checkbox'][@class='wos-style-checkbox']"</span>)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>访问元素的内容<br>element.text</p>
-</li>
-<li><p>复选框选中与取消选中</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">checkbox = driver.find_element_by_id(<span class="string">"checkbox"</span>)</span><br><span class="line"><span class="keyword">if</span> checkbox.is_selected():  <span class="comment">#如果被选中</span></span><br><span class="line">    checkbox.click()    <span class="comment"># 再点击一次，就变成了取消选中</span></span><br><span class="line"><span class="keyword">else</span>:   <span class="comment"># 如果没有被选中</span></span><br><span class="line">    checkbox.click()    <span class="comment"># 再点击一次，就变成了选中</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>提交表单</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">keywords = driver.find_element_by_id(<span class="string">"input"</span>)</span><br><span class="line"><span class="comment"># 清空表单默认值</span></span><br><span class="line">keywords.clear()</span><br><span class="line"><span class="comment"># 提交表单</span></span><br><span class="line">keywords.send_keys(values)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>输完表单内容需要回车<br>直接在表单内容中添加\n即可。</p>
-</li>
-<li><p>下拉框<br>使用Select对象</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from selenium.webdriver.support.ui import Select</span><br><span class="line">from selenium import webdriver</span><br><span class="line">s = Select(driver.find_element_by_id(&quot;databases&quot;))</span><br><span class="line"></span><br><span class="line">s.select_by_value(&quot;value&quot;)</span><br><span class="line">s.select_by_index(index)</span><br><span class="line">s.select_by_visible_text(&quot;visible_text&quot;)</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>模拟鼠标操作</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">from selenium.webdriver.common.action_chains import ActionChains</span><br><span class="line"></span><br><span class="line"># 定位element</span><br><span class="line">arrow = driver.find_element_by_id(&quot;next&quot;)</span><br><span class="line"># 单击</span><br><span class="line">ActionChains(driver).click(arrow).perform()</span><br><span class="line"># 双击</span><br><span class="line">ActionChains(driver).double_click(arrow).perform()</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>display:none和visible: hidden<br>display:none表示完全不可见，不占据页面空间，而visible: hidden仅仅隐藏了element的显示效果，仍然占据页面空间，并且是可以被定位到，但是无法被访问（如selenium的click,clear以及send_keys等，会报错ElementNotVisibleException’: Message: Element is not currently visible and so may not be interacted with）。</p>
-</li>
-</ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://www.w3schools.com/xml/xml_xpath.asp" target="_blank" rel="noopener">https://www.w3schools.com/xml/xml_xpath.asp</a><br>2.<a href="https://devhints.io/xpath" target="_blank" rel="noopener">https://devhints.io/xpath</a><br>3.<a href="https://zhuanlan.zhihu.com/p/31604356" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/31604356</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/01/monte-carlo-markov-chain/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/08/01/monte-carlo-markov-chain/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">Monte Carlo Markov Chain</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-08-01 20:07:38" itemprop="dateCreated datePublished" datetime="2019-08-01T20:07:38+08:00">2019-08-01</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:41:19" itemprop="dateModified" datetime="2019-12-17T15:41:19+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Monte Carlo方法在很多地方都出现过，但是它具体到底是干什么的，之前从来没有仔细了解过，这次正好趁着这个机会好好学习一下。<br>统计模拟中有一个重要的问题就是给定一个概率分布$p(x)$，生成它的样本。对于一些简单的分布，可以使用均匀分布产生的样本进行样本。但是对于一些复杂的样本，单单使用均匀分布就不行了，需要使用更加复杂的随机模拟方法。Markov Chain Monte Carlo就是一种随机模拟方法(simple simulation)，我们常见的gibbs sampling也是。通过多次模拟，产生多组实验数据，进行积分啊什么的。</p>
-<h2 id="Monte-Carlov-Markov-Chain"><a href="#Monte-Carlov-Markov-Chain" class="headerlink" title="Monte Carlov Markov Chain"></a>Monte Carlov Markov Chain</h2><p>考虑以下，给定一个beta分布，如何进行采样？MCMC提供了从任意概率分布中采样的方法，尤其是当我们计算后验概率时极为有用。在贝叶斯公式中，如下图所示，我们需要从后验分布中进行采样，但是后验分布并不是那么好计算的，因为牵扯到$p(D)$的计算，根据全概率公式，需要进行积分，而beta分布的积分并不好解。<br><img src="/2019/08/01/monte-carlo-markov-chain/bayesian.png" alt="bayesian"></p>
-<p>Wikipedia上MCMC的定义：MCMC是一类方法的统称，MCMC方法构建一个Markov chain，这个Markov chain的stationary distribution是我们的目标distribution，然后进行采样。经过很多步之后的一个state可以看成是我们目标distribution的一个样本。简单解释以下就是，给定一个概率分布$p(x)$，我们想要生成这个概率分布的一些样本。因为马尔科夫链能够收敛到stationary distribution，我们的想法就是构造一个转移矩阵为$P$的马尔科夫连，使得该马尔科夫的stationry distribution是$p(x)$，那么不管我们从任何初始状态$x_0$出发，得到一个马尔科夫链$x_0,x_1,\cdots, x_t,x_{t+1}, \cdots$，如果马尔科夫链在第$n$步已经到了stationary distribution，那么$t+1$后的states都可以看成$p(x)$的样本。</p>
-<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><p>我们从Beta分布中进行采样，Beta分布的公式如下所示：</p>
-<script type="math/tex; mode=display">f(\theta;\alpha, \beta) = \frac{1}{B(\alpha, \beta)}\theta\^{\alpha-1}(1-\theta)\^{\beta-1},\alpha\gt 0,\beta\gt 0, x\in \left[0,1\right]</script><p>其中，$\frac{1}{B(\alpha, \beta)} = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$，是$\alpha,\beta$的函数，这里我们假设$\alpha,\beta$是固定的。<br>MCMC方法能够创建一个Markov chain，它的stationary distribution是Beta distribution。</p>
-<p>定义$s=(s_1,s_2,\cdots, s_M)$是desired stationary distribution。我们的目标是创建一个Markov Chain，它的stationary distribution是desitred stationary distribution。随机初始化一个具有$M$个states的Markov Chain，transition matrix 是$P$，$p_{ij}$代表从state $i$到$j$的概率。<br>随机初始化的Markov Chain肯定有一个stationary distribution，但是不是我们想要的哪个。我们的目标就是改变这个Markov Chain让它的stationary distribution是我们想要的。为了实现这个目的：</p>
+            <h2 id="gcc">GCC</h2>
+<p>GCC是GUN项目下的编译器驱动程序，它可以将文件形式的源代码文件翻译成一个可执行的目标文件。这个翻译过程总共包含四个阶段，执行这四个阶段的程序（预处理器cpp，编译器cc1，汇编器as，链接器ld）组成了编译器驱动程序。</p>
+<h2 id="快速入门">快速入门</h2>
 <ol>
-<li>随机选择一个初始state $i$</li>
-<li>根据$P$的第$i$行随机选择一个新的proposal state</li>
-<li>计算一个measure称作Acceptance Probabiliby：<script type="math/tex; mode=display">a_{ij} = min(\frac{s_j p_{ji}}{s_ip_{ij}},1)</script></li>
-<li>投掷一枚正面向上概率为$a_{ij}$的硬币，如果正面向上，accept这个proposal，移动到下一个state，否则，reject 这个proposal，留在当前state。</li>
-<li>重复下去</li>
+<li>保存c++源文件为hello_world.c</li>
 </ol>
-<p>经过很长时间以后，这个chain会收敛，我们可以使用这个chain的states作为从任意distribution的采样。不同的分布，使用的acceptance probability不同而已，其实就是根据给出的分布计算一个接收概率而已。</p>
-<h3 id="从beta分布中采样"><a href="#从beta分布中采样" class="headerlink" title="从beta分布中采样"></a>从beta分布中采样</h3><p>Beta分布是定义在$[0,1]$上的连续分布，它有$[0,1]$上的无穷多个states。假设具有$[0,1]$上无限个states的markov chain的transition matrix $P$是一个对称矩阵，即$p_{ij}=p_{ji}$，acceptance probability中的$p_{ij}$项就可以消掉。<br>接下来我们要做的是：</p>
-<ol>
-<li>从均匀分布$(0,1)$中随机选择一个初始state $i$</li>
-<li>根据$P$的第$i$行值随机选择一个新的proposal state。</li>
-<li>计算Acceptance Probability：<script type="math/tex; mode=display">a_{ij} = min(\frac{s_j p_{ji}}{s_ip_{ij}},1)</script>可以化简为：<script type="math/tex; mode=display">a_{ij} = min(\frac{s_j}{s_i},1)</script>其中$s_i = Ci\^{\alpha-1} (1-i)\^{\beta-1},s_j = Cj\^{\alpha-1} (1-j)\^{\beta-1}$，</li>
-<li>投掷一枚正面向上概率为$a_{ij}$的硬币，如果正面向上，accept这个proposal，移动到下一个state，否则，reject 这个proposal，留在当前state。</li>
-<li>重复下去</li>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"hello world.\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>使用gcc 编译</li>
 </ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/165/how-would-you-explain-markov-chain-monte-carlo-mcmc-to-a-layperson</a><br>2.<a href="https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1" target="_blank" rel="noopener">https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1</a><br>3.<a href="http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf" target="_blank" rel="noopener">http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf</a><br>4.<a href="https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/" target="_blank" rel="noopener">https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/</a></p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>gcc -o hello_world hello_world.c</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<ol start="3">
+<li>执行编译后的源文件<br>
+./hello_world</li>
+</ol>
+<h2 id="选项">选项</h2>
+<ul>
+<li><code>[-Wall]</code>，允许发出gcc提供的所有有用的警告。</li>
+<li><code>[-std=standard]</code>，指定C标准的版本，standard取值为c99, c11, gnu89等</li>
+<li><code>[-Og]</code>，指定编译器优化级别，为debug可用，</li>
+<li><code>[-m32]</code>，指定编译成32位程序。</li>
+<li><code>[-m64]</code>，指定编译成64位程序。</li>
+</ul>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://legacy.gitbook.com/download/pdf/book/lexdene/gcc-five-minutes" target="_blank" rel="noopener">https://legacy.gitbook.com/download/pdf/book/lexdene/gcc-five-minutes</a></p>
 
           
         
@@ -1334,7 +1595,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/31/markov-matrices/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/28/dot-product-cross-product-and-triple-product/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -1354,7 +1615,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/07/31/markov-matrices/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">Markov Matrices</a>
+                <a href="/2019/08/28/dot-product-cross-product-and-triple-product/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">dot product cross product and triple product</a>
               
             
           </h1>
@@ -1379,7 +1640,7 @@
                 
               
 
-              <time title="创建时间：2019-07-31 20:18:10" itemprop="dateCreated datePublished" datetime="2019-07-31T20:18:10+08:00">2019-07-31</time>
+              <time title="创建时间：2019-08-28 17:26:35" itemprop="dateCreated datePublished" datetime="2019-08-28T17:26:35+08:00">2019-08-28</time>
             
 
             
@@ -1396,7 +1657,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 15:42:40" itemprop="dateModified" datetime="2019-12-17T15:42:40+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-17 16:30:06" itemprop="dateModified" datetime="2019-12-17T16:30:06+08:00">2019-12-17</time>
               
             
           </span>
@@ -1413,7 +1674,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
 
                 
                 
@@ -1449,26 +1710,304 @@
       
         
           
-            <h2 id="Markov-Matrices"><a href="#Markov-Matrices" class="headerlink" title="Markov Matrices"></a>Markov Matrices</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>马尔科夫矩阵满足两个条件</p>
+            <p>先给出已知条件，两个列向量$a= (x_1,y_1, z_1), w=(x_2,y_2, z_2)$。</p>
+<h2 id="点积-dot-product">点积(dot product)</h2>
+<h3 id="定义">定义</h3>
+<p>点积，又叫数量积，定义为$a\cdot b = x_1 x_2 + y_1y_2 + z_1z_2$。<br>
+另一种定义方式是$a\cdot b = \vert a \vert \vert b \vert cos &lt;a, b&gt;$`<br>
+这两种定义方式实际上是一样的：<br>
+<img src="/2019/08/28/dot-product-cross-product-and-triple-product/dot_product.jpg" alt="dot_product"></p>
+<h2 id="叉积-cross-product">叉积(cross product)</h2>
+<h3 id="定义-v2">定义</h3>
+<p>叉积，又叫向量积，定义为$\vert a\times b \vert = \vert a \vert \vert b \vert sin &lt;a, b&gt;$，最后得到一个方向和$a,b$都正交的向量，并且方向符合右手规则。向量积的大小等于$a,b$构成的平行四边形的面积。</p>
+<h3 id="属性">属性</h3>
+<ol>
+<li>$a\times b, b\times a$是方向相反的</li>
+<li>$a,b$的叉积垂直于$a$和$b$</li>
+<li>任意向量和它自己的叉积为$0$。</li>
+</ol>
+<h2 id="混合积-trple-product">混合积(trple product)</h2>
+<h3 id="定义-v3">定义</h3>
+<p>混合积定义为$(a\times b) \cdot c$，它的绝对值等于以$a,b,c$三个向量构成的形状的体积。</p>
+<h3 id="属性-v2">属性</h3>
+<p>向量$a\times b$是一个向量，$a\times b$的大小相当于底面积，方向垂直于$a,b$所有的平面，再和$c$点乘，乘上了$c$投影到$a,b$点乘结果所在的直线上，相当于乘上了高。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/28/linear-algebra-eigenvalues-and-eigenvectors/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/08/28/linear-algebra-eigenvalues-and-eigenvectors/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">eigenvalues and eigenvectors（特征值和特征向量）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-08-28 17:21:43" itemprop="dateCreated datePublished" datetime="2019-08-28T17:21:43+08:00">2019-08-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:47:39" itemprop="dateModified" datetime="2019-12-17T15:47:39+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="特征值和特征向量">特征值和特征向量</h2>
+<p>这里介绍的东西都是针对于方阵来说的。</p>
+<h3 id="定义">定义</h3>
+<p>$Ax=\lambda x $，满足该式子的$x$称为矩阵$A$的特征向量，相应的$\lambda$称为特征值。</p>
+<h3 id="求解">求解</h3>
+<p>将$Ax=\lambda x$进行移项，得到$(A-\lambda I) x =0$，其中$A-\lambda I$必须是sigular（即不可逆），如果$A - \lambda I$是非奇异矩阵，也就是说它的列向量相互独立，那么只有零解，无意义。令$det (A-\lambda I)=0$，求出相应的$\lambda$和$x$。</p>
+<h3 id="属性">属性</h3>
+<ol>
+<li>$n$个特征值的乘积等于行列式。</li>
+<li>$n$个特征值之和等于对角线元素之和。</li>
+</ol>
+<h2 id="迹">迹</h2>
+<h3 id="定义-v2">定义</h3>
+<p>主对角线元素之和叫做迹（trace）。<br>
+$$\lambda_1 +\cdots + \lambda_n = trace = a_{11} + \cdots + a_{nn}$$</p>
+<h2 id="矩阵对角化">矩阵对角化</h2>
+<h3 id="定义-v3">定义</h3>
+<p>如果合适的使用矩阵$A$的特征向量，可以把$A$转换成一个对角矩阵。<br>
+假设$n\times n$的矩阵$A$有$n$个线性独立的特征向量$x_1,\cdots, x_n$，把它们当做列向量，构成一个新的矩阵$S=\left[x_1, \cdots, x_n\right]$。<br>
+$$AS = A\left[x_1, \cdots, x_n\right] = \left[\lambda_1 x_1, \cdots, \lambda_n x_n\right] = \left[x_1, \cdots, x_n\right] \begin{bmatrix} \lambda_1 &amp;\cdots &amp; 0 \\ \vdots&amp;\lambda_i &amp; \vdots\\ 0&amp; \cdots &amp; \lambda_n\end{bmatrix} = S\Lambda$$<br>
+即$AS = S\Lambda$，所以有$S^{-1} AS = \Lambda, A = S\Lambda S^{-1} $，这里我们假设$A$的$n$个特征向量都是线性无关的。$A, \Lambda$的特征值相同，特征向量不同。$A$的特征向量用来对角化$A$。</p>
+<h3 id="属性-v2">属性</h3>
+<p>如果一个矩阵有$n$个不同的实特征值，那么它一定可对角化。<br>
+如果存在重复的特征值，可能但不一定可对角化，单位矩阵就有重复特征值，但可对角化。</p>
+<h2 id="可逆和对角化">可逆和对角化</h2>
+<p>矩阵可逆和矩阵可对角化之间没有关联。<br>
+矩阵可逆和特征值是否为$0$有关，而矩阵可对角化与特征向量有关，是否有足够的线性无关的特征向量。</p>
+<h2 id="矩阵的幂">矩阵的幂</h2>
+<h3 id="矩阵幂">矩阵幂</h3>
+<p>$A= S\Lambda S^{-1} $,<br>
+$A^2 = S\Lambda S^{-1}S\Lambda S^{-1} = S\Lambda^2 S^{-1} $,<br>
+$A^k = S\Lambda^k S^{-1}$<br>
+所以，$A^k $和$A$的特征向量相同，特征值是$\Lambda^k $。当$k\rightarrow \infty$时，如果所有的特征值$\lambda_i \lt 1$，那么$A^k \rightarrow 0$。</p>
+<h3 id="以解方程组-u-k-1-au-k">以解方程组$u_{k+1} = Au_k$</h3>
+<p>从给定的向量$u_0$开始，$u_1 = Au_0, u_2 = Au_1, u_k = A^k u_0$<br>
+假设$u_0 = c_1 x_1 + c_2 x_2 + \cdots + c_nx_n$，$x_1, \cdots, x_n$是一组正交基。<br>
+$Au_0 =  c_1 \lambda_1 x_1 + \cdots + c_n\lambda_n x_n$<br>
+$u_{100} = A^{100} u_0 = c_1 \lambda_1^{100} x_1 + \cdots + c_n \lambda_n^{100} x_n$<br>
+$u_{100} = A^{100} u_0 = \Lambda^{100} S c$</p>
+<h2 id="微分方程">微分方程</h2>
+<h2 id="指数矩阵">指数矩阵</h2>
+<h2 id="markov-matrices">Markov Matrices</h2>
+<h3 id="定义-v4">定义</h3>
+<p>马尔科夫矩阵满足两个条件</p>
 <ol>
 <li>所有元素大于$0$</li>
 <li>行向量之和为$1$</li>
 </ol>
-<h3 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h3><ol>
-<li>$\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&amp;b\\\\c&amp;d\\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&amp;b\\\\c&amp;d - 1\\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)\begin{bmatrix}1\\\ \vdots\\\ 1\end{bmatrix} = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。</li>
+<h3 id="属性-v3">属性</h3>
+<ol>
+<li>$\lambda = 1$是一个特征值，对应的特征向量的所有分量大于等于$0$。可以直接验证，假设$A = \begin{bmatrix}a&amp;b\\c&amp;d\\ \end{bmatrix}, a + b = 1, c + d = 1$，$A-\lambda I =  \begin{bmatrix}a - 1&amp;b\\c&amp;d - 1\\ \end{bmatrix}$，所有元素加起来等于$0$，即$(A-I)(1, \cdots, 1)^T = 0$，所以这些向量线性相关，因为存在一组不全为$0$的系数使得他们的和为$0$。所以$A-I$是奇异矩阵，也就是说$1$是$A$的一个特征值。</li>
 <li>所有其他的特征值小于$1$。</li>
 </ol>
-<h2 id="Markov-Property"><a href="#Markov-Property" class="headerlink" title="Markov Property"></a>Markov Property</h2><p>简单的来说，就是下一时刻的状态只取决于当前状态，跟之前所有时刻的状态无关，即：</p>
-<script type="math/tex; mode=display">P(X_{t+1} = k |X_t=k_t,\cdots, X_1 = k_1) = P(X_{t+1}=k |X_t=k_t) \tag{1}</script><h2 id="Markov-Chain-Process"><a href="#Markov-Chain-Process" class="headerlink" title="Markov Chain(Process)"></a>Markov Chain(Process)</h2><p>如果一个Chain(process)是Markov的，就叫它Markov Chain(Process)。</p>
-<h2 id="Stationary-Distribution"><a href="#Stationary-Distribution" class="headerlink" title="Stationary Distribution"></a>Stationary Distribution</h2><p>为什么要用Markov Chain呢？因为它有一个很好的性质，叫做stationary distribution。简单的来说，就是不论初始状态是什么，经过很多步之后，都会达到一个stable state。举个例子，股票有牛市和熊市，还有波动状态，它们的转换关系如下所示：<br><img src="/2019/07/31/markov-matrices/markov_transition.png" alt="markov_transition"><br>状态转义矩阵矩阵如下表所示：<br>| |牛市|熊市|波动|<br>|:—:|:—:|:—:|:—:|<br>|牛市|0.9|0.075|0.025|<br>|熊市|0.15|0.8|0.05|<br>|波动|0.25|0.25|0.5|</p>
-<p>假如从熊市开始，初始state是熊市，用数值表示就是$(0, 1, 0)\^T$。根据当前时刻计算下一时刻的公式为：</p>
-<script type="math/tex; mode=display">s_{t+1} = s_t Q \tag{2}</script><p>相应结果为$s_{t+1} = (0.15, 0.8, 0.05)\^T$<br>$t+2$时刻的计算公式为：</p>
-<script type="math/tex; mode=display">s_{t+2} = s_t Q\^2 \tag{3}</script><p>这样一直计算下去，可以到达一个稳定state $s$满足:</p>
-<script type="math/tex; mode=display">sQ = s \tag{4}</script><p>对于这个例子来说，不管从什么初始状态开始，最后都会到达稳定状态$s = (0.625, 0.3125, 0.0625)\^T$。<br>那么这个stationary distribution有什么用呢？它能够给出一个process稳定以后在任意时刻某个state出现的概率，比如牛市出现的概率是$62.5\\% $，熊市出现的概率是$31.25\\%$。</p>
-<h3 id="马尔科夫链的稳定性"><a href="#马尔科夫链的稳定性" class="headerlink" title="马尔科夫链的稳定性"></a>马尔科夫链的稳定性</h3><p>如果一个非周期性马尔科夫链有转移矩阵$P$，并且它的任意两个状态都是连通的，那么$lim_{n\rightarrow \infty} P_{ij}\^m$存在，且与$i$无关，记为$lim_{n\rightarrow \infty }P_{ij}^n = \pi(j)$，即矩阵$P\^n$的所有第$j$列都是$\pi(j)$，与$P$的初始值无关。</p>
-<h2 id="马尔科夫矩阵的幂"><a href="#马尔科夫矩阵的幂" class="headerlink" title="马尔科夫矩阵的幂"></a>马尔科夫矩阵的幂</h2><p>$u_{k+1}=Au_k$，其中$A$是马尔科夫矩阵。我们能得到</p>
-<script type="math/tex; mode=display">u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots \tag{5}</script><p>如果只有一个特征值为$1$，对于所有其他特征值$\lambda \neq 1$，当$k\rightarrow \infty$时，幂运算$\lambda^k \rightarrow 0$，能到达一个稳态。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1" target="_blank" rel="noopener">https://towardsdatascience.com/mcmc-intuition-for-everyone-5ae79fff22b1</a></p>
+<h3 id="马尔科夫矩阵的幂">马尔科夫矩阵的幂</h3>
+<p>$u_k = A^k u_0 = c_1 \lambda_1^k x_1 + c_2 \lambda_2^k x_2 + \cdots$<br>
+如果只有一个特征值为$1$，所有其他特征值都小于$1$，幂运算之后$\lambda^k \rightarrow 0, k\rightaroow \infty, \lambda_k \neq 1$。</p>
+<h2 id="对称矩阵">对称矩阵</h2>
+<h3 id="定义-v5">定义</h3>
+<p>满足$A= A^T $的矩阵$A$被称为对称矩阵。</p>
+<h3 id="属性-v4">属性</h3>
+<ol>
+<li>实对称矩阵的特征值都是实数<br>
+证明：由$Ax= \lambda x$，得到$A\bar{x} = \bar{\lambda} \bar{x}$，$\bar{x}$是$x$的共轭，转置得：<br>
+$$\bar{x}^T A^T = \bar{x}^T A = \bar{x}^T \bar{\lambda}$$<br>
+$Ax = \lambda x$的左边乘上$\bar{x}^T $，在$\bar{x}^T A = \bar{x}^T \lambda$的右边同时乘上$x$：<br>
+$$\bar{x}^T Ax = \bar{x}^T \lambda x = \bar{x}^T A x= \bar{x}^T \bar{\lambda} x$$<br>
+即$\bar{x}^T \lambda x = \bar{x}^T \bar{\lambda} x$，而$\bar{x}^T x= \vert x\vert \ge 0 $，如果$x\neq 0$，则$\lambda = \bar{\lambda}$，即$\lambda$的虚部为$0$，即特征值都是实数。</li>
+<li>对称矩阵有单位正交的特征向量。<br>
+证明：假设$S = \left[v_1, \cdots, v_i, \cdots, v_n\right]$是矩阵$A$的特征向量矩阵，根据矩阵对角化公式：<br>
+$$A = S \Lambda S^{-1}  $$<br>
+而$A=A^T $，所以得到<br>
+$$S\Lambda S^{-1} = A = A^T = \left(S \Lambda S^{-1} \right)^T = S^{-T} \Lambda^T S^T = S^{-T} \Lambda S^T $$<br>
+可以得出$S^T = S^{-1} $，所以$S S^T = I$，即$v_i^T v_i = 1, v_i^T v_j = 0, \forall i\neq j$。</li>
+<li>所有的对称矩阵都是可对角化的。</li>
+</ol>
+<h3 id="谱定理-spectral-theorem">谱定理（Spectral Theorem）</h3>
+<p>对称矩阵的对角化可以从$A=S\Lambda S^{-1} $变成$A=Q\Lambda Q^{-1} =Q\Lambda Q^T $。<br>
+谱定理：每一个对称矩阵都有以下分解$A = Q\Lambda Q^T $，$\Lambda$是实特征值，$Q$是单位正交向量矩阵。<br>
+$$A = Q\Lambda Q^{-1} = Q\Lambda Q^T $$<br>
+$A$是对称的，$Q \Lambda Q^T $也是对称的。</p>
+<h2 id="正定矩阵">正定矩阵</h2>
+<p>正定矩阵，负定矩阵，半正定矩阵，半负定矩阵都是对于对称矩阵来说的。</p>
+<h3 id="定义-v6">定义</h3>
+<p>如果对于所有的非零向量$x$，$x^T Ax$都是大于$0$的，我们称矩阵$A$是正定矩阵。</p>
+<h3 id="属性-v5">属性</h3>
+<ol>
+<li>所有的$n$个特征值都是正的</li>
+<li>所有的$n$个左上行列式都是正的</li>
+<li>所有的$n$个主元都是正的</li>
+<li>对于任意$x\neq 0$，$x^T A x$大于$0$。</li>
+<li>$A=R^T R$，$R$是一个具有$n$个独立column的矩阵。</li>
+</ol>
+<p>如果任意矩阵$A$拥有以上属性中的任意一个，那么它就有其他四个性质，或者说上面五个属性都可以用来判定矩阵是否为正定矩阵。</p>
+<h3 id="半正定矩阵">半正定矩阵</h3>
+<p>如果对于所有的非零向量$x$，$x^T Ax$都是大于等于$0$的，我们称矩阵$A$是半正定矩阵。</p>
+<h3 id="属性-v6">属性</h3>
+<p>对于任何矩阵$A$，$A^T A$和$A A^T $都是对称矩阵，并且它们一定是半正定矩阵。<br>
+假设$A = \begin{bmatrix} a&amp;b\\c&amp;d\end{bmatrix}$，如何判断$A^T A$是不是正定的？根据定义，判断$x^T (A^T A) x$的符号：<br>
+$$x^T (A^T A) x = x^T A^T Ax = (Ax)^T (Ax) = \vert Ax \vert $$<br>
+相当于计算向量$Ax$的模长，它一定是大于等于$0$的。<br>
+同理$A A^T $的二次型相当于计算$A^T x$的模长，大于等于$0$。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课<br>
+2.<a href="http://maecourses.ucsd.edu/~mdeolive/mae280a/lecture11.pdf" target="_blank" rel="noopener">http://maecourses.ucsd.edu/~mdeolive/mae280a/lecture11.pdf</a></p>
 
           
         
@@ -1525,7 +2064,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/31/distributions/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/28/linear-algebra-determinants/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -1545,7 +2084,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/07/31/distributions/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">distributions</a>
+                <a href="/2019/08/28/linear-algebra-determinants/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">determinants（行列式）</a>
               
             
           </h1>
@@ -1570,7 +2109,7 @@
                 
               
 
-              <time title="创建时间：2019-07-31 11:25:10" itemprop="dateCreated datePublished" datetime="2019-07-31T11:25:10+08:00">2019-07-31</time>
+              <time title="创建时间：2019-08-28 14:45:18" itemprop="dateCreated datePublished" datetime="2019-08-28T14:45:18+08:00">2019-08-28</time>
             
 
             
@@ -1587,7 +2126,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 15:15:10" itemprop="dateModified" datetime="2019-12-17T15:15:10+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-17 15:47:32" itemprop="dateModified" datetime="2019-12-17T15:47:32+08:00">2019-12-17</time>
               
             
           </span>
@@ -1604,7 +2143,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论与统计/" itemprop="url" rel="index"><span itemprop="name">概率论与统计</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
 
                 
                 
@@ -1640,25 +2179,74 @@
       
         
           
-            <h2 id="常见的离散分布和连续分布"><a href="#常见的离散分布和连续分布" class="headerlink" title="常见的离散分布和连续分布"></a>常见的离散分布和连续分布</h2><p>常见的离散分布有伯努利分布，二项分布，泊松分布，几何分布，多项分布。</p>
-<h2 id="伯努利分布"><a href="#伯努利分布" class="headerlink" title="伯努利分布"></a>伯努利分布</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><p>伯努利实验是单次随机试验，只有成功和失败两种结果。它服从的分布叫做伯努利分布，伯努利分布也叫两点分布或者$0-1$分布。</p>
-<h3 id="概率密度函数"><a href="#概率密度函数" class="headerlink" title="概率密度函数"></a>概率密度函数</h3><h3 id="期望和方差"><a href="#期望和方差" class="headerlink" title="期望和方差"></a>期望和方差</h3><h2 id="二项分布"><a href="#二项分布" class="headerlink" title="二项分布"></a>二项分布</h2><h3 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h3><p>如果某个试验是伯努利试验，事件A在一次试验中发生的概率是$p$，现在独立的重复该试验$n$次，用$X$表示事件A在发生的次数，$X=i$的所有的可能取值为$0,1,\cdots,n$。$X$所服从的分布就叫二项分布，它的计算公式如下：</p>
-<script type="math/tex; mode=display">P(X=i|\theta)= \begin{pmatrix}n\\\\ i\end{pmatrix}p\^i(1-p)\^{n-i}</script><p>二项分布有两个条件，一个是独立的进行$n$次试验，相互之间互不干扰，一个是同分布，即所有试验中A发生的概率都是相等的。</p>
-<h3 id="概率密度函数-1"><a href="#概率密度函数-1" class="headerlink" title="概率密度函数"></a>概率密度函数</h3><h3 id="期望和方差-1"><a href="#期望和方差-1" class="headerlink" title="期望和方差"></a>期望和方差</h3><h2 id="几何分布和负二项分布"><a href="#几何分布和负二项分布" class="headerlink" title="几何分布和负二项分布"></a>几何分布和负二项分布</h2><h3 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h3><h3 id="概率密度函数-2"><a href="#概率密度函数-2" class="headerlink" title="概率密度函数"></a>概率密度函数</h3><h3 id="期望和方差-2"><a href="#期望和方差-2" class="headerlink" title="期望和方差"></a>期望和方差</h3><h2 id="多项分布"><a href="#多项分布" class="headerlink" title="多项分布"></a>多项分布</h2><h3 id="定义-3"><a href="#定义-3" class="headerlink" title="定义"></a>定义</h3><p>如果把事件A的取值推广到多个，而不是两个，独立进行$n$次实验，求$X=i$的所有可能的取值就是一个多项分布。比如掷骰子$100$次，出现$50$次$1$，$30$次$2$和$20$次$3$的概率就是一个多项分布。<br>多项分布的计算公式如下：</p>
-<script type="math/tex; mode=display">P(x_1,x_2,\cdots, x_k; n, p_1,p_2, \cdots,p_k) = \frac{n!}{x_1!\cdots x_k!}p_1\^{x_1}\cdots p_k\^{x_k},\sum_{i=1}\^{k}p_i = 1</script><h3 id="概率密度函数-3"><a href="#概率密度函数-3" class="headerlink" title="概率密度函数"></a>概率密度函数</h3><h3 id="期望和方差-3"><a href="#期望和方差-3" class="headerlink" title="期望和方差"></a>期望和方差</h3><h2 id="泊松分布"><a href="#泊松分布" class="headerlink" title="泊松分布"></a>泊松分布</h2><h3 id="定义-4"><a href="#定义-4" class="headerlink" title="定义"></a>定义</h3><h3 id="概率密度函数-4"><a href="#概率密度函数-4" class="headerlink" title="概率密度函数"></a>概率密度函数</h3><h3 id="期望和方差-4"><a href="#期望和方差-4" class="headerlink" title="期望和方差"></a>期望和方差</h3><h2 id="Gamma函数"><a href="#Gamma函数" class="headerlink" title="Gamma函数"></a>Gamma函数</h2><p>Gamma函数的定义：</p>
-<script type="math/tex; mode=display">\Gamma(x) = \int_0\^{\infty}t^{x-1}e\^{-t}dt</script><p>通过分部积分，可以推导出来这个函数有如下的性质：</p>
-<script type="math/tex; mode=display">\Gamma(x+1) = x\Gamma(x)</script><p>可以证明，$\Gamma(x)$函数是阶乘在实数集合上的扩展：</p>
-<script type="math/tex; mode=display">\Gamma(n) = (n-1)!</script><p>只不过这里是$(n-1)!$，而不是$n!$。事实上，如果把$t\^{x-1}$替换成$t\^x$就能得到$\Gamma(n) = n!$，但是欧拉不知道为什么，还是使用了$t\^{x-1}$。</p>
-<h2 id="Beta分布"><a href="#Beta分布" class="headerlink" title="Beta分布"></a>Beta分布</h2><h3 id="定义-5"><a href="#定义-5" class="headerlink" title="定义"></a>定义</h3><p>我们常用的贝叶斯估计，是将先验概率转化为了后验概率。。比如说抛硬币，我们通常假设硬币是公平的，也就是说正面向上的概率是$0.5$，这个先验概率就是$0.5$，然后根据观测到的事件将先验概率转化为后验概率。<br>这里的先验分布我们取得是一个值，如果不取一个值，而是选择一个分布呢？比如Beta分布：</p>
-<script type="math/tex; mode=display">f(\theta;\alpha, \beta) = \frac{1}{B(\alpha, \beta)}\theta\^{\alpha-1}(1-\theta)\^{\beta-1},\alpha\gt 0,\beta\gt 0, x\in \left[0,1\right]</script><p>其中，$\frac{1}{B(\alpha, \beta)} = \frac{\Gamma(\alpha+\beta)}{\Gamma(\alpha)\Gamma(\beta)}$</p>
-<p>然后使用贝叶斯推断，得到一个后验概率分布。Beta分布有一个神奇的特点就是使用贝叶斯推断得到的后验概率也是一个Beta分布，这个特点叫做共轭分布，接下来就会介绍。</p>
-<h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><p>Beta分布可以表示各种各种的曲线，从而也能表示各种各样的先验分布。</p>
-<h3 id="均值和方差"><a href="#均值和方差" class="headerlink" title="均值和方差"></a>均值和方差</h3><p>Beta分布的均值是$\frac{\alpha}{\alpha+\beta}$。</p>
-<h2 id="共轭先验分布"><a href="#共轭先验分布" class="headerlink" title="共轭先验分布"></a>共轭先验分布</h2><p>在贝叶斯概率理论中，如果后验概率和先验概率服从相同类型的分布，那么先验分布和后验分布被叫做共轭分布。同时，先验分布叫做似然函数的共轭先验分布。<br>Beta分布就是一个共轭分布，但是有一个前提，就是数据符合二项分布的时候，参数的先验和后验都可以是Beta分布，也称Beta分布是二项分布的共轭先验分布，似然函数是二项分布。</p>
-<h3 id="证明Beta分布是二项分布的共轭先验分布"><a href="#证明Beta分布是二项分布的共轭先验分布" class="headerlink" title="证明Beta分布是二项分布的共轭先验分布"></a>证明Beta分布是二项分布的共轭先验分布</h3><p>已知条件：先验是Beta分布，数据服从二项分布<br>根据贝叶斯公式，后验概率的计算公式如下：</p>
-<script type="math/tex; mode=display">P(\theta|data) = \frac{P(data|\theta)P(\theta)}{P(data)} \propto P(data|\theta)P(\theta)</script><p>而$P(data|\theta)$可以根据似然函数的定义来计算$L(\theta|data) = P(data|\theta)$，又因为数据服从二项分布，有$P(data|\theta) \propto \theta\^z(1-\theta)\^{n-z}$，而Beta分布有$P(\theta) = Beta(\theta;\alpha,\beta) \propto \theta\^{(\alpha-1)}(1-\theta)\^{\beta-1}$，而$P(data)$与$\theta$无关，所以</p>
-<script type="math/tex; mode=display">P(\theta|data) \propto P(data|\theta)P(\theta) = \theta\^{z+\alpha-1}(1-\theta)\^{\beta+n-z-1}</script><p>也就是说后验分布服从Beta$(\alpha+z, \beta+n-z)$，得证。</p>
-<h2 id="狄利克雷分布"><a href="#狄利克雷分布" class="headerlink" title="狄利克雷分布"></a>狄利克雷分布</h2><h3 id="定义-6"><a href="#定义-6" class="headerlink" title="定义"></a>定义</h3><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf" target="_blank" rel="noopener">http://bloglxm.oss-cn-beijing.aliyuncs.com/lda-LDA%E6%95%B0%E5%AD%A6%E5%85%AB%E5%8D%A6.pdf</a><br>2.<a href="https://zhuanlan.zhihu.com/p/49267988" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/49267988</a></p>
+            <h2 id="行列式-determinants">行列式（Determinants）</h2>
+<p>这一章介绍行列式相关知识，行列式的一些属性等等。</p>
+<ul>
+<li>矩阵不可逆，行列式为$0$。</li>
+<li>主元的乘积是行列式。</li>
+<li>交换任意两行和两列，行列式的符号改变。</li>
+<li>行列式的绝对值等于这个矩阵描述的space的体积。</li>
+<li>行列式的计算公式有三个：
+<ol>
+<li>主元公式，就是所有主元的乘积</li>
+<li>big formula</li>
+<li>cofact formula</li>
+</ol>
+</li>
+</ul>
+<h2 id="定义以及性质">定义以及性质</h2>
+<p>行列式用det表示，给出以下的几个属性：</p>
+<ol>
+<li>$n\times n$的单位矩阵$I$的行列式$det I = I$<br>
+$$\begin{vmatrix}1&amp;0\\0&amp;1 \end{vmatrix} = 1$$</li>
+<li>交换任意两行，行列式符号取反。<br>
+$$\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix} = - \begin{vmatrix}c&amp;d\\a&amp;b \end{vmatrix}$$</li>
+<li>行列式是每一行的线性函数<br>
+$$\begin{vmatrix}ta&amp;tb\\c&amp;d \end{vmatrix} = t \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$<br>
+$$\begin{vmatrix}a+a’&amp;b+b’\\c&amp;d \end{vmatrix} = \begin{vmatrix}a’&amp;b’\\c&amp;d \end{vmatrix}+\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$</li>
+</ol>
+<p>以上的三个属性是行列式的性质，事实上，它们定义了行列式是什么，从这几个基本属性出发，我们能推导出更多的属性。</p>
+<ol start="4">
+<li>如果$A$的两行相等，那么$det A=0$，交换两行，还是矩阵$A$，行列式变号，所以行列式只能为$0$。<br>
+假设$A = \begin{bmatrix}a&amp;b\\a&amp;b \end{bmatrix}$，$\begin{vmatrix}a&amp;b\\a&amp;b \end{vmatrix}= - \begin{vmatrix}a&amp;b\\a&amp;b \end{vmatrix}$</li>
+<li>从某一行减去其他行的倍数，行列式不变<br>
+$$\begin{vmatrix}a&amp;b\\c- la&amp;d-lb \end{vmatrix}= \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix} -l \begin{vmatrix}a&amp;b\\a&amp;b\end{vmatrix}   = \begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}$$</li>
+<li>某一行为$0$矩阵，行列式为$0$。<br>
+$$\begin{vmatrix}0&amp;0\\c&amp;d \end{vmatrix} = \begin{vmatrix}c&amp;d\\c&amp;d \end{vmatrix} = 0$$</li>
+<li>如果$A$是三角矩阵，行列式的值等于对角元素乘积。<br>
+$$\begin{vmatrix}a&amp;b\\0&amp;d \end{vmatrix} = \begin{vmatrix}a&amp;0\\c&amp;d \end{vmatrix} = \begin{vmatrix}a&amp;0\\0&amp;d \end{vmatrix} = ad \begin{vmatrix}1&amp;0\\0&amp;1 \end{vmatrix} = ad$$</li>
+<li>当且仅当$A$不可逆的时候，$det A\neq 0$<br>
+$det A = det U$，如果$A$不可逆，$U$中有零行，从$6$我们知道，行列式为$0$。如果$A$可逆，行列式的值等于主元的乘积。</li>
+<li>矩阵$AB$的行列式等于矩阵$A$的行列式以及矩阵$B$的行列式。<br>
+$$\begin{vmatrix}a&amp;b\\c&amp;d \end{vmatrix}\begin{vmatrix}p&amp;q\\r&amp;s \end{vmatrix} = \begin{vmatrix}ap+br&amp;aq+bs\\cp+dr&amp;cq+ds \end{vmatrix}$$<br>
+证明：<br>
+对于$2\times 2$的情况，有$\begin{vmatrix}A\end{vmatrix}\begin{vmatrix}B\end{vmatrix} = (ad - bc) ( ps - qr) = (ap + br) (cq+ds) - (aq+bs)(cp+dr) \begin{vmatrix}AB \end{vmatrix}$<br>
+当$B$是$A^{-1} $的时候，有$det (A A^{-1}) = det (I) = 1 = det (A) det(A^{-1} )$，所以$det A^{-1} = \frac{1}{det A}$</li>
+<li>$A^T$和$A$的行列式相同。<br>
+$PA=LU, A^T P^T = U^T L^T$，$det L = det L^T = 1, det U = det U^T $，$L$是对角线元素为$1$的对角矩阵，$U$是对角矩阵，$P$是置换矩阵，$P^T P = I$，$det P det P^T = 1$，则$det P = det P^T = 1$，这个为什么？我有点不明明白。最后有$det A = det A^T $。</li>
+</ol>
+<h2 id="行列式的计算">行列式的计算</h2>
+<h3 id="主元公式">主元公式</h3>
+<p>行列式等于主元的乘积。</p>
+<h3 id="大公式">大公式</h3>
+<p>$n=2$的情况下：<br>
+$$A= \begin{bmatrix} a &amp; b\\c&amp;d\\\end{bmatrix}$$<br>
+$$det A = \begin{vmatrix}a&amp;0\\c&amp;d\end{vmatrix}+\begin{vmatrix}0&amp;b\\c&amp;d\end{vmatrix} = \begin{vmatrix}a&amp;0\\c&amp;0\end{vmatrix}+\begin{vmatrix}a&amp;0\\0&amp;d\end{vmatrix}+\begin{vmatrix}0&amp;b\\c&amp;0\end{vmatrix} \begin{vmatrix}0&amp;b\\0&amp;d\end{vmatrix} = ad - bc$$<br>
+$n=3$的情况下，最后有六项不为$0$的取值，$3!= 3\times 2\times 1= 6$<br>
+在$n$的情况下，有$n!$个项，将它们加起来求和。</p>
+<h3 id="代数余子式-cofactors">代数余子式（Cofactors）</h3>
+<h4 id="定义">定义</h4>
+<p>用$C$表示代数余子式，用$M_{ij}$表示划去$i$行，$j$列的子矩阵，<br>
+$$C_{ij} = (-1)^{i+j} det  M_{ij} $$</p>
+<h4 id="计算行列式">计算行列式</h4>
+<p>行列式可以沿着任意一行或者任意一列，利用代数余子式进行计算，<br>
+沿着第$i$行计算的公式如下：<br>
+$$ det A = \sum_{j=1}^n a_{ij} C_{ij}$$<br>
+沿着第$j$列计算的公式如下：<br>
+$$ det A = \sum_{i=1}^m a_{ij} C_{ij}$$<br>
+可以递归下去进行计算。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课视频</p>
 
           
         
@@ -1715,7 +2303,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/31/probability_basic/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/27/linear-algebra-orthogonality/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -1735,7 +2323,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/07/31/probability_basic/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">probability basic</a>
+                <a href="/2019/08/27/linear-algebra-orthogonality/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">orthogonality（正交性）</a>
               
             
           </h1>
@@ -1760,7 +2348,7 @@
                 
               
 
-              <time title="创建时间：2019-07-31 11:24:55" itemprop="dateCreated datePublished" datetime="2019-07-31T11:24:55+08:00">2019-07-31</time>
+              <time title="创建时间：2019-08-27 19:21:44" itemprop="dateCreated datePublished" datetime="2019-08-27T19:21:44+08:00">2019-08-27</time>
             
 
             
@@ -1777,7 +2365,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 15:47:21" itemprop="dateModified" datetime="2019-12-17T15:47:21+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-17 15:47:58" itemprop="dateModified" datetime="2019-12-17T15:47:58+08:00">2019-12-17</time>
               
             
           </span>
@@ -1794,7 +2382,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论与统计/" itemprop="url" rel="index"><span itemprop="name">概率论与统计</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
 
                 
                 
@@ -1830,21 +2418,89 @@
       
         
           
-            <h2 id="概率"><a href="#概率" class="headerlink" title="概率"></a>概率</h2><p>概率，反映随机事件出现的可能性（likelihood)大小。随机事件是指在相同条件下，可能出现也可能不出现的事件。</p>
-<h2 id="频率学派vs贝叶斯学派"><a href="#频率学派vs贝叶斯学派" class="headerlink" title="频率学派vs贝叶斯学派"></a>频率学派vs贝叶斯学派</h2><p>频率学派和贝叶斯学派在探讨不确定性这件事的出发点不同。<br>频率学派认为世界是确定的，直接为事件本身建模，某件事情发生的可能性是固定的。给定频率的取值空间，频率学派相信其中只有一个值是真实的概率，而我们要做的就是找出这个值。于是就有了最大似然估计和置信区间等等，这些方法表示的有多大可能性找到这个值。</p>
-<p>而贝叶斯学派并不是从事件本身出发的，他们认为世界是不确定的，从观察者角度出发，观察者获得的信息不同，世界是不确定的。贝叶斯学派认为频率学派中的随机事件只是观察者不知道结果，随机性指的是观察者猜测结果的可能性，是不断变化的。频率学派的概率描述的是事件本身，而贝叶斯学派的概率描述的是观测者看到新的观测之后对某个观测的猜测。<br>贝叶斯学派认为这个参数的取值空间中，任意一个参数都有可能是模型实用的值，只是取值概率不同而已。他们通过先验分布和后验分布这样的概念，找到参数取某个值的概率。最大后验估计就是贝叶斯学派参数估计的常用方法，写出关于$\theta$的函数，然后令偏导等于$0$即可。<strong>原来我有个问题，就是先验分布是一个分布，而为什么最大后验求出来的是一个值，这是因为这个分布也是$\theta$的函数，求导之后，解$\theta$就是一个值啊。。后验分布是一个分布，而最大后验估计求出来的是一个$\theta$的取值。</strong></p>
-<h2 id="先验，后验，似然，条件概率"><a href="#先验，后验，似然，条件概率" class="headerlink" title="先验，后验，似然，条件概率"></a>先验，后验，似然，条件概率</h2><h3 id="先验和后验"><a href="#先验和后验" class="headerlink" title="先验和后验"></a>先验和后验</h3><p>假设的概率，或者给出的概率。<br>比如给出一个硬币，求随机投掷一次正面向上的概率。。在不知道任何其他条件的情况下，我们假设它是公平的，这就是一个先验。然后随机投掷了十次，发现十次正面都是向上的，显然，这个硬币不是公平的，根据这个事件我们可以修改这个硬币正面向上的概率，这时候得到的概率就是后验概率。</p>
-<h3 id="似然"><a href="#似然" class="headerlink" title="似然"></a>似然</h3><p>用$\theta$表示一个随机过程的参数，观测到的事件是$O$。$P(O|\theta)$是这件事发生的概率。然而，在现实生活中，我们常常是不知道$\theta$的，我们只能根据观测到的$O$，计算$P(\theta|O)$。而估计$P(\theta|O)$最常用的方法就是最大似然估计，即寻找使得当前观测$O$出现概率最大化的参数。似然的定义是给定观测$O$关于未知参数$\theta$的函数：</p>
-<script type="math/tex; mode=display">L(\theta|O) = P(O|\theta)</script><p>$L(\theta|O)$被称为似然，左面是似然，右面是概率密度（函数）。这两个函数从定义上来说是完全不同的对象，前者是$\theta$的函数，后者是$O$的函数，这里的等号意思是函数值相等，而不是两个函数本身就是同一个函数。</p>
-<h3 id="条件概率"><a href="#条件概率" class="headerlink" title="条件概率"></a>条件概率</h3><p>似然就是一种条件概率。</p>
-<h2 id="参数估计方法"><a href="#参数估计方法" class="headerlink" title="参数估计方法"></a>参数估计方法</h2><p>最大似然估计，贝叶斯估计和最大后验估计</p>
-<h3 id="最大似然估计"><a href="#最大似然估计" class="headerlink" title="最大似然估计"></a>最大似然估计</h3><p><a href>最大似然估计</a>是频率学派的观点，它的基本思想是参数$\theta$是客观存在的，只是未知而已。它的目标是调整模型参数使得样本出现的概率最大化，求得的参数就是待估计参数。<br>用公式表示如下所示：</p>
-<script type="math/tex; mode=display">L(\theta|x) = f(x|\theta) = f(x_1, \cdots, x_n|\theta) = \prod\_{i=1}^n f(x_i|\theta)</script><script type="math/tex; mode=display">\hat{\theta}\_{mle} = \arg \max\_{\theta} L(\theta|x)</script><h3 id="贝叶斯估计"><a href="#贝叶斯估计" class="headerlink" title="贝叶斯估计"></a>贝叶斯估计</h3><p>贝叶斯估计是贝叶斯学派的观点，它的基本思想是参数$\theta$是随机的，也是个随机变量，因此只能根据样本估计参数$\theta$的分布。贝叶斯估计可以看作是，在假定$\theta$服从某个先验分布前提下，根据样本信息去校正先验分布，得到后验分布。由于后验分布是一个条件分布，通常我们取后验分布的期望作为参数的估计值。<br>用公式表示如下所示：</p>
-<script type="math/tex; mode=display">\pi(\theta|x) = \frac{f(x|\theta)\pi(\theta)}{m(x)} = \frac{f(x|\theta)\pi(\theta)}{\int f(x|\theta)\pi(\theta) d(\theta)}</script><script type="math/tex; mode=display">\hat{\theta}\_{be} = \mathbb{E}\left[ \pi(\theta|x)\right]</script><h3 id="最大后验估计"><a href="#最大后验估计" class="headerlink" title="最大后验估计"></a>最大后验估计</h3><p>而最大后验估计是贝叶斯估计的一种实现。最大后验估计的基本思想采样了极大似然估计的思想，最大后验估计的目标是调整模型参数使得样本出现的后验概率最大，和最大似然估计的区别是加了一个先验分布。</p>
-<script type="math/tex; mode=display">\hat{\theta}\_{map} = \arg \max\_{\theta} \pi(\theta|x) = \arg \max\_{\theta} \frac{f(x|\theta)\pi(\theta)}{m(x)}  = \arg\max\_{\theta}f(x|\theta)\pi(\theta)</script><p>对其同取$\log$，得到：</p>
-<script type="math/tex; mode=display">\hat{\theta}\_{map} = \arg\max\_{\theta}f(x|\theta)\pi(\theta) =\arg\max\_{\theta}(\log f(x|\theta) + \log \pi(\theta))</script><p>所以MAP可以看成带有正则化项的MLE。</p>
-<h2 id="贝叶斯分类器（朴素贝叶斯）和参数估计（贝叶斯估计等）的关系"><a href="#贝叶斯分类器（朴素贝叶斯）和参数估计（贝叶斯估计等）的关系" class="headerlink" title="贝叶斯分类器（朴素贝叶斯）和参数估计（贝叶斯估计等）的关系"></a>贝叶斯分类器（朴素贝叶斯）和参数估计（贝叶斯估计等）的关系</h2><p>参数估计（贝叶斯估计等）用来求解<a href>贝叶斯分类器</a>（朴素贝叶斯）的参数。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.陈希孺《概率论与统计》<br>2.<a href="https://www.zhihu.com/question/20587681/answer/41436978" target="_blank" rel="noopener">https://www.zhihu.com/question/20587681/answer/41436978</a><br>3.<a href="https://zhuanlan.zhihu.com/p/40024110" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/40024110</a></p>
+            <h2 id="正交性-orthogonality">正交性（Orthogonality）</h2>
+<p>这一章主要介绍正交性相关的内容。包括正交向量，投影，正交子空间，正交基以及如果求一组正交基，最后介绍QR分解求线性方程组。</p>
+<h2 id="正交向量-orthogonal-vectors">正交向量（Orthogonal vectors）</h2>
+<p>给定向量$v,w$，如果$v^T w = 0$，那么这两个向量就是正交向量。</p>
+<h2 id="正交子空间-orthogonal-subspaces">正交子空间（Orthogonal subspaces）</h2>
+<p>如果对于$\forall v\in V, \forall w\in W$，都有$v^T w = 0$，那么我们称subspaces $V,W$是orthogonal subspaces。</p>
+<h2 id="column-space-nullsapce-row-space-left-nullspace的正交性">Column space, nullsapce, row space, left nullspace的正交性</h2>
+<ol>
+<li>
+<p>Row space和nullspace是正交的。<br>
+举个例子来证明吧，有$A= \begin{bmatrix}c1&amp;c2\end{bmatrix} = \begin{bmatrix}r1\\r2\end{bmatrix} = \begin{bmatrix}1&amp;1&amp;2&amp;4\\0&amp;0&amp;1&amp;3\end{bmatrix}$<br>
+因为row space是row vector的linear combination，即$c_1 r_1+c_2 r_2$，而nullspace是$Ax=0$的所有解，即$x_1 c_1+x_2c_2  = 0$，这里的$0$是向量，可以推出来$r_1x = 0, r_2x =0 $，所以$c_1 r_1 x =0, c_2 r_2x = 0$，也就是说row space中的任意vector和nullspace中的vector都正交。<br>
+使用数值方法证明：<br>
+$x$表示$Ax=0$中的$x$，$A^Ty$表示row space，那么有<br>
+$$x^T (A^T y) = (Ax)^T y = 0^T y = 0$$</p>
+</li>
+<li>
+<p>Column space和nullspace是正交的。</p>
+</li>
+</ol>
+<h2 id="正交补-orthogonal-complements">正交补（Orthogonal complements）</h2>
+<h3 id="定义">定义</h3>
+<p>如果一个subspace包含所有和subspace $V$正交的向量，称这个subspace是$V$的orthogonal complements（正交补）。</p>
+<h3 id="示例">示例</h3>
+<p>Nullspace是row space的正交补（$\mathbb{R}^n$上）。<br>
+Left nullspace是column space的正交补（$\mathbb{R}^m$上）。</p>
+<h2 id="投影-projections">投影（Projections）</h2>
+<p>如下图所示，左边是投影到一条直线上的结果，右边是投影到一个subspace上的结果<br>
+<img src="/2019/08/27/linear-algebra-orthogonality/projection.jpg" alt="projection"></p>
+<h2 id="a-t-a">$A^T A$</h2>
+<p>$A^T A$是可逆的，当且仅当$A$有linear independent columns时<br>
+证明：<br>
+$A^TA$是一个$n\times n$的方阵，$A$的nullspace和$A^T A$的nullspace相等。<br>
+如果$Ax= 0$，那么$A^T Ax = 0$，所以$x$也在$A^T A$的nullspace中。如果$A^T Ax=0$，那么我们要证明$Ax=0$，在左右两边同乘$x^T $得$x^T A^T Ax=0$，则$(AX)^T AX =0$，所以$\vert Ax\vert^2 =0$。也即是说如果$A^T Ax=0$，那么$Ax$的长度为$0$，也就是$Ax=0$。<br>
+如果$A^T A$的columns是独立的，也就是说nullspace为空，所以$A$的columns也是独立的；同理，如果$A$的columns是独立的，那么$A^T $的columns也是独立的。</p>
+<h2 id="最小二乘法-least-squares-approximations">最小二乘法（Least Squares Approximations）</h2>
+<p>$Ax=b$无解的情况，通常是等式个数大于未知数的个数，即$m\gt n$，$b$不在$A$的column space内。我们的目标是想让$e=b-Ax$为$0$，当这个目标不能实现的时候，可以在方程左右两边同时乘上$A^T$，求出一个近似的$\hat{x}$：<br>
+$$A^TAx = A^Tb$$<br>
+如何推导出这个结果，有以下几种方法：</p>
+<h3 id="最小化误差">最小化误差</h3>
+<ol>
+<li>
+<p>几何上<br>
+$Ax=b$的最好近似是$A\bar{x} = p$，最小的可能误差是$e=b-p$，$b$上的点的投影都在$p$上，而$p$在$A$的column space上，从直线拟合的角度上来看，$\bar{x}$给出了最好的结果。</p>
+</li>
+<li>
+<p>代数上<br>
+$b=p+e$，$e$在$A$的nullspace上，$Ax=b=p+e$我们解不出来，$A\bar{x} = p$我们可以解出来。</p>
+</li>
+<li>
+<p>积分</p>
+</li>
+</ol>
+<h3 id="直线拟合">直线拟合</h3>
+<h3 id="抛物线拟合">抛物线拟合</h3>
+<h2 id="正交基-orthogonal-bases">正交基（Orthogonal Bases）</h2>
+<h3 id="定义-v2">定义</h3>
+<p>一组向量$q_1, q_2, \cdots , q_n$如果满足以下条件：<br>
+$$q_i^T q_j\begin{cases}0, i\neq j \\1, i=j\end{cases}$$<br>
+我们称这一组向量是正交向量，由正交column vectors构成的矩阵用一个特殊字母$Q$表示。如果这组正交向量同时还是单位向量，我们叫它单位正交向量。如果columns仅仅正交，而不是单位向量的话，点乘仍然会得到一个对角矩阵，但是它的性质没有那么好。</p>
+<h3 id="性质">性质</h3>
+<ol>
+<li>满足$Q^T Q=I$。</li>
+<li>如果$Q$是方阵，那么$Q^T = Q^{-1}$，即转置等于逆。</li>
+<li>如果$Q$是方阵的话，$QQ^T = Q^T Q= I$。</li>
+<li>如果$Q$是rectangular的话，$QQ^T =I$不成立，而$Q^T Q =I$依然成立。</li>
+</ol>
+<h2 id="用-q-取代-a-进行正交投影">用$Q$取代$A$进行正交投影</h2>
+<p>假设矩阵$A$的所有column vectors都是orthonormal的，$a$就变成了$q$，$A^T A$就变成了$Q^T Q=I$，所以$Ax=b$的解变成了$\bar{x} = Q^T b$，而投影矩阵变成了$P=QQ^T $。</p>
+<h2 id="gram-schmidi正交化">Gram-Schmidi正交化</h2>
+<p>Gram-Schmidt正交化过程就相当于是在不断的进行投影，这个方法的想法是从$n$个独立的column vector出发，构建$n$个正交向量，然后再单位化。拿$3$个过程举个例子。用$a,b,c$表示初始的$3$个独立向量，$A,B,C$表示三个正交向量，$q_1, q_2,q_3$表示三个正交单位向量。<br>
+第一个正交向量，直接对第一个向量单位化<br>
+$$A=a, q_1 = \frac{A}{\vert A\vert}$$<br>
+第二个正交向量，将第二个向量投影到第一个向量上，计算出一个和第二个向量正交的向量。<br>
+$$B=b-\frac{A^T B}{A^T A}A , q_2 = \frac{B}{\vert B\vert}$$<br>
+第三个正交向量，将第三个向量分别投影到第一个和第二个正交向量上，计算处第三个正交向量。<br>
+$$C=c - \frac{A^T C}{A^T A}A - \frac{B^T C}{B^T B}B , q_2 = \frac{C}{\vert C\vert}$$<br>
+<img src="/2019/08/27/linear-algebra-orthogonality/gram_schmidi.jpg" alt="gram_schmidi"></p>
+<h2 id="qr分解">QR分解</h2>
+<p>假设一个矩阵$A$的列向量分别为$a,b,c$，最后经过一个三角矩阵$R$化简成一个正交矩阵$Q$，相应的列向量分别为$q_1,q_2,q_3$。<br>
+首先根据Gram-Schmidi计算处一组正交基$Q = \begin{bmatrix}q_1&amp;q_2&amp;q_3 \end{bmatrix}$。根据$A$，能直接计算出$Q$，那么如何得到$R$呢？我们假设$A=QR$，在$A$和$Q$已知的情况下，并且满足$Q^T Q = I$，我们可以左右两边同时乘上$Q^T $，就有$Q^T A = Q^T QR = R$，即$R=Q^T A$。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课</p>
 
           
         
@@ -1901,7 +2557,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/26/linear-algebra-vector-spaces和subspaces/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -1921,7 +2577,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">reinforcement learning an introduction 第7章笔记</a>
+                <a href="/2019/08/26/linear-algebra-vector-spaces和subspaces/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">linear algebra vector spaces和subspaces（向量空间和子空间）</a>
               
             
           </h1>
@@ -1946,7 +2602,7 @@
                 
               
 
-              <time title="创建时间：2019-07-30 09:59:50" itemprop="dateCreated datePublished" datetime="2019-07-30T09:59:50+08:00">2019-07-30</time>
+              <time title="创建时间：2019-08-26 19:17:41" itemprop="dateCreated datePublished" datetime="2019-08-26T19:17:41+08:00">2019-08-26</time>
             
 
             
@@ -1963,7 +2619,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-17 14:59:28" itemprop="dateModified" datetime="2019-12-17T14:59:28+08:00">2019-12-17</time>
+                <time title="修改时间：2019-12-17 15:16:20" itemprop="dateModified" datetime="2019-12-17T15:16:20+08:00">2019-12-17</time>
               
             
           </span>
@@ -1980,7 +2636,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
 
                 
                 
@@ -2016,36 +2672,156 @@
       
         
           
-            <h2 id="n-step-Bootstrapping"><a href="#n-step-Bootstrapping" class="headerlink" title="n-step Bootstrapping"></a>n-step Bootstrapping</h2><p>这章要介绍的n-step TD方法，将MC和one-step TD用一个统一的框架整合了起来。在一个任务中，两种方法可以无缝切换。n-step方法生成了一系列方法，MC在一头，one-step在另一头。最好的方法往往不是MC也不是one-step TD。One-step TD每隔一个timestep进行bootstrapping，在许多需要及时更新变化的问题，这种方法很有用，但是一般情况下，经历了长时间的稳定变化之后，bootstrap的效果会更好。N-step TD就是将one-step TD方法中time interval的one改成了n。N-step方法的idea和eligibility traces很像，eligibility traces同时使用多个不同的time intervals进行bootstarp。</p>
-<h2 id="n-step-TD-Prediction"><a href="#n-step-TD-Prediction" class="headerlink" title="n-step TD Prediction"></a>n-step TD Prediction</h2><p>对于使用采样进行policy evaluation的方法来说，不断使用policy $\pi$生成sample episodes，然后估计$v_{\pi}$。MC方法用的是每一个episode中每个state的return进行更新，即无穷步reward之和。TD方法使用每一个state执行完某一个action之后的下一个reward加上下一个state的估计值进行更新。N-step方法使用的是每一个state接下来n步的reward之和加上第n步之后的state的估计值。相应的backup diagram如下所示：<br><img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n/_step\_backup\_diagram.png" alt="n\_step\_diagram"></p>
-<p>n-step方法还是属于TD方法，因为n-step的更新还是基于时间维度上不同estimate的估计进行的。</p>
-<blockquote>
-<p>n-step updates are still TD methods because they still chagne an erlier estimate based on how it differs from a later estimate. Now the later estimate is not one step later, but n steps later。</p>
-</blockquote>
-<p>正式的，假设$S_t$的estimated value是基于state-reward sequence $S_t, R_{t+1}, S_{t+1}, R_{t+2}, \cdots, R_T,S_T$得到的。<br>MC方法更新基于completer return：</p>
-<script type="math/tex; mode=display">G\_T = R\_{t+1} + \gamma R\_{t+2} + \gamma^2 R\_{t+3} + \cdots + \gamma^{T-t-1}R\_T \tag{1}</script><p>one-step TD更新基于one-step return：</p>
-<script type="math/tex; mode=display">G\_{t:t+1} = R\_{t+1}+ \gamma V\_t(S\_{t+1}) \tag{2}</script><p>two-step TD更新基于two-step return：</p>
-<script type="math/tex; mode=display">G\_{t:t+2} = R\_{t+1}+ \gamma V\_t(S\_{t+1}) + \gamma^2 V\_{t+1}(S\_{t+2}) \tag{3}</script><p>n-step TD更新基于n-step return：</p>
-<script type="math/tex; mode=display">G\_{t:t+n} = R\_{t+1}+ \gamma V\_t(S\_{t+1}) + \gamma^2 V\_{t+1}(S\_{t+2}) +\cdots + \gamma^{n-1} R\_{t+n} + \gamma^n V\_{t+n-1}(S\_{t+n}), n\ge1, 0\le t\le T-n \tag{4}</script><p>所有的n-step方法都可以看成使用n steps的rewards之和加上$V_{t+n-1}(S_{t+n})$近似其余项的rewards近似return。如果$t+n \ge T$时，$T$步以后的reward以及estimated value当做$0$，相当于定义$t+n \ge T$时，$G_{t:t+1} = G_t$。<br>当$n &gt; 1$时，只有在$t+n$时刻之后，$R_{t+n},S_{t+n}$也是已知的，所以不能使用real time的算法。使用$t+n-1$时刻的$V$近似估计$V_{t+n-1}(S_{t+n})$，将n-step return当做n-step TD的target，得到的更新公式如下：</p>
-<script type="math/tex; mode=display">V\_{t+n}(S\_t) = V\_{t+n-1} (S\_t) + \gamma(G\_{t:t+n} - V\_{t+n-1}(S\_{t}))\tag{5}</script><p>当更新$V_{t+n}(S_t)$时，所有其他states的$V$不变，用公式来表示是$V_{t+n}(s) = V_{t+n-1}(s), \forall s\neq S_t$。在每个episode的前$n-1$步中，不进行任何更新，为了弥补这几步，在每个episode结束以后，即到达terminal state之后，仍然继续进行更新，直到下一个episode开始之前，依然进行updates。完整的n-step TD算法如下：</p>
-<h3 id="n-step-TD-prediction伪代码"><a href="#n-step-TD-prediction伪代码" class="headerlink" title="n-step TD prediction伪代码"></a>n-step TD prediction伪代码</h3><p>n-step TD估计$V\approx v_{\pi}$<br>输入：一个policy $\pi$<br>算法参数：step size $\alpha \in (0, 1]$，正整数$n$<br>随机初始化$V(s), \forall s\in S$<br>Loop for each episode<br>$\qquad$初始化 $S_0 \neq terminal$<br>$\qquad$$T\leftarrow \infty$<br>$\qquad$Loop for $t=0, 1, 2, \cdots:$<br>$\qquad$ IF $t\lt T$, THEN<br>$\qquad\qquad$ 根据$\pi(\cdot|S_t)$执行action<br>$\qquad\qquad$ 接收并记录$R_{t+1}, S_{t+1}$<br>$\qquad\qquad$ 如果$S_{t+1}$是terminal ，更新$T\leftarrow t+1$<br>$\qquad$ END IF<br>$\qquad$ $\tau \leftarrow t - n + 1, \tau$是当前更新的时间<br>$\qquad$ If $\tau \ge 0$, then<br>$\qquad\qquad$ $G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>$\qquad\qquad$ 如果$\tau+n \lt T$，那么$G\leftarrow G+ \gamma^n V(S_{\tau+n})$<br>$\qquad\qquad$ $V(S_{\tau}) \leftarrow V(S_{\tau}) +\alpha [G-V(S_{\tau})]$<br>$\qquad$ End if<br>Until $\tau = T-1$<br>n-step return有一个重要的属性叫做error reduction property，在最坏的情况下，n-step returns的期望也是一个比$V_{t+n-1}$更好的估计：</p>
-<script type="math/tex; mode=display">max\_{s}|\mathbb{E}\_{\pi}\left[G\_{t:t+n}|S\_t = s\right]- v\_{\pi}(s)| \le \gamma^n max\_s | V\_{t+n-1}(s)-v\_{\pi}(s)| \tag{6}</script><p>所以所有的n-step TD方法都可以收敛到真实值，MC和one-step TD是其中的一种特殊情况。</p>
-<h2 id="n-step-Sarsa"><a href="#n-step-Sarsa" class="headerlink" title="n-step Sarsa"></a>n-step Sarsa</h2><p>介绍完了prediction算法，接下来要介绍的就是control算法了。因为TD方法是model-free的，所以，还是要估计action value function。上一章介绍了one-step Sarsa，这一章自然介绍一下n-step Sarsa。n-step Sarsa的backup图如下所示：<br><img src="/2019/07/30/reinforcement-learning-an-introduction-第7章笔记/n/_step\_sarsa.png" alt="n\_step\_sarsa"><br>就是将n-step TD的state换成state-action就行了。定义action value的n-step returns如下：</p>
-<script type="math/tex; mode=display">G\_{t:t+n} = R\_{t+1} + \gamma R\_{t+2} + \gamma^2 R\_{t+1} + \cdots + \gamma^{n-1} R\_{t+n} + \gamma^n Q\_{t+n-1}(S\_{t+n},A\_{t+n}), n\ge 1, 0\le t\le T-n\tag{7}</script><p>如果$t+n\ge T$，那么$G_{t:t+n} = G_t$。<br>完整的$n$-step Sarsa如下所示：</p>
-<h3 id="n-step-Sarsa算法伪代码"><a href="#n-step-Sarsa算法伪代码" class="headerlink" title="n-step Sarsa算法伪代码"></a>n-step Sarsa算法伪代码</h3><p>n-step Sarsa算法，估计$Q\approx q_{*}$<br>随机初始化$Q(s,a),\forall s\in S, a\in A$<br>初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>Loop for each episode<br>$\qquad$初始化$S_0\neq$ terminal<br>$\qquad$ 选择action $A_0= \pi(\cdot| S_0)$<br>$\qquad$ $T\leftarrow \infty$<br>$\qquad$ Loop for $t=0,1,2,\cdots$<br>$\qquad\qquad$ If $t\lt T$,then:<br>$\qquad\qquad\qquad$ 采取action $A_t$，<br>$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>$\qquad\qquad$ $T\leftarrow t+1$<br>$\qquad\qquad$ 否则选择$A_{t+1} = \pi(\cdot|S_{t+1})$<br>$\qquad\qquad$End if<br>$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>$\qquad\qquad$ If $\tau \ge 0$<br>$\qquad\qquad\qquad$ $G\leftarrow \sum_{i=\tau +1}^{min(\tau+n, T)} \gamma^{i-\tau -1} R_i$<br>$\qquad\qquad\qquad$ If $\tau+n \le T$,then<br>$\qquad\qquad\qquad$ $G\leftarrow G+\gamma^n Q(S_{\tau+n}, A_{\tau+n})$<br>$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>$\qquad\qquad$End if<br>$\qquad$ Until $\tau =T-1$</p>
-<h3 id="n-step-Expected-Sarsa"><a href="#n-step-Expected-Sarsa" class="headerlink" title="n-step Expected Sarsa"></a>n-step Expected Sarsa</h3><p>n-step Expected Sarsa的n-step return定义为：</p>
-<script type="math/tex; mode=display">G\_{t:t+n} = R\_{t+1} +\gamma R\_{t+1} + \cdots +\gamma^{n-1} R\_{t+n} + \gamma^n \bar{V}\_{t+n-1}(S\_{t+n}) \tag{8}</script><p>其中$\bar{V}_t(s) = \sum_{a}\pi(a|s) Q_t(s,a), \forall s\in S$<br>如果$s$是terminal，它的期望是$0$。</p>
-<h2 id="n-step-Off-policy-Learning"><a href="#n-step-Off-policy-Learning" class="headerlink" title="n-step Off-policy Learning"></a>n-step Off-policy Learning</h2><p>Off-policy算法使用behaviour policy采样的内容得到target policy的value function，但是需要使用他们在不同policy下采取某个action的relavtive probability。在$n$-step方法中，我们感兴趣的只有对应的$n$个actions，所以最简单的off-policy $n$-step TD算法，$t$时刻的更新可以使用importance sampling ratio $\rho_{t:t+n-1}$：</p>
-<script type="math/tex; mode=display">V\_{t+n}(S\_t) = V\_{t+n-1} S\_t + \alpha \rho\_{t:t+n-1}\left[G\_{t:t+n} - V\_{t+n-1}(S\_t)\right], 0\le t\le T \tag{9}</script><p>$\rho_{t:t+n-}$计算的是从$A_t$到$A_{t+n-1}$这$n$个action在behaviour policy和target policy下的relative probability，计算公式如下：</p>
-<script type="math/tex; mode=display">\rho\_{t:h} = \prod\_{k=t}^{min(h, T-1)} \frac{\pi(A\_k|S\_k)}{b(A\_k|S\_k)} \tag{10}</script><p>如果$\pi(A_k|S_k) = 0$，那么对应的$n$-step return对应的权重就应该是$0$，如果policy $pi$下选中某个action的概率很大，那么对应的return就应该比$b$下的权重大一些。因为在$b$下出现的概率下，很少出现，所以权重就该大一些啊。如果是on-policy的话，importance sampling ratio一直是$1$，所以公式$9$可以将on-policy和off-policy的$n$-step TD概括起来。同样的，$n$-step的Sarsa的更新公式也可以换成：</p>
-<script type="math/tex; mode=display">Q\_{t+n}(S\_t,A\_t) = Q\_{t+n-1}(S\_t,A\_t) + \alpha \rho\_{t+1:t+n}\left[G\_{t:t+n} - Q\_{t+n-1} (S\_t,A\_t)\right], 0\le t\le T \tag{11}</script><p>公式$11$中的importance sampling ratio要比公式$9$中计算的晚一步。这是因为我们是在更新一个state-action pair，我们并不关心有多大的概率选中这个action，我们现在已经选中了它，importance sampling只是用于后续actions的选择。这个解释也让我理解了为什么Q-learning和Sarsa为什么没有使用importance sampling。完整的伪代码如下。</p>
-<h3 id="Off-policy-n-step-Sarsa-估计-Q"><a href="#Off-policy-n-step-Sarsa-估计-Q" class="headerlink" title="Off-policy $n$-step Sarsa 估计$Q$"></a>Off-policy $n$-step Sarsa 估计$Q$</h3><p>输入：任意的behaviour policy $b$, $b(a|s)\gt 0, \forall s\in S, a\in A$<br>随机初始化$Q(s,a), \forall s\in S, a\in A$<br>初始化$\pi$是相对于$Q$的greedy policy<br>算法参数：步长$\alpha \in (0,1]$，正整数$n$<br>Loop for each episode<br>$\qquad$初始化$S_0\neq terminal$<br>$\qquad$选择并存储$A_0 \sim b(\cdot|S_0)$<br>$\qquad T\leftarrow \infty$<br>$\qquad$Loop for $t=0,1,2,\cdots$<br>$\qquad\qquad$IF $t\lt T$,then<br>$\qquad\qquad\qquad$执行action $A_t$，接收$R_{t+1}, S_{t+1}$<br>$\qquad\qquad\qquad$如果$S_{t+1}$是terminal，那么$T\leftarrow t+1$<br>$\qquad\qquad\qquad$否则选择并记录$A_{t+1} \sim b(\cdot| S_{t+1})$<br>$\qquad\qquad$END IF<br>$\qquad\qquad \tau \leftarrow t-n +1$  (加$1$表示下标是从$0$开始的)<br>$\qquad\qquad$ IF $\tau \ge 0$<br>$\qquad\qquad\qquad \rho \leftarrow \prod_{i=\tau+1}^{min(\tau+n,T)} \frac{\pi(A_i|S_i)}{b(A_i|S_i)}$ （计算$\rho_{\tau+1:\tau+n}$，这里是不是写成了Expected Sarsa公式）<br>$\qquad\qquad\qquad G\leftarrow \sum_{i=\tau+1}^{min(\tau+n, T)}\gamma^{i-\tau -1}R_i$ （计算$n$个reward, $R_{\tau+1}+\cdots+R_{\tau+n}$）<br>$\qquad\qquad\qquad$如果$\tau+n \lt T$，$G\leftarrow G + \gamma^n Q(S_{\tau+n},A_{\tau+n})$ （因为没有$Q(S_T,A_T)$）<br>$\qquad\qquad\qquad Q(S_{\tau}, A_{\tau}) \leftarrow Q(S_{\tau}, A_{\tau})+\alpha \rho \left[G-Q(S_{\tau}, A_{\tau})\right]$（计算$Q(S_{\tau+n},A_{\tau+n})$）<br>$\qquad\qquad\qquad$确保$\pi$是相对于$Q$的greedy policy<br>$\qquad\qquad$ END IF<br>$\qquad$Until $\tau = T-1$<br>上面介绍的算法是$n$-step的Sarsa，计算importance ratio使用的$\rho_{t+1:t+n}$，$n$-step的Expected Sarsa计算importance ratio使用的是$\rho_{t+1:t+n-1}$，因为在估计$\bar{V}_{t+n-1}$时候，考虑到了last state中所有的actions。</p>
-<h2 id="n-step-Tree-Backup算法"><a href="#n-step-Tree-Backup算法" class="headerlink" title="$n$-step Tree Backup算法"></a>$n$-step Tree Backup算法</h2><p>这一章介绍的是不适用importance sampling的off-policy算法，叫做tree-backup algorithm。如下图所示，是一个$3$-step的tree-backup diaqgram。<br>沿着中间这条路走，有三个sample states和rewards以及两个sample actions。在旁边的是没有被选中的actions。对于这些没有选中的actions，因为没有采样，所以使用bootstrap计算target value。因为它的backup diagram有点像tree，所以就叫做tree backup upadte。或者更精确的说，backup update使用的是所用tree的叶子结点action value的估计值进行计算的。非叶子节点的action对应的是采样的action，不参与更新，所有叶子节点对于target的贡献都有一个权重正比于它在target policy下发生的概率。在$S_{t+1}$处的除了$A_{t+1}$之外所有action权重是$\pi(a|S_{t+1})$，$A_{t+1}$一点贡献没有；在$S_{t+2}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(a’|S_{t+2})$；在$S_{t+3}$处所有没有被选中的action的权重是$\pi(A_{t+1}|S_{t+1})\pi(A_{t+2}|S_{t+2})\pi(a’’|S_{t+3})$<br>one-step Tree backup 算法其实就是Expected Sarsa：</p>
-<script type="math/tex; mode=display">G\_{t:t+1} = R\_{t+1} + \gamma \sum\_a\pi(a|S\_{t+1})Q(a, S\_{t+1}), t\lt T-1 \tag{12}</script><p>two-step Tree backup算法return计算公式如下：<br>\begin{align*}<br>G_{t:t+2} &amp;= R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})(R_{t+2} + \sum_{a} \pi(a|S_{t+2})Q(a, S_{t+2})\\\\<br>&amp;=R_{t+1} + \gamma \sum_{a\neq A_{t+1}}\pi(a|S_{t+1})Q(a, S_{t+1}), t\lt T-1$ + \gamma\pi(A_{t+1}|S_{t+1})G_{t+1:t+2}, t \lt T-2<br>\end{align*}<br>下面的形式给出了tree-backup的递归形式如下：</p>
-<script type="math/tex; mode=display">G\_{t:t+n} = R\_{t+1} + \gamma \sum\_{a\neq A\_{t+1}}\pi(a|S\_{t+1})Q(a,S\_{t+1}) + \gamma\pi(A\_{t+1}|S\_{t+1}) G\_{t+1:t+n}, n\ge 2, t\lt T-1, \tag{13}</script><p>当$n=1$时除了$G_{T-1:t+n} = R_T$，其他的和式子$12$一样。使用这个新的target代替$n$-step Sarsa中的target就可以得到$n$-step tree backup 算法。<br>完整的算法如下所示：</p>
-<h3 id="n-step-Tree-Backup-算法"><a href="#n-step-Tree-Backup-算法" class="headerlink" title="$n$-step Tree Backup 算法"></a>$n$-step Tree Backup 算法</h3><p>随机初始化$Q(s,a),\forall s\in S, a\in A$<br>初始化$\pi$是相对于$Q$的$\epsilon$-greedy policy，或者是一个给定的不变policy<br>算法参数：step size $\alpha \in (0,1], \epsilon \gt 0$，一个正整数$n$<br>Loop for each episode<br>$\qquad$初始化$S_0\neq$ terminal<br>$\qquad$ 根据$S_0$随机选择action $A_0$<br>$\qquad$ $T\leftarrow \infty$<br>$\qquad$ Loop for $t=0,1,2,\cdots$<br>$\qquad\qquad$ If $t\lt T$,then:<br>$\qquad\qquad\qquad$ 采取action $A_t$，<br>$\qquad\qquad\qquad$ 接收rewared $R_{t+1}$以及下一个state $S_{t+1}$<br>$\qquad\qquad$ 如果$S_{t+1}$是terminal，那么<br>$\qquad\qquad$ $T\leftarrow t+1$<br>$\qquad\qquad$ 根据$S_{t+1}$随机选择action $A_{t+1}$<br>$\qquad\qquad$End IF<br>$\qquad\qquad$ $\tau \leftarrow t-n+1$<br>$\qquad\qquad\qquad$ IF $\tau+n\ge T$ then<br>$\qquad\qquad\qquad\qquad G\leftarrow R_T$<br>$\qquad\qquad\qquad$ ELSE<br>$\qquad\qquad\qquad\qquad G\leftarrow R_{t+1}+\gamma \sum_a\pi(a|S_{t+1})Q(a, S_{t+1})$<br>$\qquad\qquad\qquad$ END IF<br>$\qquad\qquad\qquad$Loop for $k = min(t, T-1)$ down $\tau+1$<br>$\qquad\qquad\qquad G\leftarrow R_k+\gamma^n\sum_{a\neq A_k}\pi(a|S_k)Q(a, S_k) + \gamma \pi(A_k|S_k) G$<br>$\qquad\qquad\qquad$ $Q(S_{\tau}, Q_{\tau}) \leftarrow Q(S_{\tau}, Q_{\tau}) + \alpha \left[G-Q(S_{\tau}, Q_{\tau})\right]$<br>$\qquad\qquad$End if<br>$\qquad$ Until $\tau =T-1$</p>
-<h2 id="n-step-Q-sigma"><a href="#n-step-Q-sigma" class="headerlink" title="$n$-step $Q(\sigma)$"></a>$n$-step $Q(\sigma)$</h2><p>现在已经讲了$n$-step Sarsa，$n$-step Expected Sarsa，$n$-step Tree Backup，$4$-step的一个backup diagram如下所示。它们其实有很多共同的特性，可以用一个框架把它们统一起来。<br>具体的算法就不细说了。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《reinforcement learning an introduction》第二版<br>2.<a href="https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/335396/why-dont-we-use-importance-sampling-for-one-step-q-learning</a></p>
+            <h2 id="向量空间和子空间-vector-spaces-and-subspaces">向量空间和子空间（vector spaces and subspaces）</h2>
+<p>这一件介绍和space相关的概念以及很多其他的基础知识。</p>
+<h2 id="线性组合-linear-of-combinations">线性组合（Linear of Combinations）</h2>
+<p>线性组合有两种：加法和数乘。</p>
+<h3 id="定义">定义</h3>
+<p>如果$v$和$w$是column vectors，$c,d$是标量，那么$cv+dw$是$v$和$w$的线性组合。</p>
+<h2 id="向量空间-vector-spaces">向量空间（Vector Spaces）</h2>
+<p>Vector spaces是向量的集合，通常表示为$\mathbb{R}^1 , \mathbb{R}^2 , \mathbb{R}^n $。$\mathbb{R}^5 $表示所有$5$维的column vectors。</p>
+<h3 id="定义-v2">定义</h3>
+<p>Space $\mathbb{R}^n $是所有$n$维column vectors $v$组成的space。</p>
+<h2 id="子空间-subspaces">子空间（Subspaces）</h2>
+<h3 id="定义-v3">定义</h3>
+<p>某个vector space的subspace是满足以下条件的vectors的集合，如果$v$和$w$是subspace中的vectors，并且$c$是任意的salar，</p>
+<ol>
+<li>$v+w$还在subspace中</li>
+<li>$cv$还在subspace</li>
+</ol>
+<p>也就是说subspace是对加法和数乘封闭的vectors set，所有的线性组合仍然还在这个subspace。</p>
+<h3 id="例子">例子</h3>
+<ol>
+<li>所有的subspace都包括zero vector。</li>
+<li>通过原点的直线都是subspace。</li>
+<li>包含$v$和$w$的subspace一定得包含所有的线性组合$cv+dw$</li>
+<li>给定两个subspace $S,T$
+<ol>
+<li>$S\cup T$不是一个subspace</li>
+<li>$S\cap T$是一个subspace，证明<br>
+假设$v,w$是$S\cap T$的，则$v,w\in S, v,w\in T$，$v+w\in S, v+w\in T, cv+dw \in S, cv+dw \in T$，所以$cv+dw \in S\cap T$</li>
+</ol>
+</li>
+</ol>
+<h2 id="列空间-column-space">列空间（Column Space）</h2>
+<h3 id="创建矩阵的subspace">创建矩阵的subspace</h3>
+<p>取矩阵$A$的column vectors，计算它们的所有线性组合，借得到了一个subspace</p>
+<h3 id="定义-v4">定义</h3>
+<p>给定矩阵$A$，$A$的所有column vectors的linear combinations组成的subspace称为column space，用$C(A)$表示。$C(A)$由$Ax$的所有可能取值构成。</p>
+<h3 id="性质">性质</h3>
+<ol>
+<li>当且仅当$b$在$A$的column space中，$Ax=b$才有解。</li>
+<li>假设$A$是$m\times n$矩阵，$A$的column space是$\mathbb{R}^m $的subspace。</li>
+</ol>
+<h2 id="零空间-nullspace">零空间（Nullspace）</h2>
+<h3 id="定义-v5">定义</h3>
+<p>矩阵$A$的nullspace是所有$Ax=0$的解构成的vector space，用$N(A)$表示。$N(A)$是$\mathbb{R}^n $的subspace，因为$x$是在$\mathbb{R}^n $中的$n$维向量，所以是$\mathbb{R}^n $的subspace。</p>
+<h2 id="special-solution-主元-自由变量-special-solution-pivot-variables和free-variables-pivot-columns和free-columns">special solution，主元，自由变量（Special solution, Pivot variables和free variables, Pivot columns和free columns）</h2>
+<h3 id="special-solution">special solution</h3>
+<p>如果方程数量小于未知数数量，那么这个方程（组）有无穷多个解，为了表示这个方程组，指定special solution来表示它。<br>
+如方程组<br>
+\begin{cases}x_1+2x_2=0\\3x_1+6x_2 = 0 \end{cases}<br>
+上面的方程组其实是一个方程$x_1+2x_2=0$，两个未知数。随便的选择一个变量，让它的值为$1$，求出另一个$x$。比如令$x_2 = 1$，那么$x_1 = -2$。我们就称$(x_1=-2,x_2=1)$为一个special solution。<br>
+再给一个例子，$x+2y+3z=0$，有两个special solution，随机选择两个变量，分别让其中一个取$1$，剩余的另一个取$0$，求解出来最后的一个变量。</p>
+<h3 id="主元-主元列-自由变量-自由列">主元，主元列，自由变量，自由列</h3>
+<p>我们通常把选定的两个变量叫做free variables，其他的那些变量叫做pivot variables。比如第一个例子中，$x_2$是free variable，$x_1$是pivot variable。第二个例子中，$x_2, x_3$是free variables，$x_1$是pivot variables。主元所在的column叫做pivot column，free variables所在的column叫做free columns。</p>
+<h2 id="秩-rank">秩（rank）</h2>
+<p>矩阵$A$的秩（rank），用$r(A)$表示，它等于pivots的数量，等于column space的维度，等于row space的维度。</p>
+<h2 id="消元法解-ax-0">消元法解$Ax=0$</h2>
+<p>两个步骤：</p>
+<ol>
+<li>将矩阵$A$化为三交矩阵$U$</li>
+<li>解$Ux=0$或者$Rx=0$</li>
+</ol>
+<h3 id="示例">示例</h3>
+<p>矩阵$A= \begin{bmatrix}1&amp;1&amp;2&amp;3\\2&amp;2&amp;8&amp;10\\ 3&amp;3&amp;10&amp;13\end{bmatrix}$化成三角矩阵为：$U= \begin{bmatrix}1&amp;1&amp;2&amp;3\\0&amp;0&amp;4&amp;4\\ 0&amp;0&amp;0&amp;0\end{bmatrix}$，第一列和第三列是pivot columns，第二列和第四列是free columns，然后求出special solutions，再计算出通解。<br>
+对于每个free variabled都有一个special solution，$Ax=0$共有$r$个pivots，以及$n-r$个free variables，$A$的nullspace $N(A)$包含$n-r$个special solutions，$N(A)$具有如下的形式：<br>
+$$N = \begin{bmatrix} -F\\I\end{bmatrix}$$<br>
+其中$F$为free variables取特值的时候，pivtos的取值，$I$为free variables的取值。</p>
+<h2 id="行简化阶梯形矩阵-thre-reduced-row-echelon-matrix">行简化阶梯形矩阵（Thre reduced row echelon matrix）</h2>
+<p>行简化阶梯形矩阵是pivot colunmn恰好构成单位矩阵的矩阵，如：<br>
+$$U = \begin{bmatrix}1&amp;1&amp;0&amp;1\\0&amp;0&amp;1&amp;1\\0&amp;0&amp;0&amp;0\end{bmatrix}$$<br>
+所有的pivots都是$1$，主元所在列的其余位置都是$0$。<br>
+行简化阶梯形矩阵给出了很多有用信息：</p>
+<ol>
+<li>pivot columns</li>
+<li>pivot rows</li>
+<li>pivots是$1$</li>
+<li>zero rows显示这一行是其他rows的lihear combination</li>
+<li>free columns</li>
+</ol>
+<h2 id="ax-b-的通解">$Ax=b$的通解</h2>
+<p>先求出particular solution，让所有的free variables取$0$，求解出pivots，得到一个solution，我们称它为particular solution。然后求出所有的special solutions，则$Ax=b$的通解可以表示为：<br>
+$$x = x_p + a x_{special_solution_1} + b x_{special_solution} + \cdots=x_p+x_n$$<br>
+即particular solution加上nullspace组成的新的vector sets。当没有free variables的时候，也就没有special solutions，nullspace为空。</p>
+<!--当$b=0$的时候，我们可以求出通解$x$，当$b\neq 0$时，有点难。通过使用增广矩阵：$\left[A\ b\right]$，然后进行消元，得到$\left[R\ d\right]$，$R$是行间化阶梯形矩阵，$d$是$b$做了和$A$一样的变换后的结果。-->
+<h2 id="列满秩">列满秩</h2>
+<h3 id="定义-v6">定义</h3>
+<p>对于$m\times n$的矩阵$A$，每一列都有一个pivot，rank $r=n$，matrix是瘦高的$(m\ge n)$，其实就相当于每一个column vector都用到了，没有多余的column vector。可以用以下的形式表示：<br>
+$$R = \begin{bmatrix}I\\0\end{bmatrix}=\begin{bmatrix}n\times n 单位矩阵\\m-n行零向量\end{bmatrix}$$</p>
+<h3 id="属性">属性</h3>
+<p>当$A$列满秩的时候，有以下结论：</p>
+<ol>
+<li>$A$的所有columns都是pivot columns</li>
+<li>没有free variables，free columns和special solutions</li>
+<li>Nullspace只有$x=0$</li>
+<li>如果$Ax=b$有解，那么它只有一个解，或者一个解都没有</li>
+</ol>
+<h2 id="行满秩">行满秩</h2>
+<h3 id="定义-v7">定义</h3>
+<p>对于$m\times n$的矩阵$A$，如果$r=m$的话，$A$是一个矮胖的矩阵$(m\le n)$，每一行都有一个pivot。<br>
+$$R = \begin{bmatrix}I&amp;F\end{bmatrix}=\begin{bmatrix}m\times m 单位矩阵&amp;F\end{bmatrix}$$</p>
+<h3 id="属性-v2">属性</h3>
+<p>当$A$行满秩的时候，有以下结论：</p>
+<ol>
+<li>$A$的所有row都有pivots，$R$没有$0$向量</li>
+<li>对于任何$b$，$Ax=b$都有解</li>
+<li>column space就是整个$\mathbb{R}^m$</li>
+<li>总共有$n-r= n-m$个special solutions。</li>
+</ol>
+<h2 id="秩和方程解个数之间的关系">秩和方程解个数之间的关系</h2>
+<ol>
+<li>$r=m, r=n$,可逆方阵，$Ax=b$有且只有一个解，$R=\begin{bmatrix}I\end{bmatrix}$</li>
+<li>$r=m, r\lt n$,矮胖，$Ax=b$有无穷多个解，一个particular solution加上nullspace中的无穷个，$R=\begin{bmatrix}I&amp;F\end{bmatrix}$</li>
+<li>$r\lt m, r=m$,瘦高，$Ax=b$没有或者只有一个解，如果$b$恰好在$A$的column space中有一个解，如果$b$恰好不在$A$的column space中无解，因为column vectors是相互独立的，所以$Ax=0$只有零解，$R=\begin{bmatrix}I\\0\end{bmatrix}$</li>
+<li>$r\lt m, r\lt n$,并不满秩，$Ax=b$无解或者有无穷多个解，无解的情况是不在$A$的column space中，有解的情况是 在$A$的column space中，而在这部分中，又有无穷多个零解，所以要不无解要不无穷多个解。$R=\begin{bmatrix}I&amp;F\\0&amp;0\end{bmatrix}$</li>
+</ol>
+<h2 id="线性独立-linear-independence">线性独立（Linear independence）</h2>
+<p>矩阵$A$的columns是linear independent的，当且仅当$Ax=0$的唯一解是$x=0$时。也就是说$A$的nullspace只有零向量的时候。</p>
+<h3 id="定义-v8">定义</h3>
+<p>给定一系列向量$v_1, \cdots, v_n$，$c_1 v_1 +\cdots+c_n v_n=0$当且仅当$c_1, \cdots, c_n=0$时候成立。</p>
+<h2 id="生成-span">生成（Span）</h2>
+<h3 id="定义-v9">定义</h3>
+<p>使用一系列vectors生成space的过程就叫做span。</p>
+<h2 id="行空间-row-space">行空间（Row Space）</h2>
+<h3 id="定义-v10">定义</h3>
+<p>使用矩阵的row vector生成的subspace就叫做row space，表示维$C(A<sup>T)$，它和$A</sup>T$的column space是相同的。</p>
+<h2 id="基-basis">基（Basis）</h2>
+<h3 id="定义-v11">定义</h3>
+<p>生成space的最小vectors的independent vectors叫做这个space的一组basis，basis不是唯一的。</p>
+<h3 id="示例-v2">示例</h3>
+<p>矩阵的pivot columns是它的column space的一组basis。</p>
+<h2 id="维度-dimension">维度（Dimension）</h2>
+<h3 id="定义-v12">定义</h3>
+<p>Space的dimension指的是每组basis中向量的个数。对于一个space，不同的baisis，它们的vectors不同，但是向量的个数都是相同的，这是space的属性。</p>
+<h2 id="秩和维度的关系">秩和维度的关系</h2>
+<p>和矩阵$A$相关的主要有四个subspace，分别是column space, nullspace, row space以及left nullspace。它们四个具有的属性如下所示：</p>
+<ol>
+<li>row space和column space的dimension都是$r$</li>
+<li>nullspace和left nullspace的dimension是$n-r, m-r$，为什么是$n-r,m-r$，解$Ax=0$得到$x$是$n$维向量，也就是nullspace是$\mathbb{R}^n$的subspace，$A$的column space的dimension是$r$，free variables，free columns的个数就是$n-r$，special solutions的个数就是$n-r$，而nullspace的basis其实就是所有的special solutions，所以nullspace的dimension就是$n-r$，$m-r$同理。</li>
+</ol>
+<h2 id="a-和-r-的维度和基的关系">$A$和$R$的维度和基的关系</h2>
+<p>这里的$A$是矩阵，$R$是行间化阶梯形矩阵</p>
+<ol>
+<li>$A$和$R$的row space相同，dimension相同，为$r$，basis相同</li>
+<li>$A$和$R$的column space不同，dimension相同，也为$r$，basis不同</li>
+<li>$A$和$R$的nullspace相同，dimension相同，为$n-r$,basis相同</li>
+<li>$A$和$R$的left nullspace不同，dimension相同，为$m-r$</li>
+</ol>
+<p>Row space和nullspace都是$\mathbb{R}^n $的subspace，它们的dimension加起来等于n，但是这两个subspace加起来并不是$\mathbb{R}^n $。Row space是对$r$个$n$维pivot row vectors进行linear combination，而nullspace是对$n-r$个$n$维的解向量$x$进行linear combination，这里虽然都出现了$n$，但是第一个$n$是row vector的长度$n$，而第二个$n$是解向量的$n$。<br>
+同理，可以得column space和left nullspace都是$\mathbb{R}^m$的subspace。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.MIT线性代数公开课</p>
 
           
         
@@ -2102,7 +2878,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/07/16/maddpg/">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/08/24/linear-algebra-idempotent-matrix/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="马晓鑫爱马荟荟">
@@ -2122,7 +2898,7 @@
           <h1 class="post-title" itemprop="name headline">
                 
                 
-                <a href="/2019/07/16/maddpg/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">maddpg</a>
+                <a href="/2019/08/24/linear-algebra-idempotent-matrix/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/16/index.html">linear algebra idempotent matrix</a>
               
             
           </h1>
@@ -2147,7 +2923,7 @@
                 
               
 
-              <time title="创建时间：2019-07-16 10:31:58" itemprop="dateCreated datePublished" datetime="2019-07-16T10:31:58+08:00">2019-07-16</time>
+              <time title="创建时间：2019-08-24 13:07:15" itemprop="dateCreated datePublished" datetime="2019-08-24T13:07:15+08:00">2019-08-24</time>
             
 
             
@@ -2164,11 +2940,29 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-12-02 16:05:52" itemprop="dateModified" datetime="2019-12-02T16:05:52+08:00">2019-12-02</time>
+                <time title="修改时间：2019-12-17 16:23:45" itemprop="dateModified" datetime="2019-12-17T16:23:45+08:00">2019-12-17</time>
               
             
           </span>
 
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -2199,7 +2993,27 @@
       
         
           
-            <h2 id="代码解析"><a href="#代码解析" class="headerlink" title="代码解析"></a>代码解析</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.</p>
+            <h2 id="idempotent-matirx-幂等矩阵">Idempotent Matirx（幂等矩阵）</h2>
+<p><strong>定义</strong>满足$A^2 = A$的矩阵叫做idempotent matirx（幂等矩阵）。<br>
+幂等矩阵必须是方阵。</p>
+<h2 id="示例">示例</h2>
+<p>$$\begin{bmatrx} 4&amp;-1\\12&amp;-3\end{bmatrix}$$</p>
+<h2 id="属性">属性</h2>
+<ul>
+<li>除了identity matrix，所有的idempotent matrix都是singular。如果它是方阵，那么它的determiant是$0$。</li>
+<li>如果M是幂等矩阵，那么M-I也一定是幂等矩阵。<br>
+$$(I-M)(I-M) =  I^2 - 2IM + M^2 = I - M$$</li>
+<li>幂等矩阵的特征值只能是$0$或者$1$<br>
+证明： 如果$A$是idempotent, $\lambda$是一个特征值，$v$是对应的特征向量。<br>
+$$\lambda v = Av = AAv = \lambda Av = \lambda^2 v$$<br>
+因为$v\neq 0$，所以$\lambda=0, or 1$。</li>
+<li>幂等矩阵可对角化</li>
+<li>幂等矩阵的迹等于幂等矩阵的秩</li>
+<li>方阵零矩阵和单位矩阵都是幂等矩阵。</li>
+</ul>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://www.statisticshowto.datasciencecentral.com/idempotent-matrix/" target="_blank" rel="noopener">https://www.statisticshowto.datasciencecentral.com/idempotent-matrix/</a><br>
+2.<a href="http://people.stat.sfu.ca/~lockhart/richard/350/08_2/lectures/Theory/web.pdf" target="_blank" rel="noopener">http://people.stat.sfu.ca/~lockhart/richard/350/08_2/lectures/Theory/web.pdf</a></p>
 
           
         
@@ -2245,7 +3059,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/15/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><span class="page-number current">16</span><a class="page-number" href="/page/17/">17</a><span class="space">&hellip;</span><a class="page-number" href="/page/32/">32</a><a class="extend next" rel="next" href="/page/17/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/15/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/15/">15</a><span class="page-number current">16</span><a class="page-number" href="/page/17/">17</a><span class="space">&hellip;</span><a class="page-number" href="/page/33/">33</a><a class="extend next" rel="next" href="/page/17/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2290,7 +3104,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">313</span>
+                    <span class="site-state-item-count">324</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
