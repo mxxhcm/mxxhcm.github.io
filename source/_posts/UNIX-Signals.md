@@ -1,5 +1,5 @@
 ---
-title: UNIX signals
+title: UNIX Signals
 date: 2019-12-05 10:20:16
 tags:
  - UNIX
@@ -24,23 +24,23 @@ categories: UNIX
 这一小节介绍的signal都是由于terminate一个进程的。它们之间的区别在于使用目的不同，并且程序可能对不同的signals有不同的处理方法。
 处理这些signals的目的是让进程在terminate之前能够进行合适的清理。比如，删除临时文件等等。
 
-### `SIGTEM`
-这个signal可以被blocked, handled和忽略，shell命令的`kill`默认会产生`SIGTERM` signal。
+### `SIGINT`（程度最轻）
+`SIGINT`是程序中断singal，当用户输入INTR字符（通常是C-c）时中断，发送到前台进程组的所有进程。
+
+### `SIGTEM`（正常的kill）
+这个signal可以被blocked, handled和忽略，shell命令的`kill(1)`默认会产生`SIGTERM` signal。
 > It is the normal way to politely ask a program to terminate.
 
-### `SIGINT`
-`SIGINT`是程序中断singal，当用户输入INTR字符（通常是C-c）时中断。
+### `SIGQUIT`（可以忽略的最harvest信号）
+`SIGQUIT`和`SIGINT`很像，会中断一个进程，但是它被QUIT（通常是C-\）控制，发送给前台进程组的所有进程。并且当它terminate一个进程时，它会产生一个core dump，就像一个程序出错信号一样。
+在处理`SIGQUIT`的时候，最好不进行某些cleanups。比如，如果程序创建临时文件，处理其他termination时，最好把临时文件给删除了，但是对于`SIGQUIT`来说，最好不把它们给删了，因为用户可以用它们查找原因。
 
-### `SIGQUIT`
-`SIGQUIT`和`SIGINT`很像，会中断一个进程，但是它被QUIT（通常是C-\）控制，并且当它terminate一个进程时，它会产生一个core dump，就像一个程序出错信号一样。
-在处理`SIGQUI`的时候，最好不进行某些cleanups。比如，如果程序创建临时文件，处理其他termination时，最好把临时文件给删除了，但是对于`SIGQUIT`来说，最好不把它们给删了，因为用户可以用它们查找原因。
-
-### `SIGKILL`
-`SIGKILL` signal用于立刻终止程序。它不能被handled，也不能被忽略，因此是致命的。同样的也不能被block。
+### `SIGKILL`（不能被捕捉或者忽略）
+`SIGKILL` signal用于立刻终止程序。这是两个不能被捕捉或者忽略的信号之一（另一个是作业控制信号SIGSTOP）。它向系统管理员提供了一种可以杀死任一进程的可靠方法。
 这个singal通常是显式请求。因为他不能被handled，所以一般把它作为最后一个选择，在尝试了C-c或者`SIGTERM`不起作用之后，最后再使用`SIGKILL`。
 
 ### `SIGHUP`
-如果终端借口检测到一个连接断开（可能因为网络或者电话连接断了），就将这个signal报告和这个终端相关的控制进程。
+如果终端接口检测到一个连接断开（可能因为网络或者电话连接断了），就将这个signal报告和这个终端相关的控制进程（会话首进程），会话首进程可能在后台，而上述几个SIGNAL都是发送给前台进程（除了SIGKILL)。
 
 
 ### 其他
@@ -53,6 +53,14 @@ categories: UNIX
 
 ## Job Control Signals
 ### `SIGCLD`
+### `SIGCONT`
+### `SIGSTOP`
+### `SIGSTP`
+交互停止信号，当用户在终端上按下(C-z)时，终端驱动程序产生这个信号，发送到前台进程组的所有进程。
+### `SIGTTIN`
+
+### `SIGTTOU`
+
 
 ## 参考文献
 1.https://unix.stackexchange.com/questions/251195/difference-between-less-violent-kill-signal-hup-1-int-2-and-term-15

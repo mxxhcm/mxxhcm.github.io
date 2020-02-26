@@ -1,5 +1,5 @@
 ---
-title: UNIX Signal
+title: UNIX signal
 date: 2019-12-04 15:22:47
 tags:
  - UNIX
@@ -10,7 +10,6 @@ categories: UNIX
 
 ## 概述
 Signals是软件终端。它提供了一种处理异步事件的方法。
-
 
 ## 什么是signal
 每一个signal都有一个名字，它们以三个字符`SIG`开头。例如：
@@ -25,7 +24,6 @@ Signals是软件终端。它提供了一种处理异步事件的方法。
 - 调用`kill(2)`函数
 - 调用`kill(1)`命令，它是`kill(2)`的接口
 - 检测到某种软件条件已经发生
-
 
 常见的signal可以分为以下几类：
 - 程序出错signals，用于report程序错误
@@ -59,10 +57,10 @@ sighandler_t signal(int signum, sighandler_t handler);
 ### `signal`性质
 1. `signal`函数有两个参数和一个返回值。第一个参数`signum`是整形，表示一个signal，第二个参数handler是函数指针，返回值也是一个函数指针。
 2. `handler`的值是常量`SIG_IGN`，`SIG_DFL`或者一个函数的地址。分别表示忽略该信号，执行默认动作，或者调用相应的函数。
-3. `signal`的返回值是指向之前的信号处理程序的函数指针。
+3. **`signal`函数的返回值是指向之前的信号处理程序的函数指针。**所以，对于signal来说，只有改变信号的处理方式才能确定信号的当前处理方式。
 
 ###  `exec`和`fork`
-当使用`exec`执行一个程序时，所有signal的状态都是系统默认或者忽略。`exec`函数将原先设置为要catch的signal更改为默认动作，其他signal的状态不变。比如一个进程原先要捕捉的signal，执行一个新程序后就不再catch了，因为signal catch函数的地址可能在执行的新程序文件中无意义了。
+当使用`exec`执行一个程序时，所有signal的状态都是系统默认或者忽略。`exec`函数将原先设置为要捕获的signal更改为默认动作，其他signal的状态不变。比如一个进程原先要捕获的signal，执行一个新程序后就不再catch了，因为signal catch函数的地址可能在执行的新程序文件中无意义了。
 
 而fork因为复制了父进程的内存映像，所以信号捕捉函数的地址在子进程中是有意义的，子进程继承了父进程的信号处理方式。
 
@@ -74,11 +72,18 @@ sighandler_t signal(int signum, sighandler_t handler);
 4. 进程不希望发生某种signal时，不能关闭它，只能ignore它。
 
 ## 中断的系统调用
+如果进程在执行一个**低速系统调用**而**阻塞**期间捕捉到一个signal，这个系统调用就会被中断不再继续执行（不再阻塞），返回出错，errno设置为EINTR。
+什么是低速系统调用？系统调用被分为两类，一类是低速系统调用，另一类是其他系统调用。低速系统调用是指**可能会使进程永远阻塞**的一类系统调用，比如：
+1. 如果某些类型文件（管道，终端设备和网络设备）的数据不存在，则读操作可能会使调用者永远阻塞。
+2. pause和wait函数等。
+3. ...
+
+注意，与磁盘I/O有关的系统调用大多数时候总是会很快返回。
 
 ## 可重入函数
-signal发生的时间是任意的，如果此时进程在执行某个函数，就可能会对进程造成破坏。
+signal发生的时间是任意的，进程正在执行的正常指令可能会被信号处理程序中断，会对进程造成破坏。
 SUS说明了在信号处理程序中保证调用安全的函数，这些函数是可重入的，被称为异步信号安全的(async-signal safe)。如下所示是异步信号安全的函数：
-![]()
+![re](re.png)
 其余的大多数函数是不可重入的，因为它们可能满足以下条件：
 1. 使用静态数据结构；
 2. 调用`malloc`或者`free`；
@@ -93,26 +98,15 @@ SUS说明了在信号处理程序中保证调用安全的函数，这些函数�
 ## 函数
 ISO C并不涉及多进程，所以它不能定义以进程ID为参数的函数。
 
-### `kill`
-向进程发送一个signal。``` c
-int kill(pid_t pid, int sig);
-```
-如果pid是正的，sig发送到pid指定的进程；
-如果pid是0，sig信号发送到调用进程的进程组中的所进程；
-如果pid是-1,sig发送到调用进程有权限发送signals的所有进程（除了init进程）。注意：有权限指的是特权，或者real，effective UID等于目标进程的real或者saved SUID。
-如果pid比-1小，sig发送到进程组中进程id为-pid的进程。
+### `kill`和`raise`
+kill向参数pid指定的进程或者进程组发送一个signal。
+raise向调用者发送一个signal，ISO C中没有线程，POSIX.1扩展了raise可以处理多线程。单线程程序中等价于`kill(getpid(), sig)`。在多线程程序中等价于`pthread_kill(pthread_self(), sig)`。
 
-### `raise`
-`raise`向调用者发送一个signal，ISO C中没有线程，POSIX.1扩展了raise可以处理多线程，它的原型如下：```c
-int raise(int sig);
-```
-单线程程序中等价于`kill(getpid(), sig)`。
-在多线程程序中等价于`pthread_kill(pthread_self(), sig)`。
-
-
-### `alarm`
-### `pause`
+### `alarm`和`pause`
+alarm不阻塞，当某个时刻到达时，内核会产生一个SIGALRM信号。
+pause使调用进程挂起，直到捕捉到任意一个信号，执行相应的信号处理程序，并从其返回时，pause才返回。
 
 ## 参考文献
 1.《APUE》第三版
 2.https://www.gnu.org/software/libc/manual/html_node/Standard-Signals.html#Standard-Signals
+

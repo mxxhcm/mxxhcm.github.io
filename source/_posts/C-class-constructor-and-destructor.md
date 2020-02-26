@@ -26,6 +26,13 @@ categories: C/C++
 
 ### 默认构造函数的作用
 
+## 编译器生成的默认构造函数（是编译器需要）
+Nontrivial default construct是编译器需要的那种构造函数，必要的话由编译器合成，它不会负责对data member进行初始化，这是程序员的责任。总共有四种nontrivial default construct：
+1. 带有default constructor的member class object；
+2. 带有default constructor的base class；
+3. 带有virtual function的class；
+4. 带有virtual base class的class。
+
 ## 定义构造函数
 构造函数是可以重载的，一个类可以有多个构造函数。
 

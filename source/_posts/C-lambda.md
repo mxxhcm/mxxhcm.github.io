@@ -17,7 +17,9 @@ capture list和function body不能忽略，其他的部分都可以忽略。
 
 ## 向lambda传递参数
 capture list和param list可以传递参数。capture list传递的是当前函数内的局部变量，表示lambda未来会使用这些变量，param list是lambda接受的参数。
-capture list内可以是value capture，也可以是reference capture。
+**capture list内可以是value capture，也可以是reference capture。它们的区别？**
+1. value capture需要变量可以拷贝，而且是在lambda创建时拷贝，而不是调用时。在创建后对变量的修改，不会改变lambda内对应的值。
+2. reference capture实际上使用的是引用绑定的对象，需要注意，在调用时，要保证这个引用所绑定的变量是存在的。
 
 ## 隐式capture
 capture list中指定=或者&可以自动推断lambda中可能用到的局部变量。隐式capture和显式capture可以同时存在。

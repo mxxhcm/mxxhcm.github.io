@@ -13,24 +13,7 @@ categories: UNIX
 
 ## 进程标识(pid)
 每一个进程都有一个非负整数表示它的唯一进程ID。进程ID标识符总是唯一的，但是可以复用。
-系统中有一些专用进程，具体细节跟实现有关。
-获得当前进程的各项id：
-``` c
-// real uid
-uid_t ruid = getuid()
-// effective uid
-uid_t euid = geteuid()
-
-// real gid
-uid_t rgid = getgid()
-// effective gid
-uid_t egid = getegid()
-
-// pid
-uid_t pid = getpid()
-// parent pid
-uid_t ppid = getppid()
-```
+关于和进程ID相关的内容，可以查看[]()。
 
 ## `fork`
 `fork`创建一个子进程。函数原型：
@@ -236,130 +219,11 @@ int fexecve(int fd, char *const argv[], char *const envp[]);
 5. 在`exec`前后，real UID和real GID不变，effective ID取决于是否设置set UID和set GID。如果新程序的set UID已经设置，则effective ID变成程序文件所有者的ID，否则不变。
 6. 这几个函数中，只有`execve`是系统调用，其他几个都只是库函数，最终都要调用`execve`。
 
-## 更改UID和GID
-进程的real UID, real GID以及effective UID，effective GID都是可以改变的。可以使用`setuid`, `seteuid`和`setgid`, `setegid`更改real UID， effective UID，和real GID以及effective GID。它们的原型如下：
-
-### `setuid`, `seteuid`和`setgid`, `setegid`原型
-``` c
-#include <unistd.h>
-
-int setuid(uid_t uid);
-int setgid(gid_t gid);
-int seteuid(uid_t euid);
-int setegid(gid_t egid);
-```
-
-### `setuid`, `seteuid`和`setgid`, `setegid`属性
-更改进程的UID需要遵守以下规则：
-1. 如果进程具有超级用户权限。`setuid`函数将real UID, effective UID和saved set UID都保存为uid。
-2. 如果进程没有超级用户权限。但是uid等于real UID或者saved set UID，则`setuid`只将real UID改成uid。其他UID不变。
-3. 如果两个条件都不满足，设置`errno`为`EPERM`，返回-1。
-4. 只有superuser进程可以改变real UID。一般来说，real UID是用户登录时，login程序设置的，而且不会改变它。login是一个超级用户进程，当它调用`setuid`时，设置所有三个uid。
-5. 只有set-user-ID位被设置时，`exec`才设置effective UID。如果set-user-ID位没有被设置，`exec`不修改effective UID。任何时候，都可以调用`setuid`将effective UID设置为real UID和saved set UID修改为。
-6. saved set-user-ID是`exec`从effective UID复制而来的。如果设置了set-user-ID位，在`exec`根据文件的UID设置了进程的effective UID之后，这个副本就被保存起来了。
-
-总结得到以下的表格：
-|ID| |`exec`| |`setuid`|
-|:--:|:--:|:--:|:--:|:--:|
-||set-user-ID位关闭|set-user-ID位开启| 超级用户 |  非超级用户|
-|real UID|不变|不变|设置为uid|不变|
-|effective UID|不变|程序文件的UID|设置为uid|设置为uid|
-|saved set-UID|从effective ID复制|从effective ID复制|设置为uid|不变|
-
-### `setreuid`和`setregid`
-``` c
-#include <unistd.h>
-
-int setreuid(uid_t ruid, uid_t euid);
-int setregid(gid_t rgid, gid_t egid);
-```
-1. 交换real UID和effective UID。一个非root用户总能交换real UID和effective UID。允许一个set-user-ID程序交换成用户的普通权限，然后再次交换回去。
-2. 某个参数设置为1，表示相应的ID不变
-
-### `seteuid`和`setegid`
-``` c
-#include <sys/types.h>
-#include <unistd.h>
-
-int seteuid(uid_t euid);
-int setegid(gid_t egid);
-```
-1. 一个非root用户可以将effective UID设置为real UID或者saved set-UID。
-对于一个特权用户，可以将effective UID设置为uid。和`setuid`的区别在于，它修改三个UID。
-
-### 组ID
-修改进程的GID和修改进程的UID类似。附属组ID不受`setgid`，`setegid`和`setrugid`的影响。
-
 ## 解释器文件
-所有的UNIX系统都支持解释器文件。这种文件是文本文件，起始形式是：``` txt
-#! pathname [optional-argument]
-```
-在感叹号和pathname之间的空格是可以选的。常见的解释器文件以下列行开始：```shell
-#! /bin/bash
-```
-pathname通常是绝对路径名。对这种文件的识别是由内核作为`exec`系统调用处理的一部分完成的。内核是调用`exec`函数的进程实际执行的并不是该解释器文件，而是在该解释器文件第一行中pathname指定的文件。解释器文件是文本文件，它以!#开头，而解释器是二进制文件，由解释器中的文件第一行的pathname指定。
-
-是否一定需要解释器文件呢？不完全如此，但是它们确实使得用户得到效率方面的好处，代价是内核的额外开销，因为识别解释器文件的是内核。由于下列原因，解释器文件是有用的：
-1. 有些程序是用某种脚本语言写的脚本，解释器文件可以将这一事实隐藏起来。
-2. 解释器脚本在效率方面提供了好处。
-3. 解释器脚本使我们可以使用除了/bin/sh以外的其他shell编写shell脚本。
+关于解释器文件，可以查看[]()。
 
 ## `system`
-ISO C定义了`system`函数，它用来执行一个shell命令，对系统的依赖性很强。`system`库函数调用`fork`创建一个子进程使用`execl`执行参数`system`指定的shell命令。相当于:```c
-execl("/bin/sh", "sh", "-c", command, (char *) 0);
-```
-POSIX.1包括了`system`接口，扩展了ISO C定义，描述了`system`在POSIX.1环境中的运行行为。
-```c
-#include <stdlib.h>
-
-int system(const char *command);
-```
-`system`在其实现中调用了`fork`, `exec`和`waitpid`，可能有以下的返回值：
-1. 如果`command`是一个空指针，当前系统是有可用的shell时，`system`返回非0值，否则返回0。在UNIX的各个实现中，一定提供了shell，当`command`是空指针时，总是返回非零值。
-2. `fork`失败或者`waitpid`返回处`EINTR`之外的出错，返回-1，设置errno。
-3. 如果`exec`失败，表示不能执行shell，返回值如同shell执行了exit(127)一样
-4. 所有三个函数都成功，`system`的返回值和在shell中执行相应命令的的termination status一样。
-
-其中一种`system`的可能实现如下所示：```c
-int system(const char *cmdstring)
-{
-    pid_t pid;
-    int status;
-
-    if(cmdstring == NULL)
-        return 1;
-    
-    if ((pid = fork()) < 0)
-    {
-        status = -1;
-    }
-    else if(pid == 0)
-    {
-        execl("/bin/sh", "sh",  "-c", cmdstring, (char*)0);
-        _exit(127);
-    }
-    else
-    {
-        while(waitpid(pid, &status, 0) < 0)
-        {
-
-            if(errno != EINTR)
-            {
-                status = -1;
-                break;
-            }
-        }
-    }
-
-    return status;
-}
-```
-使用`system`而不是直接使用`fork`和`exec`的好处是：`system`进行了各种所需要的各种出错处理和信号处理。但是早期的系统中，没有`waitpid`函数，于是父进程使用下列语句等待子进程结束：``` c
-while((lastpid = wait(&status) != pid && lastpid !=-1)
-    ;
-```
-如果在调用`system`之前产生了其它子进程，如果这些子进程在`system`产生的子进程之前结束，那么上面的代码会将这些提前结束的子进程的进程ID和termination都给丢弃。
-**system函数还有可能会出现漏洞。如果设置了set UID或者set GID位的程序执行`system`，那么这个进程的高级别权限可能会保持下来（现代的系统都解决了这个问题）。如果一个进程正在以特殊的权限(set UID和set GID)运行，它又想生成另一个进程执行另一个程序，它应该直接使用`fork`和`exec`，而且在`fork`之后，`exec`之前要改回普通权限，set UID和set GID程序绝不应该调用`system`函数。**
+关于system的介绍，可以查看[]()。
 
 ## 进程会计
 大多数UNIX系统都提供了一个选项进行进程会计处理。启动该选项之后，每当进程结束时内核就会写一个会记记录。典型的会计记录是一个二进制数据，一般包括命令名，所有的CPU时间总量，UID和GID，启动时间等。所有的标准都没有定义进程会记，所以实现上就千差万别。

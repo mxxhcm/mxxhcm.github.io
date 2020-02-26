@@ -7,6 +7,8 @@ categories: 其他编程语言
 ---
 
 ## Matlab基础
+### for循环
+### if语句
 ### plot
 ``` matlab
 xlabel('your x label', 'fontsize', 20);
