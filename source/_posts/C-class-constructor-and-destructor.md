@@ -39,6 +39,15 @@ Nontrivial default construct是编译器需要的那种构造函数，必要的�
 2. 值传参。
 3. 函数返回值。
 
+
+### 默认memberwise的初始化
+如果类没有提供explicit copy constructor，当使用类对象初始化另一个类对象时，其实是使用默认memberwise初始化完成的。
+copy constructor只有在必要的时候通过编译器产生出来。
+
+
+### Bitwise Copy Semantics
+
+
 ## 定义构造函数
 构造函数是可以重载的，一个类可以有多个构造函数。
 
