@@ -33,6 +33,12 @@ Nontrivial default construct是编译器需要的那种构造函数，必要的�
 3. 带有virtual function的class；
 4. 带有virtual base class的class。
 
+## 拷贝构造函数的构建操作
+有三种情况，会把一个object的内容当做另一个object的初值，即调用拷贝构造函数：
+1. 用=号初始化一个对象。
+2. 值传参。
+3. 函数返回值。
+
 ## 定义构造函数
 构造函数是可以重载的，一个类可以有多个构造函数。
 
