@@ -327,6 +327,612 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/02/20/UNIX-id/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/02/20/UNIX-id/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">UNIX id</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-20 15:03:12" itemprop="dateCreated datePublished" datetime="2020-02-20T15:03:12+08:00">2020-02-20</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-02-21 12:31:42" itemprop="dateModified" datetime="2020-02-21T12:31:42+08:00">2020-02-21</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="和进程相关的id">和进程相关的ID</h2>
+<ol>
+<li>每个进程都有一个进程ID(pid)，还有一个父进程ID(ppid)。<br>
+除此之外，每个进程还有以下ID:</li>
+<li>实际用户ID，实际组ID。实际用户ID和实际组ID就是当前用户的UID和GID。</li>
+<li>有效用户ID，有效组ID，附属组ID。通常情况下，实际用户ID和有效用户ID是一样的，实际组ID和有效组ID也是一样的。</li>
+<li>保存的设置用户ID，保存的设置组ID，它们包含了执行一个程序时有效U(G)ID的副本。可以在st_mode中设置set-user-ID和set-group-ID位（这个和保存的设置U(G)ID不是一个东西），表示，当执此文件时，将进程的有效用户ID设置成文件所有者的UID，或者将进程的有效组ID设置称为文件所有组的GID，通过<code>exec</code>实现。</li>
+<li>进程组ID。每一个进程都属于一个进程组。一个进程只能为自己或者它的子进程设置进程组ID，在它的子进程调用了exec之后，它就不能再更改子进程的进程组ID了。</li>
+<li>会话ID。一个session可以有多个进程组，一个session可以有一个控制控制（终端设备或者伪终端设备）。如果进程调用setsid()创建一个新的session，那么这个进程没有控制终端。</li>
+</ol>
+<h2 id="访问进程的各种id">访问进程的各种ID</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> getpid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">pid_t</span> getppid(<span class="keyword">void</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">uid_t</span> getuid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">uid_t</span> geteuid(<span class="keyword">void</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">gid_t</span> getgid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">gid_t</span> getegid(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="修改进程相关的id">修改进程相关的ID</h2>
+<h3 id="同时设置实际-有效和保存的设置id">同时设置实际，有效和保存的设置ID</h3>
+<ol>
+<li>使用<code>setxid</code>设置进程的实际U(G)ID，有效U(G)ID，保存的设置U(G)ID：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setuid</span><span class="params">(<span class="keyword">uid_t</span> uid)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setgid</span><span class="params">(<span class="keyword">gid_t</span> gid)</span></span>;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>关于修改的规则，有三条：<br>
+1. 如果是root用户，可以将三个ID都设置为u(g)id。<br>
+2. 如果不是root用户，但是uid和实际用户id一样，可以将有效uid改为uid，其他不变。<br>
+3. 否则，出错。</p>
+<ol start="2">
+<li>使用此外，调用<code>exec</code>也可能会更改有效U(G)ID和保存的设置U(G)ID。无论是否设置set-user(group)-id，实际U(G)ID都不变；当设置U(G)ID位打开时，将有效U(G)ID设置为程序文件的UID，否则有效U(G)ID不变，保存的set-user(group)-id都是从有效U(G)ID复制。</li>
+</ol>
+<p>总结得到以下的表格：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">ID</th>
+<th style="text-align:center"></th>
+<th style="text-align:center"><code>exec</code></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"><code>setuid</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">set-user-ID位关闭</td>
+<td style="text-align:center">set-user-ID位开启</td>
+<td style="text-align:center">超级用户</td>
+<td style="text-align:center">非超级用户</td>
+</tr>
+<tr>
+<td style="text-align:center">real UID</td>
+<td style="text-align:center">不变</td>
+<td style="text-align:center">不变</td>
+<td style="text-align:center">设置为uid</td>
+<td style="text-align:center">不变</td>
+</tr>
+<tr>
+<td style="text-align:center">effective UID</td>
+<td style="text-align:center">不变</td>
+<td style="text-align:center">程序文件的UID</td>
+<td style="text-align:center">设置为uid</td>
+<td style="text-align:center">设置为uid</td>
+</tr>
+<tr>
+<td style="text-align:center">saved set-UID</td>
+<td style="text-align:center">从effective ID复制</td>
+<td style="text-align:center">从effective ID复制</td>
+<td style="text-align:center">设置为uid</td>
+<td style="text-align:center">不变</td>
+</tr>
+</tbody>
+</table>
+<h3 id="设置有效id">设置有效ID</h3>
+<p>设置进程的有效U(G)ID。如果是普通用户，可以将有效U(G)ID设置为实际U(G)ID或者保存的设置U(G)ID，如果是特权用户，可以将有效U(G)ID设置为u(g)id：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">seteuid</span><span class="params">(<span class="keyword">uid_t</span> uid)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setegid</span><span class="params">(<span class="keyword">gid_t</span> gid)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h3 id="交换实际id和有效id">交换实际ID和有效ID</h3>
+<p>交换进程的实际U(G)ID和有效U(G)ID。对于普通用户，可以交换实际U(G)ID和有效U(G)ID；还可以允许普通用户将有效U(G)ID设置为保存的设置U(G)ID。<br>
+某个参数设置为1，表示相应的ID不变。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setreuid</span><span class="params">(<span class="keyword">uid_t</span> ruid, <span class="keyword">uid_t</span> euid)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setregid</span><span class="params">(<span class="keyword">uid_t</span> rgid, <span class="keyword">uid_t</span> egid)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/02/18/C-regex/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/02/18/C-regex/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">C++ regex</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-18 18:21:06" itemprop="dateCreated datePublished" datetime="2020-02-18T18:21:06+08:00">2020-02-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-02-19 12:13:03" itemprop="dateModified" datetime="2020-02-19T12:13:03+08:00">2020-02-19</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="正则表达式">正则表达式</h2>
+<p>regex定义在regex包中。</p>
+<h2 id="regex类">regex类</h2>
+<p>regex是一个正则表达式类。<br>
+输入是string，使用smatch保存匹配的相关信息，使用sregex_iterator获得某个string中所有匹配的子串。<br>
+输入是<code>const char *</code>，使用regex, cmatch，和cregex_iterator。</p>
+<h2 id="c-正则使用流程">C++ 正则使用流程</h2>
+<p>给定一个输入（待搜索序列）string。<br>
+创建一个regex对象，调用regex_search(是否存在一个子串和regex匹配)或者regex_match（整个字符串是否和regex匹配）进行匹配，如果匹配成功，将匹配到的内容写入一个smatch对象，并且返回一个true的布尔变量，否则返回false。<br>
+或者可以使用sregex_iterator查找所有的匹配子串，返回一个smatch对象的引用，或者一个指向smatch对象的指针。</p>
+<h2 id="smatch操作">smatch操作</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/02/18/C-tuple/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/02/18/C-tuple/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">C++ tuple</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-18 15:54:42 / 修改时间：18:20:53" itemprop="dateCreated datePublished" datetime="2020-02-18T15:54:42+08:00">2020-02-18</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="tuple">tuple</h2>
+<p>在头文件tuple中，是一个类模板。和pair很像，pair是具有两个不同成员的类模板，而tuple是具有不定个数的成员类型也不定的类模板。</p>
+<h2 id="创建tuple">创建tuple</h2>
+<ol>
+<li>直接调用构造函数</li>
+<li>使用<code>make_tuple</code>函数模板。</li>
+</ol>
+<h2 id="访问tuple的成员">访问tuple的成员</h2>
+<ol>
+<li><code>get&lt;i&gt;(t)</code>获得tuple t的第i个元素。</li>
+<li><code>tuple_size&lt;tupleType&gt;</code>类模板，使用它的public成员value获得某个tuple的数据成员的个数。</li>
+<li><code>tuple_element&lt;i, tupleType&gt;</code>类模板，使用它的public成员type获得某个tupleType类型变量的第i个元素的类型。</li>
+</ol>
+<h2 id="tuple的用处">tuple的用处</h2>
+<ol>
+<li>返回多个值。</li>
+</ol>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/02/13/C-RTTI/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1641,568 +2247,6 @@ DNS查询可以是迭代查询也可以是递归查询。<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/01/08/C-lambda/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2020/01/08/C-lambda/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">C++ lambda</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2020-01-08 19:50:10" itemprop="dateCreated datePublished" datetime="2020-01-08T19:50:10+08:00">2020-01-08</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2020-02-21 23:27:47" itemprop="dateModified" datetime="2020-02-21T23:27:47+08:00">2020-02-21</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="lambda">lambda</h2>
-<p>lambda是一种可调用对象，它具有如下的形式：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[](param <span class="built_in">list</span>)-&gt;<span class="keyword">return</span> type &#123;function body&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>其中<code>[]</code>叫做capture list，(param list)是参数列表，return type是返回值类型，{function body}是函数体。<br>
-capture list和function body不能忽略，其他的部分都可以忽略。</p>
-<h2 id="向lambda传递参数">向lambda传递参数</h2>
-<p>capture list和param list可以传递参数。capture list传递的是当前函数内的局部变量，表示lambda未来会使用这些变量，param list是lambda接受的参数。<br>
-<strong>capture list内可以是value capture，也可以是reference capture。它们的区别？</strong></p>
-<ol>
-<li>value capture需要变量可以拷贝，而且是在lambda创建时拷贝，而不是调用时。在创建后对变量的修改，不会改变lambda内对应的值。</li>
-<li>reference capture实际上使用的是引用绑定的对象，需要注意，在调用时，要保证这个引用所绑定的变量是存在的。</li>
-</ol>
-<h2 id="隐式capture">隐式capture</h2>
-<p>capture list中指定=或者&amp;可以自动推断lambda中可能用到的局部变量。隐式capture和显式capture可以同时存在。</p>
-<h2 id="指定返回类型">指定返回类型</h2>
-<p>如果lambda中包含超过一个return之外的语句，编译器假定它返回void，然后就不会return了。lambda可以指定返回类型：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[](param <span class="built_in">list</span>)-&gt;<span class="keyword">return</span> type &#123;function body&#125;;</span><br></pre></td></tr></table></figure></p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《C++ Primer》第五版中文版</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/01/08/C-callable-object/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2020/01/08/C-callable-object/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">C++ callable object</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2020-01-08 19:48:08 / 修改时间：19:49:59" itemprop="dateCreated datePublished" datetime="2020-01-08T19:48:08+08:00">2020-01-08</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>C++ 中有四种可调用对象(callable object)。</p>
-<ol>
-<li>函数；</li>
-<li>函数指针；</li>
-<li>重载了函数调用运算符的类；</li>
-<li>lambda表达式。</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/01/04/UNIX-thread/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2020/01/04/UNIX-thread/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">UNIX thread</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2020-01-04 19:11:28" itemprop="dateCreated datePublished" datetime="2020-01-04T19:11:28+08:00">2020-01-04</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2020-01-06 10:45:58" itemprop="dateModified" datetime="2020-01-06T10:45:58+08:00">2020-01-06</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="线程和进程的区别和联系">线程和进程的区别和联系</h2>
-<p>每个线程都包含有执行环境所必须的信息，包括进程中标识线程的线程ID，一组寄存器值，栈，调度优先级和策略，signal屏蔽字，errno变量和线程私有数据。<br>
-一个进程的所有信息对该进程的所有线程都是共享的，包括可执行程序的代码，程序的全局内存，堆内存，栈和文件描述符。</p>
-<h2 id="线程id">线程ID</h2>
-<p>线程ID只有在它所在的上下文才有意义。线程ID用<code>pthread_t</code>数据类型表示，实现的时候用一个结构体表示，所以不能把它当做整数处理。<br>
-在<code>pthread_t</code>的具体实现上，Linux使用无符号长整形表示（这个值看起来也像指针，但是不是指针），Solaris用无符号整形表示，FreeBSD和Mac OS X用指向pthread结构的指针表示。</p>
-<h2 id="函数">函数</h2>
-<h3 id="pthread-self"><code>pthread_self</code></h3>
-<p>获得当前进程ID</p>
-<h3 id="pthread-equal"><code>pthread_equal</code></h3>
-<p>判断两个进程ID是否相等，返回值是0表示不相等</p>
-<h3 id="pthread-create"><code>pthread_create</code></h3>
-<p>创建线程，返回值是0表示正常退出。</p>
-<h3 id="pthread-exit"><code>pthread_exit</code></h3>
-<p>终止当前线程，设置的retval可以被<code>pthread_join</code>得到。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">pthread_exit</span><span class="params">(<span class="keyword">void</span> *retval)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p>此外，可以直接return一个void *类型的值结束当前线程。</p>
-<h3 id="pthread-join"><code>pthread_join</code></h3>
-<p><code>pthread_join</code>可以通过<code>pthread_</code>获得一个终止线程（通过<code>pthread_exit</code>结束或者return的void*的值）的exit code。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_join</span><span class="params">(<span class="keyword">pthread_t</span> thread, <span class="keyword">void</span> **retval)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<h3 id="pthread-cancel"><code>pthread_cancel</code></h3>
-<p>给一个线程发送一个取消请求。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_cancel</span><span class="params">(<span class="keyword">pthread_t</span> thread)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<h3 id="pthread-cleanup-push和pthread-cleanup-pop"><code>pthread_cleanup_push</code>和<code>pthread_cleanup_pop</code></h3>
-<p>线程处理程序，和<code>atexit</code>类似。它们都操作的是thread-cancellation clearn-up handlers的调用栈。当一个thread被cancelled时，自动执行一个clean-up handler函数。<br>
-<code>pthread_clean_push</code>将一个清理函数<code>routine</code>push到clean-up hanlers栈的最上面，当routine随后被调用的时候，传递arg参数给它。<br>
-<code>pthread_clean_pop</code>从clean-up栈的栈顶将routine移除，如果execute位不为0的话执行它。</p>
-<p>在以下情况下，一个cancellation clean-up handler从栈中弹出，并执行：</p>
-<ol>
-<li>一个thread被canceled，弹出所有clean-up handlers。</li>
-<li>一个thread被调用<code>pthread_exit</code>终止，弹出所有的clearn-up handlers。</li>
-<li>一个thread调用<code>pthread_clean_push</code>，并且参数excute为非0值，弹出栈定的clean-up handlers。</li>
-</ol>
-<h3 id="none"></h3>
-<h3 id="总结">总结</h3>
-<p><code>pthread_create</code>,<code>pthread_exit</code>和<code>pthread_join</code>它们的void *类型的参数可以传递的值不止一个，还可以传递结构的地址，但是需要注意的是，这个结构所在的内存在调用者完成调用之后必须还是有效的（如果是当前线程在栈上分配的内存的话，返回值这个地址就无效了）。</p>
-<h2 id="参考文献">参考文献</h2>
-<ol>
-<li></li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2252,7 +2296,7 @@ capture list和function body不能忽略，其他的部分都可以忽略。</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">324</span>
+                    <span class="site-state-item-count">326</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2313,7 +2357,9 @@ capture list和function body不能忽略，其他的部分都可以忽略。</p>
                     
                       
                     
-                    <span class="site-state-item-count">24</span>
+                      
+                    
+                    <span class="site-state-item-count">25</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -2474,7 +2520,9 @@ capture list和function body不能忽略，其他的部分都可以忽略。</p>
                     
                       
                     
-                    <span class="site-state-item-count">74</span>
+                      
+                    
+                    <span class="site-state-item-count">75</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
