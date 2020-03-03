@@ -7,7 +7,6 @@ tags:
 categories: UNIX
 ---
 
-
 ## 线程和进程的区别和联系
 每个线程都包含有执行环境所必须的信息，包括进程中标识线程的线程ID，一组寄存器值，栈，调度优先级和策略，signal屏蔽字，errno变量和线程私有数据。
 一个进程的所有信息对该进程的所有线程都是共享的，包括可执行程序的代码，程序的全局内存，堆内存，栈和文件描述符。
@@ -15,7 +14,6 @@ categories: UNIX
 ## 线程ID
 线程ID只有在它所在的上下文才有意义。线程ID用`pthread_t`数据类型表示，实现的时候用一个结构体表示，所以不能把它当做整数处理。
 在`pthread_t`的具体实现上，Linux使用无符号长整形表示（这个值看起来也像指针，但是不是指针），Solaris用无符号整形表示，FreeBSD和Mac OS X用指向pthread结构的指针表示。 
-
 
 ## 创建线程
 使用`pthread_create`进行。如果失败，返回错误码，而不是设置errno。
@@ -28,7 +26,6 @@ categories: UNIX
 2. 被同一进程中的其他线程cancel。
 3. 调用`pthread_exit`
 
-
 ## 线程同步
 ### 互斥量
 互斥量有两种状态，要不加锁，要不就是不加锁。
@@ -36,7 +33,6 @@ categories: UNIX
 
 ### 避免死锁
 ### 超时锁
-
 ### 读写锁
 读写锁有三种状态：
 读锁，写锁，不加锁。
@@ -46,8 +42,37 @@ categories: UNIX
 筛选条件
 
 ### 条件变量
+条件变量和互斥量的区别[2]。
+mutex只是让我们阻塞直到lock可用。
+而condition variable让我们阻塞到某个用户定义的条件可用。
+
 ### 自旋锁
+mutex在阻塞的时候是sleep。
+而自旋锁在阻塞的时候是占用cpu。
+
 ### 屏障
+pthread_join就是一种barrier。
+只不过pthread_barrier_wait() wait的是所有count个线程都要调用pthread_barrier_wait()。
+而pthread_join() wait的是线程的返回值。
+如果其他线程没有结束，主线程中没有调用pthread_join()获得这些线程的返回值。则主线程可能结束的比这些线程早，从而使得这些进程尚未完成就退出了（因为主进程会return或者调用exit)。
+
+pthread_wait()的返回值，总共有count个线程调用，只有一个返回`PTHREAD_BARRIER_SERIAL_THREAD`，其他都返回0。
+
+## 线程限制
+
+## 线程属性
+
+## 同步属性
+
+## 重入
+
+## 线程和特定数据
+
+## 取消选项
+
+## 线程和fork
+
+## 线程和IO
 
 ## 函数
 ### `pthread_self`
@@ -91,4 +116,5 @@ int pthread_cancel(pthread_t thread);
 
 
 ## 参考文献
-1.
+1.《APUE》第三版
+2.https://stackoverflow.com/questions/4742196/advantages-of-using-condition-variables-over-mutex
