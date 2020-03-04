@@ -327,6 +327,256 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/03/linear-algebra-singular-value-decomposition/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/01/03/linear-algebra-singular-value-decomposition/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/32/index.html">singular value decomposition（奇异值分解）</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-03 15:19:54" itemprop="dateCreated datePublished" datetime="2019-01-03T15:19:54+08:00">2019-01-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:47:51" itemprop="dateModified" datetime="2019-12-17T15:47:51+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/线性代数/" itemprop="url" rel="index"><span itemprop="name">线性代数</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="特征值分解-eigen-value-decomposition">特征值分解(eigen value decomposition)</h2>
+<p>要谈奇异值分解，首先要从特征值分解(eigen value decomposition, EVD)谈起。<br>
+矩阵的作用有三个：一个是旋转，一个是拉伸，一个是平移，都是线性操作。如果一个$n\times n$方阵$A$对某个向量$x$只产生拉伸变换，而不产生旋转和平移变换，那么这个向量就称为方阵$A$的特征向量(eigenvector)，对应的伸缩比例叫做特征值(eigenvalue)，即满足等式$Ax = \lambda x$。其中$A$是方阵，$x$是方阵$A$的一个特征向量，$\lambda$是方阵$A$对应特征向量$x$的特征值。<br>
+假设$S$是由方阵$A$的$n$个线性无关的特征向量构成的方阵，$\Lambda$是方阵$A$的$n$个特征值构成的对角矩阵，则$A=S\Lambda S^{-1}$，这个过程叫做对角化过程。<br>
+证明：<br>
+因为$Ax_1 = \lambda_1 x_1,\cdots,Ax_n = \lambda_n x_n$,<br>
+所以<br>
+\begin{align*}AS &amp;= A\begin{bmatrix}x_1&amp; \cdots&amp;x_n\end{bmatrix}\\<br>
+&amp;=\begin{bmatrix} \lambda_1x_1&amp;\cdots&amp;\lambda x_n\end{bmatrix}\\<br>
+&amp;= \begin{bmatrix}x_1&amp; \cdots&amp;x_n\end{bmatrix} \begin{bmatrix}\lambda_1&amp; &amp; &amp;\\&amp;\lambda_2&amp;&amp;\\&amp;&amp;\cdots&amp;\\&amp;&amp;&amp;\lambda_n\end{bmatrix}\<br>
+&amp;= S\Lambda<br>
+\end{align*}<br>
+所以$AS=S\Lambda, A=S\Lambda S^{-1}, S^{-1}AS=\Lambda$。<br>
+若方阵$A$为对称矩阵，矩阵$A$的特征向量是正交的，将其单位化为$Q$，则$A=Q\Lambda Q^T$，这个过程就叫做特征值分解。</p>
+<h2 id="奇异值分解-singular-value-decomposition">奇异值分解(singular value decomposition)</h2>
+<p>特征值分解是一个非常好的分解，因为它能把一个方阵分解称两类非常好的矩阵，一个是正交阵，一个是对角阵，这些矩阵都便于进行各种计算，但是它对于原始矩阵的要求太严格了，必须要求矩阵是对称正定矩阵，这是一个很苛刻的条件。所以就产生了奇异值分解，奇异值分解可以看作特征值分解在$m\times n$维矩阵上的推广。对于对称正定矩阵来说，有特征值，对于其他一般矩阵，有奇异值。</p>
+<p>奇异值分解可以看作将一组正交基映射到另一组正交基的变换。普通矩阵$A$不是对称正定矩阵，但是$AA^T $和$A^TA $一定是对称矩阵，且至少是半正定的。从对$A^TA $进行特征值分解开始，$A^T A=V\Sigma_1V^T $，$V$是一组正交的单位化特征向量${v_1,\cdots,v_n}$，则$Av_1,\cdots,Av_n$也是正交的。<br>
+证明：<br>
+\begin{align*}Av_1\cdot Av_2 &amp;=(Av_1)^T Av_2\\<br>
+&amp;=v_1^T A^T Av_2\\<br>
+&amp;=v_1^T \lambda v_2\\<br>
+&amp;=\lambda v_1^T v_2\\<br>
+&amp;=0<br>
+\end{align*}<br>
+所以$Av_1,Av_2$是正交的，同理可得$Av_1,\cdots,Av_n$都是正交的。<br>
+而：<br>
+\begin{align*}<br>
+Av_i\cdot Av_i &amp;= v_i^T A^T Av_i\\<br>
+&amp;=v_i \lambda v_i\\<br>
+&amp;=\lambda v_i^2\\<br>
+&amp;=\lambda<br>
+\end{align*}<br>
+将$Av_i$单位化为$u_i$，得$u_i = \frac{Av_i}{|Av_i|} = \frac{Av_i}{\sqrt{\lambda_i}}$，所以$Av_i = \sqrt{\lambda_i}u_i$。<br>
+将向量组${v_1,\cdots,v_r}$扩充到$R^n $中的标准正交基${v_1,\cdots,v_n}$，将向量组${u_1,\cdots,u_r}$扩充到$R^n $中的标准正交基${u_1,\cdots,u_n}$，则$AV = U\Sigma$，$A=U\sigma V^T $。</p>
+<p>事实上，奇异值分解可以看作将行空间的一组正交基加上零空间的一组基映射到列空间的一组正交基加上左零空间的一组基的变换。对一矩阵$A,A\in \mathbb{R}^{m\times n} $，若$r(A)=r$，取行空间的一组特殊正交基${v_1,\cdots,v_r}$，当矩阵$A$作用到这组基上，会得到另一组正交基${u_1,\cdots,u_r}$，即$Av_i = \sigma_iu_i$。<br>
+矩阵表示是：<br>
+\begin{align*}<br>
+AV &amp;= A\begin{bmatrix}v_1&amp;\cdots&amp;v_r\end{bmatrix}\\<br>
+&amp;= \begin{bmatrix}\sigma_1u_1 &amp; \cdots &amp; \sigma_ru_r\end{bmatrix}\\<br>
+&amp;= \begin{bmatrix}u_1&amp;u_2&amp;\cdots&amp;u_r\end{bmatrix}\begin{bmatrix}\sigma_1&amp;&amp;&amp;\\&amp;\sigma_2&amp;&amp;\\&amp;&amp;\cdots&amp;\\&amp;&amp;&amp;\sigma_n\end{bmatrix}\\<br>
+&amp;=U\Sigma<br>
+\end{align*}<br>
+其中$A\in \mathbb{R}^{m\times n}, V\in \mathbb{R}^{n\times r},U\in \mathbb{R}^{m\times r}, \Sigma \in \mathbb{R}^{r\times n}$。<br>
+当有零空间的时候，行空间的一组基是$r$维，加上零空间的$n-r$维，构成$R^n $空间中的一组标准正交基。列空间的一组基也是$r$维的，加上左零空间的$m-r$维，构成$R^m $空间的一组标准正交基。零空间中的向量在对角矩阵$\Sigma$中体现为$0$，<br>
+则$A=U\Sigma V^{-1} $，$V$是正交的，所以$A=U\Sigma V^T $，其中$V\in \mathbb{R}^{n\times n}, U\in \mathbb{R}^{m\times m}, \Sigma \in \mathbb{R}^{m\times n}$。</p>
+<p>$A=U\Sigma V^T $,<br>
+$A^T = V\Sigma^T U^T $,<br>
+$AA^T = U\Sigma V^T V\Sigma^T U^T $,<br>
+$A^T A = V\Sigma^T U^T U\Sigma V^T $<br>
+对$A A^T $和$A^T A$作特征值分解，则$A A^T = U\Sigma_1U^T $,$A^T A=V\Sigma_2V^T $，所以对$AA^T $作特征值分解求出来的$U$和对$A^T A$作特征值分解求出来的$V$就是对$A$作奇异值分解求出来的$U$和$V$，$AA^T $和$A^T A$作特征值分解求出来的$\Sigma$的非零值是相等的，都是对$A$作奇异值分解的$\Sigma$的平方。</p>
+<h3 id="a-t-a-和-aa-t-的非零特征值是相等的">$A^T A$和$AA^T $的非零特征值是相等的</h3>
+<p>证明：对于任意的$m\times n$矩阵$A$，$A^T A$和$AA^T $的非零特征值相同的。 设$A^T A$的特征值为$\lambda_i$，对应的特征向量为$v_i$，即$A^T Av_i = \lambda_i v_i$。<br>
+则$AA^T Av_i = A\lambda_iv_i = \lambda_i Av_i$。<br>
+所以$AA^T $的特征值为$\lambda_i$，对应的特征向量为$Av_i$。<br>
+因此$A^T A$和$AA^T $的非零特征值相等。</p>
+<h3 id="几何意义">几何意义</h3>
+<p>对于任意一个矩阵，找到其行空间(加上零空间)的一组正交向量，使得该矩阵作用在该向量序列上得到的新的向量序列保持两两正交。奇异值的几何意义就是这组变化后的新的向量序列的长度。</p>
+<h3 id="物理意义">物理意义</h3>
+<p>奇异值往往对应着矩阵隐含的重要信息，且重要性和奇异值大小正相关。每个矩阵都可以表示为一系列秩为$1$的“小矩阵”的和，而奇异值则衡量了这些秩一矩阵对$A$的权重。<br>
+奇异值分解的物理意义可以通过图像压缩表现出来。给定一张$m\times n$像素的照片$A$，用奇异值分解将矩阵分解为若干个秩一矩阵之和，即：<br>
+\begin{align*}<br>
+A&amp;=\sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T +\cdots+\sigma_r u_rv_r^T\\<br>
+&amp;= \begin{bmatrix}u_1&amp;u_2&amp;\cdots&amp;u_r\end{bmatrix}\begin{bmatrix}\sigma_1&amp;&amp;&amp;\&amp;\sigma_2&amp;&amp;\&amp;&amp;\cdots&amp;\&amp;&amp;&amp;\sigma_n\end{bmatrix}\begin{bmatrix}v_1<sup>T\v_2</sup>T\ \vdots\v_r^T\end{bmatrix}\\<br>
+&amp;=U\Sigma V^T<br>
+\end{align*}</p>
+<p>这个也叫部分奇异值分解。其中$V\in R^{r\times n}, U\in R^{m\times r}, \Sigma \in R^{r\times r}$。因为不含有零空间和左零空间的基，如果加上零空间的$n-r$维和左零空间的$m-r$维，就是奇异值分解。<br>
+较大的奇异值保存了图片的主要信息，特别小的奇异值有时可能是噪声，或者对于图片的整体信息不是特别重要。做图像压缩的时候，可以只取一部分较大的奇异值，比如取前八个奇异值作为压缩后的图片：<br>
+$$A = \sigma_1 u_1v_1^T +\sigma_2 u_2v_2^T + \cdots + \sigma_8 u_8v_8^T$$<br>
+现实中常用的做法有两个：</p>
+<ol>
+<li>保留矩阵中$90%$的信息：将奇异值平方和累加到总值的%90%为止。</li>
+<li>当矩阵有上万个奇异值的时候，取前面的$2000$或者$3000$个奇异值。。</li>
+</ol>
+<h2 id="参考文献-references">参考文献(references)</h2>
+<p>1.Gilbert Strang, MIT Open course：Linear Algebra<br>
+2.<a href="https://www.cnblogs.com/pinard/p/6251584.html" target="_blank" rel="noopener">https://www.cnblogs.com/pinard/p/6251584.html</a><br>
+3.<a href="http://www.ams.org/publicoutreach/feature-column/fcarc-svd" target="_blank" rel="noopener">http://www.ams.org/publicoutreach/feature-column/fcarc-svd</a><br>
+4.<a href="https://www.zhihu.com/question/22237507/answer/53804902" target="_blank" rel="noopener">https://www.zhihu.com/question/22237507/answer/53804902</a><br>
+5.<a href="http://charleshm.github.io/2016/03/Singularly-Valuable-Decomposition/" target="_blank" rel="noopener">http://charleshm.github.io/2016/03/Singularly-Valuable-Decomposition/</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/02/ml-pca/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3223,475 +3473,6 @@ Compile with:</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2018/10/24/assembly-MIPS/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2018/10/24/assembly-MIPS/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/32/index.html">assamble MIPS</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-10-24 20:42:37" itemprop="dateCreated datePublished" datetime="2018-10-24T20:42:37+08:00">2018-10-24</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:45:29" itemprop="dateModified" datetime="2019-12-17T15:45:29+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/汇编/" itemprop="url" rel="index"><span itemprop="name">汇编</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="技巧">技巧</h2>
-<p>怎么写汇编程序。<br>
-写一个函数时，在被调用函数内，首先说明参数，表明每个寄存器存放的都是什么。比如a0-a3,都存放的是什么。在调用功能函数内，使用a0-a3传递参数。<br>
-先使用寄存器，最后在分配栈帧大小。。</p>
-<p>s0-s7可以用来保存数据，比如函数A调用函数B，函数A中使用的s0-s7，在调用完函数B返回后，s0-s7原来的值是什么，现在就还是什么。<br>
-t0-t9就随用随操作。<br>
-在写循环的时候<br>
-先写循环的框架。。</p>
-<h2 id="mips-r2000-指令格式">MIPS R2000 指令格式</h2>
-<p>每条指令都是32位长，由几个bits field构成，如下所示：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center"></th>
-<th style="text-align:center">6 bits</th>
-<th style="text-align:center">5 bits</th>
-<th style="text-align:center">5 bits</th>
-<th style="text-align:center">5 bits</th>
-<th style="text-align:center">5 bits</th>
-<th style="text-align:center">6 bits</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">寄存器</td>
-<td style="text-align:center">op</td>
-<td style="text-align:center">reg1</td>
-<td style="text-align:center">reg2</td>
-<td style="text-align:center">des</td>
-<td style="text-align:center">shift</td>
-<td style="text-align:center">funct</td>
-</tr>
-<tr>
-<td style="text-align:center">立即数</td>
-<td style="text-align:center">op</td>
-<td style="text-align:center">reg1</td>
-<td style="text-align:center">reg2</td>
-<td style="text-align:center">16位常数</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-<tr>
-<td style="text-align:center">jump</td>
-<td style="text-align:center">op</td>
-<td style="text-align:center">26位常数</td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-<td style="text-align:center"></td>
-</tr>
-</tbody>
-</table>
-<p>前六位是op域，确定这条指令是寄存器指令，立即数指令还是jump指令，从而确定后面的指令该如何被解释。<br>
-如果op域是0，表示这是一条寄存器指令，通常执行一个算术或者逻辑运算。funct域指定要执行的操作，reg1和reg2表示用作操作数的寄存器，des表示存储结果的寄存器。</p>
-<h2 id="mips-register集合">MIPS Register集合</h2>
-<p>MISP R200 CPU总共有32个寄存器，其中31个都是通用寄存器，可以用来存储任何指令，剩下的一个，叫做register zero，任何时候存放的总是0。<br>
-尽管理论上任意一个register都可以用作任何目的。MIPS程序员通常有一个默认的规定：</p>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">symbolic name</th>
-<th style="text-align:center">序号</th>
-<th style="text-align:center">用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">zero</td>
-<td style="text-align:center">0</td>
-<td style="text-align:center">一直存放的都是常数0。</td>
-</tr>
-<tr>
-<td style="text-align:center">at</td>
-<td style="text-align:center">1</td>
-<td style="text-align:center">保留</td>
-</tr>
-<tr>
-<td style="text-align:center">v0-v1</td>
-<td style="text-align:center">2-3</td>
-<td style="text-align:center">包含返回值，如果值是单字的，只有$v0有用</td>
-</tr>
-<tr>
-<td style="text-align:center">a0-a3</td>
-<td style="text-align:center">4-7</td>
-<td style="text-align:center">参数寄存器，包含一个子程序调用的前4个参数</td>
-</tr>
-<tr>
-<td style="text-align:center">t0-t9</td>
-<td style="text-align:center">8-15, 24-25</td>
-<td style="text-align:center">临时寄存器0到9</td>
-</tr>
-<tr>
-<td style="text-align:center">s0-s7</td>
-<td style="text-align:center">16-23</td>
-<td style="text-align:center">保存寄存器0到7</td>
-</tr>
-<tr>
-<td style="text-align:center">k0-k1</td>
-<td style="text-align:center">26-27</td>
-<td style="text-align:center">内核寄存器0,1，DO NOT USE</td>
-</tr>
-<tr>
-<td style="text-align:center">gp</td>
-<td style="text-align:center">28</td>
-<td style="text-align:center">全局数据指针用于定位static global varaibles。现在忽略它</td>
-</tr>
-<tr>
-<td style="text-align:center">sp</td>
-<td style="text-align:center">29</td>
-<td style="text-align:center">栈指针</td>
-</tr>
-<tr>
-<td style="text-align:center">fp</td>
-<td style="text-align:center">30</td>
-<td style="text-align:center">帧指针</td>
-</tr>
-<tr>
-<td style="text-align:center">ra</td>
-<td style="text-align:center">31</td>
-<td style="text-align:center">返回地址</td>
-</tr>
-</tbody>
-</table>
-<h2 id="spim环境系统调用">SPIM环境系统调用</h2>
-<table>
-<thead>
-<tr>
-<th style="text-align:center">service</th>
-<th style="text-align:center">code</th>
-<th style="text-align:center">参数</th>
-<th style="text-align:center">结果</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center">打印int</td>
-<td style="text-align:center">1</td>
-<td style="text-align:center">$a0</td>
-<td style="text-align:center">在console打印出int</td>
-</tr>
-<tr>
-<td style="text-align:center">打印float</td>
-<td style="text-align:center">2</td>
-<td style="text-align:center">$f12</td>
-<td style="text-align:center">在console打印出float</td>
-</tr>
-<tr>
-<td style="text-align:center">打印double</td>
-<td style="text-align:center">3</td>
-<td style="text-align:center">$f12</td>
-<td style="text-align:center">在console打印出double</td>
-</tr>
-<tr>
-<td style="text-align:center">打印string</td>
-<td style="text-align:center">4</td>
-<td style="text-align:center">$a0</td>
-<td style="text-align:center">在console打印出string</td>
-</tr>
-<tr>
-<td style="text-align:center">读入int</td>
-<td style="text-align:center">5</td>
-<td style="text-align:center">none</td>
-<td style="text-align:center">结果存放在v0</td>
-</tr>
-<tr>
-<td style="text-align:center">读入float</td>
-<td style="text-align:center">6</td>
-<td style="text-align:center">none</td>
-<td style="text-align:center">结果存放在f0</td>
-</tr>
-<tr>
-<td style="text-align:center">读入double</td>
-<td style="text-align:center">7</td>
-<td style="text-align:center">none</td>
-<td style="text-align:center">结果存放在f0</td>
-</tr>
-<tr>
-<td style="text-align:center">读入string</td>
-<td style="text-align:center">8</td>
-<td style="text-align:center">$a0存放地址，$a1存放长度</td>
-<td style="text-align:center">空</td>
-</tr>
-<tr>
-<td style="text-align:center">sbrk</td>
-<td style="text-align:center">9</td>
-<td style="text-align:center">$a0(长度)</td>
-<td style="text-align:center">$v0</td>
-</tr>
-<tr>
-<td style="text-align:center">exit</td>
-<td style="text-align:center">10</td>
-<td style="text-align:center">空</td>
-<td style="text-align:center">空</td>
-</tr>
-</tbody>
-</table>
-<h2 id="stack-frames">Stack Frames</h2>
-<p>每一次调用一个子程序，就会专门为当前子程序调用创建一个独一无二的栈帧。在递归调用的情况下，创建了很多个栈帧，每一次调用就有一个。栈帧的组织形式是很重要的，因为它们需要在调用者和被调者之间传递参数，定义寄存器如何在调用函数和被调用函数之间共享。此外，还需要在被调用函数的栈帧内定义局部变量的存储格式。每个栈帧的最小值是32。<br>
-一般来说，一个子程序调用的栈帧可能包含以下的内容：</p>
-<ul>
-<li>传递给子程序的参数</li>
-<li>saved寄存器的值（$s0到$s7）</li>
-<li>子程序调用返回地址（$ra）</li>
-<li>局部变量</li>
-</ul>
-<p>如下图所示，栈从高地址向低地址增长。<br>
-<img src="/2018/10/24/assembly-MIPS/" alt><br>
-每个stack frame被分成了五个区域：</p>
-<ol>
-<li>参数区域，存放子程序调用的其他子程序所需要的参数。它们不会被当前子程序使用，而是用于当前子程序调用的子程序。前四个参数可以使用参数寄存器（$a0到$a3）进行传递，如果超过四个参数，就存放在sp+16, sp+20, 等等。也就是说当前栈帧最底部存放的是它调用的子程序所需要的参数，如果它没有调用子程序，那就不需要这个区域了。</li>
-<li>保留寄存器区域用于保存saved寄存器（$s0到$s7）的值。这些寄存器的值在进入当前子程序时就被保存，在子程序返回前，从这个区域将值复制到saved寄存器。在这期间，saved寄存器的值可以随意使用。这个很有用哦。</li>
-<li>返回地址区域用于存放返回地址寄存器（$ra）的值，这个值在当前子程序被执行的时候，就被复制到栈上，在当前子程序返回前被拷贝回去。如果当前子程序没有调用其他子程序，不需要这个区了。</li>
-<li>Pad区域是保证栈帧的总大小是8的倍数。在这里插入是为了确保，局部变量的存储区域总是以双字开始的。</li>
-<li>局部存储区域用于局部变量的存储。当前子程序必须保留足够的字存放局部变量和局部寄存器（$t0到$t9）的值。这个区域也必须进行padding确保它的大小总是8 words的整数倍。</li>
-</ol>
-<p>总结以下，当一个函数被调用时，为它创建一个栈帧，这个栈帧的最小值是32，最大值不限，要能容纳所有要保存的对象，包括上面介绍的五个部分。具体怎么操作呢。如果当前函数被调用了，首先移动<code>sp</code>到能容纳下所有要保存的内容，然后保存返回地址，保存可能使用到的saved寄存器。然后将传递给这个子程序的参数，$a0到$a3这几个参数的值存放在<strong>调用当前函数的函数的栈帧底部</strong>，然后当前函数用到这几个值时，从那里获取，超过4个参数的通过栈传递，直接存放在sp+16, sp+20等位置。<br>
-比如当前函数调用了两次子函数，需要用到传递给当前函数的这几个参数，在这几个子函数调用前后参数值不应该改变。</p>
-<h2 id="mips-insturction-set">MIPS Insturction Set</h2>
-<ul>
-<li>如果op包含 a(u)，这条指令是有符号数或者无符号数参与的算术运算，取决于有没有u。</li>
-<li>des 一定是一个寄存器</li>
-<li>src1 一定是一个寄存器</li>
-<li>reg2 一定是一个寄存器</li>
-<li>src2 可以是一个寄存器，也可以是一个32位整数</li>
-<li>addr一定是一个地址。</li>
-</ul>
-<h3 id="区别">区别</h3>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">    .data</span><br><span class="line">array:  .space 1024*4</span><br><span class="line">    .text</span><br><span class="line">la  $t1, array  # la将数组的地址存放到一个寄存器</span><br><span class="line">lw  $a0, ($t1)  # lw将数组地址的内容load出来</span><br><span class="line">lw  $a0, 24($t1)</span><br><span class="line"></span><br><span class="line">move $t2, $t1</span><br></pre></td></tr></table></figure>
-<h3 id="算术指令">算术指令</h3>
-<ul>
-<li>mul des, src1, src2   将寄存器src1和寄存器或者数值src2的结果存放在寄存器des</li>
-<li>mulo des, src1, src2  有溢出</li>
-<li>mult(u) src1, reg2    将寄存器src1和寄存器reg2的结果存放在lo和寄存器hi上。</li>
-<li>div src1, reg2</li>
-<li>div des, sr1, src2</li>
-<li>add(u) des, src1, src1</li>
-</ul>
-<h3 id="比较指令">比较指令</h3>
-<h3 id="分支和跳转指令">分支和跳转指令</h3>
-<h4 id="分支-branch">分支(branch)</h4>
-<ul>
-<li>
-<p>beq ssr1, src2, lab</p>
-</li>
-<li>
-<p>ble sr1, src2, lab    如果src1 &lt;= src2，跳转到lab</p>
-</li>
-<li>
-<p>bgt sr1, src2, lab    如果src1 &gt;= src1，跳转到lab</p>
-</li>
-</ul>
-<p>和零比</p>
-<ul>
-<li>beqz src1, lab    如果寄存器src1的值等于0，跳转到lab</li>
-<li>bnez src1, lab    如果寄存器src1的值不等于0，跳转到lab</li>
-<li>blez src1, lab    如果寄存器src1的值小于等于0，跳转到lab</li>
-<li>bgez src1, lab    如果寄存器src1的值大于等于0，跳转到lab</li>
-</ul>
-<h4 id="跳转">跳转</h4>
-<ul>
-<li>j label   跳转到一个label</li>
-<li>jr src1   跳转到一个位置src1</li>
-<li>jar label 跳转到label，并且存储下一条指令到$ra</li>
-<li>jalr src1 跳转一个位置src1，并且将下一条指令的位置存储到$ra</li>
-</ul>
-<h3 id="load-store和数据移动">Load,Store和数据移动</h3>
-<h4 id="load">Load</h4>
-<ul>
-<li>la des, addr  加载一个label的地址到des</li>
-<li>lw des, addr 加载地址addr处的一个word</li>
-<li>li des, const 加载一个而常数到des</li>
-</ul>
-<h4 id="store">Store</h4>
-<h4 id="数据移动">数据移动</h4>
-<ul>
-<li>move des, src1  将寄存器src1的内容复制到寄存器des中</li>
-<li>mfhi des      将hi中的内容复制到des中</li>
-<li>mflo des      将lo中的内容复制到des中</li>
-<li>mthi src1     将寄存器src1中的内容复制到hi中</li>
-<li>mtlo src1     将寄存器src1中的内容复制到lo中</li>
-</ul>
-<h3 id="异常处理">异常处理</h3>
-<h2 id="spim-assembler">SPIM Assembler</h2>
-<h3 id="段和链接器指令">段和链接器指令</h3>
-<h3 id="数据指令">数据指令</h3>
-<p>.asciiz str，汇编给定的以null结尾的字符串，<br>
-.ascii str，汇编给定的不以null结尾的字符串<br>
-.byte byte1 … byteN，汇编给定的字节（八位整数）<br>
-.half half1 … halfN，汇编给定的半字（十六位整数）<br>
-.word word1 … wordN，汇编给定的字（三十二位整数）<br>
-.space size，在当前的段中分配n字节的空间，在SPIM中，只允许在数据段中进行。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>MIPS教程<br>
-1.<a href="https://sites.cs.ucsb.edu/~franklin/64/lectures/mipsassemblytutorial.pdf" target="_blank" rel="noopener">https://sites.cs.ucsb.edu/~franklin/64/lectures/mipsassemblytutorial.pdf</a><br>
-MIPS汇编指令以及对应的机器代码<br>
-2.<a href="http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html" target="_blank" rel="noopener">http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html</a><br>
-3.<a href="https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf" target="_blank" rel="noopener">https://courses.cs.washington.edu/courses/cse410/09sp/examples/MIPSCallingConventionsSummary.pdf</a><br>
-4.<a href="https://stackoverflow.com/questions/7748769/mips-programming-how-to-call-a-function-from-a-separate-file" target="_blank" rel="noopener">https://stackoverflow.com/questions/7748769/mips-programming-how-to-call-a-function-from-a-separate-file</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3741,7 +3522,7 @@ MIPS汇编指令以及对应的机器代码<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">326</span>
+                    <span class="site-state-item-count">327</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
