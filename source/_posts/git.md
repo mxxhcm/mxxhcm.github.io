@@ -78,7 +78,8 @@ commit xxxxxx
 
 git revert会提交一个新的版本，将回退当做新的一个push，之前的内容都会保留。
 
+## git pull和git fetch区别
 
 ## 参考文献
 1.https://blog.csdn.net/kongbaidepao/article/details/52253774
-
+2.https://www.cnblogs.com/ruiyang-/p/10764711.html
