@@ -6,6 +6,24 @@ tags:
 categories: 面试
 ---
 
+## netstat
+netstat监控网络连接，路由表等，网络接口等。
+netstat默认打印所有打开的socket连接。
+-a, --all展示所有的listening和没有listening的sockets。
+-l, --listening，展示所有listening的socket，默认情况下是忽略的。
+-p, --program，每一个socket属于哪一个程序和pid。
+-n, --numeric，数值展示host，port和用户名。
+-t, --tcp
+-u, --udp
+-r打印路由表。
+-i打印网络接口。
+
+## lsof
+列出打开的文件。
+
+## ip
+ip address，查看ip地址。
+ip link，查看网络设备。
 
 ## 原子操作
 原子操作指的是由多步组成的操作，要么执行完所有步骤，要不一步也不执行。
@@ -21,6 +39,11 @@ categories: 面试
 4. 线程具有自己的私有属性。
 5. 一个进程结束后所有线程都将终止，而一个线程结束不会影响其他线程（如果调用了exit就会终止所有线程。）
 6. 线程是轻量级的进程，它的创建和销毁的代价要比进程小。
+
+
+## fork和vfork区别
+1. fork采用copy-on-write，而vfork在调用exec之前和父进程共享数据。
+2. fork不对子进程的执行顺序做任何要求，而vfork要求子进程先运行，父进程挂起，知道子进程调用了exec或者exit之后，父进程恢复运行。
 
 ## 进程同步
 
