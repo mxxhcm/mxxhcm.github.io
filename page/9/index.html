@@ -327,6 +327,208 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/12/UNIX-system-call-vs-library-call/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/12/UNIX-system-call-vs-library-call/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/9/index.html">UNIX system call vs library call</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-12 13:01:01" itemprop="dateCreated datePublished" datetime="2019-11-12T13:01:01+08:00">2019-11-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:49:18" itemprop="dateModified" datetime="2019-12-17T15:49:18+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="系统调用-system-call-和库函数-library-function">系统调用(system call)和库函数(library function)</h2>
+<h3 id="系统调用">系统调用</h3>
+<p>所有的操作系统都提供多种服务的入口点，通过这些入口点向内核请求服务，这些入口点被称为系统调用(system call)。系统调用处于kernel mode，一些任务只能在kernel mode运行。比如和硬件的交互，系统调用使得用户mode的进程可以通过系统调用进入kernel mode，从而实现和硬件的交互。。<br>
+系统调用接口可以在man的第二部分查看，它是用C语言定义的，与具体系统如何调用一个系统调用的实现技术无关。这些和早期的操作系统按照传统方式用机器的汇编语言定义内核入口点。<br>
+UNIX使用的方法是为每个系统调用在标准C库中设置一个同名函数。用户进程使用标准C调用相应的函数，这些函数又根据系统调用调用相应的内核服务。</p>
+<h3 id="库函数">库函数</h3>
+<p>库函数可以在man手册的第三部分查看，第三部分定义了程序员可以使用的通用库函数。库函数可以调用系统调用，也可以不调用系统调用，比如<code>read</code>函数会调用系统调用，而<code>atoi</code>等并不使用任何系统调用。</p>
+<h3 id="系统调用和库函数之间的关系">系统调用和库函数之间的关系</h3>
+<ol>
+<li>从实现角度来看，系统调用和库函数有着根本的区别，系统调用处于内核mode，库函数属于用户mode。</li>
+<li>从用户应用角度考虑，可以把系统调用看做C函数，使用系统调用还是库函数不重要，它们都是为应用程序提供服务的。</li>
+<li>C函数只是系统调用和库函数的一种实现，系统调用和库函数都可以以其他方式实现。</li>
+<li>系统调用通常只是提供一种最小接口，而库函数实现更复杂的功能。</li>
+<li>库函数可以被替换，但是系统调用通常是不能替换的。</li>
+<li>库函数可以调用系统调用，也可以不调用系统调用。</li>
+<li>应用程序既可以调用库函数也可以调用系统调用。</li>
+<li>进程控制系统调用(fork, exec和wait)等通常由应用程序直接调用。为了简化一些常见情况，UNIX也提供了一些库函数，如system和popen。</li>
+<li>库函数链接到用户程序，在user space执行，而syste call没有链接到用户程序，在kernel space执行</li>
+<li>库函数的执行时间被计算为user level time，而system call的执行事件算作system time的一部分。</li>
+<li>库函数可以简单的进行debug，而系统调用不能debug，因为它们被kernel执行。</li>
+</ol>
+<p>对于第4条，可以考虑以下例子：<br>
+sbrk(2)是分配存储空间的UNIX系统调用，它按照指定字节数增加或者减少进程地址空间。如何管理进程的地址空间由进程决定。<br>
+malloc(3)是公用函数库中的一个存储分配空间函数，它负责进行进程的存储地址管理。<br>
+我们可以自己实现一个malloc，但是它很有可能还要使用sbrk(2)。内核中的系统调用ssbrk是系统层面的空间分配，而库函数malloc是在用户层面进行操作。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版<br>
+2.<a href="https://www.thegeekstuff.com/2012/07/system-calls-library-functions/" target="_blank" rel="noopener">https://www.thegeekstuff.com/2012/07/system-calls-library-functions/</a><br>
+3.<a href="https://stackoverflow.com/questions/29816791/what-is-the-difference-between-system-call-and-library-call" target="_blank" rel="noopener">https://stackoverflow.com/questions/29816791/what-is-the-difference-between-system-call-and-library-call</a><br>
+4.<a href="https://unix.stackexchange.com/questions/6931/what-is-the-difference-between-a-library-call-and-a-system-call-in-linux" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/6931/what-is-the-difference-between-a-library-call-and-a-system-call-in-linux</a><br>
+5.<a href="https://unix.stackexchange.com/questions/57232/difference-between-system-calls-and-library-functions" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/57232/difference-between-system-calls-and-library-functions</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/12/C-main-argc-argv/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -442,11 +644,21 @@
       
         
           
-            <h2 id="main函数"><a href="#main函数" class="headerlink" title="main函数"></a>main函数</h2><p><code>main</code>函数是C语言和C++ 程序的入口，C和C++ 的标准要求它们的实现必须支持以下两种形式：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;...&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span>&#123;...&#125;</span><br></pre></td></tr></table></figure></p>
-<p>任何C和C++ 库实现都必须实现以上两种形式的<code>main</code>，除此以外，可以根据标准进行其他扩展实现，但是这样子可能在一个平台上能运行的程序在另一个平台上不能运行，即除了标准的两种<code>main</code>，其他扩展都是不可移植的。<br>需要注意的一点是，C和C++ 标准对于<code>main</code>的扩展有要求，C++ 标准要求所有的<code>main</code>都必须返回<code>int</code>类型，只有它们的参数可以改变。而C要自由一些，可以有<code>void main(char, dobule)</code>的实现，但是在C++ 标准中这是不支持的。<code>int main(int ,char*, char**)</code>在C和C++ 标准中都是允许的。</p>
-<h2 id="main函数示例"><a href="#main函数示例" class="headerlink" title="main函数示例"></a>main函数示例</h2><p>假设有一个名为prog的可执行文件，其中包含一个<code>main</code>函数，可以通过命令行选项向程序传递参数：<br><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">prog -d -o file data0</span><br></pre></td></tr></table></figure></p>
-<p>这些参数通过两个形参<code>argc</code>和<code>argv</code>传递给<code>main</code>函数。形参<code>argv</code>是一个数组，数组元素是字符串指针，即<code>argv</code>是一个C风格字符串指针数组。而<code>argc</code>表示的是字符串数组的长度。<br>当一个实参传递给<code>main</code>函数之后，<code>argv</code>的第一个元素指向程序的名字或者一个空字符串，接下来的元素依次存放命令行提供的实参。最后一个指针指向的元素应该保证为0。<br>注意，当使用<code>argv</code>中的实参时，注意<code>argv[0]</code>保存的是程序名字或者空字符串，可选的实参从<code>argv[1]</code>开始。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer第五版》<br>2.<a href="https://stackoverflow.com/questions/9554513/c-main-vs-c-main" target="_blank" rel="noopener">https://stackoverflow.com/questions/9554513/c-main-vs-c-main</a><br>3.《你必须知道的495个C语言问题》</p>
+            <h2 id="main函数">main函数</h2>
+<p><code>main</code>函数是C语言和C++ 程序的入口，C和C++ 的标准要求它们的实现必须支持以下两种形式：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;...&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span></span>&#123;...&#125;</span><br></pre></td></tr></table></figure>
+<p>任何C和C++ 库实现都必须实现以上两种形式的<code>main</code>，除此以外，可以根据标准进行其他扩展实现，但是这样子可能在一个平台上能运行的程序在另一个平台上不能运行，即除了标准的两种<code>main</code>，其他扩展都是不可移植的。<br>
+需要注意的一点是，C和C++ 标准对于<code>main</code>的扩展有要求，C++ 标准要求所有的<code>main</code>都必须返回<code>int</code>类型，只有它们的参数可以改变。而C要自由一些，可以有<code>void main(char, dobule)</code>的实现，但是在C++ 标准中这是不支持的。<code>int main(int ,char*, char**)</code>在C和C++ 标准中都是允许的。</p>
+<h2 id="main函数示例">main函数示例</h2>
+<p>假设有一个名为prog的可执行文件，其中包含一个<code>main</code>函数，可以通过命令行选项向程序传递参数：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">prog -d -o file data0</span><br></pre></td></tr></table></figure>
+<p>这些参数通过两个形参<code>argc</code>和<code>argv</code>传递给<code>main</code>函数。形参<code>argv</code>是一个数组，数组元素是字符串指针，即<code>argv</code>是一个C风格字符串指针数组。而<code>argc</code>表示的是字符串数组的长度。<br>
+当一个实参传递给<code>main</code>函数之后，<code>argv</code>的第一个元素指向程序的名字或者一个空字符串，接下来的元素依次存放命令行提供的实参。最后一个指针指向的元素应该保证为0。<br>
+注意，当使用<code>argv</code>中的实参时，注意<code>argv[0]</code>保存的是程序名字或者空字符串，可选的实参从<code>argv[1]</code>开始。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer第五版》<br>
+2.<a href="https://stackoverflow.com/questions/9554513/c-main-vs-c-main" target="_blank" rel="noopener">https://stackoverflow.com/questions/9554513/c-main-vs-c-main</a><br>
+3.《你必须知道的495个C语言问题》</p>
 
           
         
@@ -618,11 +830,23 @@
       
         
           
-            <h2 id="UNIX-standard"><a href="#UNIX-standard" class="headerlink" title="UNIX standard"></a>UNIX standard</h2><h3 id="ISO-C"><a href="#ISO-C" class="headerlink" title="ISO C"></a>ISO C</h3><p>ISO C是国际标准化组织给出的C语言的标准。它包含两部分：C语言的语法和语义，标准库。但是标准只是给出了C标准函数的原型和功能，并没有给出他们的实现。具体的实现由编译器决定，只要编译器声称它们支持ISO C标准，那么这个编译器就必须严格遵守ISO C标准中的各项规定。<br>ISO C标准现在由ISO/IEC的C程序国际标准工作组维护和开发，该工作组称为ISO/IEC JTC1/SC22/WG14，简称WG14。ISO C标准的目的是提供C程序的可移植性，使其能适合大量不同的操作系统，而不仅仅是适合UNIX系统。<br>根据C语言的发展来说：<br>1972年，丹里斯发明了C语言，这个版本的C语言叫做K&amp;R C。<br>ISO C的前身是ANSI C，1989年，美国国家标准学会(ANSI)提出了ANSI标准X3.159-1989，这个标准就是ANSI C，它也被采纳为国际标准ISO/IEC 9899:1990，也就是ISO C90。其中IEC是国际电子技术委员会的缩写。后来陆续有了ISO C99，ISO C11等标准。</p>
+            <h2 id="unix-standard">UNIX standard</h2>
+<h3 id="iso-c">ISO C</h3>
+<p>ISO C是国际标准化组织给出的C语言的标准。它包含两部分：C语言的语法和语义，标准库。但是标准只是给出了C标准函数的原型和功能，并没有给出他们的实现。具体的实现由编译器决定，只要编译器声称它们支持ISO C标准，那么这个编译器就必须严格遵守ISO C标准中的各项规定。<br>
+ISO C标准现在由ISO/IEC的C程序国际标准工作组维护和开发，该工作组称为ISO/IEC JTC1/SC22/WG14，简称WG14。ISO C标准的目的是提供C程序的可移植性，使其能适合大量不同的操作系统，而不仅仅是适合UNIX系统。<br>
+根据C语言的发展来说：<br>
+1972年，丹里斯发明了C语言，这个版本的C语言叫做K&amp;R C。<br>
+ISO C的前身是ANSI C，1989年，美国国家标准学会(ANSI)提出了ANSI标准X3.159-1989，这个标准就是ANSI C，它也被采纳为国际标准ISO/IEC 9899:1990，也就是ISO C90。其中IEC是国际电子技术委员会的缩写。后来陆续有了ISO C99，ISO C11等标准。</p>
 <p>按照ISO标准定义的头文件，可以将ISO C库分为24个区。下面要介绍的POSIX.1标准包含ISO C的头文件以及另外一些头文件。</p>
-<h3 id="IEEE-POSIX"><a href="#IEEE-POSIX" class="headerlink" title="IEEE POSIX"></a>IEEE POSIX</h3><p>POSIX是由国际电气和电子工程学会制定的标准族。POSIX是可移植操作系统接口（Portable Operating System Interface）。它原来只是IEEE操作系统接口的标准1003.1，后来扩展成了许多其他标准和标准草案，如shell和实用程序等。<br>和本书相关的是操作系统接口标准，它的目的是提高应用程序在各种UNIX操作系统之间的可移植性。它定义了符合POSIX的操作系统必须提供的各种服务，但是它并不局限于UNIX和类UNIX类的系统。<br>由于1003.1标准只给出了接口而不是一种实现，所以并不区分系统调用和库函数。1988版本的1003.1标准，即1003.1-1988递交给了ISO，最后作为IEEE标准1003.1-1990正式出版，这就是国际标准ISO/IEC 9945-1:1990，通常也称为POSIX.1。</p>
-<h3 id="Single-UNIX-Specification"><a href="#Single-UNIX-Specification" class="headerlink" title="Single UNIX Specification"></a>Single UNIX Specification</h3><p>单一UNIX规范(SUS)是POSIX.1标准的一个超集，它对POSIX.1进行了扩展，POSIX.1相当于SUS的基本规范部分。<br>POSIX.1中的X/Open系统接口(XSI)选项描述了可选的接口，也定义了遵循XSI的实现必须支持POSIX1的哪些可选部分，这些必须支持的部分包括：文件同步，线程栈地址，长度属性，线程进程共享同步以及<code>_XOPEN_UNIX</code>符号常量，只有遵循SXI的实现才能称为UNIX系统。</p>
-<h2 id="UNIX-implement"><a href="#UNIX-implement" class="headerlink" title="UNIX implement"></a>UNIX implement</h2><ol>
+<h3 id="ieee-posix">IEEE POSIX</h3>
+<p>POSIX是由国际电气和电子工程学会制定的标准族。POSIX是可移植操作系统接口（Portable Operating System Interface）。它原来只是IEEE操作系统接口的标准1003.1，后来扩展成了许多其他标准和标准草案，如shell和实用程序等。<br>
+和本书相关的是操作系统接口标准，它的目的是提高应用程序在各种UNIX操作系统之间的可移植性。它定义了符合POSIX的操作系统必须提供的各种服务，但是它并不局限于UNIX和类UNIX类的系统。<br>
+由于1003.1标准只给出了接口而不是一种实现，所以并不区分系统调用和库函数。1988版本的1003.1标准，即1003.1-1988递交给了ISO，最后作为IEEE标准1003.1-1990正式出版，这就是国际标准ISO/IEC 9945-1:1990，通常也称为POSIX.1。</p>
+<h3 id="single-unix-specification">Single UNIX Specification</h3>
+<p>单一UNIX规范(SUS)是POSIX.1标准的一个超集，它对POSIX.1进行了扩展，POSIX.1相当于SUS的基本规范部分。<br>
+POSIX.1中的X/Open系统接口(XSI)选项描述了可选的接口，也定义了遵循XSI的实现必须支持POSIX1的哪些可选部分，这些必须支持的部分包括：文件同步，线程栈地址，长度属性，线程进程共享同步以及<code>_XOPEN_UNIX</code>符号常量，只有遵循SXI的实现才能称为UNIX系统。</p>
+<h2 id="unix-implement">UNIX implement</h2>
+<ol>
 <li>SVR4</li>
 <li>4.4BSD</li>
 <li>FreeBSD</li>
@@ -631,20 +855,25 @@
 <li>Solaris</li>
 <li>其他UNIX系统</li>
 </ol>
-<h2 id="标准和实现的关系"><a href="#标准和实现的关系" class="headerlink" title="标准和实现的关系"></a>标准和实现的关系</h2><p>标准其实是任一实际系统的子集。</p>
-<h2 id="限制"><a href="#限制" class="headerlink" title="限制"></a>限制</h2><p>UNIX实现定义了很多幻数和常量。已经有若干种可以移植的方法确定这些幻数和具体实现定义的限制。以下两种类型的限制是必须的：</p>
+<h2 id="标准和实现的关系">标准和实现的关系</h2>
+<p>标准其实是任一实际系统的子集。</p>
+<h2 id="限制">限制</h2>
+<p>UNIX实现定义了很多幻数和常量。已经有若干种可以移植的方法确定这些幻数和具体实现定义的限制。以下两种类型的限制是必须的：</p>
 <ol>
 <li>编译时限制，比如<code>int</code>的最大值是什么。</li>
 <li>运行时限制，比如文件名的字符，这个只有在我们运行程序时才能知道。</li>
 </ol>
-<p>编译时限制可以在头文件中定义。程序在编译时可以包含这些头文件，运行时限制需要进程调用另一个函数获得限制值。<br>但是有时候可能某些限制在给定的实现中是固定的，而在另一个实现中是变动的。比如文件的名字。为了解决这类问题，提供了以下三种限制：</p>
+<p>编译时限制可以在头文件中定义。程序在编译时可以包含这些头文件，运行时限制需要进程调用另一个函数获得限制值。<br>
+但是有时候可能某些限制在给定的实现中是固定的，而在另一个实现中是变动的。比如文件的名字。为了解决这类问题，提供了以下三种限制：</p>
 <ol>
 <li>编译时限制</li>
 <li>与文件和目录无关的运行时限制（<code>sysconf</code>函数）</li>
 <li>与文件和目录有关的运行时限制（<code>pathconf</code>函数和<code>fpathconf</code>函数）</li>
 </ol>
-<h3 id="ISO-C限制"><a href="#ISO-C限制" class="headerlink" title="ISO C限制"></a>ISO C限制</h3><p>包含在<code>&lt;limits.h&gt;</code>头文件中，ISO C标准给出了各种类型的最小范围，每个实现必须满足这个最小范围，具体取多少由实现决定。常见的比如<code>int</code>, <code>float</code>,<code>char</code>等的最大值和最小值。以及可同时打开的标准I/O流的最小个数。</p>
-<h3 id="POSIX限制"><a href="#POSIX限制" class="headerlink" title="POSIX限制"></a>POSIX限制</h3><p>POSIX.1定义了大量限制和常量，我们只关心和基本POSIX.1接口有关的部分。它们被分为以下7类：</p>
+<h3 id="iso-c限制">ISO C限制</h3>
+<p>包含在<code>&lt;limits.h&gt;</code>头文件中，ISO C标准给出了各种类型的最小范围，每个实现必须满足这个最小范围，具体取多少由实现决定。常见的比如<code>int</code>, <code>float</code>,<code>char</code>等的最大值和最小值。以及可同时打开的标准I/O流的最小个数。</p>
+<h3 id="posix限制">POSIX限制</h3>
+<p>POSIX.1定义了大量限制和常量，我们只关心和基本POSIX.1接口有关的部分。它们被分为以下7类：</p>
 <ol>
 <li>数值限制</li>
 <li>最小值</li>
@@ -655,17 +884,21 @@
 <li>路径可变名</li>
 </ol>
 <p>这些限制有些在<code>&lt;limits.h&gt;</code>中定义，其余的限制按具体条件可以定义，可以不定义。</p>
-<h3 id="XSI限制"><a href="#XSI限制" class="headerlink" title="XSI限制"></a>XSI限制</h3><ol>
+<h3 id="xsi限制">XSI限制</h3>
+<ol>
 <li>最小值</li>
 <li>运行时不变值</li>
 </ol>
-<h3 id="sysconf-pathconf和fpathconf"><a href="#sysconf-pathconf和fpathconf" class="headerlink" title="sysconf, pathconf和fpathconf"></a><code>sysconf</code>, <code>pathconf</code>和<code>fpathconf</code></h3><p>如何获得一个特定系统中实际支持的限制值？</p>
+<h3 id="sysconf-pathconf和fpathconf"><code>sysconf</code>, <code>pathconf</code>和<code>fpathconf</code></h3>
+<p>如何获得一个特定系统中实际支持的限制值？</p>
 <ol>
 <li>某些限制值在编译时是可以使用的，而有些限制值只有在运行时才能确定。</li>
 <li>也有某些限制值在一个给定的系统中可能是不会改变的，而其他限制值可能会改变，因为它们与文件和目录相关。</li>
 </ol>
 <p>运行时限制可以通过下面三个函数之一获得：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">sysconf</span><span class="params">(<span class="keyword">int</span> name)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">pathconf</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> name)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">fpathconf</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">int</span> name)</span></span>;</span><br><span class="line"><span class="comment">// 所有函数如果成功，返回相应值，出错，返回-1</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="选项"><a href="#选项" class="headerlink" title="选项"></a>选项</h2><h2 id="基本系统数据类型"><a href="#基本系统数据类型" class="headerlink" title="基本系统数据类型"></a>基本系统数据类型</h2><p>头文件<code>&lt;sys/types.h&gt;</code>定义了许多和实现相关的数据类型，它们被称为基本系统数据类型。这些数据类型都是用C的typedef定义的，大多数以<code>_t</code>结尾。常见的如下：</p>
+<h2 id="选项">选项</h2>
+<h2 id="基本系统数据类型">基本系统数据类型</h2>
+<p>头文件<code>&lt;sys/types.h&gt;</code>定义了许多和实现相关的数据类型，它们被称为基本系统数据类型。这些数据类型都是用C的typedef定义的，大多数以<code>_t</code>结尾。常见的如下：</p>
 <ul>
 <li><code>clock_t</code></li>
 <li><code>gid_t</code></li>
@@ -677,8 +910,11 @@
 <li><code>ssize_t</code></li>
 <li><code>time_t</code></li>
 </ul>
-<h2 id="标准之间的冲突"><a href="#标准之间的冲突" class="headerlink" title="标准之间的冲突"></a>标准之间的冲突</h2><p>如果出现冲突，POSIX.1服从ISO C标准。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《APUE》<br>2.<a href="https://www.zhihu.com/question/40175738/answer/154308906" target="_blank" rel="noopener">https://www.zhihu.com/question/40175738/answer/154308906</a></p>
+<h2 id="标准之间的冲突">标准之间的冲突</h2>
+<p>如果出现冲突，POSIX.1服从ISO C标准。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》<br>
+2.<a href="https://www.zhihu.com/question/40175738/answer/154308906" target="_blank" rel="noopener">https://www.zhihu.com/question/40175738/answer/154308906</a></p>
 
           
         
@@ -850,10 +1086,18 @@
       
         
           
-            <h2 id="UNIX-system"><a href="#UNIX-system" class="headerlink" title="UNIX system"></a>UNIX system</h2><p>UNIX是一类操作系统，所有的操作系统都为它们运行的程序提供服务。典型的服务包括：执行新程序，读写文件，分配存储区域，获得当前时间等等。</p>
-<h2 id="UNIX体系结构"><a href="#UNIX体系结构" class="headerlink" title="UNIX体系结构"></a>UNIX体系结构</h2><p>严格意义上来说，可以把操作系统定义为一种系统软件，它控制计算机硬件资源，提供程序运行环境，这种软件称为内核。从广义上来说，操作系统包含了内核和其它一些软件，这些软件使得计算机能够发挥作用，其他软件包括应用程序，shell和公共函数库等。比如，Linux是GNU操作系统的内核，我们有时候也把GNU/Linux操作系统称为Linux，所以Linux可以表示两层含义，一种是内核，一种是操作系统。<br>内核的接口称为系统调用（system call），公用函数库在系统调用接口之上，应用程序可以使用公用函数库，也可以使用系统调用。shell是一个特殊的应用程序，它为运行其他应用程序提供了一个接口。<br>系统调用提供了访问内核的接口，公用函数库构建在系统调用上，应用程序可以构建在公用函数库上，也可以构建在shell和系统调用之上，shell建立在系统调用之上。</p>
-<h2 id="登录-Login"><a href="#登录-Login" class="headerlink" title="登录(Login)"></a>登录(Login)</h2><h3 id="用户名-username-，用户组-group-和密码-passwd"><a href="#用户名-username-，用户组-group-和密码-passwd" class="headerlink" title="用户名(username)，用户组(group)和密码(passwd)"></a>用户名(username)，用户组(group)和密码(passwd)</h3><p>/etc/group和/etc/passwd文件分别给出了user的group和passwd相关信息，这些文件的具体格式可以使用<code>man 5 passwd</code>和<code>man 5 group</code>查看。</p>
-<h3 id="shell"><a href="#shell" class="headerlink" title="shell"></a>shell</h3><p>shell是一个命令行解释器，它读取用户输入，然后执行命令。shell的用户输入通常来自终端，这种是交互式shell；有时shell的输入也可以来自文件，这种文件叫做shell脚本。<br>常见系统的shell有：</p>
+            <h2 id="unix-system">UNIX system</h2>
+<p>UNIX是一类操作系统，所有的操作系统都为它们运行的程序提供服务。典型的服务包括：执行新程序，读写文件，分配存储区域，获得当前时间等等。</p>
+<h2 id="unix体系结构">UNIX体系结构</h2>
+<p>严格意义上来说，可以把操作系统定义为一种系统软件，它控制计算机硬件资源，提供程序运行环境，这种软件称为内核。从广义上来说，操作系统包含了内核和其它一些软件，这些软件使得计算机能够发挥作用，其他软件包括应用程序，shell和公共函数库等。比如，Linux是GNU操作系统的内核，我们有时候也把GNU/Linux操作系统称为Linux，所以Linux可以表示两层含义，一种是内核，一种是操作系统。<br>
+内核的接口称为系统调用（system call），公用函数库在系统调用接口之上，应用程序可以使用公用函数库，也可以使用系统调用。shell是一个特殊的应用程序，它为运行其他应用程序提供了一个接口。<br>
+系统调用提供了访问内核的接口，公用函数库构建在系统调用上，应用程序可以构建在公用函数库上，也可以构建在shell和系统调用之上，shell建立在系统调用之上。</p>
+<h2 id="登录-login">登录(Login)</h2>
+<h3 id="用户名-username-用户组-group-和密码-passwd">用户名(username)，用户组(group)和密码(passwd)</h3>
+<p>/etc/group和/etc/passwd文件分别给出了user的group和passwd相关信息，这些文件的具体格式可以使用<code>man 5 passwd</code>和<code>man 5 group</code>查看。</p>
+<h3 id="shell">shell</h3>
+<p>shell是一个命令行解释器，它读取用户输入，然后执行命令。shell的用户输入通常来自终端，这种是交互式shell；有时shell的输入也可以来自文件，这种文件叫做shell脚本。<br>
+常见系统的shell有：</p>
 <ul>
 <li>Bourne shell，/bin/sh，是Steve Bourne在贝尔实验室开发的shell，几乎所有的UNIX系统都支持这种shell，</li>
 <li>Bourne-again shell, /bin/bash，GNU shell，所有的Linux系统都提供这种shell，它的设计遵循了POSIX标准，同时保留了和Bourne shell的兼容性。更多关于/bin/bash的内容可以参考<a href>linux /bin/bash</a>。</li>
@@ -861,42 +1105,75 @@
 <li>Korn shell,/bin/ksh，贝尔实验室的David Korn开发的，在大多数UNIX系统上运行，与Bourne shell向上兼容。</li>
 <li>TENEX C shell,/bin/tcsh，是C shell的加强版本，它从TENEX系统借鉴而来，常用来替换C shell。</li>
 </ul>
-<p>不同的Linux版本使用不同的默认shell，一些Linux默认使用Bourne-again shell，另外一些使用BSD对Bourne shell的替代品dash(Debian Almquist shell)。<br>FreeBSD的默认用户shell衍生于Debian Almquist shell。<br>Mac OS X的默认shell是Bourne-again shell。<br>Solaris继承了BSD和System V，它提供了所有的shell。</p>
-<h2 id="文件和目录-File-and-dir"><a href="#文件和目录-File-and-dir" class="headerlink" title="文件和目录(File and dir)"></a>文件和目录(File and dir)</h2><h3 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h3><p>UNIX文件系统是文件和目录的一种树状结构，所有目录和文件的起点是根目录(root dir)，用”/“表示。</p>
-<h3 id="文件名"><a href="#文件名" class="headerlink" title="文件名"></a>文件名</h3><p>目录中的各个名字称为文件名，只有”/“和空格不能出现在文件名中。”/“用来分隔构成路径名的各文件名，而空格用来终止一个路径名。<br>创建新的目录时会自动创建”.”目录指向当前目录和”..”指向父目录，在根目录中，”.”和”..”都指向根目录。</p>
-<h3 id="目录名"><a href="#目录名" class="headerlink" title="目录名"></a>目录名</h3><p>由斜线分隔的一个或者多个文件名组成的序列构成路径名，以斜线开头的路径名称为绝对路径名，否则是相对路径名。”/“是一个特殊的绝对路径名，它不包含文件名。</p>
-<h3 id="工作目录"><a href="#工作目录" class="headerlink" title="工作目录"></a>工作目录</h3><p>相对路径名都是从工作目录开始解释的。在shell中可以通过cd更改工作目录，进程可以通过chdir更改工作目录。</p>
-<h3 id="起始目录（用户主目录）"><a href="#起始目录（用户主目录）" class="headerlink" title="起始目录（用户主目录）"></a>起始目录（用户主目录）</h3><p>用户登录后，工作目录默认设置为用户主目录，可以从/etc/passwd文件查看。</p>
-<h2 id="输入和输出-Input-and-Output"><a href="#输入和输出-Input-and-Output" class="headerlink" title="输入和输出(Input and Output)"></a>输入和输出(Input and Output)</h2><h3 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h3><p>文件描述符是一个小的非负整数，内核用它来标示一个进程正在访问的文件。当内核打开或者创建一个文件时，都会返回一个文件描述符。在读写文件时，可以使用这个文件描述符。</p>
-<h3 id="标准输入，标准输出和标准错误"><a href="#标准输入，标准输出和标准错误" class="headerlink" title="标准输入，标准输出和标准错误"></a>标准输入，标准输出和标准错误</h3><p>在shell中运行一个新程序时，所有的shell都会为这个程序打开三个文件描述符，标准输入，标准输出和标准错误。如果没有指定的话，它们都链接向终端。可以通过重定向将它们链接到文件。</p>
-<h3 id="不带缓冲区的I-O"><a href="#不带缓冲区的I-O" class="headerlink" title="不带缓冲区的I/O"></a>不带缓冲区的I/O</h3><p>函数<code>open</code>，<code>read</code>,<code>read</code>,<code>lseek</code>和<code>close</code>提供了不带缓冲的I/O。这些函数都使用文件描述符。<br>头文件<code>&lt;unistd.h&gt;</code>包含了两个常量<code>STDIN_FILENO</code>和<code>STDOUT_FILENO</code>，分别指向标准输入和标准输出的文件描述符。它们是POSIX标准的一部分，在POSXI标准中分别是0和1，但是为了可读性，一般不用它们的具体值。</p>
-<h3 id="标准I-O"><a href="#标准I-O" class="headerlink" title="标准I/O"></a>标准I/O</h3><p>标准I/O函数为那些不带缓冲的I/O函数提供了一个带缓冲的借口。使用标准I/O不用担心如何选取最佳的缓冲区大小，还简化了对输入行的处理。</p>
-<h2 id="程序和进程-Process"><a href="#程序和进程-Process" class="headerlink" title="程序和进程(Process)"></a>程序和进程(Process)</h2><h3 id="程序"><a href="#程序" class="headerlink" title="程序"></a>程序</h3><p>程序是一个存储在磁盘上的某个目录中的可执行文件。内核使用<code>exec</code>函数将程序读入内存，并执行该程序。</p>
-<h3 id="进程和进程ID-PID"><a href="#进程和进程ID-PID" class="headerlink" title="进程和进程ID(PID)"></a>进程和进程ID(PID)</h3><p>程序的执行实例被称为进程(process)。每一个进程都有一个唯一的数字标示符，叫做进程ID(process ID, PID),PID是一个非负整数。可以使用<code>getpid</code>函数获得PID，<code>getpid</code>返回一个<code>pid_t</code>类型，我们不知道它的大小，但是标准保证它能存放在一个长整形中，所以可以把它强制转换成它可能会用到的最大数据类型即长整形，提高程序的可移植性。</p>
-<h3 id="进程控制"><a href="#进程控制" class="headerlink" title="进程控制"></a>进程控制</h3><p>有三个用于进程控制的主要函数，他们分别是<code>fork</code>,<code>exec</code>和<code>waitpid</code>。</p>
+<p>不同的Linux版本使用不同的默认shell，一些Linux默认使用Bourne-again shell，另外一些使用BSD对Bourne shell的替代品dash(Debian Almquist shell)。<br>
+FreeBSD的默认用户shell衍生于Debian Almquist shell。<br>
+Mac OS X的默认shell是Bourne-again shell。<br>
+Solaris继承了BSD和System V，它提供了所有的shell。</p>
+<h2 id="文件和目录-file-and-dir">文件和目录(File and dir)</h2>
+<h3 id="文件系统">文件系统</h3>
+<p>UNIX文件系统是文件和目录的一种树状结构，所有目录和文件的起点是根目录(root dir)，用&quot;/&quot;表示。</p>
+<h3 id="文件名">文件名</h3>
+<p>目录中的各个名字称为文件名，只有&quot;/“和空格不能出现在文件名中。”/“用来分隔构成路径名的各文件名，而空格用来终止一个路径名。<br>
+创建新的目录时会自动创建”.“目录指向当前目录和”…“指向父目录，在根目录中，”.“和”…&quot;都指向根目录。</p>
+<h3 id="目录名">目录名</h3>
+<p>由斜线分隔的一个或者多个文件名组成的序列构成路径名，以斜线开头的路径名称为绝对路径名，否则是相对路径名。&quot;/&quot;是一个特殊的绝对路径名，它不包含文件名。</p>
+<h3 id="工作目录">工作目录</h3>
+<p>相对路径名都是从工作目录开始解释的。在shell中可以通过cd更改工作目录，进程可以通过chdir更改工作目录。</p>
+<h3 id="起始目录-用户主目录">起始目录（用户主目录）</h3>
+<p>用户登录后，工作目录默认设置为用户主目录，可以从/etc/passwd文件查看。</p>
+<h2 id="输入和输出-input-and-output">输入和输出(Input and Output)</h2>
+<h3 id="文件描述符">文件描述符</h3>
+<p>文件描述符是一个小的非负整数，内核用它来标示一个进程正在访问的文件。当内核打开或者创建一个文件时，都会返回一个文件描述符。在读写文件时，可以使用这个文件描述符。</p>
+<h3 id="标准输入-标准输出和标准错误">标准输入，标准输出和标准错误</h3>
+<p>在shell中运行一个新程序时，所有的shell都会为这个程序打开三个文件描述符，标准输入，标准输出和标准错误。如果没有指定的话，它们都链接向终端。可以通过重定向将它们链接到文件。</p>
+<h3 id="不带缓冲区的i-o">不带缓冲区的I/O</h3>
+<p>函数<code>open</code>，<code>read</code>,<code>read</code>,<code>lseek</code>和<code>close</code>提供了不带缓冲的I/O。这些函数都使用文件描述符。<br>
+头文件<code>&lt;unistd.h&gt;</code>包含了两个常量<code>STDIN_FILENO</code>和<code>STDOUT_FILENO</code>，分别指向标准输入和标准输出的文件描述符。它们是POSIX标准的一部分，在POSXI标准中分别是0和1，但是为了可读性，一般不用它们的具体值。</p>
+<h3 id="标准i-o">标准I/O</h3>
+<p>标准I/O函数为那些不带缓冲的I/O函数提供了一个带缓冲的借口。使用标准I/O不用担心如何选取最佳的缓冲区大小，还简化了对输入行的处理。</p>
+<h2 id="程序和进程-process">程序和进程(Process)</h2>
+<h3 id="程序">程序</h3>
+<p>程序是一个存储在磁盘上的某个目录中的可执行文件。内核使用<code>exec</code>函数将程序读入内存，并执行该程序。</p>
+<h3 id="进程和进程id-pid">进程和进程ID(PID)</h3>
+<p>程序的执行实例被称为进程(process)。每一个进程都有一个唯一的数字标示符，叫做进程ID(process ID, PID),PID是一个非负整数。可以使用<code>getpid</code>函数获得PID，<code>getpid</code>返回一个<code>pid_t</code>类型，我们不知道它的大小，但是标准保证它能存放在一个长整形中，所以可以把它强制转换成它可能会用到的最大数据类型即长整形，提高程序的可移植性。</p>
+<h3 id="进程控制">进程控制</h3>
+<p>有三个用于进程控制的主要函数，他们分别是<code>fork</code>,<code>exec</code>和<code>waitpid</code>。</p>
 <ul>
 <li><code>fork</code>创建一个新进程，新进程是调用进程的一个副本，称调用进程为父进程，新创建的进程为子进程。<code>fork</code>对父进程返回子进程的进程ID（一个非负整数），对子进程则返回0。</li>
 <li><code>execlp</code>函数要求参数以null结束而不是换行符结束。</li>
 <li>子进程中调用<code>execlp</code>执行从标准输入读入的命令，用新的程序文件代替子进程原先执行的程序文件。<code>fork</code>和<code>exec</code>两者组合就是某些操作系统所称的spawn一个新进程。在UNIX系统中，这两部分分成了两个独立的函数。</li>
 <li>子进程调用<code>execlp</code>执行新的程序文件，父进程希望等待子进程终止，这是通过<code>waitpid</code>实现的，<code>waitpid</code>接收要等待进程的ID，以及接收一个整形的地址，用来存放子进程的终止状态。出错返回-1，否则返回state改变的子进程的PID，或者返回0（子进程的状态没有改变）。</li>
 </ul>
-<h3 id="线程-thread-和线程I-O"><a href="#线程-thread-和线程I-O" class="headerlink" title="线程(thread)和线程I/O"></a>线程(thread)和线程I/O</h3><ol>
+<h3 id="线程-thread-和线程i-o">线程(thread)和线程I/O</h3>
+<ol>
 <li>通常来说一个进程只有一个控制线程，即某一时刻执行的一组机器指令。对于某些问题，如果有多个控制线程分别多用于它的不同部分，可以使得问题变得更加容易。也可以充分利用多处理器系统的并行能力。</li>
 <li>一个进程内的所有线程共享同一地址空间，文件描述符，栈以及和进程相关的属性。因为线程能够访问同一个存储区域，所以线程在访问共享数据时需要采取同步措施避免不一致性。</li>
 <li>线程也有ID，但是线程ID只在它所属的进程内起作用。一个进程中的线程ID在另一个进程中没有意义。当一个进程中对某个特定线程进程处理时，可以使用线程ID引用它。</li>
 </ol>
-<h2 id="出错处理"><a href="#出错处理" class="headerlink" title="出错处理"></a>出错处理</h2><p>当UNIX系统函数出错时，通常会返回一个负值，整形变量errno通常被设置为具有特定信息的值。比如对于<code>open</code>函数，errno大约有15种不同的值（文件不存在，权限问题），成功执行返回一个非负文件描述符，出错则返回-1。另外有一些函数对于出错使用约定值而不是返回值。比如返回对象指针的函数，出错时会返回一个NULL指针。<br>头文件<code>&lt;errno.h&gt;</code>定义了errno以及可以赋值给它的各种常量。这些常量都以字符E开头。可以使用<code>man 2 intro</code>列出这些常量，在linux中使用<code>man 3 errno</code>列出这些常量。</p>
+<h2 id="出错处理">出错处理</h2>
+<p>当UNIX系统函数出错时，通常会返回一个负值，整形变量errno通常被设置为具有特定信息的值。比如对于<code>open</code>函数，errno大约有15种不同的值（文件不存在，权限问题），成功执行返回一个非负文件描述符，出错则返回-1。另外有一些函数对于出错使用约定值而不是返回值。比如返回对象指针的函数，出错时会返回一个NULL指针。<br>
+头文件<code>&lt;errno.h&gt;</code>定义了errno以及可以赋值给它的各种常量。这些常量都以字符E开头。可以使用<code>man 2 intro</code>列出这些常量，在linux中使用<code>man 3 errno</code>列出这些常量。</p>
 <p>**关于errno的两条规则:</p>
 <ol>
 <li>如果没有出错，errno的值不会被清除，所以，只有在函数的返回值指明出错的时候，errno的值才是有意义的，否则不要使用它；</li>
 <li>任何函数都不会将errno的值设置为0，而且<code>&lt;errno.h&gt;</code>头文件中的任何常量都不等于0。**</li>
 </ol>
-<h3 id="出错恢复"><a href="#出错恢复" class="headerlink" title="出错恢复"></a>出错恢复</h3><p>可以将<code>&lt;errno.h&gt;</code>中定义的各种出错分为两类：致命性的和非致命性的。<br>对于致命性的错误，无法恢复，可以输出错误信息帮助用户处理。<br>对于非致命的错误，可以妥善的进行处理。大多数非致命性出错都是暂时的，比如因为资源短缺。常见的与资源相关的非致命性出错包含：<code>EAGAIN</code>,<code>ENFILE</code>,<code>ENOBUFS</code>,<code>ENOLCK</code>,<code>ENOSPC</code>,<code>EWOULDBLOCK</code>，有时候<code>ENOMEM</code>也是非致命性出错。当<code>EBUSY</code>指明共享资源正在被使用时，也可以将它作为非致命性出错。当<code>EINTR</code>中断一个慢速调用时，也可将它作为非致命性出错处理。对于资源相关的非致命性出错，最典型的恢复操作是延迟一段时间重试。</p>
-<h2 id="用户标识"><a href="#用户标识" class="headerlink" title="用户标识"></a>用户标识</h2><h3 id="用户ID-UID"><a href="#用户ID-UID" class="headerlink" title="用户ID(UID)"></a>用户ID(UID)</h3><p>用于标识不同的用户。可以在口令文件/etc/passwd中找到用户的UID。root用户的UID是0。</p>
-<h3 id="组ID-GID"><a href="#组ID-GID" class="headerlink" title="组ID(GID)"></a>组ID(GID)</h3><p>用于标识不同的group。口令文件/etc/passwd中也包含了用户的GID。组文件将组名映射为数值的GID。</p>
-<p>为什么使用数值的UID和GID，对于磁盘上的每个文件，都应该存储该文件所有者的GID和PID，存储这两个值只需要4个字节（假设每个都用双字节的整形存放，早期的UNIX系统使用16位整数表示UID和GID，而现在的UNIX系统使用32位整数表示UID和GID。<br>）。如果使用ASCII user name和group name，需要更多的磁盘空间。在进行权限检验时，整形也比字符串更快。<br>但是对于用户来说，使用ASCII name比较方便，所以在/etc/passwd和/etc/group中存放了UID和user name以及GID和group name的映射。</p>
-<h3 id="附属组ID"><a href="#附属组ID" class="headerlink" title="附属组ID"></a>附属组ID</h3><p>每个登录名除了/etc/passwd指定的一个group外，还可以属于其他的group，大多数系统至少支持16个附属组，通过查找/etc/group中有该登录名的前16个项作为它的附属组ID。</p>
-<h2 id="信号-signal"><a href="#信号-signal" class="headerlink" title="信号(signal)"></a>信号(signal)</h2><p>Signal用于通知进程发生了某种特殊情况。比如进程在执行除法操作的时候，发生了除0操作，内核会将SIGFPE signal发送给进程。对于每一个signal，进程有以下三种方式进行处理：</p>
+<h3 id="出错恢复">出错恢复</h3>
+<p>可以将<code>&lt;errno.h&gt;</code>中定义的各种出错分为两类：致命性的和非致命性的。<br>
+对于致命性的错误，无法恢复，可以输出错误信息帮助用户处理。<br>
+对于非致命的错误，可以妥善的进行处理。大多数非致命性出错都是暂时的，比如因为资源短缺。常见的与资源相关的非致命性出错包含：<code>EAGAIN</code>,<code>ENFILE</code>,<code>ENOBUFS</code>,<code>ENOLCK</code>,<code>ENOSPC</code>,<code>EWOULDBLOCK</code>，有时候<code>ENOMEM</code>也是非致命性出错。当<code>EBUSY</code>指明共享资源正在被使用时，也可以将它作为非致命性出错。当<code>EINTR</code>中断一个慢速调用时，也可将它作为非致命性出错处理。对于资源相关的非致命性出错，最典型的恢复操作是延迟一段时间重试。</p>
+<h2 id="用户标识">用户标识</h2>
+<h3 id="用户id-uid">用户ID(UID)</h3>
+<p>用于标识不同的用户。可以在口令文件/etc/passwd中找到用户的UID。root用户的UID是0。</p>
+<h3 id="组id-gid">组ID(GID)</h3>
+<p>用于标识不同的group。口令文件/etc/passwd中也包含了用户的GID。组文件将组名映射为数值的GID。</p>
+<p>为什么使用数值的UID和GID，对于磁盘上的每个文件，都应该存储该文件所有者的GID和PID，存储这两个值只需要4个字节（假设每个都用双字节的整形存放，早期的UNIX系统使用16位整数表示UID和GID，而现在的UNIX系统使用32位整数表示UID和GID。<br>
+）。如果使用ASCII user name和group name，需要更多的磁盘空间。在进行权限检验时，整形也比字符串更快。<br>
+但是对于用户来说，使用ASCII name比较方便，所以在/etc/passwd和/etc/group中存放了UID和user name以及GID和group name的映射。</p>
+<h3 id="附属组id">附属组ID</h3>
+<p>每个登录名除了/etc/passwd指定的一个group外，还可以属于其他的group，大多数系统至少支持16个附属组，通过查找/etc/group中有该登录名的前16个项作为它的附属组ID。</p>
+<h2 id="信号-signal">信号(signal)</h2>
+<p>Signal用于通知进程发生了某种特殊情况。比如进程在执行除法操作的时候，发生了除0操作，内核会将SIGFPE signal发送给进程。对于每一个signal，进程有以下三种方式进行处理：</p>
 <ol>
 <li>忽略某个signal。不推荐这种处理方式，如果发生了除0操作，就会出错。</li>
 <li>按系统默认方式处理。比如除0操作，系统默认是终止进程。</li>
@@ -904,14 +1181,19 @@
 </ol>
 <p>很多情况都会产生signal，通过键盘有两种产生signal的方法：</p>
 <ul>
-<li>中断键(interrupt key)，通常是ctrl+C或者Delete键和退出建(quit key)，通常是Ctrl+ 键，这两个signal用于中断当前运行的进程。</li>
+<li>中断键(interrupt key)，通常是ctrl+C或者Delete键和退出建(quit key)，通常是Ctrl+\ 键，这两个signal用于中断当前运行的进程。</li>
 <li>调用kill函数，向进程发送一个signal，注意我们必须是root用户或者这个进程的所有者。</li>
 </ul>
-<h3 id="捕获signal示例"><a href="#捕获signal示例" class="headerlink" title="捕获signal示例"></a>捕获signal示例</h3><p>在bash中运行程序时，使用中断键，相应的程序会终止。为什么会发生这种结果，对于中断信号(SIGINT)的系统默认动作是终止进程，因为进程没有告诉系统内核该怎么处理，所以系统按照默认方式终止该进程。<br>为了捕获该信号，程序需要调用signal函数，其中指定了产生SIGINT信号时要调用的函数的名字。</p>
-<h2 id="时间-time"><a href="#时间-time" class="headerlink" title="时间(time)"></a>时间(time)</h2><p>UNIX系统使用过两种不同的时间值。</p>
+<h3 id="捕获signal示例">捕获signal示例</h3>
+<p>在bash中运行程序时，使用中断键，相应的程序会终止。为什么会发生这种结果，对于中断信号(SIGINT)的系统默认动作是终止进程，因为进程没有告诉系统内核该怎么处理，所以系统按照默认方式终止该进程。<br>
+为了捕获该信号，程序需要调用signal函数，其中指定了产生SIGINT信号时要调用的函数的名字。</p>
+<h2 id="时间-time">时间(time)</h2>
+<p>UNIX系统使用过两种不同的时间值。</p>
 <ol>
-<li>日历时间。协调世界时(Coordinated Universal Time, UTC)，即从1970年1月1日00:00:00这个时间开始经过的累计秒数。<br>系统基本数据类型time_t用于保存这种时间值。</li>
-<li>进程时间。也称为CPU时间，用来度量进程使用的CPU资源。进程时间用始终滴答计算，每秒钟曾经取过50,60或者100个时钟滴答。<br>系统基本数据类型clock_t保存这种时间值。</li>
+<li>日历时间。协调世界时(Coordinated Universal Time, UTC)，即从1970年1月1日00:00:00这个时间开始经过的累计秒数。<br>
+系统基本数据类型time_t用于保存这种时间值。</li>
+<li>进程时间。也称为CPU时间，用来度量进程使用的CPU资源。进程时间用始终滴答计算，每秒钟曾经取过50,60或者100个时钟滴答。<br>
+系统基本数据类型clock_t保存这种时间值。</li>
 </ol>
 <p>当度量一个进程的执行时间时，UNIX系统为一个进程维护了三个进程时间值：</p>
 <ul>
@@ -920,9 +1202,15 @@
 <li>系统CPU时间，为该进程执行内核程序所经历的时间。</li>
 </ul>
 <p>用户CPU时间和系统CPU时间被称为CPU时间，可以使用time命令获得一个进程的时钟时间，用户CPU时间和系统CPU时间。比如：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">~$:time ls</span><br><span class="line">~$:time man ls</span><br></pre></td></tr></table></figure></p>
-<h2 id="系统调用-system-call-和库函数-library-function"><a href="#系统调用-system-call-和库函数-library-function" class="headerlink" title="系统调用(system call)和库函数(library function)"></a>系统调用(system call)和库函数(library function)</h2><h3 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h3><p>所有的操作系统都提供多种服务的入口点，通过这些入口点向内核请求服务，这些入口点被称为系统调用(system call)。系统调用处于kernel mode，一些任务只能在kernel mode运行。比如和硬件的交互，系统调用使得用户mode的进程可以通过系统调用进入kernel mode，从而实现和硬件的交互。。<br>系统调用接口可以在man的第二部分查看，它是用C语言定义的，与具体系统如何调用一个系统调用的实现技术无关。这些和早期的操作系统按照传统方式用机器的汇编语言定义内核入口点。<br>UNIX使用的方法是为每个系统调用在标准C库中设置一个同名函数。用户进程使用标准C调用相应的函数，这些函数又根据系统调用调用相应的内核服务。</p>
-<h3 id="库函数"><a href="#库函数" class="headerlink" title="库函数"></a>库函数</h3><p>库函数可以在man手册的第三部分查看，第三部分定义了程序员可以使用的通用库函数。库函数可以调用系统调用，也可以不调用系统调用，比如<code>read</code>函数会调用系统调用，而<code>atoi</code>等并不使用任何系统调用。</p>
-<h3 id="系统调用和库函数之间的关系"><a href="#系统调用和库函数之间的关系" class="headerlink" title="系统调用和库函数之间的关系"></a>系统调用和库函数之间的关系</h3><ol>
+<h2 id="系统调用-system-call-和库函数-library-function">系统调用(system call)和库函数(library function)</h2>
+<h3 id="系统调用">系统调用</h3>
+<p>所有的操作系统都提供多种服务的入口点，通过这些入口点向内核请求服务，这些入口点被称为系统调用(system call)。系统调用处于kernel mode，一些任务只能在kernel mode运行。比如和硬件的交互，系统调用使得用户mode的进程可以通过系统调用进入kernel mode，从而实现和硬件的交互。。<br>
+系统调用接口可以在man的第二部分查看，它是用C语言定义的，与具体系统如何调用一个系统调用的实现技术无关。这些和早期的操作系统按照传统方式用机器的汇编语言定义内核入口点。<br>
+UNIX使用的方法是为每个系统调用在标准C库中设置一个同名函数。用户进程使用标准C调用相应的函数，这些函数又根据系统调用调用相应的内核服务。</p>
+<h3 id="库函数">库函数</h3>
+<p>库函数可以在man手册的第三部分查看，第三部分定义了程序员可以使用的通用库函数。库函数可以调用系统调用，也可以不调用系统调用，比如<code>read</code>函数会调用系统调用，而<code>atoi</code>等并不使用任何系统调用。</p>
+<h3 id="系统调用和库函数之间的关系">系统调用和库函数之间的关系</h3>
+<ol>
 <li>从实现角度来看，系统调用和库函数有着根本的区别，系统调用处于内核mode，库函数属于用户mode。</li>
 <li>从用户应用角度考虑，可以把系统调用看做C函数，使用系统调用还是库函数不重要，它们都是为应用程序提供服务的。</li>
 <li>C函数只是系统调用和库函数的一种实现，系统调用和库函数都可以以其他方式实现。</li>
@@ -935,8 +1223,14 @@
 <li>库函数的执行时间被计算为user level time，而system call的执行事件算作system time的一部分。</li>
 <li>库函数可以简单的进行debug，而系统调用不能debug，因为它们被kernel执行。</li>
 </ol>
-<p>对于第4条，可以考虑以下例子：<br>sbrk(2)是分配存储空间的UNIX系统调用，它按照指定字节数增加或者减少进程地址空间。如何管理进程的地址空间由进程决定。<br>malloc(3)是公用函数库中的一个存储分配空间函数，它负责进行进程的存储地址管理。<br>我们可以自己实现一个malloc，但是它很有可能还要使用sbrk(2)。内核中的系统调用ssbrk是系统层面的空间分配，而库函数malloc是在用户层面进行操作。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《APUE》第三版<br>2.<a href="https://www.thegeekstuff.com/2012/07/system-calls-library-functions/" target="_blank" rel="noopener">https://www.thegeekstuff.com/2012/07/system-calls-library-functions/</a><br>3.<a href="https://stackoverflow.com/questions/29816791/what-is-the-difference-between-system-call-and-library-call" target="_blank" rel="noopener">https://stackoverflow.com/questions/29816791/what-is-the-difference-between-system-call-and-library-call</a></p>
+<p>对于第4条，可以考虑以下例子：<br>
+sbrk(2)是分配存储空间的UNIX系统调用，它按照指定字节数增加或者减少进程地址空间。如何管理进程的地址空间由进程决定。<br>
+malloc(3)是公用函数库中的一个存储分配空间函数，它负责进行进程的存储地址管理。<br>
+我们可以自己实现一个malloc，但是它很有可能还要使用sbrk(2)。内核中的系统调用ssbrk是系统层面的空间分配，而库函数malloc是在用户层面进行操作。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版<br>
+2.<a href="https://www.thegeekstuff.com/2012/07/system-calls-library-functions/" target="_blank" rel="noopener">https://www.thegeekstuff.com/2012/07/system-calls-library-functions/</a><br>
+3.<a href="https://stackoverflow.com/questions/29816791/what-is-the-difference-between-system-call-and-library-call" target="_blank" rel="noopener">https://stackoverflow.com/questions/29816791/what-is-the-difference-between-system-call-and-library-call</a></p>
 
           
         
@@ -1096,16 +1390,22 @@
       
         
           
-            <h2 id="APUE是什么"><a href="#APUE是什么" class="headerlink" title="APUE是什么"></a>APUE是什么</h2><p>APUE是Advandaced Programming in the UNIX environment的简称，即UNIX高级环境编程。<br>很多人都把这本书和UNP(UNIX Network Programming)当做UNIX编程的神书。一直想拜读这两本书，但是每次翻开之后就放弃了，因为看不懂它在讲些什么，这篇博客简单介绍了APUE到底是什么，它能用来干什么。</p>
-<h2 id="APUE包含的内容"><a href="#APUE包含的内容" class="headerlink" title="APUE包含的内容"></a>APUE包含的内容</h2><p>UNIX系统提供了两类程序设计接口：</p>
+            <h2 id="apue是什么">APUE是什么</h2>
+<p>APUE是Advandaced Programming in the UNIX environment的简称，即UNIX高级环境编程。<br>
+很多人都把这本书和UNP(UNIX Network Programming)当做UNIX编程的神书。一直想拜读这两本书，但是每次翻开之后就放弃了，因为看不懂它在讲些什么，这篇博客简单介绍了APUE到底是什么，它能用来干什么。</p>
+<h2 id="apue包含的内容">APUE包含的内容</h2>
+<p>UNIX系统提供了两类程序设计接口：</p>
 <ol>
 <li>系统调用接口：UNIX为程序运行提供的大量服务－打开文件，读文件，启动一个新程序，分配存储区以及获得当前时间等等，这些服务被称为系统调用接口(system call interface)。</li>
 <li>标准C库：提供大量广泛用于C程序中的函数（格式化输入出入，字符串比较等等）。</li>
 </ol>
 <p>APUE这本书并不是介绍UNIX中有哪些系统调用接口和库函数，这些可以从《UNIX程序员手册》中找到，APUE给出的是这些系统调用接口和库函数该怎么使用，以及它们的基本原理。</p>
-<h2 id="UNIX标准"><a href="#UNIX标准" class="headerlink" title="UNIX标准"></a>UNIX标准</h2><p>20世纪80年代，有各个版本的UNIX，为了让这些UNIX版本统一起来，人们制定了数个国际标准，包含C程序设计的ANSI C标准，IEEE POSIX标准，以及X/Open可移植性等等。</p>
-<h2 id="APUE样例"><a href="#APUE样例" class="headerlink" title="APUE样例"></a>APUE样例</h2><p>APUE中给出的所有示例代码，都是ANSI C编写的。这些程序的<a href="http://www.apuebook.com/code2e.html" target="_blank" rel="noopener">下载地址</a>。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《APUE》第三版</p>
+<h2 id="unix标准">UNIX标准</h2>
+<p>20世纪80年代，有各个版本的UNIX，为了让这些UNIX版本统一起来，人们制定了数个国际标准，包含C程序设计的ANSI C标准，IEEE POSIX标准，以及X/Open可移植性等等。</p>
+<h2 id="apue样例">APUE样例</h2>
+<p>APUE中给出的所有示例代码，都是ANSI C编写的。这些程序的<a href="http://www.apuebook.com/code2e.html" target="_blank" rel="noopener">下载地址</a>。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版</p>
 
           
         
@@ -1277,29 +1577,42 @@
       
         
           
-            <h2 id="泛型算法"><a href="#泛型算法" class="headerlink" title="泛型算法"></a>泛型算法</h2><p>头文件<code>&lt;algorithm&gt;</code>定义了许多通用算法，而头文件<code>&lt;numeric&gt;</code>定义了一组数值泛型算法。<br><strong>算法并不依赖于容器，即算法不直接操作容器，而是运行于迭代器之上，执行迭代器的操作。因此算法永远不会改变底层容器的大小，但是它可能改变容器中保存的元素，也可能在容器内移动元素，但永远不会直接添加或者删除元素。</strong><br><strong>标准库定义了一类特殊的迭代器，叫做插入器(inserter)，插入器可以向容器添加元素。给插入器赋值的时候，它们会在底层的容器上执行插入操作。因此，当一个算法操作这样的迭代器时，迭代器可以完成向容器添加元素的效果，但是算法自身不会直接操作容器。</strong></p>
+            <h2 id="泛型算法">泛型算法</h2>
+<p>头文件<code>&lt;algorithm&gt;</code>定义了许多通用算法，而头文件<code>&lt;numeric&gt;</code>定义了一组数值泛型算法。<br>
+<strong>算法并不依赖于容器，即算法不直接操作容器，而是运行于迭代器之上，执行迭代器的操作。因此算法永远不会改变底层容器的大小，但是它可能改变容器中保存的元素，也可能在容器内移动元素，但永远不会直接添加或者删除元素。</strong><br>
+<strong>标准库定义了一类特殊的迭代器，叫做插入器(inserter)，插入器可以向容器添加元素。给插入器赋值的时候，它们会在底层的容器上执行插入操作。因此，当一个算法操作这样的迭代器时，迭代器可以完成向容器添加元素的效果，但是算法自身不会直接操作容器。</strong></p>
 <p>绝大部分算法的都对一个范围内的元素进行操作，这个范围被称为输入范围，接收输入范围的算法总是使用前两个参数表示这个范围。可以将它们分为：</p>
 <ul>
 <li>只读算法，如find, find_if, count, count_if accumulate，equal等。</li>
 <li>写容器元素的算法，如fill,fill_n，copy,replace,replace_copy等。</li>
 <li>重排容器元素的算法，如sort, unique等。</li>
 </ul>
-<h2 id="定制操作"><a href="#定制操作" class="headerlink" title="定制操作"></a>定制操作</h2><p>这一节主要介绍了如何向算法传递可调用对象。总共有三种方法：</p>
+<h2 id="定制操作">定制操作</h2>
+<p>这一节主要介绍了如何向算法传递可调用对象。总共有三种方法：</p>
 <ol>
 <li>predicate。predicate是一个可调用的表达式，返回结果是一个能用作条件的值。C++ 使用了unary predicate和binary predicate。</li>
 <li>lambda表达式，具体的可以查看<a href></a>。</li>
 <li>bind 绑定参数。</li>
 </ol>
-<h2 id="再谈迭代器"><a href="#再谈迭代器" class="headerlink" title="再谈迭代器"></a>再谈迭代器</h2><p>这一节介绍了四种特殊的迭代器：</p>
+<h2 id="再谈迭代器">再谈迭代器</h2>
+<p>这一节介绍了四种特殊的迭代器：</p>
 <ol>
 <li>insert iterator</li>
 <li>iostream iterator</li>
 <li>reverse iterator</li>
 <li>move iterator</li>
 </ol>
-<h2 id="迭代器类别"><a href="#迭代器类别" class="headerlink" title="迭代器类别"></a>迭代器类别</h2><h2 id="算法形参模式"><a href="#算法形参模式" class="headerlink" title="算法形参模式"></a>算法形参模式</h2><h2 id="算法命令规范"><a href="#算法命令规范" class="headerlink" title="算法命令规范"></a>算法命令规范</h2><h2 id="特定容器算法"><a href="#特定容器算法" class="headerlink" title="特定容器算法"></a>特定容器算法</h2><p>list和forward_list单独定义了sort, merge, remove, reverse和unique。<br>因为通用的sort需要使用random_access_iterator，所以不能用于list和forward_list。而上述的其他算法的通用版本可以用于list和forwrad_list，但是代价太高了。这些算法需要交换输入序列中的算法，list和forward_list可以仅仅通过改变元素之间的链接而不是真的交换它们的值实现更快的交换，这样的性能比通用的版本要更好一些。list和froward_list还有一个特殊的splice算法。<br><img src="/2019/11/10/C-generic-algorithm/" alt><br><img src="/2019/11/10/C-generic-algorithm/" alt></p>
+<h2 id="迭代器类别">迭代器类别</h2>
+<h2 id="算法形参模式">算法形参模式</h2>
+<h2 id="算法命令规范">算法命令规范</h2>
+<h2 id="特定容器算法">特定容器算法</h2>
+<p>list和forward_list单独定义了sort, merge, remove, reverse和unique。<br>
+因为通用的sort需要使用random_access_iterator，所以不能用于list和forward_list。而上述的其他算法的通用版本可以用于list和forwrad_list，但是代价太高了。这些算法需要交换输入序列中的算法，list和forward_list可以仅仅通过改变元素之间的链接而不是真的交换它们的值实现更快的交换，这样的性能比通用的版本要更好一些。list和froward_list还有一个特殊的splice算法。<br>
+<img src="/2019/11/10/C-generic-algorithm/" alt><br>
+<img src="/2019/11/10/C-generic-algorithm/" alt></p>
 <p><strong>注意，链表特有版本的算法会改变底层的容器。</strong></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》第五版中文版</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》第五版中文版</p>
 
           
         
@@ -1471,70 +1784,117 @@
       
         
           
-            <h2 id="模板面试知识点"><a href="#模板面试知识点" class="headerlink" title="模板面试知识点"></a>模板面试知识点</h2><ol>
+            <h2 id="模板面试知识点">模板面试知识点</h2>
+<ol>
 <li>模板特化和偏特化[2]。</li>
 <li>函数模板和类模板的定义通常需要放在头文件中。为了生成一个实例化版本，编译器需要掌握函数模板或者类模板成员函数的定义[3]。</li>
 <li>函数重载和模板特化的关系。模板特化不影响函数匹配，实际上，我们是替编译器实现了重载之后的某个特殊类型的实例化。</li>
 </ol>
-<h2 id="一些函数"><a href="#一些函数" class="headerlink" title="一些函数"></a>一些函数</h2><ol>
+<h2 id="一些函数">一些函数</h2>
+<ol>
 <li><code>remove_reference</code>，可以将一个引用类型（包括左值引用和右值引用）变成非引用类型，通过类模板特化完成。</li>
 <li><code>std::move</code>，将一个左值转换成右值，或者保持右值不变。通过static_cast完成。</li>
 <li><code>std::forward&lt;T&gt;(arg)</code>。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> Type&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">(Type &amp;&amp; arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    another_func(<span class="built_in">std</span>::forward&lt;Type&gt;(arg));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
 </ol>
 <p>上述代码会做到将func的实参原封不动的（保持所有属性）转发到another_func中，具体的过程：首先根据引用折叠和右值引用参数推断出Type的类型，如果arg是右值，Type是普通类型，如果arg是左值，则Type是引用的右值，通过引用折叠，得到Type是一个左值引用。推断出Type的类型之后，std::forward<type>返回的是Type的&amp;&amp;，再和arg进行引用折叠，得到相应的左值或者右值。</type></p>
-<h2 id="模板定义"><a href="#模板定义" class="headerlink" title="模板定义"></a>模板定义</h2><h3 id="模板参数列表"><a href="#模板参数列表" class="headerlink" title="模板参数列表"></a>模板参数列表</h3><p>模板定义以关键字template开始，后跟一个模板参数列表，是一个逗号分隔的一个或者多个模板参数的列表，用<code>&lt;</code>和<code>&gt;</code>分隔开来。模板参数可以是模板类型参数和非类型模板参数。</p>
-<h4 id="模板类型参数"><a href="#模板类型参数" class="headerlink" title="模板类型参数"></a>模板类型参数</h4><p>一个模板类型参数表示一个类型，类型参数前需要加上<code>class</code>或者<code>typename</code>关键字，它们是等价的。</p>
-<h4 id="非类型模板参数"><a href="#非类型模板参数" class="headerlink" title="非类型模板参数"></a>非类型模板参数</h4><p>而非类型模板参数是一个值，而不是一个类型，通过一个特定的类型名指定非类型参数。</p>
+<h2 id="模板定义">模板定义</h2>
+<h3 id="模板参数列表">模板参数列表</h3>
+<p>模板定义以关键字template开始，后跟一个模板参数列表，是一个逗号分隔的一个或者多个模板参数的列表，用<code>&lt;</code>和<code>&gt;</code>分隔开来。模板参数可以是模板类型参数和非类型模板参数。</p>
+<h4 id="模板类型参数">模板类型参数</h4>
+<p>一个模板类型参数表示一个类型，类型参数前需要加上<code>class</code>或者<code>typename</code>关键字，它们是等价的。</p>
+<h4 id="非类型模板参数">非类型模板参数</h4>
+<p>而非类型模板参数是一个值，而不是一个类型，通过一个特定的类型名指定非类型参数。</p>
 <p>模板参数列表的作用很像函数参数列表。<strong>函数参数列表</strong>定义了若干特定类型的局部变量，但是没有指出如何初始化它们。运行时，需要调用者提供实参来初始化形参。而模板参数表示在类或者函数定义中用到的类型或者值。使用模板时，我们需要显式或者隐式的指定模板实参，将它绑定到模板参数上。</p>
-<h2 id="模板种类"><a href="#模板种类" class="headerlink" title="模板种类"></a>模板种类</h2><h3 id="函数模板"><a href="#函数模板" class="headerlink" title="函数模板"></a>函数模板</h3><p>调用函数模板时，编译器会用函数实参推断模板实参。</p>
-<h3 id="类模板"><a href="#类模板" class="headerlink" title="类模板"></a>类模板</h3><p>编译器不能为类模板推断模板类型参数，为了使用类模板，必须在<strong>模板名</strong>后的尖括号提供模板实参列表代替模板参数。</p>
+<h2 id="模板种类">模板种类</h2>
+<h3 id="函数模板">函数模板</h3>
+<p>调用函数模板时，编译器会用函数实参推断模板实参。</p>
+<h3 id="类模板">类模板</h3>
+<p>编译器不能为类模板推断模板类型参数，为了使用类模板，必须在<strong>模板名</strong>后的尖括号提供模板实参列表代替模板参数。</p>
 <ol>
-<li><strong>实例化类模板。</strong><br>使用类模板时，需要提供显式模板实参列表，编译器使用这些模板实参进行实例化。</li>
-<li><strong>类模板的成员函数。</strong><br>定义在类模板之外的成员函数必须以关键字template开始，后接类模板参数列表。在类外定义一个成员时，不仅要说明成员属于哪个类，从<strong>一个模板生成的类的名字</strong>中必须包含它的模板实参（比如<code>Blob&lt;T&gt;</code>)。</li>
-<li><strong>类模板成员函数的实例化。</strong><br>对于一个实例化了的类模板，它的成员只有在使用时才被实例化，所以即使某种类型不完全符合模板操作的类型，也能用这个类型实例化类。</li>
-<li><strong>在类的作用域内简化模板类名的使用。</strong><br>在类模板自己的作用域内，不需要使用<code>Blob&lt;T&gt;</code>，使用<code>Blob</code>即可。</li>
-<li><strong>类模板和友元。</strong><br>仅仅每个实例类型之间互为友元。（template_friend_1.cpp)<br>一个类可以将另一个模板的所有实例都声明为友元。（template_friend_2.cpp)<br>一个类可以是一个类模板所有实例的友元。（template_friend_3.cpp)<br>一个类模板将另一个类模板的所有实例都声明为友元。（template_friend_4.cpp)<br>一个模板将模板类型参数声明为友元。</li>
-<li><strong>模板类型别名。</strong><br>使用using可以为类模板定义一个别名。</li>
-<li><strong>类模板的static成员。</strong><br>每个实例都有一个自己的static成员。</li>
+<li><strong>实例化类模板。</strong><br>
+使用类模板时，需要提供显式模板实参列表，编译器使用这些模板实参进行实例化。</li>
+<li><strong>类模板的成员函数。</strong><br>
+定义在类模板之外的成员函数必须以关键字template开始，后接类模板参数列表。在类外定义一个成员时，不仅要说明成员属于哪个类，从<strong>一个模板生成的类的名字</strong>中必须包含它的模板实参（比如<code>Blob&lt;T&gt;</code>)。</li>
+<li><strong>类模板成员函数的实例化。</strong><br>
+对于一个实例化了的类模板，它的成员只有在使用时才被实例化，所以即使某种类型不完全符合模板操作的类型，也能用这个类型实例化类。</li>
+<li><strong>在类的作用域内简化模板类名的使用。</strong><br>
+在类模板自己的作用域内，不需要使用<code>Blob&lt;T&gt;</code>，使用<code>Blob</code>即可。</li>
+<li><strong>类模板和友元。</strong><br>
+仅仅每个实例类型之间互为友元。（template_friend_1.cpp)<br>
+一个类可以将另一个模板的所有实例都声明为友元。（template_friend_2.cpp)<br>
+一个类可以是一个类模板所有实例的友元。（template_friend_3.cpp)<br>
+一个类模板将另一个类模板的所有实例都声明为友元。（template_friend_4.cpp)<br>
+一个模板将模板类型参数声明为友元。</li>
+<li><strong>模板类型别名。</strong><br>
+使用using可以为类模板定义一个别名。</li>
+<li><strong>类模板的static成员。</strong><br>
+每个实例都有一个自己的static成员。</li>
 </ol>
-<h3 id="模板参数"><a href="#模板参数" class="headerlink" title="模板参数"></a>模板参数</h3><ol>
-<li><strong>模板参数和作用域。</strong><br>模板内的变量名不能和模板参数名冲突。</li>
-<li><strong>使用类的类型成员。</strong><br>默认情况下，假定通过作用域运算符访问的是名字不是类型。如果需要访问类型的话，必须使用typename关键字告诉编译器这是一个类型。</li>
-<li><strong>默认模板实参。</strong><br>C++ 11之后，可以为函数和类模板都提供默认实参。在使用类模板的时候，必须在模板名后加上尖括号，如果一个类模板的所有模板参数都有默认实参，而且想要使用默认实参，需要使用`&lt;&gt;。</li>
+<h3 id="模板参数">模板参数</h3>
+<ol>
+<li><strong>模板参数和作用域。</strong><br>
+模板内的变量名不能和模板参数名冲突。</li>
+<li><strong>使用类的类型成员。</strong><br>
+默认情况下，假定通过作用域运算符访问的是名字不是类型。如果需要访问类型的话，必须使用typename关键字告诉编译器这是一个类型。</li>
+<li><strong>默认模板实参。</strong><br>
+C++ 11之后，可以为函数和类模板都提供默认实参。在使用类模板的时候，必须在模板名后加上尖括号，如果一个类模板的所有模板参数都有默认实参，而且想要使用默认实参，需要使用`&lt;&gt;。</li>
 </ol>
-<h3 id="成员模板"><a href="#成员模板" class="headerlink" title="成员模板"></a>成员模板</h3><p>一个类（普通类或者类模板）都可以包含本身是模板的函数，这种成员被称为成员模板，成员模板不能是虚函数。</p>
+<h3 id="成员模板">成员模板</h3>
+<p>一个类（普通类或者类模板）都可以包含本身是模板的函数，这种成员被称为成员模板，成员模板不能是虚函数。</p>
 <ol>
 <li><strong>普通类的成员模板。</strong></li>
-<li><strong>类模板的成员模板。</strong><br>类模板和成员模板有各自的模板参数。当在类模板外定义成员模板的时候，必须同时为类模板和成员模板提供模板参数列表，类模板的参数列表在前，成员模板的参数列表在后。</li>
+<li><strong>类模板的成员模板。</strong><br>
+类模板和成员模板有各自的模板参数。当在类模板外定义成员模板的时候，必须同时为类模板和成员模板提供模板参数列表，类模板的参数列表在前，成员模板的参数列表在后。</li>
 </ol>
-<h3 id="实例化定义"><a href="#实例化定义" class="headerlink" title="实例化定义"></a>实例化定义</h3><p>模板在使用时才被实例化，当多个独立编译的源文件同时使用了相同的模板和模板参数列表时，可能而存在多个同一模板的示例，使用<strong>显式实例化</strong>避免这种开销。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="keyword">template</span> declaration;    <span class="comment">//实例化声明</span></span><br><span class="line"><span class="keyword">template</span> declaration;           <span class="comment">//实例化定义</span></span><br><span class="line"><span class="comment">// 示例</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">template</span> Blob&lt;<span class="built_in">string</span>&gt;;</span><br><span class="line"><span class="keyword">template</span> Blob&lt;<span class="built_in">string</span>&gt;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="实例化定义">实例化定义</h3>
+<p>模板在使用时才被实例化，当多个独立编译的源文件同时使用了相同的模板和模板参数列表时，可能而存在多个同一模板的示例，使用<strong>显式实例化</strong>避免这种开销。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="keyword">template</span> declaration;    <span class="comment">//实例化声明</span></span><br><span class="line"><span class="keyword">template</span> declaration;           <span class="comment">//实例化定义</span></span><br><span class="line"><span class="comment">// 示例</span></span><br><span class="line"><span class="keyword">extern</span> <span class="keyword">template</span> Blob&lt;<span class="built_in">string</span>&gt;;</span><br><span class="line"><span class="keyword">template</span> Blob&lt;<span class="built_in">string</span>&gt;;</span><br></pre></td></tr></table></figure></p>
 <p>实例化定义会实例化所有的成员，所以用来实例化的类型，必须能用于模板的所有成员。</p>
-<h3 id="效率和灵活性"><a href="#效率和灵活性" class="headerlink" title="效率和灵活性"></a>效率和灵活性</h3><p><code>shared_ptr</code>在运行时绑定deleter，deleter不是<code>shared_ptr</code>的成员。<br><code>unique_ptr</code>在编译是绑定deleter，deleter是<code>unique_ptr</code>的一个成员。</p>
-<h2 id="模板实参推断"><a href="#模板实参推断" class="headerlink" title="模板实参推断"></a>模板实参推断</h2><h3 id="类型转换和模板类型参数"><a href="#类型转换和模板类型参数" class="headerlink" title="类型转换和模板类型参数"></a>类型转换和模板类型参数</h3><ol>
-<li><strong>能用于函数模板的类型转化。</strong><ul>
+<h3 id="效率和灵活性">效率和灵活性</h3>
+<p><code>shared_ptr</code>在运行时绑定deleter，deleter不是<code>shared_ptr</code>的成员。<br>
+<code>unique_ptr</code>在编译是绑定deleter，deleter是<code>unique_ptr</code>的一个成员。</p>
+<h2 id="模板实参推断">模板实参推断</h2>
+<h3 id="类型转换和模板类型参数">类型转换和模板类型参数</h3>
+<ol>
+<li><strong>能用于函数模板的类型转化。</strong>
+<ul>
 <li><code>const</code>转换，可以将非顶层const 转换为顶层const</li>
-<li>数组或者函数转换为相应的指针。 </li>
+<li>数组或者函数转换为相应的指针。</li>
 </ul>
 </li>
 <li><strong>相同模板类型参数的函数形参。</strong></li>
 <li><strong>不同模板类型参数的函数形参。</strong></li>
 <li><strong>正常类型转换对应于普通函数实参。</strong></li>
 </ol>
-<h3 id="函数模板显式实参"><a href="#函数模板显式实参" class="headerlink" title="函数模板显式实参"></a>函数模板显式实参</h3><p>对于一些编译器无法推断出的模板实参类型，可以指定显式模板实参。而且显式模板实参的顺序和模板参数声明的顺序一致。</p>
-<h3 id="尾置返回类型"><a href="#尾置返回类型" class="headerlink" title="尾置返回类型"></a>尾置返回类型</h3><p>可以使用尾置返回类型声明不知道返回结果的类型。</p>
-<h3 id="函数指针的实参推断"><a href="#函数指针的实参推断" class="headerlink" title="函数指针的实参推断"></a>函数指针的实参推断</h3><p>当参数是一个函数模板实例的地址时，程序的上下文必须满足，对于每个模板参数，能唯一确定它的类型或者值。</p>
-<h3 id="模板实参推断和引用"><a href="#模板实参推断和引用" class="headerlink" title="模板实参推断和引用"></a>模板实参推断和引用</h3><ol>
-<li>当函数参数是一个普通左值引用的时候，只能给他传递一个左值，实参可以是const，也可以不是。如果实参是const的，T会被推断成const类型。<br>当函数参数是一个常量引用的时候，实参可以是任何对象。这个const是函数参数类型的一部分，而不是模板参数类型的一部分。</li>
+<h3 id="函数模板显式实参">函数模板显式实参</h3>
+<p>对于一些编译器无法推断出的模板实参类型，可以指定显式模板实参。而且显式模板实参的顺序和模板参数声明的顺序一致。</p>
+<h3 id="尾置返回类型">尾置返回类型</h3>
+<p>可以使用尾置返回类型声明不知道返回结果的类型。</p>
+<h3 id="函数指针的实参推断">函数指针的实参推断</h3>
+<p>当参数是一个函数模板实例的地址时，程序的上下文必须满足，对于每个模板参数，能唯一确定它的类型或者值。</p>
+<h3 id="模板实参推断和引用">模板实参推断和引用</h3>
+<ol>
+<li>当函数参数是一个普通左值引用的时候，只能给他传递一个左值，实参可以是const，也可以不是。如果实参是const的，T会被推断成const类型。<br>
+当函数参数是一个常量引用的时候，实参可以是任何对象。这个const是函数参数类型的一部分，而不是模板参数类型的一部分。</li>
 <li>也可以推断出右值实参的类型。</li>
 <li>引用折叠和右值引用参数。如果一个函数参数是指向模板参数类型的右值引用，比如T&amp;&amp; val，可以给val传递任意类型的实参（左值或者右值）。如果将一个左值传递给这样的参数，则函数参数被实例化为一个普通的<strong>左值引用</strong>。</li>
 </ol>
-<h3 id="理解std-move"><a href="#理解std-move" class="headerlink" title="理解std::move"></a>理解std::move</h3><p>std::move的源代码如下：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">typename</span> remove_reference&lt;T&gt;::<span class="function">type&amp;&amp; <span class="title">move</span><span class="params">(T&amp;&amp; t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;<span class="keyword">typename</span> remove_reference&lt;T&gt;::type&amp;&amp;&gt;(t);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="理解std-move">理解std::move</h3>
+<p>std::move的源代码如下：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">typename</span> remove_reference&lt;T&gt;::<span class="function">type&amp;&amp; <span class="title">move</span><span class="params">(T&amp;&amp; t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;<span class="keyword">typename</span> remove_reference&lt;T&gt;::type&amp;&amp;&gt;(t);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>所以，从代码中我们可以看出来，是可以显式的将一个左值static_cast到一个右值引用。</p>
-<h3 id="forward"><a href="#forward" class="headerlink" title="forward"></a>forward</h3><p>forward指的是将实参的所有性质原封不动的转发给其他函数，包括实参类型是否是const的以及实参是左值还是右值。<br><strong>forward<t>的返回类型是T&amp;&amp;。</t></strong>如下代码：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;Typename T&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">(Type &amp;&amp; arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 首先对右值引用模板参数进行推导，如果arg是右值，那么推断出Type是普通非引用类型。如果arg是左值，推断出Type是左值引用类型。</span></span><br><span class="line">    <span class="built_in">std</span>::forward&lt;Type&gt;(arg);</span><br><span class="line">    <span class="comment">// 调用std::forward获得Type的右值引用，通过引用折叠，可以得到相应的左值和右值类型变量。</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="重载与模板"><a href="#重载与模板" class="headerlink" title="重载与模板"></a>重载与模板</h2><p>函数模板匹配规则，如果有多个函数都满足要求，选择其中最特殊的那个：普通函数比函数模板特殊，都是函数模板的时候，选择更特殊的那个，否则就有歧义。</p>
-<h2 id="可变参数模板"><a href="#可变参数模板" class="headerlink" title="可变参数模板"></a>可变参数模板</h2><p><strong>可变参数模板</strong>是一个接收可变数目参数的模板函数或模板类。可变数目的参数被称为参数包。存在两种参数包：模板参数包和函数参数包，模板参数包表示零个或者多个模板参数，就是typename加上… ，函数参数包表示零个或者多个函数参数，是模板类型加上…。</p>
-<h2 id="模板特化"><a href="#模板特化" class="headerlink" title="模板特化"></a>模板特化</h2><p>函数模板特化和类模板特化。特化一个函数模板时，必须为原函数模板中的每个模板参数都提供实参，叫做全特化。类模板的特化不需要给所有的模板参数提供实参，可以指定一部分参数而不是所有参数，即偏特化。<br><strong>特化</strong>的本质是实例化，和模板的重载本质上是不同的，特化不会影响函数匹配。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》第五版中文版<br>2.<a href="https://stackoverflow.com/questions/8061456/c-function-template-partial-specialization" target="_blank" rel="noopener">https://stackoverflow.com/questions/8061456/c-function-template-partial-specialization</a><br>3.<a href="https://isocpp.org/wiki/faq/templates" target="_blank" rel="noopener">https://isocpp.org/wiki/faq/templates</a></p>
+<h3 id="forward">forward</h3>
+<p>forward指的是将实参的所有性质原封不动的转发给其他函数，包括实参类型是否是const的以及实参是左值还是右值。<br>
+**forward<t>的返回类型是T&amp;&amp;。**如下代码：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;Typename T&gt;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">(Type &amp;&amp; arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 首先对右值引用模板参数进行推导，如果arg是右值，那么推断出Type是普通非引用类型。如果arg是左值，推断出Type是左值引用类型。</span></span><br><span class="line">    <span class="built_in">std</span>::forward&lt;Type&gt;(arg);</span><br><span class="line">    <span class="comment">// 调用std::forward获得Type的右值引用，通过引用折叠，可以得到相应的左值和右值类型变量。</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></t></p>
+<h2 id="重载与模板">重载与模板</h2>
+<p>函数模板匹配规则，如果有多个函数都满足要求，选择其中最特殊的那个：普通函数比函数模板特殊，都是函数模板的时候，选择更特殊的那个，否则就有歧义。</p>
+<h2 id="可变参数模板">可变参数模板</h2>
+<p><strong>可变参数模板</strong>是一个接收可变数目参数的模板函数或模板类。可变数目的参数被称为参数包。存在两种参数包：模板参数包和函数参数包，模板参数包表示零个或者多个模板参数，就是typename加上… ，函数参数包表示零个或者多个函数参数，是模板类型加上…。</p>
+<h2 id="模板特化">模板特化</h2>
+<p>函数模板特化和类模板特化。特化一个函数模板时，必须为原函数模板中的每个模板参数都提供实参，叫做全特化。类模板的特化不需要给所有的模板参数提供实参，可以指定一部分参数而不是所有参数，即偏特化。<br>
+<strong>特化</strong>的本质是实例化，和模板的重载本质上是不同的，特化不会影响函数匹配。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》第五版中文版<br>
+2.<a href="https://stackoverflow.com/questions/8061456/c-function-template-partial-specialization" target="_blank" rel="noopener">https://stackoverflow.com/questions/8061456/c-function-template-partial-specialization</a><br>
+3.<a href="https://isocpp.org/wiki/faq/templates" target="_blank" rel="noopener">https://isocpp.org/wiki/faq/templates</a></p>
 
           
         
@@ -1706,27 +2066,35 @@
       
         
           
-            <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><ol>
+            <h2 id="概念">概念</h2>
+<ol>
 <li>类的基本思想是数据抽象和封装。数据抽象是一种依赖于<strong>接口</strong>和<strong>实现</strong>分离的编程技术。类的接口包括用户所能执行的操作；类的实现包括类的数据成员，接口的实现部分（函数体），类所需要的各种私有函数的实现。<strong>封装</strong>指的是用访问说明符(public, private, protected)实现对类的访问控制。</li>
 <li>继承。有一个类作为基类，派生类从基类继承而来，具有基类的全部或者部分成员。</li>
 <li>动态绑定，也叫运行时绑定。在运行时选择函数的版本。</li>
 <li>虚函数。基类将希望派生类override的函数声明为虚函数。</li>
 <li>类派生列表。冒号后面跟着以逗号分隔的基类列表，每个基类前面可以有三种访问说明符中的一个：<code>public</code>,<code>private</code>, <code>protected</code>。</li>
 </ol>
-<h2 id="什么是面向对象"><a href="#什么是面向对象" class="headerlink" title="什么是面向对象"></a>什么是面向对象</h2><p>面向对象程序设计的核心思想是<strong>数据抽象</strong>，<strong>继承</strong>，<strong>动态绑定</strong>。</p>
+<h2 id="什么是面向对象">什么是面向对象</h2>
+<p>面向对象程序设计的核心思想是<strong>数据抽象</strong>，<strong>继承</strong>，<strong>动态绑定</strong>。</p>
 <ol>
 <li>数据抽象和封装。数据抽象依赖于接口和实现分离的编程技术。接口包括用户所能执行的操作，实现包括类的数据成员，接口实现的函数体，定义类所需要的各种私有函数。封装指的是用访问说明符(public, private, protected)实现对类的访问控制。</li>
 <li>继承，定义相似的类型并对其相似关系建模。有一个类作为基类，派生类从基类继承而来，具有基类的全部或者部分成员。</li>
 <li>动态绑定，也叫运行时绑定，在运行时选择函数的版本。动态绑定在一定程序上忽略相似类型的区别，用统一的方式使用它们的对象。</li>
 </ol>
-<h2 id="基类和派生类"><a href="#基类和派生类" class="headerlink" title="基类和派生类"></a>基类和派生类</h2><h3 id="定义基类"><a href="#定义基类" class="headerlink" title="定义基类"></a>定义基类</h3><ol>
-<li>成员函数和继承。派生类可以继承基类的成员函数，也可以提供自己的函数对基类的函数进行覆盖(override)。基类需要将这两种成员函数分开：一种是基类希望派生类覆盖的函数，一种是基类希望派生类直接使用的函数。<br><strong>定义虚函数表明基类希望派生类覆盖的函数</strong>，在使用对象的指针或者引用调用虚函数时，这个调用会被动态绑定。而没有定义为虚函数的成员函数，解析过程发生在编译时而非运行时。<br><strong>除了构造函数之外的所有非静态函数都可以是虚函数。在基类中声明的虚函数，在派生类中无需声明为虚函数就隐式的是虚函数。</strong></li>
+<h2 id="基类和派生类">基类和派生类</h2>
+<h3 id="定义基类">定义基类</h3>
+<ol>
+<li>成员函数和继承。派生类可以继承基类的成员函数，也可以提供自己的函数对基类的函数进行覆盖(override)。基类需要将这两种成员函数分开：一种是基类希望派生类覆盖的函数，一种是基类希望派生类直接使用的函数。<br>
+<strong>定义虚函数表明基类希望派生类覆盖的函数</strong>，在使用对象的指针或者引用调用虚函数时，这个调用会被动态绑定。而没有定义为虚函数的成员函数，解析过程发生在编译时而非运行时。<br>
+<strong>除了构造函数之外的所有非静态函数都可以是虚函数。在基类中声明的虚函数，在派生类中无需声明为虚函数就隐式的是虚函数。</strong></li>
 <li>访问控制和继承。派生类可以继承基类的成员，但是派生类的成员函数不一定有权限访问继承来的成员。派生类可以访问基类的公用成员，但是无法访问基类的私有成员。<code>protected</code>访问运算符声明的成员表示派生类可以访问，但是其他用户无法访问的成员。</li>
 </ol>
-<h3 id="定义派生类"><a href="#定义派生类" class="headerlink" title="定义派生类"></a>定义派生类</h3><p>通过<strong>派生类列表</strong>，指出它是从哪个或者哪些基类中继承而来的。首先是一个冒号，后面跟着用逗号分隔的基类列表，每个基类前面可以有三种访问说明符中的一个：public、protected或者private，默认是private。</p>
+<h3 id="定义派生类">定义派生类</h3>
+<p>通过<strong>派生类列表</strong>，指出它是从哪个或者哪些基类中继承而来的。首先是一个冒号，后面跟着用逗号分隔的基类列表，每个基类前面可以有三种访问说明符中的一个：public、protected或者private，默认是private。</p>
 <ol>
-<li>派生类中的虚函数。派生类可以不override他继承的虚函数，这样子派生类会直接继承基类中的版本。<br>C++ 11中，不一定需要在要override的函数前加上virtual关键字，可以使用override关键字修饰，表明这个函数是override的函数。</li>
-<li><strong>派生类对象和派生类向基类的类型转换。可以把派生类对象当做基类对象使用，也可以将基类指针或引用绑定到派生类对象上，也可以把派生类指针用在需要基类指针的地方。</strong>一个派生类对象包含多个组成部分：一个含有派生类自己定义的成员的子对象，以及一个与该派生类继承的基类对应的子对象，如果有多个基类，就会有多个这样的子对象。一个基类的对象可以独立存在，也可以作为派生类对象的一部分存在。如果基类对象不是派生类对象的一部分，那么它只含有基类定义的成员，而不含有派生类定义的对象。而一个基类对象可能是派生类对象的一部分，也可能不是，所以不存在从基类到派生类的自动类型转换。</li>
+<li>派生类中的虚函数。派生类可以不override他继承的虚函数，这样子派生类会直接继承基类中的版本。<br>
+C++ 11中，不一定需要在要override的函数前加上virtual关键字，可以使用override关键字修饰，表明这个函数是override的函数。</li>
+<li>**派生类对象和派生类向基类的类型转换。可以把派生类对象当做基类对象使用，也可以将基类指针或引用绑定到派生类对象上，也可以把派生类指针用在需要基类指针的地方。**一个派生类对象包含多个组成部分：一个含有派生类自己定义的成员的子对象，以及一个与该派生类继承的基类对应的子对象，如果有多个基类，就会有多个这样的子对象。一个基类的对象可以独立存在，也可以作为派生类对象的一部分存在。如果基类对象不是派生类对象的一部分，那么它只含有基类定义的成员，而不含有派生类定义的对象。而一个基类对象可能是派生类对象的一部分，也可能不是，所以不存在从基类到派生类的自动类型转换。</li>
 <li>派生类的构造函数。派生类的构造函数中，需要调用基类的构造函数对于基类部分进行初始化。即每隔类控制它自己的成员的初始化。</li>
 <li>派生类使用基类的成员。派生类的对象不能直接初始化基类的成员，尽管语法上是正确的。与类的对象交互必须使用类的接口。</li>
 <li>继承与静态成员。整个继承体系中只存在每个静态成员的一个定义。</li>
@@ -1734,68 +2102,101 @@
 <li>用作基类的类。如果要将某个类用作基类，这个类必须声明而且定义过了。</li>
 <li><code>final</code>关键字防止继承的发生。用<code>final</code>关键字修饰的类不能用作基类，但是可以作为子类，不过这个子类不能继续作为基类被继承。</li>
 </ol>
-<h3 id="类型转换和继承"><a href="#类型转换和继承" class="headerlink" title="类型转换和继承"></a>类型转换和继承</h3><ol>
-<li><strong>在具有继承关系的类之间，可以将基类的指针或引用绑定到派生类对象。当使用基类的引用或者指针时，引用或者指针绑定的对象可能是基类的对象，也可能是派生类的对象。</strong>因为每个派生类都包含一个基类部分，基类的引用或者指针可以绑定到基类部分。</li>
+<h3 id="类型转换和继承">类型转换和继承</h3>
+<ol>
+<li>**在具有继承关系的类之间，可以将基类的指针或引用绑定到派生类对象。当使用基类的引用或者指针时，引用或者指针绑定的对象可能是基类的对象，也可能是派生类的对象。**因为每个派生类都包含一个基类部分，基类的引用或者指针可以绑定到基类部分。</li>
 <li>表达式的<strong>静态类型</strong>是变量声明时的类型或表达式生成的类型，在编译时就是已知的；<strong>动态类型</strong>是变量或者表达式表示的内存中的对象的类型，在运行时才知道。</li>
 <li>不存在从基类向派生类的隐式类型转换。</li>
 <li>派生类向基类的类型转换只对指针或者引用类型有效，在派生类类型和基类类型之间不存在这样的转换。当用一个派生类对象为一个基类对象初始化（调用拷贝构造函数）或者赋值（调用拷贝赋值函数）时，只有该派生类中的基类部分会被拷贝，移动或者赋值，它的派生类部分将被忽略掉。</li>
 </ol>
-<h2 id="虚函数"><a href="#虚函数" class="headerlink" title="虚函数"></a>虚函数</h2><ol>
+<h2 id="虚函数">虚函数</h2>
+<ol>
 <li>每一个虚函数都必须被定义，因为连编译器也不知道哪个虚函数被使用了。</li>
 <li>对虚函数的调用可能在运行时才被解析，编译器产生的代码知道运行时才能确定应该调用哪个版本的函数。</li>
 <li><strong>动态绑定只有在通过指针或者引用调用虚函数时才会发生。</strong>（P537页）</li>
-<li><strong>C++ 的多态性的根本原因是引用或指针的静态类型可以和动态类型不同。</strong><br>当使用基类的引用或者指针调用基类中定义的一个函数时，如果这个函数是虚函数，直到运行时才会决定到底执行哪个版本，这个版本取决于引用或者指针绑定的对象的真实类型。<br>对于非虚函数的调用在编译时进行绑定。同样，通过对象（不是引用也不是指针）进行的函数调用（包含虚函数和非虚函数）都在编译时确定。</li>
+<li><strong>C++ 的多态性的根本原因是引用或指针的静态类型可以和动态类型不同。</strong><br>
+当使用基类的引用或者指针调用基类中定义的一个函数时，如果这个函数是虚函数，直到运行时才会决定到底执行哪个版本，这个版本取决于引用或者指针绑定的对象的真实类型。<br>
+对于非虚函数的调用在编译时进行绑定。同样，通过对象（不是引用也不是指针）进行的函数调用（包含虚函数和非虚函数）都在编译时确定。</li>
 <li>派生中override的虚函数必须和基类中的函数形参，返回类型完全一致，除了类的虚函数返回类型是类本身的指针或引用时是一个例外。</li>
 <li>final和override关键字。final说明这个类不能被继承，override说明这个函数是对基类中虚函数的重写。它们出现在形参列表（包括const或引用修饰符）之后。final也可以用于修饰某个函数，表示这个函数不能被override。</li>
-<li><strong>虚函数和默认实参。</strong>如果虚函数调用<strong>使用了默认实参</strong>，实参值由调用的静态类型决定（也就是基类虚函数定义的默认实参，和派生类定义的默认实参无关）。</li>
+<li><strong>虚函数和默认实参。<strong>如果虚函数调用</strong>使用了默认实参</strong>，实参值由调用的静态类型决定（也就是基类虚函数定义的默认实参，和派生类定义的默认实参无关）。</li>
 <li>可以使用作用域运算符强制调用虚函数的某个特定版本。例如，当一个派生类的虚函数需要调用它覆盖的基类的虚函数版本时。</li>
 </ol>
-<h2 id="纯虚函数和抽象基类"><a href="#纯虚函数和抽象基类" class="headerlink" title="纯虚函数和抽象基类"></a>纯虚函数和抽象基类</h2><ol>
+<h2 id="纯虚函数和抽象基类">纯虚函数和抽象基类</h2>
+<ol>
 <li><strong>纯虚函数</strong>。在函数体的位置书写=0就可以将一个函数声明为纯虚函数，纯虚函数无序定义。</li>
-<li><strong>含有纯虚函数的类是抽象基类。</strong>不能定义抽象基类的对象。抽象基类负责定义接口，而派生类可以覆盖接口。</li>
+<li>**含有纯虚函数的类是抽象基类。**不能定义抽象基类的对象。抽象基类负责定义接口，而派生类可以覆盖接口。</li>
 </ol>
-<h2 id="访问控制和继承"><a href="#访问控制和继承" class="headerlink" title="访问控制和继承"></a>访问控制和继承</h2><p>每个类控制着自己成员的初始化过程，还控制着成员对于派生类来说是否可访问。</p>
-<h3 id="成员访问说明符"><a href="#成员访问说明符" class="headerlink" title="成员访问说明符"></a>成员访问说明符</h3><p>protected说明符：</p>
+<h2 id="访问控制和继承">访问控制和继承</h2>
+<p>每个类控制着自己成员的初始化过程，还控制着成员对于派生类来说是否可访问。</p>
+<h3 id="成员访问说明符">成员访问说明符</h3>
+<p>protected说明符：</p>
 <ol>
 <li>对于类的用户来说是不可访问的，对派生类的成员和友元来说是可以访问的。</li>
 <li>派生类的成员或者友元只能访问派生类对象的基类部分的protected成员，派生类对于基类对象中的protected成员没有任何访问特权。</li>
 </ol>
-<p>某个类对它继承而来的成员的访问权限受到两个因素影响：一个是在基类中该成员的访问说明符，另一个是派生类的派生列表中的访问说明符（public, private, protected继承）。<br><strong>基类中的访问说明符决定基类的用户（包含派生类的成员和友元）是否能够访问它的直接基类成员，派生列表中的访问说明符决定派生类用户（包含派生类的派生类）对于基类的访问权限。</strong>对于public继承，派生类用户对于基类的成员的访问遵循原来的访问说明符；私有继承，所有的基类成员都是private的；对于protected继承，基类的所有public成员都是protected的，派生类的成员和友元可以访问继承而来的成员，而派生类的用户不能访问。</p>
-<h3 id="派生类向基类转换的可访问性"><a href="#派生类向基类转换的可访问性" class="headerlink" title="派生类向基类转换的可访问性"></a>派生类向基类转换的可访问性</h3><p>一个类可能有三种用户：普通用户，类的实现者，派生类。普通用户编写的代码使用类的对象，这部分用户只能访问类的公有成员（接口），而实现者负责编写类的成员和友元代码，它们既能访问类的公有部分，也能访问类的私有部分。<br>派生类向基类的转换会受派生类的派生访问说明符的影响。</p>
+<p>某个类对它继承而来的成员的访问权限受到两个因素影响：一个是在基类中该成员的访问说明符，另一个是派生类的派生列表中的访问说明符（public, private, protected继承）。<br>
+**基类中的访问说明符决定基类的用户（包含派生类的成员和友元）是否能够访问它的直接基类成员，派生列表中的访问说明符决定派生类用户（包含派生类的派生类）对于基类的访问权限。**对于public继承，派生类用户对于基类的成员的访问遵循原来的访问说明符；私有继承，所有的基类成员都是private的；对于protected继承，基类的所有public成员都是protected的，派生类的成员和友元可以访问继承而来的成员，而派生类的用户不能访问。</p>
+<h3 id="派生类向基类转换的可访问性">派生类向基类转换的可访问性</h3>
+<p>一个类可能有三种用户：普通用户，类的实现者，派生类。普通用户编写的代码使用类的对象，这部分用户只能访问类的公有成员（接口），而实现者负责编写类的成员和友元代码，它们既能访问类的公有部分，也能访问类的私有部分。<br>
+派生类向基类的转换会受派生类的派生访问说明符的影响。</p>
 <ol>
 <li>派生类public继承基类，用户代码可以使用派生类到基类的转换，否则不行。</li>
 <li>派生类public, protected, private继承基类，派生类成员或者友元都可以使用派生类到基类的转换。</li>
 <li>派生类public或者protected继承基类，派生类的派生类的成员或者友元可以使用派生类到基类的转换，否则不行。</li>
 </ol>
-<p><strong>基类的public成员，基类成员和友元可以访问，基类的普通用户可以访问，派生类的成员和友元可访问。<br>基类的protected成员，基类成员和友元可以访问，基类的普通用户不可以访问，派生类的成员和友元可以访问。<br>private，基类的成员和友元可以访问，基类的普通用户不可以访问，派生类的成员和友元不可以访问。<br>public继承，派生类的普通用户可以访问基类的public成员，派生类的派生类的成员和友元可以访问基类public和protected成员。<br>protected继承，派生类的普通用户不可以访问基类的任何成员，派生类的派生类的成员和友元可以访问基类的public和protected成员。<br>private继承，派生类的普通用户不可以访问基类的任何成员，和派生类的派生类成员和友元不可以访问基类的任何成员。</strong></p>
-<h3 id="友元和继承"><a href="#友元和继承" class="headerlink" title="友元和继承"></a>友元和继承</h3><p>友元关系不能继承，每个类负责控制各自的访问权限。</p>
-<h3 id="改变个别成员的可访问性"><a href="#改变个别成员的可访问性" class="headerlink" title="改变个别成员的可访问性"></a>改变个别成员的可访问性</h3><p>可以使用using声明改变继承的某些成员的可访问性。</p>
-<h2 id="继承中的类作用域"><a href="#继承中的类作用域" class="headerlink" title="继承中的类作用域"></a>继承中的类作用域</h2><ol>
-<li><strong>派生类的作用域嵌套在基类的作用域之内。</strong>所以派生类才能像使用自己的成员一样使用基类的成员。</li>
+<p><strong>基类的public成员，基类成员和友元可以访问，基类的普通用户可以访问，派生类的成员和友元可访问。<br>
+基类的protected成员，基类成员和友元可以访问，基类的普通用户不可以访问，派生类的成员和友元可以访问。<br>
+private，基类的成员和友元可以访问，基类的普通用户不可以访问，派生类的成员和友元不可以访问。<br>
+public继承，派生类的普通用户可以访问基类的public成员，派生类的派生类的成员和友元可以访问基类public和protected成员。<br>
+protected继承，派生类的普通用户不可以访问基类的任何成员，派生类的派生类的成员和友元可以访问基类的public和protected成员。<br>
+private继承，派生类的普通用户不可以访问基类的任何成员，和派生类的派生类成员和友元不可以访问基类的任何成员。</strong></p>
+<h3 id="友元和继承">友元和继承</h3>
+<p>友元关系不能继承，每个类负责控制各自的访问权限。</p>
+<h3 id="改变个别成员的可访问性">改变个别成员的可访问性</h3>
+<p>可以使用using声明改变继承的某些成员的可访问性。</p>
+<h2 id="继承中的类作用域">继承中的类作用域</h2>
+<ol>
+<li>**派生类的作用域嵌套在基类的作用域之内。**所以派生类才能像使用自己的成员一样使用基类的成员。</li>
 <li>一个对象，引用或者指针的静态类型决定了该对象的哪些成员是可见的。</li>
-<li><strong>和其他的作用域一样，派生类也能重用定义在它的直接基类或者间接基类的名字，定义在内层作用域的名字会隐藏在定义在外层作用域的名字，而不会重载声明在外部作用域的函数</strong>。派生类的成员会隐藏同名的类成员，可以通过作用域运算符使用隐藏的外层作用域成员。<br><strong>为什么基类与派生类的虚函数必须有相同的形参列表？</strong>如果它们的形参不同，就不会override了，而是隐藏了。</li>
-<li><strong>名字查找和继承。</strong>当使用对象，指针或者引用调用某个函数时，可以分为四个步骤：<br>首先确定静态类型。<br>然后在这个静态类型中查找成员，如果没有找到，依次查找直接基类和间接基类，找到为止，如果一直到最后都没有找到，报错。<br>找到了的话，就进行类型检验。名字查找优先于类型检查。<br>如果调用合法，编译器根据调用的是否是虚函数产生不同的代码。如果是通过引用或者指针调用的虚函数，进行动态绑定；如果不是虚函数或者通过对象调用的函数，编译器产生一个常规函数调用。</li>
+<li><strong>和其他的作用域一样，派生类也能重用定义在它的直接基类或者间接基类的名字，定义在内层作用域的名字会隐藏在定义在外层作用域的名字，而不会重载声明在外部作用域的函数</strong>。派生类的成员会隐藏同名的类成员，可以通过作用域运算符使用隐藏的外层作用域成员。<br>
+**为什么基类与派生类的虚函数必须有相同的形参列表？**如果它们的形参不同，就不会override了，而是隐藏了。</li>
+<li>**名字查找和继承。**当使用对象，指针或者引用调用某个函数时，可以分为四个步骤：<br>
+首先确定静态类型。<br>
+然后在这个静态类型中查找成员，如果没有找到，依次查找直接基类和间接基类，找到为止，如果一直到最后都没有找到，报错。<br>
+找到了的话，就进行类型检验。名字查找优先于类型检查。<br>
+如果调用合法，编译器根据调用的是否是虚函数产生不同的代码。如果是通过引用或者指针调用的虚函数，进行动态绑定；如果不是虚函数或者通过对象调用的函数，编译器产生一个常规函数调用。</li>
 <li>派生类可以override重载的函数，如果派生类希望所有重载版本对它来说都是可见的，需要override所有的版本，或者一个也不override。可以使用using声明指定一个名字而不指定形参列表。这时，只需要定义派生类特有的函数就可以了。</li>
 </ol>
-<h2 id="构造函数和拷贝控制"><a href="#构造函数和拷贝控制" class="headerlink" title="构造函数和拷贝控制"></a>构造函数和拷贝控制</h2><h3 id="虚析构函数"><a href="#虚析构函数" class="headerlink" title="虚析构函数"></a>虚析构函数</h3><p><strong>当存在继承关系时，需要在基类中将析构函数定义成虚函数。如果基类的析构函数不是虚函数，那么delete一个指向派生类对象的基类指针将会产生未定义的行为。</strong><br>虚析构函数会阻止合成移动操作，即使是默认版本的虚析构函数。</p>
-<h3 id="合成拷贝控制和继承"><a href="#合成拷贝控制和继承" class="headerlink" title="合成拷贝控制和继承"></a>合成拷贝控制和继承</h3><ol>
+<h2 id="构造函数和拷贝控制">构造函数和拷贝控制</h2>
+<h3 id="虚析构函数">虚析构函数</h3>
+<p><strong>当存在继承关系时，需要在基类中将析构函数定义成虚函数。如果基类的析构函数不是虚函数，那么delete一个指向派生类对象的基类指针将会产生未定义的行为。</strong><br>
+虚析构函数会阻止合成移动操作，即使是默认版本的虚析构函数。</p>
+<h3 id="合成拷贝控制和继承">合成拷贝控制和继承</h3>
+<ol>
 <li>合成的构造函数，赋值运算符和析构函数分别负责使用直接基类中对应的操作对一个对象中的直接基类部分进行初始化，赋值和销毁的操作。</li>
 <li>删除的拷贝控制函数和基类的关系。</li>
 <li>移动操作和基类的关系。大多数基类都会定义一个虚析构函数，虚析构函数是拷贝控制函数中的一个，所以基类通常不会含有合成的移动操作，而在在它的派生类中也没有合成的移动操作。</li>
 </ol>
-<h3 id="派生类的拷贝控制成员"><a href="#派生类的拷贝控制成员" class="headerlink" title="派生类的拷贝控制成员"></a>派生类的拷贝控制成员</h3><ol>
+<h3 id="派生类的拷贝控制成员">派生类的拷贝控制成员</h3>
+<ol>
 <li>派生类的拷贝或移动构造函数，需要调用基类的拷贝或者移动构造函数进行派生类的基类部分对象的拷贝或者移动。</li>
 <li>派生类的赋值运算符，在派生类的赋值运算符中还要调用基类的赋值运算符。</li>
 <li>派生类析构函数。析构函数中只需要进行派生类的析构就行了，基类的析构是自动执行的。</li>
 <li>在构造函数和析构函数中调用虚函数时，分别调用与构造函数或者析构函数所属类型相对应的虚函数版本。因为派生类对象构造函数被调用时，首先调用基类的构造函数，这个时候派生类的对象还是未初始化的，所以就无法调用派生类的构造函数。而在析构过程中，同理。</li>
 </ol>
-<h3 id="继承的构造函数"><a href="#继承的构造函数" class="headerlink" title="继承的构造函数"></a>继承的构造函数</h3><ol>
-<li>派生类可以重用它的直接基类的构造函数，通过使用一条using声明：<br><code>using Base::Base;</code><br>就可以在派生类中使用基类的构造函数，并且在派生类中构造函数的访问级别和基类中相同。</li>
+<h3 id="继承的构造函数">继承的构造函数</h3>
+<ol>
+<li>派生类可以重用它的直接基类的构造函数，通过使用一条using声明：<br>
+<code>using Base::Base;</code><br>
+就可以在派生类中使用基类的构造函数，并且在派生类中构造函数的访问级别和基类中相同。</li>
 <li>当基类的构造函数含有默认实参的时候，派生类会获得多个继承的构造函数。</li>
 <li>除了两个例外情况，派生类会继承所有基类的构造函数。一个是派生类中定义了和基类中参数列表相同的构造函数，另一个是基类的默认，拷贝和移动构造函数不会被继承。继承的构造函数也不会当做用户定义的构造函数使用，所以如果一个类如果只有一个继承的构造函数，它也会有一个合成的默认构造函数。</li>
 </ol>
-<h2 id="容器和继承"><a href="#容器和继承" class="headerlink" title="容器和继承"></a>容器和继承</h2><p>使用容器存放继承体系中的对象时，在容器中放置（智能）指针而非对象，这些指针的动态类型可能是基类类型，也可能是派生类类型。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》第五版</p>
+<h2 id="容器和继承">容器和继承</h2>
+<p>使用容器存放继承体系中的对象时，在容器中放置（智能）指针而非对象，这些指针的动态类型可能是基类类型，也可能是派生类类型。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》第五版</p>
 
           
         
@@ -1967,7 +2368,8 @@
       
         
           
-            <h2 id="什么是运算符重载"><a href="#什么是运算符重载" class="headerlink" title="什么是运算符重载"></a>什么是运算符重载</h2><ol>
+            <h2 id="什么是运算符重载">什么是运算符重载</h2>
+<ol>
 <li>运算符重载有两种实现形式，一种是成员函数，一种是非成员函数的。如果一个运算符函数是成员函数，它的显式参数数量要比运算对象的数量少一个，第一个运算对象绑定到了隐含的this指针。</li>
 <li>一个运算符函数，或者是类的成员，或者至少还有一个类型成员的函数。</li>
 <li>一般不重载逗号运算符和取地址运算符，逻辑与和逻辑或运算符。</li>
@@ -1976,38 +2378,55 @@
 <li>重载的运算符的含义应该和内置类型保持一致。</li>
 <li>[]，=, ()和-&gt;必须是成员函数，否则就会编译出错。</li>
 </ol>
-<h2 id="输出和输出运算符"><a href="#输出和输出运算符" class="headerlink" title="输出和输出运算符"></a>输出和输出运算符</h2><h3 id="输出运算符"><a href="#输出运算符" class="headerlink" title="输出运算符"></a>输出运算符</h3><p>输出运算符的第一个形参是一个非常量ostream对象的引用：向流写入内容会改变其状态，所以形参ostream是非常量，因为无法复制ostream对象所以形参ostream是引用。<br>第二个形参一般来说是一个常量的引用：引用避免复制实参，常量意味着输出操作不会改变对象的内容。<br>输出运算符尽量减少格式化操作。</p>
-<h3 id="输入运算符"><a href="#输入运算符" class="headerlink" title="输入运算符"></a>输入运算符</h3><p>输入运算符的第一个形参是运算符将要读取的流的引用，第二个形参是将要读入的非常量对象的引用。</p>
-<h2 id="算术和关系运算符"><a href="#算术和关系运算符" class="headerlink" title="算术和关系运算符"></a>算术和关系运算符</h2><p>可以把算术运算符和关系运算符定义成非成员函数，从而实现对左侧或者右侧对象的转换。</p>
-<h3 id="相等运算符"><a href="#相等运算符" class="headerlink" title="相等运算符"></a>相等运算符</h3><ol>
+<h2 id="输出和输出运算符">输出和输出运算符</h2>
+<h3 id="输出运算符">输出运算符</h3>
+<p>输出运算符的第一个形参是一个非常量ostream对象的引用：向流写入内容会改变其状态，所以形参ostream是非常量，因为无法复制ostream对象所以形参ostream是引用。<br>
+第二个形参一般来说是一个常量的引用：引用避免复制实参，常量意味着输出操作不会改变对象的内容。<br>
+输出运算符尽量减少格式化操作。</p>
+<h3 id="输入运算符">输入运算符</h3>
+<p>输入运算符的第一个形参是运算符将要读取的流的引用，第二个形参是将要读入的非常量对象的引用。</p>
+<h2 id="算术和关系运算符">算术和关系运算符</h2>
+<p>可以把算术运算符和关系运算符定义成非成员函数，从而实现对左侧或者右侧对象的转换。</p>
+<h3 id="相等运算符">相等运算符</h3>
+<ol>
 <li>比较对象的每一个数据成员，只有对应的成员都相等时，才认为两个对象相等。</li>
 <li>一般定义了==操作，也应该定义!=操作。但是，实际上只有一个操作负责实际比较的操作，另一个运算符工作委托给他。</li>
 </ol>
-<h3 id="关系运算符"><a href="#关系运算符" class="headerlink" title="关系运算符"></a>关系运算符</h3><p>operator==的结果必须和opeartor&lt;的结果一致，即==为真的话，&lt;为假；&lt;为真，==就为假。</p>
-<h2 id="赋值运算符"><a href="#赋值运算符" class="headerlink" title="赋值运算符"></a>赋值运算符</h2><ol>
+<h3 id="关系运算符">关系运算符</h3>
+<p>operator==的结果必须和opeartor&lt;的结果一致，即==为真的话，&lt;为假；&lt;为真，==就为假。</p>
+<h2 id="赋值运算符">赋值运算符</h2>
+<ol>
 <li>赋值运算符必须定义为成员函数。</li>
 <li>复合赋值运算符不一定必须定义为类的成员。</li>
 <li>普通赋值和复合赋值都返回左侧运算对象的引用。</li>
 </ol>
-<h2 id="下标运算符"><a href="#下标运算符" class="headerlink" title="下标运算符"></a>下标运算符</h2><ol>
+<h2 id="下标运算符">下标运算符</h2>
+<ol>
 <li>下标运算符必须是成员函数。</li>
 <li>下标运算符通常需要定义两个版本，一个返回普通引用，另一个是类的常量成员，返回常量引用。</li>
 </ol>
-<h2 id="递增和递减运算符"><a href="#递增和递减运算符" class="headerlink" title="递增和递减运算符"></a>递增和递减运算符</h2><ol>
+<h2 id="递增和递减运算符">递增和递减运算符</h2>
+<ol>
 <li>自增自减运算符没有要求是成员函数，但是建议将其设定成成员函数。</li>
 <li>前置版本返回递增或者递减后对象的引用。</li>
 <li>重载无法区分后置和前置，后置版本接收一个额外的不被使用的int形参，进行区分。后置版本返回对象的原值，返回的是值而不是引用。</li>
 </ol>
-<h2 id="成员访问运算符"><a href="#成员访问运算符" class="headerlink" title="成员访问运算符"></a>成员访问运算符</h2><ol>
+<h2 id="成员访问运算符">成员访问运算符</h2>
+<ol>
 <li>箭头运算必须是成员函数，而解引用不必。</li>
 </ol>
-<h2 id="函数调用运算符"><a href="#函数调用运算符" class="headerlink" title="函数调用运算符"></a>函数调用运算符</h2><ol>
+<h2 id="函数调用运算符">函数调用运算符</h2>
+<ol>
 <li>函数调用运算符必须是成员函数。</li>
 <li>一个类可以定义多个不同版本的调用运算符。</li>
 <li>定义了函数调用运算符的类对象被称为函数对象，因为可以调用这种对象。</li>
 </ol>
-<h3 id="lambda是函数对象"><a href="#lambda是函数对象" class="headerlink" title="lambda是函数对象"></a>lambda是函数对象</h3><h3 id="标准库定义的函数对象"><a href="#标准库定义的函数对象" class="headerlink" title="标准库定义的函数对象"></a>标准库定义的函数对象</h3><p>标准库定义了算术，关系，逻辑类型的函数对象，它们都是模板，定义在functional头文件中：<br><img src="/2019/11/10/C-operator-overload/function_object.png" alt="function_object"></p>
-<h3 id="可调用对象和function"><a href="#可调用对象和function" class="headerlink" title="可调用对象和function"></a>可调用对象和function</h3><p>C++ 中的可调用对象：</p>
+<h3 id="lambda是函数对象">lambda是函数对象</h3>
+<h3 id="标准库定义的函数对象">标准库定义的函数对象</h3>
+<p>标准库定义了算术，关系，逻辑类型的函数对象，它们都是模板，定义在functional头文件中：<br>
+<img src="/2019/11/10/C-operator-overload/function_object.png" alt="function_object"></p>
+<h3 id="可调用对象和function">可调用对象和function</h3>
+<p>C++ 中的可调用对象：</p>
 <ol>
 <li>函数</li>
 <li>函数指针</li>
@@ -2015,18 +2434,23 @@
 <li>bind创建的对象</li>
 <li>重载了函数调用运算符的类</li>
 </ol>
-<p>可调用对象也有类型。比如每个lambda都有自己唯一的类型，函数和函数指针的类型由返回值类型和实参类型决定。<br>但是不同的可调用对象类型可能共享同一种调用形式，一种调用形式对应一个函数类型。</p>
-<h2 id="重载，类型转换与运算符"><a href="#重载，类型转换与运算符" class="headerlink" title="重载，类型转换与运算符"></a>重载，类型转换与运算符</h2><p>转换构造函数和类型转换运算符共同定义了类类型转换。</p>
-<h3 id="类型转换运算符"><a href="#类型转换运算符" class="headerlink" title="类型转换运算符"></a>类型转换运算符</h3><ol>
+<p>可调用对象也有类型。比如每个lambda都有自己唯一的类型，函数和函数指针的类型由返回值类型和实参类型决定。<br>
+但是不同的可调用对象类型可能共享同一种调用形式，一种调用形式对应一个函数类型。</p>
+<h2 id="重载-类型转换与运算符">重载，类型转换与运算符</h2>
+<p>转换构造函数和类型转换运算符共同定义了类类型转换。</p>
+<h3 id="类型转换运算符">类型转换运算符</h3>
+<ol>
 <li>类型转换运算符是类的一种特殊成员函数，它负责将一个类类型的值转换成其他类型，它的形式如下：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">operator</span> <span class="title">type</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br></pre></td></tr></table></figure></li>
 </ol>
 <p>这里的type是int, double等。</p>
-<ol>
+<ol start="2">
 <li><strong>类型转换运算符没有显式的返回类型，没有形参，必须声明为类的成员函数，而且不应该改变待转换对象的的内容，因此一般定义为const成员。</strong></li>
 <li>实践中很少定义类型转换运算符，因为用户会感觉很意外。</li>
 <li>通过加上explict关键字，必须使用static_cast显式调用才会进行类型转换。但是，当表达式用作条件时，显式的类型转换会被隐式的执行。</li>
 </ol>
-<h3 id="避免类型转换运算符产生的二义性"><a href="#避免类型转换运算符产生的二义性" class="headerlink" title="避免类型转换运算符产生的二义性"></a>避免类型转换运算符产生的二义性</h3><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》第五版</p>
+<h3 id="避免类型转换运算符产生的二义性">避免类型转换运算符产生的二义性</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》第五版</p>
 
           
         
@@ -2198,7 +2622,8 @@
       
         
           
-            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>除了构造函数外，一个类通过定义五种特殊的成员函数：</p>
+            <h2 id="概述">概述</h2>
+<p>除了构造函数外，一个类通过定义五种特殊的成员函数：</p>
 <ol>
 <li>拷贝构造函数</li>
 <li>拷贝赋值运算符</li>
@@ -2207,12 +2632,15 @@
 <li>析构函数</li>
 </ol>
 <p>控制类对象的拷贝，移动，赋值和销毁时执行的各种动作，这些操作称为拷贝控制操作（copy control)。</p>
-<h2 id="拷贝，赋值和销毁"><a href="#拷贝，赋值和销毁" class="headerlink" title="拷贝，赋值和销毁"></a>拷贝，赋值和销毁</h2><p>在含有指针数据成员的类中，通常需要定义拷贝构造函数，拷贝赋值运算符和析构函数。下面介绍一些它们的主要特点，学习它们通过例子更容易。</p>
-<h3 id="拷贝构造函数"><a href="#拷贝构造函数" class="headerlink" title="拷贝构造函数"></a>拷贝构造函数</h3><ol>
+<h2 id="拷贝-赋值和销毁">拷贝，赋值和销毁</h2>
+<p>在含有指针数据成员的类中，通常需要定义拷贝构造函数，拷贝赋值运算符和析构函数。下面介绍一些它们的主要特点，学习它们通过例子更容易。</p>
+<h3 id="拷贝构造函数">拷贝构造函数</h3>
+<ol>
 <li>拷贝构造函数通常不应该是explicit的。</li>
 <li>在含有指针数据成员的类中，默认的拷贝构造函数会失效。</li>
 <li>拷贝初始化和直接初始化的区别。使用<code>=</code>号初始化是拷贝初始化，不使用<code>=</code>号就是直接初始化。直接初始化时，实际上是根据传入的参数调用相应的构造函数，是函数匹配。而拷贝初始化是使用拷贝构造函数将右侧的对象拷贝到正在创建的对象那个。</li>
-<li>什么时候会用到拷贝构造函数：<ul>
+<li>什么时候会用到拷贝构造函数：
+<ul>
 <li>使用<code>=</code>初始化对象时；</li>
 <li>将一个对象作为实参传递给非引用的形参时</li>
 <li>将一个对象作为实参传递给一个非引用类型时；</li>
@@ -2221,16 +2649,22 @@
 </ul>
 </li>
 </ol>
-<h3 id="拷贝赋值函数"><a href="#拷贝赋值函数" class="headerlink" title="拷贝赋值函数"></a>拷贝赋值函数</h3><ol>
+<h3 id="拷贝赋值函数">拷贝赋值函数</h3>
+<ol>
 <li>在含有指针数据成员的类中，默认的赋值运算<code>=</code>只能将指针指向被拷贝元素的数据。</li>
 <li>赋值运算符通常应该返回一个指向其左侧运算对象的引用。</li>
 </ol>
-<h3 id="析构函数"><a href="#析构函数" class="headerlink" title="析构函数"></a>析构函数</h3><ol>
+<h3 id="析构函数">析构函数</h3>
+<ol>
 <li>释放对象使用的资源，销毁对象的非static数据成员。</li>
 <li>析构函数没有返回值，也不接受重载。</li>
 </ol>
-<h3 id="default"><a href="#default" class="headerlink" title="=default"></a><code>=default</code></h3><p><code>=default</code>将函数定义为合成的。只能对默认构造函数或者拷贝控制函数使用<code>=default</code>，<code>=default</code>可以出现在类外定义成员函数时。</p>
-<h3 id="阻止拷贝"><a href="#阻止拷贝" class="headerlink" title="阻止拷贝"></a>阻止拷贝</h3><p>有时候某些拷贝控制函数不需要定义，比如iostream类不能拷贝，以避免多个对象写入或者读取相同的IO缓冲。可以通过将拷贝构造函数和拷贝赋值函数定义为删除的函数阻止拷贝。<br>对于删除的函数：我们虽然声明了它们，但是不能以任何方式使用它们。在函数的参数列表之后加上<code>=delete</code>将函数定义为删除的，这会通知编译器，我们不希望定义这些成员。<code>=delete</code>必须出现在函数第一次声明的时候，而且除了析构函数之外的任何函数都可以指定<code>=delete</code>。对于析构函数来说，如果声明为<code>=delete</code>的，那么这个对象就不能被释放了。而对于除了拷贝控制和默认构造函数之外的其他函数，定义<code>=delete</code>就是多次一举了，如果你不需要，直接不定义就是了，但是实际上这种做法是合法的。<br><strong>合成的拷贝控制成员可能是删除的。</strong>如果一个类有一个数据成员不能默认构造，拷贝，复制或者销毁，则对应的成员函数被定义为删除的。比如：</p>
+<h3 id="default"><code>=default</code></h3>
+<p><code>=default</code>将函数定义为合成的。只能对默认构造函数或者拷贝控制函数使用<code>=default</code>，<code>=default</code>可以出现在类外定义成员函数时。</p>
+<h3 id="阻止拷贝">阻止拷贝</h3>
+<p>有时候某些拷贝控制函数不需要定义，比如iostream类不能拷贝，以避免多个对象写入或者读取相同的IO缓冲。可以通过将拷贝构造函数和拷贝赋值函数定义为删除的函数阻止拷贝。<br>
+对于删除的函数：我们虽然声明了它们，但是不能以任何方式使用它们。在函数的参数列表之后加上<code>=delete</code>将函数定义为删除的，这会通知编译器，我们不希望定义这些成员。<code>=delete</code>必须出现在函数第一次声明的时候，而且除了析构函数之外的任何函数都可以指定<code>=delete</code>。对于析构函数来说，如果声明为<code>=delete</code>的，那么这个对象就不能被释放了。而对于除了拷贝控制和默认构造函数之外的其他函数，定义<code>=delete</code>就是多次一举了，如果你不需要，直接不定义就是了，但是实际上这种做法是合法的。<br>
+**合成的拷贝控制成员可能是删除的。**如果一个类有一个数据成员不能默认构造，拷贝，复制或者销毁，则对应的成员函数被定义为删除的。比如：</p>
 <ol>
 <li>类的某个成员的析构函数      是删除的或不可访问的，类的合成析构函数被定义为删除的。</li>
 <li>类的某个成员的拷贝构造函数  是删除的或不可访问的，类的合成拷贝构造函数也被定义为删除的。</li>
@@ -2238,28 +2672,45 @@
 <li>类的某个成员的析构函数是删除的或者不可访问的，类的合成析构函数，合成默认构造函数，合成拷贝构造函数也被定义为删除的。</li>
 <li>类的某个成员是没有类内初始化器的引用，或者有一个没有类内初始化器的const成员，类的默认构造函数和合成拷贝赋值运算符被定义为删除的。</li>
 </ol>
-<h2 id="拷贝控制和资源管理"><a href="#拷贝控制和资源管理" class="headerlink" title="拷贝控制和资源管理"></a>拷贝控制和资源管理</h2><p>通过定义拷贝操作，可以使得类的行为看起来像一个值或者像一个指针。<br>类的行为像值，就是说拷贝一个像值的对象时，副本和原来的对象是完全独立的，改变副本不会对原来的对象有任何影响，反之亦然。<br>类的行为像指针，就是说拷贝一个向指针的对象时，副本和原来的对象使用相同的底层数据，改变副本也会影响原来的对象，反之亦然。</p>
-<h3 id="行为像值的类"><a href="#行为像值的类" class="headerlink" title="行为像值的类"></a>行为像值的类</h3><ol>
+<h2 id="拷贝控制和资源管理">拷贝控制和资源管理</h2>
+<p>通过定义拷贝操作，可以使得类的行为看起来像一个值或者像一个指针。<br>
+类的行为像值，就是说拷贝一个像值的对象时，副本和原来的对象是完全独立的，改变副本不会对原来的对象有任何影响，反之亦然。<br>
+类的行为像指针，就是说拷贝一个向指针的对象时，副本和原来的对象使用相同的底层数据，改变副本也会影响原来的对象，反之亦然。</p>
+<h3 id="行为像值的类">行为像值的类</h3>
+<ol>
 <li>定义拷贝构造函数，完成对象内容的拷贝，而不是指针的拷贝。</li>
 <li>定义拷贝赋值函数，需要考虑自赋值的情况。一般来说，拷贝赋值运算符组合了析构函数和拷贝构造函数的工作。</li>
 <li>定义析构函数，释放对象占用的空间。</li>
 </ol>
-<h3 id="行为像指针的类"><a href="#行为像指针的类" class="headerlink" title="行为像指针的类"></a>行为像指针的类</h3><p>通过引用计数来实现。</p>
-<h2 id="swap函数"><a href="#swap函数" class="headerlink" title="swap函数"></a><code>swap</code>函数</h2><p>这个的目的就是交换指针而不是交换对象内容。</p>
-<h2 id="对象移动"><a href="#对象移动" class="headerlink" title="对象移动"></a>对象移动</h2><p>移动而不是拷贝对象，可能会大幅度提高性能。比如vector在扩容的时候，将元素从旧内存拷贝到新内存是不必要的；另一方面，IO类或者unique_ptr等类，包含不能共享的资源，这些资源不能拷贝但是可以移动。<br>标准库容器，string和shared_ptr，即支持移动也支持拷贝。IO类和unique_ptr类可以移动但是不能拷贝。</p>
-<h3 id="右值引用"><a href="#右值引用" class="headerlink" title="右值引用"></a>右值引用</h3><ol>
+<h3 id="行为像指针的类">行为像指针的类</h3>
+<p>通过引用计数来实现。</p>
+<h2 id="swap函数"><code>swap</code>函数</h2>
+<p>这个的目的就是交换指针而不是交换对象内容。</p>
+<h2 id="对象移动">对象移动</h2>
+<p>移动而不是拷贝对象，可能会大幅度提高性能。比如vector在扩容的时候，将元素从旧内存拷贝到新内存是不必要的；另一方面，IO类或者unique_ptr等类，包含不能共享的资源，这些资源不能拷贝但是可以移动。<br>
+标准库容器，string和shared_ptr，即支持移动也支持拷贝。IO类和unique_ptr类可以移动但是不能拷贝。</p>
+<h3 id="右值引用">右值引用</h3>
+<ol>
 <li>右值引用只能绑定到临时对象，所以它有两个属性：它所引用的对象将要被销毁，并且该对象没有其他用户。</li>
-<li>左值引用不能绑定到要求转换的表达式，字面常量或者是返回右值的表达式。而右值引用可以绑定到上述三类表达式，但是不能将一个右值绑定到一个左值上。<br>返回左值表达式的例子：返回左值引用的函数，赋值，下标，解引用和前置递增递减运算符。可以将一个左值引用绑定到这类表达式的结果上。<br>返回右值表达式的例子：返回非引用类型的函数，算符，关系，位和后置递增递减运算符。不能将左值引用绑定到这类表达式上，但是可以将一个const的左值引用或者右值引用绑定到这类表达式上。</li>
+<li>左值引用不能绑定到要求转换的表达式，字面常量或者是返回右值的表达式。而右值引用可以绑定到上述三类表达式，但是不能将一个右值绑定到一个左值上。<br>
+返回左值表达式的例子：返回左值引用的函数，赋值，下标，解引用和前置递增递减运算符。可以将一个左值引用绑定到这类表达式的结果上。<br>
+返回右值表达式的例子：返回非引用类型的函数，算符，关系，位和后置递增递减运算符。不能将左值引用绑定到这类表达式上，但是可以将一个const的左值引用或者右值引用绑定到这类表达式上。</li>
 <li>变量是左值。变量可以看做只有一个运算对象而没有运算符的表达式。变量表达式都是左值。</li>
 <li>move函数。不能将一个右值引用直接绑定到左值上，但是可以使用utility头文件中的move函数将一个左值转换成对应的右值引用类型。</li>
 </ol>
-<h3 id="移动构造函数和移动赋值函数"><a href="#移动构造函数和移动赋值函数" class="headerlink" title="移动构造函数和移动赋值函数"></a>移动构造函数和移动赋值函数</h3><ol>
-<li>不抛出异常的移动构造函数和移动赋值运算符必须标记为noexcept。<br>移动操作通常不抛出异常，但是抛出异常也是允许的；当异常发生时，标准库容器能够为自身的行为提供保障。比如，vector保证，调用push_back发生异常时，vector自身不会改变。所以，在调用push_back需要重新分配内存时，使用拷贝构造函数抛出异常时，会保证原来的vector不受影响，但是如果调用能够抛出异常的移动构造函数，在调用失败的时候，原来的vector会受到影响，不能保证vector自身不变。<br>所以，只有将移动构造函数声明为noexcept时，明确说明调用移动构造函数不会抛出异常，在vector扩容重新进行内存分配的时候，才会使用拷贝构造函数。</li>
+<h3 id="移动构造函数和移动赋值函数">移动构造函数和移动赋值函数</h3>
+<ol>
+<li>不抛出异常的移动构造函数和移动赋值运算符必须标记为noexcept。<br>
+移动操作通常不抛出异常，但是抛出异常也是允许的；当异常发生时，标准库容器能够为自身的行为提供保障。比如，vector保证，调用push_back发生异常时，vector自身不会改变。所以，在调用push_back需要重新分配内存时，使用拷贝构造函数抛出异常时，会保证原来的vector不受影响，但是如果调用能够抛出异常的移动构造函数，在调用失败的时候，原来的vector会受到影响，不能保证vector自身不变。<br>
+所以，只有将移动构造函数声明为noexcept时，明确说明调用移动构造函数不会抛出异常，在vector扩容重新进行内存分配的时候，才会使用拷贝构造函数。</li>
 <li>合成的移动操作。如果一个类定义了自己的拷贝构造函数，拷贝赋值运算符或者析构函数，编译器就不会为它合成移动构造函数和移动赋值运算符。当一个类没有定义任何自己版本的拷贝控制函数，并且类的每个非static数据成员都可以移动时，才会合成移动构造函数或者移动赋值函数。</li>
 <li>如果类定义了一个移动构造函数或者一个移动赋值运算符，类的合成拷贝构造函数和合成拷贝赋值运算符会被定义成删除的。</li>
 </ol>
-<h3 id="成员函数和右值引用"><a href="#成员函数和右值引用" class="headerlink" title="成员函数和右值引用"></a>成员函数和右值引用</h3><h4 id="成员函数的参数可以是左值或右值"><a href="#成员函数的参数可以是左值或右值" class="headerlink" title="成员函数的参数可以是左值或右值"></a>成员函数的参数可以是左值或右值</h4><p>除了构造函数和赋值运算符之外，一个成员函数也可以同时提供拷贝和移动版本：一个版本接收一个指向const的左值引用，一个版本接收一个指向非const的右值引用。</p>
-<h4 id="左值或者右值调用成员函数"><a href="#左值或者右值调用成员函数" class="headerlink" title="左值或者右值调用成员函数"></a>左值或者右值调用成员函数</h4><ol>
+<h3 id="成员函数和右值引用">成员函数和右值引用</h3>
+<h4 id="成员函数的参数可以是左值或右值">成员函数的参数可以是左值或右值</h4>
+<p>除了构造函数和赋值运算符之外，一个成员函数也可以同时提供拷贝和移动版本：一个版本接收一个指向const的左值引用，一个版本接收一个指向非const的右值引用。</p>
+<h4 id="左值或者右值调用成员函数">左值或者右值调用成员函数</h4>
+<ol>
 <li>C++ 可以对右值进行赋值。C++ 11中可以阻止这种用法，通过<strong>引用限定符</strong>强制左侧运算对象是一个左值。</li>
 <li>在参数列表后放置一个引用修饰符，&amp;或者&amp;&amp;，分别指出this可以指向一个左值或者右值。</li>
 <li>类似const限定符，引用限定符只能用于非static的成员函数，并且需要同时出现在声明和定义中。</li>
@@ -2267,219 +2718,8 @@
 <li>一个函数既可以用const也可以用引用限定，当它们同时出现时，引用限定符必须跟随在const限定符之后。</li>
 <li>引用限定符可以区分重载函数。当出现两个或者两个以上具有相同名字或者参数列表的函数时，必须同时有引用修饰符或者同时没有。</li>
 </ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》第五版</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/10/C-dyncamic-memory/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/10/C-dyncamic-memory/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/9/index.html">C++ dyncamic memory</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-10 12:39:41" itemprop="dateCreated datePublished" datetime="2019-11-10T12:39:41+08:00">2019-11-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2020-02-21 23:54:22" itemprop="dateModified" datetime="2020-02-21T23:54:22+08:00">2020-02-21</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>每一个C程序都把内存划分成静态内存，栈内存，堆内存（自由空间）。静态内存存放局部static对象，类的static数据成员以及定义在任何函数之外的变量。栈存放函数内的非static对象。堆内存是由程序员自己负责管理（申请和释放）的内存。</p>
-<h2 id="动态内存和智能指针"><a href="#动态内存和智能指针" class="headerlink" title="动态内存和智能指针"></a>动态内存和智能指针</h2><p>C++ 中动态内存的管理是通过一对运算符<code>new</code>和<code>delete</code>实现的。<code>new</code>在动态内存中为对象分配空间，并且返回一个指向该对象的指针，可以选择对对象进行初始化；<code>delete</code>接收一个动态对象的指针，销毁该对象，释放和它相关的内存。</p>
-<p>动态内存很难管理，有时候忘记释放内存，会产生内存泄露；有时候在有指针引用内存的情况下就释放了它，这种情况下产生非法引用的内存。<br>C++ 提供了两种智能指针，<code>shared_ptr</code>和<code>unique_ptr</code>管理动态对象。智能指针也是模板。因此，在创建智能指针的时候，需要提供类型信息。<br><code>shared_ptr</code>允许多个指针指向一个对象，而<code>unique_ptr</code>则独占所指向的对象。<br>下面是<code>shared_ptr</code>和<code>unique_ptr</code>都支持的一些操作：<br><img src="/2019/11/10/C-dyncamic-memory/smart_pointer.png" alt="smart_pointer"></p>
-<h2 id="shared-ptr"><a href="#shared-ptr" class="headerlink" title="shared_ptr"></a><code>shared_ptr</code></h2><p><img src="/2019/11/10/C-dyncamic-memory/shared_pointer.png" alt="shared_ptr"></p>
-<ol>
-<li><code>shared_ptr</code>的声明和创建</li>
-<li><code>make_shared</code>创建一个指针。</li>
-<li><code>shared_ptr</code>的拷贝和赋值，引用计数。修改引用计数的几种情况：<ul>
-<li>拷贝一个<code>shared_ptr</code>，比如用一个<code>shared_ptr</code>初始化另一个，值传参，返回值等情况，引用计数增加。</li>
-<li>给<code>shared_ptr</code>赋一个新值，引用计数减少。</li>
-<li>shared_ptr被销毁时，引用计数减少。</li>
-</ul>
-</li>
-<li>通过析构函数自动销毁它管理的对象。</li>
-</ol>
-<h2 id="new"><a href="#new" class="headerlink" title="new"></a><code>new</code></h2><h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><ol>
-<li>默认初始化。<code>new</code>后面加类型，没有小括号，也没有花括号。<br>默认情况下，new分配的对象，不管是单个分配的还是数组中的，都是默认初始化的。这意味着内置类型或组合类型的对象的值是无定义的，而类类型对象将用默认构造函数进行初始化。</li>
-<li>值初始化。类型名字后加()即可，对于内置类型的变量，初始化为0，对于类类型的变量，调用默认构造函数。</li>
-<li>直接初始化。使用初始化列表加对象值，或者小括号加对象值。</li>
-</ol>
-<p>对于自定义类型而言，只要一调用new，无论后面有没有加()，那么编译器不仅仅给它分配内存，还调用它的默认构造函数初始化。</p>
-<p>还有auto初始化器。</p>
-<h3 id="内存耗尽"><a href="#内存耗尽" class="headerlink" title="内存耗尽"></a>内存耗尽</h3><p>使用placement new（定位new），当内存耗尽时，防止new抛出bad_alloc异常。</p>
-<h2 id="shared-ptr和new"><a href="#shared-ptr和new" class="headerlink" title="shared_ptr和new"></a><code>shared_ptr</code>和<code>new</code></h2><ol>
-<li>定义和改变shared_ptr的其他方法，shared_ptr对象还有其他几个构造函数，分别接收内置指针，unique_ptr，以及内置指针和内置指针的删除器，shared_ptr对象和它的删除器这几类参数。<strong>接收内置指针参数的shared_ptr的构造函数是explict的，也就是必须显式调用构造函数，不能使用隐式转换将一个内置指针转换成shared_ptr。</strong></li>
-<li><strong>当把一个shared_ptr指针绑定到一个普通指针时，接下来不应该再使用内置指针访问这部分内存了。</strong></li>
-<li><strong>也不要使用shared_ptr的get()函数返回的指针初始化另一个智能指针或者为智能指针赋值。同时也不能使用delete删除get()返回的指针，否则会发生二次delete。</strong></li>
-<li>p.reset()函数可以用来重置指针p，如果p是指向shared_ptr的唯一对象，会将p原本指向的对象释放；如果没有传入参数，p置为空；如果传入了参数q，让p指向q；还可以传递一个d，表示调用d而不是delete释放q。</li>
-<li>copy on write可以通过shared_ptr实现？？？使用unique()函数检测是否自己是当前的shared_ptr的唯一用户，不是的话，调用reset()函数拷贝一个新的。</li>
-</ol>
-<h2 id="智能指针和异常"><a href="#智能指针和异常" class="headerlink" title="智能指针和异常"></a>智能指针和异常</h2><h3 id="智能指针和哑类"><a href="#智能指针和哑类" class="headerlink" title="智能指针和哑类"></a>智能指针和哑类</h3><h3 id="使用自己的释放操作"><a href="#使用自己的释放操作" class="headerlink" title="使用自己的释放操作"></a>使用自己的释放操作</h3><p>shared_ptr假设它们指向的内容是动态内存，当它被销毁时，调用delete。我们可以自己定义一个删除器，取代delete的调用。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">end_connection</span><span class="params">(connection *p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    disconnect(*p);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    connection c = connect(&amp;d);</span><br><span class="line">    <span class="built_in">shared_ptr</span>&lt;connection&gt; p(&amp;c, end_connection);</span><br><span class="line">    <span class="comment">// 创建一个connection类型的智能指针，构造函数的参数是一个内置的指针类型和一个调用函数。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="unique-ptr"><a href="#unique-ptr" class="headerlink" title="unique_ptr"></a><code>unique_ptr</code></h2><p><img src="/2019/11/10/C-dyncamic-memory/unique_pointer.png" alt="unique_ptr"></p>
-<h2 id="weak-ptr"><a href="#weak-ptr" class="headerlink" title="weak_ptr"></a><code>weak_ptr</code></h2><p><code>weak_ptr</code>不控制指向对象的生存周期，它指向一个shared_ptr管理的对象，将一个weak_ptr绑定到shared_ptr不增加引用计数。<br><img src="/2019/11/10/C-dyncamic-memory/weak_ptr.png" alt="weak_ptr"></p>
-<h2 id="new和数组"><a href="#new和数组" class="headerlink" title="new和数组"></a><code>new</code>和数组</h2><h3 id="初始化-1"><a href="#初始化-1" class="headerlink" title="初始化"></a>初始化</h3><ol>
-<li><code>new int[]</code>，默认初始化。</li>
-<li><code>new int[]()</code>，值初始化。但是不能在括号中给出初始化器，也就是不能用auto分配数组。</li>
-<li><code>new int[10]{1, 2, 3}</code>，列表初始化。</li>
-</ol>
-<h3 id="动态分配空数组"><a href="#动态分配空数组" class="headerlink" title="动态分配空数组"></a>动态分配空数组</h3><p>动态分配一个空数组是允许的，但是不能解引用。<br>而定义一个长度为0的数组是不允许的。</p>
-<h3 id="智能指针和动态数组"><a href="#智能指针和动态数组" class="headerlink" title="智能指针和动态数组"></a>智能指针和动态数组</h3><p><code>unique_ptr</code>有一个可以管理new分配的数组的版本。而shared_ptr没有相应的版本，如果想要使用<code>shared_ptr</code>管理数组，需要提供自己定义的删除器。</p>
-<h2 id="allocate类"><a href="#allocate类" class="headerlink" title="allocate类"></a>allocate类</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》第五版</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》第五版</p>
 
           
         
@@ -2570,7 +2810,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">328</span>
+                    <span class="site-state-item-count">329</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
