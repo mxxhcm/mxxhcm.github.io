@@ -25,8 +25,8 @@ const可以用来区分重载。
 const常量有数据类型，而宏常量没有。编译器可以对前者进行安全检查，对后者只能进行字符替换。
 
 ## inline[10,11]
-1. 为什么引入inline？减少函数调用的开销。
-2. inline只适合函数体代码简单的函数使用，不能有循环等语句。
+1. 为什么引入inline？避免函数调用的开销，比如说参数入栈，出栈。
+2. inline只适合函数体代码简单的函数使用，不能有循环等语句。适用于规模小，流程直接，频繁调用。
 3. 用inline声明的函数并不一定会inline，取决于编译器。
 4. 建议inline函数的定义放在头文件中。
 5. 类内定义的函数是隐式的inline函数。
@@ -35,7 +35,8 @@ const常量有数据类型，而宏常量没有。编译器可以对前者进行
 
 ## inline和宏函数的区别
 1. 宏函数是由预处理器对宏进行替换，而内联函数是通过编译器控制的。
-2. 内联函数是函数，只不过在调用的时候像宏一样展开，减少函数调用。
+2. 内联函数是函数，会进行参数检查。只不过在调用的时候像宏一样展开，减少函数调用。
+3. 宏是不安全的，而内联是安全的。
 
 
 ## 指针函数和函数指针
@@ -286,6 +287,8 @@ new一个空数组是和合法的，但是不能解引用！！！可以把它�
 ### placement new
 重载operator new函数。placement new可以为分配函数提供额外的信息。
 Placement new允许我们将对象构造在已经分配好的内存上，分配好的内存不一定是operator new分配的内存，甚至可以是静态内存。
+allocator的内存分配和构造函数的调用是分开进行的，通过两个函数allocate和construct。
+对应于new，可以使用operator new进行空间分配，使用placement new调用构造函数。
 
 ## 对齐
 gcc 默认对齐是4字节对齐。在结构体中要注意。
@@ -333,15 +336,21 @@ auto f = [local variable](int x){return a;};
 
 ## 数据结构相关
 ### 堆
-二叉堆是完全二叉树，可以用数组实现。最大堆就是每个根节点的值大于其子节点的值，最小堆就是每个根节点的值小于其子节点的值。
+**二叉堆是完全二叉树，一般可以用数组实现**。最大堆就是每个根节点的值大于其子节点的值，最小堆就是每个根节点的值小于其子节点的值。
 
-#### heap相关的算法
-- push，将新的节点插在最后一个位置。
+#### SGI STL heap相关的算法
+- push_heap，将新的节点插在最后一个位置。
+- pop_heap，弹出最大堆的堆顶元素。（或者就是heapify）
+- sort_heap，就是排序。
+- make_heap，创建一个最大堆。
+
+#### 优先队列
+底层实现是二叉堆，总是弹出key最大的元素。
 
 ### 哈希和哈希表
 
 #### 什么是哈希
-哈希：把任意长度的输入，变成固定长度的输出，这个映射的规则就是对应的哈希算法，原始数据映射后的输出叫做哈希值(key)。哈希值(key)存在的目的是加速key-value的查找速度。
+哈希：把任意长度的输入，变成固定长度的输出，这个映射的规则就是对应的哈希算法，原始数据映射后的输出叫做哈希值。哈希值存在的目的是加速key-value的查找速度。
 哈希常见的几种实现方式：顺序，链式，散列，索引。哈希表是其中的一种。
 注意把哈希和哈希表区分开来。
 
@@ -453,6 +462,9 @@ info locals，查看当前帧中的局部变量。
 continue
 step
 
+## 移动语义和右值引用[16]
+移动语义，是为了避免无用的复制开销。右值引用的出现，让移动语义变得可能。将指针指向的内存直接拿过来使用。
+Move semantics is a new way of moving resources around in an optimal way by avoiding unnecessary copies of temporary objects, based on rvalue references. In my opinion, the best way to understand what move semantics is about is to build a wrapper class around a dynamic resource (i.e. a dynamically allocated pointer) and keep track of it as it moves in and out functions. Keep in mind however that move semantics does not apply only to classes!
 
 ## 参考文献
 1.https://stackoverflow.com/questions/57483/what-are-the-differences-between-a-pointer-variable-and-a-reference-variable-in
@@ -470,3 +482,4 @@ step
 13.https://www.cnblogs.com/findumars/p/6358194.html
 14.https://blog.csdn.net/kikajack/article/details/92829582
 15.https://en.cppreference.com/w/cpp/utility/hash
+16.https://www.internalpointers.com/post/c-rvalue-references-and-move-semantics-beginners

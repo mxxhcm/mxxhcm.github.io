@@ -43,6 +43,11 @@ git remote add origin git@github.com:mxxhcm/**.git # 添加ssh连接方式
 git push --set-upstream origin master
 git remote -v  # 再次查看远程连接的方式
 ```
+## git的区域
+git的区域分为工作区，git一个项目后，能看到的目录，不包含.git目录。
+.git所在目录是版本库，版本库包含叫做stage的暂存区。以及创建的各个branch。
+git add 操作的是暂存区。
+git commit是把暂存区的所有东西提交到当前的branch。
 
 ## 分支管理
 ~$:git branch dev 创建分支
@@ -79,6 +84,7 @@ commit xxxxxx
 git revert会提交一个新的版本，将回退当做新的一个push，之前的内容都会保留。
 
 ## git pull和git fetch区别
+
 
 ## 参考文献
 1.https://blog.csdn.net/kongbaidepao/article/details/52253774
