@@ -327,6 +327,1079 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/21/UNIX-file-and-directory/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/21/UNIX-file-and-directory/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">UNIX file and directory</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-21 10:18:13" itemprop="dateCreated datePublished" datetime="2019-11-21T10:18:13+08:00">2019-11-21</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 16:33:44" itemprop="dateModified" datetime="2019-12-17T16:33:44+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述">概述</h2>
+<p>这一节主要介绍文件系统和文件的一些属性，这些属性都存在<code>stat</code>函数给出的<code>struct stat</code>结构体中，<code>struct stat</code>的部分字段如下所示，接下来的小节会对这些字段进行详细的介绍：</p>
+<h3 id="struct-stat"><code>struct stat</code></h3>
+<p>这个结构体包括：</p>
+<ol>
+<li><code>mode_t st_mode;</code> 文件类型和文件权限控制</li>
+<li><code>ino_t st_ino;</code> 文件存放的i-node号</li>
+<li><code>dev_t st_dev;</code> 文件所在文件系统的设备号</li>
+<li><code>dev_t st_rdev;</code> 特殊文件所在文件系统的设备号</li>
+<li><code>nlink_t st_nlink;</code> 链接到文件指向的i-node节点的数量，即hardlink</li>
+<li><code>uid_t st_uid;</code> 文件所有者的UID</li>
+<li><code>gid_t st_gid;</code> 文件所有者的GID</li>
+<li><code>off_t st_size;</code> 普通文件的字节数</li>
+<li><code>struct timespec st_atime;</code> 最后一次access文件内容的时间</li>
+<li><code>struct timespec st_mtime;</code> 最后一个modification文件内容的时间</li>
+<li><code>struct timespec st_ctime;</code> 最后一次文件i-node 内容change的时间</li>
+<li><code>blksize_t st_blksize;</code> 最合适的I/O block size</li>
+<li><code>blkcnt_t st_blocks;</code> 分配了多少个disk blocks</li>
+</ol>
+<h2 id="文件系统">文件系统</h2>
+<p>UNIX文件系统有多种实现，比如基于BSD的UNIX文件系统(UFS)，linux的ext4文件系统，以及Mac OS X的HFS文件系统。本节拿UFS举例子。<br>
+一个磁盘可以有一个或者多个partition，每个partition可以包含文件系统也可以不包含。对于UFS文件系统，它由boot blocks，super block，cylinder groups组成。每一个cylinder group由super block copy, config info, i-node图，block bitmap以及i-nodes和data blocks组成。i-node节点是固定长度的记录项，它包含有关文件的大部分信息。</p>
+<ol>
+<li>i-node节点包含了文件的：文件类型，文件访问权限，文件长度，和指向文件数据的指针等，<code>stat</code>绝大部分的数据都取自i-node。</li>
+<li>data blocks中存放实际的数据，包含data blocks和directory blocks。data blocks存放文件的实际数据。目录也是文件，directory blocks也是data block，只不过它是存放目录文件中所有directory entry(目录项)的data blcok，一个directory entroy包括文件名和i-node编号。i-node节点编号的数据类型是<code>ino_t</code>。</li>
+<li>hard links：在每一个i-node中，都有一个链接计数，记录指向它的目录项个数，POSIX.1常量<code>LINK_MAX</code>指定了一个文件连接数的最大值。链接计数可以从<code>st_nlink</code>中得到，类型是<code>nlink_t</code>。hard link创建一个新的目录项指向链接目标的i-node节点，删除原来的目录项对新的目录项没有影响。只有当指向i-node节点的链接数等于0时且没有进程使用该文件时，可以删除该文件。</li>
+<li>symbolic links：symbolic links文件的实际内容，也就是存储在data blocks中的内容，是该symbolic link指向的文件的名字。symbolic link和hard link不一样，它有自己的i-node号，删除它指向的文件，这个symbolic link会失效，变成一个dead link。它的文件类型是<code>S_IFLNK</code>。</li>
+<li>一个目录项不能指向另一个文件系统的i-node，所以hard link不能跨越文件系统。</li>
+<li>在不更换文件系统的情况下为一个文件重命名的话。文件的实际内容没有变，只是构造了一个新的目录项，它的i-node就是待重命名的文件，然后删除老的目录项。链接的计数并不会改变，这就是<code>mv</code>命令的工作方式。</li>
+<li>i-node节点指向的数据块也可以存放目录项，在i-node的<code>st_mode</code>中可以确定它的类型是<code>S_IFDIR</code>。创建一个名为<code>testdir</code>的空目录，它的链接计数是2，一个是<code>.</code>目录，一个是<code>testdir</code>。<code>testdir</code>的上一级目录，它的链接计数是3（假设上一级目录只包含<code>testdir</code>），一个是这个目录的名字，一个是<code>.</code>，一个是<code>testdir</code>中的<code>..</code>。</li>
+</ol>
+<p>关于linux文件系统，可以查看<a href="https://mxxhcm.github.io/2019/05/07/linux-file-system/">linux file system</a>.</p>
+<h3 id="设备特殊文件">设备特殊文件</h3>
+<p>这一小节主要介绍<code>st_dev</code>和<code>st_rdev</code>字段。</p>
+<ol>
+<li>每个文件系统所在的存储设备都由其主次设备号表示。设备号所用的数据类型是基本系统数据类型<code>dev_t</code>。主设备号标识设备驱动程序，次设备号标识特定的子设备。一个磁盘驱动器通常可以包含多个文件系统，同一个磁盘上的文件系统通常具有相同的主设备号，但是次设备号却不同。</li>
+<li>每个文件名中的<code>st_dev</code>是存放该文件名和其对应i节点的文件系统的设备号。</li>
+<li>可以使用两个宏<code>major</code>和<code>minor</code>访问主，次设备号，它们的参数都是<code>st_dev</code>。POSIX.1说明<code>dev_t</code>类型存在，但是没有定义它是什么，具体取值与实现相关。</li>
+<li>只有字符特殊文件和块特殊文件才有<code>st_rdev</code>值，同样使用<code>major</code>和<code>minor</code>两个宏访问相应的主次设备号。</li>
+<li>块特殊文件是包含随机访问文件系统的设备，比如硬盘驱动器，软盘驱动器和CD-ROM以及磁带等。</li>
+</ol>
+<h2 id="文件类型">文件类型</h2>
+<p>文件类型信息包含在<code>struct stat</code>的<code>st_mode</code>字段中。UNIX系统的文件类型有以下几种：</p>
+<ol>
+<li>普通文件，可以是二进制文件，也可以是文本文件。除了二进制可执行文件必须遵循标准化格式外，其他的文件对于UNIX内核来说基本上没有区别。使用<code>S_ISREG</code>宏进行判断。</li>
+<li>目录文件，包含了其他文件的名字，以及指向这些文件有关信息的指针。对一个目录具有读权限的任意进程都可以读目录的内容，但是只有内核才可以直接写目录文件。使用<code>S_ISDIR</code>宏进行判断。</li>
+<li>block special file，提供对设备带缓冲的访问，每次访问以固定的长度进行。使用<code>S_ISBLK</code>宏进行判断。</li>
+<li>character special file，提供对设备不带缓冲的访问，每次访问长度可变。系统中的设备要么是block special file要是character special file。使用<code>S_ISCHR</code>宏进行判断。</li>
+<li>FIFO，用于进程间通信。使用<code>S_ISFIFO</code>宏进行判断。</li>
+<li>socket，用于进程间的网络通信。使用<code>S_ISSOCK</code>宏进行判断。</li>
+<li>symbolic link，指向另一个文件。使用<code>S_ISLNK</code>宏进行判断。</li>
+</ol>
+<h2 id="stat-fstat-fstatat-lstat"><code>stat</code>, <code>fstat</code>, <code>fstatat</code>, <code>lstat</code></h2>
+<p>可以通过<code>stat</code>等函数获得文件（各类文件）的<code>struct stat</code>结构体，它们的原型如下：</p>
+<h3 id="函数原型">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">stat</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, struct stat *statbuf)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fstat</span><span class="params">(<span class="keyword">int</span> fd, struct stat *statbuf)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">lstat</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, struct stat *statbuf)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fstatat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, struct stat *statbuf, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="性质">性质</h3>
+<ol>
+<li><code>stat</code>将pathname指定的文件的有关信息存在放在<code>statbuf</code>中</li>
+<li><code>fstat</code>将文件描述符指定的文件的有关信息存在放在<code>statbuf</code>中</li>
+<li><code>lstat</code>和<code>stat</code>类似，但是当文件是一个symbolic link时，<code>lstat</code>返回symbolic link相关的信息，<code>stat</code>返回的是symbolic link链向的文件。</li>
+<li><code>fstatat</code>相当于将前三个函数进行了整合：<br>
+当<code>dirfd</code>设置为<code>AT_FDCWD</code>时或者pathname是绝对路径时，设置<code>AT_SYSLINK_NOFOLLOW</code> flags时，相当于<code>lstat</code>。<br>
+当<code>dirfd</code>设置为<code>AT_FDCWD</code>时或者pathname是绝对路径时，<code>AT_SYSLINK_NOFOLLOW</code> flags不进行设置时，相当于<code>stat</code>。<br>
+当<code>dirfd</code>既不是<code>AT_FDCWD</code>而且pathname不是绝对路径时，就是<code>fstatat</code>处理的情况了。</li>
+</ol>
+<h2 id="hard-link和函数link-linkat-unlink-unlinkat和remove">hard link和函数<code>link</code>, <code>linkat</code>, <code>unlink</code>, <code>unlinkat</code>和<code>remove</code></h2>
+<p>任何一个文件可以有多个目录项指向它的i-node节点。可以使用<code>link</code>和<code>linkat</code>创建hard link，使用<code>unlink</code>和<code>unlinkat</code>, <code>remove</code>删除hard link。</p>
+<h3 id="hard-link的特点">hard link的特点</h3>
+<ol>
+<li>使用hard link链接的文件具有相同的inode和data block。</li>
+<li>删除一个hard link不会影响其他具有相同inode号的文件。</li>
+<li>只能对已经存在的文件创建hard link。</li>
+<li>不能跨越文件系统创建hard link，因为每个文件系统的i-node节点都是单独的。</li>
+<li>不能对目录创建hard link，可能会形成循环。</li>
+</ol>
+<h3 id="link和linkat的函数原型"><code>link</code>和<code>linkat</code>的函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">link</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *oldpath, <span class="keyword">const</span> <span class="keyword">char</span> *newpath)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">linkat</span><span class="params">(<span class="keyword">int</span> olddirfd, <span class="keyword">const</span> <span class="keyword">char</span> *oldpath, <span class="keyword">int</span> newdirfd, <span class="keyword">const</span> <span class="keyword">char</span> *newpath, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="link和linkat的函数性质"><code>link</code>和<code>linkat</code>的函数性质</h3>
+<ol>
+<li><code>link</code>和<code>linkat</code>应该是原子操作。</li>
+<li><code>linkat</code>和<code>link</code>类似。</li>
+</ol>
+<h3 id="unlink和unlinkat的函数原型"><code>unlink</code>和<code>unlinkat</code>的函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">unlink</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">unlinkat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="unlink和unlinkat的函数性质"><code>unlink</code>和<code>unlinkat</code>的函数性质</h3>
+<ol>
+<li>如果<code>pathname</code>是hard link，这两个函数删除<code>pathname</code>的相应目录项，将<code>pathname</code>指向文件的i-node的链接数减一。</li>
+<li>如果<code>pathname</code>是symbolic link，<code>unlink</code>删除的是symbolic link本身，而不follow它。</li>
+<li>给出symbolic link时，没有任何函数能够删除symbolic link指向的文件。</li>
+<li>如果链接数等于0，并且内核检查打开该文件的进程个数，如果它们都等于0。<code>unlink</code>会删除这个文件。如果链接数或者打开文件的进程个数大于0，不会对文件做修改。</li>
+<li><code>unlinkat</code>和<code>unlink</code>类似。</li>
+</ol>
+<h3 id="remove的函数原型"><code>remove</code>的函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">remove</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="remove的函数性质"><code>remove</code>的函数性质</h3>
+<ol>
+<li><code>remove</code>可以解除对文件或者目录的hard link。</li>
+<li>作用于目录时，<code>remove</code>相当于<code>rmdir</code>。</li>
+<li>作用于文件时，<code>remove</code>相当于<code>unlink</code>。</li>
+</ol>
+<h2 id="symbolic-link和函数symlink-symbolinkat-readlink-readlinkat">symbolic link和函数<code>symlink</code>,<code>symbolinkat</code>, <code>readlink</code>, <code>readlinkat</code></h2>
+<p>hard links有一些限制：</p>
+<ol>
+<li>链接和文件必须处于同一文件系统中，</li>
+<li>只有root用户才能创建指向目录的链接。</li>
+</ol>
+<h3 id="symbolic-link的特点">symbolic link的特点</h3>
+<p>而symbolic link可以避开hard link的这些限制。</p>
+<ol>
+<li>symbolic可以看成文件的间接指针，它有自己的文件属性和权限，有自己的i-node号和data block，而所有指向一个i-node节点的hard link拥有相同的i-node。</li>
+<li>symbolic link对于它指向的对象没有任何文件系统的限制，任何用户都可以创建指向目录的symbolic link。</li>
+<li>使用文件名字为参数调用文件函数时，需要知道这个函数是否处理symbolic link的。如果函数具有处理symbolic link的功能，那么它处理的是symbolic link指向的文件，否则它直接处理这个symbolic link本身。<br>
+如下所示，是常见的函数是否处理symbolic link，<code>fstat</code>和<code>fchmod</code>因为处理的是文件描述符，这个文件描述符是否是symbolic link本身通常是由<code>open</code>决定的。<br>
+<code>access</code>,<code>chdir</code>, <code>chmod</code>, <code>chown</code>，<code>creat</code>, <code>exec</code>, <code>link</code>, <code>open</code>, <code>opendir</code>, <code>pathconf</code>, <code>stat</code>, <code>truncate</code>跟随symbolic link。<br>
+<code>lchown</code>,<code>lstat</code>, <code>readlink</code>, <code>remove</code>, <code>rename</code>, <code>unlink</code>不跟随symbolic link。</li>
+<li>使用symbolic link可能在文件系统中引入循环。<code>unlink</code>不跟随symbolic link，所以使用<code>unlink</code>消除symbolic link。但是hard link的循环很难消除。这也是为什么<code>link</code>函数不允许构造指向目录的hard link的原因。</li>
+<li>symbolic link可以指向系统中并不存在的文件。所以<code>creat</code>的参数可以是symbolic link。</li>
+</ol>
+<p>创建和读取symbolic link的函数原型如下：</p>
+<h3 id="symlink和symlinkat函数原型"><code>symlink</code>和<code>symlinkat</code>函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">symlink</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *target, <span class="keyword">const</span> <span class="keyword">char</span> *linkpath)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">symlinkat</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *target, <span class="keyword">int</span> newdirfd, <span class="keyword">const</span> <span class="keyword">char</span> *linkpath)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="symlink和symlinkat函数性质"><code>symlink</code>和<code>symlinkat</code>函数性质</h3>
+<ol>
+<li><code>linkpath</code>和<code>target</code>不需要在同一个文件系统，而且<code>target</code>甚至可以不存在</li>
+<li><code>symlinkat</code>和<code>symlink</code>类似。</li>
+</ol>
+<h3 id="readlink和readlinkat函数原型"><code>readlink</code>和<code>readlinkat</code>函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ssize_t</span> readlink(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">char</span> *buf, <span class="keyword">size_t</span> bufsiz);</span><br><span class="line"><span class="keyword">ssize_t</span> readlinkat(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">char</span> *buf, <span class="keyword">size_t</span> bufsiz);</span><br></pre></td></tr></table></figure>
+<h3 id="readlink和readlinkat函数性质"><code>readlink</code>和<code>readlinkat</code>函数性质</h3>
+<ol>
+<li><code>open</code>函数跟随symbolic link，而<code>readlink</code>打开symbolic link本身，并且读取symbolic link中的名字</li>
+<li><code>readlink</code>组合了<code>open</code>,<code>close</code>和<code>read</code>的所有操作。如果函数成功执行，返回读入buf的字节数。</li>
+<li><code>readlinkat</code>和<code>readlink</code>类似。</li>
+</ol>
+<h2 id="和进程相关的uid和gid">和进程相关的UID和GID</h2>
+<p>每一个进程有6个或者更多和它相关的ID：</p>
+<h3 id="实际uid和gid">实际UID和GID</h3>
+<p>real UID和real GID，用来表示当前用户。</p>
+<h3 id="有效uid和gid">有效UID和GID</h3>
+<p>effective UID和effective UID，决定我们的文件访问权限。通常情况下，effective UID以及effective GID和real UID以及real GID一样。</p>
+<h3 id="set-user-id和set-group-id">Set-User-ID和Set-Group-ID</h3>
+<p>saved set-user-ID和saved set-group-ID，在执行一个程序时，包含了有效user ID和有效group ID的副本。<br>
+每一个文件都有一个UID和GID，它们的值在<code>st_uid</code>和<code>st_gid</code>中。<br>
+当执行一个程序文件时，进程的effective UID通常就是real UID，而effective GID通常就是real GID。但是可以在<code>st_mode</code>中设置一个特殊的flag，意思是当执行此文件时，将执行此文件的进程的effective UID设置为文件所有者的UID。同样，还有另一个特殊的flag，它将执行此文件的进程的effective GID设置为文件组所有者的UID。这两个标志位被记为set-user-ID bit和set-group-ID bit，它们都存放在<code>st_mode</code>中，可以使用<code>S_ISUID</code>和<code>S_ISGID</code>测试。<br>
+<strong>运行set UID程序的进程通常会获得额外的权限！！！所以要格外注意。</strong></p>
+<h2 id="文件和目录的访问权限">文件和目录的访问权限</h2>
+<p><code>st_mode</code>中还包含了文件的访问权限。对于所有文件类型（不单单是文件和目录），都有三种访问权限：</p>
+<h3 id="r-读权限">r-读权限</h3>
+<p>读权限查询目录名内的数据。</p>
+<h3 id="w-写权限">w-写权限</h3>
+<ul>
+<li>新建文件与目录</li>
+<li>删除文件或者目录</li>
+<li>重命名以及转移文件或者目录</li>
+</ul>
+<h3 id="x-可执行权限">x-可执行权限</h3>
+<ul>
+<li>进入某目录</li>
+<li>切换到该目录（cd命令）</li>
+<li>对于只具有可执行权限的目录，可以使用<code>cd</code>进入该目录，也可以打开该目录的文件，或者进入下一级目录。但是需要我们知道它们的名字，不能使用<code>ls</code>命令查看，因为没有读目录的权限。。</li>
+</ul>
+<p>!!!能不能进入某一目录只与该目录的x权限有关，如果不拥有某目录的x权限，即使拥有r权限，那么也无法执行该目录下的任何命令。<br>
+但是即使拥有了x权限，但是没有r权限，能进入该目录但是不能打开该目录，因为没有读取的权限，但是可以进入下一级目录或者打开当前目录的文件（因为不能读目录，所以需要知道下一级目录的名字或者当前目录下要打开的文件的名字），路径上的所有目录都必须有可执行权限。。</p>
+<h3 id="sticky-bit">sticky bit</h3>
+<p><code>S_ISVTX</code>较老版本的UNIX叫做表示stick bit，而新版UNIX叫做saved-text bit，这也是<code>S_ISVTX</code>名字的由来。这一位的作用是，当一个可执行文件的这一位被设置了，当该程序第一次被执行，在它终止时，程序正文部分的一个副本，即机器指令，仍然保存在交换区中，这使得下次执行该程序时能较快的载入内存。因为通常的UNIX文件系统中，文件的数据块都是随机存放的，相对来说，交换区被当做一个连续文件来处理。而现在的UNIX系统都使用了虚拟存储系统和快速文件系统，已经不需要这种技术了。<br>
+现在系统扩展了stick bit的使用，SUS允许对目录设置目录的stick bit，如果一个目录设置了stick bit，只有对该目录具有写权限的用户并且满足下列条件之一，才能删除或者重命名该目录下的文件：</p>
+<ol>
+<li>拥有该文件</li>
+<li>拥有此目录</li>
+<li>是root用户</li>
+</ol>
+<p>比如/tmp目录，设置了stick bit，任何用户都可以在这个目录下创建文件。任意用户,组和其它对这两个目录的权限都是读写和执行。但是用户不能删除和重命名属于其他人的文件。</p>
+<h3 id="十二个访问权限位">十二个访问权限位</h3>
+<p>将<code>rwx</code>和user, group以及other进行组合，总共有九个访问权限位，再加上<code>S_ISUID</code>,<code>S_ISGID</code>和<code>S_ISVTX</code>三个特殊位：</p>
+<ul>
+<li>S_ISUID，set user id,</li>
+<li>S_ISGID, set group id,</li>
+<li>S_ISVTX, stick bit,</li>
+<li>S_IRUSR, user read,</li>
+<li>S_IWUSR, user write,</li>
+<li>S_IXUSR, user exectu,</li>
+<li>S_IRGRP, group read,</li>
+<li>S_IWGRP, group write,</li>
+<li>S_IXGRP, group exectuble,</li>
+<li>S_IROTH, other read,</li>
+<li>S_IWOTH, other write,</li>
+<li>S_TXOTH, other exectuble,</li>
+</ul>
+<p>可以对最后九项做一个简洁版的表示：<br>
+S_IRWXU = S_IRUSR|R_IWUSR|S_IXUSR<br>
+S_IRWXG = S_IRGRP|S_IWGRP|S_IXGRP<br>
+S_IRWXO = S_IROTH|S_IWOTH|S_IXOTH</p>
+<h3 id="文件和目录的操作规则">文件和目录的操作规则</h3>
+<ol>
+<li>使用名字打开任意类型的文件时，对于文件名字中包含的每一个目录，包括当前工作目录，都应该具有执行权限。</li>
+<li>对于一个文件的读权限决定了我们能够打开先有文件进行读操作。这与<code>open</code>函数的<code>O_RDONLY</code>和<code>O_RDWR</code>有关。</li>
+<li>对于一个文件的写权限决定了我们能够打开先有文件进行写操作。这与<code>open</code>函数的<code>O_WRONLY</code>和<code>O_RDWR</code>有关。</li>
+<li>如果要在<code>open</code>函数中指定<code>O_TRUNC</code>标志，必须对该文件拥有写权限。</li>
+<li>为了在一个目录中创建新文件，必须对这个目录具有写权限和执行权限。</li>
+<li>为了删除一个现有文件，必须对包含该文件的目录拥有写权限和执行权限，而不必对文件本身拥有读权限和写权限。</li>
+<li>如果使用7个<code>exec</code>函数中的任何一个执行某个文件，都必须拥有该文件的写权限。</li>
+</ol>
+<h3 id="访问权限检测">访问权限检测</h3>
+<p>进程每次打开，创建或者删除一个文件时，内核就会进行文件访问权限测试，这种测试可能涉及到文件的UID，文件的组GID，进程的effective UID和effective GID。文件的UID和文件的GID都是文件的属性，而effective UID和effective GID是进程的属性。<br>
+内核进行访问权限测试的步骤如下：</p>
+<ol>
+<li>如果进程的effective UID是0，结束权限判断，允许各项访问。否则跳转第2步进行判断。</li>
+<li>如果进程的effectiev UID等于文件UID，也就是<code>st_uid</code>，结束权限判断，根据访问权限位允许相应操作。否则跳转第3步。</li>
+<li>如果进程的effective GID等于文件的GID，结束权限判断，根据访问权限的设置允许相应的操作，否则跳转第4步。</li>
+<li>如果不满足前三条，就按照若其他用户的访问权限位判定操作是否合法。</li>
+</ol>
+<p>总结一下，就是依次判断effective UID是不是等于root，effective UID是不是等于<code>st_uid</code>，或者effective GID是不是等于<code>st_gid</code>，如果都不满足，就按照其它权限判定当前进程对文件的操作是否被允许。按照顺序来判断，满足一个就不用判断后面的了。</p>
+<h2 id="函数umask">函数<code>umask</code></h2>
+<p>前面介绍了和文件相关的9个访问权限位，使用进程创建文件时，文件的权限可以由<code>umask</code>修改，相当于在原有的mode上减去<code>umask</code>指定的mode。函数<code>umask</code>的原型如下：</p>
+<h3 id="函数原型-v2">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">mode_t</span> umask(<span class="keyword">mode_t</span> cmask);</span><br></pre></td></tr></table></figure>
+<h3 id="特点">特点</h3>
+<ol>
+<li>这个函数的作用是去掉<code>cmask</code>中指定的权限，返回之前的mode。</li>
+<li><strong>在程序中使用<code>open</code>和<code>creat</code>等创建新文件时，如果想要确保指定的访问限权被激活，必须在进程运行时修改<code>umask</code>的值。否则，<code>umask</code>可能会覆盖掉我们创建文件时指定的mode。</strong></li>
+<li>shell中有内置的<code>umask</code>命令，SUS要求shell的<code>umask</code>除了支持八进制的拒绝权限外，还要支持符号格式的指定许可的权限。使用<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">umask -S</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>查看。</p>
+<h2 id="新文件和目录的uid和gid">新文件和目录的UID和GID</h2>
+<p>创建文件时，新文件的UID被设置为进程的effective UID。关于新文件的GID，可以选择以下两种方式中的一个进行设置：</p>
+<ol>
+<li>新文件的GID可以是进程的effective GID</li>
+<li>新文件的GID可以是它所在目录的GID。</li>
+</ol>
+<p>不同的UNIX实现有不同的设置，这里拿linux来说，Linux 3.2.0以后，新文件的GID取决于它所在目录的set-group ID bit是否被设置，如果被设置了，新文件的ID就是它所在目录的GID，否则就是进程的effective GID。<br>
+新目录的UID和GID和文件一样。</p>
+<h2 id="函数mkdir-mkdirat和rmdir">函数<code>mkdir</code>，<code>mkdirat</code>和<code>rmdir</code></h2>
+<p>可以使用<code>mkdir和</code>mkdirat<code>创建目录，使用</code>rmdir`删除目录。它们的原型如下：</p>
+<h3 id="函数原型-v3">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mkdir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">mkdirat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">rmdir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="性质-v2">性质</h3>
+<ol>
+<li><code>mkdir</code>创建一个空目录，自动包含<code>.</code>和<code>..</code>项。文件的访问</li>
+<li>目录的权限默认权限是进程的<code>umask</code>给出的。对于目录，我们至少需要指定execute位。</li>
+<li>目录的UID和GID跟进程<code>create</code>文件时一样。</li>
+<li><code>mkdirat</code>和<code>mkdir</code>类似。</li>
+<li><code>rmdir</code>删除目录。</li>
+</ol>
+<h2 id="函数access和faccessat">函数<code>access</code>和<code>faccessat</code></h2>
+<p>使用<code>open</code>函数打开文件时，内核使用进程的effective UID和effective GID检测它对文件的访问权限。<br>
+<code>acess</code>使用进程的real UID和real GID进行权限访问测试。访问权限测试步骤和之前介绍的四步一样，只不过使用real UID和real GID代替了effective UID和effective GID。</p>
+<h3 id="函数原型-v4">函数原型</h3>
+<p><code>access</code>和<code>faccessat</code>的原型如下：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">access</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> mode)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">faccessat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> mode, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h3 id="参数和区别">参数和区别</h3>
+<ol>
+<li><code>mode</code>可选参数有，<code>F_OK</code>，<code>R_OK</code>, <code>W_OK</code>,<code>X_OK</code>，其中<code>F_OK</code>表示测试这个文件是否存在。</li>
+<li><code>faccessat</code>和<code>access</code>在两种情况下相同，<code>dirfd</code>设置为<code>AT_FDCWD</code>且<code>pathname</code>四相对路径和<code>pathname</code>是绝对路径。否则的话，<code>faccessat</code>就是测试相对于<code>dirfd</code>指向的打开目录下的<code>pathname</code>的权限。</li>
+<li>如果<code>flags</code>设置为<code>AT_EACCESS</code>的话，权限访问检测使用的是effective UID和effective GID而不是real UID和real GID。</li>
+</ol>
+<h2 id="函数chmod-fchmod和fchmodat">函数<code>chmod</code>, <code>fchmod</code>和<code>fchmodat</code></h2>
+<p>文件的访问权限可以使用<code>chmod</code>, <code>fchmod</code>和<code>fchmodat</code>进行修改，它们的原型如下：</p>
+<h3 id="原型">原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">chmod</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchmod</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchmodat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">mode_t</span> mode, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="特点-v2">特点</h3>
+<ol>
+<li><code>chmod</code>在指定的文件上进行操作</li>
+<li><code>fchmod</code>是对已经打开的文件文件描述符进行操作。</li>
+<li><code>fchmodat</code>和<code>chmod</code>在两种情况下是相等的，当<code>pathname</code>是绝对路径时，以及<code>dirfd</code>设置为<code>AT_FDCWD</code>且<code>pathname</code>是相对路径的时候。否则，<code>fchmodat</code>操作相对于打开目录的pathname。</li>
+<li>当flags设置了<code>AT_SYMLINK_NOFLOLLW</code>时，不会followsymbolic link。</li>
+<li>在以下两种情况下，<code>chmod</code>函数自动清除两个权限位：
+<ul>
+<li>新创建文件的GID可能不是调用进程的effective GID。新文件的GID可能是父目录的GID。如果新文件的GID不等于进程的effective GID，而且进程没有root权限，set-group-id位会被自动关闭。</li>
+<li>stick bit的设置</li>
+</ul>
+</li>
+</ol>
+<h2 id="函数chown-fchown-chownat和lchown">函数<code>chown</code>, <code>fchown</code>,<code>chownat</code>和<code>lchown</code></h2>
+<p>可以使用<code>chown</code>, <code>fchown</code>,<code>chownat</code>和<code>lchown</code>更改文件的UID和GID。它们的原型如下：</p>
+<h3 id="函数原型-v5">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">chown</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">uid_t</span> owner, <span class="keyword">gid_t</span> group)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchown</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">uid_t</span> owner, <span class="keyword">gid_t</span> group)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">lchown</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">uid_t</span> owner, <span class="keyword">gid_t</span> group)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchownat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">uid_t</span> owner, <span class="keyword">gid_t</span> group, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="特点-v3">特点</h3>
+<ol>
+<li>当文件不是symbolic link时，所有的函数操作类似。</li>
+<li>当文件是symbolic link时，<code>lchown</code>和设置了<code>AT_SYMLINK_NOFOLLOW</code>标志的<code>fchownat</code>都修改的是symbolic link本身，而不是它链接的对象。</li>
+<li><code>fchown</code>操作的是<code>fd</code>指向的已经打开的文件，因为它在一个已经打开的文件上操作，所以它不能修改symbolic link本身。</li>
+<li><code>fchownat</code>和<code>fchown</code>或者<code>lchown</code>在下面两种情况下是等价的：当pathname是决定路径或者<code>dirfd</code>设置为<code>AT_FDCWD</code>时且pathname是相对路径时。在这两种情况下，如果<code>flags</code>设置了<code>AT_SYMLINK_NOFOLLOW</code>标志，<code>fchownat</code>和<code>lchown</code>一样，否则<code>fchownat</code>和<code>fchown</code>一样。如果不是这两种情况，<code>fchowat</code>是操作相对于打开目录的pathname。</li>
+<li>根据<code>_POSIX_CHOWN_RESTRICTED</code>常量的值，可以查询是否只有超级用户才能更改文件的所有者，如果这个常量对指定的文件有效，那么
+<ul>
+<li>只有root进程才能更新该文件的UID，普通用户不能修改其他用户文件的UID</li>
+<li>如果进程拥有此文件(进程的effective UID等于文件的UID)， 可以更改这些文件的GID，但是只能更改到进程的effective GID或者继承的附属组ID之一。</li>
+</ul>
+</li>
+<li>如果这些函数由非root进程调用，在成功返回时，set UID和set GID位都会被清楚。</li>
+</ol>
+<h2 id="函数rename和renameat">函数<code>rename</code>和<code>renameat</code></h2>
+<p>可以使用函数<code>rename</code>和<code>rename</code>对文件或者目录进行重命名。它们的原型如下：</p>
+<h3 id="函数原型-v6">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">rename</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *oldpath, <span class="keyword">const</span> <span class="keyword">char</span> *newpath)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">renameat</span><span class="params">(<span class="keyword">int</span> olddirfd, <span class="keyword">const</span> <span class="keyword">char</span> *oldpath, <span class="keyword">int</span> newdirfd, <span class="keyword">const</span> <span class="keyword">char</span> *newpath)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="性质-v3">性质</h3>
+<ol>
+<li>ISO C对文件定义了<code>reanme</code>，但是ISO C没有对目录定义该函数。POSIX.1扩展了定义，使得它<code>rename</code>可以处理目录和symbolic link。</li>
+<li>如果<code>oldpath</code>指向普通文件，那么为文件进行重命名。如果<code>newname</code>存在，它不能是一个目录。如果它不是目录，先将该目录项删除，然后将<code>oldname</code>重命名为<code>newname</code>。进程需要对<code>oldpath</code>和<code>newpath</code>的父目录都拥有写和执行权限，因为<code>rename</code>会修改这两个目录。</li>
+<li>如果<code>oldpath</code>指向目录，为目录重命名。如果<code>newname</code>已经存在，那么它必须是一个目录，而且应该是空目录。如果<code>newname</code>目录存在且为空，先将它删除，然后将<code>oldname</code>重命名为<code>newname</code>。且<code>newname</code>不能包含<code>oldname</code>，比如不能将<code>/usr/foo</code>重命名为<code>/usr/foo/testdir</code>，因为不能删除<code>/usr/foo</code>目录。</li>
+<li>如果<code>oldpath</code>指向symbolic link，<code>rename</code>不follow symbolic link，直接处理symbolic link本身。</li>
+<li>不能对<code>.</code>和<code>..</code>进行重命名。或者说<code>.</code>和<code>..</code>不能出现在<code>oldpath</code>和<code>newpath</code>上。</li>
+<li>当<code>oldpath</code>和<code>newpath</code>指向同一个文件，函数不做任何操作直接返回。</li>
+<li><code>renameat</code>和<code>rename</code>类似。</li>
+</ol>
+<h2 id="文件长度">文件长度</h2>
+<p><code>struct stat</code>中的<code>st_size</code>以字节为单位表示文件的长度。这个字段只对普通文件，目录文件和symbolic link有意义。<br>
+对于普通文件，它的长度可以是0，在开始读这种文件时，得到EOF标志。<br>
+对于目录，文件长度通常是一个数的整数倍。<br>
+对于symbolic link，文件长度是链接指向的文件名的实际字节数，不包含null字节。<br>
+对于现在的大多数UNIX系统，提供了<code>st_blksize</code>和<code>st_blocks</code>字段。<code>st_blksize</code>表示对文件I/O适合的块长度，第二个是所分配的固定大小的block数量。</p>
+<h3 id="文件中的hole">文件中的hole</h3>
+<ol>
+<li>普通文件可以有hole，hole是当前文件偏移量超过文件尾端，然后进行写入造成的。</li>
+<li>对于同样长度的有空洞和没有空洞的文件来说，它们所占用的blocks块数是不同的。这里说的同样长度指的是字节数，使用<code>ls -l</code>列出来的长度，那些空洞不占用磁盘上的存储区。</li>
+<li>使用<code>cat</code>进行复制时，会将空洞使用0字节填满。</li>
+<li>使用<code>du -s file.txt</code>可以查看文件所占用的blocks数量，这些blocks中还有一些用来存放指向实际数据块的指针。</li>
+</ol>
+<h3 id="文件截断">文件截断</h3>
+<p>可以使用<code>truncate</code>和<code>ftruncate</code>截断文件，函数原型是：</p>
+<h4 id="函数原型-v7">函数原型</h4>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">truncate</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *path, <span class="keyword">off_t</span> length)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ftruncate</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">off_t</span> length)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="特点-v4">特点</h4>
+<ol>
+<li>当<code>length</code>长度小于原来文件的长度时，超过<code>length</code>的进行截断。</li>
+<li>当<code>length</code>长度大于原来文件的长度时，原来的文件长度到<code>length</code>之间的数据被读作0。</li>
+<li><code>ftruncate</code>操作的是文件描述符，<code>truncate</code>操作的是文件。</li>
+</ol>
+<h2 id="文件的时间">文件的时间</h2>
+<h3 id="文件的三个时间">文件的三个时间</h3>
+<p>每一个文件守护三个时间：</p>
+<ol>
+<li><code>st_atim</code>，记录文件数据的最后访问时间。使用<code>ls -u</code>查看。</li>
+<li><code>st_mtim</code>，记录文件数据的最后修改时间。默认的<code>ls</code>显示的就是文件的最后修改时间。</li>
+<li><code>st_ctim</code>，记录i-node状态的最后更改时间。使用<code>ls -c</code>查看。常见的许多操作都会影响i-node，主要就是<code>i-node</code>中存放的那些信息，更改文件权限，更改文件的<code>st_uid</code>和<code>st_gid</code>，文件的链接数等等。</li>
+</ol>
+<p>这个让我想不明白的是为什么<code>link</code>,<code>unlink</code>,<code>creat</code>等会影响所使用文件的父目录的inode节点。</p>
+<h3 id="函数futimens-utimensat和utimes原型">函数<code>futimens</code>, <code>utimensat</code>和<code>utimes</code>原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">utimensat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">const</span> struct timespec times[<span class="number">2</span>], <span class="keyword">int</span> flags)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">futimens</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">const</span> struct timespec times[<span class="number">2</span>])</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">utimes</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *filename, <span class="keyword">const</span> struct timeval times[<span class="number">2</span>])</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="函数futimens-utimensat和utimes性质">函数<code>futimens</code>, <code>utimensat</code>和<code>utimes</code>性质</h3>
+<ol>
+<li>
+<p>如果<code>times</code>为空，访问时间和修改时间都设为当前时间</p>
+</li>
+<li>
+<p>如果<code>times</code>指向两个<code>timespec</code>结构的数组，任一元素的<code>tv_nsec</code>字段的值为<code>UTIME_NOW</code>，相应的时间戳设置为当前时间，忽略相应的<code>tv_sec</code>字段。</p>
+</li>
+<li>
+<p>如果<code>times</code>指向两个<code>timespec</code>结构的数组，任一元素的<code>tv_nsec</code>字段的值为<code>UTIME_OMIT</code>，相应的时间戳保持不变，忽略相应的<code>tv_sec</code>字段。</p>
+</li>
+<li>
+<p>如果<code>times</code>指向两个<code>timespec</code>结构的数组，<code>tv_nsec</code>字段的值既不是<code>UTIME_NOW</code>也不是<code>UTIME_OMIT</code>，相应的时间戳设置为相应的<code>tv_sec</code>和<code>tv_nsec</code>字段。</p>
+</li>
+<li>
+<p><code>futimens</code>需要打开文件更改它的时间</p>
+</li>
+<li>
+<p><code>utimensat</code>可以使用文件名更改时间。</p>
+</li>
+<li>
+<p><code>utimes</code>对路径进行操作。</p>
+</li>
+<li>
+<p><code>struct timespec</code>结构体是：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">time_t</span> tv_sec;</span><br><span class="line">    <span class="keyword">long</span> tv_nsec;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p><code>struct timeval</code> 结构体是：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timeval</span>&#123;</span></span><br><span class="line">    <span class="keyword">time_t</span> tv_sec;  <span class="comment">//秒</span></span><br><span class="line">    <span class="keyword">long</span> tv_usec;   <span class="comment">//微妙</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+</li>
+</ol>
+<h2 id="读目录">读目录</h2>
+<p>目录可以被任何具有读权限的用户读取，但是为了保护文件系统，只有kernel可以写目录。目录的<code>w</code>权限位和<code>x</code>权限位表示的是用户是否可以在目录中创建或者删除新文件，并不是说用户可以写目录本身。</p>
+<p>给出<code>opendir</code>, <code>fopendir</code>,</p>
+<h3 id="函数原型-v8">函数原型</h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;dirent.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function">DIR *<span class="title">opendir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *name)</span></span>;</span><br><span class="line"><span class="function">DIR *<span class="title">fdopendir</span><span class="params">(<span class="keyword">int</span> fd)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function">struct dirent *<span class="title">readdir</span><span class="params">(DIR *dirp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">rewinddir</span><span class="params">(DIR *dirp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">closedir</span><span class="params">(DIR *dirp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">telldir</span><span class="params">(DIR *dirp)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">seekdir</span><span class="params">(DIR *dirp, <span class="keyword">long</span> loc)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="函数性质">函数性质</h3>
+<ol>
+<li><code>opendir</code>将文件转换成目录处理函数需要的<code>DIR</code>结构，而<code>fdopendir</code>将文件描述符转换成目录处理函数需要的<code>DIR</code>结构。这里的<code>DIR</code>到底是什么，没有告诉，so上有一个回答说它是不透明数据类型，只需要使用它，不需要知道它的定义[3]。</li>
+<li><code>telldir</code>和<code>seekdir</code>不是POSIX.1的组成部分，但是它是SUS的XSI扩展。所有UNIX系统都会提供这两个实现。</li>
+<li><code>struct dirent</code>结构体定义在<code>&lt;dirent.h&gt;</code>头文件中，它与实现相关，但是必须包含以下两个成员：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ino_d d_ino;</span><br><span class="line"><span class="keyword">char</span> d_name[];</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>POSIX.1并没有定义<code>d_ino</code>，而POSIX.1的XSI扩展定义了<code>d_ino</code>。</p>
+<ol start="4">
+<li><code>DIR</code>是一个内部结构，这几个函数使用这个内部结构保存当前正在被读的目录的有关信息。<code>opendir</code>和<code>fdopendir</code>返回<code>DIR</code>，而其他函数把<code>DIR</code>当做参数。<br>
+使用<code>opendir</code>打开文件时，<code>readdir</code>返回的是目录项中的第一项。<br>
+使用<code>fdopndir</code>打开文件时，<code>readdir</code>返回的第一项取决于传递给<code>fopendir</code>的文件描述符的当前文件偏移量。</li>
+</ol>
+<h2 id="函数chdir-fchdir和getcwd">函数<code>chdir</code>, <code>fchdir</code>和<code>getcwd</code></h2>
+<p>每一个进程都有一个当前工作目录，**当前工作目录是进程的一个属性，**这个目录是搜索所有相对路径名的起点，不以&quot;/&quot;开始的路径名都是相对路径名。可以使用<code>chdir</code>后者<code>fchdir</code>改变当前进程的工作目录。它们的原型如下：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">chdir</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *path)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fchdir</span><span class="params">(<span class="keyword">int</span> fd)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">getcwd</span><span class="params">(<span class="keyword">char</span> *buf, <span class="keyword">size_t</span> size)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p><code>chdir</code>的参数是<code>path</code>，而<code>fchidir</code>的参数是文件描述符。</p>
+<h3 id="chdir只会改变当前进程的work-dir"><code>chdir</code>只会改变当前进程的work dir</h3>
+<p>**需要注意的一点是，<code>chdir</code>和<code>fchdir</code>只改变调用这个函数本身的进程，并不影响其他进程。**比如在shell中运行一个程序，在这个程序中更改了进程的当前工作目录，结束这个程序的执行时，shell的当前工作目录并不会改变，因为shell和我们刚才执行的程序属于两个不同的进程。因此，如果要改变shell进程自己的工作目录，应该使用shell直接调用<code>chdir</code>函数，所以<code>cd</code>命令内建在shell中。<br>
+<code>getcwd</code>是获得进程当前工作的绝对路径名。内核并不保存目录的完整路径名（linux除外），为了获得进程当前工作的绝对路径名。<code>getcwd</code>需要从当前工作目录开始，找到它的上一级目录，读取目录项，找到和工作目录i节点编号相同的目录项，得到对应的文件名。就这样一层一层的向上找，这就找到了绝对路径名。<code>getcwd</code>会followsymbolic link，但是不会知道它是由哪里链接到这里的。</p>
+<h3 id="和进程相关的目录getcwd">和进程相关的目录<code>getcwd</code></h3>
+<p>当一个应用程序需要在经过一些列目录操作之后返回它刚开始的工作目录时。可以先使用<code>getcwd</code>获得最开始的工作目录，保存起来，最后再使用<code>chdir</code>进行恢复。<br>
+<code>fchdir</code>可以有更简单的操作，在刚开始时，保存目录的文件描述符。最后使用<code>fchdir</code>直接打开这个文件描述符。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版<br>
+2.<a href="https://unix.stackexchange.com/questions/21251/execute-vs-read-bit-how-do-directory-permissions-in-linux-work" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/21251/execute-vs-read-bit-how-do-directory-permissions-in-linux-work</a><br>
+3.<a href="https://superuser.com/questions/168578/why-must-a-folder-be-executable/168583" target="_blank" rel="noopener">https://superuser.com/questions/168578/why-must-a-folder-be-executable/168583</a><br>
+4.<a href="https://stackoverflow.com/questions/22122405/where-is-dir-defined" target="_blank" rel="noopener">https://stackoverflow.com/questions/22122405/where-is-dir-defined</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/20/data-structure-bineary-search-trees-vs-binary-heaps/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/20/data-structure-bineary-search-trees-vs-binary-heaps/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">data structure bineary search trees vs binary heaps</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-20 09:37:58" itemprop="dateCreated datePublished" datetime="2019-11-20T09:37:58+08:00">2019-11-20</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 16:13:35" itemprop="dateModified" datetime="2019-12-17T16:13:35+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据结构/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://stackoverflow.com/questions/6147242/heap-vs-binary-search-tree-bst" target="_blank" rel="noopener">https://stackoverflow.com/questions/6147242/heap-vs-binary-search-tree-bst</a><br>
+2.<a href="https://cs.stackexchange.com/questions/27860/whats-the-difference-between-a-binary-search-tree-and-a-binary-heap" target="_blank" rel="noopener">https://cs.stackexchange.com/questions/27860/whats-the-difference-between-a-binary-search-tree-and-a-binary-heap</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/18/UNIX-file-IO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/18/UNIX-file-IO/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">UNIX file I/O</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-18 19:19:20" itemprop="dateCreated datePublished" datetime="2019-11-18T19:19:20+08:00">2019-11-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-11-24 10:10:01" itemprop="dateModified" datetime="2019-11-24T10:10:01+08:00">2019-11-24</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="注意事项">注意事项</h2>
+<ol>
+<li><code>creat</code>以只写方式打开文件，不能进行读操作。</li>
+<li>为什么有了<code>open</code>要有<code>creat</code>，早期的<code>open</code>只支持0,1,2三个flag，不能打开不存在的文件，需要有单独的系统调用创建文件。而有了新的<code>open</code>以后就不需要<code>creat</code>了。</li>
+<li><code>open</code>和<code>dup</code>返回的文件描述符一定是最小的未使用的文件描述符。</li>
+<li>以<code>O_APPEND</code>打开的文件，如果进行<code>write</code>的话，即使使用<code>lseek</code>定位到非文件结尾处，最后也是在文件结尾处进行写。因为使用<code>O_APPEND</code>的<code>write</code>是由两个系统调用函数<code>lseek</code>和“普通的”<code>write</code>构成的一个操作。而<code>read</code>操作可以使用<code>lseek</code>进行定位。</li>
+<li>所有的磁盘I/O都要经过内核的block buffers块缓存区，也称为内核的(buffer cache)缓冲区高速缓存。有一个例外就是对原始磁盘设备的I/O，先不考虑这种情况。<code>read</code>和<code>write</code>的数据都要被内核进行缓冲，术语unbuffered I/O指的是在用户的进程中不会对这两个函数进行自动缓冲，每次<code>read</code>和<code>write</code>都会进行一次系统调用。</li>
+</ol>
+<h2 id="文件i-o">文件I/O</h2>
+<p>UNIX系统中的大多数文件I/O只用到了5个函数：<code>open</code>,<code>read</code>,<code>write</code>, <code>lseek</code>和<code>close</code>。不同的缓冲长度对<code>read</code>和<code>write</code>的速度影响。<br>
+本章介绍的函数通常被称为不带缓冲的I/O，不带缓冲的I/O指的是每个<code>read</code>和<code>write</code>都调用内核中的一个系统调用，它们不是ISO C的组成部分，但是，它们都是POSIX.1和SUS的组成部分。<br>
+只要涉及在多个进程之间共享资源，原子操作的概念就非常重要。本章还进行一步讨论在多个进程之间如何共享文件，以及所涉及的内核有关数据结构。相应的函数有：<code>dup</code>, <code>fcntl</code>,<code>sync</code>, <code>fsync</code>和<code>ioctl</code>等。</p>
+<h2 id="文件描述符">文件描述符</h2>
+<p>对于内核而言，所有打开的文件都是通过文件描述符引用。文件描述符是一个非负整数。当打开或者创建一个新文件时，内核向进程返回一个文件描述符。当读，写一个文件时，使用<code>open</code>或者<code>creat</code>返回的文件描述符标识该文件，将其作为参数传递给<code>read</code>或者<code>write</code>。<br>
+UNIX系统shell把文件描述符0和进程的标准输入关联，文件描述符1和标准输出关联，文件描述符2和标准错误关联。为了提高系统的可读性，通常把它们换成符号常量<code>STDIN_FILENO</code>,<code>STDOUT_FILENO</code>和<code>STDERR_FILENO</code>，它们都在头文件<code>&lt;unistd.h&gt;</code>中定义。<br>
+文件描述符的变化范围是0到<code>OPEN_MAX-1</code>，早起的UNIX系统实现采用的上限值是19，现在的很多系统将它增加到63。（对于Linux, FreeBSD等的很多版本，文件描述符的变化范围几乎是无限的，只受到硬件资源的约束）</p>
+<h2 id="open-openat和creat-close"><code>open</code>,<code>openat</code>和<code>creat</code>, <code>close</code></h2>
+<p>函数原型：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> flags)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">open</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> flags, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">creat</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">mode_t</span> mode)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">openat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> flags)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">openat</span><span class="params">(<span class="keyword">int</span> dirfd, <span class="keyword">const</span> <span class="keyword">char</span> *pathname, <span class="keyword">int</span> flags, <span class="keyword">mode_t</span> mode)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>参数<code>pathname</code>是路径名，可以是相对路径也可以是绝对路径，<code>flags</code>的选项有很多，它们定义在<code>&lt;fcntl.h&gt;</code>头文件中。flag参数必须在<code>O_RDONLY</code>,<code>O_WRONLY</code>和<code>O_RDWR</code>之中选且只能选一个。然后还有很多其他的可选flag，常见的有：<code>O_APPEND</code>，<code>O_CREAT</code>，<code>O_EXCL</code>, <code>O_DIRECTORY</code>等，使用<code>man 2 open</code>就可以查看。</p>
+<h3 id="openat-vs-open"><code>openat</code> vs <code>open</code></h3>
+<p><code>open</code>和<code>openat</code>返回的一定是最小的没有使用的文件描述符。可以利用这一点可以在标准输入，标准输出，或者标准错误上打开新的文件。一个应用程序可以先关闭标准输出，然后打开另一个文件，执行打开操作前就能了解到该文件一定会在文件描述符1上打开。<br>
+<code>dirfd</code>参数是<code>open</code>和<code>openat</code>的区别，它们之间的关系有以下三种：</p>
+<ol>
+<li><code>pathname</code>指定的是绝对路径名，<code>dirfd</code>参数被忽略，<code>open</code>和<code>openat</code>一样。</li>
+<li><code>pathname</code>指定的是相对路径名，<code>dirfd</code>制定了相对路径名在文件系统中的开始地址，<code>dirfd</code>参数通过打开相对路径名的目录来获取。</li>
+<li><code>pathname</code>指定了相对路径名，<code>dirfd</code>的参数是特殊值<code>AT_FDCWD</code>，这种情况下，路径名是在当前工作目录中获取，<code>openat</code>和<code>open</code>在操作上类似。</li>
+</ol>
+<h3 id="openat作用"><code>openat</code>作用</h3>
+<p>为什么增加<code>openat</code>函数，它的目的是解决两个问题：</p>
+<ol>
+<li>让线程可以使用相对路径名打开目录中的文件，而不再只能打开当前工作目录。同一进程中的所有线程共享相同的当前工作目录。</li>
+<li>避免time-of-check-to-time-of-use错误。它的基本思想是，如果有两个基于文件的系统调用，第二个调用的结果依赖于第一个调用的结果，那么程序是脆弱的。因为两个调用并不是原子操作，在两个函数调用之间，文件可能改变了，这就造成了第一个调用的结果不再有效，使得程序的最终结果是错误的。</li>
+</ol>
+<h3 id="文件名和路径名过长">文件名和路径名过长</h3>
+<p>当文件名和路径名过长时，是截断为系统允许的最长量还是返回出错信息？这个是由系统的历史形成的。通常BSD和Linux总是会返回出错，而System V和Solaris等不一定。<br>
+具体的可以根据POSIX.1定义的常量<code>_POSIX_NO_TRUC</code>决定是截断还是出错。根据文件系统的类型，这个值可以变换。可以使用<code>fpathconf</code>或者<code>pathconf</code>查询目录具体支持哪种行为。<br>
+如果<code>_POSIX_NO_TRUC</code>有效，当路径名超过<code>PATH_MAX</code>或者路径名中的任一文件名超过<code>NAME_MAX</code>时，返回出错，并将<code>errno</code>设置为<code>ENAMETOOLONG</code>。</p>
+<h3 id="create和open"><code>create</code>和<code>open</code></h3>
+<p><code>create</code>其实相当于指定了<code>open</code>的flags为<code>O_WRONLY|O_CREAT|O_TRUNC</code>。<br>
+为什么有了<code>open</code>还要有<code>creat</code>，在早期的UNIX版本中，<code>flags</code>只能为0,1或者2。无法打开一个不存在的文件。因此需要另一个系统调用<code>creat</code>创建新文件。现在的<code>open</code>系统调用提供了<code>O_CREAT</code>和<code>O_TRUNC</code>选项，也就不需要<code>creat</code>了。</p>
+<p><code>creat</code>的不足：<code>creat</code>以<strong>只写方式</strong>打开所创建的文件，即创建新文件之后，只能对新文件进行写操作，不能进行读操作。如果要创建一个临时文件，先写文件，然后再读文件。在<code>open</code>的老版本时，即不能打开不存在的文件时，需要先使用<code>creat</code>创建新文件，然后关闭该文件，然后使用<code>open</code>读文件。现在的话，可以使用以下方式实现创建新文件并进行读写：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">open(path, O_RDWR|O_CREAT|O_TRUNC, mode);</span><br></pre></td></tr></table></figure></p>
+<h3 id="close函数"><code>close</code>函数</h3>
+<p>调用<code>close</code>关闭一个已经打开的文件。函数原型：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">close</span><span class="params">(<span class="keyword">int</span> fd)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h3 id="创建文件">创建文件</h3>
+<ol>
+<li>
+<p>创建一个只写文件（如果文件存在，将文件清零）：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">creat(filename, mode);</span><br><span class="line">open(filename, O_WRONLY|O_CREAT|O_TRUNC, mode);</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>创建一个读写文件（如果文件存在，将文件清零）：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">open(filename, O_RDWR|O_CREAT|O_TRUNC);</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>检测并创建一个只写文件（ 如果文件存在，错处，返回-1）：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">open(filename, O_WRONLY|O_CREAT|O_EXCL, mode);</span><br></pre></td></tr></table></figure></p>
+</li>
+<li>
+<p>检测并创建一个读写文件（ 如果文件存在，错处，返回-1）：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">open(filename, O_RDWR|O_CREAT|O_EXCL, mode);</span><br></pre></td></tr></table></figure></p>
+</li>
+</ol>
+<h2 id="lseek-read-write"><code>lseek</code>, <code>read</code>, <code>write</code></h2>
+<p>它们的原型如下所示：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">off_t</span> lseek(<span class="keyword">int</span> fd, <span class="keyword">off_t</span> offset, <span class="keyword">int</span> whence);</span><br><span class="line"><span class="keyword">ssize_t</span> read(<span class="keyword">int</span> fd, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count);</span><br><span class="line"><span class="keyword">ssize_t</span> write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure>
+<h3 id="当前文件偏移量">当前文件偏移量</h3>
+<ol>
+<li>每一个打开文件都有一个和它相关联的当前文件偏移量(current file offset)。它通常是一个非负整数，用来度量从文件开始处的字节数。</li>
+<li>通常情况下，读写操作都是从current file offset开始的，并且使偏移量增加读写的字节数。</li>
+<li>除了指定<code>O_APPEND</code>选项外，打开一个文件时，默认的current file offset都是0。</li>
+<li><code>whence</code>有三个取值，<code>SEEK_SET</code>, <code>SEEK_CUR</code>, <code>SEEK_END</code>。<code>lseek</code>成功执行，返回的offset等于<code>whence+offset</code>，对于<code>SEEK_CUR</code>和<code>SEEK_END</code>来说，参数<code>offset</code>可正可负，只要保证返回的current file offset非负即可。</li>
+<li><code>lseek</code>中的<code>l</code>表示<code>long</code>。</li>
+<li>current file offset可以大于文件长度，这种情况会在文件中构成一个空洞。空洞不要求占据磁盘上的存储区。</li>
+</ol>
+<h3 id="read"><code>read</code></h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> read(<span class="keyword">int</span> fd, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure>
+<p><code>read</code>函数从文件描述符标示的文件中读取至多<code>count</code>个字节到<code>buf</code>指定的位置。如果操作成功的话，返回读到的字节数，如果已经到了文件结尾，返回0。出错的话，返回-1，设置errno。<br>
+在以下几种情况下，读到的字节数可能少于<code>count</code>：</p>
+<ol>
+<li>读普通文件时，在读满<code>count</code>个之前就已经到了文件尾端。</li>
+<li>某个信号造成中断时，而已经读取了部分数据时。</li>
+<li>从终端设备读时，通常一次最多读一行。</li>
+<li>从网络读时，网络中的缓冲机制。</li>
+<li>从管道或者FIFO读取时，管道包含的字节数少于<code>count</code>。</li>
+<li>从面向记录的设备读时，一次最多返回一个记录。</li>
+<li>第二个参数<code>void*</code>表示通用指针。</li>
+<li>返回值<code>ssize_t</code>是有符号类型，因为它需要返回正整数字节，0和-1。</li>
+<li>第三个参数<code>size_t</code>是一个无符号类型。</li>
+</ol>
+<h3 id="write"><code>write</code></h3>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span> write(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count);</span><br></pre></td></tr></table></figure>
+<p>它的返回值通常和<code>count</code>一样，否则就是出错了。出错的常量原因有：</p>
+<ol>
+<li>磁盘满了，</li>
+<li>超过了一个给定进程的文件长度限制。</li>
+<li>如果<code>lseek</code>返回的当前文件偏移量不在文件结尾，<code>write</code>会覆盖掉相应位置的数据。</li>
+</ol>
+<p>对于普通文件，写操作从文件的当前偏移量开始，如果打开文件时指定了<code>O_APPEND</code>选项，那么文件偏移量设置在文件结尾处。在一次写成功之后，文件偏移量增加实际写的字节数。</p>
+<h3 id="创建含有空洞的文件">创建含有空洞的文件</h3>
+<p>当<code>lseek</code>使得当前文件偏移量超过了现有文件长度，再继续进行<code>write</code>之后，当前文件偏移量和文件长度之间的内容就是空洞，它一般不占用磁盘空间，但是使用<code>ls</code>时，会把它计算成字节长度。</p>
+<h2 id="i-o的效率">I/O的效率</h2>
+<p>进程终止时，UNIX系统内核会关闭所有打开的文件描述符，但是并不会关闭标准输入和输出。<br>
+在选取<code>read</code>和<code>write</code>的buffer大小时，也有一定技巧。大多数文件系统都使用了预读(read ahead)技术。当进行顺序读取时，系统试图读入比应用所要求的更多数据，并且假设应用很快就会读这些数据。<br>
+在使用<code>ext4</code>文件系统时，它的磁盘块长度是4096，所以当BUFFER大于等于4096时，读写时间几乎不变。</p>
+<h2 id="文件共享">文件共享</h2>
+<h3 id="i-o数据结构">I/O数据结构</h3>
+<p>UNIX支持在不同进程之间共享打开文件。这需要使用到内核用于I/O的数据结构。内核使用三种数据结构表示打开文件：进程表记录项，文件表项和节点表项。</p>
+<ol>
+<li>进程表记录项。每个进程在进程表中都有一个记录项，记录项中包含一张打开文件描述符表，每隔描述符占用一项，其中内容有：文件描述符标志和指向文件表项的指针。</li>
+<li>文件表项。内核为所有打开文件维持一张文件表。每个表项包含：文件状态标志，当前文件偏移量和指向该文件节点表项的指针</li>
+<li>节点表项。每个打开设备都有一个节点结构。包含文件的所有者，文件长度，指向文件实际数据块在磁盘上所在的指针等。</li>
+</ol>
+<p>如果两个进程打开了同一个文件，每个进程都会获得各自相应文件的一个文件表项，这两个文件表项中的节点表项指针指向同一个节点表项。也有可能多个进程的文件描述符指向同一个文件表项。<br>
+自己的总结，每一个文件都有一个节点表项，记录文件长度和数据存储地址，而文件表项记录的是在节点表项的哪个位置进行什么操作，进程表记录项记录了每个进程打开了几个文件，每个文件的文件表项在哪里。</p>
+<h3 id="write和lseek对当前文件偏移量的影响"><code>write</code>和<code>lseek</code>对当前文件偏移量的影响</h3>
+<ol>
+<li><code>write</code>在写入完成后，在文件表项的当前文件偏移量上加上写入的字节数，如果当前文件偏移量超过了当前文件长度，更新节点表项中的文件长度，相当于文件长度增加了。</li>
+<li><code>lseek</code>只修改文件表项中的当前文件偏移量，不进行任何I/O操作。</li>
+<li><code>lseel</code>定位到文件尾端的时候，文件表项中当前文件偏移量被设置为节点表项中的当前文件长度。</li>
+<li>使用<code>O_APPEND</code>打开文件的时候，文件表项中的文件状态标志也会被修改，对于使用<code>O_APPEND</code>操作打开的文件，进行<code>write</code>操作相当于先将当前文件偏移量设置为节点表项中的文件长度，然后再<code>write</code>，即使先使用<code>lseek</code>将当前文件偏移量设置为<code>SEEK_SET</code>也不行，也是进行追加。所以在每次append之前不用先进行<code>lseek</code>，<code>lseek</code>了也白做。但是<code>read</code>可以使用<code>lseek</code>正常进行。</li>
+</ol>
+<h2 id="原子操作">原子操作</h2>
+<p>如果一个操作是原子操作，那么这个操作的所有步骤要么不执行，要不全部执行。</p>
+<h3 id="追加文件">追加文件</h3>
+<p>指定<code>open</code>的<code>O_APPEND</code>选项实现追加操作，<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fileno=open(filename, O_RDWR|O_APPEND);</span><br><span class="line">write(file, buf, BUFSIZE);</span><br></pre></td></tr></table></figure></p>
+<p>追加文件是一个原子操作，如果不是原子操作的话，就相当于：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fileno = open(filename, O_RDWR);</span><br><span class="line">lseek(fileno, <span class="number">0</span>, SEEK_END);</span><br><span class="line">write(fileno, buf, BUFSIZE);</span><br></pre></td></tr></table></figure></p>
+<p>如果是单进程，上面两段代码是等价的，但是如果是多进程的话，下面代码就可能会出错。进程A lseek，进程B lseek，进程A write，进程B write。进程B的操作会覆盖进程A的操作。<br>
+所以这也就解释了使用选项<code>O_APPEND</code>后的操作，因为这个append的<code>write</code>是由两个系统调用组成的原子操作，先<code>lseek</code>，再普通的<code>write</code>。所以在调用<code>write</code>之前不用<code>lseek</code>，就算你<code>lseek</code>了也是白<code>lseek</code>。</p>
+<h3 id="读写原子操作">读写原子操作</h3>
+<p>读写的原子操作原型如下：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ssize_t</span> pread(<span class="keyword">int</span> fd, <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count, <span class="keyword">off_t</span> offset);</span><br><span class="line"><span class="keyword">ssize_t</span> pwrite(<span class="keyword">int</span> fd, <span class="keyword">const</span> <span class="keyword">void</span> *buf, <span class="keyword">size_t</span> count, <span class="keyword">off_t</span> offset);</span><br></pre></td></tr></table></figure></p>
+<p>调用<code>pread</code>相当于调用<code>lseek</code>和<code>read</code>的原子操作，但是<code>pread</code>不改变当前文件偏移量。<br>
+调用<code>write</code>相当于调用<code>lseek</code>和<code>write</code>的原子操作，但是<code>pwrite</code>不改变当前文件偏移量。</p>
+<h3 id="创建文件原子操作">创建文件原子操作</h3>
+<p>检查文件是否存在和创建文件是一个原子操作。如果这个操作不是原子操作，比如说是由<code>open</code>和<code>creat</code>两个函数调用组成的一个操作，它们不是一个原子操作。当前进程确定一个文件不存在，决定创建该文件。在<code>open</code>和<code>creat</code>调用之间，另一个进程创建了这个文件，并写入了数据。当前进程会再次创建这个文件，覆盖掉另一个进程写入的数据。</p>
+<h2 id="dup和dup2复制文件描述符"><code>dup</code>和<code>dup2</code>复制文件描述符</h2>
+<p>UNIX系统提供了两个原子操作<code>dup</code>和<code>dup2</code>对一个指定的文件描述符进行复制。如果得到的新文件描述符和fd不同，那么这两个文件描述符共享同一个文件表项。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// dup返回的文件描述符一定是当前可用文件描述符中的最小值。和open一个文件类似。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup</span><span class="params">(<span class="keyword">int</span> fd)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//可以通过fd2指定返回的新的文件描述符。</span></span><br><span class="line"><span class="comment">// 如果fd2和fd相等，返回fd2</span></span><br><span class="line"><span class="comment">// 如果fd2和fd不等，关闭fd2，然后返回fd2。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dup2</span><span class="params">(inf fd, <span class="keyword">int</span> fd2)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>非原子操作的文件描述符复制可以通过<code>fcntl</code>实现。</p>
+<h2 id="sync-fsync和fdatasync"><code>sync</code>,<code>fsync</code>和<code>fdatasync</code></h2>
+<p>UNIX系统在内核中设置了缓冲区高速缓存或者页高速缓存，大多数磁盘的I/O都通过缓冲区进行。当我们向文件写入数据时，内核通常先将数据复制到缓冲区中，然后排入队列，晚些写入磁盘，这方方式叫做<strong>延迟写</strong>。<br>
+等到内核需要使用缓冲区存放其他磁盘块数据时，它会把所有延迟写数据写入磁盘。为了保证磁盘上实际文件系统和缓冲区中内容的一致性，UNIX提供了三个函数，它们的原型如下：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 1.将所有修改过的块缓冲区排入队列，然后就返回，并不等待实际写磁盘操作结束。</span></span><br><span class="line"><span class="comment">// 通常情况下，update系统守护进程一般每隔30秒调用一次`sync`函数，这就保证了定期将内核块缓冲区的内容写入磁盘。命令sync(1)也会调用`sync`函数。</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sync</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.只对文件描述符`fd`指定的一个文件起作用，等到写磁盘操作结束才返回。更新文件的数据和属性。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fsync</span><span class="params">(<span class="keyword">int</span> fd)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 3.只对文件描述符`fd`指定的一个文件起作用，等到写磁盘操作结束才返回。只更新文件的数据。</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fdatasync</span><span class="params">(<span class="keyword">int</span> fd)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h2 id="fcntl"><code>fcntl</code></h2>
+<p>fcntl是文件控制函数，它的原型如下：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fcntl</span><span class="params">(<span class="keyword">int</span> fd, <span class="keyword">int</span> cmd, ... <span class="comment">/* arg */</span> )</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>fcntl有很多种功能，这一节先介绍以下五种：</p>
+<ol>
+<li>复制一个已有的描述符，设置<code>cmd</code>为<code>F_DUPFD</code>或者<code>F_DUPFD_CLOEXEC</code>。</li>
+<li>获取和设置文件描述符标志，设置<code>cmd</code>为<code>F_GETFD</code>或者<code>F_SETFD</code>。当前只有一个文件描述符标志，就是<code>FD_CLOEXEC</code>。</li>
+<li>获取和设置文件状态标志，设置<code>cmd</code>为<code>F_GETFL</code>或者<code>F_SETFL</code>。<br>
+获取文件状态标志时，介绍<code>open</code>时给出了许多文件状态标志。对于五个互斥的权限，需使用<code>O_ACCMODE</code>取得访问方式位，然后与相应的权限比对。对于其他的权限，将返回值和相应的标志进行与操作，判断是否设置了相应位。<br>
+设置文件状态标志位时，可以更改的几个权限有，<code>O_APPEND</code>, <code>O_NONBLOCK</code>, <code>O_SYNC</code>, <code>O_DSYNC</code>, <code>O_RSYNC</code>, <code>O_FSYNC</code>, <code>O_ASYNC</code>。</li>
+<li>获取和设置异步I/O所有权，设置<code>cmd</code>为<code>F_GETOWN</code>或者<code>F_SETOWN</code>。</li>
+<li>获取和设置记录锁，设置<code>cmd</code>为<code>F_GETLK</code>，或者<code>F_SETLK</code>或者<code>F_SETLKW</code>。</li>
+</ol>
+<p>在修改文件描述符标志或者文件状态标志时，必须要先获得现在的标志值，然后对它进行修改，获得新的标志值，然后进行设置。不能单单设置一个标志值，否则会关闭以前设置的标志位。</p>
+<h2 id="ioctl"><code>ioctl</code></h2>
+<p>这个有点看不懂。</p>
+<h2 id="dev-fd"><code>/dev/fd</code></h2>
+<p>UNIX提供了<code>/dev/fd</code>目录，其中包含了名为0, 1, 2的文件。打开<code>/dev/fd/0</code>,<code>/dev/fd/1</code>, <code>/dev/fd/2</code>相当于复制描述符n。即：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fd = open(<span class="string">"/dev/df/0"</span>, mode);</span><br><span class="line">fd = dup(<span class="number">0</span>);</span><br></pre></td></tr></table></figure></p>
+<p>上述两行代码是相等的。文件描述符0和fd共享同一个文件表项。在Linux中，文件描述符被映射成指向底层物理文件的符号链接。比如打开<code>/dev/fd/0</code>时，实际上打开的是与标准输入关联的文件。返回的新文件描述符的mode和<code>/dev/fd</code>文件描述符的mode并不相关。所以，即使我们使用<code>O_RDWR</code> mode打开<code>/dev/fd/0</code>，也不能对<code>fd</code>进行写操作。<br>
+Linux下提供了<code>/dev/stdin</code>，<code>/dev/stdout</code>, <code>/dev/stderr</code>，它们和<code>/dev/fd/0</code>等都是一样的。在shell中，可以使用dev/fd作为参数，把标准输入和输出当做一个文件，可以像处理其他文件一样进行操作。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/18/how-C-program-works/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2020,823 +3093,11 @@ That’s, pointers in C (or C++) doesn’t have a fixed size.</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/13/C-compound-type-array/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/13/C-compound-type-array/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C/C++ compound type array</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-13 14:09:40" itemprop="dateCreated datePublished" datetime="2019-11-13T14:09:40+08:00">2019-11-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:38:11" itemprop="dateModified" datetime="2019-12-17T16:38:11+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="数组">数组</h2>
-<p>数组和<code>vector</code>类似，但是数组是定长的，大小不变，而<code>vector</code>是可变的，可以把<code>vector</code>看成可变长度的数组。<br>
-如果不清楚元素的确切个数，使用vector。</p>
-<h3 id="定义和初始化">定义和初始化</h3>
-<p>数组的维度必须是确定的，在编译时就知道，即是一个常量表达式（值不会改变并且在编译时就已知）。<br>
-默认情况下，数组的元素被默认初始化。和内置类型的变量一样，如果在数组内部定义了某种内置类型的数组，那么默认初始化得到的数组含有未定义的值。</p>
-<h3 id="显式的初始化数组">显式的初始化数组</h3>
-<ol>
-<li>可以忽略维度，编译器会根据初始值推测出来；</li>
-<li>如果指明维度，初始值的数量不应该超出指定的大小；</li>
-<li>如果维度比提供的初始值大，其它的元素被初始化成默认值（值初始化）。</li>
-</ol>
-<h3 id="数组不支持直接拷贝和直接赋值">数组不支持直接拷贝和直接赋值</h3>
-<p>不能将数组或的内容拷贝给其他数组作为初始值，也不能用数组为其他数组赋值。</p>
-<h3 id="数组和vector">数组和<code>vector</code></h3>
-<p>不允许使用一个数组为另一个数组赋初值，也不允许使用<code>vector</code>初始化数组。但是支持使用数组来初始化<code>vector</code>：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> arr[] = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br><span class="line"><span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; vi(begin(arr), end(arr));</span><br></pre></td></tr></table></figure></p>
-<h3 id="复杂数组的声明">复杂数组的声明</h3>
-<p>对于数组声明的理解，从变量名开始，先往右，再往左读。比如：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> arr[<span class="number">10</span>];    <span class="comment">//数组arr，有10个元素，每个元素是int类型</span></span><br><span class="line"><span class="keyword">int</span> *ptrs[<span class="number">10</span>];  <span class="comment">//数组ptrs，有10个int*类型元素，</span></span><br><span class="line"><span class="keyword">int</span> &amp;refs[<span class="number">10</span>];  <span class="comment">//错误</span></span><br><span class="line"><span class="keyword">int</span> (*Parray)[<span class="number">10</span>] = &amp;arr;   <span class="comment">//数组的指针Parray，指向一个有10个int类型的数组</span></span><br><span class="line"><span class="keyword">int</span> (&amp;arrRef)[<span class="number">10</span>] = arr;    <span class="comment">//数组的引用arrRef，引用一个10个int类型的数组</span></span><br><span class="line"><span class="keyword">int</span> *(&amp;<span class="built_in">array</span>)[<span class="number">10</span>] = ptrs;   <span class="comment">//数组的引用array，引用一个10个int*类型的数组</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="访问数组元素">访问数组元素</h2>
-<ol>
-<li>范围for 语句。</li>
-<li>下标运算符。下标的类型是<code>size_t</code>类型。它是一种机器相关的无符号类型，足够大能够表示内存中任意对象的大小。定义在<code>&lt;stddef.c&gt;</code>或者<code>&lt;cstddef&gt;</code>头文件中。</li>
-</ol>
-<h2 id="数组和指针">数组和指针</h2>
-<h3 id="数组名和指针">数组名和指针</h3>
-<ol>
-<li>一般情况下，可以使用取地址符获取某个对象的指针。数组元素也是对象，使用下标运算符得到数组指定位置的对象，使用取地址符就能得到指向该元素的指针。([1]3.5.3)</li>
-<li>数组的另一个特性是，在大多用到数组名字的时候，编译器都会自动的将它转换成一个指向数组首元素的指针，而且数组名是一个常量指针([1]3.5.3)。或者说数组作为右值时，编译器会自动将数组转化成数组首元素的地址([2)]。</li>
-<li>在C中，只有两种操作不把数组名字当做常量指针，当数组名字用作<code>sizeof</code>和<code>&amp;</code>的操作对象时。当<code>sizeof</code>的输入是数组名时，返回的是数组的长度（字节为单位）。而<code>&amp;</code>对数组名取地址时，返回的是指向数组的指针。</li>
-</ol>
-<p>在<a href="https://mxxhcm.github.io/2019/11/13/C-compound-type-pointer/">C++复合类型指针</a>中介绍了指针的算术运算。指针的算术运算有一个要求，就是指针必须指向数组中某一个元素。如下所示：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">size_t</span> sz = <span class="number">5</span>;</span><br><span class="line"><span class="keyword">int</span> arr[sz] = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>&#125;;</span><br><span class="line"><span class="keyword">int</span> *ip;</span><br><span class="line">ip = arr;   <span class="comment">//这个不是数组的赋值。事实上，这是指针的赋值。</span></span><br><span class="line"><span class="keyword">int</span> *ip2 = ip+<span class="number">4</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> *p = arr + sz;</span><br><span class="line"><span class="keyword">int</span> *p2 = arr + <span class="number">10</span>;</span><br></pre></td></tr></table></figure></p>
-<p>上述代码中，给<code>arr</code>加上<code>sz</code>时，编译器自动的将它转换成指向数组<code>arr</code>中首元素的指针。执行加法操作，其实就是指针的算术运算，最后指向<code>arr</code>的第五个元素之后的位置。如果超出了这个位置，就会出错，编译器不会检查这种错误。</p>
-<h3 id="下标引用">下标引用</h3>
-<ol>
-<li>对于内置数组来说，执行下标运算，相当于先将数组转换为首元素的指针，然后执行数组的算术运算。如下所示：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ia[] = &#123;<span class="number">0</span>, <span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>&#125;;</span><br><span class="line"><span class="keyword">int</span> i = ia[<span class="number">2</span>];  <span class="comment">//这行代码其实相当于以下两行代码</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> *p = ia;</span><br><span class="line">i = *(p+<span class="number">2</span>);</span><br></pre></td></tr></table></figure></li>
-</ol>
-<p>除了优先级外，下标运算和间接访问（解引用）完全一样。</p>
-<ol start="2">
-<li>
-<p><strong>而且只要指针指向的是数组中的元素或者数组中尾元素的下一个位置，都可以执行下标操作。当指针指向数组尾后元素时，该位置不可访问！但是可以访问其他位置。</strong><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *p = &amp;ia[<span class="number">2</span>];</span><br><span class="line"><span class="keyword">int</span> j = p[<span class="number">1</span>];</span><br><span class="line"><span class="keyword">int</span> k = p[<span class="number">-2</span>];</span><br></pre></td></tr></table></figure></p>
-</li>
-<li>
-<p>和标准库<code>string</code>，<code>vector</code>下标操作的不同之处在于，内置数组的下标操作中，，下标可以是负的，而标准<code>string</code>,<code>vector</code>中下标必须是无符号类型。</p>
-</li>
-</ol>
-<h3 id="数组-指针">数组!=指针</h3>
-<p>需要注意的是，数组和指针并不是等价的！考虑以下代码：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a[<span class="number">5</span>];</span><br><span class="line"><span class="keyword">int</span> *b;</span><br></pre></td></tr></table></figure>
-<p><code>a</code>和<code>b</code>不能互换使用，即使它们都可以使用指针运算，可以进行间接访问和下标引用操作。它们并不一样。<br>
-定义一个数组时，编译器会根据声明指定的元素数量为数组保留内存空间，然后再创建数组名，它的值是一个常量，指向这段空间的起始位置。定义一个指针变量时，编译器只为指针本身保留内存空间。所以，进行了上述定义以后，<code>*a</code>合法，而<code>*b</code>不合法。</p>
-<h3 id="c-中的数组和指针">C++中的数组和指针</h3>
-<ol>
-<li>使用decltype关键字对数组进行解析时，不会将数组转换成指针，它会将识别出数组类型。使用<code>auto</code>分析数组类型时会推断出指针类型。</li>
-<li>指针也是迭代器。通过数组名字或者数组首元素地址都可以得到指向数组第一个元素的指针。</li>
-<li><code>begin</code>和<code>end</code>获取数组首元素指针和尾后指针。尾后指针不能执行解引用和递增操作。</li>
-</ol>
-<h2 id="c风格字符串">C风格字符串</h2>
-<p>C风格字符串不是一种类型，而是一种约定俗成的写法。按照约定，C风格字符串存放在数组中，并且以空字符<code>'\0'</code>结束。关于C风格字符串更多的内容可以查看<a href></a>。</p>
-<h3 id="字符数组">字符数组</h3>
-<ol>
-<li>
-<p>使用列表初始化。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> str2[] = &#123;<span class="string">'h'</span>, <span class="string">'e'</span>, <span class="string">'l'</span>, <span class="string">'l'</span>, <span class="string">'o'</span>&#125;;</span><br><span class="line"><span class="keyword">char</span> str3[] = &#123;<span class="string">'h'</span>, <span class="string">'e'</span>, <span class="string">'l'</span>, <span class="string">'l'</span>, <span class="string">'o'</span>, <span class="string">'\0'</span>&#125;;</span><br></pre></td></tr></table></figure></p>
-</li>
-<li>
-<p>使用字符串字面值初始化。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> str1[] = <span class="string">"helloworld"</span>;</span><br><span class="line"><span class="comment">//编译器会隐式的在最后加一个"\0"，sizeof(str)会计算这个"\0", strlen(str)不会</span></span><br></pre></td></tr></table></figure></p>
-</li>
-</ol>
-<p>这种方式是字符数组初始化的简便写法。</p>
-<ol start="3">
-<li>指针和C风格字符串<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *messages= <span class="string">"hello world"</span>;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<p>对于以上三种方式来说，方式1和2是等价的，这种方式中的&quot;helloworld&quot;存放在栈中。而第三种有些特殊，在第三种方式中，&quot;hello world&quot;是一个字符串字面值常量，存放在数据区的字符串常量部分[6,7,8,9]。事实上，它是一个常量字符数组，是一个不可修改的左值[9]，把它作为右值时，会进行类型转换将左值转换成右值，即使用常量字符数组首字符的地址进行初始化。</p>
-<h3 id="c风格字符串操作函数">C风格字符串操作函数</h3>
-<p>C语言标准库<code>&lt;string.h&gt;</code>或者C++版本的<code>&lt;string.h&gt;</code>提供了以下的字符串操作函数，它们的参数必须是指向以空字符结束的字符数组的指针。在函数内存不会验证这些字符串参数是否满足要求。</p>
-<ul>
-<li><code>strlen(p)</code>，返回p指向的字符串的长度，不包括空字符</li>
-<li><code>strcmp(p1, p2)</code>，p1==p2，返回0,p1&gt;p2，返回正值，否则返回负值。</li>
-<li><code>strcat(p1, p2)</code>，p2拼接到p1，返回p1</li>
-<li><code>sctcpy(p1, p2)</code>，p2拷贝到p1，返回p1</li>
-</ul>
-<p>有一点需要注意的是，<code>p2</code>必须能够容纳下拼接后或者拷贝后的字符串，编译器不会进行检查，这需要由程序员自己进行检查。</p>
-<h3 id="c风格字符串的比较">C风格字符串的比较</h3>
-<p>两个C风格字符串的比较，其实比较的是指针而不是字符串本身。如下所示：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">char str1[] = &quot;hello&quot;;</span><br><span class="line">char str2[] = &quot;world&quot;;</span><br><span class="line">if(str1 &lt; str2) //这行代码比较的不是两个字符串，而是两个指针。</span><br></pre></td></tr></table></figure></p>
-<h3 id="string和c风格字符串的相互转换"><code>string</code>和C风格字符串的相互转换</h3>
-<ol>
-<li>允许使用以空字符结束的字符数组初始化<code>string</code>对象或者为<code>string</code>对象赋值。</li>
-<li><code>string</code>对象的加法运算中允许使用空字符结束的字符数组作为其运算对象，不能两个都是。</li>
-<li><code>string</code>对象的复合赋值运算中允许使用以空字符结束的字符数组作为其右侧运算对象。</li>
-</ol>
-<h4 id="string转换成c风格字符串"><code>string</code>转换成C风格字符串</h4>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">string s(&quot;hello world!&quot;);</span><br><span class="line">const char *str = s.c_str();</span><br></pre></td></tr></table></figure>
-<h2 id="多维数组">多维数组</h2>
-<p>多维数组指的是数组的数组。多维数组的定义方式如下：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ia[<span class="number">3</span>][<span class="number">4</span>];   <span class="comment">//大小为3的数组，每个元素是一个大小为4的数组</span></span><br><span class="line"><span class="keyword">int</span> arr[<span class="number">10</span>][<span class="number">20</span>][<span class="number">30</span>];    <span class="comment">//大小为10的数组，每个元素是大小为20的数组，每个数组的元素又是一个大小为30的数组。</span></span><br></pre></td></tr></table></figure></p>
-<h3 id="存储顺序">存储顺序</h3>
-<p>按照从右到左的维度顺序依次进行存储，实际上它们存储在了线性空间内。比如对于一个数组<code>int array[3][6]</code>，它在内存中的存储顺序其实是：<br>
-a[0][0], a[0][1], a[0][2], a[0][3], a[0][4], a[0][5], a[1][0], a[1][1], a[1][2], a[1][3], a[1][4], a[1][5], a[2][0], a[2][1], a[2][2], a[2][3], a[2][4], a[2][5]。</p>
-<h3 id="多维数组的初始化">多维数组的初始化</h3>
-<p>使用花括号括起来的一组值初始化多维数组。</p>
-<ol>
-<li>
-<p>指定所有元素的值。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a[<span class="number">3</span>][<span class="number">4</span>] = &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>, <span class="number">11</span>&#125;;</span><br></pre></td></tr></table></figure></p>
-</li>
-<li>
-<p>初始化一部分，其余的进行值初始化<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a[<span class="number">3</span>][<span class="number">4</span>] = &#123;<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;</span><br></pre></td></tr></table></figure></p>
-</li>
-</ol>
-<p>只对a[0]进行了初始化。</p>
-<ol start="3">
-<li>初始化每一行的部分元素。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> a[<span class="number">3</span>][<span class="number">4</span>] = &#123;&#123;<span class="number">0</span>&#125;, &#123;<span class="number">1</span>&#125;, &#123;<span class="number">2</span>&#125;, &#123;<span class="number">3</span>&#125;&#125;;</span><br></pre></td></tr></table></figure></li>
-</ol>
-<p>只对每一行的第一个值进行了初始化。</p>
-<h3 id="多维数组数组名和指针">多维数组数组名和指针</h3>
-<p>一维数组的数组名是一个指针，它的类型是指向元素类型的指针。多维数组也一样，多维数组的数组名也是一个指针，只不过它的类型是指向数组的指针。比如：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> matrix[<span class="number">3</span>][<span class="number">10</span>];</span><br></pre></td></tr></table></figure></p>
-<p>数组名<code>matrix</code>实际上是指向数组首元素的一个指针，数组首元素是一个<code>int [10]</code>类型的数组，所以<code>matrix</code>是一个指向<code>int [10]</code>类型数组的指针，解引用操作<code>*matrix</code>得到一个<code>int [10]</code>类型的数组，这个东西其实也是一个数组名，相当于一个指针，指向一个<code>int</code>类型。<code>*(*(matrix+1)+2)</code>其实就是<code>matrix[1][2]</code>。</p>
-<h3 id="多维数组的下标">多维数组的下标</h3>
-<p>如果要访问多维数组中的某个元素，必须指定所有维度的下标。即：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> matrix[<span class="number">3</span>][<span class="number">10</span>];</span><br><span class="line"><span class="comment">//要访问第2行的第16个元素，使用下标[1][15]。</span></span><br><span class="line">matrix[<span class="number">1</span>][<span class="number">15</span>];</span><br></pre></td></tr></table></figure></p>
-<p>但是，实际上，下标和间接引用是等价的，在多维数组中也一样。数组名<code>matrix</code>可以当成一个指针，<code>matrix +1</code>实际上指向第二个<code>int [10]</code>的数组，<code>*(matrix+1)</code>是一个<code>int [10]</code>的数组。</p>
-<h3 id="指向数组的指针">指向数组的指针</h3>
-<p>在下面的代码中，<code>pa</code>是一个int指针，<code>p</code>是一个<code>int [10]</code>类型的指针，指向<code>matrix</code>的第一行的10个元素。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> <span class="built_in">array</span>[<span class="number">10</span>], *pa = <span class="built_in">vector</span>;</span><br><span class="line"><span class="keyword">int</span> matrix[<span class="number">3</span>][<span class="number">10</span>], (*p)[<span class="number">10</span>] = matrix;</span><br></pre></td></tr></table></figure></p>
-<h2 id="指针数组">指针数组</h2>
-<p>我们可以创建指针的数组。例如：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *api[<span class="number">10</span>];</span><br></pre></td></tr></table></figure></p>
-<p>创建了一个数组，数组有10个元素，每个元素都是一个<code>int*</code>类型的指针。可以创建一个<code>char*</code>类型的指针数组：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">char</span> *keyword[] = &#123;</span><br><span class="line">    <span class="string">"do"</span>,</span><br><span class="line">    <span class="string">"while"</span>,</span><br><span class="line">    <span class="string">"if"</span>,</span><br><span class="line">    <span class="string">"for"</span>,</span><br><span class="line">    <span class="string">"return"</span>,</span><br><span class="line">    <span class="string">"switch"</span>,</span><br><span class="line">    <span class="literal">NULL</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>可以参考下面示意图：<br>
-<img src="/2019/11/13/C-compound-type-array/char_pointer_array.jpg" alt="char_pointer_array"></p>
-<h2 id="数组和左值">数组和左值</h2>
-<p>数组本身是一个不可修改的左值。</p>
-<h2 id="字符串字面值和左值">字符串字面值和左值</h2>
-<p>字符串字面值常量是一个常量，不可修改的左值，它以数组的形式存储。</p>
-<h2 id="为什么数组不支持赋值">为什么数组不支持赋值</h2>
-<ol>
-<li>不支持数组的拷贝是为了避免不必要的复制开销，数组复制将会导致连续的内存读和写。</li>
-<li>为什么用指针代替数组，不是因为他们太像了，而是避免赋值的开销，因为c里面只有值传递，如果对数组采用pass by value，会有很大的开销。</li>
-</ol>
-<h2 id="array-array和-array-0"><code>array</code>,<code>&amp;array</code>和<code>&amp;array[0]</code></h2>
-<p><code>array</code>和<code>&amp;array[0]</code>是一样的，它们和&amp;array有什么区别呢？[3]</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> <span class="built_in">array</span>[] = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"array=%p, &amp;array=%p\n"</span>, <span class="built_in">array</span>, &amp;<span class="built_in">array</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"array+1=%p: &amp;array+1=%p\n"</span>, <span class="built_in">array</span>+<span class="number">1</span>, &amp;<span class="built_in">array</span>+<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
-<p>程序的输出如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">array=0x7ffc50c541c0: &amp;array=0x7ffc50c541c0</span><br><span class="line">array+1=0x7ffc50c541c4: &amp;array+1=0x7ffc50c541d4</span><br></pre></td></tr></table></figure>
-<p>根据上面程序的输出，<code>array</code>和<code>&amp;array</code>得到了一样的地址。但是它们并不是一样的！！！它们的地址相同，但是地址的类型不同。<br>
-对指针进行算术运算，将<code>array</code>和<code>&amp;array</code>都加一，我们却得到了不同的结果。事实上，<code>array</code>是指向数组第一个元素的指针，而<code>&amp;array</code>是指向整个<code>int [5]</code>数组的指针。因此，根据指针运算规则，对地址<code>array</code>和<code>&amp;array</code>进行算术运算，得到了不同的结果。</p>
-<h2 id="数组和函数">数组和函数</h2>
-<h3 id="数组形参">数组形参</h3>
-<p>数组有两个特殊的性质：</p>
-<ol>
-<li>不允许拷贝，因为不能拷贝数组，所以不能以值传递的方式使用数组参数。</li>
-<li>在使用数组时通常会将其转换成指针。因为数组会被转换成指针，所以为函数传递数组时，实际上传递的是指向数组首元素的指针，这样子可以节约开销。</li>
-</ol>
-<h3 id="管理数组转换的指针">管理数组转换的指针</h3>
-<p>当传递给函数一个数组时，实参自动的转成指向数组首元素的指针，数组的大小对于函数的调用没有什么影响。因为数组是以指针的形式传递给函数的，所以函数其实是不知道数组的大小的，调用者应该为此提供一些额外的信息。通常有三种方式：</p>
-<ol>
-<li>显示传递一个表示数组大小的形参</li>
-<li>使用标记指定数组长度，要求数组本身包含一个结束标记，典型的例子是C风格字符串。</li>
-<li>使用标准库规范，传递数组首元素和尾后元素的指针。可以使用<code>begin</code>和<code>end</code>函数获得数组的首元素和尾后元素的指针。</li>
-</ol>
-<h3 id="数组形参和const">数组形参和<code>const</code></h3>
-<p>当函数不需要对数组进行写操作时，数组形参应该是指向<code>const</code>的指针。只有当函数确实需要改变数组元素值的时候，才把形参定义成指向非常量的指针。</p>
-<h3 id="数组引用形参">数组引用形参</h3>
-<p>C++允许将变量定义成数组的引用，形参也可以是数组的引用。此时，引用形参绑定到数组上。</p>
-<h3 id="传递多维数组">传递多维数组</h3>
-<p>C++其实没有真正的多维数组，多维数组其实就是数组的数组。把多维数组传递给函数时，传递的是指向数组首元素的指针。而多维数组是数组的数组，首元素本身就是一个数组，多维数组转换成指向数组的指针。数组第二维以及后面维度都是数组类型的一部分，不能省略。</p>
-<h2 id="函数返回值和数组">函数返回值和数组</h2>
-<p>因为数组不能被拷贝，所以函数不能返回数组。不过可以返回数组的指针或者引用。</p>
-<h3 id="声明一个返回数组指针的函数">声明一个返回数组指针的函数</h3>
-<p>返回数组指针的函数形式如下所示：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Type (*function(parameter_list)) [dimension]</span><br></pre></td></tr></table></figure></p>
-<p>类似于其他数组的声明，Type表示元素的类型，dimension表示数组的大小，<code>(*function(parameter_list))</code>两端的括号必须在，否则函数的返回类型就是指针的数组。如下示例:<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> (*func(<span class="keyword">int</span> i))[<span class="number">10</span>];</span><br></pre></td></tr></table></figure></p>
-<p><code>func</code>带有参数，说明它是一个函数，前面带有解引用操作，说明可以对函数调用的结果执行解引用操作，括号右面说明这是一个维度为10的数组，括号左面是数组类型。</p>
-<h3 id="使用尾置返回类型">使用尾置返回类型</h3>
-<p>可以使用尾置返回类型，任何函数的定义都能使用尾置返回，但是这种形式一般用于比较复杂的返回类型，比如数组的指针或者数组的引用。形式如下：<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">auto func() -&gt; int (*)[10];</span><br></pre></td></tr></table></figure></p>
-<h3 id="使用decltype">使用<code>decltype</code></h3>
-<p>可以使用<code>decltype</code>声明返回值类型。比如返回一个指针时，<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> odd[] = &#123;<span class="number">1</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">7</span>, <span class="number">9</span>&#125;;</span><br><span class="line"><span class="keyword">int</span> even[] = &#123;<span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">10</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">decltype</span>(odd) *func(<span class="keyword">int</span> i)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> (i%<span class="number">2</span>)? &amp;odd: &amp;even;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《C++ Primer第五版》<br>
-2.<a href="https://stackoverflow.com/questions/1641957/is-an-array-name-a-pointer" target="_blank" rel="noopener">https://stackoverflow.com/questions/1641957/is-an-array-name-a-pointer</a><br>
-3.<a href="https://www.geeksforgeeks.org/whats-difference-between-array-and-array-for-int-array5/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/whats-difference-between-array-and-array-for-int-array5/</a><br>
-4.<a href="https://stackoverflow.com/questions/3437110/why-do-c-and-c-support-memberwise-assignment-of-arrays-within-structs-but-not/3439969" target="_blank" rel="noopener">https://stackoverflow.com/questions/3437110/why-do-c-and-c-support-memberwise-assignment-of-arrays-within-structs-but-not/3439969</a><br>
-5.<a href="https://stackoverflow.com/questions/45656162/why-cant-a-modifiable-lvalue-have-an-array-type" target="_blank" rel="noopener">https://stackoverflow.com/questions/45656162/why-cant-a-modifiable-lvalue-have-an-array-type</a><br>
-6.<a href="https://stackoverflow.com/questions/1704407/what-is-the-difference-between-char-s-and-char-s" target="_blank" rel="noopener">https://stackoverflow.com/questions/1704407/what-is-the-difference-between-char-s-and-char-s</a><br>
-7.<a href="https://stackoverflow.com/questions/2938895/difference-between-char-a-string-char-p-string" target="_blank" rel="noopener">https://stackoverflow.com/questions/2938895/difference-between-char-a-string-char-p-string</a><br>
-8.<a href="http://c-faq.com/decl/strlitinit.html" target="_blank" rel="noopener">http://c-faq.com/decl/strlitinit.html</a><br>
-9.<a href="https://stackoverflow.com/questions/10004511/why-are-string-literals-l-value-while-all-other-literals-are-r-value" target="_blank" rel="noopener">https://stackoverflow.com/questions/10004511/why-are-string-literals-l-value-while-all-other-literals-are-r-value</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/13/C-getline-vs-C-getline/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/13/C-getline-vs-C-getline/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C getline vs C++ getline</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-13 13:11:10" itemprop="dateCreated datePublished" datetime="2019-11-13T13:11:10+08:00">2019-11-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:14:11" itemprop="dateModified" datetime="2019-12-17T15:14:11+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="getline-in-c">getline in C</h2>
-<h3 id="原型">原型</h3>
-<p>使用<code>man getline</code>可以看到UNIX提供的库函数<code>getline</code>的原型。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ssize_t</span> getline(<span class="keyword">char</span> **lineptr, <span class="keyword">size_t</span> *n, FILE *stream);</span><br><span class="line"><span class="keyword">ssize_t</span> getdelim(<span class="keyword">char</span> **lineptr, <span class="keyword">size_t</span> *n, <span class="keyword">int</span> delim, FILE *stream);</span><br></pre></td></tr></table></figure>
-<h3 id="性质">性质</h3>
-<ol>
-<li><code>getline()</code>从stream中读入一整行，</li>
-<li>如果<code>*lineptr</code>设置为NULL并且<code>*n=0</code>，<code>getline()</code>会分配一个buffer存储读入的line。这个buffer应该被用户程序释放，即使<code>geline()</code>失败了。</li>
-<li>如果<code>*lineptr</code>包含一个指针，大小是<code>*n</code>字节。当buffer不能存下读入的line时，<code>getline()</code>会使用<code>realloc(3)</code>对buffer进行resize，更新<code>*lineptr</code>和<code>*n</code>。</li>
-<li>只要成功调用，<code>*lineptr</code>和<code>*n</code>分别表示的是buffer的地址和分配的内存大小。</li>
-<li><code>getdelim()</code>和<code>getline()</code>一样，只不过可以指定一个delimiter而不是使用newline作为delimiter。任何delimiter都会存进<code>*lineptr</code>中。</li>
-<li>为什么<code>getline</code>需要的是<code>char**</code>而不是<code>char*</code>，因为<code>getline</code>在lineptr指向的空间不足时，重新分配内存，如果使用的是<code>char*</code>的话，当<code>getline</code>重新分配内存后，我们就失去了对<code>line</code>的访问，而使用一个<code>char**</code>类型的字符串，使用一个<code>char**</code>类型，即指针的指针记录每次分配的<code>char*</code>。[3]。</li>
-</ol>
-<h2 id="getline-in-c-v2">getline in C++</h2>
-<h3 id="cin-getline">cin.getline</h3>
-<p><code>cin.getline()</code>是操作C strings，即字符数组的。不会将<code>'\n'</code>读入。</p>
-<h3 id="std-getline">std::getline</h3>
-<ol>
-<li><code>std::getline()</code>是操作C++ strings的，即<code>std::string</code>。</li>
-<li><code>std::getline()</code>从input stream中读一个string，遇到delimiter就停止，默认的delimiter是<code>'\n'</code>。即使输入开始就是delimiter也会停止。</li>
-<li><code>std::getline()</code>会把delimiter也读进来，然后把读到的内容存到<code>string</code>对象中去，存入的内容不包含delimiter。</li>
-</ol>
-<h2 id="代码示例">代码示例</h2>
-<h3 id="getline">getline</h3>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span><br><span class="line">&#123;</span><br><span class="line">    FILE *stream = <span class="built_in">stdin</span>;</span><br><span class="line">    <span class="keyword">char</span> *line = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">size_t</span> len = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">ssize_t</span> nread;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> ((nread = getline(&amp;line, &amp;len, stream)) != <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Retrieved line of length %zu:\n"</span>, nread);</span><br><span class="line">        fwrite(line, nread, <span class="number">1</span>, <span class="built_in">stdout</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(line);</span><br><span class="line">    <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="getdelim">getdelim</h3>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span><br><span class="line">&#123;</span><br><span class="line">    FILE *stream = <span class="built_in">stdin</span>;</span><br><span class="line">    <span class="keyword">char</span> *line = <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">size_t</span> len = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">ssize_t</span> nread;</span><br><span class="line">    <span class="keyword">int</span> delim = <span class="string">','</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> ((nread = getdelim(&amp;line, &amp;len, delim, stream)) != <span class="number">-1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Retrieved line of length %zu:\n"</span>, nread);</span><br><span class="line">        fwrite(line, nread, <span class="number">1</span>, <span class="built_in">stdout</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">free</span>(line);</span><br><span class="line">    <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/4872361/why-are-there-two-different-getline-functions-if-indeed-there-are" target="_blank" rel="noopener">https://stackoverflow.com/questions/4872361/why-are-there-two-different-getline-functions-if-indeed-there-are</a><br>
-2.<a href="https://www.reddit.com/r/learnprogramming/comments/4fx64h/is_there_a_difference_between_cingetline_and/" target="_blank" rel="noopener">https://www.reddit.com/r/learnprogramming/comments/4fx64h/is_there_a_difference_between_cingetline_and/</a><br>
-3.<a href="https://stackoverflow.com/questions/5744393/why-is-the-first-argument-of-getline-a-pointer-to-pointer-char-instead-of-c/36098042" target="_blank" rel="noopener">https://stackoverflow.com/questions/5744393/why-is-the-first-argument-of-getline-a-pointer-to-pointer-char-instead-of-c/36098042</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/12/C-exit-and-return/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/11/12/C-exit-and-return/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/8/index.html">C/C++ exit and return</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-11-12 13:51:20" itemprop="dateCreated datePublished" datetime="2019-11-12T13:51:20+08:00">2019-11-12</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2020-02-23 18:00:59" itemprop="dateModified" datetime="2020-02-23T18:00:59+08:00">2020-02-23</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="进程终止">进程终止</h2>
-<p>总共有八种方式可以让进程终止，包括五种正常终止和三种异常终止，前五种是正常终止，后五种是异常终止：</p>
-<ol>
-<li>从<code>main</code>返回，相当于调用<code>exit</code>。</li>
-<li>调用<code>exit</code>，ISO C定义的，它的操作包括调用各个exit handler，处理所有标准I/O流。</li>
-<li>调用<code>_exit</code>或者<code>_Exit</code>，ISO C定义了<code>_Exit</code>，而POSIX.1说明了<code>_exit</code>。它的目的是提供一种无需运行exit handler或者信号处理程序而终止的方法。是否对标准I/O流进行flush，取决于实现。在UNIX中，<code>_Exit</code>和<code>_exit</code>是同义的，并不flush I/O流。</li>
-<li>最后一个线程从其启动例程返回</li>
-<li>最后一个线程调用<code>pthread_exit</code></li>
-<li>调用<code>abort</code></li>
-<li>接到一个<code>signal</code></li>
-<li>最后一个线程对取消请求做出响应</li>
-</ol>
-<p>不管进程以哪种方式终止，最后都会执行内核中的同一段代码，这段代码为相关进程关闭所有打开的文件描述符，释放它使用的内存。<br>
-为了让终止进程能够通知父进程它是如何终止的。对于3个终止函数(<code>exit</code>, <code>_exit</code>, <code>_Exit</code>)，将它们的<code>exit status</code>作为参数传递给函数。在异常终止的情况下，内核产生一个指示其异常终止原因的terminaiton status（终止状态）。在任意终止情况下，这个终止进程的父进程都能用<code>wait</code>或者<code>waitpid</code>函数获得它的终止状态。<br>
-<strong>如果父进程在子进程之前终止</strong>，那么对于父进程终止的所有进程，它们的父进程都变成<code>init</code>进程，终止状态返回到<code>init</code>进程。具体是怎么操作：对于一个即将终止的进程，内核检查所有活动进程，判断其中是否有待终止进程的子进程，如果有的话，将这些进程的父进程的ID改为<code>init</code>进程的ID 1。<br>
-<strong>如果子进程在父进程之前终止</strong>。内核为每一个终止进程保留了一部分信息，当终止进程的父进程调用<code>wait</code>或者<code>waitpid</code>时，可以获取这些信息，这些信息包含终止进程PID，进程的终止状态，进程占用的CPU时间总量。内核可以释放这些进程的内存，关闭打开的文件。如果一个进程终止了，但是它的父进程没有等待它，它被称为一个zombie（僵尸）进程。如果一个长期运行的进程，<code>fork</code>了很多子进程，除非父进程等到取得子进程的终止状态，要不它们就会变成僵尸进程。<strong>当父进程结束时，僵尸进程就会结束？？？将所有的子进程交给init进程？但是这些进程都已经结束了。</strong><br>
-<code>init</code>的子进程，不会变成僵尸进程，因为<code>init</code>进程被编写成无论何时只要有一个子进程终止，<code>init</code>就会调用一个<code>wait</code>函数获得其终止状态。</p>
-<h3 id="exit和-exit函数"><code>exit</code>和<code>_Exit</code>函数</h3>
-<h4 id="c11标准定义">C11标准定义</h4>
-<p><code>exit</code>定义在<code>&lt;stdlib.h&gt;</code>头文件中</p>
-<blockquote>
-<p>void exit( int exit_code ); (until C11)<br>
-_Noreturn void exit( int exit_code );(since C11)<br>
-Causes normal program termination to occur.<br>
-Several cleanup steps are performed:</p>
-</blockquote>
-<ul>
-<li>functions passed to atexit are called, in reverse order of registration（调用atexit注册的函数）</li>
-<li>all C streams are flushed and closed （冲洗C的缓冲区，不是不关闭流吗？？？）</li>
-<li>files created by tmpfile are removed  (删除临时文件）</li>
-<li>control is returned to the host environment. If exit_code is zero or EXIT_SUCCESS, an implementation-defined status, indicating successful termination is returned. If exit_code is EXIT_FAILURE, an implementation-defined status, indicating unsuccessful termination is returned. In other cases implementation-defined status value is returned.（将控制权返还给操作系统。）</li>
-</ul>
-<p><code>-Exit</code>定义在<code>&lt;stdlib.h&gt;</code>头文件中</p>
-<blockquote>
-<p>void _Exit( int exit_code ); (since C99) (until C11)<br>
-_Noreturn void _Exit( int exit_code );(since C11)<br>
-Causes normal program termination to occur without completely cleaning the resources.<br>
-Functions passed to at_quick_exit() or atexit() are not called. Whether open streams with unwritten buffered data are flushed, open streams are closed, or temporary files are removed is implementation-defined. （不调用atexit注册的函数，是否冲洗缓冲区，关闭打开的stream和删除临时文件是由实现定义的，UNIX都不做这些操作）<br>
-If exit_code is 0 or EXIT_SUCCESS, an implementation-defined status indicating successful termination is returned to the host environment. If exit_code is EXIT_FAILURE, an implementation-defined status, indicating unsuccessful termination, is returned. In other cases an implementation-defined status value is returned.</p>
-</blockquote>
-<h4 id="性质">性质</h4>
-<ol>
-<li><code>exit</code>和<code>_Exit</code>是ISO C的内容，而<code>_exit</code>是POSIX.1的内容。</li>
-<li>它们都用于正常终止一个程序，<code>_Exit</code>和<code>_exit</code>立刻进入内核，<code>_Exit</code>和<code>_exit</code>是否冲洗缓冲区是由实现定义的，UNIX上选择不冲洗。而<code>exit</code>先执行一些清理操作，然后返回内核，<code>exit</code>函数首先调用<code>atexit</code>函数登记的终止处理程序，然后冲洗标准I/O流，现代的<code>exit</code>实现都不会关闭标准I/O流，之前的一些实现还会关闭标准I/O流，这在调用<code>vfork</code>的时候可能会出现问题，还会删除临时文件。</li>
-<li>三个退出函数都需要一个整形的参数，被称为exit status。</li>
-<li>如果满足以下条件：
-<ul>
-<li>调用这三个函数不带终止状态</li>
-<li><code>main</code>执行了一个不带返回值的<code>return</code>语句</li>
-<li><code>main</code>没有声明返回类型为整形，进程的终止状态是未定义的。<br>
-那么这个进程的终止状态是未定义的。</li>
-</ul>
-</li>
-<li><code>main</code>返回返回一个整型值和用该值调用<code>exit</code>是等价的。对于某些C编译器和UNIX lint(1)程序来说，会产生警告信息，因为这些编译器并不了解<code>main</code>中的<code>return</code>和<code>exit</code>的作用是相同的。避开这种警告信息的一种方法是在<code>main</code>中使用<code>return</code>而不是<code>exit</code>，这样做的结果是UNIX grep命令无法找出程序中所有的<code>exit</code>调用。另一个方法是将<code>main</code>声明为<code>void</code>而不是<code>int</code>，然后调用<code>exit</code>，但是这不并不是标准，ISO C和POSIX.1定义<code>main</code>的返回值应当是带符号整形。</li>
-</ol>
-<h4 id="函数原型">函数原型</h4>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">exit</span><span class="params">(<span class="keyword">int</span> status)</span></span>;</span><br><span class="line"><span class="keyword">void</span> _Exit(<span class="keyword">int</span> status);</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> _exit(<span class="keyword">int</span> status);</span><br></pre></td></tr></table></figure>
-<h3 id="atexit"><code>atexit</code></h3>
-<h4 id="c11标准定义-v2">C11标准定义</h4>
-<blockquote>
-<p>Registers the function pointed to by func to be called on normal program termination (via exit() or returning from main()). The functions will be called in reverse order they were registered, i.e. the function registered last will be executed first.<br>
-The same function may be registered more than once.<br>
-atexit is thread-safe: calling the function from several threads does not induce a data race.<br>
-The implementation is guaranteed to support the registration of at least 32 functions. The exact limit is implementation-defined.</p>
-</blockquote>
-<h4 id="性质-v2">性质</h4>
-<p>每个进程可以通过<code>atexit</code> register至多32个由<code>exit</code>自动调用的函数，这些函数被称为exit handler（终止处理程序）。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">atexit</span><span class="params">(<span class="keyword">void</span> (*function)(<span class="keyword">void</span>))</span></span>;</span><br></pre></td></tr></table></figure></p>
-<ol>
-<li><code>atexit</code>的参数是一个函数地址，不会有返回值</li>
-<li><code>exit</code>调用<code>atexit</code> register的程序的顺序和使用<code>atexit</code>进行register的顺序相反。</li>
-<li>ISO C和POSIX.1标准规定，<code>exit</code>首先调用各个exit handler，然后使用<code>fclose</code>关闭所有标准I/O流。</li>
-<li>POSIX.1对ISO C进行了扩展，如果程序调用了任何<code>exec</code>函数，清除exit handler。</li>
-<li>内核执行一个程序的唯一方法是调用一个<code>exec</code>函数。进程自愿终止的唯一办法是显式或者隐式的（通过<code>exit</code>）调用<code>_exit</code>和<code>_Exit</code>。</li>
-</ol>
-<h2 id="return和exit"><code>return</code>和<code>exit</code></h2>
-<ol>
-<li><code>return</code>是C/C++语言的关键字，是语言级别的；而<code>exit()</code>是一个函数，它是对系统调用<code>_exit()</code>的封装，是系统调用层次的。</li>
-<li><code>return</code>结束一个函数的执行；而<code>exit()</code>结束一个进程，删除进程使用的内存空间，并且将应用程序的一个状态返回给OS，这个状态标识了进程的运行信息。</li>
-<li><code>exit(0)</code>表示正常运行程序并退出程序，<code>exit(1)</code>表示非正常运行导致退出程序；<code>return 0</code>和<code>retrun 1</code>能够起类似的作用。</li>
-<li>对于我们自定的函数，可以return给操作系统，交给相关的处理程序调用exit或者程序自身直接调用exit。</li>
-</ol>
-<h3 id="c-中的区别">C++中的区别</h3>
-<p>在C++中，退出程序时，<code>exit</code>并不会调用局部非静态对象的析构函数，而<code>return</code>会调用局部非静态对象的析构函数。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://stackoverflow.com/questions/461449/return-statement-vs-exit-in-main" target="_blank" rel="noopener">https://stackoverflow.com/questions/461449/return-statement-vs-exit-in-main</a><br>
-2.<a href="https://www.geeksforgeeks.org/return-statement-vs-exit-in-main/" target="_blank" rel="noopener">https://www.geeksforgeeks.org/return-statement-vs-exit-in-main/</a><br>
-3.<a href="https://www.zhihu.com/question/26591968/answer/33839473" target="_blank" rel="noopener">https://www.zhihu.com/question/26591968/answer/33839473</a><br>
-4.<a href="https://www.zhihu.com/question/26591968/answer/33330774" target="_blank" rel="noopener">https://www.zhihu.com/question/26591968/answer/33330774</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/7/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/33/">33</a><a class="extend next" rel="next" href="/page/9/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <a class="extend prev" rel="prev" href="/page/7/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><span class="page-number current">8</span><a class="page-number" href="/page/9/">9</a><span class="space">&hellip;</span><a class="page-number" href="/page/34/">34</a><a class="extend next" rel="next" href="/page/9/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -2881,7 +3142,7 @@ The implementation is guaranteed to support the registration of at least 32 func
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">329</span>
+                    <span class="site-state-item-count">332</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>

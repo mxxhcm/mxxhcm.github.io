@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="进程间通信 Linux及城建通信可以分为两类，一类是同一台主机之间的进程间通信，另一类是网络之间的进程通信。 同一台主机之间的进程通信有以下几种：  管道 协程 FIFO 消息队列 信号量 共享存储 UNIX域套接字。  而网络通信主要就是套接字通信。 管道 管道的局限性：  半双工。（虽然大多数实现都是全双工，为了移植性，假设是半双工）。 管道只能在具有公共祖先的两个进程之间使用。  FIFO没">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-03-08T01:51:59.613Z">
+<meta property="og:updated_time" content="2020-03-12T13:38:39.252Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UNIX IPC">
 <meta name="twitter:description" content="进程间通信 Linux及城建通信可以分为两类，一类是同一台主机之间的进程间通信，另一类是网络之间的进程通信。 同一台主机之间的进程通信有以下几种：  管道 协程 FIFO 消息队列 信号量 共享存储 UNIX域套接字。  而网络通信主要就是套接字通信。 管道 管道的局限性：  半双工。（虽然大多数实现都是全双工，为了移植性，假设是半双工）。 管道只能在具有公共祖先的两个进程之间使用。  FIFO没">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2020-03-08 09:51:59" itemprop="dateModified" datetime="2020-03-08T09:51:59+08:00">2020-03-08</time>
+                <time title="修改时间：2020-03-12 21:38:39" itemprop="dateModified" datetime="2020-03-12T21:38:39+08:00">2020-03-12</time>
               
             
           </span>
@@ -488,12 +488,61 @@ FIFO的用处：</p>
 <li>shell命令将数据从一条管道传送到另一条时，无需创建中间临时文件。</li>
 <li>客户进程-服务器进程应用程序中，FIFO用作汇集点，在服务器和客户端之间传送数据。</li>
 </ol>
-<h2 id="消息队列">消息队列</h2>
-<h2 id="信号量">信号量</h2>
-<h2 id="共享存储">共享存储</h2>
-<h2 id="unix域套接字">UNIX域套接字</h2>
+<h2 id="xsi-ipc">XSI IPC</h2>
+<p>XSI IPC包含三种，分别是消息队列，信号量，共享内存。IPC通过IPC描述符进行访问（和文件描述很像）。但是和文件不同的是，IPC都没有名字，所以要创建多个IPC，怎么区分它们，这个就是key（键）的作用，每一个IPC都有一个键（和文件名字很像）。<br>
+问题就是怎么让通信的进程知道它们要使用的IPC描述符？</p>
+<ol>
+<li>使用IPC_PRIVATE创建一个新的IPC（IPC_PRIVATE保证创建一个新的IPC，将返回的IPC描述符存放在一个文件中。或者就是父子进程之间，直接复制IPC描述符。</li>
+<li>在一个公用的头文件中指定一个键，这个键被父进程和子进程都认可。这种可能是键已经被用过了，再创建的时候就会出错。</li>
+<li>根据一个路径名和项目ID创建一个键。</li>
+</ol>
+<p>不能使用IPC_PRIVATE作为一个键来引用消息队列，引用消息队列时要绕过get函数。</p>
+<h3 id="优点和缺点">优点和缺点</h3>
+<ol>
+<li>IPC都是在系统范围内起作用的，没有引用计数，所以，如果进程创建了一个IPC，然后退出，那么这些IPC都不会被删除，需要显式的删除。在使用信号量时，如果进程退出时没有释放信号量，信号量不会被释放。</li>
+<li>IPC结构在文件系统中没有名字，所以不能使用操作文件的那些函数，需要增加新的系统调用和命令。<br>
+此外，没有办法使用多路转接。</li>
+<li>如果显式的删除IPC的话，不管当前有多少个进程在使用，都会被删除。下一次再使用的话就会报错。</li>
+</ol>
+<h2 id="xsi消息队列">XSI消息队列</h2>
+<p>消息队列</p>
+<h2 id="xsi信号量">XSI信号量</h2>
+<p>XSI信号量是一个计数器，用于为多个进程提供对共享数据的访问。但是XSI信号量不是单个信号量，而是一个信号量的集合。<br>
+需要使用<code>semget</code>创建一个信号量集合（数量可以等于1）。<br>
+然后使用<code>semget</code>获得一个信号量描述符（成功创建时返回的也是信号量描述符）。<br>
+接下来使用<code>semctl</code>设置每个信号量的值。<br>
+使用<code>semop</code>控制信号量值的增和减。</p>
+<p>XSI信号量的缺点：</p>
+<ol>
+<li>是一个信号集合。</li>
+<li>信号量的创建和初始化是分开的。</li>
+<li>当进程退出时，可能没有释放分配给他的信号量，使用SEM_UNDO解决。</li>
+</ol>
+<h2 id="xsi共享内存-2">XSI共享内存[2]</h2>
+<p>共享内存允许两个或者多个进程共享一个给定的存储区。因为数据不需要在客户进程和服务器进程之间进行复制，这是最快的一种IPC。<br>
+使用共享内存时，需要注意的是，在多个进程之间同步访问一个给定的存储区。通常使用信号量同步共享内存，当然也可以使用互斥量和记录锁，线程锁共享。</p>
+<p>共享内存和存储IO映射的区别，用mmap映射的存储段是和文件相关的，而XSI共享内存并没有这种限制。</p>
+<h2 id="它们之间的区别">它们之间的区别</h2>
+<ol>
+<li>信号量和互斥量的区别。都表示对于资源的访问权，但是信号量的资源计数可以超过1，而互斥量的资源计数为1。</li>
+<li>消息队列。</li>
+</ol>
+<h2 id="进程间传递字符串">进程间传递字符串</h2>
+<p>若果需要两个进程间的双向数据流，可以使用消息队列和全双工管道。</p>
+<ol>
+<li>全双工管道。</li>
+<li>消息队列。先创建一个消息队列，然后调用fork，它们就可以实现通信了。因为消息队列不能使用IPC_PRIVATE作为一个KEY打开消息队列。</li>
+</ol>
+<h2 id="进程同步的方法">进程同步的方法</h2>
+<p>信号量，记录锁和互斥量的比较。如果在多个进程中共享同一个资源，可以使用这三种方法的任意一种来实现。</p>
+<ol>
+<li>使用信号量。创建一个包含一个成员的信号量集合，将该信号量的值初始化为1。为了分配资源，以sem_op为-1调用semop，为了释放资源，以sem_op为+1调用semop。对每个操作都指定SEM_UNDO，处理在未释放资源条件下进程终止的情况。</li>
+<li>使用记录锁。创建一个空文件，并且使用该文件的第一个字节（无需存在）作为锁字节，为了分配资源，先对该字节获得一个写锁。释放资源时，对该字节解锁。记录锁的性质保证了一个锁的持有者进程终止时，内核会自动释放资源。</li>
+<li>使用互斥量。所有的进程将相同的文件映射到它们的地址空间中，使用PTHREAD_PROCESS_SHARED互斥量属性在文件的相同偏移处初始化互斥量。为了分配资源，对互斥量加锁。为了释放资源，解锁互斥量。如果一个进程没有释放互斥量而终止，恢复是非常困难的。</li>
+</ol>
 <h2 id="参考文献">参考文献</h2>
-<p>1.《APUE》第三版</p>
+<p>1.《APUE》第三版<br>
+2.<a href="https://www.cnblogs.com/my_life/articles/4538299.html" target="_blank" rel="noopener">https://www.cnblogs.com/my_life/articles/4538299.html</a></p>
 
       
     </div>
@@ -621,7 +670,7 @@ FIFO的用处：</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">329</span>
+                    <span class="site-state-item-count">332</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -915,7 +964,7 @@ FIFO的用处：</p>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#进程间通信"><span class="nav-number">1.</span> <span class="nav-text">进程间通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#管道"><span class="nav-number">2.</span> <span class="nav-text">管道</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数popen和pclose"><span class="nav-number">2.1.</span> <span class="nav-text">函数popen和pclose</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#协同进程"><span class="nav-number">3.</span> <span class="nav-text">协同进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fifo"><span class="nav-number">4.</span> <span class="nav-text">FIFO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#消息队列"><span class="nav-number">5.</span> <span class="nav-text">消息队列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#信号量"><span class="nav-number">6.</span> <span class="nav-text">信号量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#共享存储"><span class="nav-number">7.</span> <span class="nav-text">共享存储</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#unix域套接字"><span class="nav-number">8.</span> <span class="nav-text">UNIX域套接字</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">9.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#进程间通信"><span class="nav-number">1.</span> <span class="nav-text">进程间通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#管道"><span class="nav-number">2.</span> <span class="nav-text">管道</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数popen和pclose"><span class="nav-number">2.1.</span> <span class="nav-text">函数popen和pclose</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#协同进程"><span class="nav-number">3.</span> <span class="nav-text">协同进程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#fifo"><span class="nav-number">4.</span> <span class="nav-text">FIFO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xsi-ipc"><span class="nav-number">5.</span> <span class="nav-text">XSI IPC</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#优点和缺点"><span class="nav-number">5.1.</span> <span class="nav-text">优点和缺点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xsi消息队列"><span class="nav-number">6.</span> <span class="nav-text">XSI消息队列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xsi信号量"><span class="nav-number">7.</span> <span class="nav-text">XSI信号量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xsi共享内存-2"><span class="nav-number">8.</span> <span class="nav-text">XSI共享内存[2]</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#它们之间的区别"><span class="nav-number">9.</span> <span class="nav-text">它们之间的区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程间传递字符串"><span class="nav-number">10.</span> <span class="nav-text">进程间传递字符串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#进程同步的方法"><span class="nav-number">11.</span> <span class="nav-text">进程同步的方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">12.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
