@@ -327,6 +327,480 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/17/virtual-memory-csapp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/12/17/virtual-memory-csapp/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">virtual memory csapp</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-17 02:55:10" itemprop="dateCreated datePublished" datetime="2019-12-17T02:55:10+08:00">2019-12-17</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-03-08 09:52:50" itemprop="dateModified" datetime="2020-03-08T09:52:50+08:00">2020-03-08</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机系统/" itemprop="url" rel="index"><span itemprop="name">计算机系统</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="物理和虚拟寻址">物理和虚拟寻址</h2>
+<p>计算机系统的主存被组织成一个由M个连续的字节数组，每字节都有一个唯一的<strong>物理地址</strong>。物理寻址：CPU使用物理地址访问主存。<br>
+早期PC使用物理寻址，现代处理器使用虚拟寻址。通过虚拟寻址，CPU通过一个虚拟地址访问主存，这个虚拟地址在送到内存前被转换成适当的物理地址。实现地址翻译的是内存管理单元(MMU)。</p>
+<h2 id="地址空间">地址空间</h2>
+<p>地址空间是一个非负整数地址的集合，如果地址空间是连续的，<strong>叫做线性地址空间</strong>。<br>
+带有虚拟内存的系统，CPU从一个有N个地址的地址空间中生成<strong>虚拟地址</strong>，这个地址空间称为<strong>虚拟地址空间</strong>：{0,1,…, N-1}，N一般是2的n次幂（n为32或者64)，也叫做n位地址空间。<br>
+这个系统还需要还有一个<strong>物理地址空间</strong>，对应系统中物理内存的M个字节：{0,1,…,M-1}。M不要求是2的幂，但是一般假设M是2的m次幂。</p>
+<p>地址空间区分了数据对象（字节）和它们的属性（地址）。允许每个数据对象有多个独立的地址，比如主存中的每个字节可能有一个虚拟地址，也有一个物理地址。</p>
+<h2 id="虚拟内存作为缓存的工具">虚拟内存作为缓存的工具</h2>
+<p><strong>虚拟内存可以用来缓存更大的虚拟地址空间的页面。</strong><br>
+从概念上而言，<strong>虚拟内存被组织为一个由存放在磁盘上的N个连续的字节大小的单元组成的数组</strong>。每个字节都有一个唯一的虚拟地址，作为数组的索引。磁盘上数组的内容被缓存在主存中。<br>
+虚拟内存系统将虚拟内存分割成虚拟页(VP)，虚拟页存储在磁盘上。物理内存被分割成物理页(PP，也叫页帧)，物理页缓存在DRAM上。他们的大小都为P字节。</p>
+<p>虚拟页面的集合被分为三个不相交的子集：</p>
+<ol>
+<li>未分配的。虚拟内存系统还没有创建或者分配的页，未分配的块没有任何数据和他们相关联，也就不占用磁盘空间。</li>
+<li>缓存的。已经缓存在物理内存中的已分配页。</li>
+<li>未缓存的。未缓存在物理内存中的已分配页。</li>
+</ol>
+<h3 id="dram缓存的组织结构">DRAM缓存的组织结构</h3>
+<p>DRAM缓存表示虚拟内存系统的缓存，它在主存中缓存虚拟页。<br>
+SRAM缓存表示CPU和主存之间的L1, L2, L3高速缓存。<br>
+DRAM缓存的不命中率要比SRAM中的不命中昂贵的多，因为DRAM不命中，需要磁盘提供服务，而SRAM不命中需要DRAM提供服务。而DRAM比SRAM慢10倍，而磁盘比DRAM慢10万倍。而且从磁盘的第一个扇区读取第一个字节的时间开销比起读这个扇区中的连续字节要慢10万被。<br>
+因为大的不命中处罚和访问第一个字节的开销，虚拟页往往很大，通过是4KB到2MB。优于大的不命中处罚，DRAM缓存是全相连的，任何虚拟页都可以放置在任何物理页中。</p>
+<h3 id="页表">页表</h3>
+<p>页表是一个数据结构，它和操作系统，MMU（内存管理单元中的）地址翻译硬件，一起提供了虚拟页的缓存的查找（当前虚拟页是否缓存在某个物理页中）和替换（如果不在替换哪个）等。<br>
+页表是一个常驻的主存，它是一个页表条目(page table entry)的数组，虚拟地址空间中的每个页在页表中都有一个PTE。假设PTE是由一个有效位和n位地址空间组成的，如果设置了有效位，地址指向物理页的起始位置，如果没有设置有效位，地址指向虚拟页在磁盘上的起始位置。</p>
+<h3 id="页命中和缺页">页命中和缺页</h3>
+<p>DRAM缓存不命中称为缺页page fault，命中叫做页命中。</p>
+<ol>
+<li>如果想要读取某个字，地址翻译硬件根据虚拟地址查找页表，然后找到一个页表项</li>
+<li>如果页表项标记当前页被缓存了，地址翻译硬件根据PTE中的物理内存地址构造这个字的物理地址，返回。</li>
+<li>如果页表项标记当前页没有被缓存，触发缺页异常，调用内核的缺页异常处理程序，选择一个物理页中的内存进行替换。<br>
+替换的内容：将替换页的更新写入磁盘，以及将替换页的页表条目更新为没有缓存。将访问页从磁盘复制到主存，更新该页相应的页表项。异常处理程序返回时会重新启动导致缺页的指令，这个指令把缺页的虚拟地址重新发送到地址翻译硬件。接下来就相当于执行步骤2。</li>
+</ol>
+<p>页面调度（交换）是指在磁盘和内存之间传送页的活动。<br>
+直到有不命中发生时，才进行页面调入（换入）和页面调出（换出）的策略叫做按需页面调度。</p>
+<h3 id="分配页面">分配页面</h3>
+<p>比如调用malloc就会触发分配页面的操作：在磁盘上分配空间，然后它们映射到物理内存中的物理页面，并更新相应的页表项。</p>
+<h3 id="局部性和抖动">局部性和抖动</h3>
+<p>局部性使得虚拟内存的性能很好。尽管在整个运行过程中引用的不同页面总数可能超过物理内存的大小，但是局部性保证了在任意时刻，程序趋向于在一个较小的活动页面集合上工作，这个集合叫做工作集或者常驻集合。<br>
+不过，当工作集的大小超过物理内存的大小时，就会发生抖动（即页面不断的被换进换出）。</p>
+<h2 id="虚拟内存作为内存管理的工具">虚拟内存作为内存管理的工具</h2>
+<p>操作系统为每个进程都提供了一个独立的页表，也就是一个独立的地址空间。多个虚拟页面可以映射到同一个物理页面。<br>
+按需页面调度和独立的虚拟地址空间结合，有很多好处：</p>
+<ol>
+<li>简化链接。</li>
+<li>简化加载。</li>
+<li>简化共享。</li>
+<li>简化内存分配。</li>
+</ol>
+<h2 id="虚拟内存作为内存保护的工具">虚拟内存作为内存保护的工具</h2>
+<p>虚拟内存通过在页表项中添加SUP，READ，WRITE等字段，控制进程的权限。设置SUP位，表示只有内核进程可以访问页面，否则就没有权限。<br>
+违反了条件，就会触发Segmentation fault。</p>
+<h2 id="地址翻译">地址翻译</h2>
+<p>形式上来说，地址翻译是一个N元素的虚拟地址空间(Virtual Adress Space)中的元素和一个M元素的物理地址空间(Phicias Adress Space)中元素之间的映射。</p>
+<p>CPU的页表基址寄存器（Page table base register, PTBR)指向当前页表。n位的地址空间包含两部分，一个是p位的虚拟页面偏移(virtual page offset, VPO)，一个是n-p位的虚拟页号(Virtual Page Number, VPN)。</p>
+<p>物理和虚拟页面都是P字节的，所以VPO和PPO是相同的。</p>
+<h3 id="结合高速缓存和虚拟内存">结合高速缓存和虚拟内存</h3>
+<h3 id="利用tlb加速地址翻译">利用TLB加速地址翻译</h3>
+<h3 id="多级页表">多级页表</h3>
+<h3 id="端到端的地址翻译">端到端的地址翻译</h3>
+<h2 id="intel-core-i7-linux-内存系统">Intel Core i7/Linux 内存系统</h2>
+<h2 id="内存映射">内存映射</h2>
+<p>Linux通过将一个虚拟内存区域和磁盘上的对象关联起来，初始化这个虚拟内存区域中的内容，这个过程叫做内存映射(memory mapping)。</p>
+<h3 id="再看共享对象">再看共享对象</h3>
+<h3 id="再看fork函数">再看fork函数</h3>
+<h3 id="再看execve函数">再看execve函数</h3>
+<h3 id="使用mmap函数的用户级内存映射">使用mmap函数的用户级内存映射</h3>
+<h2 id="动态内存分配">动态内存分配</h2>
+<h3 id="malloc和free">malloc和free</h3>
+<h3 id="为什么要使用动态内存分配">为什么要使用动态内存分配</h3>
+<h3 id="分配器的要求和目标">分配器的要求和目标</h3>
+<h3 id="碎片">碎片</h3>
+<h3 id="实现问题">实现问题</h3>
+<h3 id="隐式空闲链表">隐式空闲链表</h3>
+<h3 id="放置已分配的块">放置已分配的块</h3>
+<h3 id="分隔空闲块">分隔空闲块</h3>
+<h3 id="获取额外的堆内存">获取额外的堆内存</h3>
+<h3 id="合并空闲块">合并空闲块</h3>
+<h3 id="带边界标记的合并">带边界标记的合并</h3>
+<h3 id="实现一个简单的分配器">实现一个简单的分配器</h3>
+<h3 id="显式空闲链表">显式空闲链表</h3>
+<h3 id="分离的空闲链表">分离的空闲链表</h3>
+<h2 id="垃圾收集">垃圾收集</h2>
+<h3 id="基本知识">基本知识</h3>
+<h3 id="mark和sweep垃圾收集器">Mark和Sweep垃圾收集器</h3>
+<h3 id="c程序的保守mark和sweep">C程序的保守Mark和Sweep</h3>
+<h2 id="c中常见的内存相关错误">C中常见的内存相关错误</h2>
+<h3 id="解引用坏指针">解引用坏指针</h3>
+<h3 id="读取未初始化的内存">读取未初始化的内存</h3>
+<h3 id="允许栈缓冲区溢出">允许栈缓冲区溢出</h3>
+<h3 id="假设指针和它们指向的对象是相同大小的">假设指针和它们指向的对象是相同大小的</h3>
+<h3 id="造成错位错误">造成错位错误</h3>
+<h3 id="引用指针-而不是它所指向的对象">引用指针，而不是它所指向的对象</h3>
+<h3 id="误解引用指针">误解引用指针</h3>
+<h3 id="引用不存在的变量">引用不存在的变量</h3>
+<h3 id="引用空闲堆块中的数据">引用空闲堆块中的数据</h3>
+<h3 id="引起内存泄露">引起内存泄露</h3>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《CSAPP》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/16/storage-technologies-csapp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/12/16/storage-technologies-csapp/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">storage technologies csapp</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-12-16 22:11:33" itemprop="dateCreated datePublished" datetime="2019-12-16T22:11:33+08:00">2019-12-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 16:42:31" itemprop="dateModified" datetime="2019-12-17T16:42:31+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/计算机系统/" itemprop="url" rel="index"><span itemprop="name">计算机系统</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="存储技术-storage-technologies">存储技术（storage technologies）</h2>
+<h3 id="随机访问存储器-random-acess-memory">随机访问存储器（Random Acess Memory）</h3>
+<h4 id="静态ram-sram">静态RAM(SRAM)</h4>
+<h4 id="动态ram-dram">动态RAM(DRAM)</h4>
+<h4 id="传统的dram">传统的DRAM</h4>
+<h4 id="内存模块">内存模块</h4>
+<h4 id="其他dram">其他DRAM</h4>
+<ul>
+<li>Fast page mode DRAM (FPM DRAM)</li>
+<li>Extended data out DRAM (EDO DRAM)</li>
+<li>Synchronous DRAM (SDRAM)</li>
+<li>Double Data-Rate Synchronous DRAM (DDR SDRAM)</li>
+<li>Video RAM (VRAM)</li>
+</ul>
+<h3 id="非易失型存储器">非易失型存储器</h3>
+<ul>
+<li>只读存储器,Read-Only Memory (ROM)</li>
+<li>可编程只读ROM, Programmable PROM (PROM)</li>
+<li>可擦写可编程ROM, Erasable Programmable ROM (EPROM)</li>
+<li>Eletrically Erasable PROM (EEPROM)</li>
+</ul>
+<h3 id="访问主存">访问主存</h3>
+<h2 id="局部性-locality">局部性(locality)</h2>
+<h2 id="存储器层次结构">存储器层次结构</h2>
+<h2 id="高速缓存存储器">高速缓存存储器</h2>
+<h3 id="通用的高速缓存存储器组织结构">通用的高速缓存存储器组织结构</h3>
+<h3 id="直接映射高速缓存">直接映射高速缓存</h3>
+<h3 id="组相连高速缓存">组相连高速缓存</h3>
+<h3 id="全相连高速缓存">全相连高速缓存</h3>
+<h2 id="高速缓存对程序性能的影响">高速缓存对程序性能的影响</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《CSAPP》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/16/assembly-x86-64/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2350,359 +2824,6 @@ $$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/10/C-problems/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/12/10/C-problems/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">C/C++ problems</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-12-10 19:09:03" itemprop="dateCreated datePublished" datetime="2019-12-10T19:09:03+08:00">2019-12-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2020-01-01 14:10:09" itemprop="dateModified" datetime="2020-01-01T14:10:09+08:00">2020-01-01</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题0-c和c-的命名规则">问题0-C和C++ 的命名规则</h2>
-<p>STL中的东西都放在了std命名空间中，并且使用了大小写字母等，为什么还需要使用leading underscore(single and double)前置的下划线？是标准，还是仅仅是习惯？<br>
-宏不遵守namespaces和其他上下文，为了避免冲突，就只能使用这种命名方式了，这不是一种编码标准，只是一种防止冲突的方式。具体示例可以看问题0的参考文献[1]。</p>
-<p>那么C++ 的命名规则是什么呢？参见问题0的参考文献[2]。</p>
-<ol>
-<li>Reserved in any scope(在任何scope都保留的命名规则)，包括宏的实现：
-<ul>
-<li>下划线后紧跟大写字母的声明符。</li>
-<li>包含两个下划线的声明符。</li>
-</ul>
-</li>
-<li>Reserved in the global namespace(在全局的namespace中保留的命名规则）：
-<ul>
-<li>使用一个下划线开头的声明符</li>
-</ul>
-</li>
-<li>在<code>std</code> namespace中的所有东西都是保留的。</li>
-</ol>
-<p>C通常会使用缩写，而C++ 中通常使用单下划线分隔单词，C/C++ 通常不使用驼峰命名法，除了STL模板类型。</p>
-<h2 id="问题1-c中为什么const-int不能当做array-size">问题1-C中为什么<code>const int</code>不能当做array size</h2>
-<blockquote>
-<p>The const qualifier really means ``read-only’’; an object so qualified is a run-time object which cannot (normally) be assigned to. The value of a const-qualified object is therefore not a constant expression in the full sense of the term, and cannot be used for array dimensions, case labels, and the like. (C is unlike C++ in this regard.) When you need a true compile-time constant, use a preprocessor #define (or perhaps an enum).</p>
-</blockquote>
-<p>在C语言中，<code>const</code>修饰只代表只读，被<code>const</code>修饰的对象是一个运行时对象，通常不能被赋值。因此它不是一个常量表达式，这点和C++ 不一样。可以使用<code>#define</code>或者<code>enum</code>。<br>
-什么是常量表达式，在编译时就能获得它的值，而不是运行时。</p>
-<blockquote>
-<p>A constant expression can be evaluated during translation rather than runtime, and accordingly may be used in any place that a constant may be.[ISO C11 Sec 6[ISO C11 Sec 6.6]</p>
-</blockquote>
-<h2 id="问题2-cc1和gcc的关系">问题2-cc1和gcc的关系</h2>
-<p>C语言程序从ASCII转换到可执行目标文件分别经历了预处理器cpp，编译器cc1，汇编器as，以及链接器ld的处理，一个编译器驱动程序包含所有这几个部分，gcc是GNU编译系统上的编译驱动程序。<br>
-我在ubuntu 18.04上没有找到cc1，我的做法：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">which gcc       # 查看gcc存放位置</span><br><span class="line"><span class="meta">#</span>我的输出是: </span><br><span class="line"><span class="meta">#</span>/usr/bin/gcc</span><br><span class="line">gcc --version # 查看当前gcc 版本</span><br><span class="line"><span class="meta">#</span>我的输出是: </span><br><span class="line"><span class="meta">#</span>gcc (Ubuntu 7.4.0-1ubuntu1~18.04.1) 7.4.0,,,</span><br><span class="line">cd /usr</span><br><span class="line">sudo find . -name "cc1"</span><br><span class="line"><span class="meta">#</span>我的输出是：</span><br><span class="line"><span class="meta">#</span>./lib/gcc/x86_64-linux-gnu/7/cc1</span><br><span class="line"><span class="meta">#</span>./lib/gcc/x86_64-linux-gnu/6/cc1</span><br><span class="line"><span class="meta">#</span>然后根据gcc版本7.4，进入第一个目录</span><br><span class="line"></span><br><span class="line">cp cc1 /usr/bin # 将它拷贝到和gcc相同的目录</span><br></pre></td></tr></table></figure></p>
-<h2 id="参考文献">参考文献</h2>
-<p>问题0<br>
-1.<a href="https://stackoverflow.com/questions/22319950/why-does-the-naming-convention-of-stl-use-so-many-leading-underscore" target="_blank" rel="noopener">https://stackoverflow.com/questions/22319950/why-does-the-naming-convention-of-stl-use-so-many-leading-underscore</a><br>
-2.<a href="https://stackoverflow.com/questions/228783/what-are-the-rules-about-using-an-underscore-in-a-c-identifier" target="_blank" rel="noopener">https://stackoverflow.com/questions/228783/what-are-the-rules-about-using-an-underscore-in-a-c-identifier</a><br>
-3.<a href="https://stackoverflow.com/questions/1734277/name-of-c-c-stdlib-naming-convention" target="_blank" rel="noopener">https://stackoverflow.com/questions/1734277/name-of-c-c-stdlib-naming-convention</a><br>
-4.<a href="https://www.gnu.org/savannah-checkouts/gnu/libc/manual/html_node/Reserved-Names.html" target="_blank" rel="noopener">https://www.gnu.org/savannah-checkouts/gnu/libc/manual/html_node/Reserved-Names.html</a><br>
-5.<a href="https://isocpp.org/wiki/faq/coding-standards" target="_blank" rel="noopener">https://isocpp.org/wiki/faq/coding-standards</a><br>
-问题1<br>
-1.<a href="https://stackoverflow.com/a/44268465/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/44268465/8939281</a><br>
-2.<a href="https://stackoverflow.com/a/18848583/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/18848583/8939281</a><br>
-3.<a href="http://c-faq.com/ansi/constasconst.html" target="_blank" rel="noopener">http://c-faq.com/ansi/constasconst.html</a><br>
-问题2<br>
-1.<a href="https://unix.stackexchange.com/questions/77779/relationship-between-cc1-and-gcc" target="_blank" rel="noopener">https://unix.stackexchange.com/questions/77779/relationship-between-cc1-and-gcc</a><br>
-2.<a href="https://stackoverflow.com/a/51218063/8939281" target="_blank" rel="noopener">https://stackoverflow.com/a/51218063/8939281</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/12/08/C-calss-friend/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/12/08/C-calss-friend/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/5/index.html">C++ calss friend</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-12-08 16:57:44" itemprop="dateCreated datePublished" datetime="2019-12-08T16:57:44+08:00">2019-12-08</time>
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2752,7 +2873,7 @@ $$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">332</span>
+                    <span class="site-state-item-count">334</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3239,11 +3360,11 @@ $$b=\sum_{i=-n}^m 2^i\times b_i$$<br>
       
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
       

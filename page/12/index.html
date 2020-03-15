@@ -327,6 +327,483 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/05/C-IO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/05/C-IO/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">C++ IO</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-05 16:00:09" itemprop="dateCreated datePublished" datetime="2019-11-05T16:00:09+08:00">2019-11-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-25 21:58:30" itemprop="dateModified" datetime="2019-12-25T21:58:30+08:00">2019-12-25</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="i-o类">I/O类</h2>
+<p>标准库提供了三类IO操作，它们分别是读写流的iostream，读写文件的fstream，读写内存中string的sstream。如下表所示：<br>
+<img src="/2019/11/05/C-IO/io.png" alt="io"><br>
+ifstream和istringstrem都继承自istream，ofstream和ostringstream都继承自ostream。像使用cin和cout那样使用它们就行。</p>
+<h3 id="io对象的特性">IO对象的特性</h3>
+<ol>
+<li>不能拷贝或者对IO对象赋值。所以不能将形参和返回类型设置为流类型，必须将它们设置为流引用类型。</li>
+<li>读写一个IO对象会改变它的状态，因此传递和返回的引用不能是const的。</li>
+</ol>
+<h3 id="io流的状态">IO流的状态</h3>
+<p>IO操作很容易出错，一些错误是可恢复的，另一些是不可恢复的。下面是IO类中定义的函数和表示，可以帮助我们访问和操纵流的状态。<br>
+<img src="/2019/11/05/C-IO/condition.png" alt="condition"><br>
+<code>strm::iostate</code>中存放了当前IO流的状态，这个类型是一个位集合，IO类定义了四个iostate类型的常量表达式表达特定的位类型，可以使用位运算与设置或者检测多个标志位：</p>
+<ul>
+<li>strm::badbit，表示系统级的错误</li>
+<li>strm::failbit，可恢复错误（到达文件结束也会置位strm::failbit，发生系统级错误时也会被置位）</li>
+<li>strm::eofbit，到达文件结束</li>
+<li>strm::goodbit，流处于未出错状态</li>
+</ul>
+<p>它们用来表示流的状态，可以用<code>good()</code>, <code>fail()</code>，<code>eof()</code>, <code>bad()</code>分别查询对应标志位的状态。我们将流当做条件使用的代码其实就是使用的是状态位的状态。<br>
+可以使用<code>rdstate</code>函数获得当前流的状态，使用<code>setstate</code>对给定条件位置位，使用<code>clear</code>可以清除所错误标志位，也可以清除指定错误标志位。</p>
+<h3 id="管理缓冲区">管理缓冲区</h3>
+<p>关于缓冲区的内容，简单来说，缓冲区的作用就是减少系统级IO，提高读写效率。具体介绍可以查看<a href></a>。<br>
+这里介绍一下导致C++中缓冲区刷新的原因：</p>
+<ol>
+<li>程序结束，作为main函数return的一部分，冲洗缓冲区</li>
+<li>缓冲区满时，冲洗缓冲区</li>
+<li>使用操作符endl，会在输出内容的末尾加一个<code>'\n'</code>，然后刷新缓冲区；使用flush刷新缓冲区，不附加任何字符；使用ends在输出内容的末尾加一个空字节，并不会刷新缓冲区（C++ Primer第五版上写错了）。</li>
+<li>使用<code>cout &lt;&lt; unitbuf</code>设置为每次输出操作后都刷新缓冲区（即使不适用endl等操作符），即无缓冲，使用<code>cout &lt;&lt; nounitbuf</code>恢复。</li>
+<li>一个输出流可能关联到另一个流，当读写关联的流时，关联到的流的缓冲区都会被刷新。</li>
+</ol>
+<h2 id="iostream"><code>iostream</code></h2>
+<p>C++标准IO库<code>iostream</code>提供了输入流<code>istream</code>和输出流<code>ostream</code>，一个流就是一个字符序列，从IO设备中读出或者写入IO设备。</p>
+<h3 id="标准输入输出对象">标准输入输出对象</h3>
+<ul>
+<li><code>cin</code>，标准输入</li>
+<li><code>cout</code>，标准输出</li>
+<li><code>cerr</code>，标准错误</li>
+<li><code>clog</code>，用来输出一些普通信息。</li>
+</ul>
+<p>通常系统会将程序所运行的窗口和标准IO对象关联起来，读取<code>cin</code>，从当前程序关联的窗口进行读取，向<code>cout</code>,<code>cerr</code>和<code>clog</code>写入数据时，会写到同一个窗口中，可对它们进行重定向。</p>
+<h3 id="输入输出运算符">输入输出运算符</h3>
+<ul>
+<li><code>&lt;&lt;</code>输出运算符，接收两个运算符，左侧需要是<code>ostream</code>对象，右侧需要是要打印的对象。返回左侧运算对象，即写入给定值的<code>ostream</code>对象。</li>
+<li><code>&gt;&gt;</code>输入运算符，接收两个运算符，左侧需要是<code>istream</code>对象，右侧从istream中读入的数据要写入的对象。返回左侧运算对象，即给定的<code>istream</code>对象。</li>
+</ul>
+<p>一直有个问题就是为什么<code>&lt;&lt;</code>是输出，<code>&gt;&gt;</code>是输入，可以简单的把箭头方向当做数据流向，输出的数据流向<code>ostream</code>中的标准输出<code>cin</code>，输入时，数据从<code>istream</code>的标准输入<code>cin</code>流向变量。</p>
+<h3 id="操纵符">操纵符</h3>
+<p><code>endl</code>是一种操纵符。当把它写入到<code>ostream</code>的时候，有两个作用：</p>
+<ol>
+<li>结束当前行</li>
+<li>将与当前输出设备相关的缓冲区中的内容刷新到输出设备中。这个刷新操作可以保证目前为止程序的所有输出都真正写入输出流而不是在内存中的等待写入输出流。</li>
+</ol>
+<h3 id="命名空间">命名空间</h3>
+<p>命名空间可以解决名自定义冲突问题。比如有两个不同的库中实现了一个同名的函数，可以通过加上命名空间进行区分。<code>cin</code>,<code>cout</code>和<code>endl</code>都定义在<code>std</code>命名空间中。在访问时需要使用以下方式：<code>std::cin</code>，<code>std::cout</code>，<code>std::endl</code>。<br>
+C++标准库定义的名字在都在<code>std</code>中。</p>
+<h3 id="读取任意的输入数据">读取任意的输入数据</h3>
+<p>下面的示例代码对任意的输入数据进行求和。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;iostream&gt;</span><br><span class="line"></span><br><span class="line">using std::cin;</span><br><span class="line">using std::endl;</span><br><span class="line">using std::cout;</span><br><span class="line"></span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    int sum = 0, value = 0;</span><br><span class="line">    while(std::cin &gt;&gt; value)</span><br><span class="line">    &#123;</span><br><span class="line">        sum += value;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    std::cout &lt;&lt; &quot;Sum is: &quot; &lt;&lt; sum &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="fstream"><code>fstream</code></h2>
+<p>头文件<code>fstream</code>定义了三个类型支持文件IO：</p>
+<ul>
+<li><code>ifstream</code>从一个给定的文件读取数据；</li>
+<li><code>ofstream</code>向一个给定的文件写入数据；</li>
+<li><code>fstream</code>读写给定文件。</li>
+</ul>
+<p>这些类型和我们之前使用的<code>cin</code>和<code>cout</code>一样，可以使用<code>getline</code>从一个<code>ifstream</code>中读取数据。<code>fstream</code>具有以下的一些特殊操作：<br>
+<img src="/2019/11/05/C-IO/fstream.png" alt="fstream"><br>
+这些操作只有<code>fstream</code>,<code>ofstream</code>和<code>ifstream</code>对象能调用，其他类型不行。</p>
+<h3 id="使用fstream-ifstream和ofstream">使用<code>fstream</code>,<code>ifstream</code>和<code>ofstream</code></h3>
+<p>我们想要读文件的时候，可以定义一个<code>fstream</code>对象，然后将这个对象和文件关联起来，每个<code>fstream</code>类都定义了一个名字为<code>open</code>的成员函数，它完成了一些系统相关的操作，定位给定的文件，打开为读或写模式。<br>
+在创建<code>fstream</code>对象时，我们可以提供一个文件名，此时<code>open</code>函数会被自动调用。如果定义了一个空<code>fstream</code>对象，可以手动调用<code>open</code>将它和一个文件关联起来。调用<code>open</code>可能失败，进行<code>open</code>是否成功的检测通常是一个好习惯。<br>
+<code>close</code>函数可以关闭<code>fstream</code>当前关联的文件，当一个<code>fstream</code>对象被销毁时，会自动调用<code>close</code>函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1.构造一个ifstream并打开给定文件，文件名可以是string，也可以是C风格字符串</span></span><br><span class="line"><span class="function">ifstream <span class="title">in</span><span class="params">(ifile)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2.输出文件流并未关联到任何文件。</span></span><br><span class="line">ofstream out;</span><br><span class="line">out.open(ifile+<span class="string">".out"</span>);</span><br></pre></td></tr></table></figure>
+<p>可以使用<code>fstream</code>代替<code>iostream</code>，因为<code>fstream</code>是<code>iostream</code>的子类。</p>
+<h3 id="file-mode">file mode</h3>
+<p>C++ 中的file mode如下所示：<br>
+<img src="/2019/11/05/C-IO/file_mode.png" alt="file_mode"><br>
+具体的使用可以等用到的时候查资料。</p>
+<h2 id="sstream"><code>sstream</code></h2>
+<p>头文件<code>sstream</code>定义了三个类型支持内存IO：</p>
+<ul>
+<li><code>istringstream</code>从<code>string</code>读取数据；</li>
+<li><code>ostringfstream</code>向<code>string</code>写入数据；</li>
+<li><code>stringstream</code>读写<code>string</code>。</li>
+</ul>
+<p><code>stringstream</code>特有的操作如下：<br>
+<img src="/2019/11/05/C-IO/stringstream.png" alt="stringstream"></p>
+<h3 id="使用istringstream和使用ostringstream">使用<code>istringstream</code>和使用<code>ostringstream</code></h3>
+<p>最好的就是写一个例子。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer第五版》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/05/C-char-char-string/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/11/05/C-char-char-string/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">C char*, char [], char** and C++ string</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-05 12:21:22" itemprop="dateCreated datePublished" datetime="2019-11-05T12:21:22+08:00">2019-11-05</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:14:29" itemprop="dateModified" datetime="2019-12-17T15:14:29+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="char-arr-字符数组-c类型字符串"><code>char arr[]</code>（字符数组，C类型字符串）</h2>
+<ol>
+<li>C语言中的<strong>字符串</strong>的概念：以NULL字节结尾的零个或者多个字符。而字符数组可以不以<code>'\0'</code>结束，而且不能为空。</li>
+<li>字符串通常存在字符数组中，这也是C语言中没有显式的字符串类型的原因。</li>
+<li>因为字符串以NULL结束，所以字符串内部不能有NULL字节。</li>
+<li>为什么选择NULL作为字符串的终止符，因为它不是一个可打印的字符。</li>
+</ol>
+<p>如下所示，是<code>char str[]</code>，即字符数组的定义。<code>str</code>是自动变量，存放在栈里面。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> str1[] = <span class="string">"hello"</span>;</span><br><span class="line"><span class="keyword">char</span> str2[] = &#123;<span class="string">'h'</span>, <span class="string">'e'</span>, <span class="string">'l'</span>, <span class="string">'l'</span>, <span class="string">'o'</span>, <span class="string">'\0'</span>&#125;;</span><br><span class="line"><span class="keyword">char</span> str3[] = &#123;<span class="string">'h'</span>, <span class="string">'e'</span>, <span class="string">'l'</span>, <span class="string">'l'</span>, <span class="string">'o'</span>&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="char-字符指针"><code>char*</code>（字符指针）</h2>
+<ol>
+<li><code>char*</code>是一个指针，指向一个<code>char</code>，理论上来说，它并不是一个数组。</li>
+<li><code>char *ptr;</code>并不为它指向的内容分配内存，而是只分配一个<code>char *</code>大小的内存存放指针变量<code>ptr</code>。</li>
+<li><code>char arr[10];</code>是一个数组，不是一个指针，<code>char *</code>和<code>char[10]</code>不是一个类型。</li>
+</ol>
+<h2 id="char-指向字符指针的指针"><code>char**</code>（指向字符指针的指针）</h2>
+<p><code>char**</code>是一个指针，指向一个指向<code>char</code>的指针。这个东西我刚开没有理解它有什么有，后来想明白了，它可以指向一个指针数组。如下所示：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *arr[] =  &#123;</span><br><span class="line">    <span class="string">"hello"</span>,</span><br><span class="line">    <span class="string">"world"</span>,</span><br><span class="line">    <span class="string">"hi"</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">char</span> **p = arr;</span><br></pre></td></tr></table></figure></p>
+<p>p是字符指针的指针，指向数组中的第一个字符串，(*p)就是一个字符指针，指向第一个字符串的第一个字符，**p就是第一个字符串的第一个字符。<br>
+而<code>p+1</code>指向数组中的第二个字符串。<br>
+<code>p+2</code>指向数组中的第三个字符串。<br>
+事实上，这个p和arr的作用是一样的。<code>char**</code>经常在<code>main</code>函数中用到。</p>
+<h2 id="std-string"><code>std::string</code></h2>
+<p>字符串字面值和<code>string</code>是不同的类型，字符串字面值是为了和C语言兼容，它不是标准库中<code>string</code>对象的内容。</p>
+<h2 id="字符和字符串字面值常量">字符和字符串字面值常量</h2>
+<p><strong>字符串字面值常量</strong>是用一对双引号包围一串字符。如<code>&quot;hello&quot;</code>, <code>&quot;hi\n&quot;</code>, <code>&quot;&quot;</code>等，<code>'a'</code>是字面值字符常量。<br>
+程序在使用字符串常量时，编译器会将字符串常量存放在数据区的常量区。当一个字符串常量出现在在一个表达式中，表达式使用的值是字符串常量在内存中的地址，而不是这些字符串常量本身。可以把字符串赋值给“指向字符的指针”，即让指针指向字符串常量在内存中的地址。但是不能把字符串常量赋值给一个字符数组，即不能把字符串常量的地址赋值给字符数组。比如<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> *message1 = <span class="string">"Hello world!"</span>;</span><br></pre></td></tr></table></figure></p>
+<p>这个代码是将字符串常量中第一个字符的地址传递给message。</p>
+<h2 id="字符数组和字面值常量的区别">字符数组和字面值常量的区别</h2>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> message1[] = <span class="string">"Hello world!;</span></span><br><span class="line"><span class="string">char *message2 = "</span>Hello world!<span class="string">";</span></span><br></pre></td></tr></table></figure>
+<p>第一种方式，其实是一种约定，它等于<code>char message1[] = {'H', 'e', 'l', 'l', 'o', 'w', 'o', 'r', 'l', 'd', '\0'};</code>。<br>
+而第二种方式中，&quot;Hello world&quot;是一个字面值常量，它在内存中只能以数组的形式存在，是一个不可修改的左值表达式。而message2实际上指向了这个字符串数组的首字符。</p>
+<h2 id="常见的指针数组">常见的指针数组</h2>
+<ol>
+<li><code>main</code>函数的形参<code>char *argv[]</code>就是一个指针数组</li>
+<li><code>getline</code>的第一个参数是<code>char **lineptr</code>。</li>
+</ol>
+<p>怎么理解？如下图所示：<br>
+<img src="/2019/11/05/C-char-char-string/pointer_array.jpg" alt="pointer_array"></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer第五版》<br>
+2.<a href="https://www.zhihu.com/question/307261590/answer/563448215" target="_blank" rel="noopener">https://www.zhihu.com/question/307261590/answer/563448215</a><br>
+3.<a href="https://www.zhihu.com/question/307261590/answer/563630017" target="_blank" rel="noopener">https://www.zhihu.com/question/307261590/answer/563630017</a><br>
+4.<a href="https://stackoverflow.com/questions/10004511/why-are-string-literals-l-value-while-all-other-literals-are-r-value" target="_blank" rel="noopener">https://stackoverflow.com/questions/10004511/why-are-string-literals-l-value-while-all-other-literals-are-r-value</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/11/05/C-sizeof/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1927,384 +2404,6 @@ fflush(stdout)刷新标准输出缓冲区，把输出缓冲区里的东西打印
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/26/ml-bayesian-decision-theorem-and-bayesian-classifier/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/26/ml-bayesian-decision-theorem-and-bayesian-classifier/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">bayesian decision theorem and bayesian classifier</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-26 20:02:39" itemprop="dateCreated datePublished" datetime="2019-10-26T20:02:39+08:00">2019-10-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:26:15" itemprop="dateModified" datetime="2019-12-17T16:26:15+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="关键字">关键字</h2>
-<p>贝叶斯分类器，贝叶斯定理，朴素贝叶斯，贝叶斯错误率</p>
-<h2 id="贝叶斯决策理论">贝叶斯决策理论</h2>
-<p>在<a href="https://mxxhcm.github.io/2019/07/31/probability_basic/">概率论基础中</a>已经简单介绍了频率学派和贝叶斯学派。贝叶斯学派中几个重要的概念：先验，后验。<br>
-贝叶斯决策理论是通过计算后验概率进行决策的，贝叶斯决策理论的实际意义不大，但是具有非常重要的理论意义，尤其是误差上界的计算。</p>
-<h3 id="贝叶斯定理-公式">贝叶斯定理（公式）</h3>
-<p>假设X,Y是一对随机变量，它们的联合概率$P(X=x, Y=y)$是指$X$取值$x$且$Y$取值为$y$的概率，条件概率是指一个随机变量在另一个随机变量取值已知的情况下取某一个特定值的概率。比如$P(Y=y|X=y)$是指在变量$X$取值$x$的情况下，变量$Y$取值$y$的概率。$X$和$Y$的联合概率和条件概率满足如下关系：<br>
-$$P(X,Y) = P(Y|X)\cdot P(X) = P(X|Y)\cdot P(Y) \tag{1}$$<br>
-由上面的公式可以得到下面公式，称为贝叶斯定理：<br>
-$$ P(Y|X) = \frac{P(X|Y)P(Y)}{P(X)} \tag{2}$$</p>
-<p>贝叶斯公式最伟大之处就在于将先验概率转化为了后验概率。使得后验概率变得可以求解了。</p>
-<h3 id="最小错误率贝叶斯决策">最小错误率贝叶斯决策</h3>
-<h3 id="最小风险贝叶斯决策">最小风险贝叶斯决策</h3>
-<h2 id="贝叶斯分类器">贝叶斯分类器</h2>
-<p>根据贝叶斯决策理论得到的分类器，以贝叶斯定理为基础，是一类分类算法的总称，叫做贝叶斯分类器。常见的贝叶斯分类器有<a href="http://mxxhcm.github.io/2019/10/27/bayesian-classifier-naive-baye-classifier/">朴素贝叶斯</a>和<a href="http://mxxhcm.github.io/2019/01/06/bayesian-classifier-bayesian-networks/">贝叶斯信念网络</a>。</p>
-<h3 id="贝叶斯决策边界">贝叶斯决策边界</h3>
-<p>贝叶斯分类器产生最低的错误率，叫做贝叶斯错误率。因为贝叶斯分类器总是选择使式子$(1)$最大化的类，在$X=x_0$处的错误率是$1-\max_j Pr(Y=j|X=x_0)$。<br>
-整个贝叶斯分类器的错误率是：<br>
-$$1-\mathbb{E}\left(\max_j Pr(Y=j|X=x_0)\right) \tag{6}$$<br>
-其中期望表示计算所有$X$的可能取值上的平均错误率。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.cnblogs.com/phoenixzq/p/3539619.html" target="_blank" rel="noopener">https://www.cnblogs.com/phoenixzq/p/3539619.html</a><br>
-2.<a href="http://funhacks.net/2015/05/18/Bayesian-classifier/" target="_blank" rel="noopener">http://funhacks.net/2015/05/18/Bayesian-classifier/</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/10/26/generate-random-numbers-in-a-interval-from-specify-distribution/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/10/26/generate-random-numbers-in-a-interval-from-specify-distribution/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/12/index.html">generate random numbers in a interval from specify distribution</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-10-26 19:28:22" itemprop="dateCreated datePublished" datetime="2019-10-26T19:28:22+08:00">2019-10-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-10-27 19:32:58" itemprop="dateModified" datetime="2019-10-27T19:32:58+08:00">2019-10-27</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/概率论与统计/" itemprop="url" rel="index"><span itemprop="name">概率论与统计</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="问题">问题</h2>
-<p>如何利用一个分布（高斯分布），生成指定区间内的随机数？<br>
-比如在[-100,100]区间内，利用生成分布产生200个随机数，这个其实是叫截断正态分布。<br>
-思路：<br>
-我的想法是先使用正态分布随机生成一个数，然后判断这个数是否是满足区间内，如果不满足，就生成下一个。</p>
-<h2 id="代码实现">代码实现</h2>
-<h3 id="c">C</h3>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line"></span><br><span class="line">##<span class="meta"># python</span></span><br><span class="line">``` python</span><br></pre></td></tr></table></figure>
-<h3 id="matlab">matlab</h3>
-<figure class="highlight matlab"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">```</span><br><span class="line"></span><br><span class="line">### R</span><br><span class="line">``` R</span><br><span class="line">rand_interval = <span class="function"><span class="keyword">function</span><span class="params">(min, max, number)</span></span></span><br><span class="line">&#123;</span><br><span class="line">  sd = (as.numeric(<span class="built_in">max</span>)-as.numeric(<span class="built_in">min</span>))/<span class="number">3</span></span><br><span class="line">  count = <span class="number">0</span></span><br><span class="line">  res = <span class="number">1</span>:number</span><br><span class="line">  <span class="keyword">while</span>(TRUE)</span><br><span class="line">  &#123;</span><br><span class="line">    x = rnorm(<span class="number">1</span>, <span class="built_in">mean</span>=<span class="number">0</span>,sd=sd)</span><br><span class="line">    <span class="keyword">if</span>(x &gt;= <span class="built_in">min</span> &amp;&amp; x &lt;= <span class="built_in">max</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      count = count+<span class="number">1</span></span><br><span class="line">      res[count] = x</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (res)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">min</span> = <span class="number">-100</span></span><br><span class="line"><span class="built_in">max</span> = <span class="number">100</span></span><br><span class="line">number = <span class="number">20</span></span><br><span class="line">x1 = rand_interval(<span class="built_in">min</span>, <span class="built_in">max</span>, number)</span><br><span class="line">x2 = rand_interval(<span class="built_in">min</span>, <span class="built_in">max</span>, number)</span><br><span class="line">x1</span><br><span class="line">x2</span><br></pre></td></tr></table></figure>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.ilovematlab.cn/thread-302139-1-1.html" target="_blank" rel="noopener">https://www.ilovematlab.cn/thread-302139-1-1.html</a><br>
-2.<a href="https://stats.stackexchange.com/questions/113230/generate-random-numbers-following-a-distribution-within-an-interval" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/113230/generate-random-numbers-following-a-distribution-within-an-interval</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2354,7 +2453,7 @@ $$1-\mathbb{E}\left(\max_j Pr(Y=j|X=x_0)\right) \tag{6}$$<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">332</span>
+                    <span class="site-state-item-count">334</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2835,11 +2934,11 @@ $$1-\mathbb{E}\left(\max_j Pr(Y=j|X=x_0)\right) \tag{6}$$<br>
       
     
       
+    
+      
+    
+      
         
-      
-    
-      
-    
       
     
       

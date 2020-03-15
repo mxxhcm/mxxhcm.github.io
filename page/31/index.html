@@ -327,6 +327,567 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/18/MongoDB笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/18/MongoDB笔记/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/31/index.html">MongoDB笔记</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 15:06:56" itemprop="dateCreated datePublished" datetime="2019-03-18T15:06:56+08:00">2019-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 16:26:53" itemprop="dateModified" datetime="2019-12-17T16:26:53+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据库/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="一-数据库的安装">一、数据库的安装</h2>
+<p>自行下载安装包并安装</p>
+<h2 id="二-数据库的运行和连接-以及以下简单的使用">二、数据库的运行和连接,以及以下简单的使用</h2>
+<h3 id="1-windows命令行下连接">1.windows命令行下连接</h3>
+<h4 id="1-设置数据库存放目录">（1）设置数据库存放目录</h4>
+<p>~#:md D:/data/db</p>
+<h4 id="2-运行mongodb服务">（2）运行mongodb服务</h4>
+<p>~#:mongod</p>
+<h4 id="3-连接mongodb数据库">（3）连接mongodb数据库</h4>
+<p>~#:mongo (database_name)<br>
+如果不输入数据库名会默认连接到mongodb自带的一个数据库test，如果指定了数据库名就会连接到该数据库</p>
+<h3 id="2-使用python代码中连接到数据库">2.使用python代码中连接到数据库</h3>
+<h4 id="1-导入python-pacakge">（1）导入python pacakge</h4>
+<p>使用pip安装即可<br>
+import pymongo</p>
+<h4 id="2-连接到mongodb">（2）连接到mongodb</h4>
+<p>connection = MongoClient(‘localhost’, 27017)</p>
+<h4 id="3-连接到某个数据库">（3）连接到某个数据库</h4>
+<p>db = connection.test  #连接到test数据库<br>
+db现在指向的是test这个数据库</p>
+<h4 id="4-指向某个collection">（4）指向某个collection</h4>
+<p>collection = db.collection_one</p>
+<h4 id="5-查看collection中的内容">（5）查看collection中的内容</h4>
+<p>items = collection.find()<br>
+print(items[‘key’])</p>
+<h3 id="3-一些简单的操作">3.一些简单的操作</h3>
+<h4 id="1-切换数据库">（1）切换数据库</h4>
+<p>~#:use database_name</p>
+<h4 id="2-查看所有的数据库">（2）查看所有的数据库</h4>
+<p>~#:show databases;</p>
+<h4 id="3-查看所有的collection">（3）查看所有的collection</h4>
+<p>~#:show collections;</p>
+<h2 id="三-crud操作">三.CRUD操作</h2>
+<h3 id="1-id的构成-12-bytes-hex">1.id的构成 12 bytes hex</h3>
+<p>4+3+2+3<br>
+timestamp + mac address + pid + counter<br>
+timestamp是unix timestamp，mac address 是 mongd运行的网卡mac address，pid是process id，</p>
+<h3 id="2-create-document">2. create document</h3>
+<h4 id="1-create-one-document-insertone">（1）create one document(insertOne)</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.insertOne(&#123;&quot;key_one&quot;:&quot;value&quot;,&quot;key_two&quot;:&quot;value&quot;&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="2-create-many-documents-有order-insertmany">（2）create many documents（有order,insertMany）</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.insertMany(</span><br><span class="line">[</span><br><span class="line">&#123;&quot;key_one&quot;:&quot;value&quot;,&quot;key_two&quot;:&quot;value&quot;&#125;,</span><br><span class="line">&#123;&quot;key_one&quot;:&quot;value&quot;,&quot;key_two&quot;:&quot;value&quot;&#125;,</span><br><span class="line">&#123;&quot;key_one&quot;:&quot;value&quot;,&quot;key_two&quot;:&quot;value&quot;&#125;</span><br><span class="line">])</span><br></pre></td></tr></table></figure>
+<h4 id="3-create-many-documents-无order-insertmany">（3）create many documents（无order,insertMany）</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.insertMany(</span><br><span class="line">db.collection_one.insertMany(</span><br><span class="line">[</span><br><span class="line">&#123;&quot;key_one&quot;:&quot;value&quot;,&quot;key_two&quot;:&quot;value&quot;&#125;,</span><br><span class="line">&#123;&quot;key_one&quot;:&quot;value&quot;,&quot;key_two&quot;:&quot;value&quot;&#125;,</span><br><span class="line">&#123;&quot;key_one&quot;:&quot;value&quot;,&quot;key_two&quot;:&quot;value&quot;&#125;</span><br><span class="line">] , &#123;&quot;ordered&quot;:false&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="4-upsert">（4）upsert</h4>
+<p>第一个参数是一个filter选择合适的 document，第二个参数是一个更新操作for the documents were selected，第三个参数是 that if there is no matching result,if the value of upsert is true,then insert a new document,else do nothing.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.insertMany(</span><br><span class="line">db.movieDetails.updateOne(&#123; name:&quot;mxxhcm&quot;&#125;, &#123; \$set:&#123;lover:&quot;mahuihui&quot;&#125; &#125; , &#123;upsert : true&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="5-有无order的区别">（5）有无order的区别</h4>
+<p>有order的话遇到inset错误就会停下来，没有order的话在插入document的时候，遇到错误会跳过该条语句执行下一条语句。</p>
+<h3 id="3-read-documents-query-documents">3.read documents(query documents)</h3>
+<p>link:<br>
+<a href="https://docs.mongodb.com/manual/reference/operator/query/" target="_blank" rel="noopener">https://docs.mongodb.com/manual/reference/operator/query/</a></p>
+<h4 id="1-查找document">（1）查找document</h4>
+<p>查找collection_one这个collection中所有的document</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.find()</span><br></pre></td></tr></table></figure>
+<p>查找collection_one这个collection中满足{}中条件的collection，{}中的条件需要满足anded</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.find(&#123;&#125;)</span><br></pre></td></tr></table></figure>
+<p>pretty()表示以规范的格式展现出来查询结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.find().pretty()</span><br></pre></td></tr></table></figure>
+<p>findOne表示只展示出第一条结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.findOne()</span><br></pre></td></tr></table></figure>
+<p>满足{}中条件的第一条结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.findOne(&#123;&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="2-对document进行计数">（2）对document进行计数</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.count()</span><br></pre></td></tr></table></figure>
+<h4 id="3-设置查找的条件-equality-match">（3）设置查找的条件(equality match)</h4>
+<h5 id="a-scalar-equality-match">a.scalar equality match</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.find(&#123;&quot;key&quot;:&quot;value&quot;,&quot;key&quot;,&quot;value&quot;&#125;)</span><br></pre></td></tr></table></figure>
+<h5 id="b-nested-documents-equality-match">b.nested documents equality match</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.find(&#123;&quot;key.key2.key3&quot;:&quot;value&quot;&#125;)</span><br></pre></td></tr></table></figure>
+<h5 id="c-equality-matches-on-arrays">c.equality matches on arrays</h5>
+<h6 id="entire-array-value-match">entire array value match</h6>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.find(&#123;key:[value1,value2]&#125;)</span><br></pre></td></tr></table></figure>
+<h6 id="any-array-element-fileds-match-a-specfic-value">any array element fileds match a specfic value</h6>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.find(&#123;key:&quot;value2&quot;&#125;)</span><br></pre></td></tr></table></figure>
+<h6 id="a-specfiec-element-fields-match-a-specfic-value">a specfiec element fields match a specfic value</h6>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection_one.find(&#123;key.0:&quot;value1&quot;&#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="4-cursor">（4）cursor</h4>
+<h4 id="5-projection">（5）projection</h4>
+<p>by default,mongodb return all fields in all matching documents for query.<br>
+Projection are supplied as the second argument<br>
+db.collection_one.find({“key1”:“value”,“key2”,“value”},{“key1”:1,“key2”:1,“key3”:0,“key4”:0}).pretty()</p>
+<h4 id="6-comparison-operation">（6）comparison operation</h4>
+<p>$eq<br>
+$gt<br>
+$gte<br>
+$lt<br>
+$lte<br>
+$ne<br>
+$in<br>
+$nin</p>
+<h5 id="a-在某个范围内">a.在某个范围内</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find(&#123; runtime : &#123; \$gt: 70,  \$lte:100 &#125; &#125;).pretty()</span><br></pre></td></tr></table></figure>
+<h5 id="b-不等于-ne">b.不等于($ne)</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find(&#123; rated : &#123; \$ne:&quot;unrated&quot; &#125; &#125;).pretty()</span><br></pre></td></tr></table></figure>
+<h5 id="c-在-in">c.在($in)</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find(&#123;rated : &#123; \$in : [&quot;G&quot;,&quot;PG&quot;,&quot;PG-13&quot;] &#125;  &#125;).pretty()</span><br></pre></td></tr></table></figure>
+<h4 id="7-element-operator">（7）element operator</h4>
+<h5 id="a-存在某个filed-exists">a.存在某个filed($exists)</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetail.find( &#123; filed_name : &#123; \$exists: true|false &#125; &#125; ).pretty()</span><br></pre></td></tr></table></figure>
+<h5 id="b-某个字段的类型-type">b.某个字段的类型($type)</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetail.find( &#123; filed_name : &#123; \$type :&quot;string&quot;&#125; &#125;).pretty()</span><br></pre></td></tr></table></figure>
+<h4 id="8-logical-operator">（8）logical operator</h4>
+<p>$or<br>
+$and<br>
+$not<br>
+$nor</p>
+<h5 id="a-逻辑或-or">a.逻辑或($or)</h5>
+<p>$or需要数组作为参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find( &#123; \$or: [ &#123; field_one : &#123;\$type : &quot;string&quot;&#125; &#125; , &#123;field_two : &#123;\$exist: &quot;name&quot; &#125; &#125; ] &#125; ).pretty()</span><br></pre></td></tr></table></figure>
+<h5 id="b-逻辑与-and">b.逻辑与($and)</h5>
+<p>$and操作支持我们在同一个filed指定多个约束条件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find(&#123; \$and: [ &#123;field_one: &#123;\$ne :null&#125; &#125; , &#123; field_one: &#123;\$gt:60, \$lte: 100&#125; &#125; ] &#125;).pretty()</span><br></pre></td></tr></table></figure>
+<h4 id="9-regex-operator">（9）regex operator</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find(&#123; &quot;awards.text&quot;: &#123; \$regex: /^Won\s/&#125;  &#125;).pretty()</span><br></pre></td></tr></table></figure>
+<h4 id="10-array-operator">（10）array operator</h4>
+<p>$all<br>
+$size<br>
+$elementMatch</p>
+<h5 id="a-all">a.all</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find(&#123;genres : &#123;\$all :[&quot;comedy&quot;,&quot;crime&quot;,&quot;drama&quot;]&#125; &#125;).pretty()</span><br><span class="line">db.movieDetails.find(&#123;genres :  [&quot;comedy&quot;,&quot;crime&quot;,&quot;drama&quot;]  &#125;).pretty()</span><br></pre></td></tr></table></figure>
+<p>上面两个式子是有区别的，第一个式子会匹配genres中包含&quot;comedy&quot;,“crime”,“drama&quot;的document<br>
+而第二个只会匹配genres为&quot;comedy”,“crime”,&quot;drama&quot;的document。</p>
+<h5 id="b-size">b.size</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find(&#123;country : &#123;\$size : 3&#125; &#125;).pretty()</span><br></pre></td></tr></table></figure>
+<h5 id="c-elementmatch">c.elementMatch</h5>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.find(&#123; boxOffice: &#123; country: &quot;UK&quot;, revenue: &#123; \$gt: 15 &#125; &#125; &#125;)</span><br></pre></td></tr></table></figure>
+<h3 id="9-update-documents">9.update documents</h3>
+<p>link:<br>
+<a href="https://docs.mongodb.com/manual/reference/operator/update/" target="_blank" rel="noopener">https://docs.mongodb.com/manual/reference/operator/update/</a></p>
+<h4 id="0-some-update-operator">（0）some update operator</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.updateOne( &#123; name : &quot;mxxhcm&quot; &#125; , &#123; \$inc : &#123; age: 1&#125; &#125;)</span><br></pre></td></tr></table></figure>
+<h4 id="1-updateone">（1）updateOne</h4>
+<h5 id="a-update-for-scalar-fields">a.update for scalar fields</h5>
+<p>$set</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.updateOne( &#123; name : &quot;mxxhcm&quot; &#125; , &#123; \$set : &#123; age: 19&#125; &#125;)</span><br></pre></td></tr></table></figure>
+<p>$unset</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.updateOne( &#123; name : &quot;mxxhcm&quot; &#125; , &#123; \$unset : &#123; age: 19&#125; &#125;)</span><br></pre></td></tr></table></figure>
+<p>$inc<br>
+age后是在原来的age上加的数值</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.updateOne( &#123; name : &quot;mxxhcm&quot; &#125; , &#123; \$set : &#123; age: 19&#125; &#125;)</span><br></pre></td></tr></table></figure>
+<p>updateOne has two arguments, the first one is a selector,the second argument is how we want to update the document.</p>
+<h5 id="b-update-for-array-fields">b.update for array fields</h5>
+<p>$push</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetails.updateOne(&#123;name:&quot;mxxhcm&quot;&#125; , &#123;\$push: &#123; reviews: &#123; key1:value,key2:value...&#125;  &#125;  &#125; )</span><br><span class="line">db.movieDetails.updateOne(&#123;name:&quot;mxxhcm&quot;&#125; , &#123;\$push: &#123; reviews:</span><br><span class="line">                                                                                                &#123; \$each: [&#123; key1:value,key2:value...&#125; ,                                                                                                                        &#123;key1:value,key2:value...&#125; ]  &#125;  </span><br><span class="line">                                                                                              &#125;   &#125; )</span><br><span class="line">db.movieDetails.updateOne(&#123;name:&quot;mxxhcm&quot;&#125; , &#123;\$push: &#123; reviews:</span><br><span class="line">                                                                                                &#123; \$each: [&#123; key1:value,key2:value...&#125; ,                                                                                                                        &#123;key1:value,key2:value...&#125; ] ,                                                                                                             \$slice:3 &#125;  </span><br><span class="line">                                                                                              &#125;   &#125; )</span><br><span class="line">db.movieDetails.updateOne(&#123;name:&quot;mxxhcm&quot;&#125; , &#123;\$push: &#123; reviews:</span><br><span class="line">                                                                                                &#123; \$each: [&#123; key1:value,key2:value...&#125; ,                                                                                                                        &#123;key1:value,key2:value...&#125; ] ,                                                                                                             \$position:0,  </span><br><span class="line">                                                                                                  \$slice:3 &#125;  </span><br><span class="line">                                                                                              &#125;   &#125; )</span><br></pre></td></tr></table></figure>
+<h4 id="2-updatemany">（2）updateMany</h4>
+<p>the same as updateOne</p>
+<h4 id="3-replaceone">（3）replaceOne</h4>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.movieDetail.replcaeOne(&#123;&#125;,&#123;&#125;)</span><br></pre></td></tr></table></figure>
+<p>the first argument is a filter,the second argument is the thing that replace what the filter choose,it can be a document,or a variable point to a document.</p>
+<h3 id="10-using-mongdb-by-pymongo">10. using mongdb by pymongo</h3>
+<p>见代码</p>
+<h4 id="1-sort-skip-limit">（1）sort，skip，limit</h4>
+<p>sort &gt; skip &gt; limit</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cursor.sort(&apos;student_id&apos;,pymongo.ASCENDING).skip(4).limit(3)</span><br><span class="line">in python file:</span><br><span class="line">cursor.sort(  [ (&apos;student_id&apos;,pymongo.ASCENDING) , (&apos;score&apos;,pymongo.DESCENDING) ] ).skip(4).limit(3)</span><br><span class="line">in mongo shell:</span><br><span class="line">cursor.sort(  [ &#123;&apos;student_id&apos;:1&#125;, &#123;&apos;score&apos;,-1)&#125; ] ).skip(4).limit(3)</span><br></pre></td></tr></table></figure>
+<p>####（2）find,find_one,cursors<br>
+####（3）project<br>
+####（4）regex<br>
+####（5）insert<br>
+####（6）update<br>
+####（7）<br>
+There is a intervening between find and update,so maybe you find and update is not the same one.</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/14/ml-activation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/14/ml-activation/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/31/index.html">神经网络-激活函数</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-14 11:45:46" itemprop="dateCreated datePublished" datetime="2019-03-14T11:45:46+08:00">2019-03-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-12-17 15:55:49" itemprop="dateModified" datetime="2019-12-17T15:55:49+08:00">2019-12-17</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="激活函数的一些问题">激活函数的一些问题</h2>
+<h3 id="为什么要使用non-linear激活函数不使用linear激活函数？">为什么要使用non-linear激活函数不使用linear激活函数？</h3>
+<p><img src="/2019/03/14/ml-activation/fnn.png" alt="fnn"><br>
+给定一个如图所示的前馈神经网络。有一个输入层，一个隐藏层，一个输出层。输入是$2$维的，有$4$个隐藏单元，输出是$2$维的。<br>
+则：$ \hat{f}(x) = \sigma(w_1x+b_1)w_2 + b_2$<br>
+这里$\sigma$是一个线性的激活函数，不妨设$\sigma(x) = x$。<br>
+那么就有：<br>
+\begin{align*}<br>
+\hat{f}(x) &amp;= \sigma(w_1x+b_1)w_2 + b_2\<br>
+&amp;= (w_1x+b_1)w_2 + b_2\<br>
+&amp;= w_1w_2x + w_2b1 + b_2\<br>
+&amp;= (w_1w_2) x + (w_2b1 + b_2)\<br>
+&amp;= w’ x + b’<br>
+\end{align*}<br>
+因此，当使用线性激活函数的时候，我们可以把一个多层感知机模型化简成一个线性模型。当使用线性激活函数时，增加网络的深度没有用，使用线性激活函数的十层感知机和一层感知机没有区别，并不能增加网络的表达能力。因为任意两个仿射函数的组合还是仿射函数。</p>
+<h3 id="为什么relu激活函数是non-linear的？">为什么ReLU激活函数是non-linear的？</h3>
+<p>ReLU的数学表达形式如下：<br>
+$$g(x) = max(0, x)$$<br>
+首先考虑一下什么是linear function,什么是non-linear function。在微积分上，平面内的任意一条直线是线性函数，否则就是非线性函数。<br>
+考虑这样一个例子，输入数据的维度为$1$，输出数据的维度也为$1$，用$g(ax+b)$表示ReLU激活函数。如果我们使用两个隐藏单元，那么$h_1(x) = g(x)+g(-x)$可以用来表示$f(x)=|x|$，而函数$|x|$是一个非线性函数，函数图像如下所示。<br>
+<img src="/2019/03/14/ml-activation/absolute.png" alt="f(x)=|x|"><br>
+我们还可以用ReLU逼近二次函数$f(x) = x^2$，如使用函数$h_2(x) = g(x) + g(-x) + g(2x-2) + g(2x+2)$逼近二次函数，对应的图像如下。<br>
+<img src="/2019/03/14/ml-activation/quadratic.png" alt="h_2(x)"><br>
+使用的项越多，最后近似出来的图像也就和我们要逼近的二次函数越像。<br>
+同理，可以使用ReLU激活函数去逼近任意非线性函数。</p>
+<h3 id="为什么relu比sigmod还有tanh激活函数要好？">为什么ReLU比sigmod还有tanh激活函数要好？</h3>
+<p>ReLU收敛的更快，因为梯度更大。<br>
+当CNN的层数越来越深的时候，实验表明，使用ReLU的CNN要比使用sigmod或者tanh的CNN训练的更容易，更快收敛。<br>
+为什么会这样，目前有两种理论，见参考文献[4]。<br>
+第一个，$tanh(x)$有梯度消散问题(vanishing gradient)。当$x$趋向于$\pm\infty$时，$tanh(x)$的导数趋向于$0$。如下图所示。</p>
+<blockquote>
+<p>Vanishing gradients occur when lower layers of a DNN have gradients of nearly 0 because higher layer units are nearly saturated at -1 or 1, the asymptotes of the tanh function. Such vanishing gradients cause slow optimization convergence, and in some cases the final trained network converges to a poor local minimum.</p>
+</blockquote>
+<blockquote>
+<p>One way ReLUs improve neural networks is by speeding up training. The gradient computation is very simple (either 0 or 1 depending on the sign of x). Also, the computational step of a ReLU is easy: any negative elements are set to 0.0 – no exponentials, no multiplication or division operations.</p>
+</blockquote>
+<p><img src="/2019/03/14/ml-activation/tanh.png" alt="tanh(x)"><br>
+ReLU是non-saturating nonlinearity的激活函数，sigmod和tanh是saturating nonlinearity激活函数，会将输出挤压到一个区间内。</p>
+<blockquote>
+<p>f是non-saturating 当且仅当$|lim_{z\rightarrow -\infty} f(z)| \rightarrow + \infty$或者$|lim_{z\rightarrow +\infty} f(z)| \rightarrow + \infty$</p>
+</blockquote>
+<p>tanh和sigmod将输入都挤压在某一个很小的区间内，比如(0,1)，输入发生很大的变化，经过激活函数以后变化很小，经过好几层之后，基本上就没有差别了。而当网络很深的时候，反向传播主要集中在后几层，而输入层附近的权值没办法好好学习。而对于ReLU来说，任意深度的神经网络，都不存在梯度消失。</p>
+<p>第二种理论是说有一些定理能够证明，在某些假设条件下，局部最小就是全局最小。如果使用sigmod或者tanh激活函数的时候，这些假设不能成立，而使用ReLU的话，这些条件就会成立。</p>
+<h3 id="为什么发生了梯度消失以后训练结构很差？">为什么发生了梯度消失以后训练结构很差？</h3>
+<p>我的想法是，</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://stats.stackexchange.com/a/391971" target="_blank" rel="noopener">https://stats.stackexchange.com/a/391971</a><br>
+2.<a href="https://stats.stackexchange.com/a/299933" target="_blank" rel="noopener">https://stats.stackexchange.com/a/299933</a><br>
+3.<a href="https://stats.stackexchange.com/a/141978" target="_blank" rel="noopener">https://stats.stackexchange.com/a/141978</a><br>
+4.<a href="https://stats.stackexchange.com/a/335972" target="_blank" rel="noopener">https://stats.stackexchange.com/a/335972</a><br>
+5.<a href="https://stats.stackexchange.com/a/174438" target="_blank" rel="noopener">https://stats.stackexchange.com/a/174438</a><br>
+6.<a href="https://stats.stackexchange.com/questions/391968/relu-vs-a-linear-activation-function" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/391968/relu-vs-a-linear-activation-function</a><br>
+7.<a href="https://stats.stackexchange.com/questions/141960/why-are-rectified-linear-units-considered-non-linear" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/141960/why-are-rectified-linear-units-considered-non-linear</a><br>
+8.<a href="https://stats.stackexchange.com/questions/299915/how-does-the-rectified-linear-unit-relu-activation-function-produce-non-linear" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/299915/how-does-the-rectified-linear-unit-relu-activation-function-produce-non-linear</a><br>
+9.<a href="https://stats.stackexchange.com/questions/226923/why-do-we-use-relu-in-neural-networks-and-how-do-we-use-it/226927#226927" target="_blank" rel="noopener">https://stats.stackexchange.com/questions/226923/why-do-we-use-relu-in-neural-networks-and-how-do-we-use-it/226927#226927</a><br>
+10.<a href="https://www.zhihu.com/question/264163033" target="_blank" rel="noopener">https://www.zhihu.com/question/264163033</a><br>
+11.<a href="http://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf" target="_blank" rel="noopener">http://ai.stanford.edu/~amaas/papers/relu_hybrid_icml2013_final.pdf</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/03/13/cnn/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -3370,598 +3931,6 @@ Foerster等人和He等人的工作与我们的工作最接近。Foerster等人�
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/26/Policy-Gradient-With-Value-Function-Approximation-For-Collective-Multiagent-Planning/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/26/Policy-Gradient-With-Value-Function-Approximation-For-Collective-Multiagent-Planning/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/31/index.html">Policy Gradient With Value Function Approximation For Collective Multiagent Planning</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-26 19:33:50" itemprop="dateCreated datePublished" datetime="2019-01-26T19:33:50+08:00">2019-01-26</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 16:21:06" itemprop="dateModified" datetime="2019-12-17T16:21:06+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/强化学习/" itemprop="url" rel="index"><span itemprop="name">强化学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="摘要">摘要</h2>
-<p>分布式的部分可观测马尔科夫决策过程(Dec POMDP)为解决多智能体系统中的序列决策问题提供了一个框架。考虑到POMDP的计算复杂度，最近的研究主要集中在Dec-POMDP中一些易于处理但是比较实用的子问题。本文解决的就是其中的一个子问题叫做CDec-POMDP其中一系列智能体的共同行为影响了它们公共的reward和环境变化。本文的主要贡献是提出了一个actor-critic(AC)强化学习算法优化CDec-POMDP问题的policy。普通的AC算法对于大型问题收敛的很慢，为了解决这个问题，本文展示了如何将智能体的估计动作值函数进行分解从而产生有效的更新以及推导出一个基于局部奖励信号的新的critic训练方式。通过在一个合成的benchmark以及真实的出租车车队优化问题上和其他方法进行对比，结果表明本文的AC方法提供了比之前最好的方法还要高质量的方法。</p>
-<h2 id="引言">引言</h2>
-<p>近些年来，分布式的部分可观测马尔科夫决策过程已经发展成了解决多智能体协作的序列决策问题的一个很有前景的(promising)方法。Dec-POMDP对智能体基于环境和其他智能体的不同部分观测最大化一个全局的目标进行建模。Dec-POMDP的具体应用包括协调行星探测，多机器人协调控制以及无线网络的吞吐量优化。然而，解决分布式的部分马尔科夫决策过程是相当困难的，即使对于只有$2$个智能体的问题呢是NP难的。<br>
-为了增大规模和提高真实问题中的应用，过去的研究已经探索了智能体之间严格的交互，如状态转换和观测独立，事件驱动的的交互以及智能体之间的弱耦合性。最近，一系列工作开始关注于智能体的身份不影响它们之间的交互上，环境的变化主要受到智能体的共同影响，和著名的阻塞游戏很像。一些城市交通中的问题如出租车调度可以用这样的协同规划模型进行建模。<br>
-在本文中，作者着重于集中的Dec-POMDP框架将一类不确定情况下的集中多智能体序列决策问题形式化。Nguyen等人提出了一个采样方法优化CDec-POMDP模型中的policy。之前方法的一个主要缺点是policy是用表格形式展现的，随着智能体的observation spaces改变时，表格形式的policy不能很好的进行扩展。受到最近一些强化学习工作的启发，本文的贡献是一个AC框架的强化学习算法用来优化CDec-POMDP的policy。Policy用函数如神经网络来表示可以避免表格形式的policy的扩展性问题。我们推导出了策略梯度并且基于CDec-POMDP中智能体的交互提出了一个估计的因子动作值函数。普通的AC算法因为学习全局reward的原因，在解决大型多智能体系统问题时收敛的很慢。为了解决这个问题，本文提出了一种新的方式去训练critic，高效利用智能体的局部值函数的估计动作值函数。<br>
-我们在一个合成的多机器人导航领域和现实世界中一个亚洲城市的出租车调度问题上测试了本文的方法，结果展示了本文的方法可以扩展到大型多智能体系统上。根据经验，我们因式AC方法比以前最好的方法给出的解决方案都要好。因式AC方法收敛的也比普通的AC方法快很多，验证了我们提出的critic训练方法的有效性。<br>
-<strong>相关工作</strong> 我们的工作基于具有近似值函数的策略梯度框架。然而，根据以往的经验显示，直接应用原始的策略梯度到多智能体任务中，尤其是CDec-POMDP模型中会产生较高方差。在本文中，我们展示了一个和CDec-POMDP兼容的估计值函数，它能产生高效且低方差的策略梯度更新。Peshkin很早之前就研究过了应用于分布式policy的强化学习，Guestrin还提出使用REINFORCE从协调图中训练一个因子值函数的softmax策略。然而，这些以前的工作中，策略梯度都是从全局的经验回报而不是分解后的critic中估计的。我们在第四章中展示了一个分解后ciritc和基于训练这个critic得到的一个单个值函数对于高效的采样学习是很重要的。我们的实验结果表明了我们提出的critic训练方式比用全局经验回报训练收敛的还要快。</p>
-<h2 id="集中分布式pomdp模型">集中分布式POMDP模型</h2>
-<p>我们首先介绍一下Nguyen提出的CDec-POMDP模型。一个对应于这个模型的$T$步的动态贝叶斯网络如图所示。它由以下几个部分组成：</p>
-<ul>
-<li>一个有限的计划范围$H$</li>
-<li>智能的数量$M$，一个智能体m可能处在state space $S$中的任意一个状态，联合state space是$\times_{m=1}^MS$，我们用$i\in S$表示一个state。</li>
-<li>每一个智能体m都有一个action spaceA，我们用$j\in A$表示一个action。</li>
-<li>用$(s_{1:H},a_{1:H})<sup>m=(s_1</sup>m,a_1<sup>m,\cdots,s_H</sup>m,a_H<sup>m)$表示一个智能体m完整的state-action轨迹。用随机变量$s_t</sup>m,a_t^m$表示智能体$m$在$t$时刻的state和action。不同的指示函数$I_t(\cdot)$如表$1$所示。给定每一个智能体$m\in M$的轨迹，定义以下的计数方式：<br>
-$$n_t(i,j,i’) = \sum_{m=1}^M I_t^m(i,j,i’),\forall i,i’\in S,j\in A.$$<br>
-如表$1$所示，计数器$n_t(i,j,i’)$表示在$t$时刻处于state $i$，采取action $j$，转换到state $i’$的智能体数量。其他计数器$n_t(i)$和$n_t(i,j)$的定义类似。使用这些计数器，我们可以定义$t$时刻的计数表$\bf{n}<em>{s_t}$和$\bf{n}</em>{s_ta_t}$如表$1$所示。</li>
-<li>我们假设一个普遍的部分观测环境，其中智能体基于其他智能体的总体影响可以有不同的ovservation。一个智能体观测到它的局部state $s_t<sup>m$。此外在$t$时刻基于它的局部状态$s_t</sup>m$和计数表$\bf{n}_{s_t}$观测到$o_t^m$。例如，一个智能体m在$t$时刻处于state $i$，可以观测到其他也处在state $i(=n_t(i))$的智能体或者其他处在state $i$临近状态$j$的智能体，即$n_t(j),\forall j\in Nb(i)$。</li>
-<li>状态转换函数是$\Phi_t(s_{t+1}<sup>m=i’|s_t</sup>m=i,a_t^m=j,\bf{N}<em>{s_t})$。所有智能体的状态转换函数是一样的，注意它会受到$\bf{n}</em>{s_t}$的影响，而$\bf{n}_{s_t}$依赖于智能体的共同行为。</li>
-<li>每一个智能体m有一个不平稳的policy $\pi_t<sup>m(j|i,o_t</sup>m(i,\bf{n}<em>{s_t}))$，表示在$t$时刻给定智能体m的observation $(i,o_t^m(i,\bf{n}</em>{s_t})$之后，智能体采取action $j$的概率。我们用$\pi^m=(\pi_1,\cdots,\pi_H)$表示智能体m水平范围的policy。</li>
-<li>一个智能体接收到的reward $r_t^m=r_t(i,j,\bf{n}<em>{s_t}$取决于它的局部state和action，以及计数表$\bf{n}</em>{s_t}$。</li>
-<li>初始的state分布，$b_o=(P(i)\forall i \in S)$，对于所有的智能体都是相同的。</li>
-</ul>
-<p>我们在这里展示了最简单的版本，所有的智能体的类型都相同，并且有相似的state transition，observation和reward模型。模型也可以处理多种类型的智能体，不同类型的智能体有不同的变化。我们还可以引入一个不受智能体action影响的external state，如交通领域的出租车需求。我们的结果也可以扩展到解决类似的问题。<br>
-像CDec-POMDP之类的模型对于解决智能体数量很大或者智能体的身份不影响reward或者transition function之类的问题是很有用的。其中一个应用是出租车车队优化问题，这个问题是计算出出租车调度的policy使得车队的利润最大化。一个出租车的决策过程如下。在时刻$t$时，每个出租车观测到它当前的城市空间$z$，不同的空间构成了state space $S$，以及当前空间和它的相邻空间的其他出租车的计数和当前局部请求的一个估计。这构成了出租车基于计数的observation $o(\cdot)$。基于这个observation，出租车必须决定待在当前空间$z$寻找乘客还是移动到下一个空间。这些决策选择取决于不同的因子，如请求比率和当前空间其他出租车的计数。类似的，环境是随机的，在不同时间出租车请求是变化的。使用出租车车队的的GPS记录可以得到这些历史的请求数据。<br>
-<strong>基于计数的统计数据用于规划</strong> CDec-POMDP模型的一个关键属性是模型的变换取决于智能体的集中交互而不是智能体的身份。在出租车车队优化问题中，智能体数量可以相当大（大约有$8000$个智能体在现实世界的实验中）。给出这么大数量的智能体个数，为每一个智能体计算出独一无二的policy是不可能的。因此，和之前的工作类似，我们的目标是对所有智能体计算出一个相同的policy $\pi$。因为policy $\pi$取决于计数，它代表了一种富有表现力的policy。<br>
-对于一个固定的数量M来说，用${(s_{1:T},a_{1:T})^m\forall m}$表示从图$1$的DBN网络中采样得到的不同智能体的state-action轨迹。用$\mathbf{n}<em>{1:T}={(\mathbf{n}</em>{s_t},\mathbf{n}<em>{s_ta_t},\mathbf{n}</em>{s_ta_ts_{t+1}})\forall t=1:T}$表示每一个时间步$t$的结果计数表的组合向量。Nguyen等人展示了计数器$\mathbf{n}$中拥有足够的统计数据用来规划。也就是说，一个policy $\pi$在水平范围H内的联合值函数可以通过计数器的期望进行计算：<br>
-$$V(\pi) = \sum_{m=1}<sup>M\sum_{T=1}</sup>H E[r_T^m] = \sum_{\mathbf{n}\in \Omega_{1:H}}P(\mathbf{n};\pi) \left[\sum_{T=1}^H\sum_{i\in S,j\in A} n_T(i,j)r_T(i,j,\mathbf{n}<em>T)\right]$$<br>
-集合$\Omega</em>{1:H}$是所有允许的一致计数表的集合，如下所示：<br>
-$$\sum_{i\in S}n_T(i) = M \forall T;$$<br>
-$$\sum_{j\in A}n_T(i,j) = n_T(i) = \forall j \forall T;$$<br>
-$$\sum_{i’\in S}n_T(i,j,i’) = n_T(i,j)\forall i\in S,\forall j \in A, \forall T;$$<br>
-$P(\mathbf{n},\pi)$是计数器的分布。这个结果的一个关键好处是我们可以直接从分布$P(\mathbf{n})$中对计数器$\mathbf{n}$采样而不是对单个不同智能体的轨迹$(s_{1:H},a_{1:H})进行采样来$评估policy $\pi$，这显著节省了计算开销。我们的目标是计算最优的policy $\pi$来最大化$V(\pi)$。我们假设一个集中式学习，分布式执行的强化学习设置。我们假设有一个模拟器可以从$P(\mathbf{n};\pi)$中提供计数器样本。</p>
-<h2 id="cdec-pomdp的策略梯度">CDec-POMDP的策略梯度</h2>
-<p>之前的工作提出了一个基于采样的EM算法来优化policy $\pi$。这个policy被表示成计数器$\mathbf{n}$空间中的一个线性分段表policy，其中每一个线性片段指定了下一个action的分布。然而，这种表格形式的表示限制了它的表达能力，因为片段的数量是固定的先验，并且每个范围都必须手动定义，这可能会对性能产生不利影响。此外，当observation o是多维的时候，即，一个智能体观测到它位置相邻区域的计数器时，需要指数多个片段。为了解决这个问题，我们的目标是优化函数形式（如神经网络）的policy。<br>
-我们首先扩展策略梯度理论到CDec-POMDP上，用$\theta$表示policy参数的向量。我们接下来展示如何计算$\Delta_\theta V(\pi)$。用$\mathbf{s}_t,\mathbf{a}<em>t$表示$t$时刻所有智能体的联合state和联合action。给定一个policy $\pi$，值函数表示形式如下：<br>
-$$V_t(\pi)=\sum</em>{\mathbf{s}_t,\mathbf{a}<em>t}P<sup>{\pi}(\mathbf{s}_t,\mathbf{a}_t|b_o,\pi)Q_t</sup>{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>T)$$<br>
-其中$P<sup>{\pi}(\mathbf{s}_t,\mathbf{a}_t|b_o)=\sum_{\mathbf{s}_{1:t-1},\mathbf{a}_{1:t-1}}P</sup>{\pi}(\mathbf{s}</em>{1:t},\mathbf{a}</em>{1:t}|b_o)$是policy $\pi$下联合state $\mathbf{s}<em>t$，和联合action $\mathbf{a}<em>t$的分布。值函数$Q_t^{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t)$的计算过程如下：<br>
-$$Q_t^{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t) = r_t(\mathbf{s}<em>t,\mathbf{a}<em>t)+\sum</em>{\mathbf{s}</em>{t+1},\mathbf{a}</em>{t+1})}P<sup>{\pi}(\mathbf{s}_{t+1},\mathbf{a}_{t+1}|\mathbf{s}_t,\mathbf{a}_t))Q_{t+1}</sup>{\pi}(\mathbf{s}</em>{t+1},\mathbf{a}</em>{t+1})$$<br>
-接下来介绍以下CDec-POMDP的策略梯度理论：<br>
-<strong>定理1.</strong> 对于任何CDec-POMDP，策略梯度计算公式如下：<br>
-$$\Delta</em>{\theta}V_1(\pi)=\sum</em>{t=1}<sup>HE_{\mathbf{s}_t,\mathbf{a}_t)|b_o,\pi}\left[Q_t</sup>{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t)\sum</em>{i\in S,j\in A}n_t(i,j)\Delta</em>{\theta}log\pi</em>{t}(j|i,o(i,\mathbf{n}</em>{s_t}))\right]$$<br>
-这个定理的证明和其他后续结果在附录中。<br>
-注意由于许多原因利用上述结果计算策略梯度是不切实际的。联合state-action $\mathbf{a}_t,\mathbf{s}_t$空间是组合的。考虑到智能体的个数可能有很多个，对每一个智能体的轨迹进行采样是计算上不可行的。为了补救，我们接下来会展示类似policy评估直接对计数器$\mathbf{n}~P(\mathbf{n};\pi)$进行采样计算梯度。类似的，也可以使用经验回报作为动作值函数$Q_t<sup>{\pi}(\mathbf{s}_t,\mathbf{a}_t)$的一个近似估计。这是标准的REINFORCE算法在CDec-POMDP上的应用。众所周知，REINFORCE可能比其他使用学习的动作值函数的方法学习的慢。因此，我们提出了一个$Q_t</sup>{\pi}$的近似函数，展示了直接采样计数器$\mathbf{n}$来计算策略梯度。</p>
-<h3 id="使用估计动作值函数的策略梯度">使用估计动作值函数的策略梯度</h3>
-<p>估计动作值函数$Q_t^{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t)$有几种不同的方式。我们考虑下列特征形式的近似值函数$f_w$：<br>
-$$Q_t^{\pi}(\mathbf{s}<em>t,\mathbf{a}<em>t)\approx f_w(\mathbf{s}<em>t,\mathbf{a}<em>t)=\sum</em>{m=1}<sup>Mf_w</sup>m(s_t<sup>m,o(s_t</sup>m,\mathbf{n</em>{s_t}}),s_t^m)$$<br>
-每一个智能体m都定义了一个$f_w<sup>m$，它的输入是智能体的局部state，action和observation。注意不同的$f_w</sup>m$是相关的，因为它们依赖于公共的计数器表$\mathbf{n}</em>{s_t}$。这样的一种分解方式是很有用的，因为它产生了有效的策略梯度计算方式。此外，CDec-POMDP中一类很重要的这种形式的估计值函数是兼容值函数最后会产生一个无偏的策略梯度。<br>
-<strong>命题1</strong> CDec-POMDP中的兼容值函数可以分解成：<br>
-$$f_w(\mathbf{s}<em>t\mathbf{a}<em>t) = \sum_mf_w<sup>m(s_t</sup>m,o(s_t<sup>m,\mathbf{n}_{s_t}),a</sup>m)$$<br>
-我们可以直接用估计值函数$f_w$取代$Q^{\pi}(\cdot)$。经验上来说，我们发现使用这个估计的方差很大。我们利用$f_w$的结构进一步分解策略梯度会有更好的效果。<br>
-<strong>定理2</strong> 对于任何具有如下的分解的值函数：<br>
-$$f_w(\mathbf{s}<em>t\mathbf{a}<em>t) = \sum_mf_w<sup>m(s_t</sup>m,o(s_t<sup>m,\mathbf{n}_{s_t}),a</sup>m)$$<br>
-策略梯度可以写成：<br>
-$$\Delta</em>{\theta}V_1(\pi)=\sum</em>{t=1}<sup>HE_{\mathbf{s}_t,\mathbf{a}_t)|b_o,\pi}\left[\sum_m\Delta_{\theta}log\pi(a_t</sup>m|s_t<sup>m,o(s_t</sup>m,\mathbf{n}</em>{s_t}))f_w<sup>m(s_t</sup>m,o(s_t<sup>m,\mathbf{n}_{s_t}),a_t</sup>m)\right]$$<br>
-上述结果展示了如果估计值函数被分解了，那么得到的策略梯度也是分解的。上述结果也可以应用到多种类型的智能体上，只要我们假设不同的智能体有不同的函数$f_t^m$。最简单的情况下，所有的智能体都是相同类型的，每一个智能体都有相同的函数$f_w$，推断出下式：<br>
-$$f_w(\mathbf{s}<em>t,\mathbf{a}<em>t) = \sum</em>{i,j}n_t(i,j)f_w(i,j,o(i,\mathbf{n}</em>{s_t}))$$<br>
-使用上式，我们可以将策略梯度简化成：<br>
-$$\Delta</em>{\theta}V_1(\pi) = \sum_tE</em>{\mathbf{s}<em>t,\mathbf{a}<em>t}\left[\sum</em>{i,j}n_t(i,j)\Delta</em>{\theta}log\pi (j|i,o(i,\mathbf{n}</em>{s_t}))f_w(i,j,o(i,\mathbf{n}</em>{s_t}))\right]$$</p>
-<h3 id="基于计数器的策略梯度计算">基于计数器的策略梯度计算</h3>
-<p>注意在上式中，期望仍然和联合state，action，$(\mathbf{s}<em>t,\mathbf{a}<em>t)$相关，当智能体的个数很大时效率很低。为了解决这个问题是<br>
-<strong>定理3</strong> 对于任何拥有形式$f_w(\mathbf{s}<em>t,\mathbf{a}<em>t) = \sum</em>{i,j}n_t(i,j)f_w(i,j,o(i,\mathbf{n}</em>{s_t}))$的值函数，策略梯度都可以用下式计算：<br>
-\begin{equation}<br>
-E</em>{\mathbf{n}</em>{1:H}\in \Omega_{1:H}} \left[\sum_{t=1}^H\sum_{i\in S,j\in A}n_t(i,j) \Delta_{\theta}log\pi (j|i,o(i,\mathbf{n}_t)) f_w(i,j,o(i,\mathbf{n}<em>t))\right]<br>
-\end{equation}<br>
-上述结果展示了策略梯度可以类似于计算policy的值函数一样通过从底层分布$P(\cdot)$中采样计数表向量$\mathbf{n}</em>{1:H}$来计算策略梯度，在智能体数量很大的情况下也是可行的。</p>
-<h2 id="训练动作值函数">训练动作值函数</h2>
-<p>在我们的方法中，在计数器样本$\mathbf{n}<em>{1:H}$生成用来计算策略梯度后，我们还需要调整critic $f_w$的参数。注意对于每一个动作值函数$f_w(\mathbf{s}<em>t,\mathbf{a}<em>t)$只取决于联合state，action $(\mathbf{s}<em>t,\mathbf{a}<em>t)$生成的计数器。训练$f_w$可以通过一个梯度步最下化下列loss函数实现：<br>
-\begin{equation}<br>
-min_w\sum</em>{\xi=1}<sup>K\sum_{t=1}</sup>H\left(f_w(\mathbf{n}<em>t<sup>{\xi})-R_t</sup>{\xi}\right)^2<br>
-\end{equation}<br>
-其中$\mathbf{n}</em>{1:H}<sup>{\xi}$是从分布$P(\mathbf{n};\pi)$中生成的一个计数器样本；$f_w(\mathbf{n}_t</sup>{\xi})$是动作值函数，$R_t^{\xi}$是用式子$(1)$计算的$t$时刻的所有经验回报：<br>
-\begin{equation}<br>
-f_w(\mathbf{n}<em>t^{\xi}) = \sum</em>{i,j}n_t<sup>{\xi}(i,j)f_w(i,j,o(i,\mathbf{n}_t</sup>{\xi});R_t<sup>{\xi}=\sum_{T=t}</sup>H]\sum</em>{i\in S,j\in A}n_T{\xi}(i,j)r_T(i,j,\mathbf{n}<em>T^{\xi})<br>
-\end{equation}<br>
-然而，我们发现公式$(11)$中的loss函数在训练较大问题的critic时表现并不好。需要一定数量的计数器样本可靠的训练$f_w$，这对于拥有较多数量智能体的大问题的扩展有不利影响。已知在多智能体强化学习中单独利用全局reward信号的算法要比利用局部reward信号的方法多用一些样本。受到这些现象的启发，接下来我们提出了一个基于策略的局部reward信号去训练critic $f_w$。<br>
-<strong>单个值函数</strong> 用$\mathbf{n}</em>{1:H}<sup>{\xi}$表示一个计数器样本。给定计数器样本$\mathbf{n}_{1:H}</sup>{\xi}$，用$V_t<sup>{\xi}(i,j)=E\left[\sum_{t’=t}</sup>Hr</em>{t’}<sup>m|s_t</sup>m=i,a_m<sup>t=j,n_{1:H}</sup>{\xi}\right]$表示一个智能体在时刻$t$处于state $i$，采取action $j$，所能得到的所有期望reward。这个单个的值函数可以用动态规划算法来计算。基于这个值函数，我们接下来展示了式子$(12)$中全局经验reward的重新参数化：<br>
-<strong>引理(Lemma)1</strong> 给定计数器样本$\mathbf{1:H}<sup>{\xi}$，$t$时刻的经验回报$R_t</sup>{\xi}$可以被重新参数化为：<br>
-$$R_t^{\xi} = \sum</em>{i\in S,j\in A}n_t<sup>{\xi}(i,j)V_t</sup>{\xi}(i,j).$$<br>
-<strong>基于单个值函数的loss</strong> 给出引理$1$，我们推导出式子$11$中真实loss的上界，它有效利用了单个值函数：<br>
-\begin{align*}<br>
-&amp;\sum</em>{\xi}\sum_t\left(f_w(\mathbf{n}<sup>{\xi})-R_t</sup>{\xi}\right)^2 \<br>
-= &amp;\sum_{\xi}\sum_t\left(\sum_{i,j}n_t<sup>{\xi}(i,j)f_w(i,j,o(i,\mathbf{n}_t</sup>{\xi}))-\sum_{i,j}n_t<sup>{\xi}(i,j)V_t</sup>{\xi}(i,h)\right)^2\<br>
-= &amp;\sum_{\xi}\sum_t\left( \sum_{i,j}n_t<sup>{\xi}(i,j)(f_w(i,j,o(i,\mathbf{n}_t</sup>{\xi}))-V_t<sup>{\xi}(i,h))\right)</sup>2\<br>
-\le &amp;M\sum_{\xi}\sum_{t,i,j}n_t(i,j)\left(f_w(i,j,o(i,\mathbf{n}_t<sup>{\xi}))-V_t</sup>{\xi}(i,j)\right)^2<br>
-\end{align*}<br>
-其中最后一部用了柯西施瓦茨不等式。我们用式子(14)中修改过的loss训练critic。按照经验来说，对于较大的问题，式子(14)中的新loss比式子(13)中的原始loss要收敛的快很多。直观上来说，这是因为式子(14)中的新loss尝试调整每一个critic组件$f_w(i,j,o(i,\mathbf{n}_t<sup>{\xi}))$更接近它的经验回报$V_t</sup>{\xi}(i,j)$。然而，原始的式子(13)中的loss着重于最小化全局loss，而不是调整每一个单个的critic因子$f_w(\cdot)$到相对应的每一个经验回报。<br>
-算法$1$展示了CDec-POMDP中AC算法的大纲。第$7$行和第$8$行展示了两种不同的方式训练critic。第$7$行代表基于局部值函数的critic更新，也可以称为factored cirtic更新(fC)。第$8$行展示了基于全局reward或者全局critic的更新©。第$10$行展示了使用定理$2$(fA)计算的策略梯度。第$11$行展示了直接使用$f_w$计算的梯度。</p>
-<h2 id="实验">实验</h2>
-<p>这一节中比较了我们的AC算法和另外两个解决CDec-POMDP问题的算法，Soft-Max based flow update(SMFU)，和期望最大化方法。SMFU只能优化智能体的action依赖于局部state的policy，$\pi(a_t<sup>m|s_t</sup>m)$，因为它通过计算在规划阶段单个最有可能的计数器向量来估计计数器$\mathbf{n}$的作用。EM方法优化基于计数器的分段线性policy，其中$\pi(a_t<sup>m|s_t</sup>m,\cdot)$是所有可能的计数器observation $o_t$空间上的一个分段函数。<br>
-算法$1$展示了更新critic的两种方式（第$7$行和第$8$行）和更新actor的两种方式（第$10$行和第$11$行），所以就有四种可能的AC方法－fAfC,AC,FfC,fAC。我们也研究了不同actor-critic方法的属性。在附录中有神经网络的结构和其他一些实验设置。<br>
-为了和之前方法公平的进行比较，我们使用了三种不同的模型用于基于计数的observation $o_t$。在$o0$设置中，policy只取决于智能体的局部state $s_t^m$并不需要计数器。在$o1$设置中，policy取决于局部state $s_t^m$和单个计数器observation $n_t(s_t<sup>m)$。也就是说，智能体只能观测到其他也在当前状态$s_t</sup>m$的智能体的计数器。在$oN$设置中，智能体能观测到它的局部state $s_t<sup>m$和当前状态$s_t</sup>m$的局部相邻状态内其他智能体的计数器。$oN$ observation模型提供给智能体最多的信息。然而，它也是最难优化的因为policy有更多的参数。SMFU方法只能在$o0$设置中起作用，EM方法和本文中的AC方法在所有设置中都能起作用。</p>
-<!--
-**出租车调度** 我们在第二节中介绍的现实世界中的域测试了本文的方法。在这个问题中，目标是计算出租车policy优化整个车队的收入。数据包含亚洲一个大城市超过一年的出租车轨迹数据。我们使用了从数据集中提取到的车辆请求信息。平均来说，每天大概有$8000$辆出租车。整个城市被划分为$81$个空间，时间范围是$24$个小时划分为$48$个半小时的区间。
-图$2(a)$中展示了不同方法在不同的观测模型（$'o0','o1','oN'$)上的量化比较。我们测试了$4000$和$8000$辆出租车来验证是否出租车的数量会影响不同方法的性能。$y$轴展示了整个车队每天的利润。在$'o0'$设置下，所有的方法（fAfC-$o0$,SMFU,EM-$o0$）给出质量差不多的解，在$8000$个出租车上fAfC-$o0$和EM-$o0$表现的比SMFU稍微好一些。在$'o1'$设置下，
--->
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2019/01/21/ml-expectatin_maximization/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2019/01/21/ml-expectatin_maximization/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/31/index.html">EM(Expectation Maximization)算法</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-21 10:22:45" itemprop="dateCreated datePublished" datetime="2019-01-21T10:22:45+08:00">2019-01-21</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-12-17 15:41:00" itemprop="dateModified" datetime="2019-12-17T15:41:00+08:00">2019-12-17</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="引言-introduction">引言(Introduction)</h2>
-<h3 id="什么是期望最大化算法">什么是期望最大化算法</h3>
-<p>期望最大化算法(Expectation Maximization,EM)，是利用参数估计的迭代法求解最大似然估计的一种方法。</p>
-<h3 id="em和mle关系">EM和MLE关系</h3>
-<p>MLE的目标是求解已知分布类型的单个分布的参数。<br>
-EM的目标是求解已知分布类型的多个混合分布的参数。<br>
-一般我们用到的极大似然估计都是求某种已知分布类型的单个分布的参数，如求高斯分布的均值和方差；而EM算法是用来求解已知分布类型，多个该已知类型分布的混合分布的参数，这句话听起来可能有些拗口，举个最常见的例子，高斯混合分布参数的求解，这个混合分布都是高斯分布，只是每个分布的参数不同而已。如果一个高斯分布，一个卡方分布是没有办法求解的。</p>
-<h3 id="为什么叫它em算法">为什么叫它EM算法</h3>
-<p>因为这个算法总共有两个迭代步骤，E步和M步。第一步是对多个分布求期望，固定每一个分布的参数，计算出混合分布的参数，即E步，第二步是对这个混合分布利用最大似然估计方法进行参数估计，即M步。</p>
-<h2 id="推理过程">推理过程</h2>
-<p>假设我们要求一个混合分布p的参数$\theta$，比如校园内男生和女生的身高参数，显然，男生和女生的身高服从的分布类型是相同的，但是参数是不一样的。这里通过引入一个隐变量$z$，求解出对应不同$z$取值的参数$\theta$的值。<br>
-\begin{align*}<br>
-p(x|\theta) &amp;= \sum_zp(x,z|\theta)\\<br>
-&amp;=\sum_zp(z|\theta)p(x|\theta, z) \tag{0}<br>
-\end{align*}<br>
-如果我们假设男女生的身高分布是一个高斯混合模型，现在要求它的参数$\theta$。混合模型的表达式可以写为：<br>
-\begin{align*}<br>
-p(x|\theta) &amp;= \sum_zw(z)N(x|\mu_z,\sigma_z)\\<br>
-&amp;=\sum_zp(z|\theta)p(x|\theta,z)<br>
-\end{align*}<br>
-其中$\sum_zw(z) = 1,\theta={w, \mu, \sigma}$，如果用最大似然估计来解该问题的话，log函数内有和式，不好优化，所以就要换种方法。<br>
-观测数据：$x=(x_1,\cdots, x_N)$<br>
-对应的隐变量：$z=(z_1,\cdots, z_N)$，$z_i$有$c$种取值。</p>
-<p>\begin{align*}<br>
-l(\theta;x) &amp;= log p(x|\theta) \tag{1}\\<br>
-&amp;= log\prod_{i=1}^N\ p(x_i|\theta) \tag{2}\\<br>
-&amp;= \sum_{i=1}^Nlog\ p(x_i|\theta) \tag{3}\\<br>
-&amp;= \sum_{i=1}^Nlog\sum_zp(x_i,z|\theta) \tag{4}\\<br>
-\end{align*}<br>
-这里式子(4)中$\sum_zp(x,z|\theta)$该怎么变形，因为现在解不出来了。<br>
-最开始我想的是使用条件概率进行展开，即：<br>
-$$\sum_zp(x_i, z|\theta) = \sum_zp(x_i|z, \theta)p(z|\theta)$$<br>
-但是如果展开成这样子，就变成了文章开头给出的式子(0)，并没有什么用，不能继续化简了。<br>
-所以就对式子(4)做个变形<br>
-\begin{align*}<br>
-&amp;\ \ \ \ \sum_{i=1}^Nlog\sum_zp(x_i,z|\theta) \tag{4}\\<br>
-&amp;= \sum_{i=1}^Nlog\sum_zq(z|x_i)\frac{p(x_i,z|\theta)}{q(z|x_i)}, \ \ s.t.\sum_zq(z|x_i)=1 \tag{5}\\<br>
-&amp;\ge \sum_{i=1}^N \underbrace{\sum_zq(z|x_i)log\frac{p(x_i,z|\theta)}{q(z|x_i)}}_{L(q,\theta)},\ \ s.t. \sum_zq(z|x_i)=1 \tag{6}\\<br>
-\end{align*}<br>
-第(4)步到第(5)步引入了一个分布$q(z|x)$，就是给定一个观测数据$x$，隐变量$z$取值的概率分布。注意，$q(z)$是一个函数，但是给定$x$之后，$q(z|x)$是一个变量。然后因为变形之后还是没有求解，就利用杰森不等式做了缩放，将$log(sum())$变成了$sum(log())$，就变成了(6)式。<br>
-这里使用Jensen不等式的目的是使得缩放后的值还能取得和原式相等的值，重要的是等号能够取到。</p>
-<h3 id="jensen不等式">Jensen不等式</h3>
-<p>对于随机变量的Jensen不等式，当函数$f(x)$是凸函数的时候可以用下式表示：<br>
-$$f(E(x)) \le E(f(x))$$<br>
-当$f(x)$是凹函数的时候，有<br>
-$$f(E(x)) \ge E(f(x))$$</p>
-<p>接下来我们就要求解使得式子(6)中杰森不等式等号成立的$q$分布的取值。这里有两种方法可以求解。</p>
-<h3 id="拉格朗日乘子法">拉格朗日乘子法</h3>
-<p>令<br>
-$$L(q,\theta) = \sum_z q(z|x_i)log{\frac{p(x_i,z|\theta)}{q(z|x_i)}}, s.t.\sum q(z|x_i) = 1 \tag{7}$$<br>
-构建拉格朗日目标函数：<br>
-\begin{align*}<br>
-L &amp;= L(q, \theta) + \lambda(\sum_zq(z|x)- 1) \tag{8}\\<br>
-&amp;= \sum_z q(z|x_i)log{\frac{p(x_i,z|\theta)}{q(z|x_i)}} + \lambda(\sum_z q(z|x_i) - 1)  \tag{9}<br>
-\end{align*}</p>
-<p>对$L$求导，得到：<br>
-$$\frac{\partial L}{\partial q(z|x_i)} = log\frac{p(x_i, z|\theta)}{q(z|x_i)} + q(z|x_i)(-\frac{1}{q(z|x_i)}) + \lambda \tag{10}$$<br>
-令$\frac{\partial L}{\partial q(z|x_i)}$等于$0$，得到：$$log\frac{p(x_i, z|\theta)}{q(z|x_i)} = 1 - \lambda$$<br>
-两边同取$e$的对数：<br>
-$$\frac{p(x_i, z|\theta)}{q(z|x_i)} = e^{1-\lambda} \tag{11}$$<br>
-$$q(z|x_i) = e^{\lambda - 1}p(x_i, z|\theta) \tag{12}$$<br>
-两边同时求和得：<br>
-$$1 = e^{\lambda - 1}\sum_z p(x_i, z|\theta) \tag{13}$$<br>
-用$p$表示$e^{\lambda-1}$得到：<br>
-$$e^{\lambda-1} = \frac{1}{\sum_z p(x_i, z|\theta)}$$<br>
-将其代入式子(12)得：<br>
-\begin{align*}<br>
-q(z|x_i) &amp;= \frac{p(x_i, z|\theta)}{\sum_z p(x_i, z|\theta)}\\<br>
-&amp;= \frac{p(z, x_i|\theta)}{p(x_i|\theta)}\\<br>
-&amp;= p(z|x_i, \theta)  \tag{14}<br>
-\end{align*}</p>
-<p>最后求出来$q(z|x_i) = p(z|x_i, \theta)$。</p>
-<h3 id="杰森不等式成立条件">杰森不等式成立条件</h3>
-<p>杰森不等式成立条件是常数，即：<br>
-$$\frac{p(x_i, z|\theta)}{q(z|x_i)} = c,  s.t. \sum q(z|x_i)=1 \tag{15}$$<br>
-则有:<br>
-$$p(x, z_i|\theta) = cq(z_i|x) \tag{16}$$<br>
-同时对式子左右两边求和，得到：<br>
-$$\sum p(x_i, z|\theta) = \sum cq(z|x_i) = c \tag{17}$$<br>
-将$c = \sum p(x_i, z|\theta)$代入式子(14)得：<br>
-\begin{align*}<br>
-q(z|x_i) &amp;= \frac{p(x_i, z|\theta)}{\sum p(x_i,z|\theta)}\\<br>
-&amp;= \frac{p(x_i, z)|\theta}{p(x_i|\theta)}\\<br>
-&amp;= p(z|x_i, \theta) \tag{18}<br>
-\end{align*}</p>
-<h3 id="等号成立证明">等号成立证明</h3>
-<p>上面两个方法都算出来在$q(z|x_i) = p(z|x_i, \theta)$时$L$能取得最大值。接下来证明这个这个$L$的最大值和$l$相等。<br>
-将$q = p(z|x_i, \theta)$代入$L(q, \theta)$得：<br>
-\begin{align*}<br>
-L(q, \theta) &amp;= L(p(z|x_i, \theta^t), \theta^t)\\<br>
-&amp;= \sum_z p(z|x_i, \theta^t) log\frac{p(z, x_i|\theta^t)}{p(z|x_i, \theta^t)} \\<br>
-&amp;= \sum_z p(z|x_i, \theta^t) log p(x_i|\theta^t)\\<br>
-&amp;= 1\cdot log p(x_i|\theta^t)\\<br>
-&amp;= log p(x_i|\theta^t)\\<br>
-&amp;= l(\theta^t; x_i)<br>
-\end{align*}</p>
-<h3 id="另一种等号成立推导">另一种等号成立推导</h3>
-<p>\begin{align*}<br>
-l(\theta; x) - L(q, \theta) &amp;= l(\theta; x_i) - \sum_z q(z|x_i) log{\frac{p(z, x_i|\theta)}{q(z|x_i)}}\\<br>
-&amp;= \sum_z q(z|x_i) log p(x_i|\theta) - \sum_z q(z|x_i) log{\frac{p(z, x_i|\theta)}{q(z|x_i)}}\\<br>
-&amp;= \sum_z q(z|x_i)log {\frac{p(x_i|\theta)q(z|x_i)}{p(z, x_i|\theta)}}\\<br>
-&amp;= \sum_z q(z|x_i)log {\frac{q(z|x_i)}{p(z|x_i, \theta)}}\\<br>
-&amp;= KL(q(z|x_i)||p(z|x_i,\theta))<br>
-\end{align*}<br>
-最后算出来两个函数之差是一个KL散度，是从$p$到$q$的KL散度。当前仅当$p=q$时取等，否则就非负。</p>
-<h3 id="m步">M步</h3>
-<p>\begin{align*}<br>
-L(q, \theta) &amp; = \sum_z q(z|x_i) log\frac{p(z, x_i|\theta)}{q(z|x_i)} \\<br>
-&amp; = \underbrace{\sum_z q(z|x_i)log{p(z, x_i|\theta)}}_{Expected\ complete\ log-likelyhood} - \underbrace{\sum_z q(z|x_i)l{q(z|x_i)}}_{Entropy}<br>
-\end{align*}</p>
-<h2 id="em流程">EM流程</h2>
-<h3 id="计算流程">计算流程</h3>
-<p>（１）首先随机初始化模型的不同隐变量对应的参数，<br>
-（２）对于每一个观测，首先判断它对应的隐变量的分布。<br>
-（３）求期望<br>
-（４）最大似然估计求参数<br>
-用公式来表示如下：<br>
-E步：$q^{t+1} = arg\ max_q L(q, \theta^t)$<br>
-M步：$\theta^{t+1} = arg max_{\theta}L(q^{t+1}, \theta)$<br>
-E步就是根据$t$时刻的$\theta^t$利用概率$q$求出$L$的期望，然后M步使用最大似然估计计算出新的$\theta$，就这样迭代下去。</p>
-<h2 id="em收敛性分析">EM收敛性分析</h2>
-<p>EM算法的收敛性就是要证明$L(q=p(z|x_i, \theta^t) , \theta)$的值一直在增大。<br>
-\begin{align*}<br>
-L(p(z|x_i, \theta^{t+1}) , \theta^{t+1}) - L(p(z|x_i, \theta^{t}) , \theta^{t}) &amp;= log p(x_i|\theta^{t+1}) - log p(x_i|\theta^t)\\<br>
-&amp; \ge 0<br>
-\end{align*}</p>
-<h2 id="例子">例子</h2>
-<p>假如有两个硬币A和B，假设随机从A,B中选一个硬币，掷$10$次，重复$5$次实验，分别求出两个硬币正面向上的概率。假设硬币服从二项分布<br>
-$5$次实验结果如下：<br>
-5H5T<br>
-9H1T<br>
-8H2T<br>
-4H6T<br>
-7H3T</p>
-<p>这个时候有两种情况</p>
-<h3 id="知道每次选的是a还是b">知道每次选的是A还是B</h3>
-<p>这个时候就变成了极大似然估计。</p>
-<h3 id="不知道每次选的是a还是b">不知道每次选的是A还是B</h3>
-<p>这个时候就用EM算法了。<br>
-首先随机初始化$\theta_A = 0.5, \theta_B = 0.5$，<br>
-对于每一个观测，首先判断它对应的隐变量的分布。<br>
-$i={1,2,3,4,5}$，分别代表$5$个实验。<br>
-首先求出$\theta_A$的参数。<br>
-$$P(z = A|x_i, \theta_A, \theta_B) = \frac{P(z = A|x_i, \theta_A)}{P(z = A|x_i, \theta_A) + P(z = B|x_i, \theta_B)}$$<br>
-$$P(z = B|x_i, \theta_A, \theta_B) = 1 - P(z = A|x_i,\theta_A,\theta_B)$$<br>
-然后计算下式：<br>
-\begin{align*}<br>
-L(q,\theta_A) &amp;= \sum_{i=1}^5 \sum_zp(z|x_i, \theta_A, \theta_B)log p(x_i|\theta)\\<br>
-&amp;= \sum_{i=1}^5 (p(z=A|x_i, \theta_A)log p(x_i|\theta_A) + p(z=B|x_i, \theta_B)log p(x_i|\theta_B))<br>
-\end{align*}<br>
-然后利用极大既然估计计算$\theta_A$和$\theta_B$的值。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.<a href="https://www.zhihu.com/question/27976634/answer/153567695" target="_blank" rel="noopener">https://www.zhihu.com/question/27976634/answer/153567695</a><br>
-2.<a href="https://en.wikipedia.org/wiki/Jensen%27s_inequality" target="_blank" rel="noopener">https://en.wikipedia.org/wiki/Jensen's_inequality</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -4011,7 +3980,7 @@ L(q,\theta_A) &amp;= \sum_{i=1}^5 \sum_zp(z|x_i, \theta_A, \theta_B)log p(x_i|\t
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">332</span>
+                    <span class="site-state-item-count">334</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -4488,9 +4457,9 @@ L(q,\theta_A) &amp;= \sum_{i=1}^5 \sum_zp(z|x_i, \theta_A, \theta_B)log p(x_i|\t
   
     
       
-        
-      
     
+      
+        
       
     
       
