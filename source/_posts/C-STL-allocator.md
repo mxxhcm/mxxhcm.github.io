@@ -26,5 +26,5 @@ uninitialized_fill(ForwardIterator, ForwardIterator, const T& x);
 uninitialized_fill_n(ForwardIterator , size_type n, const T& x )
 这三个函数，会负责对相应的位置进行初始化，通过type_traits判断是否是POD类型，执行内存，或者是调用构造函数。
 
-## 参考文Z
+## 参考文献
 1.《STL源码剖析》

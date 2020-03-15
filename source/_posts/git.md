@@ -84,7 +84,10 @@ commit xxxxxx
 git revert会提交一个新的版本，将回退当做新的一个push，之前的内容都会保留。
 
 ## git pull和git fetch区别
-
+本地的一个git项目中，一般都有本地仓库和远程仓库。一般写完代码，git add添加到本地缓冲区，git commit提交到本地仓库。这个时候假设本地仓库和远程仓库是一致的。
+git pull 相当于git fetch和git merge。git merge将某个分支合并到master分支上。有可能会引发冲突。
+然后假设有人更新了远程仓库的代码，这个时候可以使用git pull或者git fetch进行更新。
+使用git fetch的时候，本地仓库中代码的commit id不变，而本地跟踪的远程仓库的commit id是会变的和远程仓库一致的。
 
 ## 参考文献
 1.https://blog.csdn.net/kongbaidepao/article/details/52253774
