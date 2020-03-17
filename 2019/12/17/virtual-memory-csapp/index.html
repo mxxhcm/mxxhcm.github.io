@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="物理和虚拟寻址 计算机系统的主存被组织成一个由M个连续的字节数组，每字节都有一个唯一的物理地址。物理寻址：CPU使用物理地址访问主存。 早期PC使用物理寻址，现代处理器使用虚拟寻址。通过虚拟寻址，CPU通过一个虚拟地址访问主存，这个虚拟地址在送到内存前被转换成适当的物理地址。实现地址翻译的是内存管理单元(MMU)。 地址空间 地址空间是一个非负整数地址的集合，如果地址空间是连续的，叫做线性地址空间">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-03-08T01:52:50.617Z">
+<meta property="og:updated_time" content="2020-03-16T06:45:03.326Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="virtual memory csapp">
 <meta name="twitter:description" content="物理和虚拟寻址 计算机系统的主存被组织成一个由M个连续的字节数组，每字节都有一个唯一的物理地址。物理寻址：CPU使用物理地址访问主存。 早期PC使用物理寻址，现代处理器使用虚拟寻址。通过虚拟寻址，CPU通过一个虚拟地址访问主存，这个虚拟地址在送到内存前被转换成适当的物理地址。实现地址翻译的是内存管理单元(MMU)。 地址空间 地址空间是一个非负整数地址的集合，如果地址空间是连续的，叫做线性地址空间">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2020-03-08 09:52:50" itemprop="dateModified" datetime="2020-03-08T09:52:50+08:00">2020-03-08</time>
+                <time title="修改时间：2020-03-16 14:45:03" itemprop="dateModified" datetime="2020-03-16T14:45:03+08:00">2020-03-16</time>
               
             
           </span>
@@ -471,7 +471,7 @@
 <p>DRAM缓存表示虚拟内存系统的缓存，它在主存中缓存虚拟页。<br>
 SRAM缓存表示CPU和主存之间的L1, L2, L3高速缓存。<br>
 DRAM缓存的不命中率要比SRAM中的不命中昂贵的多，因为DRAM不命中，需要磁盘提供服务，而SRAM不命中需要DRAM提供服务。而DRAM比SRAM慢10倍，而磁盘比DRAM慢10万倍。而且从磁盘的第一个扇区读取第一个字节的时间开销比起读这个扇区中的连续字节要慢10万被。<br>
-因为大的不命中处罚和访问第一个字节的开销，虚拟页往往很大，通过是4KB到2MB。优于大的不命中处罚，DRAM缓存是全相连的，任何虚拟页都可以放置在任何物理页中。</p>
+因为大的不命中处罚和访问第一个字节的开销，虚拟页往往很大，通过是4KB到2MB。由于大的不命中处罚，DRAM缓存是全相连的，任何虚拟页都可以放置在任何物理页中。</p>
 <h3 id="页表">页表</h3>
 <p>页表是一个数据结构，它和操作系统，MMU（内存管理单元中的）地址翻译硬件，一起提供了虚拟页的缓存的查找（当前虚拟页是否缓存在某个物理页中）和替换（如果不在替换哪个）等。<br>
 页表是一个常驻的主存，它是一个页表条目(page table entry)的数组，虚拟地址空间中的每个页在页表中都有一个PTE。假设PTE是由一个有效位和n位地址空间组成的，如果设置了有效位，地址指向物理页的起始位置，如果没有设置有效位，地址指向虚拟页在磁盘上的起始位置。</p>
@@ -503,20 +503,73 @@ DRAM缓存的不命中率要比SRAM中的不命中昂贵的多，因为DRAM不�
 <p>虚拟内存通过在页表项中添加SUP，READ，WRITE等字段，控制进程的权限。设置SUP位，表示只有内核进程可以访问页面，否则就没有权限。<br>
 违反了条件，就会触发Segmentation fault。</p>
 <h2 id="地址翻译">地址翻译</h2>
-<p>形式上来说，地址翻译是一个N元素的虚拟地址空间(Virtual Adress Space)中的元素和一个M元素的物理地址空间(Phicias Adress Space)中元素之间的映射。</p>
-<p>CPU的页表基址寄存器（Page table base register, PTBR)指向当前页表。n位的地址空间包含两部分，一个是p位的虚拟页面偏移(virtual page offset, VPO)，一个是n-p位的虚拟页号(Virtual Page Number, VPN)。</p>
-<p>物理和虚拟页面都是P字节的，所以VPO和PPO是相同的。</p>
+<p>形式上来说，地址翻译是一个N元素的虚拟地址空间(Virtual Adress Space)中的元素和一个M元素的物理地址空间(Phicias Adress Space)中元素之间的映射。<br>
+一个n位的虚拟地址空间包含两部分：<br>
+- 一个是n-p位的虚拟页号(Virtual Page Number, VPN)，<br>
+- 一个是p位的虚拟页面偏移(virtual page offset, VPO)。<br>
+一个物理地也包含两部分：<br>
+- 一个是m-p位的物理页号(Phicial Page Number, PPN)，<br>
+- 一个是p位的物理页面偏移(phisical page offset, VPO)。<br>
+物理和虚拟页面都是p位的，VPO和PPO是相同的。<br>
+CPU的页表基址寄存器（Page table base register, PTBR)指向当前页表。<br>
+将虚拟页号加上页表基址寄存器中的页表初始偏移，找到这个虚拟页对应的物理页号，然后将物理页号和虚拟地址中的页面偏移相结合生成物理地址。</p>
 <h3 id="结合高速缓存和虚拟内存">结合高速缓存和虚拟内存</h3>
 <h3 id="利用tlb加速地址翻译">利用TLB加速地址翻译</h3>
+<p>就是一个快表，一个小的页表。</p>
 <h3 id="多级页表">多级页表</h3>
-<h3 id="端到端的地址翻译">端到端的地址翻译</h3>
-<h2 id="intel-core-i7-linux-内存系统">Intel Core i7/Linux 内存系统</h2>
+<p>如果只用一个单独的页表进行地址翻译，假设是32位的地址空间，4KB的页面，4字节的PTE，那么即使进程只使用了虚拟地址空间中很小的一部分，也总是需要一个4MB的页表在内存中，对于64位的更严重。为什么一定需要这么多，因为是线性寻址的。<br>
+一级页表<br>
+VP 1<br>
+VP 2<br>
+…<br>
+VP 1M<br>
+总共需要1M个页表，也就是4M内存。</p>
+<p>可以使用多级页表来解决这个问题，比如说使用4KB的页表，4字节的PTE，1K个一级页表，1K个二级页表。<br>
+VP 1<br>
+VP 2<br>
+…<br>
+VP 1K<br>
+总共有1K个一级页表<br>
+如果一个一级页表的PTE是空的，那么对应的二级页表就不会被创建。<br>
+只有以及页表才是常驻内存的，对于二级页表，只有在需要时才创建，减少了主存压力。</p>
+<h2 id="linux虚拟内存系统">Linux虚拟内存系统</h2>
+<p>一个linux进程的虚拟内存分为两部分：<br>
+一个是内核虚拟内存，一个是进程虚拟内存。<br>
+内核虚拟内存分为对每个进程一样的和每个进程不一样的。每个进程都一样的是一些系统共享的资源，比如物理内存和内核代码和数据。还有一些是内核用来区分每个进程的，包括：</p>
+<ol>
+<li>task_struct，包含PID，指向用户栈的指针，可执行目标文件的名字和程序计数器。其中还包含一个mm_struct。</li>
+<li>mm_struct，这个结构体描述了虚拟内存的当前状态，其中有两个字段：
+<ul>
+<li>pgd，pgd指向第一级页表的基址。</li>
+<li>mmap，而mmap指向一个vm_area_structs的链表，其中每个vm_area_structs都描述了当前虚拟地址空间中的一个区域。每一个具体的vm_area_struct都包含以下的字段：
+<ul>
+<li>vm_start，这个area的起始地址</li>
+<li>vm_end，这个are的结束</li>
+<li>vm_prot，这个区域内虚拟页的读写权限。</li>
+<li>vm_flags，这个区域内的页面是与其他进程共享的，还是这个进程私有的。</li>
+<li>vm_flags，指向链表中的下一个area。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>page table</li>
+<li>内核栈</li>
+</ol>
+<p>进程虚拟内存就是我们常说的那些代码段，堆栈段，数据段等。</p>
 <h2 id="内存映射">内存映射</h2>
 <p>Linux通过将一个虚拟内存区域和磁盘上的对象关联起来，初始化这个虚拟内存区域中的内容，这个过程叫做内存映射(memory mapping)。</p>
 <h3 id="再看共享对象">再看共享对象</h3>
 <h3 id="再看fork函数">再看fork函数</h3>
+<p>调用fork函数时，内核为新进程创建一个各种各样的数据结构，并给他分配一个唯一的PID，为了给这个进程创建虚拟内存，它创建了当前进程的mm_struct，area_struct和页表的副本。他讲两个进程中的每个页面都标记为只读，并将两个进程中的area_struct都标记为私有的copy on write。<br>
+当fork在新进程返回时，新进程的虚拟内存和调用fork之间进程的虚拟内存相同。当这两个进程中的任意一个进程写操作的时候，COW就会创建新页面。因此，也就为每个进程保持了私有地址空间。</p>
 <h3 id="再看execve函数">再看execve函数</h3>
-<h3 id="使用mmap函数的用户级内存映射">使用mmap函数的用户级内存映射</h3>
+<p>execve在用新的程序替换当前的程序时，包含以下的过程：</p>
+<ol>
+<li>删除已存在的用户区域。</li>
+<li>映射私有区域。</li>
+<li>映射共享区域。</li>
+<li>设置程序计数器。</li>
+</ol>
 <h2 id="动态内存分配">动态内存分配</h2>
 <h3 id="malloc和free">malloc和free</h3>
 <h3 id="为什么要使用动态内存分配">为什么要使用动态内存分配</h3>
@@ -537,18 +590,52 @@ DRAM缓存的不命中率要比SRAM中的不命中昂贵的多，因为DRAM不�
 <h3 id="mark和sweep垃圾收集器">Mark和Sweep垃圾收集器</h3>
 <h3 id="c程序的保守mark和sweep">C程序的保守Mark和Sweep</h3>
 <h2 id="c中常见的内存相关错误">C中常见的内存相关错误</h2>
+<p>发生segment fault的情况[2]：</p>
+<ol>
+<li>解引用空指针。</li>
+<li>访问只读的内存地址。比如数据段中的字符串。</li>
+<li>栈溢出。函数循环引用。</li>
+<li>访问系统保护的内存地址。比如说把100当做地址。</li>
+</ol>
+<p>怎么调试segment fault？</p>
+<ol>
+<li>使用printf调试。。。</li>
+<li>使用gdb调试，使用场景，可复现的错误。需要生成调试信息。</li>
+<li>使用core文件。core文件是一个加了调试信息的内存映像[3]。怎么样调试一个core文件，两种方法：
+<ul>
+<li>gdb -c core</li>
+<li>gdb a.out core ，这里a.out是产生这个core文件的程序。<br>
+为什么没有产生core文件，linux为一些文件设置了大小，<code>ulimit(1)</code>可以查看这些大小限制，core文件一般是0，所以就看不见了，可以使用<code>ulmit -c 1024</code>设置core文件的大小为1024字节。<br>
+这种方法可以不用重新运行程序。</li>
+</ul>
+</li>
+<li>使用dmesg找到发生错误的位置，然后使用objdump反汇编。</li>
+</ol>
 <h3 id="解引用坏指针">解引用坏指针</h3>
+<p>进程的虚拟地址空间中有较大的洞，没有映射到有意义的数。如果不小心使用了这些这些，就可能会发生segment fault，但是如果没有发生的话，更难被发现。</p>
 <h3 id="读取未初始化的内存">读取未初始化的内存</h3>
+<p>比如说，堆内存没有被显式初始化，解引用这些指针，就会发生错误。</p>
 <h3 id="允许栈缓冲区溢出">允许栈缓冲区溢出</h3>
+<p>如果往栈中分配的临时数组写入的数据量超过了它的容量，就会发生溢出。</p>
 <h3 id="假设指针和它们指向的对象是相同大小的">假设指针和它们指向的对象是相同大小的</h3>
-<h3 id="造成错位错误">造成错位错误</h3>
+<p>指针的大小是不变的，在一台机器上都是确定的。</p>
+<h3 id="数组越界">数组越界</h3>
+<p>数组越界。</p>
 <h3 id="引用指针-而不是它所指向的对象">引用指针，而不是它所指向的对象</h3>
+<p>对指针进行了操作，而不是对指针指向的对象进行操作。</p>
 <h3 id="误解引用指针">误解引用指针</h3>
+<p>指针运算是以它们指向对象的大小为单位进行的。</p>
 <h3 id="引用不存在的变量">引用不存在的变量</h3>
+<p>引用局部变量。</p>
 <h3 id="引用空闲堆块中的数据">引用空闲堆块中的数据</h3>
+<p>引用被释放了的堆中的内存。</p>
 <h3 id="引起内存泄露">引起内存泄露</h3>
+<p>没有调用free释放内存。</p>
 <h2 id="参考文献">参考文献</h2>
-<p>1.《CSAPP》</p>
+<p>1.《CSAPP》<br>
+2.<a href="https://blog.csdn.net/qq_33249383/article/details/79483212" target="_blank" rel="noopener">https://blog.csdn.net/qq_33249383/article/details/79483212</a><br>
+3.<a href="https://www.cnblogs.com/dongzhiquan/archive/2012/01/20/2328355.html" target="_blank" rel="noopener">https://www.cnblogs.com/dongzhiquan/archive/2012/01/20/2328355.html</a><br>
+4.<a href="https://manybutfinite.com/post/how-the-kernel-manages-your-memory/" target="_blank" rel="noopener">https://manybutfinite.com/post/how-the-kernel-manages-your-memory/</a></p>
 
       
     </div>
@@ -678,7 +765,7 @@ DRAM缓存的不命中率要比SRAM中的不命中昂贵的多，因为DRAM不�
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">334</span>
+                    <span class="site-state-item-count">335</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -972,7 +1059,7 @@ DRAM缓存的不命中率要比SRAM中的不命中昂贵的多，因为DRAM不�
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#物理和虚拟寻址"><span class="nav-number">1.</span> <span class="nav-text">物理和虚拟寻址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址空间"><span class="nav-number">2.</span> <span class="nav-text">地址空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为缓存的工具"><span class="nav-number">3.</span> <span class="nav-text">虚拟内存作为缓存的工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dram缓存的组织结构"><span class="nav-number">3.1.</span> <span class="nav-text">DRAM缓存的组织结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页表"><span class="nav-number">3.2.</span> <span class="nav-text">页表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页命中和缺页"><span class="nav-number">3.3.</span> <span class="nav-text">页命中和缺页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分配页面"><span class="nav-number">3.4.</span> <span class="nav-text">分配页面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#局部性和抖动"><span class="nav-number">3.5.</span> <span class="nav-text">局部性和抖动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为内存管理的工具"><span class="nav-number">4.</span> <span class="nav-text">虚拟内存作为内存管理的工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为内存保护的工具"><span class="nav-number">5.</span> <span class="nav-text">虚拟内存作为内存保护的工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址翻译"><span class="nav-number">6.</span> <span class="nav-text">地址翻译</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#结合高速缓存和虚拟内存"><span class="nav-number">6.1.</span> <span class="nav-text">结合高速缓存和虚拟内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用tlb加速地址翻译"><span class="nav-number">6.2.</span> <span class="nav-text">利用TLB加速地址翻译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多级页表"><span class="nav-number">6.3.</span> <span class="nav-text">多级页表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#端到端的地址翻译"><span class="nav-number">6.4.</span> <span class="nav-text">端到端的地址翻译</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#intel-core-i7-linux-内存系统"><span class="nav-number">7.</span> <span class="nav-text">Intel Core i7/Linux 内存系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存映射"><span class="nav-number">8.</span> <span class="nav-text">内存映射</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#再看共享对象"><span class="nav-number">8.1.</span> <span class="nav-text">再看共享对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再看fork函数"><span class="nav-number">8.2.</span> <span class="nav-text">再看fork函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再看execve函数"><span class="nav-number">8.3.</span> <span class="nav-text">再看execve函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用mmap函数的用户级内存映射"><span class="nav-number">8.4.</span> <span class="nav-text">使用mmap函数的用户级内存映射</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态内存分配"><span class="nav-number">9.</span> <span class="nav-text">动态内存分配</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#malloc和free"><span class="nav-number">9.1.</span> <span class="nav-text">malloc和free</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要使用动态内存分配"><span class="nav-number">9.2.</span> <span class="nav-text">为什么要使用动态内存分配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分配器的要求和目标"><span class="nav-number">9.3.</span> <span class="nav-text">分配器的要求和目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#碎片"><span class="nav-number">9.4.</span> <span class="nav-text">碎片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现问题"><span class="nav-number">9.5.</span> <span class="nav-text">实现问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#隐式空闲链表"><span class="nav-number">9.6.</span> <span class="nav-text">隐式空闲链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#放置已分配的块"><span class="nav-number">9.7.</span> <span class="nav-text">放置已分配的块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分隔空闲块"><span class="nav-number">9.8.</span> <span class="nav-text">分隔空闲块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取额外的堆内存"><span class="nav-number">9.9.</span> <span class="nav-text">获取额外的堆内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#合并空闲块"><span class="nav-number">9.10.</span> <span class="nav-text">合并空闲块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#带边界标记的合并"><span class="nav-number">9.11.</span> <span class="nav-text">带边界标记的合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现一个简单的分配器"><span class="nav-number">9.12.</span> <span class="nav-text">实现一个简单的分配器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#显式空闲链表"><span class="nav-number">9.13.</span> <span class="nav-text">显式空闲链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分离的空闲链表"><span class="nav-number">9.14.</span> <span class="nav-text">分离的空闲链表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#垃圾收集"><span class="nav-number">10.</span> <span class="nav-text">垃圾收集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本知识"><span class="nav-number">10.1.</span> <span class="nav-text">基本知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mark和sweep垃圾收集器"><span class="nav-number">10.2.</span> <span class="nav-text">Mark和Sweep垃圾收集器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c程序的保守mark和sweep"><span class="nav-number">10.3.</span> <span class="nav-text">C程序的保守Mark和Sweep</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#c中常见的内存相关错误"><span class="nav-number">11.</span> <span class="nav-text">C中常见的内存相关错误</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#解引用坏指针"><span class="nav-number">11.1.</span> <span class="nav-text">解引用坏指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读取未初始化的内存"><span class="nav-number">11.2.</span> <span class="nav-text">读取未初始化的内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#允许栈缓冲区溢出"><span class="nav-number">11.3.</span> <span class="nav-text">允许栈缓冲区溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#假设指针和它们指向的对象是相同大小的"><span class="nav-number">11.4.</span> <span class="nav-text">假设指针和它们指向的对象是相同大小的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#造成错位错误"><span class="nav-number">11.5.</span> <span class="nav-text">造成错位错误</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用指针-而不是它所指向的对象"><span class="nav-number">11.6.</span> <span class="nav-text">引用指针，而不是它所指向的对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#误解引用指针"><span class="nav-number">11.7.</span> <span class="nav-text">误解引用指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用不存在的变量"><span class="nav-number">11.8.</span> <span class="nav-text">引用不存在的变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用空闲堆块中的数据"><span class="nav-number">11.9.</span> <span class="nav-text">引用空闲堆块中的数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引起内存泄露"><span class="nav-number">11.10.</span> <span class="nav-text">引起内存泄露</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">12.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#物理和虚拟寻址"><span class="nav-number">1.</span> <span class="nav-text">物理和虚拟寻址</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址空间"><span class="nav-number">2.</span> <span class="nav-text">地址空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为缓存的工具"><span class="nav-number">3.</span> <span class="nav-text">虚拟内存作为缓存的工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#dram缓存的组织结构"><span class="nav-number">3.1.</span> <span class="nav-text">DRAM缓存的组织结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页表"><span class="nav-number">3.2.</span> <span class="nav-text">页表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#页命中和缺页"><span class="nav-number">3.3.</span> <span class="nav-text">页命中和缺页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分配页面"><span class="nav-number">3.4.</span> <span class="nav-text">分配页面</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#局部性和抖动"><span class="nav-number">3.5.</span> <span class="nav-text">局部性和抖动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为内存管理的工具"><span class="nav-number">4.</span> <span class="nav-text">虚拟内存作为内存管理的工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#虚拟内存作为内存保护的工具"><span class="nav-number">5.</span> <span class="nav-text">虚拟内存作为内存保护的工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址翻译"><span class="nav-number">6.</span> <span class="nav-text">地址翻译</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#结合高速缓存和虚拟内存"><span class="nav-number">6.1.</span> <span class="nav-text">结合高速缓存和虚拟内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用tlb加速地址翻译"><span class="nav-number">6.2.</span> <span class="nav-text">利用TLB加速地址翻译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多级页表"><span class="nav-number">6.3.</span> <span class="nav-text">多级页表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#linux虚拟内存系统"><span class="nav-number">7.</span> <span class="nav-text">Linux虚拟内存系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存映射"><span class="nav-number">8.</span> <span class="nav-text">内存映射</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#再看共享对象"><span class="nav-number">8.1.</span> <span class="nav-text">再看共享对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再看fork函数"><span class="nav-number">8.2.</span> <span class="nav-text">再看fork函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#再看execve函数"><span class="nav-number">8.3.</span> <span class="nav-text">再看execve函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#动态内存分配"><span class="nav-number">9.</span> <span class="nav-text">动态内存分配</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#malloc和free"><span class="nav-number">9.1.</span> <span class="nav-text">malloc和free</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要使用动态内存分配"><span class="nav-number">9.2.</span> <span class="nav-text">为什么要使用动态内存分配</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分配器的要求和目标"><span class="nav-number">9.3.</span> <span class="nav-text">分配器的要求和目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#碎片"><span class="nav-number">9.4.</span> <span class="nav-text">碎片</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现问题"><span class="nav-number">9.5.</span> <span class="nav-text">实现问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#隐式空闲链表"><span class="nav-number">9.6.</span> <span class="nav-text">隐式空闲链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#放置已分配的块"><span class="nav-number">9.7.</span> <span class="nav-text">放置已分配的块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分隔空闲块"><span class="nav-number">9.8.</span> <span class="nav-text">分隔空闲块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取额外的堆内存"><span class="nav-number">9.9.</span> <span class="nav-text">获取额外的堆内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#合并空闲块"><span class="nav-number">9.10.</span> <span class="nav-text">合并空闲块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#带边界标记的合并"><span class="nav-number">9.11.</span> <span class="nav-text">带边界标记的合并</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实现一个简单的分配器"><span class="nav-number">9.12.</span> <span class="nav-text">实现一个简单的分配器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#显式空闲链表"><span class="nav-number">9.13.</span> <span class="nav-text">显式空闲链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分离的空闲链表"><span class="nav-number">9.14.</span> <span class="nav-text">分离的空闲链表</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#垃圾收集"><span class="nav-number">10.</span> <span class="nav-text">垃圾收集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本知识"><span class="nav-number">10.1.</span> <span class="nav-text">基本知识</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mark和sweep垃圾收集器"><span class="nav-number">10.2.</span> <span class="nav-text">Mark和Sweep垃圾收集器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c程序的保守mark和sweep"><span class="nav-number">10.3.</span> <span class="nav-text">C程序的保守Mark和Sweep</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#c中常见的内存相关错误"><span class="nav-number">11.</span> <span class="nav-text">C中常见的内存相关错误</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#解引用坏指针"><span class="nav-number">11.1.</span> <span class="nav-text">解引用坏指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读取未初始化的内存"><span class="nav-number">11.2.</span> <span class="nav-text">读取未初始化的内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#允许栈缓冲区溢出"><span class="nav-number">11.3.</span> <span class="nav-text">允许栈缓冲区溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#假设指针和它们指向的对象是相同大小的"><span class="nav-number">11.4.</span> <span class="nav-text">假设指针和它们指向的对象是相同大小的</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数组越界"><span class="nav-number">11.5.</span> <span class="nav-text">数组越界</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用指针-而不是它所指向的对象"><span class="nav-number">11.6.</span> <span class="nav-text">引用指针，而不是它所指向的对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#误解引用指针"><span class="nav-number">11.7.</span> <span class="nav-text">误解引用指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用不存在的变量"><span class="nav-number">11.8.</span> <span class="nav-text">引用不存在的变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引用空闲堆块中的数据"><span class="nav-number">11.9.</span> <span class="nav-text">引用空闲堆块中的数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#引起内存泄露"><span class="nav-number">11.10.</span> <span class="nav-text">引起内存泄露</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">12.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>

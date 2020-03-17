@@ -327,6 +327,206 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/03/17/UNIX-epoll-常见问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/03/17/UNIX-epoll-常见问题/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">UNIX epoll 常见问题</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-17 09:16:44 / 修改时间：10:34:02" itemprop="dateCreated datePublished" datetime="2020-03-17T09:16:44+08:00">2020-03-17</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="select和epoll区别">select和epoll区别</h2>
+<ol>
+<li>select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。</li>
+<li>传参。select和poll需要复制大量的file descriptors。</li>
+<li>返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。</li>
+<li>如果在循环中使用select，每次都要重新设置。</li>
+</ol>
+<p>使用epoll_create创建一个eventpoll结构体，每一个epoll对象都有一个eventpoll结构体，用于存放epoll_crt添加的event，这样子可以识别重复的event，添加到epollpoll的event都会和设备驱动程序建立会调用关系，当相应的事件发生时调用相应的回调方法，将发生的event添加到一个rdlist双向链表中。<br>
+每次轮询只要查看rdlist是否为空即可。</p>
+<h2 id="lt模式和et模式">LT模式和ET模式</h2>
+<p>epoll有两个工作模式，一个是edge-triggered，另一个是level-triggered。为了区别它们的不同，给出以下一个场景：</p>
+<ol>
+<li>epoll实例中添加了一个pipe的读端。</li>
+<li>pipe的写段向其中写入了2KB的数据。</li>
+<li>epoll_wait会返回这个pipe的描述符作为一个准备好的描述符。</li>
+<li>pipe的读端从pipe中读了1KB的数据。</li>
+<li>对epoll_wait的调用已经完成。</li>
+</ol>
+<p>如果添加这个描述符使用的是EPOLLET模式，那么对于epoll_wait的调用会继续阻塞，尽管它的输入缓冲区中还有数据。同时pipe的写端可能在等着对它已经发送数据的一个回复。这是因为ET模式只会在它监视的fd发生变化时才会报告event。<br>
+在上面的例子中，因为2中的写完成会产生一个event，然后这个evenet在3中被使用。因为4中的读没有把buffer中的所有数据读完，对于5中的epoll_wait可能会永远阻塞。<br>
+为了避免处理多个文件描述符的永远阻塞，建议使用epoll的ET模式时：</p>
+<ol>
+<li>使用nonblocking file descriptors。</li>
+<li>只有在read或者write返回一个EAGAIN时，再调用epoll_wait等待一个event。</li>
+</ol>
+<p>而epoll的LT模式，比poll快，可以用在任何出现在poll出现的地方。</p>
+<h2 id="常见问题">常见问题</h2>
+<ol>
+<li>epoll中区分不同file descriptors的key是什么？key是file descriptor number和open file description的组合。</li>
+<li>同一个epoll实例注册同一个file descriptor会发生什么？会获得EEXIST。但是可以添加一个dup复制的file descriptor到相同的epoll instance。</li>
+<li>两个epoll实例可以等待相同的fd吗？可以的，evenets将会通知这两个epoll实例。</li>
+<li>epoll fd自己是不是可以被poll/epoll？是的！</li>
+<li>将epoll fd放在它自己的fd sets中？epoll_ctl会失败，产生EINVAL。但是可以把它添加到其他epoll fd set中。</li>
+<li>可不可以通过UNIX域套接字发送epoll文件描述符，可以。但是最好不要这样，因为其他进程可能没有epoll监听的描述符。</li>
+<li>关闭一个fd， epoll会不会自动把它从epoll sets中移除。会，但是注意，文件描述符只是file descriptor的一个引用，当一个file descriptor被复制的话，直到所有的文件描述符都被关闭，才会被移除。</li>
+<li>超过一个event发生，它们会一块reported。</li>
+<li>一个fd上的操作是否会影响已经collected但是还没有reported的events。</li>
+<li>使用ET模式的话，是否必须连续到EAGAIN？面向报文的需要，而面向流的，需要看target file descriptor中还有多少数据。</li>
+</ol>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《UNIX程序员手册》</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/03/14/linux-tcpdump/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -764,7 +964,7 @@ count怎么实现？find怎么实现？比如找某一个val，先找到val对�
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2020-03-11 18:49:26" itemprop="dateModified" datetime="2020-03-11T18:49:26+08:00">2020-03-11</time>
+                <time title="修改时间：2020-03-17 08:56:16" itemprop="dateModified" datetime="2020-03-17T08:56:16+08:00">2020-03-17</time>
               
             
           </span>
@@ -926,6 +1126,7 @@ C++标准要求任何在access访问块中，只要满足较晚出现的的membe
 <h4 id="单继承和虚函数">单继承和虚函数</h4>
 <h4 id="多重继承">多重继承</h4>
 <h4 id="虚继承">虚继承</h4>
+<p>对于虚继承来说，无论一个虚基类在继承体系中出现了多少次，派生类中只会含有一个虚基类子对象。</p>
 <h2 id="函数语义学">函数语义学</h2>
 <p>类的member function有三种：static member function, nonstatic member function和virtual function。<br>
 static member funciton的主要特性是没有this指针，它的其他特性统统来自主要特性：</p>
@@ -2266,452 +2467,6 @@ writev将多个缓冲区中的内容写入文件描述符中。</p>
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/02/29/Network-常见面试题目/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2020/02/29/Network-常见面试题目/" class="post-title-link" itemprop="http://mxxhcm.github.io/index.html">Network 常见面试题目</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2020-02-29 21:44:42" itemprop="dateCreated datePublished" datetime="2020-02-29T21:44:42+08:00">2020-02-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2020-03-15 15:34:33" itemprop="dateModified" datetime="2020-03-15T15:34:33+08:00">2020-03-15</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/面试/" itemprop="url" rel="index"><span itemprop="name">面试</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="套接字">套接字</h2>
-<p>套接字是一个同一台主机内应用层和网络层之间的接口。由于套接字是在网络上建立网络应用程序的可编程接口，所以也把套接字称为应用程序和网络之间的应用编程接口。</p>
-<p>一个UDP套接字是由目的IP地址和目的端口号标识的二元组。两个UDP报文段，只要目的IP地址和目的端口号一样，不论源IP地址和端口号是否一样，都被定向到相同的目的进程。<br>
-一个TCP套接字是由源IP地址，源端口号，目的IP地址，目的端口号构成的四元组。所有的这四元组都被用来进行多路分解。</p>
-<h2 id="常见应用层协议">常见应用层协议</h2>
-<p>DNS<br>
-FTP<br>
-HTTP<br>
-SMTP</p>
-<h2 id="http">HTTP</h2>
-<h3 id="http请求报文段">HTTP请求报文段</h3>
-<p>HTTP包含一行请求行和多行首部行。<br>
-请求行有三个字段：方法字段，URL字段，HTTP协议版本字段。<br>
-方法字段有GET，POST，HEAD，PUT和DELETE。</p>
-<ol>
-<li>Host，目标主机。</li>
-<li>Connection，浏览器告诉服务器不希望使用持久连接。</li>
-<li>User-agent，浏览器。</li>
-<li>Accept-language</li>
-</ol>
-<h3 id="http响应报文段">HTTP响应报文段</h3>
-<p>一个状态行和6个首部行，然后是报文实体。<br>
-状态行：<br>
-协议版本，状态码和相应状态信息。<br>
-6个首部行：</p>
-<ol>
-<li>Connection，不适用持久链接。</li>
-<li>Date，服务器产生发送报文的时间。</li>
-<li>Server，服务器类型。</li>
-<li>Last-Modified，对象创建或者修改的最后日期。</li>
-<li>Content-Length，发送内容的长度。</li>
-<li>Content Type，发送内容的类型。</li>
-</ol>
-<h3 id="http状态码-3-4-5">HTTP状态码[3,4, 5]</h3>
-<p>1xx信息<br>
-2xx成功<br>
-200 OK 请求成功<br>
-201 Created 当服务器按照客户端的的请求创建了一个新的资源时，发送此响应代码。<br>
-204 No Content。服务端拒绝对PUT，POST或者DELETE请求返回任何状态信息。返回空文件替换缓存。而304是使用上次的缓存。<br>
-3xx 重定向，客户端需要做一些额外的工作才能得到所需要的资源，他们通过用于GET请求。<br>
-301 Moved Permanently 服务器知道客户端请求的资源，但是不喜欢客户端使用当前URL。<br>
-302 Found。临时性重定向。不是永久性移动，而是临时性移动。比如说用户把uri保存为书签，出现301时，书签会被更新，出现302时不会。。<br>
-303 See Other。请求已经被处理，但是服务器返回的不是文档，是一个URI。和302功能一样，但是303明确表示客户端应该使用GET方法获取资源。<br>
-304 Not modified。客户端有数据主题，不需要重复发送。<br>
-307 Temporary Redict。临时性重定向，和302有着相同的意思。但是不会将POST修改成GET。<br>
-301,302,303响应状态码返回时，几乎所有的浏览器都会把POST改成GET，删除请求体，再次发送请求。尽管301,302是禁止将POST改成GET的，但是大家都会这么做。<br>
-4xx表示客户端错误<br>
-400 Bad Request，服务器收到了请求，但是不知道什么意思。<br>
-401 请求要求用户的身份认证，而客户端认证失败。<br>
-403 客户端的请求正确，但是服务端拒绝此请求，暗示了请求的资源确实存在。<br>
-404 Not Found，服务器无法把客户端请求的URI转换为一个资源。<br>
-405 客户端中请求的方法被禁止<br>
-5xx表示服务器错误<br>
-500 Internal Server Error对于大多数web框架，如果在执行请求处理代码时遇到了异常，就发送此代码。<br>
-503 Service Unavaiable，服务器当前不能处理处理客户端的请求，可能一会就好了。<br>
-505 HTTP Version Not Support</p>
-<h3 id="get和post区别">GET和POST区别</h3>
-<ol>
-<li>GET一般是从服务器获取数据，而post一般是向服务器传送数据。</li>
-<li>GET会把请求的数据会放在URL后面，而POST把请求的数据放在body中。注意，GET的body也可以存放request body。</li>
-<li>GET请求提交的url数据最多是1024字节是浏览器或者服务器限制的。而post则没有限制。</li>
-<li>GET和POST都不安全，HTTP本身是明文协议，无论是url,header还是body，都是在网络中明文传播的。只不过url中的数据是可以在浏览器中直接看到的，而header和body中的数据更麻烦一些，需要使用抓包软件查看。</li>
-<li>但是GET的效率要比post高。</li>
-</ol>
-<h3 id="https和http-2">HTTPS和HTTP[2]</h3>
-<p>HTTP协议是明文协议，TCP和UDP也没有加密。于是就有了SSL，利用非对称密码体系对发送的数据进行加密。<br>
-HTTPS是在TCP连接之后由客户端发起的。其实使用到了对称加密技术和非对称加密技术。</p>
-<ol>
-<li>客户端发送一个Client Hello给服务器，包含一个随机数，以及客户端支持的加密条件和SSL版本。</li>
-<li>服务端回应一个Server Hello给客户端，服务器选定一组加密套件，然后和第二个随机数，以及服务器的证书（包含服务器的公钥和名字）一块发送给客户端。服务器是由CA机构发送到，一个大家都信任的机构。</li>
-<li>客户端验证服务端的证书的真实性。（使用CA的数字证书，服务端的证书含有CA对服务器信息的签名，然后客户端使用CA证书中的公钥对服务端的数字证书进行验证签名，验证签名即使用相同的摘要算法对服务器的信息进行摘要，然后和CA证书的签名对比。）<br>
-验证成功之后，生成第三个随机数，使用服务端的公钥对这个随机数加密生成PreMaster Key，然后发送给服务端。</li>
-<li>服务端用自己的私钥解密生成PreMaster Key。这个时候，两边都拥有三个随机数，使用相同的算法生成一个秘钥。之后的通信都使用这个秘钥进行。</li>
-</ol>
-<h3 id="输入www-baidu-com发生的一切">输入www.baidu.com发生的一切</h3>
-<ol>
-<li>用户输入网址。</li>
-<li>DNS解析。递归查询和迭代查询。获得IP地址。<br>
-经过ARP协议将IP地址转换成MAC地址。<br>
-还可以加上其他的，比如IP协议，ARP协议。</li>
-<li>TCP连接。三次握手。</li>
-<li>发送请求。</li>
-<li>接收HTTP相应报文</li>
-<li>浏览器渲染。</li>
-</ol>
-<h3 id="cookie">Cookie</h3>
-<p>Cookie用户和服务器的交互。因为HTTP是无状态的，简化了服务器的设计。当想要识别用户的时候，可能限制用户的访问或者想把用户和内容关联起来。HTTP使用了cookie：<br>
-cookie有四个部分：</p>
-<ol>
-<li>HTTP响应报文中有一个cookie首部行。</li>
-<li>HTTP请求报文中有一个cookie首部行。</li>
-<li>用户端系统有保留一个cookie文件。</li>
-<li>Web站点后台有一个cookie数据库。</li>
-</ol>
-<h3 id="web缓存">Web缓存</h3>
-<p>Web缓存器也叫代理服务器，它有自己的磁盘存储空间，并在自己的磁盘存储空间中保存最近请求过的对象拷贝。<br>
-然后可以配置浏览器，将用户的所有HTTP请求首先指向Web缓存器，一旦配置了浏览器，每个浏览器对象的请求首先被定向到Web缓存器。</p>
-<ol>
-<li>浏览器建立一个到Web缓存器的TCP连接，并发送一个HTTP请求。</li>
-<li>Web缓存器检查缓存是命中。</li>
-<li>命中的话，Web缓存器向发送一个条件GET，查询Last-modified。</li>
-<li>没有命中的话，Web缓存器请求该对象，并将其缓存。</li>
-<li>Web缓存器向客户机浏览器发送报文。</li>
-</ol>
-<h3 id="session-cookie和token">Session，Cookie和Token</h3>
-<h2 id="tcp和udp的选择">TCP和UDP的选择</h2>
-<p>DNS通常采用UDP，因为TCP需要建立连接，会引入建立连接的时延，这样子会慢得多。如果没有收到响应，就会向另一台DNS服务器发送查询，或者通知调用的程序它不能获得响应。<br>
-而HTTP使用TCP而不是UDP，因为web网页需要的是可靠性。</p>
-<h2 id="udp">UDP</h2>
-<p>UDP相对于TCP的优势：</p>
-<ol>
-<li>应用层能更好的控制要发送的数据和发送时间。</li>
-<li>无需连接建立。</li>
-<li>无连接状态。</li>
-<li>分组首部开销小。TCP报文段有20字节的首部开销，而UDP只有8字节的开销。</li>
-</ol>
-<h3 id="udp报文段结构">UDP报文段结构</h3>
-<p>UDP报文段的首部共8个字节，64位，每个字段8位，共4个字段，：</p>
-<ol>
-<li>16位源端口号</li>
-<li>16位目的端口号</li>
-<li>16位长度字段，长度字段包含了首部在内的UDP报文段的长度（以字节为单位）。</li>
-<li>16位检验和</li>
-</ol>
-<h3 id="udp校验和">UDP校验和</h3>
-<ol>
-<li>UDP校验和提供了差错检测功能，但是不能进行差错恢复。为什么UDP校验和work？</li>
-<li>为什么要进行差错校验？链路中可能出错，内存中也可能出错。UDP必须在端到端基础上在运输层提供差错校验。</li>
-<li>出错后如何处理。一些实现是丢弃受损的报文段，一些是将受损的报文段交给应用程序并告警。</li>
-</ol>
-<h2 id="可靠数据传输原理">可靠数据传输原理</h2>
-<h3 id="停止等待协议">停止等待协议</h3>
-<p>为了解决分组可能出错的情况，引入<strong>自动重传请求</strong>。自动重传请求协议需要另外三种协议：差错检验，接收方反馈和重传。<br>
-当一个分组到达时可能出错，接收方进行进行<strong>差错校验</strong>，如果出错，发送一个NAK给发送方。如果没有失败，发送一个ACK给接收方。<br>
-直到发送方确定接收方已经收到当前分组之后（收到一个ACK），才会继续发送新数据，这就是<strong>停止等待协议</strong>。如果收到一个NAK，就会重传当前分组。（<strong>接收方反馈</strong>）<br>
-但是ACK和NAK也可能出错或者丢失，通过引入<strong>重传</strong>解决这个问题。<br>
-到底什么时候重传呢？等待一个RTT太久了，可以使用一个定时器设置一个时间，超过这个时间就重传。<br>
-这样子在接收方引入了冗余分组的问题。冗余分组的问题在于不知道接收方发送的ACK或者NAK是否被发送方接收，或者是分组没有丢失，等到了一段时间又到了。接收方不知道接收到的分组到底是哪一个，是重发的分组还是新的分组。可以通过引入分组序号解决这个问题。在停止等待协议中，一个比特的分组序号就够了。<strong>所以也叫比特交替协议</strong>。</p>
-<h3 id="流水线可靠数据传输协议">流水线可靠数据传输协议</h3>
-<p>停止等待协议的效率太低了。流水线可靠数据传输协议不是一次只发一个分组，而是一次发送多个分组，就好像一条流水线一样。这就产生了几个问题：</p>
-<ol>
-<li>必须增加序号范围，原来只要一个比特就够了，现在需要多个。</li>
-<li>协议的发送方和接收方也必须能够缓存多个分组。</li>
-<li>流水线中如果分组丢失了，有两种方式进行差错恢复，回退N步（GBN）和选择重传（SR）。</li>
-</ol>
-<h3 id="回退n步">回退N步</h3>
-<p>GBN的发送方要处理是三个工作，准备N个分组，处理接收方返回的ACK，以及超时重传。<br>
-GBN的接收方要处理的工作，只有接收到的分组的序号和上一次相同，会返回给发送方一个ACK，GBN采用<strong>累计确认</strong>（对序号n的分组的确认表明接收方已经正确接收到n以及n之前的分组了）。所有其他情况，都会丢弃分组。比如失序分组，接收方应该接收序号为n的分组，但是收到了序号为n+1的分组，就会丢弃，而不是缓存。</p>
-<p>GBN维护一个大小为N的窗口。对于发送方，维护一个大小为N的窗口，如果这N个分组的ACK都没有收到，就不会发送新的数据，等待接收方返回ACK。发送方还有超时设置，（发送方发送的分组丢了，或者接收方返回的ACK丢了），都会重传。</p>
-<h3 id="选择重传">选择重传</h3>
-<p>GBN有时候会效率太低，因为一个分组丢失，可能导致重传整个N个分组。选择重传可以用来解决这种问题。</p>
-<h2 id="tcp">TCP</h2>
-<h3 id="tcp累计确认和gbn-选择重传之间的关系">TCP累计确认和GBN，选择重传之间的关系</h3>
-<p>GBN是滑动窗口协议，虽然也提供累计确认，但是它不会缓存失序报文，会把它们全部丢弃。假设序号为n的报文段丢失了，然后需要发送方重传n之后的所有报文。而TCP的发送方至多只会重传一个报文段，如果TCP接收方接收到了<br>
-选择重传对失序报文进行缓存，但是没有提供累计确认。</p>
-<h3 id="可靠数据传输">可靠数据传输</h3>
-<p>TCP发送方有三个与发送和重传有关的主要事件：</p>
-<ol>
-<li>数据处理。TCP从发送缓存重拿数据，加上TCP首部，传递给IP层。然后传递给网络，TCP接收方的接收缓存获取数据。</li>
-<li>超时。<br>
-通过重传引发超时的报文响应超时时间。如果多次超时的话，就倍增超时时间间隔。<br>
-冗余ACK触发<strong>快速重传</strong>（为什么发送方收到三个冗余ACK就立即快重传）。冗余ACK是对按序接收到的最后一个字节数据进行重复确认。</li>
-<li>ACK处理。如果收到的ACK是窗口的最小未确认序号，那么修改窗口的最小未确认序号。</li>
-</ol>
-<h3 id="三次握手">三次握手</h3>
-<ol>
-<li>A向B发送一个SYN报文段，并且包含自己的初始序列号。</li>
-<li>B向A发送一个SYNACK报文段，并且包含自己的初始序列号。同时分配连接缓存，变量等。</li>
-<li>A向B发送一个ACK报文段，不是SYN报文段。</li>
-</ol>
-<h3 id="为什么要随机初始化一个报文段序号">为什么要随机初始化一个报文段序号</h3>
-<p>减少上次TCP连接中的报文段被当做两台主机之间新的TCP连接中的报文段。</p>
-<h3 id="为什么是三次握手而不是两次或者四次">为什么是三次握手而不是两次或者四次</h3>
-<p>其实是四次挥手，只不过第二次和第三次可以合并起来了。三次挥手的目的是确立TCP双方都能获得对方的初始序号。<br>
-为什么不是两次？如果A向B发送一个请求，B回应一个请求。而B的回应丢了，A就无法和B进行通信。如果设计成A重传，那么可能会建立很多个连接。如果设计成B重传，为什么要B重传？不是两次握手吗？他怎么知道要重传。这些都是如果设计成两次握手需要考虑的问题。<br>
-对于三次握手来说，如果</p>
-<ol>
-<li>A发给B的丢了，A超时重传。</li>
-<li>B发给A的丢了，B超时重传。B分配缓存，变量等。</li>
-<li>A又发给B的丢了，这时候B已经认为建立了连接。<br>
-如果双方都没有数据，那么会触发第二步的超时重传。<br>
-如果A要发送数据，那么A会直接把数据发给B，就肯定建立连接了。<br>
-如果B要发送数据，也会触发第二步的超时重传。</li>
-</ol>
-<h3 id="四次挥手">四次挥手</h3>
-<ol>
-<li>A发给B FIN报文段。A执行主动关闭。</li>
-<li>B发给A ACK。B进行WAIT-TIME。等待B终止连接，这个时候B可以给A发送数据，但是A不能给B发送数据。B执行被动关闭，B处于CLOSE_WAIT状态。</li>
-<li>B发给A FIN报文段。A收到报文段之后处于TIME_WAIT状态。</li>
-<li>A发给B ACK。这个时候A要等待30s或者1分钟，两分钟。因为需要确认B那边收到了ACK，否则的话，B就无法关闭。</li>
-</ol>
-<h3 id="流量控制">流量控制</h3>
-<p>TCP通过让发送方维护一个16位的接收窗口（是接收方的）的变量来提供流量控制。不正式的说，接收窗口用于告诉发送方，接收方还有多少可用的缓存空间。TCP是全双工的，两端都维护一个接收窗口。<br>
-接收方将自己的缓冲区大小填入TCP首部的窗口长度字段。这个字段是多少：缓冲区的大小 - （缓冲区中的最后一个字节编号 - 从缓冲区中读出的最后一个字节）。<br>
-如果接收方窗口大小为0怎么办？这时发送方不给接收方发报文，而接收方也不发，只有在有数据或者ACK要发的时候，接收方才会给发送方发报文。随着接收方应用程序从缓冲区取走数据，发送方也不能继续发数据。这个时候怎么办？规定：当接收方的接收窗口大小为0时，发送方会不断发送含有一个数据字节的报文段。</p>
-<h3 id="拥塞控制">拥塞控制</h3>
-<p>分组重传是网络拥塞的征兆，却不能解决网络拥塞问题。</p>
-<p>慢启动。<br>
-快重传。<br>
-快恢复。</p>
-<h3 id="timewait过多">TIMEWAIT过多</h3>
-<p>修改内核设置：</p>
-<ol>
-<li>开启内核中TCP重用。</li>
-<li>开启内核中TCP中快速回收。</li>
-<li>修改TIMEOUT</li>
-</ol>
-<h3 id="long-fat-network">long fat network</h3>
-<p>高带宽和长时延网络情况，被称为长肥网络。带宽和时延的乘积表示网络通道的容量，也就是能够在网络中缓冲的数据量，显然增加带宽和时延都增加在网络中缓冲的数据量。但是随着它们乘积的不断变大，TCP的局限就开始显露出来。常规的窗口大小是16位的，能接收和发送的最大大小为65535，而BDP远大于这个值。TCP就不得不发送一会数据就等待ACK，极端情况下有点像停止等待协议。<br>
-缺点</p>
-<ol>
-<li>窗口小，序号少，无法充分利用带宽。窗口扩展项。</li>
-<li>时延长。快重传。</li>
-<li>序号用的很快。PAWS算法。</li>
-<li>RTT比较难测量。引入时间戳。</li>
-</ol>
-<h2 id="tcp和udp的区别">TCP和UDP的区别</h2>
-<ol>
-<li>TCP面向连接，UDP无连接。</li>
-<li>TCP提供可靠数据传输，UDP提供不可靠数据传输。</li>
-<li>TCP的逻辑通信信道是全双工的可靠信道，而UDP是不可靠信道。</li>
-<li>TCP面向字节流，把数据看成一个无结构但是有序的字节流。UDP面向报文段。</li>
-<li>TCP有流量控制，拥塞控制，UDP无。</li>
-<li>TCP很慢，而UDP很快。</li>
-<li>TCP首部20个字节，UDP是8个字节。</li>
-</ol>
-<h2 id="dos攻击">Dos攻击</h2>
-<p>Dos（拒绝服务）攻击是一种宽泛类型的攻击，可以分为三类：</p>
-<ul>
-<li>弱点攻击</li>
-<li>带宽洪泛。攻击者向目的主机发送大量的分组，导致目标的介入链路变得非常拥塞，使得合法的分组无法到达服务器。</li>
-<li>连接洪泛。创建大量的全开或者半开TCP连接。</li>
-</ul>
-<p>DDos攻击，分布式拒绝服务攻击。</p>
-<h3 id="syn洪泛攻击">SYN洪泛攻击</h3>
-<p>攻击者发送大量的SYN报文段，而不完成TCP握手的第三步，服务器不断地为这些半开连接服务器分配资源，导致服务器资源被迅速消耗。<br>
-怎么预防？SYN cookies，当服务器收到一个TCP连接时，不生成一个TCP半开连接，只生成一个初始序列号（精心计算的序列号，被称为cookie），然后发送这种序列号的SYNACK报文段。<br>
-如果客户机是合法的，客户机返回一个ACK，服务器收到ACK。然后利用这个ACK计算一个，这个ACK是否对应客户机发送的SYN报文段，如果是，生成一个全开的连接。</p>
-<h3 id="dns攻击">DNS攻击</h3>
-<p>DDos带宽洪泛攻击。攻击者向多个DNS根服务器发送大量的分组，使得大多数合法的DNS请求得不到回答。比如发送大量的ICMP报文。<br>
-怎么预防？分组过滤器，过滤ICMP报文。还有就是本地DNS服务器缓存了顶级域名服务器的地址。使得请求绕过了DNS根服务器。</p>
-<h2 id="传输层协议">传输层协议</h2>
-<p>TCP协议。<br>
-UDP协议。<br>
-运输层协议是在端系统而不是网络路由器中实现的。<br>
-端口号。<br>
-socket？</p>
-<h2 id="网络层协议">网络层协议</h2>
-<p>IP协议，IP协议为主机之间提供了逻辑通信，它的服务模型是尽力而为交互服务。<br>
-ICMP协议。<strong>互联网控制消息协议</strong>。最典型的应用是差错报告。ICMP报文有一个类型字段和一个编码字段，并且包含由该ICMP报文首次生成的IP数据报的首部和前8字节内容，以便于发送方能够确定引发该差错的数据报。<br>
-ping程序发送一个ICMP类型为8编码为0的报文到指定主机（表示回显请求），看到该回显请求的目的主机发送一个类型0编码为0的报文回显回答。<br>
-traceroute原理。traceroute利用ICMP报文实现，源主机中的该程序向目的主机发送一系列普通的IP数据报，每一个数据报都携带了一个具有不可达UDP端口号的UDP报文段，第i个报文段的TTL(time to live，确保数据报不会永远在网络中循环，每过一个路由器，字段值减一)是i。同时，源主机为每个数据报启动定时器，当第i个数据报到达第i个路由器时，TTL为0。根据IP协议的规则，路由器会向源主机发送一个ICMP告警报文（类型为11，编码为0）。该告警报文含有路由器的名字和IP地址，该ICMP报文到达源主机时，源主机从定时器得到RTT，从ICMP报文得到路由器名字和IP地址。那么什么时候停止发送数据报？当其中一个报文到达目的主机的时候，由于数据报包含了一个不可达的端口，所以目的主机会发送类型为3，编码为3的目的端口不可达的ICMP报文。<br>
-IGMP协议。网际组管理协议。用于多播。<br>
-ARP协议，地址解析协议。是算在链路层还是网络层？把IPv4地址转换成硬件地址。<br>
-RARP协议，反向地址解析协议。把硬件地址映射成IPv4地址。<br>
-路由器属于网络层设备，它只检查网络层字段。<br>
-IP地址。</p>
-<p>MTU（最大传输单元），以太网的MTU是1500字节。IPV4要求最小MTU是68字节（20字节首部长度和40字节选项，以及8字节的偏移）。IPV6要求的最小MTU是1280字节。两个主机路径上的最小MTU称为路径MTU。路径MTU可以不对称。<br>
-当IP数据报的大小超过链路MTU时，执行分片。<br>
-最小重组缓冲区是IPV4(6)的任何实现都必须保证支持的最小数据报大小，IPV4是576字节，IPV6是1500字节。超过这个大小，就不一定能被接收方识别。所以，使用UDP的网络应用的报文段一般都不超过这个大小。<br>
-MSS（最大报文段）是用来通过对方，自己这面能够接收的最大TCP报文段大小，也就是最小重组缓冲区的实际值。MSS的大小通常设置为MTU减去IP和TCP首部的长度。</p>
-<p>如果</p>
-<h2 id="数据链路层">数据链路层</h2>
-<p>成帧，透明传输，差错检测。<br>
-MAC地址。<br>
-交换机，网桥。<br>
-MAC地址。</p>
-<h2 id="物理层">物理层</h2>
-<p>集线器，中继器。</p>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《计算机网络自顶向下》<br>
-2.<a href="https://segmentfault.com/a/1190000016855991" target="_blank" rel="noopener">https://segmentfault.com/a/1190000016855991</a><br>
-3.<a href="https://www.cnblogs.com/xflonga/p/9368993.html" target="_blank" rel="noopener">https://www.cnblogs.com/xflonga/p/9368993.html</a><br>
-4.<a href="https://www.cnblogs.com/aliwa/p/8495014.html" target="_blank" rel="noopener">https://www.cnblogs.com/aliwa/p/8495014.html</a><br>
-5.<a href="https://blog.csdn.net/qq_39816673/article/details/89611936" target="_blank" rel="noopener">https://blog.csdn.net/qq_39816673/article/details/89611936</a></p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2761,7 +2516,7 @@ MAC地址。</p>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">334</span>
+                    <span class="site-state-item-count">335</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
