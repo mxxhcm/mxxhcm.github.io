@@ -108,7 +108,7 @@
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
 <meta property="og:description" content="线程和进程的区别和联系 每个线程都包含有执行环境所必须的信息，包括进程中标识线程的线程ID，一组寄存器值，栈，调度优先级和策略，signal屏蔽字，errno变量和线程私有数据。 一个进程的所有信息对该进程的所有线程都是共享的，包括可执行程序的代码，程序的全局内存，堆内存，栈和文件描述符。 线程ID 线程ID只有在它所在的上下文才有意义。线程ID用pthread_t数据类型表示，实现的时候用一个结">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2020-03-03T07:11:23.826Z">
+<meta property="og:updated_time" content="2020-03-18T14:52:31.031Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UNIX thread">
 <meta name="twitter:description" content="线程和进程的区别和联系 每个线程都包含有执行环境所必须的信息，包括进程中标识线程的线程ID，一组寄存器值，栈，调度优先级和策略，signal屏蔽字，errno变量和线程私有数据。 一个进程的所有信息对该进程的所有线程都是共享的，包括可执行程序的代码，程序的全局内存，堆内存，栈和文件描述符。 线程ID 线程ID只有在它所在的上下文才有意义。线程ID用pthread_t数据类型表示，实现的时候用一个结">
@@ -388,7 +388,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2020-03-03 15:11:23" itemprop="dateModified" datetime="2020-03-03T15:11:23+08:00">2020-03-03</time>
+                <time title="修改时间：2020-03-18 22:52:31" itemprop="dateModified" datetime="2020-03-18T22:52:31+08:00">2020-03-18</time>
               
             
           </span>
@@ -466,26 +466,32 @@
 <li>被同一进程中的其他线程cancel。</li>
 <li>调用<code>pthread_exit</code></li>
 </ol>
-<h2 id="线程同步">线程同步</h2>
-<h3 id="互斥量">互斥量</h3>
-<p>互斥量有两种状态，要不加锁，要不就是不加锁。<br>
-一次只有一个线程能够加锁。</p>
-<h3 id="避免死锁">避免死锁</h3>
-<h3 id="超时锁">超时锁</h3>
-<h3 id="读写锁">读写锁</h3>
+<h2 id="互斥锁">互斥锁</h2>
+<ol>
+<li>互斥量有两种状态，要不加锁，要不就是不加锁。</li>
+<li>一次只有一个线程能够加锁。</li>
+<li>互斥锁是协作性锁，也就是说，比如共享数据是一个链表，那么操作该链表的所有操作都必须在实际操作前获取该互斥锁，但是！没有办法防止某个线程不首先获取该互斥锁就操作该链表。</li>
+</ol>
+<h3 id="生产者和消费者问题">生产者和消费者问题</h3>
+<p>一个或者多个生产者产生数据，一个或者多个消费者使用数据。<br>
+linux中shell管道就是一个生产者消费者问题，比如<code>cat /etc/serveices|more</code>，生产者的写和消费者的读，如果管道满了，就让生产者sleep，如果管道为空，就让消费者sleep。</p>
+<p>当使用共享内存用做生产者和消费者的IPC时，它们必须执行某种显式的同步。</p>
+<h2 id="避免死锁">避免死锁</h2>
+<h2 id="超时锁">超时锁</h2>
+<h2 id="读写锁">读写锁</h2>
 <p>读写锁有三种状态：<br>
 读锁，写锁，不加锁。<br>
 一次只有一个线程可以占有写锁，但是多个线程可以同时占有读锁。读锁和写锁不能同时存在。</p>
-<h3 id="带有超时的读写锁筛选条件">带有超时的读写锁筛选条件</h3>
+<h2 id="带有超时的读写锁筛选条件">带有超时的读写锁筛选条件</h2>
 <p>筛选条件</p>
-<h3 id="条件变量">条件变量</h3>
+<h2 id="条件变量">条件变量</h2>
 <p>条件变量和互斥量的区别[2]。<br>
 mutex只是让我们阻塞直到lock可用。<br>
 而condition variable让我们阻塞到某个用户定义的条件可用。</p>
-<h3 id="自旋锁">自旋锁</h3>
+<h2 id="自旋锁">自旋锁</h2>
 <p>mutex在阻塞的时候是sleep。<br>
 而自旋锁在阻塞的时候是占用cpu。</p>
-<h3 id="屏障">屏障</h3>
+<h2 id="屏障">屏障</h2>
 <p>pthread_join就是一种barrier。<br>
 只不过pthread_barrier_wait() wait的是所有count个线程都要调用pthread_barrier_wait()。<br>
 而pthread_join() wait的是线程的返回值。<br>
@@ -951,7 +957,7 @@ mutex只是让我们阻塞直到lock可用。<br>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#线程和进程的区别和联系"><span class="nav-number">1.</span> <span class="nav-text">线程和进程的区别和联系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程id"><span class="nav-number">2.</span> <span class="nav-text">线程ID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建线程"><span class="nav-number">3.</span> <span class="nav-text">创建线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程终止的方式"><span class="nav-number">4.</span> <span class="nav-text">线程终止的方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程同步"><span class="nav-number">5.</span> <span class="nav-text">线程同步</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#互斥量"><span class="nav-number">5.1.</span> <span class="nav-text">互斥量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#避免死锁"><span class="nav-number">5.2.</span> <span class="nav-text">避免死锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#超时锁"><span class="nav-number">5.3.</span> <span class="nav-text">超时锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#读写锁"><span class="nav-number">5.4.</span> <span class="nav-text">读写锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#带有超时的读写锁筛选条件"><span class="nav-number">5.5.</span> <span class="nav-text">带有超时的读写锁筛选条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#条件变量"><span class="nav-number">5.6.</span> <span class="nav-text">条件变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自旋锁"><span class="nav-number">5.7.</span> <span class="nav-text">自旋锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#屏障"><span class="nav-number">5.8.</span> <span class="nav-text">屏障</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程限制"><span class="nav-number">6.</span> <span class="nav-text">线程限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程属性"><span class="nav-number">7.</span> <span class="nav-text">线程属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#同步属性"><span class="nav-number">8.</span> <span class="nav-text">同步属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重入"><span class="nav-number">9.</span> <span class="nav-text">重入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程和特定数据"><span class="nav-number">10.</span> <span class="nav-text">线程和特定数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#取消选项"><span class="nav-number">11.</span> <span class="nav-text">取消选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程和fork"><span class="nav-number">12.</span> <span class="nav-text">线程和fork</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程和io"><span class="nav-number">13.</span> <span class="nav-text">线程和IO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数"><span class="nav-number">14.</span> <span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-self"><span class="nav-number">14.1.</span> <span class="nav-text">pthread_self</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-equal"><span class="nav-number">14.2.</span> <span class="nav-text">pthread_equal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-create"><span class="nav-number">14.3.</span> <span class="nav-text">pthread_create</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-exit"><span class="nav-number">14.4.</span> <span class="nav-text">pthread_exit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-join"><span class="nav-number">14.5.</span> <span class="nav-text">pthread_join</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-cancel"><span class="nav-number">14.6.</span> <span class="nav-text">pthread_cancel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-cleanup-push和pthread-cleanup-pop"><span class="nav-number">14.7.</span> <span class="nav-text">pthread_cleanup_push和pthread_cleanup_pop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">14.8.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">15.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#线程和进程的区别和联系"><span class="nav-number">1.</span> <span class="nav-text">线程和进程的区别和联系</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程id"><span class="nav-number">2.</span> <span class="nav-text">线程ID</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#创建线程"><span class="nav-number">3.</span> <span class="nav-text">创建线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程终止的方式"><span class="nav-number">4.</span> <span class="nav-text">线程终止的方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#互斥锁"><span class="nav-number">5.</span> <span class="nav-text">互斥锁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#生产者和消费者问题"><span class="nav-number">5.1.</span> <span class="nav-text">生产者和消费者问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#避免死锁"><span class="nav-number">6.</span> <span class="nav-text">避免死锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#超时锁"><span class="nav-number">7.</span> <span class="nav-text">超时锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#读写锁"><span class="nav-number">8.</span> <span class="nav-text">读写锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#带有超时的读写锁筛选条件"><span class="nav-number">9.</span> <span class="nav-text">带有超时的读写锁筛选条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#条件变量"><span class="nav-number">10.</span> <span class="nav-text">条件变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自旋锁"><span class="nav-number">11.</span> <span class="nav-text">自旋锁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#屏障"><span class="nav-number">12.</span> <span class="nav-text">屏障</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程限制"><span class="nav-number">13.</span> <span class="nav-text">线程限制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程属性"><span class="nav-number">14.</span> <span class="nav-text">线程属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#同步属性"><span class="nav-number">15.</span> <span class="nav-text">同步属性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重入"><span class="nav-number">16.</span> <span class="nav-text">重入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程和特定数据"><span class="nav-number">17.</span> <span class="nav-text">线程和特定数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#取消选项"><span class="nav-number">18.</span> <span class="nav-text">取消选项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程和fork"><span class="nav-number">19.</span> <span class="nav-text">线程和fork</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程和io"><span class="nav-number">20.</span> <span class="nav-text">线程和IO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#函数"><span class="nav-number">21.</span> <span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-self"><span class="nav-number">21.1.</span> <span class="nav-text">pthread_self</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-equal"><span class="nav-number">21.2.</span> <span class="nav-text">pthread_equal</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-create"><span class="nav-number">21.3.</span> <span class="nav-text">pthread_create</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-exit"><span class="nav-number">21.4.</span> <span class="nav-text">pthread_exit</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-join"><span class="nav-number">21.5.</span> <span class="nav-text">pthread_join</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-cancel"><span class="nav-number">21.6.</span> <span class="nav-text">pthread_cancel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#pthread-cleanup-push和pthread-cleanup-pop"><span class="nav-number">21.7.</span> <span class="nav-text">pthread_cleanup_push和pthread_cleanup_pop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">21.8.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">22.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
