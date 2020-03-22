@@ -54,12 +54,21 @@ const修饰成员函数。
 修饰类对象，必须调用const类型的函数。
 const可以用来区分重载。
 
+## C语言结构体中的空数组[20]
+声明一个不占用空间的指针，redis的sds就用到了这种方法。
+
 ## include ""和`<>`区别
 它们的查找路径不同，`<>`先查找系统目录，""先查找当前目录。
 ""查找到的会隐藏<>查找到的。
 
 ## const和宏常量的区别
 const常量有数据类型，而宏常量没有。编译器可以对前者进行安全检查，对后者只能进行字符替换。
+
+## 内存泄露
+1. 忘记delete
+2. array delete
+3. 虚析构函数
+4. 指针数组，没有对每个指针进行释放。
 
 ## 指针函数和函数指针
 指针函数是一个函数，返回类型是一个指针而已。
@@ -274,10 +283,8 @@ shared_ptr的deleter是运行时绑定，所以需要使用指针，开销大，
 1. shared_ptr不支持管理动态数组。需要提供自定义的delete（只要是一个可调用对象就行）。
 2. unique_ptr支持动态管理数组，需要在类型后面加上一对方括号。当unique_ptr销毁时，会自动使用delete[]。不能使用成员访问运算符（点和箭头），但是可以使用下标访问运算符。
 
-
 ### weak_ptr
 `weak_ptr`可以解决循环引用问题，比如双向链表中的循环引用。[9]
-
 
 ## 类模板和函数模板的区别
 类模板用来生成类，函数模板的参数是由编译器推导的，而类模板的参数必须指定。
@@ -297,7 +304,8 @@ C++ 采用分离式编译。可以不用将所有的代码写在一个文件中�
 哈希表冲突严重的话会退化成单链表。这个时候哈希表的各种操作的时间复杂度都提升了一个量级，会占用大量CPU时间，降低系统响应时间，可以用来做DDos攻击。
 解决冲突的方法：
 
-## malloc和new
+## 内存管理
+
 ### new
 new一个空数组是和合法的，但是不能解引用！！！可以把它当做尾后迭代器来使用。
 
@@ -306,13 +314,67 @@ new一个空数组是和合法的，但是不能解引用！！！可以把它�
 2. calloc分配nobj个size字节的对象，每一位都初始化为0。
 3. realloc在以前分配的区域的基础上扩大为新的容量。如果原来的区域后面有足够大的空间，就在那里，否则复制到一个新的空间中。
 
-### ptmalloc实现
-
 ### placement new
 重载operator new函数。placement new可以为分配函数提供额外的信息。
 Placement new允许我们将对象构造在已经分配好的内存上，分配好的内存不一定是operator new分配的内存，甚至可以是静态内存。
 allocator的内存分配和构造函数的调用是分开进行的，通过两个函数allocate和construct。
 对应于new，可以使用operator new进行空间分配，使用placement new调用构造函数。
+
+
+### stl allocator
+管理的是malloc分配的虚拟内存，比如STL的alloc分配器。
+大于128B的，直接malloc。
+小于等于128B的，维护16个链表，每个都是8的倍数。
+
+### 用户空间内存分配[22]
+#### malloc实现[21]
+管理的是虚拟内存。
+除了mmap外的几种方式，一般分配大内存的话都是mmap，小内存的话都是通过bin实现的。
+
+#### mmap
+#### ptmalloc实现
+#### tcmalloc实现
+#### jemalloc实现
+
+
+### 内核空间内存分配[22]
+伙伴算法用于大块连续物理内存的分配。
+slab和kmalloc用于小块连续物理内存的分配。
+vmalloc用于连续虚拟内存的分配。
+注意，这三种方法都是内核空间的内存分配。
+
+#### 伙伴算法[24]
+##### 什么是伙伴算法
+伙伴算法，把所有的空闲页框分成11个链表，每个链表分别管理2的0到10次方大小的连续页框。伙伴算法只能分配2的幂次页的空间。通常一个页框是4K大小，所以伙伴算法维持的最大连续内存4M大小，最小是4K大小。
+
+##### 伙伴的回收
+什么是伙伴，由同一个块分裂开来的两个块。所有大小为2的k的块，它的地址一定是2^k次方的整数倍。将它的地址除以2的k+1次方，然后再加减2的k次方，就可以得到它的伙伴的地址。
+比如大小为16的块，可能是0-16，16-32，32-48，48-64。它们的地址都是16的倍数，0-16和16-32互为伙伴，而32-48和48-64互为伙伴。但是16-32和32-48不是伙伴！！！因为它们不是从同一个块分裂来的。。。。
+
+##### 优点和缺点[25]
+优点
+1. 解决了外部碎片问题。
+2. 解决了连续页框的分配问题。
+3. 针对于大内存。
+
+缺点：
+1. 合并的要求太严格了。
+2. 内碎片问题。
+3. 合并和拆分的开销，如果刚合并又要拆分等等。
+
+#### slab[26]
+slab机制通常由三类对象构成：kmem_cache，slab和slab对象构成。[27]
+一个kmem_cache通常有1个或者多个slab，一个slab通常是1个或者多个连续物理页，然后它被分成多个slab对象。这个cache管理的就是相应大小的slab对象。
+
+
+#### kmalloc实现[23]
+分配的是小的连续的物理内存，基于slab实现的。
+slab又是基于伙伴系统的。
+
+#### vmalloc实现
+分配的是连续的虚拟内存，物理内存不一定连续。
+
+
 
 ## 对齐
 gcc 默认对齐是4字节对齐。在结构体中要注意。
@@ -350,13 +412,8 @@ auto f = [local variable](int x){return a;};
 
 ## 设计模式
 1. 单例模式
-2. reactor模式
-
-## move语义
-
-## 分配器
-
-## 虚拟内存
+2. reactor模式。是事件驱动模式，它由一个或者多个并发输入源，有一个service handler和多个request handler。这个service handler会同步的将输入多路复用给相应的request handler。
+比如说redis的
 
 
 ## 数据结构相关
@@ -516,9 +573,12 @@ info locals，查看当前帧中的局部变量。
 continue
 step
 
-## 移动语义和右值引用[16]
+## 移动(move)语义和右值引用[16]
 移动语义，是为了避免无用的复制开销。右值引用的出现，让移动语义变得可能。将指针指向的内存直接拿过来使用。
 Move semantics is a new way of moving resources around in an optimal way by avoiding unnecessary copies of temporary objects, based on rvalue references. In my opinion, the best way to understand what move semantics is about is to build a wrapper class around a dynamic resource (i.e. a dynamically allocated pointer) and keep track of it as it moves in and out functions. Keep in mind however that move semantics does not apply only to classes!
+
+## 布隆过滤器
+布隆过滤器，它可以用来判断一个东西一定不存在或者可能存在。
 
 ## 参考文献
 1.https://stackoverflow.com/questions/57483/what-are-the-differences-between-a-pointer-variable-and-a-reference-variable-in
@@ -540,3 +600,11 @@ Move semantics is a new way of moving resources around in an optimal way by avoi
 17.https://blog.csdn.net/hackbuteer1/article/details/7740956
 18.https://blog.csdn.net/Raven_csdn/article/details/88816877
 19.https://www.cnblogs.com/raorao1994/p/9045756.html
+20.https://www.cnblogs.com/guozhiming2003/archive/2010/03/09/1681951.html
+21.https://cloud.tencent.com/developer/article/1173720
+22.https://www.cnblogs.com/arnoldlu/p/8251333.html
+23.https://www.cnblogs.com/arnoldlu/p/8215414.html
+24.https://www.cnblogs.com/xkfz007/archive/2012/11/08/2760148.html
+25.https://www.cnblogs.com/cherishui/p/4246133.html
+26.https://www.kernel.org/doc/gorman/html/understand/understand011.html
+27.https://blog.csdn.net/qq_26626709/article/details/52742484

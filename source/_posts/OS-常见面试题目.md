@@ -20,12 +20,13 @@ categories: 操作系统
 异常是同步的，指令执行时由CPU控制单元产生的，可能是除零。（异常）
 Intel x86把同步和异步中断分别称为异常和中断。
 
-## mutex和信号量，读写锁的区别
+## mutex和信号量，读写锁的区别[5]
 mutex和信号量它们都可以用来实现同步操作，而信号量可以大于1，而mutex不能大于1。还有就是信号量可以由不同的进程释放，而mutex只能由获得锁的进程释放。
 mutex和读写锁的区别，读写锁的并行性更高，而mutex要不就是加锁，要不就是不加锁。而读写锁可以是读锁，可以是写锁，还可以是不加锁。
 自旋锁和mutex的区别，自旋锁在没有获取锁之前，是忙等状态，它只能被持有一小段时间，否则就会影响性能。自旋锁一般用在非抢占式内核中，它们会阻塞中断。
 条件量可以和mutex结合使用。
 屏障。
+可以用mutex实现读写锁。。。具体的思路是，当有人读时，就要阻塞写锁，但是可以加写锁。有人写时，就要阻塞读锁。
 
 ## 动态链接和静态链接的区别
 静态链接在编译的时候就把用到的目标模块复制到可执行文件中。
@@ -118,10 +119,8 @@ task_struct包含PID，mm_struct（页表），可执行文件的名字，程序
 
 ## 进程切换
 为了控制进程的执行，内核必须有能力挂起正在CPU上运行的进程，并恢复以前挂起的某个进程的执行，这种行为被称为进程切换。linux中进程切换的主要内容：
-1. 硬件上下文。
-2. 硬件支持。
-3. Linux代码
-4. 保存浮点寄存器。
+1. 地址空间。（快表和页表）。
+2. 硬件上下文，寄存器，程序计数器。
 
 ## 进程结束
 使用exit，使用return ，使用Exit，进程的最后一个线程调用pthread_exit。
@@ -327,3 +326,4 @@ SCAN和CSCAN都是将磁头从一端移动到另一端。
 2.https://stackoverflow.com/questions/200469/what-is-the-difference-between-a-process-and-a-thread
 3.https://www.geeksforgeeks.org/difference-between-process-and-thread/
 4.https://www.cnblogs.com/Rofael/archive/2013/04/13/3019153.html
+5.https://blog.csdn.net/tt_love9527/article/details/82107549
