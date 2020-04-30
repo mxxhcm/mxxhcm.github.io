@@ -128,7 +128,7 @@ override是用来实现多态的，函数的参数类型和声明和可以父类
 C++的多态分为两种，一种是静态多态，通过函数重载和模板实现。
 一种是动态多态，虚函数实现。
 
-C实现C++的多态[5,6]。
+C实现C++的多态[5,6, 29]。
 
 ## RTTI[13]
 C++ 缺乏安全的向下转型（将派生类指针转换成基类指针），只有类型真的可以被转型的时候，才会执行向下转型。
@@ -167,6 +167,7 @@ class shared_ptr
 public:
     shared_ptr():pd(nullptr)
     { }
+
     shared_ptr(T *data): pd(data), new size_t(1)
     { } 
 
@@ -320,7 +321,6 @@ Placement new允许我们将对象构造在已经分配好的内存上，分配�
 allocator的内存分配和构造函数的调用是分开进行的，通过两个函数allocate和construct。
 对应于new，可以使用operator new进行空间分配，使用placement new调用构造函数。
 
-
 ### stl allocator
 管理的是malloc分配的虚拟内存，比如STL的alloc分配器。
 大于128B的，直接malloc。
@@ -332,8 +332,11 @@ allocator的内存分配和构造函数的调用是分开进行的，通过两�
 除了mmap外的几种方式，一般分配大内存的话都是mmap，小内存的话都是通过bin实现的。
 
 #### mmap
+
 #### ptmalloc实现
+
 #### tcmalloc实现
+
 #### jemalloc实现
 
 
@@ -374,19 +377,15 @@ slab又是基于伙伴系统的。
 #### vmalloc实现
 分配的是连续的虚拟内存，物理内存不一定连续。
 
-
-
 ## 对齐
 gcc 默认对齐是4字节对齐。在结构体中要注意。
 malloc是16字节对齐。
 
-## cmake和makefile
-make用来执行makefile，调用makefile中用户指定的命令进行编译和链接。
-makefile是文件，包含了怎么样进行编译和链接。
-makefile可以手动写，但是它不跨平台（即不同平台的makefile不同），而且工程大很麻烦。
-cmake可以根据CMakeList.txt跨平台自动生成makefile。
-CMakeLists.txt是我们自己写的。
-
+## cmake, make和makefile
+0. **cmake根据CMakeLists.txt生成makefile，make执行makefile。**
+1. makefile是文件，包含了怎么样进行编译和链接。makefile可以手动写，但是它不跨平台（即不同平台的makefile不同），而且工程大很麻烦。
+2. CMakeLists.txt是我们自己写的。cmake指向CMakeLists.txt所在的目录，cmake可以根据CMakeList.txt跨平台自动生成makefile。
+3. make用来执行makefile，调用makefile中用户指定的命令进行编译和链接。
 
 ## void *
 可以接收任意类型的赋值，无需强制类型转换。
@@ -401,6 +400,8 @@ auto f = [local variable](int x){return a;};
 4. capture list中引用和值的作用。
 5. 可以和STL中的算法进行交互。
 
+### lambda的底层实现
+
 ## 面向对象的几大原则
 1. 单一职责原则。解耦，增强内聚，即高内聚低耦合。
 2. 开放封闭原则。对扩展开放，对修改关闭。
@@ -414,7 +415,6 @@ auto f = [local variable](int x){return a;};
 1. 单例模式
 2. reactor模式。是事件驱动模式，它由一个或者多个并发输入源，有一个service handler和多个request handler。这个service handler会同步的将输入多路复用给相应的request handler。
 比如说redis的
-
 
 ## 数据结构相关
 ### 堆
@@ -580,6 +580,15 @@ Move semantics is a new way of moving resources around in an optimal way by avoi
 ## 布隆过滤器
 布隆过滤器，它可以用来判断一个东西一定不存在或者可能存在。
 
+## C++ 的异常安全性[28]
+1. 基本承诺。不破坏数据和资源泄露。比如说锁，使用析构函数。
+2. 强烈保证。如果异常被抛出，对象的状态保持不变。
+3. 不抛出异常保证。不抛出异常，比如vector的移动构造函数。
+
+## 可执行文件的执行过程
+[30]
+
+
 ## 参考文献
 1.https://stackoverflow.com/questions/57483/what-are-the-differences-between-a-pointer-variable-and-a-reference-variable-in
 2.https://blog.csdn.net/dengheCSDN/article/details/78985684
@@ -608,3 +617,6 @@ Move semantics is a new way of moving resources around in an optimal way by avoi
 25.https://www.cnblogs.com/cherishui/p/4246133.html
 26.https://www.kernel.org/doc/gorman/html/understand/understand011.html
 27.https://blog.csdn.net/qq_26626709/article/details/52742484
+28.https://blog.csdn.net/bonchoix/article/details/8046727
+29.https://www.cnblogs.com/qingergege/p/9594432.html
+30.https://blog.csdn.net/zmx1026/article/details/46471439

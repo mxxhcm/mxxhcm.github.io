@@ -7,69 +7,58 @@ categories: 数据库
 mathjax: false
 ---
 
-## 一、数据库的安装
+## 数据库的安装
 
 自行下载安装包并安装
 
-## 二、数据库的运行和连接,以及以下简单的使用
+## 数据库的运行和连接,以及以下简单的使用
 
+### 一些简单的操作
+``` shell
+# 连接mongodb数据库
+mongo (database_name) # 如果不输入数据库名会默认连接到mongodb自带的一个数据库test，如果指定了数据库名就会连接到该数据库
 
-### 1.windows命令行下连接
+#切换数据库
+use database_name;
 
-#### （1）设置数据库存放目录
-~#:md D:/data/db
+#查看所有的数据库
+show databases;
 
-#### （2）运行mongodb服务
-~#:mongod
+#查看所有的collection
+show collections;
+```
 
-#### （3）连接mongodb数据库
-~#:mongo (database_name)
-如果不输入数据库名会默认连接到mongodb自带的一个数据库test，如果指定了数据库名就会连接到该数据库
-
-### 2.使用python代码中连接到数据库
-
-#### （1）导入python pacakge
-使用pip安装即可
+### 使用python代码中连接到数据库
+``` python
 import pymongo
 
-#### （2）连接到mongodb
-connection = MongoClient('localhost', 27017)
+connection = pymongo.MongoClient('localhost', 27017)
 
-#### （3）连接到某个数据库
-db = connection.test  #连接到test数据库
-db现在指向的是test这个数据库
+db = connection.test  # db指向test数据库
+collection = db.mycollection
 
-#### （4）指向某个collection
-collection = db.collection_one
-
-#### （5）查看collection中的内容
 items = collection.find()
 print(items['key'])
+```
 
-### 3.一些简单的操作
-#### （1）切换数据库
-~#:use database_name
+### C++ 访问mongodb
+安装参考[1]。
 
-#### （2）查看所有的数据库
-~#:show databases;
 
-#### （3）查看所有的collection
-~#:show collections;
-
-## 三.CRUD操作
-### 1.id的构成 12 bytes hex
+## CRUD操作
+### id的构成 12 bytes hex
 4+3+2+3
 timestamp + mac address + pid + counter
 timestamp是unix timestamp，mac address 是 mongd运行的网卡mac address，pid是process id，
 
-### 2. create document
+### create document
 
-#### （1）create one document(insertOne)
+#### create one document(insertOne)
 ``` mongodb
 db.collection_one.insertOne({"key_one":"value","key_two":"value"})
 ```
 
-#### （2）create many documents（有order,insertMany）
+#### create many documents（有order,insertMany）
 ``` mongodb
 db.collection_one.insertMany(
 [
@@ -79,7 +68,7 @@ db.collection_one.insertMany(
 ])
 ```
 
-#### （3）create many documents（无order,insertMany）
+#### create many documents（无order,insertMany）
 ``` mongodb
 db.collection_one.insertMany(
 db.collection_one.insertMany(
@@ -90,22 +79,21 @@ db.collection_one.insertMany(
 ] , {"ordered":false})
 ```
 
-#### （4）upsert
+#### upsert
 第一个参数是一个filter选择合适的 document，第二个参数是一个更新操作for the documents were selected，第三个参数是 that if there is no matching result,if the value of upsert is true,then insert a new document,else do nothing.
 ``` mongodb
 db.collection_one.insertMany(
 db.movieDetails.updateOne({ name:"mxxhcm"}, { \$set:{lover:"mahuihui"} } , {upsert : true})
 ```
 
-
-#### （5）有无order的区别
+#### 有无order的区别
 有order的话遇到inset错误就会停下来，没有order的话在插入document的时候，遇到错误会跳过该条语句执行下一条语句。
 
-### 3.read documents(query documents)
+### read documents(query documents)
 link:
 https://docs.mongodb.com/manual/reference/operator/query/
 
-#### （1）查找document
+#### 查找document
 查找collection_one这个collection中所有的document
 ``` monogodb
 db.collection_one.find()                
@@ -130,12 +118,12 @@ db.collection_one.findOne()
 db.collection_one.findOne({})     
 ```
 
-#### （2）对document进行计数
+#### 对document进行计数
 ``` mongodb
 db.collection_one.count()
 ```
 
-#### （3）设置查找的条件(equality match)
+#### 设置查找的条件(equality match)
 ##### a.scalar equality match
 ``` mongodb
 db.collection_one.find({"key":"value","key","value"})
@@ -316,3 +304,6 @@ cursor.sort(  [ {'student_id':1}, {'score',-1)} ] ).skip(4).limit(3)
 ####（7）
 There is a intervening between find and update,so maybe you find and update is not the same one.
 
+
+## 参考文献
+1.http://mongocxx.org/mongocxx-v3/installation/

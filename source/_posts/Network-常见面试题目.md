@@ -61,15 +61,22 @@ HTTP包含一行请求行和多行首部行。
 405 客户端中请求的方法被禁止
 5xx表示服务器错误
 500 Internal Server Error对于大多数web框架，如果在执行请求处理代码时遇到了异常，就发送此代码。
+502 bad gateway
 503 Service Unavaiable，服务器当前不能处理处理客户端的请求，可能一会就好了。
 505 HTTP Version Not Support
 
 ### GET和POST区别
-1. GET一般是从服务器获取数据，而post一般是向服务器传送数据。
-2. GET会把请求的数据会放在URL后面，而POST把请求的数据放在body中。注意，GET的body也可以存放request body。
-3. GET请求提交的url数据最多是1024字节是浏览器或者服务器限制的。而post则没有限制。
-4. GET和POST都不安全，HTTP本身是明文协议，无论是url,header还是body，都是在网络中明文传播的。只不过url中的数据是可以在浏览器中直接看到的，而header和body中的数据更麻烦一些，需要使用抓包软件查看。
-5. 但是GET的效率要比post高。
+1. GET是安全的，POST是不安全的。
+2. GET是幂等的，POST是不幂等的。
+3. GET是可缓存的，POST通常是不可缓存的。
+
+GET一般是请求服务器的指定资源，是安全，幂等，可缓存的。而post一般是根据请求的payload对指定的资源机械能给你处理，POST是不安全的，不幂等的，不可缓存的。
+
+其他：
+1. GET会把请求的数据会放在URL后面，而POST把请求的数据放在body中。注意，GET的body也可以存放request body，这是针对于接口来说的。
+2. GET请求提交的url数据最多是1024字节是浏览器或者服务器限制的，而post则没有限制。
+3. GET和POST都不安全，HTTP本身是明文协议，无论是url,header还是body，都是在网络中明文传播的。只不过url中的数据是可以在浏览器中直接看到的，而header和body中的数据更麻烦一些，需要使用抓包软件查看。
+4. 但是GET的效率要比post高。
 
 
 ### HTTPS和HTTP[2]
@@ -84,7 +91,7 @@ HTTPS是在TCP连接之后由客户端发起的。其实使用到了对称加密
 
 ### 输入www.baidu.com发生的一切
 1. 用户输入网址。
-2. DNS解析。一般情况下，本机是会知道DNS服务器的IP地址的。递归查询和迭代查询获得目的主机的IP地址。一般是在同一个局域网内，通过ARP请求，查询对应的DNS服务器的MAC地址，然后把请求包发给它。
+2. DNS解析。一般情况下，本机是会知道DNS服务器的IP地址的。递归查询和迭代查询获得目的主机的IP地址。一般是在同一个局域网内，通过ARP请求，查询对应的DNS服务器的MAC地址，然后把请求包发给它。[8]
 4. TCP连接。三次握手。
 5. 发送请求。
 6. 接收HTTP相应报文
@@ -108,7 +115,7 @@ Web缓存器也叫代理服务器，它有自己的磁盘存储空间，并在�
 5. Web缓存器向客户机浏览器发送报文。
 
 ## TCP和UDP的选择
-DNS通常采用UDP，因为TCP需要建立连接，会引入建立连接的时延，这样子会慢得多。如果没有收到响应，就会向另一台DNS服务器发送查询，或者通知调用的程序它不能获得响应。
+DNS通常采用UDP，因为TCP需要建立连接，会引入建立TCP连接的时延，这样子会慢得多。如果没有收到响应，就会向另一台DNS服务器发送查询，或者通知调用的程序它不能获得响应。[9]
 而HTTP使用TCP而不是UDP，因为web网页需要的是可靠性。
 
 ## UDP
@@ -287,6 +294,7 @@ MSS（最大报文段）是用来通过对方，自己这面能够接收的最�
 
 如果
 
+
 ## 数据链路层
 成帧，透明传输，差错检测。
 MAC地址。
@@ -308,3 +316,6 @@ MAC地址。
 5.https://blog.csdn.net/qq_39816673/article/details/89611936
 6.https://www.cnblogs.com/dadonggg/p/8778318.html
 7.http://www.httpclient.cn/archives/106.html
+8.https://www.cnblogs.com/lolau/p/8137541.html
+9.为什么DNS使用UDP而不是TCP？ - 车小胖的回答 - 知乎
+https://www.zhihu.com/question/310145373/answer/583869215
