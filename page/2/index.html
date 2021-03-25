@@ -327,6 +327,229 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/03/03/UNIX-advanced-IO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="马晓鑫爱马荟荟">
+      <meta itemprop="description" content="记录硕士三年自己的积累">
+      <meta itemprop="image" content="/images/favicon.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="mxxhcm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/03/03/UNIX-advanced-IO/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">UNIX advanced IO</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-03-03 15:21:19" itemprop="dateCreated datePublished" datetime="2020-03-03T15:21:19+08:00">2020-03-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-03-14 23:43:52" itemprop="dateModified" datetime="2020-03-14T23:43:52+08:00">2020-03-14</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="同步io和异步io">同步IO和异步IO</h2>
+<p>IO操作一般分成两个不同的阶段：</p>
+<ol>
+<li>等待数据准备好</li>
+<li>从内核向进程复制数据</li>
+</ol>
+<p>比如说对于网络IO：</p>
+<ol>
+<li>第一步通常是等待数据从网络中到达，然后复制到内核中的某个缓冲区。</li>
+<li>把数据从内核缓冲区复制到应用进程缓冲区。</li>
+</ol>
+<p>比如说对于系统调用read：</p>
+<ol>
+<li>内核把数据在内核缓冲区中准备好。</li>
+<li>然后把它复制到进程IO缓冲区。</li>
+</ol>
+<p>而对于标准IO来说，还多了一个标准IO缓冲区。它们的设置是为了减少调用erad和write的次数。</p>
+<p>同步IO操作导致请求进程阻塞，直到IO完成为止。在同步IO中，真正的IO操作会阻塞进程。不管是阻塞IO还是非阻塞IO，以及IO多路复用，信号驱动的IO模型，都是同步IO。<br>
+异步IO操作不导致请求进程阻塞，即使真正的IO操作也不会阻塞。相对于信号驱动的IO，内核通知我们的是什么时候可以启动一个IO操作，而异步IO模型是内核通知我们IO操作什么时候完成。</p>
+<h2 id="阻塞io">阻塞IO</h2>
+<p>所有的套接字都是阻塞的。从数据复制到内核，以及从内核复制到应用程序缓冲区，都是阻塞的。</p>
+<h2 id="非阻塞io">非阻塞IO</h2>
+<p>非阻塞IO的意思是告诉内核如果当前的操作如果不能立即返回，而是要sleep才能完成时，返回一个错误。<br>
+等到某一次查询，数据已经准备了，然后进行相应的IO操作。</p>
+<h2 id="select和poll-epoll">select和poll，epoll</h2>
+<p>IO复用模型的思想是同时处理多个文件描述符。</p>
+<h3 id="select和pselect">select和pselect</h3>
+<p>selecdt返回的条件：</p>
+<ol>
+<li>等待的描述符准备好（读准备好，写准备好，异常准备好）只有两个异常的条件。</li>
+<li>超时</li>
+</ol>
+<p>满足任意一个就行。</p>
+<h3 id="poll">poll</h3>
+<h3 id="epoll">epoll</h3>
+<h2 id="信号驱动的io">信号驱动的IO</h2>
+<p>利用信号，让内核在描述符就绪时发送SIGIO通知应用程序，然后调用相应的处理程序进行IO操作。</p>
+<h2 id="异步io">异步IO</h2>
+<p>内核把数据准备好，然后复制到应用程序缓冲区之后才通知我们。这个时候IO操作已经完成了。</p>
+<h2 id="记录锁">记录锁</h2>
+<p>记录锁可以用来同步。打开一个空文件，使用第一个字节作为锁字节。要访问资源，需要对该字节加锁，要释放资源，需要对该字节解锁。<br>
+所以一个文件可以实现多个锁。</p>
+<h2 id="readv和writev">readv和writev</h2>
+<p>readv从文件描述符指定的文件中读取相应的数据到多个缓冲区。<br>
+writev将多个缓冲区中的内容写入文件描述符中。</p>
+<h2 id="readn和writen">readn和writen</h2>
+<p>适用于已经知道要读取和写入的字节数量的情景。其实就是多次调用非阻塞的read和write进行操作。</p>
+<h2 id="存储映射io">存储映射IO</h2>
+<p>mmap将一个磁盘文件映射到存储空间的一个缓冲区上。从缓冲区读，就相当于读文件中的相应字节。从缓冲区写，就相当于写文件中的相应字节。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版<br>
+2.《UNP》卷一</p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/02/29/Network-常见面试题目/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2961,181 +3184,6 @@ Move semantics is a new way of moving resources around in an optimal way by avoi
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://mxxhcm.github.io/2020/02/20/UNIX-interpreter-file/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="马晓鑫爱马荟荟">
-      <meta itemprop="description" content="记录硕士三年自己的积累">
-      <meta itemprop="image" content="/images/favicon.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="mxxhcm's blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2020/02/20/UNIX-interpreter-file/" class="post-title-link" itemprop="http://mxxhcm.github.io/page/2/index.html">UNIX interpreter file</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2020-02-20 16:41:39 / 修改时间：22:00:11" itemprop="dateCreated datePublished" datetime="2020-02-20T16:41:39+08:00">2020-02-20</time>
-            
-
-            
-              
-
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/UNIX/" itemprop="url" rel="index"><span itemprop="name">UNIX</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="解释器文件">解释器文件</h2>
-<p>所有的UNIX系统都支持解释器文件。这种文件是文本文件，起始形式是：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#! pathname [optional-argument]</span><br></pre></td></tr></table></figure></p>
-<p>在感叹号和pathname之间的空格是可以选的。常见的解释器文件以下列行开始：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>! /bin/bash</span><br></pre></td></tr></table></figure></p>
-<p>pathname通常是绝对路径名，识别这种文件是<code>exec</code>系统调用处理的一部分。内核使调用<code>exec</code>函数的进程实际执行的并不是该<strong>解释器文件</strong>，而是在该解释器文件第一行中pathname指定的文件，即解释器。<br>
-<strong>解释器文件是文本文件，它以!#开头，而解释器是二进制文件，由解释器中的文件第一行的pathname指定。</strong></p>
-<h2 id="解释器文件的好处">解释器文件的好处</h2>
-<p>是否一定需要解释器文件呢？不完全如此，但是它们确实使得用户得到效率方面的好处，代价是内核的额外开销，因为识别解释器文件的是内核。由于下列原因，解释器文件是有用的：</p>
-<ol>
-<li>有些程序是用某种脚本语言写的脚本，解释器文件可以将这一事实隐藏起来。</li>
-<li>解释器脚本在效率方面提供了好处。</li>
-<li>解释器脚本使我们可以使用除了/bin/sh以外的其他shell编写shell脚本。</li>
-</ol>
-<h2 id="参考文献">参考文献</h2>
-<ol>
-<li>《APUE》第三版</li>
-</ol>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3185,7 +3233,7 @@ Move semantics is a new way of moving resources around in an optimal way by avoi
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">335</span>
+                    <span class="site-state-item-count">336</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3483,7 +3531,7 @@ Move semantics is a new way of moving resources around in an optimal way by avoi
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
@@ -3666,9 +3714,9 @@ Move semantics is a new way of moving resources around in an optimal way by avoi
       
     
       
-        
-      
     
+      
+        
       
     
       
