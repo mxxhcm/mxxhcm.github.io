@@ -100,18 +100,18 @@
 
 
 
-  <meta name="description" content="select和epoll区别  select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。 传参。select和poll需要复制大量的file descriptors。 返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。 如果在循环中使用select，每次都要重新设置。  epoll">
+  <meta name="description" content="select和epoll区别 select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。 传参。select和poll需要复制大量的file descriptors。 返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。 如果在循环中使用select，每次都要重新设置。  epoll三">
 <meta name="keywords" content="UNIX">
 <meta property="og:type" content="article">
 <meta property="og:title" content="UNIX epoll 常见问题">
 <meta property="og:url" content="http://mxxhcm.github.io/2020/03/17/UNIX-epoll-常见问题/index.html">
 <meta property="og:site_name" content="mxxhcm&#39;s blog">
-<meta property="og:description" content="select和epoll区别  select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。 传参。select和poll需要复制大量的file descriptors。 返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。 如果在循环中使用select，每次都要重新设置。  epoll">
+<meta property="og:description" content="select和epoll区别 select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。 传参。select和poll需要复制大量的file descriptors。 返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。 如果在循环中使用select，每次都要重新设置。  epoll三">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2020-03-29T04:31:19.719Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="UNIX epoll 常见问题">
-<meta name="twitter:description" content="select和epoll区别  select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。 传参。select和poll需要复制大量的file descriptors。 返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。 如果在循环中使用select，每次都要重新设置。  epoll">
+<meta name="twitter:description" content="select和epoll区别 select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。 传参。select和poll需要复制大量的file descriptors。 返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。 如果在循环中使用select，每次都要重新设置。  epoll三">
 
 
 
@@ -449,21 +449,15 @@
       
 
       
-        <h2 id="select和epoll区别">select和epoll区别</h2>
-<ol>
+        <h2 id="select和epoll区别"><a href="#select和epoll区别" class="headerlink" title="select和epoll区别"></a>select和epoll区别</h2><ol>
 <li>select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。</li>
 <li>传参。select和poll需要复制大量的file descriptors。</li>
 <li>返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。</li>
 <li>如果在循环中使用select，每次都要重新设置。</li>
 </ol>
-<h2 id="epoll三板斧">epoll三板斧</h2>
-<h3 id="epoll-create">epoll_create</h3>
-<p>使用epoll_create创建一个eventpoll结构体，每一个epoll对象都有一个eventpoll结构体，用于存放epoll_ctl添加的event，这样子可以识别重复的event，添加到epollpoll的event都会和设备驱动程序建立会调用关系，当相应的事件发生时调用相应的回调方法，将发生的event添加到一个rdlist双向链表中。<br>
-每次轮询只要查看rdlist是否为空即可。</p>
-<p>在2.6.8版本之前，epoll的底层实现是hash，所以需要指定一个size大小，从2.6.8版本开始，epoll的底层实现是红黑树，size大小被忽略，但是必须比零大。<br>
-epoll_create返回一个文件描述符，用完之后要调用close。</p>
-<h3 id="epoll-ctl">epoll_ctl</h3>
-<p>epoll_ctl用于注册事件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">int</span> op, <span class="keyword">int</span> fd, struct epoll_event *event)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h2 id="epoll三板斧"><a href="#epoll三板斧" class="headerlink" title="epoll三板斧"></a>epoll三板斧</h2><h3 id="epoll-create"><a href="#epoll-create" class="headerlink" title="epoll_create"></a>epoll_create</h3><p>使用epoll_create创建一个eventpoll结构体，每一个epoll对象都有一个eventpoll结构体，用于存放epoll_ctl添加的event，这样子可以识别重复的event，添加到epollpoll的event都会和设备驱动程序建立会调用关系，当相应的事件发生时调用相应的回调方法，将发生的event添加到一个rdlist双向链表中。<br>每次轮询只要查看rdlist是否为空即可。</p>
+<p>在2.6.8版本之前，epoll的底层实现是hash，所以需要指定一个size大小，从2.6.8版本开始，epoll的底层实现是红黑树，size大小被忽略，但是必须比零大。<br>epoll_create返回一个文件描述符，用完之后要调用close。</p>
+<h3 id="epoll-ctl"><a href="#epoll-ctl" class="headerlink" title="epoll_ctl"></a>epoll_ctl</h3><p>epoll_ctl用于注册事件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">int</span> op, <span class="keyword">int</span> fd, struct epoll_event *event)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>epoll_ctl有四个参数：</p>
 <ul>
 <li>int类型文件描述符，epoll_create创建的epoll对应的描述符，指定操作的epoll实例。</li>
@@ -471,17 +465,8 @@ epoll_create返回一个文件描述符，用完之后要调用close。</p>
 <li>int类型的文件描述符，指定要监听的某个描述符。</li>
 <li>struct epoll_event类型的事件，指定我们对第三个参数指定的描述符感兴趣的事件。<figure class="highlight plain"><figcaption><span>epoll_event&#123;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">    uint32_t events;    // epoll事件</span><br><span class="line">    epoll_data_t data;  //用户数据变量</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
 </ul>
-<p>其中events可以是<br>
-EPOLLIN, 对应的描述符可读。<br>
-EPOLLOUT, 对应的描述符可写。<br>
-EPOLLPRI，对应的描述符有紧急数据可读。<br>
-EPOLLERR, 对应的描述符发生错误。<br>
-EPOLLET，设置为ET模式。<br>
-EPOLLHUP，对应的描述符被挂断。<br>
-EPOLLRDHUP，。<br>
-等</p>
-<h3 id="epoll-wait">epoll_wait</h3>
-<p>epoll_wait监听使用epl_ctl添加的事件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event *events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>其中events可以是<br>EPOLLIN, 对应的描述符可读。<br>EPOLLOUT, 对应的描述符可写。<br>EPOLLPRI，对应的描述符有紧急数据可读。<br>EPOLLERR, 对应的描述符发生错误。<br>EPOLLET，设置为ET模式。<br>EPOLLHUP，对应的描述符被挂断。<br>EPOLLRDHUP，。<br>等</p>
+<h3 id="epoll-wait"><a href="#epoll-wait" class="headerlink" title="epoll_wait"></a>epoll_wait</h3><p>epoll_wait监听使用epl_ctl添加的事件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event *events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>其中有四个参数：</p>
 <ul>
 <li>int类型的文件描述符，指定等待的epoll实例。</li>
@@ -489,8 +474,7 @@ EPOLLRDHUP，。<br>
 <li>maxevents指定最多可以返回的事件数，必须大于0。</li>
 <li>timeout指定阻塞的时间。</li>
 </ul>
-<h2 id="lt模式和et模式">LT模式和ET模式</h2>
-<p>epoll有两个工作模式，一个是edge-triggered，另一个是level-triggered。为了区别它们的不同，给出一个场景：</p>
+<h2 id="LT模式和ET模式"><a href="#LT模式和ET模式" class="headerlink" title="LT模式和ET模式"></a>LT模式和ET模式</h2><p>epoll有两个工作模式，一个是edge-triggered，另一个是level-triggered。为了区别它们的不同，给出一个场景：</p>
 <ol>
 <li>epoll实例中添加了一个pipe的读端。</li>
 <li>pipe的写段向其中写入了2KB的数据。</li>
@@ -498,20 +482,16 @@ EPOLLRDHUP，。<br>
 <li>pipe的读端从pipe中读了1KB的数据。</li>
 <li>对epoll_wait的调用已经完成。</li>
 </ol>
-<p>如果添加这个描述符使用的是EPOLLET模式，那么对于epoll_wait的调用会继续阻塞，尽管它的输入缓冲区中还有数据。同时pipe的写端可能在等着对它已经发送数据的一个回复。<strong>这是因为ET模式只会在它监视的fd发生变化时才会报告event。</strong><br>
-在上面的例子中，因为2中的写完成会产生一个event，然后这个evenet在3中被使用。因为4中的读没有把buffer中的所有数据读完，对于5中的epoll_wait可能会永远阻塞。</p>
+<p>如果添加这个描述符使用的是EPOLLET模式，那么对于epoll_wait的调用会继续阻塞，尽管它的输入缓冲区中还有数据。同时pipe的写端可能在等着对它已经发送数据的一个回复。<strong>这是因为ET模式只会在它监视的fd发生变化时才会报告event。</strong><br>在上面的例子中，因为2中的写完成会产生一个event，然后这个evenet在3中被使用。因为4中的读没有把buffer中的所有数据读完，对于5中的epoll_wait可能会永远阻塞。</p>
 <p>为了避免处理多个文件描述符的永远阻塞，建议使用epollET模式的方式，这两个应该是一块设置的：</p>
 <ol>
 <li>使用nonblocking file descriptors，并且</li>
 <li>只有在read或者write返回一个EAGAIN时，再调用epoll_wait等待一个event。或者是读写的字节数小于指定的字节数时。如果是阻塞描述符的话，这样子就会阻塞在最后一次读写调用。而导致即使有其他的描述符可以操作时，因为阻塞在这个调用中，就不能执行其他的读写操作。</li>
 </ol>
 <p>而epoll的LT模式，比poll快，可以用在任何出现在poll出现的地方。</p>
-<h2 id="epoll和select">epoll和select</h2>
-<p>什么时候使用select而不使用epoll，epoll适用于连接特别多但是活跃连接少的场景，而select适用于连接多活跃连接也多的场景。</p>
-<h2 id="常见问题">常见问题</h2>
-<ol start="0">
-<li>那么如果一个描述符一直可读，会不会导致其他进程饿死？？？怎么办？[3]<br>
-可以设置一个结构体，将fd和一个标志位联系起来，epoll_wait事件触发后，将相应的结构体的标志位置为ready，然后轮询这个列表中的描述符（刚开始一直没向明白，后来才意识到，列表中ready的描述符每一个都能被处理）。</li>
+<h2 id="epoll和select"><a href="#epoll和select" class="headerlink" title="epoll和select"></a>epoll和select</h2><p>什么时候使用select而不使用epoll，epoll适用于连接特别多但是活跃连接少的场景，而select适用于连接多活跃连接也多的场景。</p>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><ol>
+<li>那么如果一个描述符一直可读，会不会导致其他进程饿死？？？怎么办？[3]<br>可以设置一个结构体，将fd和一个标志位联系起来，epoll_wait事件触发后，将相应的结构体的标志位置为ready，然后轮询这个列表中的描述符（刚开始一直没向明白，后来才意识到，列表中ready的描述符每一个都能被处理）。</li>
 <li>epoll中区分不同file descriptors的key是什么？key是file descriptor number和open file description的组合。</li>
 <li>同一个epoll实例注册同一个file descriptor会发生什么？会获得EEXIST。但是可以添加一个dup复制的file descriptor到相同的epoll instance。</li>
 <li>两个epoll实例可以等待相同的fd吗？可以的，evenets将会通知这两个epoll实例。</li>
@@ -523,10 +503,7 @@ EPOLLRDHUP，。<br>
 <li>一个fd上的操作是否会影响已经collected但是还没有reported的events。</li>
 <li>使用ET模式的话，是否必须连续到EAGAIN？面向报文的需要，而面向流的，需要看target file descriptor中还有多少数据。</li>
 </ol>
-<h2 id="参考文献">参考文献</h2>
-<p>1.《UNIX程序员手册》<br>
-2.<a href="https://www.cnblogs.com/tianzeng/p/9997432.html" target="_blank" rel="noopener">https://www.cnblogs.com/tianzeng/p/9997432.html</a><br>
-3.<a href="https://stackoverflow.com/questions/21111003/epoll-tcp-edge-triggered-necessity-of-last-read2-call" target="_blank" rel="noopener">https://stackoverflow.com/questions/21111003/epoll-tcp-edge-triggered-necessity-of-last-read2-call</a></p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《UNIX程序员手册》<br>2.<a href="https://www.cnblogs.com/tianzeng/p/9997432.html" target="_blank" rel="noopener">https://www.cnblogs.com/tianzeng/p/9997432.html</a><br>3.<a href="https://stackoverflow.com/questions/21111003/epoll-tcp-edge-triggered-necessity-of-last-read2-call" target="_blank" rel="noopener">https://stackoverflow.com/questions/21111003/epoll-tcp-edge-triggered-necessity-of-last-read2-call</a></p>
 
       
     </div>
@@ -654,7 +631,7 @@ EPOLLRDHUP，。<br>
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">336</span>
+                    <span class="site-state-item-count">337</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -717,7 +694,9 @@ EPOLLRDHUP，。<br>
                     
                       
                     
-                    <span class="site-state-item-count">25</span>
+                      
+                    
+                    <span class="site-state-item-count">26</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -880,7 +859,11 @@ EPOLLRDHUP，。<br>
                     
                       
                     
-                    <span class="site-state-item-count">75</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">77</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -948,7 +931,7 @@ EPOLLRDHUP，。<br>
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#select和epoll区别"><span class="nav-number">1.</span> <span class="nav-text">select和epoll区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#epoll三板斧"><span class="nav-number">2.</span> <span class="nav-text">epoll三板斧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll-create"><span class="nav-number">2.1.</span> <span class="nav-text">epoll_create</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll-ctl"><span class="nav-number">2.2.</span> <span class="nav-text">epoll_ctl</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll-wait"><span class="nav-number">2.3.</span> <span class="nav-text">epoll_wait</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#lt模式和et模式"><span class="nav-number">3.</span> <span class="nav-text">LT模式和ET模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#epoll和select"><span class="nav-number">4.</span> <span class="nav-text">epoll和select</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见问题"><span class="nav-number">5.</span> <span class="nav-text">常见问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#select和epoll区别"><span class="nav-number">1.</span> <span class="nav-text">select和epoll区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#epoll三板斧"><span class="nav-number">2.</span> <span class="nav-text">epoll三板斧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll-create"><span class="nav-number">2.1.</span> <span class="nav-text">epoll_create</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll-ctl"><span class="nav-number">2.2.</span> <span class="nav-text">epoll_ctl</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll-wait"><span class="nav-number">2.3.</span> <span class="nav-text">epoll_wait</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LT模式和ET模式"><span class="nav-number">3.</span> <span class="nav-text">LT模式和ET模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#epoll和select"><span class="nav-number">4.</span> <span class="nav-text">epoll和select</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见问题"><span class="nav-number">5.</span> <span class="nav-text">常见问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
             
 
           </div>
@@ -968,7 +951,7 @@ EPOLLRDHUP，。<br>
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
