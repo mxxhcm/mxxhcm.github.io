@@ -430,19 +430,25 @@
       
         
           
-            <h2 id="system"><a href="#system" class="headerlink" title="system"></a>system</h2><p>ISO C定义了<code>system</code>函数，它用来执行一个shell命令，对系统的依赖性很强。<code>system</code>库函数调用<code>fork</code>创建一个子进程使用<code>execl</code>执行参数<code>system</code>指定的shell命令。相当于:<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">execl(<span class="string">"/bin/sh"</span>, <span class="string">"sh"</span>, <span class="string">"-c"</span>, command, (<span class="keyword">char</span> *) <span class="number">0</span>);</span><br></pre></td></tr></table></figure></p>
-<p>POSIX.1包括了<code>system</code>接口，扩展了ISO C定义，描述了<code>system</code>在POSIX.1环境中的运行行为。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">system</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *command)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<h2 id="属性"><a href="#属性" class="headerlink" title="属性"></a>属性</h2><p><code>system</code>在其实现中调用了<code>fork</code>, <code>exec</code>和<code>waitpid</code>，可能有以下的返回值：</p>
+            <h2 id="system">system</h2>
+<p>ISO C定义了<code>system</code>函数，它用来执行一个shell命令，对系统的依赖性很强。<code>system</code>库函数调用<code>fork</code>创建一个子进程使用<code>execl</code>执行参数<code>system</code>指定的shell命令。相当于:<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">execl(<span class="string">"/bin/sh"</span>, <span class="string">"sh"</span>, <span class="string">"-c"</span>, command, (<span class="keyword">char</span> *) <span class="number">0</span>);</span><br></pre></td></tr></table></figure></p>
+<p>POSIX.1包括了<code>system</code>接口，扩展了ISO C定义，描述了<code>system</code>在POSIX.1环境中的运行行为。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">system</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *command)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="属性">属性</h2>
+<p><code>system</code>在其实现中调用了<code>fork</code>, <code>exec</code>和<code>waitpid</code>，可能有以下的返回值：</p>
 <ol>
 <li>如果<code>command</code>是一个空指针，当前系统是有可用的shell时，<code>system</code>返回非0值，否则返回0。在UNIX的各个实现中，一定提供了shell，当<code>command</code>是空指针时，总是返回非零值。</li>
 <li><code>fork</code>失败或者<code>waitpid</code>返回处<code>EINTR</code>之外的出错，返回-1，设置errno。</li>
 <li>如果<code>exec</code>失败，表示不能执行shell，返回值如同shell执行了exit(127)一样</li>
 <li>所有三个函数都成功，<code>system</code>的返回值和在shell中执行相应命令的的termination status一样。</li>
 </ol>
-<h2 id="可能实现"><a href="#可能实现" class="headerlink" title="可能实现"></a>可能实现</h2><p>其中一种<code>system</code>的可能实现如下所示：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">system</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *cmdstring)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pid_t</span> pid;</span><br><span class="line">    <span class="keyword">int</span> status;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(cmdstring == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ((pid = fork()) &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        status = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(pid == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        execl(<span class="string">"/bin/sh"</span>, <span class="string">"sh"</span>,  <span class="string">"-c"</span>, cmdstring, (<span class="keyword">char</span>*)<span class="number">0</span>);</span><br><span class="line">        _exit(<span class="number">127</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">while</span>(waitpid(pid, &amp;status, <span class="number">0</span>) &lt; <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(errno != EINTR)</span><br><span class="line">            &#123;</span><br><span class="line">                status = <span class="number">-1</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> status;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="可能实现">可能实现</h2>
+<p>其中一种<code>system</code>的可能实现如下所示：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">system</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *cmdstring)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">pid_t</span> pid;</span><br><span class="line">    <span class="keyword">int</span> status;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(cmdstring == <span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> ((pid = fork()) &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        status = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(pid == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        execl(<span class="string">"/bin/sh"</span>, <span class="string">"sh"</span>,  <span class="string">"-c"</span>, cmdstring, (<span class="keyword">char</span>*)<span class="number">0</span>);</span><br><span class="line">        _exit(<span class="number">127</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">while</span>(waitpid(pid, &amp;status, <span class="number">0</span>) &lt; <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(errno != EINTR)</span><br><span class="line">            &#123;</span><br><span class="line">                status = <span class="number">-1</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> status;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>使用<code>system</code>而不是直接使用<code>fork</code>和<code>exec</code>的好处是：<code>system</code>进行了各种所需要的各种出错处理和信号处理。但是早期的系统中，没有<code>waitpid</code>函数，于是父进程使用下列语句等待子进程结束：<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span>((lastpid = wait(&amp;status) != pid &amp;&amp; lastpid !=<span class="number">-1</span>)</span><br><span class="line">    ;</span><br></pre></td></tr></table></figure></p>
-<p>如果在调用<code>system</code>之前产生了其它子进程，如果这些子进程在<code>system</code>产生的子进程之前结束，那么上面的代码会将这些提前结束的子进程的进程ID和termination都给丢弃。<br><strong>system函数还有可能会出现漏洞。如果设置了set UID或者set GID位的程序执行<code>system</code>，那么这个进程的高级别权限可能会保持下来（现代的系统都解决了这个问题）。如果一个进程正在以特殊的权限(set UID和set GID)运行，它又想生成另一个进程执行另一个程序，它应该直接使用<code>fork</code>和<code>exec</code>，而且在<code>fork</code>之后，<code>exec</code>之前要改回普通权限，set UID和set GID程序绝不应该调用<code>system</code>函数。</strong></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《APUE》第三版</p>
+<p>如果在调用<code>system</code>之前产生了其它子进程，如果这些子进程在<code>system</code>产生的子进程之前结束，那么上面的代码会将这些提前结束的子进程的进程ID和termination都给丢弃。<br>
+<strong>system函数还有可能会出现漏洞。如果设置了set UID或者set GID位的程序执行<code>system</code>，那么这个进程的高级别权限可能会保持下来（现代的系统都解决了这个问题）。如果一个进程正在以特殊的权限(set UID和set GID)运行，它又想生成另一个进程执行另一个程序，它应该直接使用<code>fork</code>和<code>exec</code>，而且在<code>fork</code>之后，<code>exec</code>之前要改回普通权限，set UID和set GID程序绝不应该调用<code>system</code>函数。</strong></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版</p>
 
           
         
@@ -602,16 +608,20 @@
       
         
           
-            <h2 id="解释器文件"><a href="#解释器文件" class="headerlink" title="解释器文件"></a>解释器文件</h2><p>所有的UNIX系统都支持解释器文件。这种文件是文本文件，起始形式是：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#! pathname [optional-argument]</span><br></pre></td></tr></table></figure></p>
+            <h2 id="解释器文件">解释器文件</h2>
+<p>所有的UNIX系统都支持解释器文件。这种文件是文本文件，起始形式是：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#! pathname [optional-argument]</span><br></pre></td></tr></table></figure></p>
 <p>在感叹号和pathname之间的空格是可以选的。常见的解释器文件以下列行开始：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>! /bin/bash</span><br></pre></td></tr></table></figure></p>
-<p>pathname通常是绝对路径名，识别这种文件是<code>exec</code>系统调用处理的一部分。内核使调用<code>exec</code>函数的进程实际执行的并不是该<strong>解释器文件</strong>，而是在该解释器文件第一行中pathname指定的文件，即解释器。<br><strong>解释器文件是文本文件，它以!#开头，而解释器是二进制文件，由解释器中的文件第一行的pathname指定。</strong></p>
-<h2 id="解释器文件的好处"><a href="#解释器文件的好处" class="headerlink" title="解释器文件的好处"></a>解释器文件的好处</h2><p>是否一定需要解释器文件呢？不完全如此，但是它们确实使得用户得到效率方面的好处，代价是内核的额外开销，因为识别解释器文件的是内核。由于下列原因，解释器文件是有用的：</p>
+<p>pathname通常是绝对路径名，识别这种文件是<code>exec</code>系统调用处理的一部分。内核使调用<code>exec</code>函数的进程实际执行的并不是该<strong>解释器文件</strong>，而是在该解释器文件第一行中pathname指定的文件，即解释器。<br>
+<strong>解释器文件是文本文件，它以!#开头，而解释器是二进制文件，由解释器中的文件第一行的pathname指定。</strong></p>
+<h2 id="解释器文件的好处">解释器文件的好处</h2>
+<p>是否一定需要解释器文件呢？不完全如此，但是它们确实使得用户得到效率方面的好处，代价是内核的额外开销，因为识别解释器文件的是内核。由于下列原因，解释器文件是有用的：</p>
 <ol>
 <li>有些程序是用某种脚本语言写的脚本，解释器文件可以将这一事实隐藏起来。</li>
 <li>解释器脚本在效率方面提供了好处。</li>
 <li>解释器脚本使我们可以使用除了/bin/sh以外的其他shell编写shell脚本。</li>
 </ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<h2 id="参考文献">参考文献</h2>
+<ol>
 <li>《APUE》第三版</li>
 </ol>
 
@@ -785,29 +795,79 @@
       
         
           
-            <h2 id="和进程相关的ID"><a href="#和进程相关的ID" class="headerlink" title="和进程相关的ID"></a>和进程相关的ID</h2><ol>
-<li>每个进程都有一个进程ID(pid)，还有一个父进程ID(ppid)。<br>除此之外，每个进程还有以下ID:</li>
+            <h2 id="和进程相关的id">和进程相关的ID</h2>
+<ol>
+<li>每个进程都有一个进程ID(pid)，还有一个父进程ID(ppid)。<br>
+除此之外，每个进程还有以下ID:</li>
 <li>实际用户ID，实际组ID。实际用户ID和实际组ID就是当前用户的UID和GID。</li>
 <li>有效用户ID，有效组ID，附属组ID。通常情况下，实际用户ID和有效用户ID是一样的，实际组ID和有效组ID也是一样的。</li>
 <li>保存的设置用户ID，保存的设置组ID，它们包含了执行一个程序时有效U(G)ID的副本。可以在st_mode中设置set-user-ID和set-group-ID位（这个和保存的设置U(G)ID不是一个东西），表示，当执此文件时，将进程的有效用户ID设置成文件所有者的UID，或者将进程的有效组ID设置称为文件所有组的GID，通过<code>exec</code>实现。</li>
 <li>进程组ID。每一个进程都属于一个进程组。一个进程只能为自己或者它的子进程设置进程组ID，在它的子进程调用了exec之后，它就不能再更改子进程的进程组ID了。</li>
 <li>会话ID。一个session可以有多个进程组，一个session可以有一个控制控制（终端设备或者伪终端设备）。如果进程调用setsid()创建一个新的session，那么这个进程没有控制终端。</li>
 </ol>
-<h2 id="访问进程的各种ID"><a href="#访问进程的各种ID" class="headerlink" title="访问进程的各种ID"></a>访问进程的各种ID</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> getpid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">pid_t</span> getppid(<span class="keyword">void</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">uid_t</span> getuid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">uid_t</span> geteuid(<span class="keyword">void</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">gid_t</span> getgid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">gid_t</span> getegid(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure>
-<h2 id="修改进程相关的ID"><a href="#修改进程相关的ID" class="headerlink" title="修改进程相关的ID"></a>修改进程相关的ID</h2><h3 id="同时设置实际，有效和保存的设置ID"><a href="#同时设置实际，有效和保存的设置ID" class="headerlink" title="同时设置实际，有效和保存的设置ID"></a>同时设置实际，有效和保存的设置ID</h3><ol>
+<h2 id="访问进程的各种id">访问进程的各种ID</h2>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> getpid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">pid_t</span> getppid(<span class="keyword">void</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">uid_t</span> getuid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">uid_t</span> geteuid(<span class="keyword">void</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">gid_t</span> getgid(<span class="keyword">void</span>);</span><br><span class="line"><span class="keyword">gid_t</span> getegid(<span class="keyword">void</span>);</span><br></pre></td></tr></table></figure>
+<h2 id="修改进程相关的id">修改进程相关的ID</h2>
+<h3 id="同时设置实际-有效和保存的设置id">同时设置实际，有效和保存的设置ID</h3>
+<ol>
 <li>使用<code>setxid</code>设置进程的实际U(G)ID，有效U(G)ID，保存的设置U(G)ID：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setuid</span><span class="params">(<span class="keyword">uid_t</span> uid)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setgid</span><span class="params">(<span class="keyword">gid_t</span> gid)</span></span>;</span><br></pre></td></tr></table></figure></li>
 </ol>
-<p>关于修改的规则，有三条：</p>
-<pre><code>1. 如果是root用户，可以将三个ID都设置为u(g)id。
-2. 如果不是root用户，但是uid和实际用户id一样，可以将有效uid改为uid，其他不变。
-3. 否则，出错。
-</code></pre><ol>
+<p>关于修改的规则，有三条：<br>
+1. 如果是root用户，可以将三个ID都设置为u(g)id。<br>
+2. 如果不是root用户，但是uid和实际用户id一样，可以将有效uid改为uid，其他不变。<br>
+3. 否则，出错。</p>
+<ol start="2">
 <li>使用此外，调用<code>exec</code>也可能会更改有效U(G)ID和保存的设置U(G)ID。无论是否设置set-user(group)-id，实际U(G)ID都不变；当设置U(G)ID位打开时，将有效U(G)ID设置为程序文件的UID，否则有效U(G)ID不变，保存的set-user(group)-id都是从有效U(G)ID复制。</li>
 </ol>
-<p>总结得到以下的表格：<br>|ID| |<code>exec</code>| |<code>setuid</code>|<br>|:—:|:—:|:—:|:—:|:—:|<br>||set-user-ID位关闭|set-user-ID位开启| 超级用户 |  非超级用户|<br>|real UID|不变|不变|设置为uid|不变|<br>|effective UID|不变|程序文件的UID|设置为uid|设置为uid|<br>|saved set-UID|从effective ID复制|从effective ID复制|设置为uid|不变|</p>
-<h3 id="设置有效ID"><a href="#设置有效ID" class="headerlink" title="设置有效ID"></a>设置有效ID</h3><p>设置进程的有效U(G)ID。如果是普通用户，可以将有效U(G)ID设置为实际U(G)ID或者保存的设置U(G)ID，如果是特权用户，可以将有效U(G)ID设置为u(g)id：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">seteuid</span><span class="params">(<span class="keyword">uid_t</span> uid)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setegid</span><span class="params">(<span class="keyword">gid_t</span> gid)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<h3 id="交换实际ID和有效ID"><a href="#交换实际ID和有效ID" class="headerlink" title="交换实际ID和有效ID"></a>交换实际ID和有效ID</h3><p>交换进程的实际U(G)ID和有效U(G)ID。对于普通用户，可以交换实际U(G)ID和有效U(G)ID；还可以允许普通用户将有效U(G)ID设置为保存的设置U(G)ID。<br>某个参数设置为1，表示相应的ID不变。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setreuid</span><span class="params">(<span class="keyword">uid_t</span> ruid, <span class="keyword">uid_t</span> euid)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setregid</span><span class="params">(<span class="keyword">uid_t</span> rgid, <span class="keyword">uid_t</span> egid)</span></span>;</span><br></pre></td></tr></table></figure></p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《APUE》</p>
+<p>总结得到以下的表格：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">ID</th>
+<th style="text-align:center"></th>
+<th style="text-align:center"><code>exec</code></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"><code>setuid</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center"></td>
+<td style="text-align:center">set-user-ID位关闭</td>
+<td style="text-align:center">set-user-ID位开启</td>
+<td style="text-align:center">超级用户</td>
+<td style="text-align:center">非超级用户</td>
+</tr>
+<tr>
+<td style="text-align:center">real UID</td>
+<td style="text-align:center">不变</td>
+<td style="text-align:center">不变</td>
+<td style="text-align:center">设置为uid</td>
+<td style="text-align:center">不变</td>
+</tr>
+<tr>
+<td style="text-align:center">effective UID</td>
+<td style="text-align:center">不变</td>
+<td style="text-align:center">程序文件的UID</td>
+<td style="text-align:center">设置为uid</td>
+<td style="text-align:center">设置为uid</td>
+</tr>
+<tr>
+<td style="text-align:center">saved set-UID</td>
+<td style="text-align:center">从effective ID复制</td>
+<td style="text-align:center">从effective ID复制</td>
+<td style="text-align:center">设置为uid</td>
+<td style="text-align:center">不变</td>
+</tr>
+</tbody>
+</table>
+<h3 id="设置有效id">设置有效ID</h3>
+<p>设置进程的有效U(G)ID。如果是普通用户，可以将有效U(G)ID设置为实际U(G)ID或者保存的设置U(G)ID，如果是特权用户，可以将有效U(G)ID设置为u(g)id：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">seteuid</span><span class="params">(<span class="keyword">uid_t</span> uid)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setegid</span><span class="params">(<span class="keyword">gid_t</span> gid)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h3 id="交换实际id和有效id">交换实际ID和有效ID</h3>
+<p>交换进程的实际U(G)ID和有效U(G)ID。对于普通用户，可以交换实际U(G)ID和有效U(G)ID；还可以允许普通用户将有效U(G)ID设置为保存的设置U(G)ID。<br>
+某个参数设置为1，表示相应的ID不变。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setreuid</span><span class="params">(<span class="keyword">uid_t</span> ruid, <span class="keyword">uid_t</span> euid)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">setregid</span><span class="params">(<span class="keyword">uid_t</span> rgid, <span class="keyword">uid_t</span> egid)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》</p>
 
           
         
@@ -979,10 +1039,19 @@
       
         
           
-            <h2 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h2><p>regex定义在regex包中。</p>
-<h2 id="regex类"><a href="#regex类" class="headerlink" title="regex类"></a>regex类</h2><p>regex是一个正则表达式类。<br>输入是string，使用smatch保存匹配的相关信息，使用sregex_iterator获得某个string中所有匹配的子串。<br>输入是<code>const char *</code>，使用regex, cmatch，和cregex_iterator。</p>
-<h2 id="C-正则使用流程"><a href="#C-正则使用流程" class="headerlink" title="C++ 正则使用流程"></a>C++ 正则使用流程</h2><p>给定一个输入（待搜索序列）string。<br>创建一个regex对象，调用regex_search(是否存在一个子串和regex匹配)或者regex_match（整个字符串是否和regex匹配）进行匹配，如果匹配成功，将匹配到的内容写入一个smatch对象，并且返回一个true的布尔变量，否则返回false。<br>或者可以使用sregex_iterator查找所有的匹配子串，返回一个smatch对象的引用，或者一个指向smatch对象的指针。</p>
-<h2 id="smatch操作"><a href="#smatch操作" class="headerlink" title="smatch操作"></a>smatch操作</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》</p>
+            <h2 id="正则表达式">正则表达式</h2>
+<p>regex定义在regex包中。</p>
+<h2 id="regex类">regex类</h2>
+<p>regex是一个正则表达式类。<br>
+输入是string，使用smatch保存匹配的相关信息，使用sregex_iterator获得某个string中所有匹配的子串。<br>
+输入是<code>const char *</code>，使用regex, cmatch，和cregex_iterator。</p>
+<h2 id="c-正则使用流程">C++ 正则使用流程</h2>
+<p>给定一个输入（待搜索序列）string。<br>
+创建一个regex对象，调用regex_search(是否存在一个子串和regex匹配)或者regex_match（整个字符串是否和regex匹配）进行匹配，如果匹配成功，将匹配到的内容写入一个smatch对象，并且返回一个true的布尔变量，否则返回false。<br>
+或者可以使用sregex_iterator查找所有的匹配子串，返回一个smatch对象的引用，或者一个指向smatch对象的指针。</p>
+<h2 id="smatch操作">smatch操作</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》</p>
 
           
         
@@ -1142,20 +1211,25 @@
       
         
           
-            <h2 id="tuple"><a href="#tuple" class="headerlink" title="tuple"></a>tuple</h2><p>在头文件tuple中，是一个类模板。和pair很像，pair是具有两个不同成员的类模板，而tuple是具有不定个数的成员类型也不定的类模板。</p>
-<h2 id="创建tuple"><a href="#创建tuple" class="headerlink" title="创建tuple"></a>创建tuple</h2><ol>
+            <h2 id="tuple">tuple</h2>
+<p>在头文件tuple中，是一个类模板。和pair很像，pair是具有两个不同成员的类模板，而tuple是具有不定个数的成员类型也不定的类模板。</p>
+<h2 id="创建tuple">创建tuple</h2>
+<ol>
 <li>直接调用构造函数</li>
 <li>使用<code>make_tuple</code>函数模板。</li>
 </ol>
-<h2 id="访问tuple的成员"><a href="#访问tuple的成员" class="headerlink" title="访问tuple的成员"></a>访问tuple的成员</h2><ol>
+<h2 id="访问tuple的成员">访问tuple的成员</h2>
+<ol>
 <li><code>get&lt;i&gt;(t)</code>获得tuple t的第i个元素。</li>
 <li><code>tuple_size&lt;tupleType&gt;</code>类模板，使用它的public成员value获得某个tuple的数据成员的个数。</li>
 <li><code>tuple_element&lt;i, tupleType&gt;</code>类模板，使用它的public成员type获得某个tupleType类型变量的第i个元素的类型。</li>
 </ol>
-<h2 id="tuple的用处"><a href="#tuple的用处" class="headerlink" title="tuple的用处"></a>tuple的用处</h2><ol>
+<h2 id="tuple的用处">tuple的用处</h2>
+<ol>
 <li>返回多个值。</li>
 </ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》</p>
 
           
         
@@ -1315,12 +1389,20 @@
       
         
           
-            <h2 id="运行时类型识别"><a href="#运行时类型识别" class="headerlink" title="运行时类型识别"></a>运行时类型识别</h2><p>运行时类型识别的功能由两个运算符实现：</p>
+            <h2 id="运行时类型识别">运行时类型识别</h2>
+<p>运行时类型识别的功能由两个运算符实现：</p>
 <ul>
 <li><code>typeid</code>返回表达式的类型。</li>
 <li><code>dynamic_cast</code>将基类的指针或引用转换成派生类的指针或者引用。</li>
 </ul>
-<h2 id="dynamic-cast"><a href="#dynamic-cast" class="headerlink" title="dynamic_cast"></a><code>dynamic_cast</code></h2><h3 id="指针类型的dynamic-cast"><a href="#指针类型的dynamic-cast" class="headerlink" title="指针类型的dynamic_cast"></a>指针类型的dynamic_cast</h3><h3 id="引用类型的dynamic-cast"><a href="#引用类型的dynamic-cast" class="headerlink" title="引用类型的dynamic_cast"></a>引用类型的dynamic_cast</h3><h2 id="type-id"><a href="#type-id" class="headerlink" title="type_id"></a><code>type_id</code></h2><h2 id="使用RTTI"><a href="#使用RTTI" class="headerlink" title="使用RTTI"></a>使用RTTI</h2><h2 id="typeinfo类"><a href="#typeinfo类" class="headerlink" title="typeinfo类"></a><code>typeinfo</code>类</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《C++ Primer》第五版</p>
+<h2 id="dynamic-cast"><code>dynamic_cast</code></h2>
+<h3 id="指针类型的dynamic-cast">指针类型的dynamic_cast</h3>
+<h3 id="引用类型的dynamic-cast">引用类型的dynamic_cast</h3>
+<h2 id="type-id"><code>type_id</code></h2>
+<h2 id="使用rtti">使用RTTI</h2>
+<h2 id="typeinfo类"><code>typeinfo</code>类</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《C++ Primer》第五版</p>
 
           
         
@@ -1480,7 +1562,14 @@
       
         
           
-            <h2 id="三次握手的过程"><a href="#三次握手的过程" class="headerlink" title="三次握手的过程"></a>三次握手的过程</h2><h2 id="为什么不是两次或者四次挥手"><a href="#为什么不是两次或者四次挥手" class="headerlink" title="为什么不是两次或者四次挥手"></a>为什么不是两次或者四次挥手</h2><h2 id="第三次没有收到"><a href="#第三次没有收到" class="headerlink" title="第三次没有收到"></a>第三次没有收到</h2><h2 id="半开连接状态"><a href="#半开连接状态" class="headerlink" title="半开连接状态"></a>半开连接状态</h2><h2 id="SYN洪泛攻击"><a href="#SYN洪泛攻击" class="headerlink" title="SYN洪泛攻击"></a>SYN洪泛攻击</h2><h2 id="四次挥手的过程"><a href="#四次挥手的过程" class="headerlink" title="四次挥手的过程"></a>四次挥手的过程</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2>
+            <h2 id="三次握手的过程">三次握手的过程</h2>
+<h2 id="为什么不是两次或者四次挥手">为什么不是两次或者四次挥手</h2>
+<h2 id="第三次没有收到">第三次没有收到</h2>
+<h2 id="半开连接状态">半开连接状态</h2>
+<h2 id="syn洪泛攻击">SYN洪泛攻击</h2>
+<h2 id="四次挥手的过程">四次挥手的过程</h2>
+<h2 id="参考文献">参考文献</h2>
+
           
         
       
@@ -1639,7 +1728,12 @@
       
         
           
-            <h2 id="Lasso"><a href="#Lasso" class="headerlink" title="Lasso"></a>Lasso</h2><h2 id="ridge"><a href="#ridge" class="headerlink" title="ridge"></a>ridge</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.</p>
+            <h2 id="lasso">Lasso</h2>
+<h2 id="ridge">ridge</h2>
+<h2 id="参考文献">参考文献</h2>
+<ol>
+<li></li>
+</ol>
 
           
         
@@ -1781,7 +1875,13 @@
       
         
           
-            <h2 id="链路层"><a href="#链路层" class="headerlink" title="链路层"></a>链路层</h2><h2 id="差错检验和纠错"><a href="#差错检验和纠错" class="headerlink" title="差错检验和纠错"></a>差错检验和纠错</h2><h2 id="链路层编址"><a href="#链路层编址" class="headerlink" title="链路层编址"></a>链路层编址</h2><h2 id="以太网"><a href="#以太网" class="headerlink" title="以太网"></a>以太网</h2><h2 id="链路层交换机"><a href="#链路层交换机" class="headerlink" title="链路层交换机"></a>链路层交换机</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《计算机网络自顶向下》</p>
+            <h2 id="链路层">链路层</h2>
+<h2 id="差错检验和纠错">差错检验和纠错</h2>
+<h2 id="链路层编址">链路层编址</h2>
+<h2 id="以太网">以太网</h2>
+<h2 id="链路层交换机">链路层交换机</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《计算机网络自顶向下》</p>
 
           
         
@@ -1953,7 +2053,10 @@
       
         
           
-            <h2 id="网络层"><a href="#网络层" class="headerlink" title="网络层"></a>网络层</h2><h2 id="IP协议"><a href="#IP协议" class="headerlink" title="IP协议"></a>IP协议</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《计算机网络自顶向下》</p>
+            <h2 id="网络层">网络层</h2>
+<h2 id="ip协议">IP协议</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《计算机网络自顶向下》</p>
 
           
         

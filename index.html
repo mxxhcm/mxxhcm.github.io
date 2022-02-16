@@ -575,8 +575,11 @@
       
         
           
-            <h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>1.先到github.com/Qv2ray/下载安装qv2ray<br>2.需要安装v2raycore，版本没有要求。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.iguge.app/helper/?p=257</p>
+            <h2 id="简介">简介</h2>
+<p><a href="http://1.xn--github-9f2j05d.com/Qv2ray/%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85qv2ray" target="_blank" rel="noopener">1.先到github.com/Qv2ray/下载安装qv2ray</a><br>
+2.需要安装v2raycore，版本没有要求。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.iguge.app/helper/?p=257</p>
 
           
         
@@ -748,15 +751,21 @@
       
         
           
-            <h2 id="select和epoll区别"><a href="#select和epoll区别" class="headerlink" title="select和epoll区别"></a>select和epoll区别</h2><ol>
+            <h2 id="select和epoll区别">select和epoll区别</h2>
+<ol>
 <li>select单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，不过是可以改的，而poll没有这个限制（使用链表），epoll是无限制的。</li>
 <li>传参。select和poll需要复制大量的file descriptors。</li>
 <li>返回值。返回的值所有fd的集合，需要遍历才知道哪几个fd发生了event。</li>
 <li>如果在循环中使用select，每次都要重新设置。</li>
 </ol>
-<h2 id="epoll三板斧"><a href="#epoll三板斧" class="headerlink" title="epoll三板斧"></a>epoll三板斧</h2><h3 id="epoll-create"><a href="#epoll-create" class="headerlink" title="epoll_create"></a>epoll_create</h3><p>使用epoll_create创建一个eventpoll结构体，每一个epoll对象都有一个eventpoll结构体，用于存放epoll_ctl添加的event，这样子可以识别重复的event，添加到epollpoll的event都会和设备驱动程序建立会调用关系，当相应的事件发生时调用相应的回调方法，将发生的event添加到一个rdlist双向链表中。<br>每次轮询只要查看rdlist是否为空即可。</p>
-<p>在2.6.8版本之前，epoll的底层实现是hash，所以需要指定一个size大小，从2.6.8版本开始，epoll的底层实现是红黑树，size大小被忽略，但是必须比零大。<br>epoll_create返回一个文件描述符，用完之后要调用close。</p>
-<h3 id="epoll-ctl"><a href="#epoll-ctl" class="headerlink" title="epoll_ctl"></a>epoll_ctl</h3><p>epoll_ctl用于注册事件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">int</span> op, <span class="keyword">int</span> fd, struct epoll_event *event)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<h2 id="epoll三板斧">epoll三板斧</h2>
+<h3 id="epoll-create">epoll_create</h3>
+<p>使用epoll_create创建一个eventpoll结构体，每一个epoll对象都有一个eventpoll结构体，用于存放epoll_ctl添加的event，这样子可以识别重复的event，添加到epollpoll的event都会和设备驱动程序建立会调用关系，当相应的事件发生时调用相应的回调方法，将发生的event添加到一个rdlist双向链表中。<br>
+每次轮询只要查看rdlist是否为空即可。</p>
+<p>在2.6.8版本之前，epoll的底层实现是hash，所以需要指定一个size大小，从2.6.8版本开始，epoll的底层实现是红黑树，size大小被忽略，但是必须比零大。<br>
+epoll_create返回一个文件描述符，用完之后要调用close。</p>
+<h3 id="epoll-ctl">epoll_ctl</h3>
+<p>epoll_ctl用于注册事件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">int</span> op, <span class="keyword">int</span> fd, struct epoll_event *event)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>epoll_ctl有四个参数：</p>
 <ul>
 <li>int类型文件描述符，epoll_create创建的epoll对应的描述符，指定操作的epoll实例。</li>
@@ -764,8 +773,17 @@
 <li>int类型的文件描述符，指定要监听的某个描述符。</li>
 <li>struct epoll_event类型的事件，指定我们对第三个参数指定的描述符感兴趣的事件。<figure class="highlight plain"><figcaption><span>epoll_event&#123;</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">    uint32_t events;    // epoll事件</span><br><span class="line">    epoll_data_t data;  //用户数据变量</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
 </ul>
-<p>其中events可以是<br>EPOLLIN, 对应的描述符可读。<br>EPOLLOUT, 对应的描述符可写。<br>EPOLLPRI，对应的描述符有紧急数据可读。<br>EPOLLERR, 对应的描述符发生错误。<br>EPOLLET，设置为ET模式。<br>EPOLLHUP，对应的描述符被挂断。<br>EPOLLRDHUP，。<br>等</p>
-<h3 id="epoll-wait"><a href="#epoll-wait" class="headerlink" title="epoll_wait"></a>epoll_wait</h3><p>epoll_wait监听使用epl_ctl添加的事件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event *events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>其中events可以是<br>
+EPOLLIN, 对应的描述符可读。<br>
+EPOLLOUT, 对应的描述符可写。<br>
+EPOLLPRI，对应的描述符有紧急数据可读。<br>
+EPOLLERR, 对应的描述符发生错误。<br>
+EPOLLET，设置为ET模式。<br>
+EPOLLHUP，对应的描述符被挂断。<br>
+EPOLLRDHUP，。<br>
+等</p>
+<h3 id="epoll-wait">epoll_wait</h3>
+<p>epoll_wait监听使用epl_ctl添加的事件。<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event *events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure></p>
 <p>其中有四个参数：</p>
 <ul>
 <li>int类型的文件描述符，指定等待的epoll实例。</li>
@@ -773,7 +791,8 @@
 <li>maxevents指定最多可以返回的事件数，必须大于0。</li>
 <li>timeout指定阻塞的时间。</li>
 </ul>
-<h2 id="LT模式和ET模式"><a href="#LT模式和ET模式" class="headerlink" title="LT模式和ET模式"></a>LT模式和ET模式</h2><p>epoll有两个工作模式，一个是edge-triggered，另一个是level-triggered。为了区别它们的不同，给出一个场景：</p>
+<h2 id="lt模式和et模式">LT模式和ET模式</h2>
+<p>epoll有两个工作模式，一个是edge-triggered，另一个是level-triggered。为了区别它们的不同，给出一个场景：</p>
 <ol>
 <li>epoll实例中添加了一个pipe的读端。</li>
 <li>pipe的写段向其中写入了2KB的数据。</li>
@@ -781,16 +800,20 @@
 <li>pipe的读端从pipe中读了1KB的数据。</li>
 <li>对epoll_wait的调用已经完成。</li>
 </ol>
-<p>如果添加这个描述符使用的是EPOLLET模式，那么对于epoll_wait的调用会继续阻塞，尽管它的输入缓冲区中还有数据。同时pipe的写端可能在等着对它已经发送数据的一个回复。<strong>这是因为ET模式只会在它监视的fd发生变化时才会报告event。</strong><br>在上面的例子中，因为2中的写完成会产生一个event，然后这个evenet在3中被使用。因为4中的读没有把buffer中的所有数据读完，对于5中的epoll_wait可能会永远阻塞。</p>
+<p>如果添加这个描述符使用的是EPOLLET模式，那么对于epoll_wait的调用会继续阻塞，尽管它的输入缓冲区中还有数据。同时pipe的写端可能在等着对它已经发送数据的一个回复。<strong>这是因为ET模式只会在它监视的fd发生变化时才会报告event。</strong><br>
+在上面的例子中，因为2中的写完成会产生一个event，然后这个evenet在3中被使用。因为4中的读没有把buffer中的所有数据读完，对于5中的epoll_wait可能会永远阻塞。</p>
 <p>为了避免处理多个文件描述符的永远阻塞，建议使用epollET模式的方式，这两个应该是一块设置的：</p>
 <ol>
 <li>使用nonblocking file descriptors，并且</li>
 <li>只有在read或者write返回一个EAGAIN时，再调用epoll_wait等待一个event。或者是读写的字节数小于指定的字节数时。如果是阻塞描述符的话，这样子就会阻塞在最后一次读写调用。而导致即使有其他的描述符可以操作时，因为阻塞在这个调用中，就不能执行其他的读写操作。</li>
 </ol>
 <p>而epoll的LT模式，比poll快，可以用在任何出现在poll出现的地方。</p>
-<h2 id="epoll和select"><a href="#epoll和select" class="headerlink" title="epoll和select"></a>epoll和select</h2><p>什么时候使用select而不使用epoll，epoll适用于连接特别多但是活跃连接少的场景，而select适用于连接多活跃连接也多的场景。</p>
-<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><ol>
-<li>那么如果一个描述符一直可读，会不会导致其他进程饿死？？？怎么办？[3]<br>可以设置一个结构体，将fd和一个标志位联系起来，epoll_wait事件触发后，将相应的结构体的标志位置为ready，然后轮询这个列表中的描述符（刚开始一直没向明白，后来才意识到，列表中ready的描述符每一个都能被处理）。</li>
+<h2 id="epoll和select">epoll和select</h2>
+<p>什么时候使用select而不使用epoll，epoll适用于连接特别多但是活跃连接少的场景，而select适用于连接多活跃连接也多的场景。</p>
+<h2 id="常见问题">常见问题</h2>
+<ol start="0">
+<li>那么如果一个描述符一直可读，会不会导致其他进程饿死？？？怎么办？[3]<br>
+可以设置一个结构体，将fd和一个标志位联系起来，epoll_wait事件触发后，将相应的结构体的标志位置为ready，然后轮询这个列表中的描述符（刚开始一直没向明白，后来才意识到，列表中ready的描述符每一个都能被处理）。</li>
 <li>epoll中区分不同file descriptors的key是什么？key是file descriptor number和open file description的组合。</li>
 <li>同一个epoll实例注册同一个file descriptor会发生什么？会获得EEXIST。但是可以添加一个dup复制的file descriptor到相同的epoll instance。</li>
 <li>两个epoll实例可以等待相同的fd吗？可以的，evenets将会通知这两个epoll实例。</li>
@@ -802,7 +825,10 @@
 <li>一个fd上的操作是否会影响已经collected但是还没有reported的events。</li>
 <li>使用ET模式的话，是否必须连续到EAGAIN？面向报文的需要，而面向流的，需要看target file descriptor中还有多少数据。</li>
 </ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《UNIX程序员手册》<br>2.<a href="https://www.cnblogs.com/tianzeng/p/9997432.html" target="_blank" rel="noopener">https://www.cnblogs.com/tianzeng/p/9997432.html</a><br>3.<a href="https://stackoverflow.com/questions/21111003/epoll-tcp-edge-triggered-necessity-of-last-read2-call" target="_blank" rel="noopener">https://stackoverflow.com/questions/21111003/epoll-tcp-edge-triggered-necessity-of-last-read2-call</a></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《UNIX程序员手册》<br>
+2.<a href="https://www.cnblogs.com/tianzeng/p/9997432.html" target="_blank" rel="noopener">https://www.cnblogs.com/tianzeng/p/9997432.html</a><br>
+3.<a href="https://stackoverflow.com/questions/21111003/epoll-tcp-edge-triggered-necessity-of-last-read2-call" target="_blank" rel="noopener">https://stackoverflow.com/questions/21111003/epoll-tcp-edge-triggered-necessity-of-last-read2-call</a></p>
 
           
         
@@ -962,13 +988,39 @@
       
         
           
-            <h2 id="tcpdump"><a href="#tcpdump" class="headerlink" title="tcpdump"></a>tcpdump</h2><p>tcpdump是unix系统下一个命令行抓包工具，需要使用root权限。</p>
-<h2 id="常用参数"><a href="#常用参数" class="headerlink" title="常用参数"></a>常用参数</h2><p>host，指定一台主机。<br>port，指定端口。<br>net，指定网段。<br>src,指定目标地址。<br>dst,指定源地址。<br>tcp/udp/arp等，指定通信协议</p>
-<p>-i指定网络接口<br>-D列出所有的网口，linux网口命名(en开头的是以太网口，wl开头的是无线网卡）。<br>-S用绝对值列出TCP的序号。<br>-n使用数字名字而不是主机名字（比如说https的端口号使用443而不是https）。<br>-c num指定接收num个包。</p>
-<h2 id="TCP包的一些字段"><a href="#TCP包的一些字段" class="headerlink" title="TCP包的一些字段"></a>TCP包的一些字段</h2><p>查看man手册。<br>Flag中<br>S是SYN，<br>F是FIN，<br>P是PUSH，（表示发送方通知接收方通讯层应该尽快的将这个报文段交给应用层。一般传输层都是隔几个报文统一上交数据。设置了PUSH就是尽快上交。）<br>R是RST，<br>U是URG，<br>W是ECN CWR<br>E是ECN-Echo<br>.是ACK。<br>win是对方接收缓冲区的大小。</p>
-<h2 id="查看DNS查询报文"><a href="#查看DNS查询报文" class="headerlink" title="查看DNS查询报文"></a>查看DNS查询报文</h2><p>在本机上运行<code>sudo tcpdump udp dst port 53</code>，即指定目标端口号为53即可。</p>
-<h2 id="查看TCP三次握手"><a href="#查看TCP三次握手" class="headerlink" title="查看TCP三次握手"></a>查看TCP三次握手</h2><p>使用命令<code>sudo tcpdump host www.baidu.com -c 10 -n -vv</code>可以查看TCP连接的前10个报文。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.<a href="https://blog.csdn.net/renrenhappy/article/details/5929702" target="_blank" rel="noopener">https://blog.csdn.net/renrenhappy/article/details/5929702</a><br>2.<a href="https://segmentfault.com/a/1190000002554673" target="_blank" rel="noopener">https://segmentfault.com/a/1190000002554673</a></p>
+            <h2 id="tcpdump">tcpdump</h2>
+<p>tcpdump是unix系统下一个命令行抓包工具，需要使用root权限。</p>
+<h2 id="常用参数">常用参数</h2>
+<p>host，指定一台主机。<br>
+port，指定端口。<br>
+net，指定网段。<br>
+src,指定目标地址。<br>
+dst,指定源地址。<br>
+tcp/udp/arp等，指定通信协议</p>
+<p>-i指定网络接口<br>
+-D列出所有的网口，linux网口命名(en开头的是以太网口，wl开头的是无线网卡）。<br>
+-S用绝对值列出TCP的序号。<br>
+-n使用数字名字而不是主机名字（比如说https的端口号使用443而不是https）。<br>
+-c num指定接收num个包。</p>
+<h2 id="tcp包的一些字段">TCP包的一些字段</h2>
+<p>查看man手册。<br>
+Flag中<br>
+S是SYN，<br>
+F是FIN，<br>
+P是PUSH，（表示发送方通知接收方通讯层应该尽快的将这个报文段交给应用层。一般传输层都是隔几个报文统一上交数据。设置了PUSH就是尽快上交。）<br>
+R是RST，<br>
+U是URG，<br>
+W是ECN CWR<br>
+E是ECN-Echo<br>
+.是ACK。<br>
+win是对方接收缓冲区的大小。</p>
+<h2 id="查看dns查询报文">查看DNS查询报文</h2>
+<p>在本机上运行<code>sudo tcpdump udp dst port 53</code>，即指定目标端口号为53即可。</p>
+<h2 id="查看tcp三次握手">查看TCP三次握手</h2>
+<p>使用命令<code>sudo tcpdump host www.baidu.com -c 10 -n -vv</code>可以查看TCP连接的前10个报文。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.<a href="https://blog.csdn.net/renrenhappy/article/details/5929702" target="_blank" rel="noopener">https://blog.csdn.net/renrenhappy/article/details/5929702</a><br>
+2.<a href="https://segmentfault.com/a/1190000002554673" target="_blank" rel="noopener">https://segmentfault.com/a/1190000002554673</a></p>
 
           
         
@@ -1128,18 +1180,30 @@
       
         
           
-            <h2 id="hash"><a href="#hash" class="headerlink" title="hash"></a>hash</h2><p>什么是hash，给定不定长的输入，得到定长的输出。<br>哈希的实现方式：数组，链表等。<br>hash可以用来干嘛？</p>
+            <h2 id="hash">hash</h2>
+<p>什么是hash，给定不定长的输入，得到定长的输出。<br>
+哈希的实现方式：数组，链表等。<br>
+hash可以用来干嘛？</p>
 <ol>
 <li>用时间换空间，实现常数时间的查找。主要是利用哈希表数据结构。</li>
 <li>保存密码。</li>
 <li>服务器扩容（一致性哈希）。</li>
 </ol>
 <p>碰撞：给定不同的输入，得到相同的输入。这是一定会发生的，因为输入的范围是无穷大的。</p>
-<p>解决碰撞的方法：<br>线性探测法：<br>二次散列法：<br>开链法：SGI STL就采用这种方法。</p>
-<h2 id="hashtable"><a href="#hashtable" class="headerlink" title="hashtable"></a>hashtable</h2><p>SGI STL中，通过维护一个链表的数组。每个链表叫做一个bucket，通过KEY对buckets取余计算bucket_number。所以不同的KEY可能会被映射到同一个bucket中，这就是冲突。<br>为了避免冲突太严重，STL中采用了一个方法，当元素的数量大于bucket的数量时，就要进行rehash。插入一个对象时，先判断是否需要rehash。如果需要rehash，需要对元素中的所有元素重新进行hash。<br>count怎么实现？find怎么实现？比如找某一个val，先找到val对应的key，找到相应bucket中的序号，判断这个bucket中的元素的key是否和要找的key相同。</p>
+<p>解决碰撞的方法：<br>
+线性探测法：<br>
+二次散列法：<br>
+开链法：SGI STL就采用这种方法。</p>
+<h2 id="hashtable">hashtable</h2>
+<p>SGI STL中，通过维护一个链表的数组。每个链表叫做一个bucket，通过KEY对buckets取余计算bucket_number。所以不同的KEY可能会被映射到同一个bucket中，这就是冲突。<br>
+为了避免冲突太严重，STL中采用了一个方法，当元素的数量大于bucket的数量时，就要进行rehash。插入一个对象时，先判断是否需要rehash。如果需要rehash，需要对元素中的所有元素重新进行hash。<br>
+count怎么实现？find怎么实现？比如找某一个val，先找到val对应的key，找到相应bucket中的序号，判断这个bucket中的元素的key是否和要找的key相同。</p>
 <p>hashtable的迭代器是ForwardIterator。</p>
-<h2 id="一致性hash"><a href="#一致性hash" class="headerlink" title="一致性hash"></a>一致性hash</h2><p>一致性hash经常用在服务器增加或者减少时，服务器失效的问题。为什么要取2的32次方？我的理解是，这样子的话，对于同一个数据key，不管有服务器的个数是多少，得到的数据的hash值都是一样的。所以增加服务器不影响数据的hash值。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《STL源码剖析》<br>2.<a href="https://zhuanlan.zhihu.com/p/34985026" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/34985026</a></p>
+<h2 id="一致性hash">一致性hash</h2>
+<p>一致性hash经常用在服务器增加或者减少时，服务器失效的问题。为什么要取2的32次方？我的理解是，这样子的话，对于同一个数据key，不管有服务器的个数是多少，得到的数据的hash值都是一样的。所以增加服务器不影响数据的hash值。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《STL源码剖析》<br>
+2.<a href="https://zhuanlan.zhihu.com/p/34985026" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/34985026</a></p>
 
           
         
@@ -1311,10 +1375,17 @@
       
         
           
-            <h2 id="C-对象模型"><a href="#C-对象模型" class="headerlink" title="C++对象模型"></a>C++对象模型</h2><p><strong>C++ 对象模型：所有的nonstatic data member放在每一个类对象内。所有的static data member, staitc member function和member function都放在所有类对象之外。而对于虚函数，每一个类产生一堆指向虚函数表的指针，放在一个表中，叫做虚表。每一个类对象都会有一个虚指针指向虚表。如果加上继承的话，每一个类对象中还要放着一个虚基类对象的指针。</strong><br>指向不同类型指针的差异，既不在指针表示不同，也不再其内容（代表一个地址）不同，而是在其所寻址出来的object类型不同。指针类型起到的作用是告诉编译器如果解释某个特定地址中内存内容和其大小。<br>转型其实只是一种编译器指令，大部分情况下他并不改变一个指针所含的真正地址，它只影响被指向内存的大小和其内容的解释方式。<br><strong>一个指针或者引用之所以支持多态，是因为它们并不会引发内存中任何与类型有关的内存委托操作，会受到影响的只是它们所指向内存的“大小和内容解释方式”而已。</strong></p>
-<h2 id="构造函数语义学"><a href="#构造函数语义学" class="headerlink" title="构造函数语义学"></a>构造函数语义学</h2><p>为什么引入explicit关键字，避免将一个单一参数的构造函数当成一个转换运算符。 </p>
-<h3 id="默认构造函数"><a href="#默认构造函数" class="headerlink" title="默认构造函数"></a>默认构造函数</h3><p>默认构造函数会在<strong>编译器需要</strong>的时候被编译器产生出来。注意，这是编译器的需要，不是程序的需要。程序的需要需要程序员进行负责。</p>
-<p>如果没有任何用户声明的构造函数，在合适的时候编译器会暗中声明一个non-trivial的构造函数。什么时候会合成non-trivil的构造函数？<br>四种情况：</p>
+            <h2 id="c-对象模型">C++对象模型</h2>
+<p><strong>C++ 对象模型：所有的nonstatic data member放在每一个类对象内。所有的static data member, staitc member function和member function都放在所有类对象之外。而对于虚函数，每一个类产生一堆指向虚函数表的指针，放在一个表中，叫做虚表。每一个类对象都会有一个虚指针指向虚表。如果加上继承的话，每一个类对象中还要放着一个虚基类对象的指针。</strong><br>
+指向不同类型指针的差异，既不在指针表示不同，也不再其内容（代表一个地址）不同，而是在其所寻址出来的object类型不同。指针类型起到的作用是告诉编译器如果解释某个特定地址中内存内容和其大小。<br>
+转型其实只是一种编译器指令，大部分情况下他并不改变一个指针所含的真正地址，它只影响被指向内存的大小和其内容的解释方式。<br>
+<strong>一个指针或者引用之所以支持多态，是因为它们并不会引发内存中任何与类型有关的内存委托操作，会受到影响的只是它们所指向内存的“大小和内容解释方式”而已。</strong></p>
+<h2 id="构造函数语义学">构造函数语义学</h2>
+<p>为什么引入explicit关键字，避免将一个单一参数的构造函数当成一个转换运算符。</p>
+<h3 id="默认构造函数">默认构造函数</h3>
+<p>默认构造函数会在<strong>编译器需要</strong>的时候被编译器产生出来。注意，这是编译器的需要，不是程序的需要。程序的需要需要程序员进行负责。</p>
+<p>如果没有任何用户声明的构造函数，在合适的时候编译器会暗中声明一个non-trivial的构造函数。什么时候会合成non-trivil的构造函数？<br>
+四种情况：</p>
 <ol>
 <li>类中包含具有默认构造函数的成员对象。需要调用成员对象。的默认构造函数。</li>
 <li>类继承了含有默认构造函数的基类对象。需要调用派生类的默认构造函数。</li>
@@ -1322,84 +1393,130 @@
 <li>含有虚基类的类。初始化虚基类对象。</li>
 </ol>
 <p>在这四种情况之外的话并且没有声明任何构造函数的类，它们拥有implicit trivial default constructors，实际上并不会被合成出来。</p>
-<h3 id="拷贝构造函数"><a href="#拷贝构造函数" class="headerlink" title="拷贝构造函数"></a>拷贝构造函数</h3><p>三种情况，会调用拷贝构造函数：</p>
+<h3 id="拷贝构造函数">拷贝构造函数</h3>
+<p>三种情况，会调用拷贝构造函数：</p>
 <ol>
 <li>明确的以一个object作为另一个object的初值。</li>
 <li>pass by value。</li>
 <li>返回一个类对象而不是类对象的引用时。</li>
 </ol>
-<h4 id="默认的memberwise的初始化"><a href="#默认的memberwise的初始化" class="headerlink" title="默认的memberwise的初始化"></a>默认的memberwise的初始化</h4><p>default memberwise initialization是把每一个内建的或者派生的数据成员（例如指针和数组，就是一个派生的数据成员）的值，从某个object拷贝到另一个object。对于成员类对象，以递归的方式执行memberwise initialization（其实就是深拷贝）。</p>
-<p>C++ 标准同样把拷贝构造函数分为trivial和non-trivial的，只有nontrivial的构造函数才会被合成到程序中，决定一个拷贝构造函数是不是nontrivial的，取决于类是否会展现bitwise copy semantics时。bitwise copy其实就是浅拷贝。<br>什么时候不展现处bitwise copy semantics：</p>
+<h4 id="默认的memberwise的初始化">默认的memberwise的初始化</h4>
+<p>default memberwise initialization是把每一个内建的或者派生的数据成员（例如指针和数组，就是一个派生的数据成员）的值，从某个object拷贝到另一个object。对于成员类对象，以递归的方式执行memberwise initialization（其实就是深拷贝）。</p>
+<p>C++ 标准同样把拷贝构造函数分为trivial和non-trivial的，只有nontrivial的构造函数才会被合成到程序中，决定一个拷贝构造函数是不是nontrivial的，取决于类是否会展现bitwise copy semantics时。bitwise copy其实就是浅拷贝。<br>
+什么时候不展现处bitwise copy semantics：</p>
 <ol>
 <li>类中包含含有拷贝构造函数的成员对象时，无论这个拷贝构造函数是设计者声明的，还是编译器合成的。</li>
 <li>类继承了含有拷贝构造函数的基类时，无论这个拷贝构造函数是设计者声明的还是编译器合成的。</li>
 <li>类声明了虚函数时。因为类对象中需要虚指针，没有bitwise semantics，编译器需要合成一个拷贝构造函数将vptr合适的初始化。当相同类型的对象相互赋值（基类对象赋值给基类对象，派生类对象赋值给偏生类对象），直接拷贝vptr是安全的，但是把派生类对象赋值给基类对象，vptr直接拷贝就不安全了，合成的拷贝构造函数会负责派生类的vptr的初始化。</li>
-<li>类直接或者间接继承了虚基类的时候，也会使得bitwise semantics失效。编译器需要让派生类中的虚基类子对象在执行器就准备妥当，还需要维护位置的完整性。<br>对于一个继承了虚基类的派生类，编译器会为派生类调用基类的默认构造函数（如果用户没有调用的话），还会将虚指针初始化，最后还会对基类的子对象进行定位（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）。</li>
+<li>类直接或者间接继承了虚基类的时候，也会使得bitwise semantics失效。编译器需要让派生类中的虚基类子对象在执行器就准备妥当，还需要维护位置的完整性。<br>
+对于一个继承了虚基类的派生类，编译器会为派生类调用基类的默认构造函数（如果用户没有调用的话），还会将虚指针初始化，最后还会对基类的子对象进行定位（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）（bitwise copy可能会破坏这个位置）。</li>
 </ol>
-<h3 id="程序转化语义学"><a href="#程序转化语义学" class="headerlink" title="程序转化语义学"></a>程序转化语义学</h3><h4 id="函数参数的初始化"><a href="#函数参数的初始化" class="headerlink" title="函数参数的初始化"></a>函数参数的初始化</h4><p>调用拷贝构造函数，构造一个参数传递给函数，并且把函数原型改成接受引用参数。</p>
-<h4 id="返回值的初始化"><a href="#返回值的初始化" class="headerlink" title="返回值的初始化"></a>返回值的初始化</h4><p>函数返回值怎么获得？一般都是在函数内部声明一个临时对象，然后返回这个临时对象。编译器在处理的时候使用了：<br>双阶段转换：</p>
+<h3 id="程序转化语义学">程序转化语义学</h3>
+<h4 id="函数参数的初始化">函数参数的初始化</h4>
+<p>调用拷贝构造函数，构造一个参数传递给函数，并且把函数原型改成接受引用参数。</p>
+<h4 id="返回值的初始化">返回值的初始化</h4>
+<p>函数返回值怎么获得？一般都是在函数内部声明一个临时对象，然后返回这个临时对象。编译器在处理的时候使用了：<br>
+双阶段转换：</p>
 <ol>
 <li>在函数声明上加了一个额外的引用参数，用来放置返回值。</li>
 <li>在return之前调用这个额外参数的拷贝构造函数拷贝函数内部处理的临时对象。</li>
 </ol>
-<h4 id="使用者层面的优化"><a href="#使用者层面的优化" class="headerlink" title="使用者层面的优化"></a>使用者层面的优化</h4><h4 id="编译器层面的优化（Named-Return-Value）"><a href="#编译器层面的优化（Named-Return-Value）" class="headerlink" title="编译器层面的优化（Named Return Value）"></a>编译器层面的优化（Named Return Value）</h4><p>直接使用一个result参数代替函数内部的临时对象，少了一次拷贝构造，这个也叫作name return value(NRV)优化。<br>为什么没有拷贝构造函数就不能实行NRV优化？（可能是因为NRV优化就是针对拷贝构造函数进行的，你连优化对象都没有了，还优化个毛线。）<br>我在gcc下进行测试，默认是打开了NRV优化的，但是如果return 指令没有发生在top level就会失效（可看文章最后的代码）。</p>
-<h4 id="要不要拷贝构造函数"><a href="#要不要拷贝构造函数" class="headerlink" title="要不要拷贝构造函数"></a>要不要拷贝构造函数</h4><p>如果某个类的拷贝构造函数被视为trivial（即没有带有拷贝构造函数的成员对象，或者基类对象，也没有虚函数和虚基类）。<br>那么memberwise的初始化会导致bitwisecopy，很快速很安全。<br>如果单从是否复制的角度来看，不用提供显式的拷贝构造函数。但是！！！如果需要大量的memberwise初始化操作，比如值传递，那么提供拷贝构造函数就可以使用NRV优化。</p>
-<h3 id="成员初始化列表"><a href="#成员初始化列表" class="headerlink" title="成员初始化列表"></a>成员初始化列表</h3><p>构造函数用来给函数设置初值，除了以下的四种情况，必须使用初始化列表进行初始化，其他情况下既可以在构造函数体内，还可以使用初始化列表。</p>
+<h4 id="使用者层面的优化">使用者层面的优化</h4>
+<h4 id="编译器层面的优化-named-return-value">编译器层面的优化（Named Return Value）</h4>
+<p>直接使用一个result参数代替函数内部的临时对象，少了一次拷贝构造，这个也叫作name return value(NRV)优化。<br>
+为什么没有拷贝构造函数就不能实行NRV优化？（可能是因为NRV优化就是针对拷贝构造函数进行的，你连优化对象都没有了，还优化个毛线。）<br>
+我在gcc下进行测试，默认是打开了NRV优化的，但是如果return 指令没有发生在top level就会失效（可看文章最后的代码）。</p>
+<h4 id="要不要拷贝构造函数">要不要拷贝构造函数</h4>
+<p>如果某个类的拷贝构造函数被视为trivial（即没有带有拷贝构造函数的成员对象，或者基类对象，也没有虚函数和虚基类）。<br>
+那么memberwise的初始化会导致bitwisecopy，很快速很安全。<br>
+如果单从是否复制的角度来看，不用提供显式的拷贝构造函数。但是！！！如果需要大量的memberwise初始化操作，比如值传递，那么提供拷贝构造函数就可以使用NRV优化。</p>
+<h3 id="成员初始化列表">成员初始化列表</h3>
+<p>构造函数用来给函数设置初值，除了以下的四种情况，必须使用初始化列表进行初始化，其他情况下既可以在构造函数体内，还可以使用初始化列表。</p>
 <ol>
 <li>初始化一个引用成员</li>
 <li>初始化一个常量成员</li>
 <li>调用一个基类的有参数的构造函数时</li>
 <li>调用一个成员类的有参数的构造函数时</li>
 </ol>
-<p>初始化列表中到底发生了什么？<br>编译器会一一操作初始化列表，用适当的顺序在构造函数内任何用户显式的代码之前安插初始化操作。<br>还有，就是初始化顺序和初始化列表中的顺序无关，和在类中声明的顺序相关。</p>
-<h2 id="Data语义学"><a href="#Data语义学" class="headerlink" title="Data语义学"></a>Data语义学</h2><p>空类的大小为1，因为编译器在空类中安插了一个char字节，使得这两个对象在内存中的位置是独一无二的。标准规定空类的大小大于0。虚基类的大小是8字节，因为虚指针。<br>如果没有虚函数，但是有虚基类，派生类对一个空类进行继承，它的大小受到三个因素的影响（因为没有虚函数，所以没有虚指针）：</p>
+<p>初始化列表中到底发生了什么？<br>
+编译器会一一操作初始化列表，用适当的顺序在构造函数内任何用户显式的代码之前安插初始化操作。<br>
+还有，就是初始化顺序和初始化列表中的顺序无关，和在类中声明的顺序相关。</p>
+<h2 id="data语义学">Data语义学</h2>
+<p>空类的大小为1，因为编译器在空类中安插了一个char字节，使得这两个对象在内存中的位置是独一无二的。标准规定空类的大小大于0。虚基类的大小是8字节，因为虚指针。<br>
+如果没有虚函数，但是有虚基类，派生类对一个空类进行继承，它的大小受到三个因素的影响（因为没有虚函数，所以没有虚指针）：</p>
 <ol>
 <li>语言本身的overhead，比如虚基类，在派生类对象中需要有指向虚基类对象的指针。它指向虚基类子对象，或者一个表格。</li>
 <li>编译器的优化处理。</li>
 <li>对齐。</li>
 </ol>
-<p>在菱形继承中，X是空的虚基类，A和B派生自X，没有自定义的数据，Y派生自A和B。<br>在没有优化的时候派生类（A和B）的大小是虚基类指针大小，一个char，一个对齐，也就是8+1+3 = 12字节。A的大小是(虚基类指针大小，一个char，和派生自A和B指向，最后加起来总共是1+8+8+3 = 20。</p>
+<p>在菱形继承中，X是空的虚基类，A和B派生自X，没有自定义的数据，Y派生自A和B。<br>
+在没有优化的时候派生类（A和B）的大小是虚基类指针大小，一个char，一个对齐，也就是8+1+3 = 12字节。A的大小是(虚基类指针大小，一个char，和派生自A和B指向，最后加起来总共是1+8+8+3 = 20。</p>
 <p>空虚基类(empty virtual base class)，它提供了一个虚接口，一个空的虚基类被看成派生类的最开始的一部分，也就是说派生类不再是空类了。所以派生自虚基类的空类的大小就是一个指针的大小。在这里，A和B的大小都是一个指向虚基类指针的大小，是8字节。而Y是16字节。</p>
-<h3 id="数据成员的绑定"><a href="#数据成员的绑定" class="headerlink" title="数据成员的绑定"></a>数据成员的绑定</h3><p>两个防御性规则</p>
+<h3 id="数据成员的绑定">数据成员的绑定</h3>
+<p>两个防御性规则</p>
 <ol>
 <li>把所有的数据成员都放在class声明的开始处。</li>
 <li>把所有的inline函数都放在class声明的外部。如果一个inline函数体，在整个类的声明没有完全被看到之前，是不会被评估求值的。但是对于成员函数的参数列表并不是这样的，参数列表中的类型还是会在第一次遇到时被求值。</li>
 </ol>
 <p>这一节最重要的就是为什么要把类型的typedef放在类的最前面。虽然对于函数的定义来说，可以使用任何类中声明的对象，但是对函数的声明是按照类中的声明顺序进行解析的！所以如果把类型的typedef放在最后，在解析函数声明的时候就可能出错（如果在函数声明出现之前没有找到某个类型，就会查找类外部的作用域）。</p>
-<h3 id="数据成员的布局"><a href="#数据成员的布局" class="headerlink" title="数据成员的布局"></a>数据成员的布局</h3><ol>
+<h3 id="数据成员的布局">数据成员的布局</h3>
+<ol>
 <li>静态数据成员存放在程序的data segment中。和单个的类对象无关。</li>
-<li>非静态数据在类对象中的排列顺序和其被声明的顺序一致。<br>C++标准要求任何在access访问块中，只要满足较晚出现的的members在类对象中有较高的地址即可，它们不一定连续，中间可能会有padding。</li>
+<li>非静态数据在类对象中的排列顺序和其被声明的顺序一致。<br>
+C++标准要求任何在access访问块中，只要满足较晚出现的的members在类对象中有较高的地址即可，它们不一定连续，中间可能会有padding。</li>
 <li>还有编译器内部使用的数据成员，用来支持整个对象模型。比如vptr，所有编译器都会把它安插在含有虚函数的类对象之内。一般放在类对象的最前端，有的也放在最后。</li>
 </ol>
-<h3 id="数据成员的存取"><a href="#数据成员的存取" class="headerlink" title="数据成员的存取"></a>数据成员的存取</h3><h4 id="static-data-member的存取"><a href="#static-data-member的存取" class="headerlink" title="static data member的存取"></a>static data member的存取</h4><ol>
+<h3 id="数据成员的存取">数据成员的存取</h3>
+<h4 id="static-data-member的存取">static data member的存取</h4>
+<ol>
 <li><strong>每一个静态数据成员都只有一个实体，存放在程序的data segment</strong>。C++ 中通过指针和对象存取成员，结果完全相同的唯一情况就是，就是对静态数据成员的存取。实际上，它们的存取都没有经过类对象，因为静态数据成员不在类中。</li>
 <li>如果取一个static data member的地址，会得到一个指向其数据类型的指针，而不是一个指向class data member的指针，因为static data member并不含在类对象中。</li>
 <li>如果不同的类都声明了同名的静态数据成员，会导致命名冲突，编译器的方法是暗中对每一个static data member进行编码，从而区分它们。</li>
 </ol>
-<h4 id="nonstatic-data-member"><a href="#nonstatic-data-member" class="headerlink" title="nonstatic data member"></a>nonstatic data member</h4><p><strong>非静态数据成员直接存放在每一个类对象中，只能通过class object（不管是直接的还是简介的）访问。</strong>比如在member function中，访问nonstatic data member，实际上是经过一个隐式的this指针进行的。<br>通过指针和.运算访问nontstaic data member，访问的data member是一个struct member，一个clas member，单一继承或者多重继承的情况下效率都相同。<br>对一个nonstatic data member进行存取操作，编译器需要把类对象的起始地址加上偏移量。每一个nonstatic data member的偏移量在编译时就知道，即使它属于一个基类子对象。因此，存取一个nonstatic data member的效果和存取C结构体或者一个费派生类的成员是一样的。<br>但如果某个data member是虚基类的成员，指针的存取速度会慢一些。</p>
-<h3 id="继承和data-member"><a href="#继承和data-member" class="headerlink" title="继承和data member"></a>继承和data member</h3><p>在C++ 继承模型中，一个派生类对象表现出来的，是自己的members加上基类data member的总和。它们的排列顺序没有要求，在大部分编译器中，base class member总是出现在上面。属于虚基类的data member除外。</p>
-<h4 id="单继承不含虚函数"><a href="#单继承不含虚函数" class="headerlink" title="单继承不含虚函数"></a>单继承不含虚函数</h4><h4 id="单继承和虚函数"><a href="#单继承和虚函数" class="headerlink" title="单继承和虚函数"></a>单继承和虚函数</h4><h4 id="多重继承"><a href="#多重继承" class="headerlink" title="多重继承"></a>多重继承</h4><h4 id="虚继承"><a href="#虚继承" class="headerlink" title="虚继承"></a>虚继承</h4><p>对于虚继承来说，无论一个虚基类在继承体系中出现了多少次，派生类中只会含有一个虚基类子对象。</p>
-<h2 id="函数语义学"><a href="#函数语义学" class="headerlink" title="函数语义学"></a>函数语义学</h2><p>类的member function有三种：static member function, nonstatic member function和virtual function。<br>static member funciton的主要特性是没有this指针，它的其他特性统统来自主要特性：</p>
+<h4 id="nonstatic-data-member">nonstatic data member</h4>
+<p>**非静态数据成员直接存放在每一个类对象中，只能通过class object（不管是直接的还是简介的）访问。**比如在member function中，访问nonstatic data member，实际上是经过一个隐式的this指针进行的。<br>
+通过指针和.运算访问nontstaic data member，访问的data member是一个struct member，一个clas member，单一继承或者多重继承的情况下效率都相同。<br>
+对一个nonstatic data member进行存取操作，编译器需要把类对象的起始地址加上偏移量。每一个nonstatic data member的偏移量在编译时就知道，即使它属于一个基类子对象。因此，存取一个nonstatic data member的效果和存取C结构体或者一个费派生类的成员是一样的。<br>
+但如果某个data member是虚基类的成员，指针的存取速度会慢一些。</p>
+<h3 id="继承和data-member">继承和data member</h3>
+<p>在C++ 继承模型中，一个派生类对象表现出来的，是自己的members加上基类data member的总和。它们的排列顺序没有要求，在大部分编译器中，base class member总是出现在上面。属于虚基类的data member除外。</p>
+<h4 id="单继承不含虚函数">单继承不含虚函数</h4>
+<h4 id="单继承和虚函数">单继承和虚函数</h4>
+<h4 id="多重继承">多重继承</h4>
+<h4 id="虚继承">虚继承</h4>
+<p>对于虚继承来说，无论一个虚基类在继承体系中出现了多少次，派生类中只会含有一个虚基类子对象。</p>
+<h2 id="函数语义学">函数语义学</h2>
+<p>类的member function有三种：static member function, nonstatic member function和virtual function。<br>
+static member funciton的主要特性是没有this指针，它的其他特性统统来自主要特性：</p>
 <ol>
 <li>不能直接存取非non static data member。</li>
 <li>不能声明为非const，volatile, virtual。</li>
 <li>不需要经过class object进行访问。</li>
 </ol>
-<h3 id="member的调用方式"><a href="#member的调用方式" class="headerlink" title="member的调用方式"></a>member的调用方式</h3><h4 id="nonstatic-member-functions"><a href="#nonstatic-member-functions" class="headerlink" title="nonstatic member functions"></a>nonstatic member functions</h4><p>nonstatic member function的访问效率必须和一般的nonmember function效率相同。这个是怎么实现的呢？编译器通过将nonstatic member function函数实体转换成对等的nonmember function函数实体：</p>
+<h3 id="member的调用方式">member的调用方式</h3>
+<h4 id="nonstatic-member-functions">nonstatic member functions</h4>
+<p>nonstatic member function的访问效率必须和一般的nonmember function效率相同。这个是怎么实现的呢？编译器通过将nonstatic member function函数实体转换成对等的nonmember function函数实体：</p>
 <ol>
 <li>向nonstatic member function添加一个额外的参数（this指针），如果是const nonstatic member function，是通过this指针是一个指向常量对象的指针。this指针本身就是一个常量指针，即它的指向不能改变。</li>
 <li>使用this指针对每一个nonstatic data member进行存取。（这就是上一节介绍的东西）。</li>
 <li>将member function重新写成一个nonmemeber functon，就是对它起一个新名字。</li>
 </ol>
-<h4 id="virtual-member-functions"><a href="#virtual-member-functions" class="headerlink" title="virtual member functions"></a>virtual member functions</h4><p>对于一个virtual函数来说，比如<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Point3d obj, *ptr = &amp;obj; </span><br><span class="line">ptr-&gt;normalize();   <span class="comment">//normalized虚函数</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="virtual-member-functions">virtual member functions</h4>
+<p>对于一个virtual函数来说，比如<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Point3d obj, *ptr = &amp;obj; </span><br><span class="line">ptr-&gt;normalize();   <span class="comment">//normalized虚函数</span></span><br></pre></td></tr></table></figure></p>
 <p>会被转化成：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(*ptr-&gt;vptr[<span class="number">1</span>])(ptr);</span><br></pre></td></tr></table></figure></p>
-<p>其中第一个ptr表示指针ptr，vptr是虚指针，指向一个虚表，1是normalize()虚函数在虚函数表中的位置，ptr表示传递给this指针的实参。<br>在一个虚函数内调用另一个虚函数，会比较快。<br>而对于通过成员访问运算符调用的虚函数，因为它不支持多态，所以会把虚函数当做普通函数进行解析。</p>
-<h3 id="static-member-function"><a href="#static-member-function" class="headerlink" title="static member function"></a>static member function</h3><p>对于static memeber function来说，通过指针或者成员访问运算符调用，编译器会将它们转换成一般的nonmember function调用。</p>
+<p>其中第一个ptr表示指针ptr，vptr是虚指针，指向一个虚表，1是normalize()虚函数在虚函数表中的位置，ptr表示传递给this指针的实参。<br>
+在一个虚函数内调用另一个虚函数，会比较快。<br>
+而对于通过成员访问运算符调用的虚函数，因为它不支持多态，所以会把虚函数当做普通函数进行解析。</p>
+<h3 id="static-member-function">static member function</h3>
+<p>对于static memeber function来说，通过指针或者成员访问运算符调用，编译器会将它们转换成一般的nonmember function调用。</p>
 <p>如果取一个static member funciton的地址，获得的是一个地址。因为static member function没有this指针，所以地址类型不是一个指向class member function的地址，而是一个nonmember function指针。</p>
-<h3 id="virtual-member-function"><a href="#virtual-member-function" class="headerlink" title="virtual member function"></a>virtual member function</h3><p>virtual function的一般实现模型：每一个class有一个虚表，包含该class中的virtual function地址，每个对象都有一个vptr，指向virtual table的所在。</p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><p>NRV被关闭：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cout</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">X</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    X():_val(<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"X()"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    X(<span class="keyword">int</span> val): _val(val)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"X()"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    X(<span class="keyword">const</span> X&amp; x)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"X(const X&amp; x)"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> _val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function">X <span class="title">bar</span><span class="params">(<span class="keyword">int</span> a)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a % <span class="number">2</span>)</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        X x = X(a);</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    X x;</span><br><span class="line">    <span class="keyword">return</span> x;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    X t = bar(<span class="number">3</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="virtual-member-function">virtual member function</h3>
+<p>virtual function的一般实现模型：每一个class有一个虚表，包含该class中的virtual function地址，每个对象都有一个vptr，指向virtual table的所在。</p>
+<h2 id="代码">代码</h2>
+<p>NRV被关闭：<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">cout</span>;</span><br><span class="line"><span class="keyword">using</span> <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">X</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    X():_val(<span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"X()"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    X(<span class="keyword">int</span> val): _val(val)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"X()"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    X(<span class="keyword">const</span> X&amp; x)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"X(const X&amp; x)"</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> _val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function">X <span class="title">bar</span><span class="params">(<span class="keyword">int</span> a)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(a % <span class="number">2</span>)</span><br><span class="line">    &#123;</span><br><span class="line"></span><br><span class="line">        X x = X(a);</span><br><span class="line">        <span class="keyword">return</span> x;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    X x;</span><br><span class="line">    <span class="keyword">return</span> x;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"></span><br><span class="line">    X t = bar(<span class="number">3</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>上述代码会调用一次构造函数，一次拷贝构造。注意，这个构造函数是临时对象x调用的。t调用的是拷贝构造函数。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《深入探索C++对象模型》</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《深入探索C++对象模型》</p>
 
           
         
@@ -1571,11 +1688,23 @@
       
         
           
-            <h2 id="allocator"><a href="#allocator" class="headerlink" title="allocator"></a>allocator</h2><p>一般来说，C++ 对象的分配都是通过new expression来实现的，new expression通过调用operator new函数分配空间，然后调用相应的构造函数。同理释放的时候，通过delete，先调用operator delete，然后调用相应的析构函数。</p>
-<p>STL allocator的把这两部分给分开，调用allocate()分配空间，然后调用construct()进行构建，construct()的话一般来说是负责调用构造函数。<br>而allocate的工作就要多一些，当然也可以少一些，比如直接调用operator new或者malloc分配。这样子的话可能效率要低一下，有内存碎片，overload比较大。<br>所以就有了下面的分配器。</p>
-<h2 id="alloc"><a href="#alloc" class="headerlink" title="alloc"></a>alloc</h2><p>SGI alloc allocator的实现是一个两级空间配置器，第一级配置器负责分配128字节以上的空间，以及异常处理。第一级配置器使用malloc而不是operator new进行内存分配的原因，可能是C++没有realloc，因为没有使用new，所以就不能使用new_handler，需要自己实现。需要客户端自己设置一个oom_handler。<br>第二级分配器采用内存池的方式，维护16个链表，每个链表负责分配一个小于128字节的8字节整数倍（8, 16, …, 128个字节）的小区块。初始时是它们都是空指针。（采用嵌入式指针节约空间）<br>接下来，如果要分配1个64字节大小对象的空间。它会向负责64字节的链表要空间，如果链表上没有足够的空间。它会向内存池要空间，而且要的不止一个，设置为20。如果内存池中有足够的空间，就返回，没有的话，满足一个也行，就返回一个对象。如果一个也没有的话，就向malloc要空间。malloc也没有的话，检测大于64字节的那些链表，是不是有空间。如果还没有的话，就调用第一级空间配置器，调用oom异常处理对象。</p>
-<h2 id="其他内存处理工具"><a href="#其他内存处理工具" class="headerlink" title="其他内存处理工具"></a>其他内存处理工具</h2><p>这里使用到了type_traits进行重载。（还有哪里使用了type_traits？）<br>uninitialized_copy(InputForwardIterator, InputIterator, ForwardIteartor);<br>uninitialized_fill(ForwardIterator, ForwardIterator, const T&amp; x);<br>uninitialized_fill_n(ForwardIterator , size_type n, const T&amp; x )<br>这三个函数，会负责对相应的位置进行初始化，通过type_traits判断是否是POD类型，执行内存，或者是调用构造函数。</p>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《STL源码剖析》</p>
+            <h2 id="allocator">allocator</h2>
+<p>一般来说，C++ 对象的分配都是通过new expression来实现的，new expression通过调用operator new函数分配空间，然后调用相应的构造函数。同理释放的时候，通过delete，先调用operator delete，然后调用相应的析构函数。</p>
+<p>STL allocator的把这两部分给分开，调用allocate()分配空间，然后调用construct()进行构建，construct()的话一般来说是负责调用构造函数。<br>
+而allocate的工作就要多一些，当然也可以少一些，比如直接调用operator new或者malloc分配。这样子的话可能效率要低一下，有内存碎片，overload比较大。<br>
+所以就有了下面的分配器。</p>
+<h2 id="alloc">alloc</h2>
+<p>SGI alloc allocator的实现是一个两级空间配置器，第一级配置器负责分配128字节以上的空间，以及异常处理。第一级配置器使用malloc而不是operator new进行内存分配的原因，可能是C++没有realloc，因为没有使用new，所以就不能使用new_handler，需要自己实现。需要客户端自己设置一个oom_handler。<br>
+第二级分配器采用内存池的方式，维护16个链表，每个链表负责分配一个小于128字节的8字节整数倍（8, 16, …, 128个字节）的小区块。初始时是它们都是空指针。（采用嵌入式指针节约空间）<br>
+接下来，如果要分配1个64字节大小对象的空间。它会向负责64字节的链表要空间，如果链表上没有足够的空间。它会向内存池要空间，而且要的不止一个，设置为20。如果内存池中有足够的空间，就返回，没有的话，满足一个也行，就返回一个对象。如果一个也没有的话，就向malloc要空间。malloc也没有的话，检测大于64字节的那些链表，是不是有空间。如果还没有的话，就调用第一级空间配置器，调用oom异常处理对象。</p>
+<h2 id="其他内存处理工具">其他内存处理工具</h2>
+<p>这里使用到了type_traits进行重载。（还有哪里使用了type_traits？）<br>
+uninitialized_copy(InputForwardIterator, InputIterator, ForwardIteartor);<br>
+uninitialized_fill(ForwardIterator, ForwardIterator, const T&amp; x);<br>
+uninitialized_fill_n(ForwardIterator , size_type n, const T&amp; x )<br>
+这三个函数，会负责对相应的位置进行初始化，通过type_traits判断是否是POD类型，执行内存，或者是调用构造函数。</p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《STL源码剖析》</p>
 
           
         
@@ -1884,45 +2013,74 @@
       
         
           
-            <h2 id="套接字描述符"><a href="#套接字描述符" class="headerlink" title="套接字描述符"></a>套接字描述符</h2><p>套接字是通信端点的抽象，是软件接口，是传输层和网络层之间的接口。正如使用文件描述符访文件，使用套接字描述符访问套接字。套接字描述符本质上就是一个文件描述符，但是不是所有参数为文件描述符的函数都可以接收套接字描述符（比如说套接字不支持文件偏移量，所以lseek等函数就不支持）。</p>
-<h2 id="寻址"><a href="#寻址" class="headerlink" title="寻址"></a>寻址</h2><h3 id="字节序"><a href="#字节序" class="headerlink" title="字节序"></a>字节序</h3><p>大端：最大字节出现在最低地址位。<br>小端：最小字节出现在最低地址位。<br>TCP/IP协议栈使用大端字节序，Linux x86使用小端。</p>
-<p>四个字节序转换函数：<br>h表示host，n表示network，l表示long(32位整数), s表示short（16位整数）</p>
+            <h2 id="套接字描述符">套接字描述符</h2>
+<p>套接字是通信端点的抽象，是软件接口，是传输层和网络层之间的接口。正如使用文件描述符访文件，使用套接字描述符访问套接字。套接字描述符本质上就是一个文件描述符，但是不是所有参数为文件描述符的函数都可以接收套接字描述符（比如说套接字不支持文件偏移量，所以lseek等函数就不支持）。</p>
+<h2 id="寻址">寻址</h2>
+<h3 id="字节序">字节序</h3>
+<p>大端：最大字节出现在最低地址位。<br>
+小端：最小字节出现在最低地址位。<br>
+TCP/IP协议栈使用大端字节序，Linux x86使用小端。</p>
+<p>四个字节序转换函数：<br>
+h表示host，n表示network，l表示long(32位整数), s表示short（16位整数）</p>
 <ol>
 <li>htonl</li>
 <li>htons</li>
 <li>ntohl</li>
 <li>ntohs</li>
 </ol>
-<h3 id="点分十进制和二进制转换"><a href="#点分十进制和二进制转换" class="headerlink" title="点分十进制和二进制转换"></a>点分十进制和二进制转换</h3><p>inet_pton<br>inet_ntop</p>
-<h2 id="bind"><a href="#bind" class="headerlink" title="bind"></a>bind</h2><p>bind一般是在服务器端需要调用，要指定周知端口号(0~1023)，一般服务器的IP地址设置为INADDR。而客户端一般是由内核指定一个端口号，这个端口号是动态或者私用的(49152~65536)。还有中间的已登记端口号。<br>如果地址已经被使用，就会返回EADDRINUSE，可以使用SO_REUSEADD和SO_REUSEPORT。</p>
-<h2 id="listen"><a href="#listen" class="headerlink" title="listen"></a>listen</h2><p>listen，服务器执行被动打开（LISTEN）。listen的第二个参数是已完成的等待被accept的最大数量（不知道怎么回事，我在linux测试没有成功）。<br>SYN泛洪攻击。</p>
-<h2 id="connect"><a href="#connect" class="headerlink" title="connect"></a>connect</h2><p>connect，调用时从CLOSED转到SYN_SENT（从套接字创建以来是CLOSED），如果返回成功是ESTABLISHED。如果connect失败，这个套接字不可用，需要close它，然后重新打开。<br>connect出错返回的三个可能：</p>
+<h3 id="点分十进制和二进制转换">点分十进制和二进制转换</h3>
+<p>inet_pton<br>
+inet_ntop</p>
+<h2 id="bind">bind</h2>
+<p>bind一般是在服务器端需要调用，要指定周知端口号(0<sub>1023)，一般服务器的IP地址设置为INADDR。而客户端一般是由内核指定一个端口号，这个端口号是动态或者私用的(49152</sub>65536)。还有中间的已登记端口号。<br>
+如果地址已经被使用，就会返回EADDRINUSE，可以使用SO_REUSEADD和SO_REUSEPORT。</p>
+<h2 id="listen">listen</h2>
+<p>listen，服务器执行被动打开（LISTEN）。listen的第二个参数是已完成的等待被accept的最大数量（不知道怎么回事，我在linux测试没有成功）。<br>
+SYN泛洪攻击。</p>
+<h2 id="connect">connect</h2>
+<p>connect，调用时从CLOSED转到SYN_SENT（从套接字创建以来是CLOSED），如果返回成功是ESTABLISHED。如果connect失败，这个套接字不可用，需要close它，然后重新打开。<br>
+connect出错返回的三个可能：</p>
 <ol>
 <li>TCP客户没有收到服务器对SYN的回应。返回ETIMEOUT。</li>
 <li>如果对于客户的相应是RST，表示服务器主机在指定的端口没有进程等待和它连接。这是一种硬错误，客户一接收到RST报文就立刻返回ECONNREFUSED错误。（产生RST的三个条件：TCP想取消一个连接；TCP接收到一个根本不存在的连接上的报文，还有就是SYN报文段到了目的地，但是没有正在监听的服务器）。</li>
 <li>如果客户发出的SYN在中间某个路由器引发了目的地不可达ICMP错误，就认为是一种软错误。</li>
 </ol>
-<h2 id="accept"><a href="#accept" class="headerlink" title="accept"></a>accept</h2><p>accept从已完成连接的队列取一个连接回来。可能导致accept返回错误的情况：</p>
+<h2 id="accept">accept</h2>
+<p>accept从已完成连接的队列取一个连接回来。可能导致accept返回错误的情况：</p>
 <ol>
 <li>被某个信号中断了，某些系统设置了被中断后的自动恢复，但是有些没有，所以，要在accept内进行中断的处理。</li>
 <li>accept返回之前连接终止。大多数情况下返回一个错误，POSIX要求返回的错误是ECONNABORTED。遇到这个错误，服务器可以忽略它，再次调用accept。</li>
 </ol>
-<p>刚开始，一直以为accept返回的一个套接字描述符，使用了新的IP地址，因为使用了fork。后来才发现自己好傻逼，fork是创建了一个子进程，有一个新的pid，而并不影响这个套接字的四元组。。<br>这也是为什么如果主机重启之后，对面会发送一个RST，因为你连接的还是那个端口号，只不过是刚才的那个连接已经断开了，这就是发送一个RST的三个条件之一。</p>
-<h2 id="close"><a href="#close" class="headerlink" title="close"></a>close</h2><p>close关闭一个套接字，默认行为是把该套接字标记成关闭，然后立即返回到调用进程，该套接字不能在由调用进程使用，也就是说他不能作为read和write的第一个参数。但是TCP将尝试发送已经排队等待发送到对端的任何数据，发送完毕后执行正常的四次挥手。</p>
-<h2 id="服务器进程中止连接"><a href="#服务器进程中止连接" class="headerlink" title="服务器进程中止连接"></a>服务器进程中止连接</h2><p>如果客户端和服务器连接，杀死服务器子进程。这时，服务器子进程调用exit，关闭所有文件描述符，导致服务器子进程向客户端发送一个FIN报文。然后客户端就处于CLOSE_WAIT状态了。<br>如果客户端继续向服务器发送报文，是允许的。这个时候TCP会返回一个RST（因为这个时候TCP收到了一个根本不存在的连接上的报文）。这个RST会不会被客户端看到取决于接下来用户从套接字读时，取决于客户端先收到由于FIN产生的EOF还是RST产生的。</p>
+<p>刚开始，一直以为accept返回的一个套接字描述符，使用了新的IP地址，因为使用了fork。后来才发现自己好傻逼，fork是创建了一个子进程，有一个新的pid，而并不影响这个套接字的四元组。。<br>
+这也是为什么如果主机重启之后，对面会发送一个RST，因为你连接的还是那个端口号，只不过是刚才的那个连接已经断开了，这就是发送一个RST的三个条件之一。</p>
+<h2 id="close">close</h2>
+<p>close关闭一个套接字，默认行为是把该套接字标记成关闭，然后立即返回到调用进程，该套接字不能在由调用进程使用，也就是说他不能作为read和write的第一个参数。但是TCP将尝试发送已经排队等待发送到对端的任何数据，发送完毕后执行正常的四次挥手。</p>
+<h2 id="服务器进程中止连接">服务器进程中止连接</h2>
+<p>如果客户端和服务器连接，杀死服务器子进程。这时，服务器子进程调用exit，关闭所有文件描述符，导致服务器子进程向客户端发送一个FIN报文。然后客户端就处于CLOSE_WAIT状态了。<br>
+如果客户端继续向服务器发送报文，是允许的。这个时候TCP会返回一个RST（因为这个时候TCP收到了一个根本不存在的连接上的报文）。这个RST会不会被客户端看到取决于接下来用户从套接字读时，取决于客户端先收到由于FIN产生的EOF还是RST产生的。</p>
 <p>如果进程第二次写，也就是收到了RST之后，内核会向这个进程发送一个SIGPIPE信号。SIGPIPE的默认行为是终止进程，所以进程为了不让程序崩溃，必须捕获它。无论捕获的操作是设置一个信号处理程序还是简单的忽略，写操作都会收到一个EPIPE错误。</p>
-<h2 id="服务器主机奔溃"><a href="#服务器主机奔溃" class="headerlink" title="服务器主机奔溃"></a>服务器主机奔溃</h2><p>假设主机崩溃，已有的网络连接上发不出任何东西。</p>
+<h2 id="服务器主机奔溃">服务器主机奔溃</h2>
+<p>假设主机崩溃，已有的网络连接上发不出任何东西。</p>
 <ol>
 <li>客户端TCP发送数据，这个时候，客户端TCP一直重传。如果服务器崩溃，对客户的数据没有任何影响，返回的错误是ETIMEOUT。如果中间的某个路由器判断服务器不可能，返回的是EHOSTUNREACH或者ENETUNREACH。</li>
 <li>如果客户端TCP没有发送数据。需要使用套接字的SO_KEEPALIVE选项。</li>
 </ol>
-<h2 id="服务器主机奔溃后重启"><a href="#服务器主机奔溃后重启" class="headerlink" title="服务器主机奔溃后重启"></a>服务器主机奔溃后重启</h2><p>主机崩溃了，然后重启，即客户端完全不知道服务端出过事情。<br>如果客户端不给服务端发送数据，客户就不知道服务器崩溃。<br>如果客户发送了数据，这时服务器TCP会返回一个RST，因为服务器丢失了崩溃前的所有连接，就会返回ECONNRESET。</p>
-<h2 id="服务器关机"><a href="#服务器关机" class="headerlink" title="服务器关机"></a>服务器关机</h2><p>和服务器进程被终止是一样的，因为服务器子进程被关闭，文件描述符被关闭。</p>
-<h2 id="套接字选项"><a href="#套接字选项" class="headerlink" title="套接字选项"></a>套接字选项</h2><ol>
-<li>SO_KEEPALIVE选项。如果开启的话，在两小时之内，套接字的任何一个方向上都没有数据交换，TCP会自动给对端发送一个保持存活探测报文，这是对端必须响应的一个TCP报文，结果有三种可能：收到对方的ACK，对方返回一个RST，或者无响应。<br>一般这个选项用在服务器端，当客户机掉线之后，关闭这种半开连接。</li>
+<h2 id="服务器主机奔溃后重启">服务器主机奔溃后重启</h2>
+<p>主机崩溃了，然后重启，即客户端完全不知道服务端出过事情。<br>
+如果客户端不给服务端发送数据，客户就不知道服务器崩溃。<br>
+如果客户发送了数据，这时服务器TCP会返回一个RST，因为服务器丢失了崩溃前的所有连接，就会返回ECONNRESET。</p>
+<h2 id="服务器关机">服务器关机</h2>
+<p>和服务器进程被终止是一样的，因为服务器子进程被关闭，文件描述符被关闭。</p>
+<h2 id="套接字选项">套接字选项</h2>
+<ol>
+<li>SO_KEEPALIVE选项。如果开启的话，在两小时之内，套接字的任何一个方向上都没有数据交换，TCP会自动给对端发送一个保持存活探测报文，这是对端必须响应的一个TCP报文，结果有三种可能：收到对方的ACK，对方返回一个RST，或者无响应。<br>
+一般这个选项用在服务器端，当客户机掉线之后，关闭这种半开连接。</li>
 <li>SO_LINGER选项。指定close函数对面向连接的协议的工作。默认的close操作是立即返回，但是如果有数据残留在套接字发送缓冲区，系统会试着把这些数据发送给对端。</li>
-<li>SO_RCVBUF和SO_SNDBUF选项。每一个套接字都有一个发送缓冲区和接收缓冲区。接收缓冲区中可用空间的大小先顶了TCP通告对端窗口的大小。<br>对于客户而言，SO_RCVBUF必须在调用connect之前设置，而对于服务器来说，SO_RCVBUF必须在listen前设置。TCP套接字的缓冲区的大小至少应该是相应连接的MSS的4倍。<br>UDP没有发送缓冲区只有发送缓冲区大小，这个发送缓冲区大小表示的是能写到套接字的最大UDP数据报大小。</li>
-<li>SO_REUSEADDR。四个作用：<ul>
+<li>SO_RCVBUF和SO_SNDBUF选项。每一个套接字都有一个发送缓冲区和接收缓冲区。接收缓冲区中可用空间的大小先顶了TCP通告对端窗口的大小。<br>
+对于客户而言，SO_RCVBUF必须在调用connect之前设置，而对于服务器来说，SO_RCVBUF必须在listen前设置。TCP套接字的缓冲区的大小至少应该是相应连接的MSS的4倍。<br>
+UDP没有发送缓冲区只有发送缓冲区大小，这个发送缓冲区大小表示的是能写到套接字的最大UDP数据报大小。</li>
+<li>SO_REUSEADDR。四个作用：
+<ul>
 <li>监听服务断开，而子进程还在服务着。这个时候如果重启服务器，因为端口号被子进程占用着，所以就会出错。</li>
 <li>同一端口启动多个实例。对于TCP，允许在同一个端口上启动绑定不同IP的同一服务器的多个实例。但是不允许启动绑定同一个端口和IP的多实例。</li>
 <li>同一端口，不同IP，绑定多个socket。允许单个进程将同一个端口绑定到多个socket上，只要每次捆绑指定不同的IP地址即可。</li>
@@ -1931,7 +2089,10 @@
 </li>
 <li>SO_REUSEPORT选项。如果bind一个</li>
 </ol>
-<h2 id="shutdonw和close"><a href="#shutdonw和close" class="headerlink" title="shutdonw和close"></a>shutdonw和close</h2><h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《APUE》<br>2.《UNP》卷一</p>
+<h2 id="shutdonw和close">shutdonw和close</h2>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》<br>
+2.《UNP》卷一</p>
 
           
         
@@ -2103,7 +2264,9 @@
       
         
           
-            <h2 id="进程间通信"><a href="#进程间通信" class="headerlink" title="进程间通信"></a>进程间通信</h2><p>Linux及城建通信可以分为两类，一类是同一台主机之间的进程间通信，另一类是网络之间的进程通信。<br>同一台主机之间的进程通信有以下几种：</p>
+            <h2 id="进程间通信">进程间通信</h2>
+<p>Linux及城建通信可以分为两类，一类是同一台主机之间的进程间通信，另一类是网络之间的进程通信。<br>
+同一台主机之间的进程通信有以下几种：</p>
 <ol>
 <li>管道</li>
 <li>协程</li>
@@ -2114,57 +2277,87 @@
 <li>UNIX域套接字。</li>
 </ol>
 <p>而网络通信主要就是套接字通信。</p>
-<h2 id="管道"><a href="#管道" class="headerlink" title="管道"></a>管道</h2><p>管道的局限性：</p>
+<h2 id="管道">管道</h2>
+<p>管道的局限性：</p>
 <ol>
 <li>半双工。（虽然大多数实现都是全双工，为了移植性，假设是半双工）。</li>
 <li>管道只能在具有公共祖先的两个进程之间使用。</li>
 </ol>
 <p>FIFO没有第二种局限性，UNIX域套接字两种局限性都没有。</p>
-<h3 id="函数popen和pclose"><a href="#函数popen和pclose" class="headerlink" title="函数popen和pclose"></a>函数<code>popen</code>和<code>pclose</code></h3><p>popen创建一个FILE stream指针。<br>指定参数’r’从cmd的标准输出读，指定参数’w’向cmd的标准输入写。</p>
-<h2 id="协同进程"><a href="#协同进程" class="headerlink" title="协同进程"></a>协同进程</h2><p>UNIX过滤程序从标准输入读取数据，向标准输出读取数据。<br>当一个过滤程序即产生某个过滤程序的输入，又读取该过滤程序的输出时，它就变成了协同进程。<br>popen只提供连接到另一个进程的标准输入或者标准输出的单向通道，而协同新城有连接到另一个进程的两个单向管道：一个连接到其标准输入，另一个则连接到它的标准输出。<br>相当于我们把数据写入一个进程的标准输出，经过它的处理后，又从它的标准输出读出。（可以通过创建两个管道来实现，一个管道向该进程的标准输入写，另一个管道从该进程的标准输出读。）<br><strong>注意如果使用标准IO函数测试的话，可能要注意缓冲区的设置。</strong></p>
-<h2 id="FIFO"><a href="#FIFO" class="headerlink" title="FIFO"></a>FIFO</h2><p>FIFO也叫命名管道。但是管道只能在两个相关的进程之间使用，而FIFO可以在任意两个进程之间交换数据。<br>创建一个FIFO之后，需要使用open打开它。<br>如果不指定O_NONBLOCK，<strong>只读</strong>open会阻塞到别的进程为写打开这个FIFO为止，而<strong>只写</strong>open会阻塞到别的进程为读而打开这个FIFO为止。<br>如果指定O_NONBLOCK，只读open总是返回成功。而如果没有其他进程为读打开这个FIFO，返回-1，置位errno为ENXIO。<br>FIFO的用处：</p>
+<h3 id="函数popen和pclose">函数<code>popen</code>和<code>pclose</code></h3>
+<p>popen创建一个FILE stream指针。<br>
+指定参数’r’从cmd的标准输出读，指定参数’w’向cmd的标准输入写。</p>
+<h2 id="协同进程">协同进程</h2>
+<p>UNIX过滤程序从标准输入读取数据，向标准输出读取数据。<br>
+当一个过滤程序即产生某个过滤程序的输入，又读取该过滤程序的输出时，它就变成了协同进程。<br>
+popen只提供连接到另一个进程的标准输入或者标准输出的单向通道，而协同新城有连接到另一个进程的两个单向管道：一个连接到其标准输入，另一个则连接到它的标准输出。<br>
+相当于我们把数据写入一个进程的标准输出，经过它的处理后，又从它的标准输出读出。（可以通过创建两个管道来实现，一个管道向该进程的标准输入写，另一个管道从该进程的标准输出读。）<br>
+<strong>注意如果使用标准IO函数测试的话，可能要注意缓冲区的设置。</strong></p>
+<h2 id="fifo">FIFO</h2>
+<p>FIFO也叫命名管道。但是管道只能在两个相关的进程之间使用，而FIFO可以在任意两个进程之间交换数据。<br>
+创建一个FIFO之后，需要使用open打开它。<br>
+如果不指定O_NONBLOCK，<strong>只读</strong>open会阻塞到别的进程为写打开这个FIFO为止，而<strong>只写</strong>open会阻塞到别的进程为读而打开这个FIFO为止。<br>
+如果指定O_NONBLOCK，只读open总是返回成功。而如果没有其他进程为读打开这个FIFO，返回-1，置位errno为ENXIO。<br>
+FIFO的用处：</p>
 <ol>
 <li>shell命令将数据从一条管道传送到另一条时，无需创建中间临时文件。</li>
 <li>客户进程-服务器进程应用程序中，FIFO用作汇集点，在服务器和客户端之间传送数据。</li>
 </ol>
-<h2 id="XSI-IPC"><a href="#XSI-IPC" class="headerlink" title="XSI IPC"></a>XSI IPC</h2><p>XSI IPC包含三种，分别是消息队列，信号量，共享内存。IPC通过IPC描述符进行访问（和文件描述很像）。但是和文件不同的是，IPC都没有名字，所以要创建多个IPC，怎么区分它们，这个就是key（键）的作用，每一个IPC都有一个键（和文件名字很像）。<br>问题就是怎么让通信的进程知道它们要使用的IPC描述符？</p>
+<h2 id="xsi-ipc">XSI IPC</h2>
+<p>XSI IPC包含三种，分别是消息队列，信号量，共享内存。IPC通过IPC描述符进行访问（和文件描述很像）。但是和文件不同的是，IPC都没有名字，所以要创建多个IPC，怎么区分它们，这个就是key（键）的作用，每一个IPC都有一个键（和文件名字很像）。<br>
+问题就是怎么让通信的进程知道它们要使用的IPC描述符？</p>
 <ol>
 <li>使用IPC_PRIVATE创建一个新的IPC（IPC_PRIVATE保证创建一个新的IPC，将返回的IPC描述符存放在一个文件中。或者就是父子进程之间，直接复制IPC描述符。</li>
 <li>在一个公用的头文件中指定一个键，这个键被父进程和子进程都认可。这种可能是键已经被用过了，再创建的时候就会出错。</li>
 <li>根据一个路径名和项目ID创建一个键。</li>
 </ol>
 <p>不能使用IPC_PRIVATE作为一个键来引用消息队列，引用消息队列时要绕过get函数。</p>
-<h3 id="优点和缺点"><a href="#优点和缺点" class="headerlink" title="优点和缺点"></a>优点和缺点</h3><ol>
+<h3 id="优点和缺点">优点和缺点</h3>
+<ol>
 <li>IPC都是在系统范围内起作用的，没有引用计数，所以，如果进程创建了一个IPC，然后退出，那么这些IPC都不会被删除，需要显式的删除。在使用信号量时，如果进程退出时没有释放信号量，信号量不会被释放。</li>
-<li>IPC结构在文件系统中没有名字，所以不能使用操作文件的那些函数，需要增加新的系统调用和命令。<br>此外，没有办法使用多路转接。</li>
+<li>IPC结构在文件系统中没有名字，所以不能使用操作文件的那些函数，需要增加新的系统调用和命令。<br>
+此外，没有办法使用多路转接。</li>
 <li>如果显式的删除IPC的话，不管当前有多少个进程在使用，都会被删除。下一次再使用的话就会报错。</li>
 </ol>
-<h2 id="XSI消息队列"><a href="#XSI消息队列" class="headerlink" title="XSI消息队列"></a>XSI消息队列</h2><p>消息队列</p>
-<h2 id="XSI信号量"><a href="#XSI信号量" class="headerlink" title="XSI信号量"></a>XSI信号量</h2><p>XSI信号量是一个计数器，用于为多个进程提供对共享数据的访问。但是XSI信号量不是单个信号量，而是一个信号量的集合。<br>需要使用<code>semget</code>创建一个信号量集合（数量可以等于1）。<br>然后使用<code>semget</code>获得一个信号量描述符（成功创建时返回的也是信号量描述符）。<br>接下来使用<code>semctl</code>设置每个信号量的值。<br>使用<code>semop</code>控制信号量值的增和减。</p>
+<h2 id="xsi消息队列">XSI消息队列</h2>
+<p>消息队列</p>
+<h2 id="xsi信号量">XSI信号量</h2>
+<p>XSI信号量是一个计数器，用于为多个进程提供对共享数据的访问。但是XSI信号量不是单个信号量，而是一个信号量的集合。<br>
+需要使用<code>semget</code>创建一个信号量集合（数量可以等于1）。<br>
+然后使用<code>semget</code>获得一个信号量描述符（成功创建时返回的也是信号量描述符）。<br>
+接下来使用<code>semctl</code>设置每个信号量的值。<br>
+使用<code>semop</code>控制信号量值的增和减。</p>
 <p>XSI信号量的缺点：</p>
 <ol>
 <li>是一个信号集合。</li>
 <li>信号量的创建和初始化是分开的。</li>
 <li>当进程退出时，可能没有释放分配给他的信号量，使用SEM_UNDO解决。</li>
 </ol>
-<h2 id="XSI共享内存-2"><a href="#XSI共享内存-2" class="headerlink" title="XSI共享内存[2]"></a>XSI共享内存[2]</h2><p>共享内存允许两个或者多个进程共享一个给定的存储区。因为数据不需要在客户进程和服务器进程之间进行复制，这是最快的一种IPC。<br>使用共享内存时，需要注意的是，在多个进程之间同步访问一个给定的存储区。通常使用信号量同步共享内存，当然也可以使用互斥量和记录锁，线程锁共享。</p>
+<h2 id="xsi共享内存-2">XSI共享内存[2]</h2>
+<p>共享内存允许两个或者多个进程共享一个给定的存储区。因为数据不需要在客户进程和服务器进程之间进行复制，这是最快的一种IPC。<br>
+使用共享内存时，需要注意的是，在多个进程之间同步访问一个给定的存储区。通常使用信号量同步共享内存，当然也可以使用互斥量和记录锁，线程锁共享。</p>
 <p>共享内存和存储IO映射的区别，用mmap映射的存储段是和文件相关的，而XSI共享内存并没有这种限制。</p>
-<h2 id="它们之间的区别"><a href="#它们之间的区别" class="headerlink" title="它们之间的区别"></a>它们之间的区别</h2><ol>
+<h2 id="它们之间的区别">它们之间的区别</h2>
+<ol>
 <li>信号量和互斥量的区别。都表示对于资源的访问权，但是信号量的资源计数可以超过1，而互斥量的资源计数为1。</li>
 <li>消息队列。</li>
 </ol>
-<h2 id="进程间传递字符串"><a href="#进程间传递字符串" class="headerlink" title="进程间传递字符串"></a>进程间传递字符串</h2><p>若果需要两个进程间的双向数据流，可以使用消息队列和全双工管道。</p>
+<h2 id="进程间传递字符串">进程间传递字符串</h2>
+<p>若果需要两个进程间的双向数据流，可以使用消息队列和全双工管道。</p>
 <ol>
 <li>全双工管道。</li>
 <li>消息队列。先创建一个消息队列，然后调用fork，它们就可以实现通信了。因为消息队列不能使用IPC_PRIVATE作为一个KEY打开消息队列。</li>
 </ol>
-<h2 id="进程同步的方法"><a href="#进程同步的方法" class="headerlink" title="进程同步的方法"></a>进程同步的方法</h2><p>信号量，记录锁和互斥量的比较。如果在多个进程中共享同一个资源，可以使用这三种方法的任意一种来实现。</p>
+<h2 id="进程同步的方法">进程同步的方法</h2>
+<p>信号量，记录锁和互斥量的比较。如果在多个进程中共享同一个资源，可以使用这三种方法的任意一种来实现。</p>
 <ol>
 <li>使用信号量。创建一个包含一个成员的信号量集合，将该信号量的值初始化为1。为了分配资源，以sem_op为-1调用semop，为了释放资源，以sem_op为+1调用semop。对每个操作都指定SEM_UNDO，处理在未释放资源条件下进程终止的情况。</li>
 <li>使用记录锁。创建一个空文件，并且使用该文件的第一个字节（无需存在）作为锁字节，为了分配资源，先对该字节获得一个写锁。释放资源时，对该字节解锁。记录锁的性质保证了一个锁的持有者进程终止时，内核会自动释放资源。</li>
 <li>使用互斥量。所有的进程将相同的文件映射到它们的地址空间中，使用PTHREAD_PROCESS_SHARED互斥量属性在文件的相同偏移处初始化互斥量。为了分配资源，对互斥量加锁。为了释放资源，解锁互斥量。如果一个进程没有释放互斥量而终止，恢复是非常困难的。</li>
 </ol>
-<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>1.《APUE》第三版<br>2.<a href="https://www.cnblogs.com/my_life/articles/4538299.html" target="_blank" rel="noopener">https://www.cnblogs.com/my_life/articles/4538299.html</a></p>
+<h2 id="参考文献">参考文献</h2>
+<p>1.《APUE》第三版<br>
+2.<a href="https://www.cnblogs.com/my_life/articles/4538299.html" target="_blank" rel="noopener">https://www.cnblogs.com/my_life/articles/4538299.html</a></p>
 
           
         
